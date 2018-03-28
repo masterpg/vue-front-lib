@@ -1,0 +1,7 @@
+.idea/
+node_modules/
+dist/
+src/**/*.js.map
+test/**/*.js.map
+test/**/*.tmp
+**/*.log
