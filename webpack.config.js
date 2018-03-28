@@ -81,8 +81,14 @@ module.exports = {
   // webpack-dev-serverの設定
   devServer: {
     contentBase: '.',
-    host: 'localhost',
     port: 5000,
+    host: '0.0.0.0',
+    disableHostCheck: true,
+    // historyApiFallbackの設定は以下URLを参照:
+    // https://github.com/webpack/docs/wiki/webpack-dev-server#the-historyapifallback-option
+    historyApiFallback: {
+      rewrites: [],
+    },
     // HMRに必要な設定②
     hot: true,
   },
