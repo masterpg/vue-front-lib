@@ -25,7 +25,7 @@
       'hello': Hello,
     },
   })
-  export default class Abc extends Vue {
+  export default class AbcApp extends Vue {
 
     @Prop({ default: 'default value A' })
     propA: string;

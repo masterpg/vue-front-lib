@@ -10,6 +10,9 @@
       <li>
         <router-link to="/abc">/abc</router-link>
       </li>
+      <li>
+        <router-link to="/shopping">/shopping</router-link>
+      </li>
     </ul>
     <router-view></router-view>
   </div>
@@ -18,12 +21,14 @@
 <script lang="ts">
   import Vue from 'vue';
   import VueRouter from 'vue-router';
-  import Abc from './abc/abc.vue';
+  import AbcApp from './components/abc/app.vue';
+  import ShoppingApp from './components/shopping/app.vue';
 
   Vue.use(VueRouter);
 
   const routes = [
-    { path: '/abc', component: Abc },
+    { path: '/abc', component: AbcApp },
+    { path: '/shopping', component: ShoppingApp },
   ];
 
   const router = new VueRouter({
