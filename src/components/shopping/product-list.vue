@@ -12,18 +12,22 @@
   </ul>
 </template>
 
-<script>
-import { mapGetters, mapActions } from 'vuex'
+<script lang="ts">
+import Vue from 'vue';
+import { Component } from 'vue-property-decorator';
+import { mapGetters, mapActions } from 'vuex';
 
-export default {
+@Component({
   computed: mapGetters({
-    products: 'allProducts'
+    products: 'allProducts',
   }),
   methods: mapActions([
-    'addProductToCart'
+    'addProductToCart',
   ]),
-  created () {
-    this.$store.dispatch('getAllProducts')
+})
+export default class ProductList extends Vue {
+  created() {
+    this.$store.dispatch('getAllProducts');
   }
 }
 </script>

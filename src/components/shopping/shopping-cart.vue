@@ -8,26 +8,30 @@
       </li>
     </ul>
     <p>Total: {{ total | currency }}</p>
-    <p><button :disabled="!products.length" @click="checkout(products)">Checkout</button></p>
+    <p>
+      <button :disabled="!products.length" @click="checkout(products)">Checkout</button>
+    </p>
     <p v-show="checkoutStatus">Checkout {{ checkoutStatus }}.</p>
   </div>
 </template>
 
-<script>
-import { mapGetters } from 'vuex'
+<script lang="ts">
+import Vue from 'vue';
+import { Component } from 'vue-property-decorator';
+import { mapGetters } from 'vuex';
 
-export default {
+@Component({
   computed: {
     ...mapGetters({
       products: 'cartProducts',
       checkoutStatus: 'checkoutStatus',
-      total: 'cartTotalPrice'
-    })
+      total: 'cartTotalPrice',
+    }),
   },
-  methods: {
-    checkout (products) {
-      this.$store.dispatch('checkout', products)
-    }
+})
+export default class ShoppingCart extends Vue {
+  private checkout(products) {
+    this.$store.dispatch('checkout', products);
   }
 }
 </script>
