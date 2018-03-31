@@ -13,7 +13,7 @@
     "no-namespace": false,
 
     // Do not allow parameters to be reassigned. To avoid bugs, developers should instead assign new values to new vars.
-    "no-parameter-reassignment": true,
+    "no-parameter-reassignment": false,
 
     // Force the use of ES6-style imports instead of /// <reference path=> imports.
     "no-reference": false,
@@ -39,7 +39,7 @@
 
     // Disallows a variable definition in an inner scope from shadowing a variable in an outer scope. Developers should
     // instead use a separate variable name.
-    "no-shadowed-variable": true,
+    "no-shadowed-variable": false,
 
     // Empty blocks are almost never needed. Allow the one general exception: empty catch blocks.
     "no-empty": false,
@@ -62,6 +62,12 @@
 
     // Disallow duplicate imports in the same file.
     "no-duplicate-imports": true,
+
+    // Enforces consistent semicolon usage at the end of every statement.
+    "semicolon": true,
+
+    // Multi-line object liiterals and function calls should have a trailing comma. This helps avoid merge conflicts.
+    "trailing-comma": [true, {"multiline": "always", "singleline": "never"}],
 
 
     // -- Strong Warnings --
@@ -94,10 +100,7 @@
     "unified-signatures": {"severity": "warning"},
 
     // Prefer const for values that will not change. This better documents code.
-    "prefer-const": {"severity": "warning"},
-
-    // Multi-line object liiterals and function calls should have a trailing comma. This helps avoid merge conflicts.
-    "trailing-comma": [true, {"multiline": "always", "singleline": "never"}]
+    "prefer-const": {"severity": "warning"}
   },
 
   "defaultSeverity": "error"
