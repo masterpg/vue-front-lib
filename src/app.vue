@@ -38,6 +38,6 @@
 
   export default {
     router,
-  }
+  };
 </script>
 

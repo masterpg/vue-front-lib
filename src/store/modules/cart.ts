@@ -4,7 +4,7 @@ import shop from '../../api/shop';
 // shape: [{ id, quantity }]
 const state = {
   added: [],
-  checkoutStatus: null
+  checkoutStatus: null,
 };
 
 // getters
@@ -17,16 +17,16 @@ const getters = {
       return {
         title: product.title,
         price: product.price,
-        quantity
-      }
-    })
+        quantity,
+      };
+    });
   },
 
   cartTotalPrice: (state, getters) => {
     return getters.cartProducts.reduce((total, product) => {
-      return total + product.price * product.quantity
-    }, 0)
-  }
+      return total + product.price * product.quantity;
+    }, 0);
+  },
 };
 
 // actions
@@ -42,9 +42,9 @@ const actions = {
       () => {
         commit('setCheckoutStatus', 'failed');
         // rollback to the cart saved before sending the request
-        commit('setCartItems', { items: savedCartItems })
-      }
-    )
+        commit('setCartItems', { items: savedCartItems });
+      },
+    );
   },
 
   addProductToCart({ state, commit }, product) {
@@ -52,14 +52,14 @@ const actions = {
     if (product.inventory > 0) {
       const cartItem = state.added.find(item => item.id === product.id);
       if (!cartItem) {
-        commit('pushProductToCart', { id: product.id })
+        commit('pushProductToCart', { id: product.id });
       } else {
-        commit('incrementItemQuantity', cartItem)
+        commit('incrementItemQuantity', cartItem);
       }
       // remove 1 item from stock
-      commit('decrementProductInventory', { id: product.id })
+      commit('decrementProductInventory', { id: product.id });
     }
-  }
+  },
 };
 
 // mutations
@@ -67,27 +67,27 @@ const mutations = {
   pushProductToCart(state, { id }) {
     state.added.push({
       id,
-      quantity: 1
-    })
+      quantity: 1,
+    });
   },
 
   incrementItemQuantity(state, { id }) {
     const cartItem = state.added.find(item => item.id === id);
-    cartItem.quantity++
+    cartItem.quantity++;
   },
 
   setCartItems(state, { items }) {
-    state.added = items
+    state.added = items;
   },
 
   setCheckoutStatus(state, status) {
-    state.checkoutStatus = status
-  }
+    state.checkoutStatus = status;
+  },
 };
 
 export default {
   state,
   getters,
   actions,
-  mutations
-}
+  mutations,
+};
