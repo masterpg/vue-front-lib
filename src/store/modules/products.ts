@@ -1,6 +1,6 @@
 import Shop, { Product as ApiProduct } from '../../api/shop';
 import { ActionContext } from 'vuex';
-import { BaseManager, Product, ProductsState, RootState } from './base';
+import { BaseManager, DECREMENT_PRODUCT_INVENTORY, GET_ALL_PRODUCTS, Product, ProductsGetters, ProductsState, RootState, SET_PRODUCTS } from './base';
 
 //================================================================================
 //
@@ -24,10 +24,6 @@ const state: ProductsState = {
 //
 //----------------------------------------------------------------------
 
-interface ProductsGetters {
-  readonly allProducts: Product[];
-}
-
 const getters = {
   allProducts: (state: ProductsState) => state.all,
 };
@@ -39,9 +35,9 @@ const getters = {
 //----------------------------------------------------------------------
 
 const actions = {
-  getAllProducts(context: ActionContext<ProductsState, RootState>): Promise<void> {
+  [GET_ALL_PRODUCTS](context: ActionContext<ProductsState, RootState>): Promise<void> {
     return Shop.getProducts().then((products) => {
-      context.commit('setProducts', products);
+      context.commit(SET_PRODUCTS, products);
     });
   },
 };
@@ -53,11 +49,11 @@ const actions = {
 //----------------------------------------------------------------------
 
 const mutations = {
-  setProducts(state: ProductsState, products: ApiProduct[]) {
+  [SET_PRODUCTS](state: ProductsState, products: ApiProduct[]) {
     state.all = products;
   },
 
-  decrementProductInventory(state: ProductsState, { id }: { id: number }) {
+  [DECREMENT_PRODUCT_INVENTORY](state: ProductsState, { id }: { id: number }) {
     const product = state.all.find(item => item.id === id);
     if (product) {
       product.inventory--;
@@ -90,7 +86,7 @@ export class ProductsManager extends BaseManager implements ProductsState, Produ
 
   get allProducts(): Product[] { return this.store.getters.allProducts; }
 
-  getAllProducts(): Promise<void> { return this.store.dispatch('getAllProducts'); }
+  getAllProducts(): Promise<void> { return this.store.dispatch(GET_ALL_PRODUCTS); }
 
-  decrementProductInventory(): void { this.store.commit('decrementProductInventory'); }
+  decrementProductInventory(): void { this.store.commit(DECREMENT_PRODUCT_INVENTORY); }
 }

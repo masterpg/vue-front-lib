@@ -39,6 +39,22 @@ export interface ProductsState {
 
 //================================================================================
 //
+//  Getters
+//
+//================================================================================
+
+export interface CartGetters {
+  readonly checkoutStatus: string | null;
+  readonly cartProducts: CartProduct[];
+  readonly cartTotalPrice: number;
+}
+
+export interface ProductsGetters {
+  readonly allProducts: Product[];
+}
+
+//================================================================================
+//
 //  Entities
 //
 //================================================================================
@@ -51,3 +67,35 @@ export interface CartProduct {
   price: number;
   quantity: number;
 }
+
+//================================================================================
+//
+//  Constants
+//
+//================================================================================
+
+//--------------------------------------------------
+//  Action
+//--------------------------------------------------
+
+export const GET_ALL_PRODUCTS = 'getAllProducts';
+
+export const CHECKOUT = 'checkout';
+
+export const ADD_PRODUCT_TO_CART = 'addProductToCart';
+
+//--------------------------------------------------
+//  Mutation
+//--------------------------------------------------
+
+export const SET_PRODUCTS = 'setProducts';
+
+export const DECREMENT_PRODUCT_INVENTORY = 'decrementProductInventory';
+
+export const PUSH_PRODUCT_TO_CART = 'pushProductToCart';
+
+export const INCREMENT_ITEM_QUANTITY = 'incrementItemQuantity';
+
+export const SET_CART_ITEMS = 'setCartItems';
+
+export const SET_CHECKOUT_STATUS = 'setCheckoutStatus';
