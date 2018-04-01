@@ -21,11 +21,11 @@
 <script lang="ts">
   import Vue from 'vue';
   import VueRouter from 'vue-router';
-  import AbcApp from './components/abc/app.vue';
-  import ShoppingApp from './components/shopping/app.vue';
 
   Vue.use(VueRouter);
 
+  const AbcApp = () => import(/* webpackChunkName: "abc" */ './components/abc/app.vue');
+  const ShoppingApp = () => import(/* webpackChunkName: "shopping" */ './components/shopping/app.vue');
   const routes = [
     { path: '/abc', component: AbcApp },
     { path: '/shopping', component: ShoppingApp },

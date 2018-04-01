@@ -14,7 +14,8 @@ module.exports = merge(baseConfig, {
   output: {
     // Webpackに生成したファイルの格納場所を設定
     path: path.resolve(__dirname, './dist'),
-    filename: 'bundle.js',
+    filename: '[name].bundle.js',
+    chunkFilename: '[name].bundle.js',
     // HMRに必要な設定①
     // 参照: http://dackdive.hateblo.jp/entry/2016/05/07/183335
     publicPath: '/dist'
