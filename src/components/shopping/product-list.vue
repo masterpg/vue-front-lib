@@ -24,7 +24,7 @@
       AppStore.products.getAllProducts();
     }
 
-    private get products() {
+    private get products(): Product[] {
       return AppStore.products.allProducts;
     }
 

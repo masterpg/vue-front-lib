@@ -24,8 +24,3 @@ namespace AppStore {
   export const cart = new CartManager(VuexStore);
 }
 export default AppStore;
-
-// export {
-//   VuexStore,
-//   AppStore,
-// };

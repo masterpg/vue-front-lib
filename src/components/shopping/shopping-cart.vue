@@ -19,15 +19,18 @@
   import AppStore from "../../store";
   import Vue from 'vue';
   import { Component } from 'vue-property-decorator';
+  import { CartProduct } from "../../store/modules/base";
 
   @Component({})
   export default class ShoppingCart extends Vue {
-    private checkout(products) { return AppStore.cart.checkout(products); }
+    private get products(): CartProduct[] { return AppStore.cart.cartProducts; }
 
-    private get products() { return AppStore.cart.cartProducts; }
+    private get checkoutStatus(): string | null { return AppStore.cart.checkoutStatus; }
 
-    private get checkoutStatus() { return AppStore.cart.checkoutStatus; }
+    private get total(): number { return AppStore.cart.cartTotalPrice; }
 
-    private get total() { return AppStore.cart.cartTotalPrice; }
+    private checkout(products): Promise<void> {
+      return AppStore.cart.checkout(products);
+    }
   }
 </script>

@@ -1,5 +1,5 @@
-import shop from '../../api/shop';
-import { BaseManager, CartState, Product, RootState } from "./base";
+import Shop from '../../api/shop';
+import { BaseManager, CartProduct, CartState, Product, RootState } from "./base";
 import { ActionContext } from "vuex";
 
 //================================================================================
@@ -27,21 +27,20 @@ const state: CartState = {
 
 interface CartGetters {
   readonly checkoutStatus: string | null;
-  readonly cartProducts: {
-    title: string,
-    price: number,
-    quantity: number,
-  }[];
+  readonly cartProducts: CartProduct[];
   readonly cartTotalPrice: number;
 }
 
 const getters = {
-  checkoutStatus: (state: CartState) => state.checkoutStatus,
+  checkoutStatus(state: CartState): string | null {
+    return state.checkoutStatus;
+  },
 
-  cartProducts: (state: CartState, getters: CartGetters, rootState: RootState) => {
+  cartProducts(state: CartState, getters: CartGetters, rootState: RootState): CartProduct[] {
     return state.added.map(({ id, quantity }) => {
       const product = rootState.products.all.find(product => product.id === id);
       return {
+        id: product!.id,
         title: product!.title,
         price: product!.price,
         quantity,
@@ -49,7 +48,7 @@ const getters = {
     });
   },
 
-  cartTotalPrice: (state: CartState, getters: CartGetters) => {
+  cartTotalPrice(state: CartState, getters: CartGetters): number {
     return getters.cartProducts.reduce((total, product) => {
       return total + product.price * product.quantity;
     }, 0);
@@ -63,34 +62,36 @@ const getters = {
 //----------------------------------------------------------------------
 
 const actions = {
-  checkout(context: ActionContext<CartState, RootState>, products: Product[]) {
+  checkout(context: ActionContext<CartState, RootState>, products: Product[]): Promise<void> {
     const savedCartItems = [...state.added];
     context.commit('setCheckoutStatus', null);
     // empty cart
     context.commit('setCartItems', { items: [] });
-    shop.buyProducts(
-      products,
-      () => context.commit('setCheckoutStatus', 'successful'),
-      () => {
-        context.commit('setCheckoutStatus', 'failed');
-        // rollback to the cart saved before sending the request
-        context.commit('setCartItems', { items: savedCartItems });
-      },
-    );
+
+    return Shop.buyProducts(products).then(() => {
+      context.commit('setCheckoutStatus', 'successful');
+    }).catch(err => {
+      context.commit('setCheckoutStatus', 'failed');
+      // rollback to the cart saved before sending the request
+      context.commit('setCartItems', { items: savedCartItems });
+    });
   },
 
-  addProductToCart(context: ActionContext<CartState, RootState>, product: Product) {
-    context.commit('setCheckoutStatus', null);
-    if (product.inventory > 0) {
-      const cartItem = state.added.find(item => item.id === product.id);
-      if (!cartItem) {
-        context.commit('pushProductToCart', { id: product.id });
-      } else {
-        context.commit('incrementItemQuantity', cartItem);
+  addProductToCart(context: ActionContext<CartState, RootState>, product: Product): Promise<void> {
+    return new Promise((resolve) => {
+      context.commit('setCheckoutStatus', null);
+      if (product.inventory > 0) {
+        const cartItem = state.added.find(item => item.id === product.id);
+        if (!cartItem) {
+          context.commit('pushProductToCart', { id: product.id });
+        } else {
+          context.commit('incrementItemQuantity', cartItem);
+        }
+        // remove 1 item from stock
+        context.commit('decrementProductInventory', { id: product.id });
       }
-      // remove 1 item from stock
-      context.commit('decrementProductInventory', { id: product.id });
-    }
+      resolve();
+    });
   },
 };
 
@@ -149,13 +150,7 @@ export class CartManager extends BaseManager implements CartState, CartGetters {
 
   get checkoutStatus(): string | null { return (<CartGetters>this.store.getters).checkoutStatus; }
 
-  get cartProducts(): {
-    title: string,
-    price: number,
-    quantity: number,
-  }[] {
-    return (<CartGetters>this.store.getters).cartProducts;
-  }
+  get cartProducts(): CartProduct[] { return (<CartGetters>this.store.getters).cartProducts; }
 
   get cartTotalPrice(): number { return (<CartGetters>this.store.getters).cartTotalPrice; }
 

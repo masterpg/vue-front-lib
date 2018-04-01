@@ -8,20 +8,25 @@ const _products = [
   { "id": 3, "title": "Charli XCX - Sucker CD", "price": 19.99, "inventory": 5 },
 ];
 
-export default {
-  getProducts(cb: (products: Product[]) => void) {
-    setTimeout(() => cb(_products), 100);
+const Shop = {
+  getProducts(): Promise<Product[]> {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(_products), 100);
+    });
   },
 
-  buyProducts(products: Product[], cb: () => void, errorCb: () => void) {
-    setTimeout(() => {
-      // simulate random checkout failure.
-      (Math.random() > 0.5 || navigator.userAgent.indexOf('PhantomJS') > -1)
-        ? cb()
-        : errorCb();
-    }, 100);
+  buyProducts(products: Product[]): Promise<void> {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        // simulate random checkout failure.
+        (Math.random() > 0.5 || navigator.userAgent.indexOf('PhantomJS') > -1)
+          ? resolve()
+          : reject();
+      }, 100);
+    });
   },
 };
+export default Shop;
 
 export interface Product {
   id: number;

@@ -1,4 +1,4 @@
-import Shop, {Product as ApiProduct} from '../../api/shop';
+import Shop, { Product as ApiProduct } from '../../api/shop';
 import { ActionContext } from 'vuex';
 import { BaseManager, Product, ProductsState, RootState } from './base';
 
@@ -39,8 +39,8 @@ const getters = {
 //----------------------------------------------------------------------
 
 const actions = {
-  getAllProducts: (context: ActionContext<ProductsState, RootState>) => {
-    Shop.getProducts((products: ApiProduct[]) => {
+  getAllProducts(context: ActionContext<ProductsState, RootState>): Promise<void> {
+    return Shop.getProducts().then((products) => {
       context.commit('setProducts', products);
     });
   },
