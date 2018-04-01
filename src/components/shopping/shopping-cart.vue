@@ -16,22 +16,18 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import { Component } from 'vue-property-decorator';
-import { mapGetters } from 'vuex';
+  import AppStore from "../../store";
+  import Vue from 'vue';
+  import { Component } from 'vue-property-decorator';
 
-@Component({
-  computed: {
-    ...mapGetters({
-      products: 'cartProducts',
-      checkoutStatus: 'checkoutStatus',
-      total: 'cartTotalPrice',
-    }),
-  },
-})
-export default class ShoppingCart extends Vue {
-  private checkout(products) {
-    this.$store.dispatch('checkout', products);
+  @Component({})
+  export default class ShoppingCart extends Vue {
+    private checkout(products) { return AppStore.cart.checkout(products); }
+
+    private get products() { return AppStore.cart.cartProducts; }
+
+    private get checkoutStatus() { return AppStore.cart.checkoutStatus; }
+
+    private get total() { return AppStore.cart.cartTotalPrice; }
   }
-}
 </script>

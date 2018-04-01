@@ -1,93 +1,169 @@
 import shop from '../../api/shop';
+import { BaseManager, CartState, Product, RootState } from "./base";
+import { ActionContext } from "vuex";
 
-// initial state
-// shape: [{ id, quantity }]
-const state = {
+//================================================================================
+//
+//  Module
+//
+//================================================================================
+
+//----------------------------------------------------------------------
+//
+//  State
+//
+//----------------------------------------------------------------------
+
+const state: CartState = {
   added: [],
   checkoutStatus: null,
 };
 
-// getters
-const getters = {
-  checkoutStatus: state => state.checkoutStatus,
+//----------------------------------------------------------------------
+//
+//  Getters
+//
+//----------------------------------------------------------------------
 
-  cartProducts: (state, getters, rootState) => {
+interface CartGetters {
+  readonly checkoutStatus: string | null;
+  readonly cartProducts: {
+    title: string,
+    price: number,
+    quantity: number,
+  }[];
+  readonly cartTotalPrice: number;
+}
+
+const getters = {
+  checkoutStatus: (state: CartState) => state.checkoutStatus,
+
+  cartProducts: (state: CartState, getters: CartGetters, rootState: RootState) => {
     return state.added.map(({ id, quantity }) => {
       const product = rootState.products.all.find(product => product.id === id);
       return {
-        title: product.title,
-        price: product.price,
+        title: product!.title,
+        price: product!.price,
         quantity,
       };
     });
   },
 
-  cartTotalPrice: (state, getters) => {
+  cartTotalPrice: (state: CartState, getters: CartGetters) => {
     return getters.cartProducts.reduce((total, product) => {
       return total + product.price * product.quantity;
     }, 0);
   },
 };
 
-// actions
+//----------------------------------------------------------------------
+//
+//  Actions
+//
+//----------------------------------------------------------------------
+
 const actions = {
-  checkout({ commit, state }, products) {
+  checkout(context: ActionContext<CartState, RootState>, products: Product[]) {
     const savedCartItems = [...state.added];
-    commit('setCheckoutStatus', null);
+    context.commit('setCheckoutStatus', null);
     // empty cart
-    commit('setCartItems', { items: [] });
+    context.commit('setCartItems', { items: [] });
     shop.buyProducts(
       products,
-      () => commit('setCheckoutStatus', 'successful'),
+      () => context.commit('setCheckoutStatus', 'successful'),
       () => {
-        commit('setCheckoutStatus', 'failed');
+        context.commit('setCheckoutStatus', 'failed');
         // rollback to the cart saved before sending the request
-        commit('setCartItems', { items: savedCartItems });
+        context.commit('setCartItems', { items: savedCartItems });
       },
     );
   },
 
-  addProductToCart({ state, commit }, product) {
-    commit('setCheckoutStatus', null);
+  addProductToCart(context: ActionContext<CartState, RootState>, product: Product) {
+    context.commit('setCheckoutStatus', null);
     if (product.inventory > 0) {
       const cartItem = state.added.find(item => item.id === product.id);
       if (!cartItem) {
-        commit('pushProductToCart', { id: product.id });
+        context.commit('pushProductToCart', { id: product.id });
       } else {
-        commit('incrementItemQuantity', cartItem);
+        context.commit('incrementItemQuantity', cartItem);
       }
       // remove 1 item from stock
-      commit('decrementProductInventory', { id: product.id });
+      context.commit('decrementProductInventory', { id: product.id });
     }
   },
 };
 
-// mutations
+//----------------------------------------------------------------------
+//
+//  Mutations
+//
+//----------------------------------------------------------------------
+
 const mutations = {
-  pushProductToCart(state, { id }) {
+  pushProductToCart(state: CartState, { id }: { id: number }) {
     state.added.push({
       id,
       quantity: 1,
     });
   },
 
-  incrementItemQuantity(state, { id }) {
+  incrementItemQuantity(state: CartState, { id }: { id: number }) {
     const cartItem = state.added.find(item => item.id === id);
-    cartItem.quantity++;
+    if (cartItem) {
+      cartItem.quantity++;
+    }
   },
 
-  setCartItems(state, { items }) {
+  setCartItems(state: CartState, { items }: { items: { id: number, quantity: number }[] }) {
     state.added = items;
   },
 
-  setCheckoutStatus(state, status) {
+  setCheckoutStatus(state: CartState, status: string | null) {
     state.checkoutStatus = status;
   },
 };
 
-export default {
+//----------------------------------------------------------------------
+//
+//  Export
+//
+//----------------------------------------------------------------------
+
+export const CartModule = {
   state,
   getters,
   actions,
   mutations,
 };
+
+//================================================================================
+//
+//  Manager
+//
+//================================================================================
+
+export class CartManager extends BaseManager implements CartState, CartGetters {
+
+  get added(): { id: number, quantity: number }[] { return this.store.state.cart.added; }
+
+  get checkoutStatus(): string | null { return (<CartGetters>this.store.getters).checkoutStatus; }
+
+  get cartProducts(): {
+    title: string,
+    price: number,
+    quantity: number,
+  }[] {
+    return (<CartGetters>this.store.getters).cartProducts;
+  }
+
+  get cartTotalPrice(): number { return (<CartGetters>this.store.getters).cartTotalPrice; }
+
+  addProductToCart(product: Product): Promise<void> {
+    return this.store.dispatch('addProductToCart', product);
+  }
+
+  checkout(products: Product[]): Promise<void> {
+    return this.store.dispatch('checkout', products);
+  }
+}

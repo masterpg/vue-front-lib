@@ -13,21 +13,23 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import { Component } from 'vue-property-decorator';
-import { mapGetters, mapActions } from 'vuex';
+  import AppStore from "../../store";
+  import Vue from 'vue';
+  import { Component } from 'vue-property-decorator';
+  import { Product } from "../../store/modules/base";
 
-@Component({
-  computed: mapGetters({
-    products: 'allProducts',
-  }),
-  methods: mapActions([
-    'addProductToCart',
-  ]),
-})
-export default class ProductList extends Vue {
-  created() {
-    this.$store.dispatch('getAllProducts');
+  @Component({})
+  export default class ProductList extends Vue {
+    created() {
+      AppStore.products.getAllProducts();
+    }
+
+    private get products() {
+      return AppStore.products.allProducts;
+    }
+
+    private addProductToCart(product: Product): Promise<void> {
+      return AppStore.cart.addProductToCart(product);
+    }
   }
-}
 </script>

@@ -1,6 +1,7 @@
 /**
  * Mocking client-server processing
  */
+
 const _products = [
   { "id": 1, "title": "iPad 4 Mini", "price": 500.01, "inventory": 2 },
   { "id": 2, "title": "H&M T-Shirt White", "price": 10.99, "inventory": 10 },
@@ -8,11 +9,11 @@ const _products = [
 ];
 
 export default {
-  getProducts(cb) {
+  getProducts(cb: (products: Product[]) => void) {
     setTimeout(() => cb(_products), 100);
   },
 
-  buyProducts(products, cb, errorCb) {
+  buyProducts(products: Product[], cb: () => void, errorCb: () => void) {
     setTimeout(() => {
       // simulate random checkout failure.
       (Math.random() > 0.5 || navigator.userAgent.indexOf('PhantomJS') > -1)
@@ -21,3 +22,10 @@ export default {
     }, 100);
   },
 };
+
+export interface Product {
+  id: number;
+  title: string;
+  price: number;
+  inventory: number;
+}

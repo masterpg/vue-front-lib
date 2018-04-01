@@ -1,12 +1,12 @@
 import Vue from 'vue';
 import App from './app.vue';
-import store from './store';
+import { VuexStore } from './store';
 import { currency } from './currency';
 
 Vue.filter('currency', currency);
 
 new Vue({
   el: '#app',
-  store,
+  store: VuexStore,
   render: h => h(App),
 });
