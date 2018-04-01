@@ -1,11 +1,11 @@
 const digitsRE = /(\d{3})(?=\d)/g;
 
-export function currency(value, currency, decimals) {
-  value = parseFloat(value);
-  if (!isFinite(value) || (!value && value !== 0)) return '';
+export function currency(value: string, currency?: string, decimals?: number) {
+  const num = parseFloat(value);
+  if (!isFinite(num) || (!num && num !== 0)) return '';
   currency = currency ? currency : '$';
   decimals = decimals ? decimals : 2;
-  const stringified = Math.abs(value).toFixed(decimals);
+  const stringified = Math.abs(num).toFixed(decimals);
   const _int = decimals
     ? stringified.slice(0, -1 - decimals)
     : stringified;
@@ -16,7 +16,7 @@ export function currency(value, currency, decimals) {
   const _float = decimals
     ? stringified.slice(-1 - decimals)
     : '';
-  const sign = value < 0 ? '-' : '';
+  const sign = num < 0 ? '-' : '';
   return sign + currency + head +
     _int.slice(i).replace(digitsRE, '$1,') +
     _float;
