@@ -16,7 +16,7 @@ export const VuexStore: IVuexStore = new Vuex.Store<RootState>({
     products: ProductsModule,
   },
   strict: debug,
-  // plugins: debug ? [createLogger({})] : []
+  plugins: debug ? [createLogger({})] : [],
 });
 
 namespace AppStore {
