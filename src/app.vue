@@ -24,8 +24,8 @@
 
   Vue.use(VueRouter);
 
-  const AbcApp = () => import(/* webpackChunkName: "abc" */ './components/abc/app.vue');
-  const ShoppingApp = () => import(/* webpackChunkName: "shopping" */ './components/shopping/app.vue');
+  const AbcApp = () => import(/* webpackChunkName: "abc" */ './components/abc/index.vue');
+  const ShoppingApp = () => import(/* webpackChunkName: "shopping" */ './components/shopping/index.vue');
   const routes = [
     { path: '/abc', component: AbcApp },
     { path: '/shopping', component: ShoppingApp },
