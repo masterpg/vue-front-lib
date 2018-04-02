@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
 
@@ -59,5 +60,14 @@ module.exports = {
       },
     ],
   },
+
+  plugins: [
+    // `to: xxx`の`xxx`は`output.path`が基準になる
+    new CopyWebpackPlugin([
+      {
+        from: 'src/global.css',
+      },
+    ]),
+  ],
 
 };
