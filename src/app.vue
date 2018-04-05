@@ -4,40 +4,66 @@
 </style>
 
 <template>
-  <div class="host">
-    <h1>Examples</h1>
-    <ul>
-      <li>
-        <router-link to="/abc">/abc</router-link>
-      </li>
-      <li>
-        <router-link to="/shopping">/shopping</router-link>
-      </li>
-    </ul>
-    <router-view></router-view>
-  </div>
+  <v-app>
+    <v-navigation-drawer
+      persistent
+      :mini-variant="miniVariant"
+      :clipped="clipped"
+      v-model="drawer"
+      enable-resize-watcher
+      fixed
+      app
+    >
+      <v-list>
+        <v-list-tile
+          value="true"
+          v-for="(item, i) in items"
+          :key="i"
+        >
+          <v-list-tile-action>
+            <v-icon v-html="item.icon"></v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <router-link :to="item.path">{{item.title}}</router-link>
+          </v-list-tile-content>
+        </v-list-tile>
+      </v-list>
+    </v-navigation-drawer>
+    <v-toolbar
+      app
+      :clipped-left="clipped"
+    >
+      <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+    </v-toolbar>
+    <v-content>
+      <router-view/>
+    </v-content>
+  </v-app>
 </template>
 
 <script lang="ts">
   import Vue from 'vue';
-  import VueRouter from 'vue-router';
+  import { Component } from 'vue-property-decorator';
 
-  Vue.use(VueRouter);
+  @Component({})
+  export default class App extends Vue {
+    private clipped = false;
+    private drawer = true;
+    private fixed = false;
+    private miniVariant = false;
 
-  const AbcApp = () => import(/* webpackChunkName: "abc" */ './components/abc/index.vue');
-  const ShoppingApp = () => import(/* webpackChunkName: "shopping" */ './components/shopping/index.vue');
-  const routes = [
-    { path: '/abc', component: AbcApp },
-    { path: '/shopping', component: ShoppingApp },
-  ];
-
-  const router = new VueRouter({
-    mode: 'history',
-    routes,
-  });
-
-  export default {
-    router,
-  };
+    private items: { icon: string, title: string, path: string }[] = [
+      {
+        icon: 'bubble_chart',
+        title: 'ABC',
+        path: '/abc',
+      },
+      {
+        icon: 'bubble_chart',
+        title: 'Shopping',
+        path: '/shopping',
+      },
+    ];
+  }
 </script>
 
