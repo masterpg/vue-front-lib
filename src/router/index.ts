@@ -3,19 +3,16 @@ import VueRouter from 'vue-router';
 
 Vue.use(VueRouter);
 
-const AbcApp = () => import(/* webpackChunkName: "abc" */ '../components/abc/index.vue');
-const ShoppingApp = () => import(/* webpackChunkName: "shopping" */ '../components/shopping/index.vue');
-
 export default new VueRouter({
   mode: 'history',
   routes: [
     {
       path: '/abc',
-      component: AbcApp,
+      component: () => import(/* webpackChunkName: "abc" */ '../views/abc/index.vue'),
     },
     {
       path: '/shopping',
-      component: ShoppingApp,
+      component: () => import(/* webpackChunkName: "shopping" */ '../views/shopping/index.vue'),
     },
   ],
 });
