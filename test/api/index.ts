@@ -1,4 +1,3 @@
-debugger;
 const assert = chai.assert;
 
 suite('api', () => {

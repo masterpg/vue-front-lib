@@ -1,6 +1,6 @@
 import Shop from '../../api/shop';
-import { ADD_PRODUCT_TO_CART, BaseManager, CartGetters, CartProduct, CartState, CHECKOUT, DECREMENT_PRODUCT_INVENTORY, INCREMENT_ITEM_QUANTITY, Product, PUSH_PRODUCT_TO_CART, RootState, SET_CART_ITEMS, SET_CHECKOUT_STATUS } from "./base";
-import { ActionContext } from "vuex";
+import { ADD_PRODUCT_TO_CART, BaseManager, CartGetters, CartProduct, CartState, CHECKOUT, DECREMENT_PRODUCT_INVENTORY, INCREMENT_ITEM_QUANTITY, Product, PUSH_PRODUCT_TO_CART, RootState, SET_CART_ITEMS, SET_CHECKOUT_STATUS } from './base';
+import { ActionContext } from 'vuex';
 
 //================================================================================
 //
@@ -14,7 +14,7 @@ import { ActionContext } from "vuex";
 //
 //----------------------------------------------------------------------
 
-const state: CartState = {
+const __state: CartState = {
   added: [],
   checkoutStatus: null,
 };
@@ -25,14 +25,14 @@ const state: CartState = {
 //
 //----------------------------------------------------------------------
 
-const getters = {
+const __getters = {
   checkoutStatus(state: CartState): string | null {
     return state.checkoutStatus;
   },
 
   cartProducts(state: CartState, getters: CartGetters, rootState: RootState): CartProduct[] {
     return state.added.map(({ id, quantity }) => {
-      const product = rootState.products.all.find(product => product.id === id);
+      const product = rootState.products.all.find((item) => item.id === id);
       return {
         id: product!.id,
         title: product!.title,
@@ -55,16 +55,16 @@ const getters = {
 //
 //----------------------------------------------------------------------
 
-const actions = {
+const __actions = {
   [CHECKOUT](context: ActionContext<CartState, RootState>, products: Product[]): Promise<void> {
-    const savedCartItems = [...state.added];
+    const savedCartItems = [...__state.added];
     context.commit(SET_CHECKOUT_STATUS, null);
     // empty cart
     context.commit(SET_CART_ITEMS, { items: [] });
 
     return Shop.buyProducts(products).then(() => {
       context.commit(SET_CHECKOUT_STATUS, 'successful');
-    }).catch(err => {
+    }).catch((err) => {
       context.commit(SET_CHECKOUT_STATUS, 'failed');
       // rollback to the cart saved before sending the request
       context.commit(SET_CART_ITEMS, { items: savedCartItems });
@@ -75,7 +75,7 @@ const actions = {
     return new Promise((resolve) => {
       context.commit(SET_CHECKOUT_STATUS, null);
       if (product.inventory > 0) {
-        const cartItem = state.added.find(item => item.id === product.id);
+        const cartItem = __state.added.find((item) => item.id === product.id);
         if (!cartItem) {
           context.commit(PUSH_PRODUCT_TO_CART, { id: product.id });
         } else {
@@ -95,7 +95,7 @@ const actions = {
 //
 //----------------------------------------------------------------------
 
-const mutations = {
+const __mutations = {
   [PUSH_PRODUCT_TO_CART](state: CartState, { id }: { id: number }) {
     state.added.push({
       id,
@@ -104,13 +104,13 @@ const mutations = {
   },
 
   [INCREMENT_ITEM_QUANTITY](state: CartState, { id }: { id: number }) {
-    const cartItem = state.added.find(item => item.id === id);
+    const cartItem = state.added.find((item) => item.id === id);
     if (cartItem) {
       cartItem.quantity++;
     }
   },
 
-  [SET_CART_ITEMS](state: CartState, { items }: { items: { id: number, quantity: number }[] }) {
+  [SET_CART_ITEMS](state: CartState, { items }: { items: Array<{ id: number, quantity: number }> }) {
     state.added = items;
   },
 
@@ -126,10 +126,10 @@ const mutations = {
 //----------------------------------------------------------------------
 
 export const CartModule = {
-  state,
-  getters,
-  actions,
-  mutations,
+  state: __state,
+  getters: __getters,
+  actions: __actions,
+  mutations: __mutations,
 };
 
 //================================================================================
@@ -140,13 +140,13 @@ export const CartModule = {
 
 export class CartManager extends BaseManager implements CartState, CartGetters {
 
-  get added(): { id: number, quantity: number }[] { return this.store.state.cart.added; }
+  get added(): Array<{ id: number, quantity: number }> { return this.store.state.cart.added; }
 
-  get checkoutStatus(): string | null { return (<CartGetters>this.store.getters).checkoutStatus; }
+  get checkoutStatus(): string | null { return (this.store.getters as CartGetters).checkoutStatus; }
 
-  get cartProducts(): CartProduct[] { return (<CartGetters>this.store.getters).cartProducts; }
+  get cartProducts(): CartProduct[] { return (this.store.getters as CartGetters).cartProducts; }
 
-  get cartTotalPrice(): number { return (<CartGetters>this.store.getters).cartTotalPrice; }
+  get cartTotalPrice(): number { return (this.store.getters as CartGetters).cartTotalPrice; }
 
   addProductToCart(product: Product): Promise<void> {
     return this.store.dispatch(ADD_PRODUCT_TO_CART, product);

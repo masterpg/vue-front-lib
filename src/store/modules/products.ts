@@ -14,7 +14,7 @@ import { BaseManager, DECREMENT_PRODUCT_INVENTORY, GET_ALL_PRODUCTS, Product, Pr
 //
 //----------------------------------------------------------------------
 
-const state: ProductsState = {
+const __state: ProductsState = {
   all: [],
 };
 
@@ -24,7 +24,7 @@ const state: ProductsState = {
 //
 //----------------------------------------------------------------------
 
-const getters = {
+const __getters = {
   allProducts: (state: ProductsState) => state.all,
 };
 
@@ -34,7 +34,7 @@ const getters = {
 //
 //----------------------------------------------------------------------
 
-const actions = {
+const __actions = {
   [GET_ALL_PRODUCTS](context: ActionContext<ProductsState, RootState>): Promise<void> {
     return Shop.getProducts().then((products) => {
       context.commit(SET_PRODUCTS, products);
@@ -48,13 +48,13 @@ const actions = {
 //
 //----------------------------------------------------------------------
 
-const mutations = {
+const __mutations = {
   [SET_PRODUCTS](state: ProductsState, products: ApiProduct[]) {
     state.all = products;
   },
 
   [DECREMENT_PRODUCT_INVENTORY](state: ProductsState, { id }: { id: number }) {
-    const product = state.all.find(item => item.id === id);
+    const product = state.all.find((item) => item.id === id);
     if (product) {
       product.inventory--;
     }
@@ -68,10 +68,10 @@ const mutations = {
 //----------------------------------------------------------------------
 
 export const ProductsModule = {
-  state,
-  getters,
-  actions,
-  mutations,
+  state: __state,
+  getters: __getters,
+  actions: __actions,
+  mutations: __mutations,
 };
 
 //================================================================================

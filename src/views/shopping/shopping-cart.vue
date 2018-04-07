@@ -16,10 +16,10 @@
 </template>
 
 <script lang="ts">
-  import AppStore from "../../store";
+  import AppStore from '../../store';
   import Vue from 'vue';
   import { Component } from 'vue-property-decorator';
-  import { CartProduct, Product } from "../../store/modules/base";
+  import { CartProduct, Product } from '../../store/modules/base';
 
   @Component({})
   export default class ShoppingCart extends Vue {

@@ -1,5 +1,5 @@
 import 'vuetify/dist/vuetify.min.css';
-import * as ES6Promise from "es6-promise";
+import * as ES6Promise from 'es6-promise';
 import App from './app.vue';
 import Vue from 'vue';
 import Vuetify from 'vuetify';
@@ -27,5 +27,5 @@ new Vue({
   el: '#app',
   router,
   store: VuexStore,
-  render: h => h(App),
+  render: (h) => h(App),
 });

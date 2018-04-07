@@ -1,5 +1,5 @@
-import { Store } from "vuex";
-import { Product as ApiProduct } from "../../api/shop";
+import { Store } from 'vuex';
+import { Product as ApiProduct } from '../../api/shop';
 
 //================================================================================
 //
@@ -29,7 +29,7 @@ export interface RootState {
 }
 
 export interface CartState {
-  added: { id: number, quantity: number }[];
+  added: Array<{ id: number, quantity: number }>;
   checkoutStatus: string | null;
 }
 

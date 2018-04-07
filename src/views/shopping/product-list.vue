@@ -13,10 +13,10 @@
 </template>
 
 <script lang="ts">
-  import AppStore from "../../store";
+  import AppStore from '../../store';
   import Vue from 'vue';
   import { Component } from 'vue-property-decorator';
-  import { Product } from "../../store/modules/base";
+  import { Product } from '../../store/modules/base';
 
   @Component({})
   export default class ProductList extends Vue {

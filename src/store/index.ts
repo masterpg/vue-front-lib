@@ -4,7 +4,7 @@ import createLogger from 'vuex/dist/logger';
 
 import { CartModule, CartManager } from './modules/cart';
 import { ProductsModule, ProductsManager } from './modules/products';
-import { IVuexStore, RootState } from "./modules/base";
+import { IVuexStore, RootState } from './modules/base';
 
 Vue.use(Vuex);
 

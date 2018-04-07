@@ -52,7 +52,7 @@
     private fixed = false;
     private miniVariant = false;
 
-    private items: { icon: string, title: string, path: string }[] = [
+    private items: Array<{ icon: string, title: string, path: string }> = [
       {
         icon: 'bubble_chart',
         title: 'ABC',

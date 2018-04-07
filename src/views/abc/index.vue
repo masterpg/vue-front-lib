@@ -22,7 +22,7 @@
 
   @Component({
     components: {
-      'hello': Hello,
+      hello: Hello,
     },
   })
   export default class AbcView extends Vue {
@@ -49,7 +49,7 @@
     // lifecycle hook
     mounted() {
       this.msg = 'mounted';
-      this.hello = <Hello>this.$refs.hello;
+      this.hello = this.$refs.hello as Hello;
     }
 
     private greet() {
