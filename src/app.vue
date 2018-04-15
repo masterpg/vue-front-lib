@@ -45,6 +45,25 @@
   import Vue from 'vue';
   import { Component } from 'vue-property-decorator';
 
+  import Vuetify from 'vuetify/es5/components/Vuetify';
+  import VApp from 'vuetify/es5/components/VApp';
+  import VGrid from 'vuetify/es5/components/VGrid';
+  import VIcon from 'vuetify/es5/components/VIcon';
+  import VList from 'vuetify/es5/components/VList';
+  import VNavigationDrawer from 'vuetify/es5/components/VNavigationDrawer';
+  import VToolbar from 'vuetify/es5/components/VToolbar';
+
+  Vue.use(Vuetify, {
+    components: {
+      VApp,
+      VGrid,
+      VIcon,
+      VList,
+      VNavigationDrawer,
+      VToolbar,
+    },
+  });
+
   @Component({})
   export default class App extends Vue {
     private clipped = false;
