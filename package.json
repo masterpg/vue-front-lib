@@ -1,8 +1,8 @@
 {
   "name": "vue-examples",
   "scripts": {
-    "build:dev": "webpack --config ./webpack.config.dev.js",
-    "serve": "webpack-dev-server --config ./webpack.config.dev.js"
+    "build:dev": "webpack --config build/webpack.dev.conf.js",
+    "serve": "webpack-dev-server --config build/webpack.dev.conf.js"
   },
   "devDependencies": {
     "@types/chai": "^4.1.2",

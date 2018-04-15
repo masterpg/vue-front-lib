@@ -1,33 +1,35 @@
 const path = require('path');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
-const baseConfig = require('./webpack.config.base.js');
+const baseConfig = require('./webpack.base.conf.js');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 /**
- * ビルド結果の出力パス
- */
-const OUTPUT_PATH = 'dist';
-
-/**
  * 基準パス
+ * 例: /boo/foo/woo/ (パスの最初と最後は"/"をつけること)
  */
 const BASE_PATH = '/';
+
+/**
+ * ビルド結果の出力パス
+ */
+const OUTPUT_PATH = path.resolve(__dirname,
+  path.join('../.dist', BASE_PATH));
+
 
 module.exports = merge(baseConfig, {
 
   mode: 'development',
 
   entry: {
-    'index': './src/index.ts',
-    'test': './test/test.ts',
+    'index': path.resolve(__dirname, '../src/index.ts'),
+    'test': path.resolve(__dirname, '../test/test.ts'),
   },
 
   output: {
-    // Webpackに生成したファイルの格納場所を設定
-    path: path.join(__dirname, OUTPUT_PATH, BASE_PATH),
+    path: OUTPUT_PATH,
     filename: '[name].bundle.js',
     chunkFilename: '[name].bundle.js',
     // HMRに必要な設定①
@@ -39,7 +41,7 @@ module.exports = merge(baseConfig, {
 
   // webpack-dev-serverの設定
   devServer: {
-    contentBase: path.join(__dirname, OUTPUT_PATH),
+    contentBase: OUTPUT_PATH,
     port: 5000,
     host: '0.0.0.0',
     disableHostCheck: true,
@@ -53,11 +55,6 @@ module.exports = merge(baseConfig, {
   },
 
   plugins: [
-    new CleanWebpackPlugin(
-      [OUTPUT_PATH],
-      { verbose: true },
-    ),
-
     new webpack.IgnorePlugin(/vertx/),
 
     // HMRに必要な設定③
