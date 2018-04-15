@@ -57,6 +57,14 @@ module.exports = merge(baseConfig, {
   plugins: [
     new webpack.IgnorePlugin(/vertx/),
 
+    new CleanWebpackPlugin(
+      [OUTPUT_PATH],
+      {
+        root: path.resolve(__dirname , '..'),
+        verbose: true
+      },
+    ),
+
     // HMRに必要な設定③
     new webpack.HotModuleReplacementPlugin(),
 
