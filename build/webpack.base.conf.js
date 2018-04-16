@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ImageminPlugin = require('imagemin-webpack-plugin').default;
 
 module.exports = {
 
@@ -48,17 +49,6 @@ module.exports = {
         loader: 'style-loader!css-loader',
       },
       {
-        test: /\.(eot|svg|ttf|woff|woff2)(\?\S*)?$/,
-        loader: 'file-loader',
-      },
-      {
-        test: /\.(png|jpe?g|gif|svg)(\?\S*)?$/,
-        loader: 'file-loader',
-        query: {
-          name: '[name].[ext]?[hash]',
-        },
-      },
-      {
         test: /\.styl$/,
         loader: ['style-loader', 'css-loader', 'stylus-loader'],
       },
@@ -67,11 +57,14 @@ module.exports = {
 
   plugins: [
     // `to: xxx`の`xxx`は`output.path`が基準になる
-    new CopyWebpackPlugin([
-      {
-        from: 'src/global.css',
-      },
-    ]),
+    new CopyWebpackPlugin([{
+      from: path.resolve(__dirname, '../src/images'),
+      to: 'images',
+    }]),
+    new ImageminPlugin({
+      test: /images\/[^\.]+\.(jpe?g|png|gif|svg)$/i,
+      cacheFolder: '.cache'
+    }),
   ],
 
 };

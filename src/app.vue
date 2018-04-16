@@ -1,5 +1,7 @@
 <style lang="scss">
-  .host {
+  .vuetify-icon {
+    width: 24px;
+    height: 24px;
   }
 </style>
 
@@ -34,6 +36,7 @@
       :clipped-left="clipped"
     >
       <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+      <img src="images/v-alt.svg" class="vuetify-icon">
     </v-toolbar>
     <v-content>
       <router-view/>

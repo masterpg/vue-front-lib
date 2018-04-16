@@ -1,7 +1,8 @@
+.cache/
 .idea/
-node_modules/
 .dist/
 dist/
+node_modules/
 src/**/*.js.map
 test/**/*.js.map
 test/**/*.tmp
