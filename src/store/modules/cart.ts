@@ -1,5 +1,5 @@
 import Shop from '../../api/shop';
-import { ADD_PRODUCT_TO_CART, BaseManager, CartGetters, CartProduct, CartState, CHECKOUT, DECREMENT_PRODUCT_INVENTORY, INCREMENT_ITEM_QUANTITY, Product, PUSH_PRODUCT_TO_CART, RootState, SET_CART_ITEMS, SET_CHECKOUT_STATUS } from './base';
+import { ADD_PRODUCT_TO_CART, BaseManager, CartGetters, CartProduct, CartState, CHECKOUT, CheckoutStatus, DECREMENT_PRODUCT_INVENTORY, INCREMENT_ITEM_QUANTITY, Product, PUSH_PRODUCT_TO_CART, RootState, SET_CART_ITEMS, SET_CHECKOUT_STATUS } from './base';
 import { ActionContext } from 'vuex';
 
 //================================================================================
@@ -16,7 +16,7 @@ import { ActionContext } from 'vuex';
 
 const __state: CartState = {
   added: [],
-  checkoutStatus: null,
+  checkoutStatus: CheckoutStatus.None,
 };
 
 //----------------------------------------------------------------------
@@ -58,14 +58,14 @@ const __getters = {
 const __actions = {
   [CHECKOUT](context: ActionContext<CartState, RootState>, products: Product[]): Promise<void> {
     const savedCartItems = [...__state.added];
-    context.commit(SET_CHECKOUT_STATUS, null);
+    context.commit(SET_CHECKOUT_STATUS, CheckoutStatus.None);
     // empty cart
     context.commit(SET_CART_ITEMS, { items: [] });
 
     return Shop.buyProducts(products).then(() => {
-      context.commit(SET_CHECKOUT_STATUS, 'successful');
+      context.commit(SET_CHECKOUT_STATUS, CheckoutStatus.Successful);
     }).catch((err) => {
-      context.commit(SET_CHECKOUT_STATUS, 'failed');
+      context.commit(SET_CHECKOUT_STATUS, CheckoutStatus.Failed);
       // rollback to the cart saved before sending the request
       context.commit(SET_CART_ITEMS, { items: savedCartItems });
     });
@@ -73,7 +73,7 @@ const __actions = {
 
   [ADD_PRODUCT_TO_CART](context: ActionContext<CartState, RootState>, product: Product): Promise<void> {
     return new Promise((resolve) => {
-      context.commit(SET_CHECKOUT_STATUS, null);
+      context.commit(SET_CHECKOUT_STATUS, CheckoutStatus.None);
       if (product.inventory > 0) {
         const cartItem = __state.added.find((item) => item.id === product.id);
         if (!cartItem) {
@@ -114,7 +114,7 @@ const __mutations = {
     state.added = items;
   },
 
-  [SET_CHECKOUT_STATUS](state: CartState, status: string | null) {
+  [SET_CHECKOUT_STATUS](state: CartState, status: CheckoutStatus) {
     state.checkoutStatus = status;
   },
 };
@@ -142,7 +142,7 @@ export class CartManager extends BaseManager implements CartState, CartGetters {
 
   get added(): Array<{ id: number, quantity: number }> { return this.store.state.cart.added; }
 
-  get checkoutStatus(): string | null { return (this.store.getters as CartGetters).checkoutStatus; }
+  get checkoutStatus(): CheckoutStatus { return (this.store.getters as CartGetters).checkoutStatus; }
 
   get cartProducts(): CartProduct[] { return (this.store.getters as CartGetters).cartProducts; }
 

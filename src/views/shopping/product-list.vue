@@ -1,27 +1,64 @@
 <template>
-  <ul>
-    <li v-for="product in products">
-      {{ product.title }} - {{ product.price | currency }}
-      <br>
-      <button
-        :disabled="!product.inventory"
-        @click="addProductToCart(product)">
-        Add to cart
-      </button>
-    </li>
-  </ul>
+  <v-layout row :class="{'ma-5': !sp, 'ma-3': sp}">
+    <v-flex xs12 sm6 offset-sm3>
+      <v-card>
+        <v-list two-line>
+          <v-list-tile>
+            <v-list-tile-content>
+              <v-list-tile-sub-title>Products</v-list-tile-sub-title>
+            </v-list-tile-content>
+            <v-list-tile-action>
+              <v-btn icon ripple @click="openCartModal()">
+                <v-icon color="grey lighten-1">mdi-cart-outline</v-icon>
+              </v-btn>
+            </v-list-tile-action>
+          </v-list-tile>
+          <v-divider></v-divider>
+          <template v-for="(product, index) in products">
+            <v-list-tile>
+              <v-list-tile-content>
+                <v-list-tile-title v-html="product.title"></v-list-tile-title>
+                <v-list-tile-sub-title><span class="text--primary">Price</span> &mdash; {{ product.price | currency }}
+                </v-list-tile-sub-title>
+              </v-list-tile-content>
+              <v-list-tile-action>
+                <v-btn icon ripple @click="addProductToCart(product)">
+                  <v-icon color="grey lighten-1">add</v-icon>
+                </v-btn>
+              </v-list-tile-action>
+            </v-list-tile>
+          </template>
+        </v-list>
+      </v-card>
+    </v-flex>
+    <shopping-cart ref="cartModal"></shopping-cart>
+  </v-layout>
 </template>
 
 <script lang="ts">
   import AppStore from '../../store';
+  import ShoppingCart from './shopping-cart.vue';
   import Vue from 'vue';
   import { Component } from 'vue-property-decorator';
   import { Product } from '../../store/modules/base';
 
-  @Component({})
+  @Component({
+    components: {
+      'shopping-cart': ShoppingCart,
+    },
+  })
   export default class ProductList extends Vue {
+
     created() {
       AppStore.products.getAllProducts();
+    }
+
+    private get sp() {
+      return this.$vuetify.breakpoint.name === 'xs';
+    }
+
+    private get cartModal(): ShoppingCart {
+      return this.$refs.cartModal as ShoppingCart;
     }
 
     private get products(): Product[] {
@@ -30,6 +67,10 @@
 
     private addProductToCart(product: Product): Promise<void> {
       return AppStore.cart.addProductToCart(product);
+    }
+
+    private openCartModal(): void {
+      this.cartModal.show();
     }
   }
 </script>

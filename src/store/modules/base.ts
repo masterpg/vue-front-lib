@@ -30,7 +30,7 @@ export interface RootState {
 
 export interface CartState {
   added: Array<{ id: number, quantity: number }>;
-  checkoutStatus: string | null;
+  checkoutStatus: CheckoutStatus;
 }
 
 export interface ProductsState {
@@ -44,7 +44,7 @@ export interface ProductsState {
 //================================================================================
 
 export interface CartGetters {
-  readonly checkoutStatus: string | null;
+  readonly checkoutStatus: CheckoutStatus;
   readonly cartProducts: CartProduct[];
   readonly cartTotalPrice: number;
 }
@@ -99,3 +99,15 @@ export const INCREMENT_ITEM_QUANTITY = 'incrementItemQuantity';
 export const SET_CART_ITEMS = 'setCartItems';
 
 export const SET_CHECKOUT_STATUS = 'setCheckoutStatus';
+
+//================================================================================
+//
+//  Enumerations
+//
+//================================================================================
+
+export enum CheckoutStatus {
+  None = 'none',
+  Failed = 'failed',
+  Successful = 'successful',
+}

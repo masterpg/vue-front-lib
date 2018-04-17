@@ -2,17 +2,21 @@
 </style>
 
 <template>
-  <div>
-    <input v-model="msg">
+  <v-card class="pa-3" :class="{'ma-5': !sp, 'ma-3': sp}">
+    <v-text-field
+      label="Input Message"
+      v-model="msg"
+      class="body-1"
+    ></v-text-field>
     <p>propA: {{propA}}</p>
     <p>propB: {{propB}}</p>
     <p>msg: {{msg}}</p>
     <p>helloMsg: {{helloMsg}}</p>
     <p>computed msg: {{computedMsg}}</p>
-    <button @click="greetButtonOnClick">Greet</button>
-    <button @click="sleepButtonOnClick">Sleep</button>
     <hello ref="hello"/>
-  </div>
+    <v-btn small @click="greetButtonOnClick">Greet</v-btn>
+    <v-btn small @click="sleepButtonOnClick">Sleep</v-btn>
+  </v-card>
 </template>
 
 <script lang="ts">
@@ -44,6 +48,10 @@
     // computed
     private get computedMsg() {
       return 'computed ' + this.msg;
+    }
+
+    private get sp() {
+      return this.$vuetify.breakpoint.name === 'xs';
     }
 
     // lifecycle hook
