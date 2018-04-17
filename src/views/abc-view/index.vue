@@ -13,7 +13,7 @@
     <p>msg: {{msg}}</p>
     <p>helloMsg: {{helloMsg}}</p>
     <p>computed msg: {{computedMsg}}</p>
-    <hello ref="hello"/>
+    <hello-view ref="helloView"></hello-view>
     <v-btn small @click="greetButtonOnClick">Greet</v-btn>
     <v-btn small @click="sleepButtonOnClick">Sleep</v-btn>
   </v-card>
@@ -22,11 +22,11 @@
 <script lang="ts">
   import Vue from 'vue';
   import { Component, Inject, Model, Prop, Watch } from 'vue-property-decorator';
-  import Hello from './hello.vue';
+  import HelloView from './hello-view.vue';
 
   @Component({
     components: {
-      hello: Hello,
+      'hello-view': HelloView,
     },
   })
   export default class AbcView extends Vue {
@@ -43,7 +43,7 @@
     // use prop values for initial data
     private helloMsg: string = 'Hello, ' + this.propA;
 
-    private hello: Hello;
+    private helloView: HelloView;
 
     // computed
     private get computedMsg() {
@@ -57,12 +57,12 @@
     // lifecycle hook
     mounted() {
       this.msg = 'mounted';
-      this.hello = this.$refs.hello as Hello;
+      this.helloView = this.$refs.helloView as HelloView;
     }
 
     private greet() {
       alert('greeting: ' + this.msg);
-      this.hello.sayHello();
+      this.helloView.sayHello();
     }
 
     private async sleep(ms: number = 1000): Promise<void> {

@@ -31,23 +31,23 @@
         </v-list>
       </v-card>
     </v-flex>
-    <shopping-cart ref="cartModal"></shopping-cart>
+    <cart-modal ref="cartModal"></cart-modal>
   </v-layout>
 </template>
 
 <script lang="ts">
   import AppStore from '../../store';
-  import ShoppingCart from './shopping-cart.vue';
   import Vue from 'vue';
+  import CartModal from './cart-modal.vue';
   import { Component } from 'vue-property-decorator';
   import { Product } from '../../store/modules/base';
 
   @Component({
     components: {
-      'shopping-cart': ShoppingCart,
+      'cart-modal': CartModal,
     },
   })
-  export default class ProductList extends Vue {
+  export default class ShoppingView extends Vue {
 
     created() {
       AppStore.products.getAllProducts();
@@ -57,8 +57,8 @@
       return this.$vuetify.breakpoint.name === 'xs';
     }
 
-    private get cartModal(): ShoppingCart {
-      return this.$refs.cartModal as ShoppingCart;
+    private get cartModal(): CartModal {
+      return this.$refs.cartModal as CartModal;
     }
 
     private get products(): Product[] {

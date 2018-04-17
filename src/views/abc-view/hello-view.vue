@@ -7,7 +7,7 @@
   import { Component } from 'vue-property-decorator';
 
   @Component
-  export default class Hello extends Vue {
+  export default class HelloView extends Vue {
     private helloTimes: number = 0;
 
     sayHello() {

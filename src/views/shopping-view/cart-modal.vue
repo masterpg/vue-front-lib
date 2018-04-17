@@ -31,7 +31,7 @@
   import { CartProduct, CheckoutStatus, Product } from '../../store/modules/base';
 
   @Component({})
-  export default class ShoppingCart extends Vue {
+  export default class CartModal extends Vue {
 
     private opened: boolean = false;
 
