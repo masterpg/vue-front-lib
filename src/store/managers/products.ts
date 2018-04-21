@@ -1,4 +1,6 @@
-import { BaseManager, DECREMENT_PRODUCT_INVENTORY, GET_ALL_PRODUCTS, Product, ProductsGetters } from '../base';
+import * as actions from '../actions';
+import * as mutations from '../mutations';
+import { BaseManager, Product, ProductsGetters } from '../base';
 
 export default class ProductsManager extends BaseManager implements ProductsGetters {
 
@@ -7,10 +9,10 @@ export default class ProductsManager extends BaseManager implements ProductsGett
   }
 
   getAllProducts(): Promise<void> {
-    return this._store.dispatch(GET_ALL_PRODUCTS);
+    return actions.getAllProducts(this._store);
   }
 
   decrementProductInventory(productId: number): void {
-    this._store.commit(DECREMENT_PRODUCT_INVENTORY, productId);
+    mutations.decrementProductInventory(this._store, productId);
   }
 }

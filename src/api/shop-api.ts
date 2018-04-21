@@ -8,7 +8,7 @@ const __products = [
   { id: 3, title: 'Charli XCX - Sucker CD', price: 19.99, inventory: 5 },
 ];
 
-const ShopApi = {
+const shopApi = {
   getProducts(): Promise<Product[]> {
     return new Promise((resolve) => {
       setTimeout(() => resolve(__products), 100);
@@ -26,7 +26,7 @@ const ShopApi = {
     });
   },
 };
-export default ShopApi;
+export default shopApi;
 
 export interface Product {
   id: number;

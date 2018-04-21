@@ -1,4 +1,5 @@
-import { ADD_PRODUCT_TO_CART, BaseManager, CartGetters, CartProduct, CHECKOUT, CheckoutStatus, Product } from '../base';
+import { BaseManager, CartGetters, CartProduct, CheckoutStatus, Product } from '../base';
+import * as actions from '../actions';
 
 export default class CartManager extends BaseManager implements CartGetters {
 
@@ -15,10 +16,10 @@ export default class CartManager extends BaseManager implements CartGetters {
   }
 
   addProductToCart(product: Product): Promise<void> {
-    return this._store.dispatch(ADD_PRODUCT_TO_CART, product);
+    return actions.addProductToCart(this._store, product);
   }
 
   checkout(products: Product[]): Promise<void> {
-    return this._store.dispatch(CHECKOUT, products);
+    return actions.checkout(this._store, products);
   }
 }

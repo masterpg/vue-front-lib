@@ -1,6 +1,8 @@
-import ShopApi from '../../api/shop-api';
-import { ADD_PRODUCT_TO_CART, CartGetters, CartProduct, CartState, CHECKOUT, CheckoutStatus, DECREMENT_PRODUCT_INVENTORY, INCREMENT_ITEM_QUANTITY, Product, PUSH_PRODUCT_TO_CART, RootState, SET_CART_ITEMS, SET_CHECKOUT_STATUS } from '../base';
+import * as actions from '../actions';
+import * as mutations from '../mutations';
+import shopApi from '../../api/shop-api';
 import { ActionContext } from 'vuex';
+import { CartGetters, CartProduct, CartState, CheckoutStatus, Product, RootState } from '../base';
 
 //----------------------------------------------------------------------
 //
@@ -50,25 +52,25 @@ const __getters = {
 //----------------------------------------------------------------------
 
 const __mutations = {
-  [PUSH_PRODUCT_TO_CART](state: CartState, productId: number) {
+  [mutations.PUSH_PRODUCT_TO_CART](state: CartState, productId: number) {
     state.added.push({
       id: productId,
       quantity: 1,
     });
   },
 
-  [INCREMENT_ITEM_QUANTITY](state: CartState, productId: number) {
+  [mutations.INCREMENT_ITEM_QUANTITY](state: CartState, productId: number) {
     const cartItem = state.added.find((item) => item.id === productId);
     if (cartItem) {
       cartItem.quantity++;
     }
   },
 
-  [SET_CART_ITEMS](state: CartState, items: Array<{ id: number, quantity: number }>) {
+  [mutations.SET_CART_ITEMS](state: CartState, items: Array<{ id: number, quantity: number }>) {
     state.added = items;
   },
 
-  [SET_CHECKOUT_STATUS](state: CartState, status: CheckoutStatus) {
+  [mutations.SET_CHECKOUT_STATUS](state: CartState, status: CheckoutStatus) {
     state.checkoutStatus = status;
   },
 };
@@ -80,33 +82,33 @@ const __mutations = {
 //----------------------------------------------------------------------
 
 const __actions = {
-  [CHECKOUT](context: ActionContext<CartState, RootState>, products: Product[]): Promise<void> {
+  [actions.CHECKOUT](context: ActionContext<CartState, RootState>, products: Product[]): Promise<void> {
     const savedCartItems = [...__state.added];
-    context.commit(SET_CHECKOUT_STATUS, CheckoutStatus.None);
+    mutations.setCheckoutStatus(context, CheckoutStatus.None);
     // empty cart
-    context.commit(SET_CART_ITEMS, []);
+    mutations.setCartItems(context, []);
 
-    return ShopApi.buyProducts(products).then(() => {
-      context.commit(SET_CHECKOUT_STATUS, CheckoutStatus.Successful);
+    return shopApi.buyProducts(products).then(() => {
+      mutations.setCheckoutStatus(context, CheckoutStatus.Successful);
     }).catch((err) => {
-      context.commit(SET_CHECKOUT_STATUS, CheckoutStatus.Failed);
+      mutations.setCheckoutStatus(context, CheckoutStatus.Failed);
       // rollback to the cart saved before sending the request
-      context.commit(SET_CART_ITEMS, savedCartItems);
+      mutations.setCartItems(context, savedCartItems);
     });
   },
 
-  [ADD_PRODUCT_TO_CART](context: ActionContext<CartState, RootState>, product: Product): Promise<void> {
+  [actions.ADD_PRODUCT_TO_CART](context: ActionContext<CartState, RootState>, product: Product): Promise<void> {
     return new Promise((resolve) => {
-      context.commit(SET_CHECKOUT_STATUS, CheckoutStatus.None);
+      mutations.setCheckoutStatus(context, CheckoutStatus.None);
       if (product.inventory > 0) {
         const cartItem = __state.added.find((item) => item.id === product.id);
         if (!cartItem) {
-          context.commit(PUSH_PRODUCT_TO_CART, product.id);
+          mutations.pushProductToCart(context, product.id);
         } else {
-          context.commit(INCREMENT_ITEM_QUANTITY, cartItem.id);
+          mutations.incrementItemQuantity(context, cartItem.id);
         }
         // remove 1 item from stock
-        context.commit(DECREMENT_PRODUCT_INVENTORY, product.id);
+        mutations.decrementProductInventory(context, product.id);
       }
       resolve();
     });
@@ -119,10 +121,10 @@ const __actions = {
 //
 //----------------------------------------------------------------------
 
-const CartModule = {
+const cartModule = {
   state: __state,
   getters: __getters,
   mutations: __mutations,
   actions: __actions,
 };
-export default CartModule;
+export default cartModule;

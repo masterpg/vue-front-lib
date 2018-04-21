@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts">
-  import AppStore from '../../store';
+  import appStore from '../../store';
   import Vue from 'vue';
   import { Component } from 'vue-property-decorator';
   import { CartProduct, CheckoutStatus, Product } from '../../store/base';
@@ -35,14 +35,14 @@
 
     private opened: boolean = false;
 
-    private get products(): CartProduct[] { return AppStore.cart.cartProducts; }
+    private get products(): CartProduct[] { return appStore.cart.cartProducts; }
 
-    private get total(): number { return AppStore.cart.cartTotalPrice; }
+    private get total(): number { return appStore.cart.cartTotalPrice; }
 
     private get checkoutStatus(): { result: boolean, message: string } {
       const result =
-        AppStore.cart.checkoutStatus === CheckoutStatus.None ||
-        AppStore.cart.checkoutStatus === CheckoutStatus.Successful;
+        appStore.cart.checkoutStatus === CheckoutStatus.None ||
+        appStore.cart.checkoutStatus === CheckoutStatus.Successful;
       return {
         result,
         message: result ? '' : 'Checkout failed.',
@@ -50,7 +50,7 @@
     }
 
     private async checkout(products: Product[]): Promise<void> {
-      await AppStore.cart.checkout(products);
+      await appStore.cart.checkout(products);
       if (this.checkoutStatus.result) {
         this.opened = false;
       }

@@ -4,7 +4,7 @@ import App from './app.vue';
 import Vue from 'vue';
 import Vuetify from 'vuetify';
 import router from './router';
-import { VuexStore } from './store';
+import { vuexStore } from './store';
 import { currency } from './currency';
 
 ES6Promise.polyfill();
@@ -26,6 +26,6 @@ Vue.filter('currency', currency);
 new Vue({
   el: '#app',
   router,
-  store: VuexStore,
+  store: vuexStore,
   render: (h) => h(App),
 });

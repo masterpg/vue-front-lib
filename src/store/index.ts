@@ -2,9 +2,9 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import createLogger from 'vuex/dist/logger';
 
-import { IVuexStore, RootState } from './base';
-import CartModule from './modules/cart';
-import ProductsModule from './modules/products';
+import { VuexStore, RootState } from './base';
+import cartModule from './modules/cart';
+import productsModule from './modules/products';
 import CartManager from './managers/cart';
 import ProductsManager from './managers/products';
 
@@ -12,17 +12,17 @@ Vue.use(Vuex);
 
 const debug = process.env.NODE_ENV !== 'production';
 
-export const VuexStore: IVuexStore = new Vuex.Store<RootState>({
+export const vuexStore = new Vuex.Store<RootState>({
   modules: {
-    cart: CartModule,
-    products: ProductsModule,
+    cart: cartModule,
+    products: productsModule,
   },
   strict: debug,
   plugins: debug ? [createLogger({})] : [],
-});
+}) as VuexStore;
 
-namespace AppStore {
-  export const products = new ProductsManager(VuexStore);
-  export const cart = new CartManager(VuexStore);
+namespace appStore {
+  export const products = new ProductsManager(vuexStore);
+  export const cart = new CartManager(vuexStore);
 }
-export default AppStore;
+export default appStore;

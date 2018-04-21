@@ -36,7 +36,7 @@
 </template>
 
 <script lang="ts">
-  import AppStore from '../../store';
+  import appStore from '../../store';
   import Vue from 'vue';
   import CartModal from './cart-modal.vue';
   import { Component } from 'vue-property-decorator';
@@ -50,7 +50,7 @@
   export default class ShoppingView extends Vue {
 
     created() {
-      AppStore.products.getAllProducts();
+      appStore.products.getAllProducts();
     }
 
     private get sp() {
@@ -62,11 +62,11 @@
     }
 
     private get products(): Product[] {
-      return AppStore.products.allProducts;
+      return appStore.products.allProducts;
     }
 
     private addProductToCart(product: Product): Promise<void> {
-      return AppStore.cart.addProductToCart(product);
+      return appStore.cart.addProductToCart(product);
     }
 
     private openCartModal(): void {

@@ -1,4 +1,4 @@
-import { Store } from 'vuex';
+import { Commit, Dispatch, Store } from 'vuex';
 import { Product as ApiProduct } from '../api/shop-api';
 
 //----------------------------------------------------------------------
@@ -37,11 +37,11 @@ export enum CheckoutStatus {
 //----------------------------------------------------------------------
 
 export abstract class BaseManager {
-  constructor(store: IVuexStore) {
+  constructor(store: VuexStore) {
     this._store = store;
   }
 
-  readonly _store: IVuexStore;
+  readonly _store: VuexStore;
 }
 
 //----------------------------------------------------------------------
@@ -50,7 +50,7 @@ export abstract class BaseManager {
 //
 //----------------------------------------------------------------------
 
-export interface IVuexStore extends Store<RootState> {}
+export interface VuexStore extends Store<RootState> {}
 
 //--------------------------------------------------
 //  States
@@ -85,27 +85,10 @@ export interface ProductsGetters {
 }
 
 //--------------------------------------------------
-//  Actions
+//  Mutations, Actions
 //--------------------------------------------------
 
-export const GET_ALL_PRODUCTS = 'getAllProducts';
-
-export const CHECKOUT = 'checkout';
-
-export const ADD_PRODUCT_TO_CART = 'addProductToCart';
-
-//--------------------------------------------------
-//  Mutations
-//--------------------------------------------------
-
-export const SET_PRODUCTS = 'setProducts';
-
-export const DECREMENT_PRODUCT_INVENTORY = 'decrementProductInventory';
-
-export const PUSH_PRODUCT_TO_CART = 'pushProductToCart';
-
-export const INCREMENT_ITEM_QUANTITY = 'incrementItemQuantity';
-
-export const SET_CART_ITEMS = 'setCartItems';
-
-export const SET_CHECKOUT_STATUS = 'setCheckoutStatus';
+export interface FunctionContext {
+  dispatch: Dispatch;
+  commit: Commit;
+}

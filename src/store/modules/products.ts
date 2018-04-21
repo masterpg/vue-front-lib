@@ -1,6 +1,8 @@
-import Shop, { Product as ApiProduct } from '../../api/shop-api';
+import * as actions from '../actions';
+import * as mutations from '../mutations';
+import shopApi, { Product as ApiProduct } from '../../api/shop-api';
 import { ActionContext } from 'vuex';
-import { DECREMENT_PRODUCT_INVENTORY, GET_ALL_PRODUCTS, ProductsState, RootState, SET_PRODUCTS } from '../base';
+import { ProductsState, RootState } from '../base';
 
 //----------------------------------------------------------------------
 //
@@ -29,11 +31,11 @@ const __getters = {
 //----------------------------------------------------------------------
 
 const __mutations = {
-  [SET_PRODUCTS](state: ProductsState, products: ApiProduct[]) {
+  [mutations.SET_PRODUCTS](state: ProductsState, products: ApiProduct[]) {
     state.all = products;
   },
 
-  [DECREMENT_PRODUCT_INVENTORY](state: ProductsState, productId: number) {
+  [mutations.DECREMENT_PRODUCT_INVENTORY](state: ProductsState, productId: number) {
     const product = state.all.find((item) => item.id === productId);
     if (product) {
       product.inventory--;
@@ -48,9 +50,9 @@ const __mutations = {
 //----------------------------------------------------------------------
 
 const __actions = {
-  [GET_ALL_PRODUCTS](context: ActionContext<ProductsState, RootState>): Promise<void> {
-    return Shop.getProducts().then((products) => {
-      context.commit(SET_PRODUCTS, products);
+  [actions.GET_ALL_PRODUCTS](context: ActionContext<ProductsState, RootState>): Promise<void> {
+    return shopApi.getProducts().then((products) => {
+      mutations.setProducts(context, products);
     });
   },
 };
@@ -61,10 +63,10 @@ const __actions = {
 //
 //----------------------------------------------------------------------
 
-const ProductsModule = {
+const productsModule = {
   state: __state,
   getters: __getters,
   mutations: __mutations,
   actions: __actions,
 };
-export default ProductsModule;
+export default productsModule;
