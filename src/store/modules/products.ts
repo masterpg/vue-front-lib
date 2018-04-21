@@ -1,12 +1,6 @@
-import Shop, { Product as ApiProduct } from '../../api/shop';
+import Shop, { Product as ApiProduct } from '../../api/shop-api';
 import { ActionContext } from 'vuex';
-import { BaseManager, DECREMENT_PRODUCT_INVENTORY, GET_ALL_PRODUCTS, Product, ProductsGetters, ProductsState, RootState, SET_PRODUCTS } from './base';
-
-//================================================================================
-//
-//  Module
-//
-//================================================================================
+import { DECREMENT_PRODUCT_INVENTORY, GET_ALL_PRODUCTS, ProductsState, RootState, SET_PRODUCTS } from '../base';
 
 //----------------------------------------------------------------------
 //
@@ -30,20 +24,6 @@ const __getters = {
 
 //----------------------------------------------------------------------
 //
-//  Actions
-//
-//----------------------------------------------------------------------
-
-const __actions = {
-  [GET_ALL_PRODUCTS](context: ActionContext<ProductsState, RootState>): Promise<void> {
-    return Shop.getProducts().then((products) => {
-      context.commit(SET_PRODUCTS, products);
-    });
-  },
-};
-
-//----------------------------------------------------------------------
-//
 //  Mutations
 //
 //----------------------------------------------------------------------
@@ -63,30 +43,28 @@ const __mutations = {
 
 //----------------------------------------------------------------------
 //
+//  Actions
+//
+//----------------------------------------------------------------------
+
+const __actions = {
+  [GET_ALL_PRODUCTS](context: ActionContext<ProductsState, RootState>): Promise<void> {
+    return Shop.getProducts().then((products) => {
+      context.commit(SET_PRODUCTS, products);
+    });
+  },
+};
+
+//----------------------------------------------------------------------
+//
 //  Export
 //
 //----------------------------------------------------------------------
 
-export const ProductsModule = {
+const ProductsModule = {
   state: __state,
   getters: __getters,
-  actions: __actions,
   mutations: __mutations,
+  actions: __actions,
 };
-
-//================================================================================
-//
-//  Manager
-//
-//================================================================================
-
-export class ProductsManager extends BaseManager implements ProductsState, ProductsGetters {
-
-  get all(): Product[] { return this.store.state.products.all; }
-
-  get allProducts(): Product[] { return this.store.getters.allProducts; }
-
-  getAllProducts(): Promise<void> { return this.store.dispatch(GET_ALL_PRODUCTS); }
-
-  decrementProductInventory(): void { this.store.commit(DECREMENT_PRODUCT_INVENTORY); }
-}
+export default ProductsModule;

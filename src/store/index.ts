@@ -2,9 +2,11 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import createLogger from 'vuex/dist/logger';
 
-import { CartModule, CartManager } from './modules/cart';
-import { ProductsModule, ProductsManager } from './modules/products';
-import { IVuexStore, RootState } from './modules/base';
+import { IVuexStore, RootState } from './base';
+import CartModule from './modules/cart';
+import ProductsModule from './modules/products';
+import CartManager from './managers/cart';
+import ProductsManager from './managers/products';
 
 Vue.use(Vuex);
 

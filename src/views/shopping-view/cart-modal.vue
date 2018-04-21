@@ -27,10 +27,10 @@
 <script lang="ts">
   import AppStore from '../../store';
   import Vue from 'vue';
-  import { Component, Prop } from 'vue-property-decorator';
-  import { CartProduct, CheckoutStatus, Product } from '../../store/modules/base';
+  import { Component } from 'vue-property-decorator';
+  import { CartProduct, CheckoutStatus, Product } from '../../store/base';
 
-  @Component({})
+  @Component
   export default class CartModal extends Vue {
 
     private opened: boolean = false;

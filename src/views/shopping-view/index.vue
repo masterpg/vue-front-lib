@@ -40,7 +40,7 @@
   import Vue from 'vue';
   import CartModal from './cart-modal.vue';
   import { Component } from 'vue-property-decorator';
-  import { Product } from '../../store/modules/base';
+  import { Product } from '../../store/base';
 
   @Component({
     components: {
