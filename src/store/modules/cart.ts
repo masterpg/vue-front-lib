@@ -50,21 +50,21 @@ const __getters = {
 //----------------------------------------------------------------------
 
 const __mutations = {
-  [PUSH_PRODUCT_TO_CART](state: CartState, { id }: { id: number }) {
+  [PUSH_PRODUCT_TO_CART](state: CartState, productId: number) {
     state.added.push({
-      id,
+      id: productId,
       quantity: 1,
     });
   },
 
-  [INCREMENT_ITEM_QUANTITY](state: CartState, { id }: { id: number }) {
-    const cartItem = state.added.find((item) => item.id === id);
+  [INCREMENT_ITEM_QUANTITY](state: CartState, productId: number) {
+    const cartItem = state.added.find((item) => item.id === productId);
     if (cartItem) {
       cartItem.quantity++;
     }
   },
 
-  [SET_CART_ITEMS](state: CartState, { items }: { items: Array<{ id: number, quantity: number }> }) {
+  [SET_CART_ITEMS](state: CartState, items: Array<{ id: number, quantity: number }>) {
     state.added = items;
   },
 
@@ -84,14 +84,14 @@ const __actions = {
     const savedCartItems = [...__state.added];
     context.commit(SET_CHECKOUT_STATUS, CheckoutStatus.None);
     // empty cart
-    context.commit(SET_CART_ITEMS, { items: [] });
+    context.commit(SET_CART_ITEMS, []);
 
     return ShopApi.buyProducts(products).then(() => {
       context.commit(SET_CHECKOUT_STATUS, CheckoutStatus.Successful);
     }).catch((err) => {
       context.commit(SET_CHECKOUT_STATUS, CheckoutStatus.Failed);
       // rollback to the cart saved before sending the request
-      context.commit(SET_CART_ITEMS, { items: savedCartItems });
+      context.commit(SET_CART_ITEMS, savedCartItems);
     });
   },
 
@@ -101,12 +101,12 @@ const __actions = {
       if (product.inventory > 0) {
         const cartItem = __state.added.find((item) => item.id === product.id);
         if (!cartItem) {
-          context.commit(PUSH_PRODUCT_TO_CART, { id: product.id });
+          context.commit(PUSH_PRODUCT_TO_CART, product.id);
         } else {
           context.commit(INCREMENT_ITEM_QUANTITY, cartItem);
         }
         // remove 1 item from stock
-        context.commit(DECREMENT_PRODUCT_INVENTORY, { id: product.id });
+        context.commit(DECREMENT_PRODUCT_INVENTORY, product.id);
       }
       resolve();
     });

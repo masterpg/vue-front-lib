@@ -33,8 +33,8 @@ const __mutations = {
     state.all = products;
   },
 
-  [DECREMENT_PRODUCT_INVENTORY](state: ProductsState, { id }: { id: number }) {
-    const product = state.all.find((item) => item.id === id);
+  [DECREMENT_PRODUCT_INVENTORY](state: ProductsState, productId: number) {
+    const product = state.all.find((item) => item.id === productId);
     if (product) {
       product.inventory--;
     }
