@@ -1,3 +1,9 @@
+<style lang="stylus" scoped>
+  p {
+    color: var(--hello-view-color);
+  }
+</style>
+
 <template>
   <p>hello times: {{ helloTimes }}</p>
 </template>

@@ -58,11 +58,11 @@ module.exports = {
   plugins: [
     // `to: xxx`の`xxx`は`output.path`が基準になる
     new CopyWebpackPlugin([{
-      from: path.resolve(__dirname, '../src/images'),
-      to: 'images',
+      from: path.resolve(__dirname, '../src/assets/images'),
+      to: 'assets/images',
     }]),
     new ImageminPlugin({
-      test: /images\/[^\.]+\.(jpe?g|png|gif|svg)$/i,
+      test: /assets\/images\/[^\.]+\.(jpe?g|png|gif|svg)$/i,
       cacheFolder: '.cache'
     }),
   ],

@@ -1,4 +1,4 @@
-import 'vuetify/dist/vuetify.min.css';
+import './assets/styles/main.styl';
 import * as ES6Promise from 'es6-promise';
 import App from './app.vue';
 import Vue from 'vue';

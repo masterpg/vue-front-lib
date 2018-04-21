@@ -1,4 +1,8 @@
-<style lang="scss">
+<style lang="stylus" scoped>
+  @import '~vuetify/src/stylus/settings/_colors'
+  .hello-view {
+    --hello-view-color: $indigo.base;
+  }
 </style>
 
 <template>
@@ -13,7 +17,7 @@
     <p>msg: {{msg}}</p>
     <p>helloMsg: {{helloMsg}}</p>
     <p>computed msg: {{computedMsg}}</p>
-    <hello-view ref="helloView"></hello-view>
+    <hello-view ref="helloView" class="hello-view"></hello-view>
     <v-btn small @click="greetButtonOnClick">Greet</v-btn>
     <v-btn small @click="sleepButtonOnClick">Sleep</v-btn>
   </v-card>
