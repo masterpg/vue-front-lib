@@ -1,5 +1,7 @@
-import { BaseManager, CartGetters, CartProduct, CheckoutStatus, Product } from '../base';
-import * as actions from '../actions';
+import { BaseManager } from '../base';
+import { CartGetters } from '../getters';
+import { CartProduct, CheckoutStatus, Product } from '../entities';
+import { actions } from '../actions';
 
 export default class CartManager extends BaseManager implements CartGetters {
 

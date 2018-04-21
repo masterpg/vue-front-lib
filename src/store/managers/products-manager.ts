@@ -1,6 +1,8 @@
-import * as actions from '../actions';
-import * as mutations from '../mutations';
-import { BaseManager, Product, ProductsGetters } from '../base';
+import { BaseManager } from '../base';
+import { Product } from '../entities';
+import { ProductsGetters } from '../getters';
+import { actions } from '../actions';
+import { mutations } from '../mutations';
 
 export default class ProductsManager extends BaseManager implements ProductsGetters {
 

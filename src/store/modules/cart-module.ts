@@ -1,8 +1,10 @@
-import * as actions from '../actions';
-import * as mutations from '../mutations';
 import shopApi from '../../api/shop-api';
-import { ActionContext } from 'vuex';
-import { CartGetters, CartProduct, CartState, CheckoutStatus, Product, RootState } from '../base';
+import { ActionContext } from '../base';
+import { INCREMENT_ITEM_QUANTITY, mutations, PUSH_PRODUCT_TO_CART, SET_CART_ITEMS, SET_CHECKOUT_STATUS } from '../mutations';
+import { actions, ADD_PRODUCT_TO_CART, CHECKOUT } from '../actions';
+import { CartState, RootState } from '../states';
+import { CartProduct, CheckoutStatus, Product } from '../entities';
+import { CartGetters } from '../getters';
 
 //----------------------------------------------------------------------
 //
@@ -52,25 +54,25 @@ const __getters = {
 //----------------------------------------------------------------------
 
 const __mutations = {
-  [mutations.PUSH_PRODUCT_TO_CART](state: CartState, productId: number) {
+  [PUSH_PRODUCT_TO_CART](state: CartState, productId: number) {
     state.added.push({
       id: productId,
       quantity: 1,
     });
   },
 
-  [mutations.INCREMENT_ITEM_QUANTITY](state: CartState, productId: number) {
+  [INCREMENT_ITEM_QUANTITY](state: CartState, productId: number) {
     const cartItem = state.added.find((item) => item.id === productId);
     if (cartItem) {
       cartItem.quantity++;
     }
   },
 
-  [mutations.SET_CART_ITEMS](state: CartState, items: Array<{ id: number, quantity: number }>) {
+  [SET_CART_ITEMS](state: CartState, items: Array<{ id: number, quantity: number }>) {
     state.added = items;
   },
 
-  [mutations.SET_CHECKOUT_STATUS](state: CartState, status: CheckoutStatus) {
+  [SET_CHECKOUT_STATUS](state: CartState, status: CheckoutStatus) {
     state.checkoutStatus = status;
   },
 };
@@ -81,8 +83,10 @@ const __mutations = {
 //
 //----------------------------------------------------------------------
 
+type Context = ActionContext<CartState, RootState, CartGetters>;
+
 const __actions = {
-  [actions.CHECKOUT](context: ActionContext<CartState, RootState>, products: Product[]): Promise<void> {
+  [CHECKOUT](context: Context, products: Product[]): Promise<void> {
     const savedCartItems = [...__state.added];
     mutations.setCheckoutStatus(context, CheckoutStatus.None);
     // empty cart
@@ -97,7 +101,7 @@ const __actions = {
     });
   },
 
-  [actions.ADD_PRODUCT_TO_CART](context: ActionContext<CartState, RootState>, product: Product): Promise<void> {
+  [ADD_PRODUCT_TO_CART](context: Context, product: Product): Promise<void> {
     return new Promise((resolve) => {
       mutations.setCheckoutStatus(context, CheckoutStatus.None);
       if (product.inventory > 0) {

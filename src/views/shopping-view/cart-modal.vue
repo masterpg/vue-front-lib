@@ -28,7 +28,7 @@
   import appStore from '../../store';
   import Vue from 'vue';
   import { Component } from 'vue-property-decorator';
-  import { CartProduct, CheckoutStatus, Product } from '../../store/base';
+  import { CartProduct, CheckoutStatus, Product } from '../../store/entities';
 
   @Component
   export default class CartModal extends Vue {
