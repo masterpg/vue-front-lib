@@ -103,7 +103,7 @@ const __actions = {
         if (!cartItem) {
           context.commit(PUSH_PRODUCT_TO_CART, product.id);
         } else {
-          context.commit(INCREMENT_ITEM_QUANTITY, cartItem);
+          context.commit(INCREMENT_ITEM_QUANTITY, cartItem.id);
         }
         // remove 1 item from stock
         context.commit(DECREMENT_PRODUCT_INVENTORY, product.id);
