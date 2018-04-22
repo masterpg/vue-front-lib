@@ -1,10 +1,10 @@
-import { BaseManager } from '../base';
+import { BaseFacade } from '../base';
 import { Product } from '../entities';
 import { ProductsGetters } from '../getters';
 import { actions } from '../actions';
 import { mutations } from '../mutations';
 
-export default class ProductsManager extends BaseManager implements ProductsGetters {
+export default class ProductsFacade extends BaseFacade implements ProductsGetters {
 
   get allProducts(): Product[] {
     return this._store.getters.allProducts;

@@ -6,8 +6,8 @@ import { RootState } from './states';
 import { VuexStore } from './base';
 import cartModule from './modules/cart-module';
 import productsModule from './modules/products-module';
-import CartManager from './managers/cart-manager';
-import ProductsManager from './managers/products-manager';
+import CartFacade from './facades/cart-facade';
+import ProductsFacade from './facades/products-facade';
 
 Vue.use(Vuex);
 
@@ -23,7 +23,7 @@ export const vuexStore = new Vuex.Store<RootState>({
 }) as VuexStore;
 
 namespace appStore {
-  export const products = new ProductsManager(vuexStore);
-  export const cart = new CartManager(vuexStore);
+  export const products = new ProductsFacade(vuexStore);
+  export const cart = new CartFacade(vuexStore);
 }
 export default appStore;

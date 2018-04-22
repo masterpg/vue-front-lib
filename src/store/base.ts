@@ -3,11 +3,11 @@ import { RootState } from './states';
 
 //----------------------------------------------------------------------
 //
-//  Managers
+//  Facades
 //
 //----------------------------------------------------------------------
 
-export abstract class BaseManager {
+export abstract class BaseFacade {
   constructor(store: VuexStore) {
     this._store = store;
   }
