@@ -3,7 +3,7 @@ import Vuex from 'vuex';
 import createLogger from 'vuex/dist/logger';
 
 import { RootState } from './states';
-import { VuexStore } from './base';
+import { AppStore, VuexStore } from './base';
 import cartModule from './modules/cart-module';
 import productsModule from './modules/products-module';
 import CartFacade from './facades/cart-facade';
@@ -13,7 +13,7 @@ Vue.use(Vuex);
 
 const debug = process.env.NODE_ENV !== 'production';
 
-export const vuexStore = new Vuex.Store<RootState>({
+const vuexStore = new Vuex.Store<RootState>({
   modules: {
     cart: cartModule,
     products: productsModule,
@@ -22,8 +22,9 @@ export const vuexStore = new Vuex.Store<RootState>({
   plugins: debug ? [createLogger({})] : [],
 }) as VuexStore;
 
-namespace appStore {
-  export const products = new ProductsFacade(vuexStore);
-  export const cart = new CartFacade(vuexStore);
-}
-export default appStore;
+const appStore: AppStore = {
+  products: new ProductsFacade(vuexStore),
+  cart: new CartFacade(vuexStore),
+};
+
+export { appStore, vuexStore, AppStore };

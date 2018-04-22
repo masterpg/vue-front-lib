@@ -45,11 +45,11 @@
 </template>
 
 <script lang="ts">
-  import Vue from 'vue';
   import { Component } from 'vue-property-decorator';
+  import { VueComponent } from '../components';
 
-  @Component({})
-  export default class App extends Vue {
+  @Component
+  export default class AppView extends VueComponent {
     private clipped = false;
     private drawer = true;
     private fixed = false;
@@ -69,4 +69,3 @@
     ];
   }
 </script>
-

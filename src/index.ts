@@ -1,11 +1,12 @@
 import './assets/styles/main.styl';
 import * as ES6Promise from 'es6-promise';
-import App from './app.vue';
+import AppView from './views/index.vue';
 import Vue from 'vue';
 import Vuetify from 'vuetify';
 import router from './router';
 import { vuexStore } from './store';
 import { currency } from './currency';
+import { initVueComponent } from './components';
 
 ES6Promise.polyfill();
 
@@ -27,5 +28,10 @@ new Vue({
   el: '#app',
   router,
   store: vuexStore,
-  render: (h) => h(App),
+  created() {
+    initVueComponent(this);
+  },
+  render(h) {
+    return h(AppView);
+  },
 });

@@ -1,3 +1,5 @@
+import CartFacade from './facades/cart-facade';
+import ProductsFacade from './facades/products-facade';
 import { Commit, Dispatch, Store } from 'vuex';
 import { RootState } from './states';
 
@@ -7,10 +9,16 @@ import { RootState } from './states';
 //
 //----------------------------------------------------------------------
 
+export interface AppStore {
+  readonly cart: CartFacade;
+  readonly products: ProductsFacade;
+}
+
 export abstract class BaseFacade {
   constructor(store: VuexStore) {
     this._store = store;
   }
+
   readonly _store: VuexStore;
 }
 

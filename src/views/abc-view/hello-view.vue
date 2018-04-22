@@ -9,11 +9,11 @@
 </template>
 
 <script lang="ts">
-  import Vue from 'vue';
   import { Component } from 'vue-property-decorator';
+  import { VueComponent } from '../../components';
 
   @Component
-  export default class HelloView extends Vue {
+  export default class HelloView extends VueComponent {
     private helloTimes: number = 0;
 
     sayHello() {

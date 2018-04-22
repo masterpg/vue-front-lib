@@ -24,16 +24,16 @@
 </template>
 
 <script lang="ts">
-  import Vue from 'vue';
-  import { Component, Inject, Model, Prop, Watch } from 'vue-property-decorator';
   import HelloView from './hello-view.vue';
+  import { Component, Prop } from 'vue-property-decorator';
+  import { VueComponent } from '../../components';
 
   @Component({
     components: {
       'hello-view': HelloView,
     },
   })
-  export default class AbcView extends Vue {
+  export default class AbcView extends VueComponent {
 
     @Prop({ default: 'default value A' })
     propA: string;

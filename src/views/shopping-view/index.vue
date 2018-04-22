@@ -36,21 +36,19 @@
 </template>
 
 <script lang="ts">
-  import appStore from '../../store';
-  import Vue from 'vue';
   import CartModal from './cart-modal.vue';
   import { Component } from 'vue-property-decorator';
   import { Product } from '../../store/entities';
+  import { VueComponent } from '../../components';
 
   @Component({
     components: {
       'cart-modal': CartModal,
     },
   })
-  export default class ShoppingView extends Vue {
-
+  export default class ShoppingView extends VueComponent {
     created() {
-      appStore.products.getAllProducts();
+      this.$app.store.products.getAllProducts();
     }
 
     private get sp() {
@@ -62,11 +60,11 @@
     }
 
     private get products(): Product[] {
-      return appStore.products.allProducts;
+      return this.$app.store.products.allProducts;
     }
 
     private addProductToCart(product: Product): Promise<void> {
-      return appStore.cart.addProductToCart(product);
+      return this.$app.store.cart.addProductToCart(product);
     }
 
     private openCartModal(): void {
