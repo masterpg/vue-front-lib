@@ -27,4 +27,4 @@ const appStore: AppStore = {
   cart: new CartFacade(vuexStore),
 };
 
-export { appStore, vuexStore, AppStore };
+export { appStore, vuexStore, AppStore, VuexStore };

@@ -4,9 +4,8 @@ import AppView from './views/index.vue';
 import Vue from 'vue';
 import Vuetify from 'vuetify';
 import router from './router';
-import { vuexStore } from './store';
+import { appStore, vuexStore } from './store';
 import { currency } from './currency';
-import { initVueComponent } from './components';
 
 ES6Promise.polyfill();
 
@@ -24,14 +23,16 @@ Vue.use(Vuetify, {
 
 Vue.filter('currency', currency);
 
+Object.defineProperty(
+  Vue.prototype, '$appStore', {
+    value: appStore,
+    writable: false,
+  },
+);
+
 new Vue({
   el: '#app',
   router,
   store: vuexStore,
-  created() {
-    initVueComponent(this);
-  },
-  render(h) {
-    return h(AppView);
-  },
+  render: (h) => h(AppView),
 });

@@ -34,14 +34,14 @@
 
     private opened: boolean = false;
 
-    private get products(): CartProduct[] { return this.$app.store.cart.cartProducts; }
+    private get products(): CartProduct[] { return this.$appStore.cart.cartProducts; }
 
-    private get total(): number { return this.$app.store.cart.cartTotalPrice; }
+    private get total(): number { return this.$appStore.cart.cartTotalPrice; }
 
     private get checkoutStatus(): { result: boolean, message: string } {
       const result =
-        this.$app.store.cart.checkoutStatus === CheckoutStatus.None ||
-        this.$app.store.cart.checkoutStatus === CheckoutStatus.Successful;
+        this.$appStore.cart.checkoutStatus === CheckoutStatus.None ||
+        this.$appStore.cart.checkoutStatus === CheckoutStatus.Successful;
       return {
         result,
         message: result ? '' : 'Checkout failed.',
@@ -49,7 +49,7 @@
     }
 
     private async checkout(products: Product[]): Promise<void> {
-      await this.$app.store.cart.checkout(products);
+      await this.$appStore.cart.checkout(products);
       if (this.checkoutStatus.result) {
         this.opened = false;
       }

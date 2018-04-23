@@ -48,7 +48,7 @@
   })
   export default class ShoppingView extends VueComponent {
     created() {
-      this.$app.store.products.getAllProducts();
+      this.$appStore.products.getAllProducts();
     }
 
     private get sp() {
@@ -60,11 +60,11 @@
     }
 
     private get products(): Product[] {
-      return this.$app.store.products.allProducts;
+      return this.$appStore.products.allProducts;
     }
 
     private addProductToCart(product: Product): Promise<void> {
-      return this.$app.store.cart.addProductToCart(product);
+      return this.$appStore.cart.addProductToCart(product);
     }
 
     private openCartModal(): void {
