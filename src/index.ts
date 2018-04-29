@@ -4,7 +4,7 @@ import AppView from './views/index.vue';
 import Vue from 'vue';
 import Vuetify from 'vuetify';
 import router from './router';
-import { appStore, vuexStore } from './store';
+import { appStore } from './store';
 import { currency } from './currency';
 
 ES6Promise.polyfill();
@@ -33,6 +33,5 @@ Object.defineProperty(
 new Vue({
   el: '#app',
   router,
-  store: vuexStore,
   render: (h) => h(AppView),
 });

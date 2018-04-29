@@ -26,7 +26,7 @@
 
 <script lang="ts">
   import { Component } from 'vue-property-decorator';
-  import { CartProduct, CheckoutStatus, Product } from '../../store/entities';
+  import { CartProduct, CheckoutStatus, Product } from '../../store/types';
   import { VueComponent } from '../../components';
 
   @Component

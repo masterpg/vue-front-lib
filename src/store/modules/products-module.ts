@@ -1,75 +1,63 @@
 import shopApi, { Product as ApiProduct } from '../../api/shop-api';
-import { ActionContext } from '../base';
-import { DECREMENT_PRODUCT_INVENTORY, mutations, SET_PRODUCTS } from '../mutations';
-import { GET_ALL_PRODUCTS } from '../actions';
-import { ProductsState, RootState } from '../states';
-import { ProductsGetters } from '../getters';
+import { BaseModule } from './base';
+import { Component } from 'vue-property-decorator';
+import { Product, ProductsModule } from '../types';
 
-//----------------------------------------------------------------------
-//
-//  State
-//
-//----------------------------------------------------------------------
+export default function newProductsModule(): ProductsModule {
+  return new ProductsModuleImpl();
+}
 
-const __state: ProductsState = {
-  all: [],
-};
+interface ProductsState {
+  all: Product[];
+}
 
-//----------------------------------------------------------------------
-//
-//  Getters
-//
-//----------------------------------------------------------------------
+@Component
+class ProductsModuleImpl extends BaseModule<ProductsState>
+  implements ProductsModule {
 
-const __getters = {
-  allProducts: (state: ProductsState) => state.all,
-};
+  //----------------------------------------------------------------------
+  //
+  //  Constructors
+  //
+  //----------------------------------------------------------------------
 
-//----------------------------------------------------------------------
-//
-//  Mutations
-//
-//----------------------------------------------------------------------
+  constructor() {
+    super();
+    this.init({
+      all: [],
+    });
+  }
 
-const __mutations = {
-  [SET_PRODUCTS](state: ProductsState, products: ApiProduct[]) {
-    state.all = products;
-  },
+  //----------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //----------------------------------------------------------------------
 
-  [DECREMENT_PRODUCT_INVENTORY](state: ProductsState, productId: number) {
-    const product = state.all.find((item) => item.id === productId);
+  get allProducts(): Product[] {
+    return this.cloneDeep(this.state.all);
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Methods
+  //
+  //----------------------------------------------------------------------
+
+  setProducts(products: ApiProduct[]): void {
+    this.state.all = products;
+  }
+
+  decrementProductInventory(productId: number): void {
+    const product = this.state.all.find((item) => item.id === productId);
     if (product) {
       product.inventory--;
     }
-  },
-};
+  }
 
-//----------------------------------------------------------------------
-//
-//  Actions
-//
-//----------------------------------------------------------------------
+  async getAllProducts(): Promise<void> {
+    const products = await shopApi.getProducts();
+    this.setProducts(products);
+  }
 
-type Context = ActionContext<ProductsState, RootState, ProductsGetters>;
-
-const __actions = {
-  [GET_ALL_PRODUCTS](context: Context): Promise<void> {
-    return shopApi.getProducts().then((products) => {
-      mutations.setProducts(context, products);
-    });
-  },
-};
-
-//----------------------------------------------------------------------
-//
-//  Export
-//
-//----------------------------------------------------------------------
-
-const productsModule = {
-  state: __state,
-  getters: __getters,
-  mutations: __mutations,
-  actions: __actions,
-};
-export default productsModule;
+}

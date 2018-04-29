@@ -1,30 +1,32 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
-import createLogger from 'vuex/dist/logger';
-
-import { RootState } from './states';
-import { AppStore, VuexStore } from './base';
-import cartModule from './modules/cart-module';
-import productsModule from './modules/products-module';
-import CartFacade from './facades/cart-facade';
-import ProductsFacade from './facades/products-facade';
-
-Vue.use(Vuex);
+import newCartModule from './modules/cart-module';
+import newProductsModule from './modules/products-module';
+import { AppStore, CartModule, ProductsModule } from './types';
+import { Component } from 'vue-property-decorator';
 
 const debug = process.env.NODE_ENV !== 'production';
 
-const vuexStore = new Vuex.Store<RootState>({
-  modules: {
-    cart: cartModule,
-    products: productsModule,
-  },
-  strict: debug,
-  plugins: debug ? [createLogger({})] : [],
-}) as VuexStore;
+@Component
+class AppStoreImpl extends Vue implements AppStore {
 
-const appStore: AppStore = {
-  products: new ProductsFacade(vuexStore),
-  cart: new CartFacade(vuexStore),
-};
+  constructor() {
+    super();
+    this.m_products = newProductsModule();
+    this.m_cart = newCartModule();
+  }
 
-export { appStore, vuexStore, AppStore, VuexStore };
+  private m_products: ProductsModule;
+
+  get products(): ProductsModule {
+    return this.m_products;
+  }
+
+  private m_cart: CartModule;
+
+  get cart(): CartModule {
+    return this.m_cart;
+  }
+
+}
+
+export const appStore: AppStore = new AppStoreImpl();
