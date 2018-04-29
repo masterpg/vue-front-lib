@@ -41,8 +41,9 @@ class CartModuleImpl extends BaseModule<CartState>
   }
 
   get cartProducts(): CartProduct[] {
+    const allProducts = this.$appStore.products.allProducts;
     return this.state.added.map(({ id, quantity }) => {
-      const product = this.$appStore.products.allProducts.find((item) => item.id === id);
+      const product = allProducts.find((item) => item.id === id);
       return {
         id: product!.id,
         title: product!.title,

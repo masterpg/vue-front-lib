@@ -1,6 +1,7 @@
 import shopApi, { Product as ApiProduct } from '../../api/shop-api';
 import { BaseModule } from './base';
 import { Component } from 'vue-property-decorator';
+import { NoCache } from '../../components/decorators';
 import { Product, ProductsModule } from '../types';
 
 export default function newProductsModule(): ProductsModule {
@@ -34,6 +35,7 @@ class ProductsModuleImpl extends BaseModule<ProductsState>
   //
   //----------------------------------------------------------------------
 
+  @NoCache
   get allProducts(): Product[] {
     return this.cloneDeep(this.state.all);
   }

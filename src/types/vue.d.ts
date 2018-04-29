@@ -1,10 +1,8 @@
 import 'vue';
-import { AppStore, VuexStore } from '../store';
+import { AppStore } from '../store/types';
 
 declare module 'vue/types/vue' {
   interface Vue {
     $appStore: AppStore;
-    // @ts-ignore
-    $store: VuexStore;
   }
 }
