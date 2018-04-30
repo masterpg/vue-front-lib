@@ -65,58 +65,53 @@ class CartModuleImpl extends BaseModule<CartState>
   //
   //----------------------------------------------------------------------
 
-  pushProductToCart(productId: number): void {
+  addProductToCart(product: Product): void {
+    this.state.checkoutStatus = CheckoutStatus.None;
+    if (product.inventory > 0) {
+      const cartItem = this.state.added.find((item) => item.id === product.id);
+      if (!cartItem) {
+        this.pushProductToCart(product.id);
+      } else {
+        this.incrementItemQuantity(cartItem.id);
+      }
+      // 在庫を1つ減らす
+      this.$appStore.products.decrementProductInventory(product.id);
+    }
+  }
+
+  checkout(products: Product[]): Promise<void> {
+    const savedCartItems = [...this.state.added];
+    this.state.checkoutStatus = CheckoutStatus.None;
+    // カートを空にする
+    this.state.added = [];
+
+    return shopApi.buyProducts(products).then(() => {
+      this.state.checkoutStatus = CheckoutStatus.Successful;
+    }).catch((err) => {
+      this.state.checkoutStatus = CheckoutStatus.Failed;
+      // カートの内容をAPIリクエス前の状態にロールバックする
+      this.state.added = savedCartItems;
+    });
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
+
+  private pushProductToCart(productId: number): void {
     this.state.added.push({
       id: productId,
       quantity: 1,
     });
   }
 
-  incrementItemQuantity(productId: number): void {
+  private incrementItemQuantity(productId: number): void {
     const cartItem = this.state.added.find((item) => item.id === productId);
     if (cartItem) {
       cartItem.quantity++;
     }
-  }
-
-  setCartItems(items: Array<{ id: number, quantity: number }>): void {
-    this.state.added = items;
-  }
-
-  setCheckoutStatus(status: CheckoutStatus): void {
-    this.state.checkoutStatus = status;
-  }
-
-  checkout(products: Product[]): Promise<void> {
-    const savedCartItems = [...this.state.added];
-    this.setCheckoutStatus(CheckoutStatus.None);
-    // empty cart
-    this.setCartItems([]);
-
-    return shopApi.buyProducts(products).then(() => {
-      this.setCheckoutStatus(CheckoutStatus.Successful);
-    }).catch((err) => {
-      this.setCheckoutStatus(CheckoutStatus.Failed);
-      // rollback to the cart saved before sending the request
-      this.setCartItems(savedCartItems);
-    });
-  }
-
-  addProductToCart(product: Product): Promise<void> {
-    return new Promise((resolve) => {
-      this.setCheckoutStatus(CheckoutStatus.None);
-      if (product.inventory > 0) {
-        const cartItem = this.state.added.find((item) => item.id === product.id);
-        if (!cartItem) {
-          this.pushProductToCart(product.id);
-        } else {
-          this.incrementItemQuantity(cartItem.id);
-        }
-        // remove 1 item from stock
-        this.$appStore.products.decrementProductInventory(product.id);
-      }
-      resolve();
-    });
   }
 
 }

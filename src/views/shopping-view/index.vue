@@ -63,8 +63,8 @@
       return this.$appStore.products.allProducts;
     }
 
-    private addProductToCart(product: Product): Promise<void> {
-      return this.$appStore.cart.addProductToCart(product);
+    private addProductToCart(product: Product): void {
+      this.$appStore.cart.addProductToCart(product);
     }
 
     private openCartModal(): void {

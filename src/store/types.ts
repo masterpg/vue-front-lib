@@ -21,8 +21,6 @@ export interface AppStore {
 export interface ProductsModule {
   readonly allProducts: Product[];
 
-  setProducts(products: ApiProduct[]): void;
-
   decrementProductInventory(productId: number): void;
 
   getAllProducts(): Promise<void>;
@@ -35,17 +33,9 @@ export interface CartModule {
 
   readonly cartTotalPrice: number;
 
-  pushProductToCart(productId: number): void;
-
-  incrementItemQuantity(productId: number): void;
-
-  setCartItems(items: Array<{ id: number, quantity: number }>): void;
-
-  setCheckoutStatus(status: CheckoutStatus): void;
-
   checkout(products: Product[]): Promise<void>;
 
-  addProductToCart(product: Product): Promise<void>;
+  addProductToCart(product: Product): void;
 }
 
 //----------------------------------------------------------------------

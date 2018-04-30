@@ -46,10 +46,6 @@ class ProductsModuleImpl extends BaseModule<ProductsState>
   //
   //----------------------------------------------------------------------
 
-  setProducts(products: ApiProduct[]): void {
-    this.state.all = products;
-  }
-
   decrementProductInventory(productId: number): void {
     const product = this.state.all.find((item) => item.id === productId);
     if (product) {
@@ -59,7 +55,7 @@ class ProductsModuleImpl extends BaseModule<ProductsState>
 
   async getAllProducts(): Promise<void> {
     const products = await shopApi.getProducts();
-    this.setProducts(products);
+    this.state.all = products;
   }
 
 }
