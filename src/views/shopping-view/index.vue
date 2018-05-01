@@ -19,7 +19,7 @@
               <v-list-tile-content>
                 <v-list-tile-title v-html="product.title"></v-list-tile-title>
                 <v-list-tile-sub-title>
-                  <span class="text--primary">Price</span> &mdash; {{ product.price | currency }}, &nbsp;&nbsp;
+                  <span class="text--primary">Price</span> &mdash; {{ product.price | currency }},&nbsp;
                   <span class="text--primary">Stock</span> &mdash; {{ product.inventory }}
                 </v-list-tile-sub-title>
               </v-list-tile-content>
