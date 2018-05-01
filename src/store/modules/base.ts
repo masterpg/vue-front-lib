@@ -22,7 +22,7 @@ export abstract class BaseModule<S> extends Vue {
   //
   //----------------------------------------------------------------------
 
-  protected init<T>(state: S): T {
+  protected initState<T>(state: S): T {
     this.m_state = state;
     return (this as any) as T;
   }

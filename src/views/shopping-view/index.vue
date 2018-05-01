@@ -18,7 +18,9 @@
             <v-list-tile>
               <v-list-tile-content>
                 <v-list-tile-title v-html="product.title"></v-list-tile-title>
-                <v-list-tile-sub-title><span class="text--primary">Price</span> &mdash; {{ product.price | currency }}
+                <v-list-tile-sub-title>
+                  <span class="text--primary">Price</span> &mdash; {{ product.price | currency }}, &nbsp;&nbsp;
+                  <span class="text--primary">Stock</span> &mdash; {{ product.inventory }}
                 </v-list-tile-sub-title>
               </v-list-tile-content>
               <v-list-tile-action>
@@ -48,7 +50,7 @@
   })
   export default class ShoppingView extends VueComponent {
     created() {
-      this.$appStore.products.getAllProducts();
+      this.$appStore.product.getAllProducts();
     }
 
     private get sp() {
@@ -60,7 +62,7 @@
     }
 
     private get products(): Product[] {
-      return this.$appStore.products.allProducts;
+      return this.$appStore.product.allProducts;
     }
 
     private addProductToCart(product: Product): void {

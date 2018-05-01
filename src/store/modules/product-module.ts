@@ -2,19 +2,18 @@ import shopApi, { Product as ApiProduct } from '../../api/shop-api';
 import { BaseModule } from './base';
 import { Component } from 'vue-property-decorator';
 import { NoCache } from '../../components/decorators';
-import { Product, ProductsModule } from '../types';
+import { Product, ProductModule } from '../types';
 
-export default function newProductsModule(): ProductsModule {
-  return new ProductsModuleImpl();
+export default function newProductModule(): ProductModule {
+  return new ProductModuleImpl();
 }
 
-interface ProductsState {
+interface ProductState {
   all: Product[];
 }
 
 @Component
-class ProductsModuleImpl extends BaseModule<ProductsState>
-  implements ProductsModule {
+class ProductModuleImpl extends BaseModule<ProductState> implements ProductModule {
 
   //----------------------------------------------------------------------
   //
@@ -24,7 +23,7 @@ class ProductsModuleImpl extends BaseModule<ProductsState>
 
   constructor() {
     super();
-    this.init({
+    this.initState({
       all: [],
     });
   }

@@ -13,8 +13,7 @@ interface CartState {
 }
 
 @Component
-class CartModuleImpl extends BaseModule<CartState>
-  implements CartModule {
+class CartModuleImpl extends BaseModule<CartState> implements CartModule {
 
   //----------------------------------------------------------------------
   //
@@ -24,7 +23,7 @@ class CartModuleImpl extends BaseModule<CartState>
 
   constructor() {
     super();
-    this.init({
+    this.initState({
       added: [],
       checkoutStatus: CheckoutStatus.None,
     });
@@ -41,7 +40,7 @@ class CartModuleImpl extends BaseModule<CartState>
   }
 
   get cartProducts(): CartProduct[] {
-    const allProducts = this.$appStore.products.allProducts;
+    const allProducts = this.$appStore.product.allProducts;
     return this.state.added.map(({ id, quantity }) => {
       const product = allProducts.find((item) => item.id === id);
       return {
@@ -75,7 +74,7 @@ class CartModuleImpl extends BaseModule<CartState>
         this.incrementItemQuantity(cartItem.id);
       }
       // 在庫を1つ減らす
-      this.$appStore.products.decrementProductInventory(product.id);
+      this.$appStore.product.decrementProductInventory(product.id);
     }
   }
 
