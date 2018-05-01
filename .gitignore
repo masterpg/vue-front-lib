@@ -2,8 +2,10 @@
 .idea/
 .dist/
 dist/
+docs/_book/
 node_modules/
 src/**/*.js.map
 test/**/*.js.map
 test/**/*.tmp
 **/*.log
+**/~$*
