@@ -1,0 +1,37 @@
+<style lang="stylus" scoped>
+</style>
+
+<template>
+  <div>
+    <input
+      type="checkbox"
+      v-bind:checked="checked"
+      v-on:change="checkboxOnChange($event)"
+    />
+  </div>
+</template>
+
+<script lang="ts">
+  import { Component, Model } from 'vue-property-decorator';
+  import { VueComponent } from '../../components';
+
+  @Component
+  export default class CustomCheckbox extends VueComponent {
+    @Model('change')
+    checked: boolean = false;
+
+    checkboxOnChange(event) {
+      // ■ コンポーネントでv-modelを使う
+      //    https://jp.vuejs.org/v2/guide/components.html#コンポーネントで-v-model-を使う
+      // ・`value`というプロパティ名はv-modelで使用される特別な名前である。
+      // ・`input`というイベントはv-modelで使用される特別なイベントである。
+      // ・ただしチェックボックスやラジオボタンでは`value`を別の目的で使用するため、
+      //   v-modelは`value`というプロパティ名を使用できない。
+      // ・このような場合は@Modelでv-modelで使用するプロパティ名とイベント名を指定する
+      // ・本コンポーネントでは以下のようにプロパティ名とイベント名を設定した:
+      //   ・プロパティ名: 'checked'
+      //   ・イベント名: 'change'
+      this.$emit('change', event.target.checked);
+    }
+  }
+</script>
