@@ -6,7 +6,7 @@
     <input
       type="checkbox"
       v-bind:checked="checked"
-      v-on:change="checkboxOnChange($event)"
+      v-on:change="checkboxOnChange"
     />
   </div>
 </template>
@@ -20,7 +20,7 @@
     @Model('change')
     checked: boolean = false;
 
-    checkboxOnChange(event) {
+    checkboxOnChange(event: Event) {
       // ■ コンポーネントでv-modelを使う
       //    https://jp.vuejs.org/v2/guide/components.html#コンポーネントで-v-model-を使う
       // ・`value`というプロパティ名はv-modelで使用される特別な名前である。
@@ -31,7 +31,8 @@
       // ・本コンポーネントでは以下のようにプロパティ名とイベント名を設定した:
       //   ・プロパティ名: 'checked'
       //   ・イベント名: 'change'
-      this.$emit('change', event.target.checked);
+      const checkboxEl = event.target as HTMLInputElement;
+      this.$emit('change', checkboxEl.checked);
     }
   }
 </script>

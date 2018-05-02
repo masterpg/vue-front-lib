@@ -53,7 +53,7 @@
     },
   })
   export default class ShoppingView extends VueComponent {
-    created() {
+    private created() {
       this.$appStore.product.getAllProducts();
     }
 

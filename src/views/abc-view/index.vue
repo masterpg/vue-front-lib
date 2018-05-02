@@ -15,7 +15,8 @@
     <p>propB: {{ propB }}</p>
     <p>message: {{ message }}</p>
     <p>custom propA: {{ customPropA }}</p>
-    <p>computed message: {{ computedMessage }}</p>
+    <p>reversed message: {{ reversedMessage }}</p>
+    <p>double reversed message: {{ doubleReversedMessage }}</p>
     <div class="layout horizontal center">
       <greet-message
         ref="greetMessage"
@@ -34,7 +35,7 @@
     <div class="layout horizontal center">
       <custom-checkbox
         v-model="customChecked"
-        class="flex-3 mr-3"
+        class="mr-3"
       ></custom-checkbox>
       <div class="flex-9">checked: {{ customChecked }}</div>
     </div>
@@ -102,8 +103,12 @@
     //  computed
     //--------------------------------------------------
 
-    private get computedMessage() {
-      return 'computed ' + this.message;
+    private get reversedMessage() {
+      return this.message.split('').reverse().join('');
+    }
+
+    private get doubleReversedMessage() {
+      return this.reversedMessage.split('').reverse().join('');
     }
 
     //--------------------------------------------------
@@ -116,10 +121,10 @@
       console.log(`messageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
     }
 
-    @Watch('computedMessage')
-    private computedMessageOnChange(newValue: string, oldValue: string): void {
+    @Watch('reversedMessage')
+    private reversedMessageOnChange(newValue: string, oldValue: string): void {
       // tslint:disable-next-line
-      console.log(`computedMessageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
+      console.log(`reversedMessageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
     }
 
     @Watch('post', { deep: true })
@@ -128,11 +133,17 @@
       console.log('postOnChange: newValue:', newValue, ', oldValue:', oldValue);
     }
 
+    @Watch('post.message')
+    private postMessageOnChange(newValue: string, oldValue: string): void {
+      // tslint:disable-next-line
+      console.log('postMessageOnChange: newValue:', newValue, ', oldValue:', oldValue);
+    }
+
     //--------------------------------------------------
-    //  lifecycle callbacks
+    //  lifecycle hooks
     //--------------------------------------------------
 
-    mounted() {
+    private mounted() {
       this.message = 'mounted';
     }
 

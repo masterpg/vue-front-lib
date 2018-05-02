@@ -19,7 +19,7 @@
 
     private greetTimes: number = 0;
 
-    greet() {
+    greet(): void {
       alert('greeting: ' + this.message);
       this.greetTimes++;
     }
