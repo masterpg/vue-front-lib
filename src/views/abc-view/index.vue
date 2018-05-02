@@ -15,7 +15,7 @@
     <p>propB: {{ propB }}</p>
     <p>message: {{ message }}</p>
     <p>custom propA: {{ customPropA }}</p>
-    <p>computed message: {{ computedMsg }}</p>
+    <p>computed message: {{ computedMessage }}</p>
     <div class="layout horizontal center">
       <greet-message
         ref="greetMessage"
@@ -39,6 +39,7 @@
       <div class="flex-9">checked: {{ customChecked }}</div>
     </div>
     <div class="layout horizontal end-justified">
+      <v-btn small @click="postButtonOnClick">Post</v-btn>
       <v-btn small @click="sleepButtonOnClick">Sleep</v-btn>
     </div>
   </v-card>
@@ -48,8 +49,13 @@
   import GreetMessage from './greet-message.vue';
   import CustomCheckbox from './custom-checkbox.vue';
   import CustomInput from './custom-input.vue';
-  import { Component, Prop } from 'vue-property-decorator';
+  import { Component, Prop, Watch } from 'vue-property-decorator';
   import { VueComponent } from '../../components';
+
+  interface Post {
+    title: string;
+    message: string;
+  }
 
   @Component({
     components: {
@@ -87,12 +93,39 @@
     // propの値を初期化に利用できる
     private customPropA: string = 'custom ' + this.propA;
 
+    private post: Post = {
+      title: 'Dear Jhon',
+      message: '',
+    };
+
     //--------------------------------------------------
     //  computed
     //--------------------------------------------------
 
-    private get computedMsg() {
+    private get computedMessage() {
       return 'computed ' + this.message;
+    }
+
+    //--------------------------------------------------
+    //  watch
+    //--------------------------------------------------
+
+    @Watch('message')
+    private messageOnChange(newValue: string, oldValue: string): void {
+      // tslint:disable-next-line
+      console.log(`messageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
+    }
+
+    @Watch('computedMessage')
+    private computedMessageOnChange(newValue: string, oldValue: string): void {
+      // tslint:disable-next-line
+      console.log(`computedMessageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
+    }
+
+    @Watch('post', { deep: true })
+    private postOnChange(newValue: Post, oldValue: Post): void {
+      // tslint:disable-next-line
+      console.log('postOnChange: newValue:', newValue, ', oldValue:', oldValue);
     }
 
     //--------------------------------------------------
@@ -121,6 +154,10 @@
 
     private greetButtonOnClick() {
       this.greetMessage.greet();
+    }
+
+    private postButtonOnClick() {
+      this.post.message = this.message;
     }
 
     private async sleepButtonOnClick() {
