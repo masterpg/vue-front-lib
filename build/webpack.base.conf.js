@@ -3,6 +3,11 @@ const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ImageminPlugin = require('imagemin-webpack-plugin').default;
 
+/**
+ * キャッシュディレクトリ
+ */
+const CACHE_DIR = '.cache';
+
 module.exports = {
 
   resolve: {
@@ -57,13 +62,18 @@ module.exports = {
 
   plugins: [
     // `to: xxx`の`xxx`は`output.path`が基準になる
-    new CopyWebpackPlugin([{
-      from: path.resolve(__dirname, '../src/assets/images'),
-      to: 'assets/images',
-    }]),
+    new CopyWebpackPlugin([
+      {
+        from: path.resolve(__dirname, '../src/manifest.json'),
+      }, {
+        from: path.resolve(__dirname, '../src/assets/images'),
+        to: 'assets/images',
+      }
+    ]),
+
     new ImageminPlugin({
       test: /assets\/images\/[^\.]+\.(jpe?g|png|gif|svg)$/i,
-      cacheFolder: '.cache'
+      cacheFolder: CACHE_DIR,
     }),
   ],
 

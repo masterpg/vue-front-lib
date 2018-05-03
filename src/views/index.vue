@@ -41,10 +41,23 @@
     <v-content>
       <router-view/>
     </v-content>
+
+    <v-snackbar
+      :timeout="10000"
+      color="info"
+      :bottom="true"
+      :right="true"
+      :multi-line="true"
+      v-model="snackbarShow"
+    >
+      {{ snackbarMessage }}
+      <v-btn flat @click.native="snackbarShow = false">Close</v-btn>
+    </v-snackbar>
   </v-app>
 </template>
 
 <script lang="ts">
+  import * as sw from '../app/service-worker';
   import { Component } from 'vue-property-decorator';
   import { VueComponent } from '../components';
 
@@ -54,6 +67,8 @@
     private drawer = true;
     private fixed = false;
     private miniVariant = false;
+    private snackbarShow = false;
+    private snackbarMessage: string = '';
 
     private items: Array<{ icon: string, title: string, path: string }> = [
       {
@@ -67,5 +82,17 @@
         path: '/shopping',
       },
     ];
+
+    private created() {
+      sw.addStateChangeListener(this.swOnStateChange);
+    }
+
+    private swOnStateChange(info: sw.StateChangeInfo) {
+      // tslint:disable-next-line
+      console.log(info);
+
+      this.snackbarMessage = info.message;
+      this.snackbarShow = true;
+    }
   }
 </script>

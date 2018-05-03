@@ -1,5 +1,6 @@
 import './assets/styles/main.styl';
 import * as ES6Promise from 'es6-promise';
+import * as sw from './app/service-worker';
 import AppView from './views/index.vue';
 import Vue from 'vue';
 import Vuetify from 'vuetify';
@@ -8,6 +9,7 @@ import { appStore } from './store';
 import { currency } from './currency';
 
 ES6Promise.polyfill();
+sw.init();
 
 Vue.use(Vuetify, {
   theme: {

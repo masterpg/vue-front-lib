@@ -1,7 +1,7 @@
+const baseConfig = require('./webpack.base.conf.js');
 const path = require('path');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
-const baseConfig = require('./webpack.base.conf.js');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -55,12 +55,11 @@ module.exports = merge(baseConfig, {
   },
 
   plugins: [
-    new webpack.IgnorePlugin(/vertx/),
 
     new CleanWebpackPlugin(
       [OUTPUT_PATH],
       {
-        root: path.resolve(__dirname , '..'),
+        root: path.resolve(__dirname, '..'),
         verbose: true
       },
     ),
@@ -85,6 +84,7 @@ module.exports = merge(baseConfig, {
 
     // `to: xxx`の`xxx`は`output.path`が基準になる
     new CopyWebpackPlugin([
+      { from: path.resolve(__dirname, '../src/service-worker.js') },
       { from: 'node_modules/mocha/mocha.css', to: 'node_modules/mocha' },
       { from: 'node_modules/mocha/mocha.js', to: 'node_modules/mocha' },
       { from: 'node_modules/chai/chai.js', to: 'node_modules/chai' },

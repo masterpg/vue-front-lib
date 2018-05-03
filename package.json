@@ -1,14 +1,17 @@
 {
   "name": "vue-examples",
   "scripts": {
+    "build": "webpack --config build/webpack.prod.conf.js",
     "build:dev": "webpack --config build/webpack.dev.conf.js",
     "serve": "webpack-dev-server --config build/webpack.dev.conf.js",
+    "serve:prod": "node_modules/.bin/browser-sync -s start '.dist' --port 5001 --ui-port 5002",
     "docs": "cd docs && ../node_modules/.bin/gitbook serve"
   },
   "devDependencies": {
     "@types/chai": "^4.1.2",
     "@types/mocha": "^5.0.0",
     "@types/node": "^9.6.1",
+    "browser-sync": "^2.24.2",
     "chai": "^4.1.2",
     "clean-webpack-plugin": "^0.1.19",
     "copy-webpack-plugin": "^4.5.1",
@@ -22,6 +25,7 @@
     "style-loader": "^0.20.3",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
+    "sw-precache-webpack-plugin": "^0.11.5",
     "ts-loader": "^4.1.0",
     "tslint": "^5.9.1",
     "tslint-loader": "^3.6.0",
