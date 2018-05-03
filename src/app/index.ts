@@ -1,6 +1,6 @@
-import './assets/styles/main.styl';
+import '../assets/styles/main.styl';
 import * as ES6Promise from 'es6-promise';
-import * as sw from './app/service-worker';
+import * as sw from './service-worker';
 import AppView from './views/index.vue';
 import Vue from 'vue';
 import Vuetify from 'vuetify';

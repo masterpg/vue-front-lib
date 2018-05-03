@@ -1,5 +1,5 @@
 import 'vue';
-import { AppStore } from '../store/types';
+import { AppStore } from '../app/store/types';
 
 declare module 'vue/types/vue' {
   interface Vue {

@@ -28,7 +28,7 @@ module.exports = merge(baseConfig, {
   mode: 'production',
 
   entry: {
-    'index': path.resolve(__dirname, '../src/index.ts'),
+    'index': path.resolve(__dirname, '../src/app/index.ts'),
   },
 
   output: {

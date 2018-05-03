@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts">
-  import * as sw from '../app/service-worker';
+  import * as sw from '../service-worker';
   import { Component } from 'vue-property-decorator';
   import { VueComponent } from '../components';
 
