@@ -1,6 +1,10 @@
 # Summary
 
 * [Introduction](README.md)
-  * [アプリケーションのデータ管理](app-data-management/index.md)
   * [Vue + TypeScript](vue-typescript/index.md)
-  * [TypeScriptチートシート](typescript-cheat-sheet/index.md)
+  * [アプリケーションのデータ管理](app-data-management/index.md)
+  * [TypeScript チートシート](typescript-cheat-sheet/index.md)
+  * スタイリング
+    * [Colors](styling/colors/index.md)
+    * [Spacing](styling/spacing/index.md)
+    * [Typography](styling/typography/index.md)
