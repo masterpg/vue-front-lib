@@ -44,7 +44,7 @@
 <script lang="ts">
   import CartModal from './cart-modal.vue';
   import { Component } from 'vue-property-decorator';
-  import { Product } from '../../store/types';
+  import { Product } from '../../stores/types';
   import { VueComponent } from '../../components';
 
   @Component({
@@ -54,7 +54,7 @@
   })
   export default class ShoppingView extends VueComponent {
     private created() {
-      this.$appStore.product.getAllProducts();
+      this.$stores.product.getAllProducts();
     }
 
     private get cartModal(): CartModal {
@@ -62,11 +62,11 @@
     }
 
     private get products(): Product[] {
-      return this.$appStore.product.allProducts;
+      return this.$stores.product.allProducts;
     }
 
     private addProductToCart(product: Product): void {
-      this.$appStore.cart.addProductToCart(product);
+      this.$stores.cart.addProductToCart(product);
     }
 
     private openCartModal(): void {

@@ -1,15 +1,16 @@
 import '../assets/styles/main.styl';
 import * as ES6Promise from 'es6-promise';
+import * as stores from './stores';
 import * as sw from './service-worker';
 import AppView from './views/index.vue';
 import Vue from 'vue';
 import Vuetify from 'vuetify';
 import router from './router';
-import { appStore } from './store';
 import { currency } from './currency';
 
 ES6Promise.polyfill();
 sw.init();
+stores.init();
 
 Vue.use(Vuetify, {
   theme: {
@@ -24,13 +25,6 @@ Vue.use(Vuetify, {
 });
 
 Vue.filter('currency', currency);
-
-Object.defineProperty(
-  Vue.prototype, '$appStore', {
-    value: appStore,
-    writable: false,
-  },
-);
 
 new Vue({
   el: '#app',

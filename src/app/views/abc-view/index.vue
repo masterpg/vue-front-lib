@@ -1,7 +1,7 @@
 <style lang="stylus" scoped>
   @import '~vuetify/src/stylus/settings/_colors'
   .greet-message {
-    --greet-message-color: $indigo.base;
+    --greet-message-color: $indigo.darken-1;
   }
 </style>
 

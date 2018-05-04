@@ -1,11 +1,7 @@
 import shopApi from '../../api/shop-api';
-import { CartModule, CartProduct, CheckoutStatus, Product } from '../types';
-import { BaseModule } from './base';
+import { CartStore, CartProduct, CheckoutStatus, Product } from '../types';
+import { BaseStore } from '../base';
 import { Component } from 'vue-property-decorator';
-
-export default function newCartModule(): CartModule {
-  return new CartModuleImpl();
-}
 
 interface CartState {
   added: Array<{ id: number, quantity: number }>;
@@ -13,7 +9,7 @@ interface CartState {
 }
 
 @Component
-class CartModuleImpl extends BaseModule<CartState> implements CartModule {
+class CartStoreImpl extends BaseStore<CartState> implements CartStore {
 
   //----------------------------------------------------------------------
   //
@@ -40,7 +36,7 @@ class CartModuleImpl extends BaseModule<CartState> implements CartModule {
   }
 
   get cartProducts(): CartProduct[] {
-    const allProducts = this.$appStore.product.allProducts;
+    const allProducts = this.$stores.product.allProducts;
     return this.state.added.map(({ id, quantity }) => {
       const product = allProducts.find((item) => item.id === id);
       return {
@@ -74,7 +70,7 @@ class CartModuleImpl extends BaseModule<CartState> implements CartModule {
         this.incrementItemQuantity(cartItem.id);
       }
       // 在庫を1つ減らす
-      this.$appStore.product.decrementProductInventory(product.id);
+      this.$stores.product.decrementProductInventory(product.id);
     }
   }
 
@@ -114,3 +110,6 @@ class CartModuleImpl extends BaseModule<CartState> implements CartModule {
   }
 
 }
+
+const cartStore: CartStore = new CartStoreImpl();
+export default cartStore;

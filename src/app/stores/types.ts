@@ -6,19 +6,19 @@ import { Product as ApiProduct } from '../api/shop-api';
 //
 //----------------------------------------------------------------------
 
-export interface AppStore {
-  readonly product: ProductModule;
+export interface Stores {
+  readonly product: ProductStore;
 
-  readonly cart: CartModule;
+  readonly cart: CartStore;
 }
 
 //----------------------------------------------------------------------
 //
-//  Modules
+//  Stores
 //
 //----------------------------------------------------------------------
 
-export interface ProductModule {
+export interface ProductStore {
   readonly allProducts: Product[];
 
   decrementProductInventory(productId: number): void;
@@ -26,7 +26,7 @@ export interface ProductModule {
   getAllProducts(): Promise<void>;
 }
 
-export interface CartModule {
+export interface CartStore {
   readonly checkoutStatus: CheckoutStatus;
 
   readonly cartProducts: CartProduct[];

@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import { clone, cloneDeep } from 'lodash';
 
-export abstract class BaseModule<S> extends Vue {
+export abstract class BaseStore<S> extends Vue {
 
   //----------------------------------------------------------------------
   //

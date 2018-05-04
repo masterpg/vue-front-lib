@@ -26,7 +26,7 @@
 
 <script lang="ts">
   import { Component } from 'vue-property-decorator';
-  import { CartProduct, CheckoutStatus, Product } from '../../store/types';
+  import { CartProduct, CheckoutStatus, Product } from '../../stores/types';
   import { VueComponent } from '../../components';
 
   @Component
@@ -34,14 +34,14 @@
 
     private opened: boolean = false;
 
-    private get products(): CartProduct[] { return this.$appStore.cart.cartProducts; }
+    private get products(): CartProduct[] { return this.$stores.cart.cartProducts; }
 
-    private get total(): number { return this.$appStore.cart.cartTotalPrice; }
+    private get total(): number { return this.$stores.cart.cartTotalPrice; }
 
     private get checkoutStatus(): { result: boolean, message: string } {
       const result =
-        this.$appStore.cart.checkoutStatus === CheckoutStatus.None ||
-        this.$appStore.cart.checkoutStatus === CheckoutStatus.Successful;
+        this.$stores.cart.checkoutStatus === CheckoutStatus.None ||
+        this.$stores.cart.checkoutStatus === CheckoutStatus.Successful;
       return {
         result,
         message: result ? '' : 'Checkout failed.',
@@ -49,7 +49,7 @@
     }
 
     private async checkout(products: Product[]): Promise<void> {
-      await this.$appStore.cart.checkout(products);
+      await this.$stores.cart.checkout(products);
       if (this.checkoutStatus.result) {
         this.opened = false;
       }

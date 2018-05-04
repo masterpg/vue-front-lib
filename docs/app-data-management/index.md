@@ -30,20 +30,20 @@ Vueのように複数のコンポーネントでアプリケーションの画�
 
 本プロジェクトではFluxやReduxの考えを参考にデータ管理の仕組みを実装しています。ここでは実装されたデータ管理の仕組みを利用する側の視点で見ていきましょう。
 
-上記でも説明しましたがアプリケーションであつかうデータはすべて**Store**(実際にはこのあとに説明するモジュール)に保管します。ただし**Action**という概念は登場せず、データの追加、更新、削除、サブスクライブといった操作はすべてこのStoreを経由して行うことになります。
+上記でも説明しましたがアプリケーションであつかうデータはすべて**Store**に保管します。ただし**Action**という概念は登場せず、データの追加、更新、削除、サブスクライブといった操作はすべてこのStoreを経由して行うことになります。
 
 次の図は利用者がデータ管理の仕組みにアクセスするためのインタフェースです。今回は例としてショッピングカートを想定したインタフェースを提供しています。
 
 ![](./images/shopping-cart-structure.png)
 
-ショッピングカートをデータ設計に落とし込んだ結果、**商品**(`ProductModule`)と**カート**(`CartModule`)という2つの**モジュール**を作成しました。モジュールからは、データにアクセスするのに必要なプロパティとメソッドがインタフェースとして提供されます。
+ショッピングカートをデータ設計に落とし込んだ結果、**商品**(`ProductStore`)と**カート**(`CartStore`)という2つのStoreを作成しました。Storeからは、データにアクセスするのに必要なプロパティとメソッドがインタフェースとして提供されます。
 
-`ProductModule`には主に次のようなインタフェースが提供されます:
+`ProductStore`には主に次のようなインタフェースが提供されます:
 * `allProducts`: 全商品一覧が取得できるgetter。
 * `getAllProducts()`: APIから商品一覧を取得するメソッド。
 * `decrementProductInventory()`: 商品の在庫を1つ減らすメソッド。
 
-`CartModule`には主に次のようなインタフェースが提供されます:
+`CartStore`には主に次のようなインタフェースが提供されます:
 * `cartProducts`: カートに入っている商品一覧を取得できるgetter。
 * `addProductToCart()`: カートに商品を追加するメソッド。
 * `checkout()`: カートに入っている商品を確定するメソッド。
@@ -51,7 +51,7 @@ Vueのように複数のコンポーネントでアプリケーションの画�
 
 ### 対象データをサブスクライブ(購読)する
 
-本プロジェクトのすべてのVueコンポーネントは`this.$appStore`でStoreにアクセスすることができます。Storeは各モージュールを保持しているので、`this.$appStore.cart`のように対象のモジュールにアクセスすることでデータを操作できます。
+本プロジェクトのすべてのVueコンポーネントは`this.$stores`でStoreにアクセスすることができます。Storeは各モージュールを保持しているので、`this.$stores.cart`のように対象のStoreにアクセスすることでデータを操作できます。
 
 ここではサブスクライブ(購読)の実装方法を説明します。対象データをサブスクライブすると、対象データに変更があった場合リアクティブな反応が起こり、自動で画面を更新することができます。
 
@@ -70,13 +70,13 @@ Vueのように複数のコンポーネントでアプリケーションの画�
 export default class CartModal extends VueComponent {
   …
   private get products(): CartProduct[] {
-    return this.$appStore.cart.cartProducts;
+    return this.$stores.cart.cartProducts;
   }
 }
 </script>
 ```
 
-サブスクライブするにはgetterを用意し、この中でモジュールが提供するプロパティにアクセスするだけでサブスクライブ状態になります。
+サブスクライブするにはgetterを用意し、この中でStoreが提供するプロパティにアクセスするだけでサブスクライブ状態になります。
 
 上記コードでは`cart.cartProducts`をサブスクライブしており、このプロパティに変更、つまりカートにはいっている商品一覧または商品自体に変更があると、画面に表示されているカートの商品一覧も自動で更新されます。
 
@@ -85,9 +85,9 @@ export default class CartModal extends VueComponent {
 
 ### 対象データを変更する
 
-アプリケーションデータの変更はモジュールが提供するsetterまたはメソッドで行ないます。これ以外にアプリケーションデータを変更する手段はありません。
+アプリケーションデータの変更はStoreが提供するsetterまたはメソッドで行ないます。これ以外にアプリケーションデータを変更する手段はありません。
 
-例えばモジュールはgetterを提供しますが、このgetterの値を変更してもアプリケーションデータは変更されません。なぜならgetterが提供するデータはアプリケーションデータのコピーだからです。
+例えばStoreはgetterを提供しますが、このgetterの値を変更してもアプリケーションデータは変更されません。なぜならgetterが提供するデータはアプリケーションデータのコピーだからです。
 
 
 ## データ管理の仕組みを実装する
@@ -96,9 +96,9 @@ export default class CartModal extends VueComponent {
 
 ### アプリケーションデータを保管するState
 
-モジュールはアプリケーションデータにアクセスするためのプロパティとメソッドを提供すると説明しましたが、アプリケーションデータ自体も保管します。このデータを保管する箱を**State**と呼びます。
+Storeはアプリケーションデータにアクセスするためのプロパティとメソッドを提供すると説明しましたが、アプリケーションデータ自体も保管します。このデータを保管する箱を**State**と呼びます。
 
-次のコードではStateを定義し、モジュールのコンストラクタで定義したStateを`BaseModule#initState()`で初期化しています。
+次のコードではStateを定義し、Storeのコンストラクタで定義したStateを`BaseStore#initState()`で初期化しています。
 
 `src/store/modules/products-module.ts`
 
@@ -108,7 +108,7 @@ interface ProductsState {
 }
 
 @Component
-class ProductsModuleImpl extends BaseModule<ProductsState> implements ProductsModule {
+class ProductsStoreImpl extends BaseStore<ProductsState> implements ProductsStore {
   constructor() {
     super();
     this.initState({
@@ -118,9 +118,9 @@ class ProductsModuleImpl extends BaseModule<ProductsState> implements ProductsMo
 }
 ```
 
-ここでは`ProductsState`というStateを定義し、`BaseModule`のジェネリクスに指定しています。これにより`initState()`で初期化に必要なプロパティが足りなかったり、必要ないプロパティが指定された場合、コンパイラがこれらのエラーを知らせてくれます。
+ここでは`ProductsState`というStateを定義し、`BaseStore`のジェネリクスに指定しています。これにより`initState()`で初期化に必要なプロパティが足りなかったり、必要ないプロパティが指定された場合、コンパイラがこれらのエラーを知らせてくれます。
 
-Stateはモジュールからしかアスセスできません。モジュールからStateへは`this.state`でアクセスできます。次はStateにアクセスしている例です。
+StateはStoreからしかアスセスできません。StoreからStateへは`this.state`でアクセスできます。次はStateにアクセスしている例です。
 
 ```ts
 const allProducts = this.state.all;
@@ -136,11 +136,11 @@ firstProduct.inventory--;
 
 ### アプリケーションデータはコピーを返す！
 
-モジュールにgetterやメソッドを定義することで、利用者にアプリケーションデータを提供することができます。ただしgetterやメソッドが返すデータはアプリケーションデータの**コピーでなければなりません**。
+Storeにgetterやメソッドを定義することで、利用者にアプリケーションデータを提供することができます。ただしgetterやメソッドが返すデータはアプリケーションデータの**コピーでなければなりません**。
 
 ```ts
 @Component
-class ProductsModuleImpl extends BaseModule<ProductsState> implements ProductsModule {
+class ProductsStoreImpl extends BaseStore<ProductsState> implements ProductsStore {
   @NoCache
   get allProducts(): Product[] {
     // アプリケーションデータのコピーを返している
@@ -175,7 +175,7 @@ getterに`@NoCache`をつけると算出プロパティがキャッシュをし�
 
 ```ts
 @Component
-class ProductsModuleImpl extends BaseModule<ProductsState> implements ProductsModule {
+class ProductsStoreImpl extends BaseStore<ProductsState> implements ProductsStore {
   get allProducts(): Product[] {
     // アプリケーションデータのコピーを返している
     return this.cloneDeep(this.state.all);
