@@ -1,4 +1,4 @@
-import * as sinon from 'sinon';
+import * as td from 'testdouble';
 import _productStore, { ProductState } from '../../../../src/app/stores/product-store';
 import { Apis, Product as ApiProduct } from '../../../../src/app/apis/types';
 import { ProductStore, Stores } from '../../../../src/app/stores/types';
@@ -36,11 +36,18 @@ suite('store/product-store', () => {
     assert.isNull(actual);
   });
 
-  test('decrementProductInventory()', () => {
+  test('decrementProductInventory() - 一般ケース', () => {
     const product = PRODUCTS[0];
     productStore.decrementProductInventory(product.id);
     const actual = productStore.getProductById(product.id);
     assert.equal(actual!.inventory, product.inventory);
+  });
+
+  test('decrementProductInventory() - 存在しない商品IDを指定した場合', () => {
+    const product = PRODUCTS[0];
+    productStore.decrementProductInventory(9876);
+    // 何も問題は起きない
+    assert(true);
   });
 
   test('getAllProducts()', async () => {
@@ -48,13 +55,11 @@ suite('store/product-store', () => {
       { id: 1, title: 'product1', price: 101, inventory: 1 },
       { id: 2, title: 'product2', price: 102, inventory: 2 },
     ];
-    const getProducts = sinon.stub(shopApi, 'getProducts');
-    getProducts.returns(API_PRODUCTS);
+    td.replace(shopApi, 'getProducts');
+    td.when(shopApi.getProducts()).thenResolve(API_PRODUCTS);
 
     await productStore.getAllProducts();
     assert.deepEqual(productStore.allProducts, API_PRODUCTS);
-
-    getProducts.restore();
   });
 
 });
