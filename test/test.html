@@ -8,12 +8,6 @@
 </head>
 <body>
   <div id="mocha"></div>
-  <script>
-    mocha.setup({ ui: 'tdd' });
-  </script>
   <%= htmlWebpackPlugin.options.bundledScript %>
-  <script>
-    mocha.run();
-  </script>
 </body>
 </html>
