@@ -1,19 +1,20 @@
-/**
- * Mocking client-server processing
- */
+import Component from 'vue-class-component';
+import { BaseApi } from '../base';
+import { Product, ShopApi } from '../types';
 
-const __products = [
+const SAMPLE_DATA: Product[] = [
   { id: 1, title: 'iPad 4 Mini', price: 500.01, inventory: 2 },
   { id: 2, title: 'H&M T-Shirt White', price: 10.99, inventory: 10 },
   { id: 3, title: 'Charli XCX - Sucker CD', price: 19.99, inventory: 5 },
 ];
 
-const shopApi = {
+@Component
+class ShopApiImpl extends BaseApi implements ShopApi {
   getProducts(): Promise<Product[]> {
     return new Promise((resolve) => {
-      setTimeout(() => resolve(__products), 100);
+      setTimeout(() => resolve(SAMPLE_DATA), 100);
     });
-  },
+  }
 
   buyProducts(products: Product[]): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -24,13 +25,8 @@ const shopApi = {
           : reject();
       }, 100);
     });
-  },
-};
-export default shopApi;
-
-export interface Product {
-  id: number;
-  title: string;
-  price: number;
-  inventory: number;
+  }
 }
+
+const shopApi: ShopApi = new ShopApiImpl();
+export default shopApi;
