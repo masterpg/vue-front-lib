@@ -66,7 +66,7 @@
     }
 
     private addProductToCart(product: Product): void {
-      this.$stores.cart.addProductToCart(product);
+      this.$stores.cart.addProductToCart(product.id);
     }
 
     private openCartModal(): void {

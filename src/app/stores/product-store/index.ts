@@ -1,10 +1,9 @@
-import shopApi from '../../api/shop-api';
 import { BaseStore } from '../base';
 import { Component } from 'vue-property-decorator';
 import { NoCache } from '../../components/decorators';
 import { Product, ProductStore } from '../types';
 
-interface ProductState {
+export interface ProductState {
   all: Product[];
 }
 
@@ -41,6 +40,13 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   //
   //----------------------------------------------------------------------
 
+  getProductById(productId: number): Product | null {
+    const result = this.state.all.find((item) => {
+      return item.id === productId;
+    }) || null;
+    return this.cloneDeep(result);
+  }
+
   decrementProductInventory(productId: number): void {
     const product = this.state.all.find((item) => item.id === productId);
     if (product) {
@@ -49,7 +55,7 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   }
 
   async getAllProducts(): Promise<void> {
-    const products = await shopApi.getProducts();
+    const products = await this.$apis.shop.getProducts();
     this.state.all = products;
   }
 

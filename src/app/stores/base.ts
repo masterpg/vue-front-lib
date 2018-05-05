@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import { Apis } from '../apis/types';
 import { clone, cloneDeep } from 'lodash';
 
 export abstract class BaseStore<S> extends Vue {
@@ -8,6 +9,8 @@ export abstract class BaseStore<S> extends Vue {
   //  Variables
   //
   //----------------------------------------------------------------------
+
+  protected readonly $apis: Apis;
 
   // @ts-ignore
   private m_state: S = null;
@@ -22,9 +25,8 @@ export abstract class BaseStore<S> extends Vue {
   //
   //----------------------------------------------------------------------
 
-  protected initState<T>(state: S): T {
+  protected initState(state: S): void {
     this.m_state = state;
-    return (this as any) as T;
   }
 
   protected cloneDeep<T>(source: T): T {

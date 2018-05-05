@@ -1,8 +1,8 @@
-import { Product as ApiProduct } from '../api/shop-api';
+import { Product as ApiProduct } from '../apis/types';
 
 //----------------------------------------------------------------------
 //
-//  Others
+//  Stores
 //
 //----------------------------------------------------------------------
 
@@ -12,14 +12,10 @@ export interface Stores {
   readonly cart: CartStore;
 }
 
-//----------------------------------------------------------------------
-//
-//  Stores
-//
-//----------------------------------------------------------------------
-
 export interface ProductStore {
   readonly allProducts: Product[];
+
+  getProductById(productId: number): Product | null;
 
   decrementProductInventory(productId: number): void;
 
@@ -33,9 +29,11 @@ export interface CartStore {
 
   readonly cartTotalPrice: number;
 
+  getCartProductById(productId): CartProduct | null;
+
   checkout(products: Product[]): Promise<void>;
 
-  addProductToCart(product: Product): void;
+  addProductToCart(productId: number): void;
 }
 
 //----------------------------------------------------------------------

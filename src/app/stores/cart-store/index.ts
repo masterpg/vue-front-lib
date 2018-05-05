@@ -1,9 +1,8 @@
-import shopApi from '../../api/shop-api';
 import { CartStore, CartProduct, CheckoutStatus, Product } from '../types';
 import { BaseStore } from '../base';
 import { Component } from 'vue-property-decorator';
 
-interface CartState {
+export interface CartState {
   added: Array<{ id: number, quantity: number }>;
   checkoutStatus: CheckoutStatus;
 }
@@ -60,7 +59,22 @@ class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   //
   //----------------------------------------------------------------------
 
-  addProductToCart(product: Product): void {
+  getCartProductById(productId): CartProduct | null {
+    const product = this.getProductById(productId);
+    const cartProduct = this.state.added.find((item) => {
+      return item.id === productId;
+    }) || null;
+    if (!cartProduct) return null;
+    return {
+      id: cartProduct.id,
+      title: product.title,
+      price: product.price,
+      quantity: cartProduct.quantity,
+    };
+  }
+
+  addProductToCart(productId: number): void {
+    const product = this.getProductById(productId);
     this.state.checkoutStatus = CheckoutStatus.None;
     if (product.inventory > 0) {
       const cartItem = this.state.added.find((item) => item.id === product.id);
@@ -80,7 +94,7 @@ class CartStoreImpl extends BaseStore<CartState> implements CartStore {
     // カートを空にする
     this.state.added = [];
 
-    return shopApi.buyProducts(products).then(() => {
+    return this.$apis.shop.buyProducts(products).then(() => {
       this.state.checkoutStatus = CheckoutStatus.Successful;
     }).catch((err) => {
       this.state.checkoutStatus = CheckoutStatus.Failed;
@@ -107,6 +121,14 @@ class CartStoreImpl extends BaseStore<CartState> implements CartStore {
     if (cartItem) {
       cartItem.quantity++;
     }
+  }
+
+  private getProductById(productId: number): Product {
+    const result = this.$stores.product.getProductById(productId);
+    if (!result) {
+      throw new Error(`A Product that matches the specified productId \`${productId}\` was not found.`);
+    }
+    return result;
   }
 
 }
