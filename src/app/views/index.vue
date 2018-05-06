@@ -83,7 +83,8 @@
       },
     ];
 
-    private created() {
+    created() {
+      super.created();
       sw.addStateChangeListener(this.swOnStateChange);
     }
 

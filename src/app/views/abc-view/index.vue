@@ -143,7 +143,8 @@
     //  lifecycle hooks
     //--------------------------------------------------
 
-    private mounted() {
+    mounted() {
+      super.mounted();
       this.message = 'mounted';
     }
 

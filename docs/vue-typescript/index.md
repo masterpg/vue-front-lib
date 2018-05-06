@@ -268,12 +268,14 @@ export default class ExampleView extends VueComponent {
 
 ## Lifecycle hooks
 
-Vueには`created`、`mounted`、`updated`、…といったライフサイクルがあり、これらのサイクルをフックできます。フックするにはこれらの名前のメソッドを定義します。
+Vueには`created`、`mounted`、`updated`、…といったライフサイクルがあり、これらのサイクルをフックできます。フックするにはこれらの名前のメソッドを定義します。この際、**必ずスーパークラスクラスのライフサイクルメソッドを呼び出すようにしてください**。
 
 ```ts
 @Component()
 export default class ExampleView extends VueComponent {
-  private created() {
+  created() {
+    // 必ずスーパークラスのライフサイクルメソッドを呼び出すこと
+    supre.created();
     …
   }
 }

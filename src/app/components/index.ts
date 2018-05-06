@@ -17,6 +17,22 @@ export class VueComponent extends Vue {
   protected get sp() {
     return this.$vuetify.breakpoint.name === 'xs';
   }
+
+  beforeCreated() {}
+
+  created() {}
+
+  beforeMount() {}
+
+  mounted() {}
+
+  beforeUpdate() {}
+
+  updated() {}
+
+  beforeDestroy() {}
+
+  destroyed() {}
 }
 
 /**
