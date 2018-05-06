@@ -8,3 +8,4 @@
     * [Colors](styling/colors/index.md)
     * [Spacing](styling/spacing/index.md)
     * [Typography](styling/typography/index.md)
+    * [Component](styling/component/index.md)
