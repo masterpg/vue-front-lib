@@ -28,7 +28,8 @@ module.exports = merge(baseConfig, {
   mode: 'production',
 
   entry: {
-    'index': path.resolve(__dirname, '../src/app/index.ts'),
+    // `babel-polyfill`はIE11対応
+    'index': ['babel-polyfill', path.resolve(__dirname, '../src/app/index.ts')],
   },
 
   output: {

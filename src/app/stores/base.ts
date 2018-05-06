@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import { Apis } from '../apis/types';
-import { clone, cloneDeep } from 'lodash';
+import clone from 'lodash/clone';
+import cloneDeep from 'lodash/cloneDeep';
 
 export abstract class BaseStore<S> extends Vue {
 

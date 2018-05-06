@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import cssVarPoly from './css-var-polyfill';
 
 /**
  * Vueコンポーネントの基底クラスです。
@@ -24,7 +25,9 @@ export class VueComponent extends Vue {
 
   beforeMount() {}
 
-  mounted() {}
+  mounted() {
+    cssVarPoly.init();
+  }
 
   beforeUpdate() {}
 
