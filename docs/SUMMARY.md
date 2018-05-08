@@ -9,3 +9,4 @@
     * [Spacing](styling/spacing/index.md)
     * [Typography](styling/typography/index.md)
     * [Component](styling/component/index.md)
+    * [Flexible Layout](styling/flexible-layout/index.md)
