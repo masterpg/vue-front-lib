@@ -148,9 +148,9 @@ Horizontalと同様にVerticalでもエレメントのサイズが柔軟に変�
 
 ```html
 <div class="layout vertical" style="height: 250px;">
-  <div>Alpha</div>
-  <div class="flex">Beta (flex)</div>
-  <div>Gamma</div>
+  <div>One</div>
+  <div class="flex">Two (flex)</div>
+  <div>Three</div>
 </div>
 ```
 
@@ -170,9 +170,9 @@ Horizontalと同様にVerticalでもエレメントのサイズが柔軟に変�
 
 ```html
 <div class="layout horizontal">
-  <div class="flex-2">Alpha</div>
-  <div class="flex">Beta</div>
-  <div class="flex-3">Gamma</div>
+  <div class="flex-2">One</div>
+  <div class="flex">Two</div>
+  <div class="flex-3">Three</div>
 </div>
 ```
 
