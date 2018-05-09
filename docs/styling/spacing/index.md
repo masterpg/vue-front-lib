@@ -37,17 +37,17 @@ Vutifyが定義した0〜5の範囲のサイズで要素にマージンまたは
 
 ## CSSクラス指定例
 
-`padding-top`にサイズ`1`を指定
+上部にサイズ`1`のパディングを指定
 ```html
 <div class="pt-1">hello</div>
 ```
 
-`margin-left`と`margin-right`にサイズ`3`を指定
+左右にサイズ`3`のマージンを指定
 ```html
 <div class="mx-3">hello</div>
 ```
 
-`margin`の全方向(`top`, `right`, `bottom`, `left`)にサイズ`5`を指定
+全方向(`top`, `right`, `bottom`, `left`)にサイズ`5`のマージンを指定
 ```html
 <div class="ma-5">hello</div>
 ```

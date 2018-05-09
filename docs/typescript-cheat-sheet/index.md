@@ -7,29 +7,29 @@ const myString: string;
 const myNumber: number;
 const myWhatever: any;
 
-// この型はxとyのnumber型をもつオブジェクトリテラルです。
+// この型は`x`と`y`の`number`型をもつオブジェクトリテラルです。
 const myComplexObject: { x: number, y: number } = { x: 0, y: 0 };
 
-// (rad: number) => number はこれ自体が型で、この型の変数がrad2degです。
-// rad2degにはこの型に合致した関数の実装が設定されています。
+// (rad: number) => number はこれ自体が型で、この型の変数が`rad2deg`です。
+// `rad2deg`にはこの型に合致した関数の実装が設定されています。
 const rad2deg: (rad: number) => number = (radians) => {
   return radians * (180 / Math.PI);
 };
 
 // () => void はこれ自体が型で、この型の変数がnopです。
-// nopにはこの型に合致した何もしない関数が設定されています。
+// `nop`にはこの型に合致した何もしない関数が設定されています。
 const nop: () => void = () => {};
 
-// number型の配列です。
+// `number`型の配列です。
 const myNumberArray: number[] = [0, 1, 2, 3];
 
-// この配列には上記で定義したmyComplexObjectの型と同じ型のオブジェクトが格納されなければなりません。
+// この配列には上記で定義した`myComplexObject`の型と同じ型のオブジェクトが格納されなければなりません。
 const myAnonymousComplexArray: Array<typeof myComplexObject> = [
   myComplexObject,
   { x: 0, y: 0 },
 ];
 
-// number型配列の配列です。
+// `number`型配列の配列です。
 const myNestedNumberArray: number[][] = [
   [1, 2, 3],
   [0, 1, 2],

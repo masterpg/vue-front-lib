@@ -178,9 +178,9 @@ Horizontalと同様にVerticalでもエレメントのサイズが柔軟に変�
 
 ![](./images/horizontal-flex-ratio.png)
 
----
-
 <br>
+
+---
 
 ここではコンテナに子エレメントをフィットさせています。フィットさせるためには以下の性質を利用します:
 
@@ -214,9 +214,9 @@ Horizontalと同様にVerticalでもエレメントのサイズが柔軟に変�
 
 ![](./images/horizontal-start.png)
 
----
-
 <br>
+
+---
 
 次のサンプルでは、Cross-axis (Vertical) のcenter位置にエレメントを配置しています:
 
@@ -229,9 +229,9 @@ Horizontalと同様にVerticalでもエレメントのサイズが柔軟に変�
 
 ![](./images/horizontal-center.png)
 
----
-
 <br>
+
+---
 
 次のサンプルでは、Cross-axis (Vertical) のend位置にエレメントを配置しています:
 
@@ -244,9 +244,9 @@ Horizontalと同様にVerticalでもエレメントのサイズが柔軟に変�
 
 ![](./images/horizontal-end.png)
 
----
-
 <br>
+
+---
 
 次のサンプルでは、上下左右中央にエレメントを配置しています:
 
@@ -279,9 +279,9 @@ Horizontalと同様にVerticalでもエレメントのサイズが柔軟に変�
 
 ![](./images/horizontal-start-justified.png)
 
----
-
 <br>
+
+---
 
 次のサンプルでは、Main-axis (Horizontal) のcenter位置に子エレメントを配置しています:
 
@@ -293,9 +293,9 @@ Horizontalと同様にVerticalでもエレメントのサイズが柔軟に変�
 
 ![](./images/horizontal-center-justified.png)
 
----
-
 <br>
+
+---
 
 次のサンプルでは、Main-axis (Horizontal) のend位置に子エレメントを配置しています:
 
@@ -307,9 +307,9 @@ Horizontalと同様にVerticalでもエレメントのサイズが柔軟に変�
 
 ![](./images/horizontal-end-justified.png)
 
----
-
 <br>
+
+---
 
 次のサンプルでは、Main-axis (Horizontal) のエレメントとエレメント間のスペースが均等になります:
 
@@ -323,9 +323,9 @@ Horizontalと同様にVerticalでもエレメントのサイズが柔軟に変�
 
 ![](./images/horizontal-justified.png)
 
----
-
 <br>
+
+---
 
 次のサンプルでは、Main-axis (Horizontal) のエレメントの周りのスペースが均等になります:
 

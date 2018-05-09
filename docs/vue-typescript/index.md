@@ -43,6 +43,8 @@ TypeScriptでインスタンス変数を定義すると、その変数はHTMLで
 
 注意点として、インスタンス変数は必ず定義時に初期化してください。初期化しないとバインディングが機能しません。
 
+次はバインディングが機能しない例です。
+
 ```ts
 @Component
 export default class ExampleView extends VueComponent {
@@ -59,7 +61,7 @@ export default class ExampleView extends VueComponent {
 ```ts
 @Component
 export default class BlogPost extends VueComponent {
-  // TypeScriptの変数名はキャメルケース
+  // 変数名はキャメルケース
   @Prop()
   postTitle: string;
 }
@@ -268,7 +270,7 @@ export default class ExampleView extends VueComponent {
 
 ## Lifecycle hooks
 
-Vueには`created`、`mounted`、`updated`、…といったライフサイクルがあり、これらのサイクルをフックできます。フックするにはこれらの名前のメソッドを定義します。この際、**必ずスーパークラスクラスのライフサイクルメソッドを呼び出すようにしてください**。
+Vueには`created`、`mounted`、`updated`、…といったライフサイクルがあり、これらのサイクルをフックできます。フックするにはこれらの名前のメソッドを定義します。この際、**必ずスーパークラスのライフサイクルメソッドを呼び出すようにしてください**。
 
 ```ts
 @Component()
