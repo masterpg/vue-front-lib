@@ -120,7 +120,7 @@ class ProductsStoreImpl extends BaseStore<ProductsState> implements ProductsStor
 
 ここでは`ProductsState`というStateを定義し、`BaseStore`のジェネリクスに指定しています。これにより`initState()`で初期化に必要なプロパティが足りなかったり、必要ないプロパティが指定された場合、コンパイラがこれらのエラーを知らせてくれます。
 
-StateはStoreからしかアスセスできません。StoreからStateへは`this.state`でアクセスできます。次はStateにアクセスしている例です。
+StateはStoreの内部からしかアスセスできません。StoreからStateへは`this.state`でアクセスできます。次はStateにアクセスしている例です。
 
 ```ts
 const allProducts = this.state.all;
