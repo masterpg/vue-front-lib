@@ -20,9 +20,9 @@
     @Model('change')
     checked: boolean = false;
 
-    checkboxOnChange(event: Event) {
-      // ■ コンポーネントでv-modelを使う
-      //    https://jp.vuejs.org/v2/guide/components.html#コンポーネントで-v-model-を使う
+    private checkboxOnChange(event: Event) {
+      // ■ v-modelを使ったコンポーネントのカスタマイズ
+      //    https://jp.vuejs.org/v2/guide/components-custom-events.html#v-model-を使ったコンポーネントのカスタマイズ
       // ・`value`というプロパティ名はv-modelで使用される特別な名前である。
       // ・`input`というイベントはv-modelで使用される特別なイベントである。
       // ・ただしチェックボックスやラジオボタンでは`value`を別の目的で使用するため、
