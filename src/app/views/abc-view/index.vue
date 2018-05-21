@@ -1,57 +1,64 @@
-<style lang="stylus" scoped>
-  @import '~vuetify/src/stylus/settings/_colors'
+<style lang="postcss" scoped>
   .greet-message {
-    --greet-message-color: $indigo.darken-1;
+    --greet-message-color: var(--paper-indigo-a200);
   }
 </style>
 
+
 <template>
-  <v-card class="pa-3" :class="{ 'ma-5': pc, 'ma-3': tab, 'ma-0': sp }">
-    <v-text-field
-      label="Input Message"
-      v-model="message"
-    ></v-text-field>
-    <p>propA: {{ propA }}</p>
-    <p>propB: {{ propB }}</p>
-    <p>message: {{ message }}</p>
-    <p>custom propA: {{ customPropA }}</p>
-    <p>reversed message: {{ reversedMessage }}</p>
-    <p>double reversed message: {{ doubleReversedMessage }}</p>
-    <div class="layout horizontal center">
-      <greet-message
-        ref="greetMessage"
-        :message="message"
-        class="greet-message mr-3"
-      ></greet-message>
-      <v-btn small @click="greetButtonOnClick">Greet</v-btn>
-    </div>
-    <div class="layout horizontal center">
-      <custom-input
-        v-model="customInputValue"
-        class="flex-3 mr-3"
-      ></custom-input>
-      <div class="flex-9">value: {{ customInputValue }}</div>
-    </div>
-    <div class="layout horizontal center">
-      <custom-checkbox
-        v-model="customChecked"
-        class="mr-3"
-      ></custom-checkbox>
-      <div class="flex-9">checked: {{ customChecked }}</div>
-    </div>
-    <div class="layout horizontal end-justified">
-      <v-btn small @click="postButtonOnClick">Post</v-btn>
-      <v-btn small @click="sleepButtonOnClick">Sleep</v-btn>
-    </div>
-  </v-card>
+  <div class="layout vertical">
+    <paper-card class="pa-3" :class="{ 'ma-5': pc, 'ma-3': tab, 'ma-0': sp }">
+      <paper-input
+        label="Input Message"
+        :value="message" @input="message = $event.target.value"
+      ></paper-input>
+      <p>propA: {{ propA }}</p>
+      <p>propB: {{ propB }}</p>
+      <p>message: {{ message }}</p>
+      <p>custom propA: {{ customPropA }}</p>
+      <p>reversed message: {{ reversedMessage }}</p>
+      <p>double reversed message: {{ doubleReversedMessage }}</p>
+      <div class="layout horizontal center">
+        <greet-message
+          ref="greetMessage"
+          :message="message"
+          class="greet-message mr-3"
+        ></greet-message>
+        <button @click="greetButtonOnClick">Greet</button>
+      </div>
+      <div class="layout horizontal">
+        <custom-input
+          v-model="customInputValue"
+          class="flex-3 mr-3"
+        ></custom-input>
+        <div class="flex-9 mt-7">value: {{ customInputValue }}</div>
+      </div>
+      <div class="layout horizontal center">
+        <custom-checkbox
+          v-model="customChecked"
+          class="mr-3"
+        ></custom-checkbox>
+        <div class="flex-9">checked: {{ customChecked }}</div>
+      </div>
+      <div class="layout horizontal end-justified">
+        <paper-button raised @click="postButtonOnClick">Post</paper-button>
+        <paper-button raised @click="sleepButtonOnClick">Sleep</paper-button>
+      </div>
+    </paper-card>
+  </div>
 </template>
 
+
 <script lang="ts">
-  import GreetMessage from './greet-message.vue';
+  import '@polymer/paper-button/paper-button';
+  import '@polymer/paper-card/paper-card';
+  import '@polymer/paper-input/paper-input';
   import CustomCheckbox from './custom-checkbox.vue';
   import CustomInput from './custom-input.vue';
+  import GreetMessage from './greet-message.vue';
   import { Component, Prop, Watch } from 'vue-property-decorator';
-  import { VueComponent } from '../../components';
+  import { ElementComponent } from '../../components';
+  import { mixins } from 'vue-class-component';
 
   interface Post {
     title: string;
@@ -65,7 +72,7 @@
       'custom-input': CustomInput,
     },
   })
-  export default class AbcView extends VueComponent {
+  export default class AbcView extends mixins(ElementComponent) {
 
     //--------------------------------------------------
     //  props
@@ -144,7 +151,6 @@
     //--------------------------------------------------
 
     mounted() {
-      super.mounted();
       this.message = 'mounted';
     }
 

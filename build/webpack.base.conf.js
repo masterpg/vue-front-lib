@@ -47,15 +47,31 @@ module.exports = {
           loaders: {
             ts: 'ts-loader!tslint-loader'
           },
+          postcss: {
+            config: {
+              path: path.resolve(__dirname, 'postcss.config.js'),
+            },
+          },
         },
       },
       {
         test: /\.css$/,
-        loader: 'style-loader!css-loader',
+        use: [
+          'vue-style-loader',
+          { loader: 'css-loader', options: { importLoaders: 1 } },
+          {
+            loader: 'postcss-loader',
+            options: {
+              config: {
+                path: path.resolve(__dirname, 'postcss.config.js'),
+              },
+            },
+          },
+        ]
       },
       {
         test: /\.styl$/,
-        loader: ['style-loader', 'css-loader', 'stylus-loader'],
+        loader: ['vue-style-loader', 'css-loader', 'stylus-loader'],
       },
     ],
   },
@@ -63,12 +79,15 @@ module.exports = {
   plugins: [
     // `to: xxx`の`xxx`は`output.path`が基準になる
     new CopyWebpackPlugin([
+      { from: path.resolve(__dirname, '../src/manifest.json') },
       {
-        from: path.resolve(__dirname, '../src/manifest.json'),
-      }, {
         from: path.resolve(__dirname, '../src/assets/images'),
-        to: 'assets/images',
-      }
+        to: 'assets/images'
+      },
+      {
+        from: path.resolve(__dirname, '../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js'),
+        to: 'node_modules/@webcomponents/webcomponentsjs'
+      },
     ]),
 
     new ImageminPlugin({

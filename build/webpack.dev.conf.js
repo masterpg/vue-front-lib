@@ -24,9 +24,8 @@ module.exports = merge(baseConfig, {
   mode: 'development',
 
   entry: {
-    // `babel-polyfill`はIE11対応
-    'index': ['babel-polyfill', path.resolve(__dirname, '../src/app/index.ts')],
-    'test': ['babel-polyfill', path.resolve(__dirname, '../test/app/index.ts')],
+    'index': path.resolve(__dirname, '../src/app/index.ts'),
+    'test': path.resolve(__dirname, '../test/app/index.ts'),
   },
 
   output: {
@@ -73,14 +72,14 @@ module.exports = merge(baseConfig, {
       template: './src/index.html',
       inject: false,
       basePath: BASE_PATH,
-      bundledScript: '<script type="text/javascript" src="index.bundle.js"></script>',
+      bundledScript: 'index.bundle.js',
     }),
 
     new HtmlWebpackPlugin({
       filename: 'test.html', // パスは`output.path`を基準
       template: './test/test.html',
       inject: false,
-      bundledScript: '<script type="text/javascript" src="test.bundle.js"></script>',
+      bundledScript: 'test.bundle.js',
     }),
 
     // `to: xxx`の`xxx`は`output.path`が基準になる

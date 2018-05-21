@@ -1,77 +1,117 @@
+<style lang="postcss" scoped>
+</style>
+
+
 <template>
-  <div
-    class="layout vertical"
-    :class="{ 'ma-5': pc, 'ma-3': tab, 'ma-0': sp }"
-  >
+  <div class="layout vertical" :class="{ 'ma-5': pc, 'ma-3': tab, 'ma-0': sp }">
 
-    <v-card class="flex">
-      <v-list two-line>
-        <v-list-tile>
-          <v-list-tile-content>
-            <v-list-tile-sub-title>Products</v-list-tile-sub-title>
-          </v-list-tile-content>
-          <v-list-tile-action>
-            <v-btn icon ripple @click="openCartModal()">
-              <v-icon color="grey lighten-1">mdi-cart-outline</v-icon>
-            </v-btn>
-          </v-list-tile-action>
-        </v-list-tile>
-        <v-divider></v-divider>
-        <template v-for="(product, index) in products">
-          <v-list-tile>
-            <v-list-tile-content>
-              <v-list-tile-title v-html="product.title"></v-list-tile-title>
-              <v-list-tile-sub-title>
-                <span class="text--primary">Price</span> &mdash; {{ product.price | currency }},&nbsp;
-                <span class="text--primary">Stock</span> &mdash; {{ product.inventory }}
-              </v-list-tile-sub-title>
-            </v-list-tile-content>
-            <v-list-tile-action>
-              <v-btn icon ripple @click="addProductToCart(product)">
-                <v-icon color="grey lighten-1">add</v-icon>
-              </v-btn>
-            </v-list-tile-action>
-          </v-list-tile>
-        </template>
-      </v-list>
-    </v-card>
+    <div>
+      <div class="layout horizontal center">
+        <div>Products</div>
+      </div>
+      <hr style="width: 100%;">
+      <div v-for="(product, index) in products" class="layout horizontal center my-3">
+        <div class="layout vertical center-justified">
+          <div>{{ product.title }}</div>
+          <div>
+            <span>Price</span> &mdash; {{ product.price | currency }},&nbsp;
+            <span>Stock</span> &mdash; {{ product.inventory }}
+          </div>
+        </div>
+        <div class="flex"></div>
+        <paper-icon-button icon="icons:add-box" @click="addProductToCart(product)"></paper-icon-button>
+      </div>
+    </div>
 
-    <cart-modal ref="cartModal"></cart-modal>
+    <div class="mt-5">
+      <div class="layout horizontal center">
+        <div>Your Cart</div>
+        <div class="flex"></div>
+        <paper-icon-button v-show="!cartIsEmpty" icon="icons:check" @click="checkout"></paper-icon-button>
+      </div>
+      <hr style="width: 100%;">
+      <div v-for="(product, index) in cartProducts" class="layout horizontal center my-3">
+        <div class="layout vertical center-justified">
+          <div>{{ product.title }}</div>
+          <div>
+            <span>Price</span> &mdash; {{ product.price | currency }} x {{ product.quantity }}
+          </div>
+        </div>
+      </div>
+      <hr v-show="!cartIsEmpty" style="width: 100%;">
+      <div v-show="!checkoutStatus.result">{{ checkoutStatus.message }}</div>
+    </div>
 
   </div>
 </template>
 
+
 <script lang="ts">
-  import CartModal from './cart-modal.vue';
+  import '@polymer/paper-button/paper-button';
+  import '@polymer/paper-card/paper-card';
+  import '@polymer/paper-icon-button/paper-icon-button';
+  import { CartProduct, CheckoutStatus, Product } from '../../stores/types';
   import { Component } from 'vue-property-decorator';
-  import { Product } from '../../stores/types';
-  import { VueComponent } from '../../components';
+  import { ElementComponent } from '../../components';
+  import { mixins } from 'vue-class-component';
 
-  @Component({
-    components: {
-      'cart-modal': CartModal,
-    },
-  })
-  export default class ShoppingView extends VueComponent {
-    created() {
-      super.created();
-      this.$stores.product.getAllProducts();
-    }
+  @Component
+  export default class ShoppingView extends mixins(ElementComponent) {
 
-    private get cartModal(): CartModal {
-      return this.$refs.cartModal as CartModal;
+    //----------------------------------------------------------------------
+    //
+    //  Variables
+    //
+    //----------------------------------------------------------------------
+
+    private get cartIsEmpty(): boolean {
+      return this.cartProducts.length === 0;
     }
 
     private get products(): Product[] {
       return this.$stores.product.allProducts;
     }
 
+    private get cartProducts(): CartProduct[] {
+      return this.$stores.cart.cartProducts;
+    }
+
+    private get cartTotalPrice(): number {
+      return this.$stores.cart.cartTotalPrice;
+    }
+
+    private get checkoutStatus(): { result: boolean, message: string } {
+      const result =
+        this.$stores.cart.checkoutStatus === CheckoutStatus.None ||
+        this.$stores.cart.checkoutStatus === CheckoutStatus.Successful;
+      return {
+        result,
+        message: result ? '' : 'Checkout failed.',
+      };
+    }
+
+    //----------------------------------------------------------------------
+    //
+    //  Lifecycle hooks
+    //
+    //----------------------------------------------------------------------
+
+    created() {
+      this.$stores.product.getAllProducts();
+    }
+
+    //----------------------------------------------------------------------
+    //
+    //  Internal methods
+    //
+    //----------------------------------------------------------------------
+
     private addProductToCart(product: Product): void {
       this.$stores.cart.addProductToCart(product.id);
     }
 
-    private openCartModal(): void {
-      this.cartModal.show();
+    private async checkout(): Promise<void> {
+      await this.$stores.cart.checkout(this.cartProducts);
     }
   }
 </script>

@@ -87,27 +87,34 @@ suite('store/cart-store', () => {
   });
 
   test('checkout() - 一般ケース', async () => {
+    const ADDED = [
+      { id: 1, quantity: 1 },
+      { id: 2, quantity: 1 },
+    ];
     const buyProducts = td.replace(shopApi, 'buyProducts');
-    td.when(shopApi.buyProducts(PRODUCTS)).thenResolve();
+    td.when(shopApi.buyProducts(ADDED)).thenResolve();
 
-    await cartStore.checkout(PRODUCTS);
+    await cartStore.checkout(ADDED);
     assert.equal(cartStore.state.checkoutStatus, CheckoutStatus.Successful);
     assert.deepEqual(cartStore.state.added, []);
 
     // `ShopApi#buyProducts()`の呼び出し回数と渡された引数を検証
     const buyProductsExplain = td.explain(buyProducts);
     assert.equal(buyProductsExplain.callCount, 1);
-    assert.deepEqual(buyProductsExplain.calls[0].args[0], PRODUCTS);
+    assert.deepEqual(buyProductsExplain.calls[0].args[0], ADDED);
   });
 
   test('checkout() - エラーケース', async () => {
-    const ADDED = [{ id: 1, quantity: 1 }];
+    const ADDED = [
+      { id: 1, quantity: 1 },
+      { id: 2, quantity: 1 },
+    ];
     cartStore.state.added = ADDED;
 
     const buyProducts = td.replace(shopApi, 'buyProducts');
-    td.when(shopApi.buyProducts(PRODUCTS)).thenReject(new Error());
+    td.when(shopApi.buyProducts(ADDED)).thenReject(new Error());
 
-    await cartStore.checkout(PRODUCTS);
+    await cartStore.checkout(ADDED);
     assert.equal(cartStore.state.checkoutStatus, CheckoutStatus.Failed);
     assert.deepEqual(cartStore.state.added, ADDED);
   });

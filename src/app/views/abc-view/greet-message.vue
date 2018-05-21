@@ -10,10 +10,10 @@
 
 <script lang="ts">
   import { Component, Prop } from 'vue-property-decorator';
-  import { VueComponent } from '../../components';
+  import { ElementComponent } from '../../components';
 
   @Component
-  export default class GreetMessage extends VueComponent {
+  export default class GreetMessage extends ElementComponent {
     @Prop()
     message: string;
 

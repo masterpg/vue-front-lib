@@ -88,7 +88,7 @@ class CartStoreImpl extends BaseStore<CartState> implements CartStore {
     }
   }
 
-  checkout(products: Product[]): Promise<void> {
+  checkout(products: Array<{ id: number, quantity: number }>): Promise<void> {
     const savedCartItems = [...this.state.added];
     this.state.checkoutStatus = CheckoutStatus.None;
     // カートを空にする

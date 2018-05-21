@@ -16,7 +16,7 @@ class ShopApiImpl extends BaseApi implements ShopApi {
     });
   }
 
-  buyProducts(products: Product[]): Promise<void> {
+  buyProducts(products: Array<{ id: number, quantity: number }>): Promise<void> {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         // simulate random checkout failure.

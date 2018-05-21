@@ -1,4 +1,4 @@
-<style lang="stylus" scoped>
+<style lang="postcss" scoped>
 </style>
 
 <template>
@@ -13,10 +13,11 @@
 
 <script lang="ts">
   import { Component, Model } from 'vue-property-decorator';
-  import { VueComponent } from '../../components';
+  import { ElementComponent } from '../../components';
+  import { mixins } from 'vue-class-component';
 
   @Component
-  export default class CustomCheckbox extends VueComponent {
+  export default class CustomCheckbox extends mixins(ElementComponent) {
     @Model('change')
     checked: boolean = false;
 

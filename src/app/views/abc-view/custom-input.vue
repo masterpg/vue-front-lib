@@ -1,20 +1,22 @@
-<style lang="stylus" scoped>
+<style lang="postcss" scoped>
 </style>
 
 <template>
   <div>
-    <v-text-field
-      @input.native="textFieldOnChange"
-    ></v-text-field>
+    <paper-input
+      @input="textFieldOnChange"
+    ></paper-input>
   </div>
 </template>
 
 <script lang="ts">
+  import '@polymer/paper-input/paper-input';
   import { Component, Prop } from 'vue-property-decorator';
-  import { VueComponent } from '../../components';
+  import { ElementComponent } from '../../components';
+  import { mixins } from 'vue-class-component';
 
   @Component
-  export default class CustomInput extends VueComponent {
+  export default class CustomInput extends mixins(ElementComponent) {
     @Prop({ default: '' })
     value: string;
 
@@ -25,8 +27,8 @@
       // ・`input`というイベントはv-modelで使用される特別なイベントである。
       // ・`value`プロパティの値は直接変更できない。例: this.value = 'hoge';
       // ・`value`プロパティの値を変更するには`input`イベントに新しい値を設定してイベントを発火する必要がある。
-      const inputEl = event.target as HTMLInputElement;
-      this.$emit('input', inputEl.value);
+      const value = (event.target as any).value;
+      this.$emit('input', value);
     }
   }
 </script>
