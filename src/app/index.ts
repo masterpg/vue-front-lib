@@ -1,4 +1,5 @@
-import '../assets/styles/main';
+import '../assets/styles/main.styl';
+import '../assets/styles/custom-style';
 import * as apis from './apis';
 import * as stores from './stores';
 import * as sw from './service-worker';

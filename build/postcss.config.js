@@ -1,8 +1,9 @@
 module.exports = {
   plugins: {
-    'postcss-import': {},
     'postcss-cssnext': {},
-    'postcss-nesting': {},
+    'postcss-extend': {},
+    'postcss-import': {},
     'postcss-media-variables': {},
+    'postcss-nesting': {},
   }
 };

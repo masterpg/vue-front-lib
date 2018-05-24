@@ -24,6 +24,7 @@
     "mocha": "^5.0.1",
     "node-sass": "^4.8.3",
     "postcss-cssnext": "^3.1.0",
+    "postcss-extend": "^1.0.5",
     "postcss-import": "^11.1.0",
     "postcss-loader": "^2.1.5",
     "postcss-media-variables": "^2.0.1",

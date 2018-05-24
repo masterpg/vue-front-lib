@@ -1,4 +1,4 @@
-<style lang="postcss" scoped>
+<style lang="stylus" scoped>
   app-drawer-layout {
     --app-drawer-width: 350px;
     &:not([narrow]) [drawer-toggle] {
@@ -15,17 +15,17 @@
   }
 
   .drawer-list {
-    margin: var(--spacer-3) 0;
-    & .item {
+    margin: var(--app-spacer-3) 0;
+    .item {
       display: block;
-      padding: 0 var(--spacer-3);
+      padding: 0 var(--app-spacer-3);
       text-decoration: none;
-      color: var(--link-color);
+      color: var(--app-link-color);
       line-height: 50px;
     }
 
-    & .item.router-link-active {
-      color: var(--primary-text-color);
+    .item.router-link-active {
+      color: var(--app-primary-text-color);
       font-weight: bold;
     }
   }
@@ -40,8 +40,8 @@
     -->
     <app-drawer ref="drawer" slot="drawer" :swipe-open="narrow">
       <app-toolbar class="drawer-toolbar">
-        <iron-icon src="assets/images/manifest/icon-48x48.png" class="mr-2"></iron-icon>
-        <div main-title>Vue WWW Base</div>
+        <iron-icon src="assets/images/manifest/icon-48x48.png"></iron-icon>
+        <div main-title class="app-ml-2">Vue WWW Base</div>
       </app-toolbar>
       <div class="drawer-list">
         <template v-for="item in items">

@@ -1,4 +1,4 @@
-<style lang="postcss" scoped>
+<style lang="stylus" scoped>
   .greet-message {
     --greet-message-color: var(--paper-indigo-a200);
   }
@@ -7,7 +7,7 @@
 
 <template>
   <div class="layout vertical">
-    <paper-card class="pa-3" :class="{ 'ma-5': pc, 'ma-3': tab, 'ma-0': sp }">
+    <paper-card class="app-pa-3" :class="{ 'app-ma-12': pc, 'app-ma-6': tab, 'app-ma-3': sp }">
       <paper-input
         label="Input Message"
         :value="message" @input="message = $event.target.value"
@@ -22,23 +22,22 @@
         <greet-message
           ref="greetMessage"
           :message="message"
-          class="greet-message mr-3"
+          class="greet-message"
         ></greet-message>
-        <button @click="greetButtonOnClick">Greet</button>
+        <button class="app-ml-3" @click="greetButtonOnClick">Greet</button>
       </div>
       <div class="layout horizontal">
         <custom-input
           v-model="customInputValue"
-          class="flex-3 mr-3"
+          class="flex-3"
         ></custom-input>
-        <div class="flex-9 mt-7">value: {{ customInputValue }}</div>
+        <div class="flex-9 app-ml-3 app-mt-7">value: {{ customInputValue }}</div>
       </div>
       <div class="layout horizontal center">
         <custom-checkbox
           v-model="customChecked"
-          class="mr-3"
         ></custom-checkbox>
-        <div class="flex-9">checked: {{ customChecked }}</div>
+        <div class="flex-9 app-ml-3">checked: {{ customChecked }}</div>
       </div>
       <div class="layout horizontal end-justified">
         <paper-button raised @click="postButtonOnClick">Post</paper-button>
