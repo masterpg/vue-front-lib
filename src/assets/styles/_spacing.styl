@@ -8,65 +8,65 @@ for $i in (0..12) {
 $i = 0
 for $app-spacer-size in $app-spacer-size-list {
   .app-mt-{$i} {
-    margin-top: $app-spacer-size !important
+    margin-top: $app-spacer-size !important;
   }
   .app-mr-{$i} {
-    margin-right: $app-spacer-size !important
+    margin-right: $app-spacer-size !important;
   }
   .app-mb-{$i} {
-    margin-bottom: $app-spacer-size !important
+    margin-bottom: $app-spacer-size !important;
   }
   .app-ml-{$i} {
     margin-left: $app-spacer-size !important
   }
   .app-mx-{$i} {
-    margin-left: $app-spacer-size !important
-    margin-right: $app-spacer-size !important
+    margin-left: $app-spacer-size !important;
+    margin-right: $app-spacer-size !important;
   }
   .app-my-{$i} {
-    margin-top: $app-spacer-size !important
-    margin-bottom: $app-spacer-size !important
+    margin-top: $app-spacer-size !important;
+    margin-bottom: $app-spacer-size !important;
   }
   .app-ma-{$i} {
-    margin: $app-spacer-size $app-spacer-size !important
+    margin: $app-spacer-size $app-spacer-size !important;
   }
 
   .app-pt-{$i} {
-    padding-top: $app-spacer-size !important
+    padding-top: $app-spacer-size !important;
   }
   .app-pr-{$i} {
-    padding-right: $app-spacer-size !important
+    padding-right: $app-spacer-size !important;
   }
   .app-pb-{$i} {
-    padding-bottom: $app-spacer-size !important
+    padding-bottom: $app-spacer-size !important;
   }
   .app-pl-{$i} {
-    padding-left: $app-spacer-size !important
+    padding-left: $app-spacer-size !important;
   }
   .app-px-{$i} {
-    padding-left: $app-spacer-size !important
-    padding-right: $app-spacer-size !important
+    padding-left: $app-spacer-size !important;
+    padding-right: $app-spacer-size !important;
   }
   .app-py-{$i} {
-    padding-top: $app-spacer-size !important
-    padding-bottom: $app-spacer-size !important
+    padding-top: $app-spacer-size !important;
+    padding-bottom: $app-spacer-size !important;
   }
   .app-pa-{$i} {
-    padding: $app-spacer-size $app-spacer-size !important
+    padding: $app-spacer-size $app-spacer-size !important;
   }
 
   $i = $i + 1
 }
 
 .app-mx-auto {
-  margin-left: auto !important
-  margin-right: auto !important
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 :root {
   $i = 0
   for $app-spacer-size in $app-spacer-size-list {
-    --app-spacer-{$i}: $app-spacer-size
+    --app-spacer-{$i}: $app-spacer-size;
     $i = $i + 1
   }
 }
