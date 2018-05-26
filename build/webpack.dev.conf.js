@@ -45,6 +45,28 @@ module.exports = merge(baseConfig, {
     port: 5000,
     host: '0.0.0.0',
     disableHostCheck: true,
+    overlay: true,
+    // statsの設定は以下URLを参照:
+    // https://webpack.js.org/configuration/stats/
+    // https://github.com/webpack/webpack/blob/5b5775f9e2fc73fea46629f2d6a3ed7a1f8424d3/lib/Stats.js#L696-L730
+    // stats: 'minimal',
+    stats:  {
+      assets: false,
+      children: false,
+      chunks: false,
+      entrypoints: false,
+      hash: false,
+      moduleTrace: false,
+      modules: false,
+      publicPath: false,
+      reasons: false,
+      source: false,
+      timings: false,
+      version: false,
+      errors: true,
+      errorDetails: true,
+      warnings: true,
+    },
     // historyApiFallbackの設定は以下URLを参照:
     // https://github.com/webpack/docs/wiki/webpack-dev-server#the-historyapifallback-option
     historyApiFallback: {

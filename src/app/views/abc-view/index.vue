@@ -40,7 +40,6 @@
         <div class="flex-9 app-ml-3">checked: {{ customChecked }}</div>
       </div>
       <div class="layout horizontal end-justified">
-        <div class="app-shadow-elevation-2dp" style="width: 100px; height: 50px;"></div>
         <paper-button raised @click="postButtonOnClick">Post</paper-button>
         <paper-button raised @click="sleepButtonOnClick">Sleep</paper-button>
       </div>
