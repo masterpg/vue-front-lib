@@ -1,8 +1,9 @@
 # Spacing
 
-Vutifyが定義した0〜5の範囲のサイズで要素にマージンまたはパディングを設定することができます。各サイズは一般的なMaterial Designの間隔に合わせて設計されています。
 
 ## CSSクラス
+
+本プロジェクトで定義した0〜12の範囲のサイズで要素にマージンまたはパディングを設定することができます。
 
 **margin**または**padding**は`{property}{direction}-{size}`のフォーマットにしたがったクラスを指定することで設定できます。
 
@@ -25,17 +26,22 @@ Vutifyが定義した0〜5の範囲のサイズで要素にマージンまたは
 
 ### size
 
-以下Vuitifyが指定するStylusの変数`$spacer`を基準にサイズを規定しています。
+* `0` - `margin` or `padding` に `0px` を設定
+* `1` - `margin` or `padding` に `4px` を設定
+* `2` - `margin` or `padding` に `8px` を設定
+* `3` - `margin` or `padding` に `12px` を設定
+* `4` - `margin` or `padding` に `16px` を設定
+* `5` - `margin` or `padding` に `20px` を設定
+* `6` - `margin` or `padding` に `24px` を設定
+* `7` - `margin` or `padding` に `28px` を設定
+* `8` - `margin` or `padding` に `32px` を設定
+* `9` - `margin` or `padding` に `36px` を設定
+* `10` - `margin` or `padding` に `40px` を設定
+* `11` - `margin` or `padding` に `44px` を設定
+* `12` - `margin` or `padding` に `48px` を設定
 
-* `0` - `margin` or `padding` に `0` を設定
-* `1` - `margin` or `padding` に `$spacer * 0.25` を設定
-* `2` - `margin` or `padding` に `$spacer * 0.5` を設定
-* `3` - `margin` or `padding` に `$spacer` を設定
-* `4` - `margin` or `padding` に `$spacer * 1.5` を設定
-* `5` - `margin` or `padding` に `$spacer * 3` を設定
 
-
-## CSSクラス指定例
+### CSSクラス指定例
 
 上部にサイズ`1`のパディングを指定
 ```html
@@ -52,3 +58,35 @@ Vutifyが定義した0〜5の範囲のサイズで要素にマージンまたは
 <div class="ma-5">hello</div>
 ```
 
+
+## CSS変数
+
+プロジェクトで汎用的に利用可能なマージンとパディング用のCSS変数を次に示します。
+
+```css
+:root {
+  --app-spacer-0; 0px;
+  --app-spacer-1; 4px;
+  --app-spacer-2; 8px;
+  --app-spacer-3; 12px;
+  --app-spacer-4; 16px;
+  --app-spacer-5; 20px;
+  --app-spacer-6; 24px;
+  --app-spacer-7; 28px;
+  --app-spacer-8; 32px;
+  --app-spacer-9; 36px;
+  --app-spacer-10; 40px;
+  --app-spacer-11; 44px;
+  --app-spacer-12; 48px;
+}
+```
+
+次は上記CSS変数の使用例です。
+
+```html
+<style lang="stylus" scoped>
+  div {
+    margin: 0 var(--app-spacer-3);
+  }
+</style>
+```

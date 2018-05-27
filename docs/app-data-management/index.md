@@ -67,7 +67,7 @@ Vueのように複数のコンポーネントでアプリケーションの画�
 
 <script lang="ts">
 @Component
-export default class CartModal extends VueComponent {
+export default class CartModal extends mixins(ElementComponent) {
   …
   private get products(): CartProduct[] {
     return this.$stores.cart.cartProducts;
@@ -139,6 +139,8 @@ firstProduct.inventory--;
 Storeにgetterやメソッドを定義することで、利用者にアプリケーションデータを提供することができます。ただしgetterやメソッドが返すデータはアプリケーションデータの**コピーでなければなりません**。
 
 ```ts
+import { NoCache } from '../../components';
+
 @Component
 class ProductsStoreImpl extends BaseStore<ProductsState> implements ProductsStore {
   @NoCache

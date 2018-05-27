@@ -1,5 +1,8 @@
 # Vue + TypeScript
 
+本プロジェクトでは[vue-class-component](https://github.com/vuejs/vue-class-component)と[vue-property-decorator](https://github.com/kaorun343/vue-property-decorator)を利用しています。これらのライブラリを利用してVueをTypeScriptで記述することにより、JavaScriptにくらべて簡潔で綺麗にコーディングすることができます。
+
+
 ## Data
 
 TypeScriptでインスタンス変数を定義すると、その変数はHTMLでバインディング可能になります。
@@ -10,8 +13,10 @@ TypeScriptでインスタンス変数を定義すると、その変数はHTMLで
 </template>
 
 <script lang="ts">
+  import { Component } from 'vue-property-decorator';
+
   @Component
-  export default class ExampleView extends VueComponent {
+  export default class ExampleView extends mixins(ElementComponent) {
     private message: string = '';
   }
 </script>
@@ -27,8 +32,10 @@ TypeScriptでインスタンス変数を定義すると、その変数はHTMLで
 </template>
 
 <script lang="ts">
+  import { Component } from 'vue-property-decorator';
+
   @Component
-  export default class ExampleView extends VueComponent {
+  export default class ExampleView extends mixins(ElementComponent) {
     private post: Post = {
       title: '',
       message: '',
@@ -47,7 +54,7 @@ TypeScriptでインスタンス変数を定義すると、その変数はHTMLで
 
 ```ts
 @Component
-export default class ExampleView extends VueComponent {
+export default class ExampleView extends mixins(ElementComponent) {
   // 変数を初期化していないのでバインディングが機能しない
   private message: string;
 }
@@ -59,8 +66,10 @@ export default class ExampleView extends VueComponent {
 `@Prop`を指定した変数はHTML属性として外部に公開され、その属性を経由して外部から値を受け取ることができます。
 
 ```ts
+import { Component, Props } from 'vue-property-decorator';
+
 @Component
-export default class BlogPost extends VueComponent {
+export default class BlogPost extends mixins(ElementComponent) {
   // 変数名はキャメルケース
   @Prop()
   postTitle: string;
@@ -80,7 +89,10 @@ PropsはDataと同様にHTMLにもバインディング可能です。
 </template>
 
 <script lang="ts">
-  export default class BlogPost extends VueComponent {
+  import { Component, Props } from 'vue-property-decorator';
+
+  @Component
+  export default class BlogPost extends mixins(ElementComponent) {
     @Prop()
     postTitle: string;
   }
@@ -113,8 +125,10 @@ postTitle: string;
 </template>
 
 <script lang="ts">
+  import { Component } from 'vue-property-decorator';
+
   @Component()
-  export default class ExampleView extends VueComponent {
+  export default class ExampleView extends mixins(ElementComponent) {
     private message: string = '';
 
     // 算出プロパティ
@@ -142,8 +156,10 @@ private get doubleReversedMessage() {
 次はインスタンス変数の変更を監視しています。
 
 ```ts
+import { Component, Watch } from 'vue-property-decorator';
+
 @Component()
-export default class ExampleView extends VueComponent {
+export default class ExampleView extends mixins(ElementComponent) {
   private message: string = '';
 
   @Watch('message')
@@ -157,7 +173,7 @@ export default class ExampleView extends VueComponent {
 
 ```ts
 @Component()
-export default class ExampleView extends VueComponent {
+export default class ExampleView extends mixins(ElementComponent) {
   private get reversedMessage() {
     …
   }
@@ -173,7 +189,7 @@ export default class ExampleView extends VueComponent {
 
 ```ts
 @Component()
-export default class ExampleView extends VueComponent {
+export default class ExampleView extends mixins(ElementComponent) {
   private post: Post = {
     title: '',
     message: '',
@@ -190,7 +206,7 @@ export default class ExampleView extends VueComponent {
 
 ```ts
 @Component()
-export default class ExampleView extends VueComponent {
+export default class ExampleView extends mixins(ElementComponent) {
   private post: Post = {
     title: '',
     message: '',
@@ -214,8 +230,10 @@ export default class ExampleView extends VueComponent {
 </template>
 
 <script lang="ts">
+  import { Component } from 'vue-property-decorator';
+
   @Component()
-  export default class ExampleView extends VueComponent {
+  export default class ExampleView extends mixins(ElementComponent) {
     private get sendButtonOnClick(event) {
       console.log(event.target.tagName);
     }
@@ -239,8 +257,10 @@ export default class ExampleView extends VueComponent {
 </template>
 
 <script lang="ts">
+  import { Component } from 'vue-property-decorator';
+
   @Component()
-  export default class ExampleView extends VueComponent {
+  export default class ExampleView extends mixins(ElementComponent) {
     private get addButonOnClick(product: Product) {
       …
     }
@@ -258,8 +278,10 @@ export default class ExampleView extends VueComponent {
 </template>
 
 <script lang="ts">
+  import { Component } from 'vue-property-decorator';
+
   @Component()
-  export default class ExampleView extends VueComponent {
+  export default class ExampleView extends mixins(ElementComponent) {
     private get addButonOnClick(product: Product, event: Event) {
       …
     }
@@ -274,7 +296,7 @@ Vueには`created`、`mounted`、`updated`、…といったライフサイク�
 
 ```ts
 @Component()
-export default class ExampleView extends VueComponent {
+export default class ExampleView extends mixins(ElementComponent) {
   created() {
     // 必ずスーパークラスのライフサイクルメソッドを呼び出すこと
     supre.created();
@@ -300,6 +322,8 @@ export default class ExampleView extends VueComponent {
 </template>
 
 <script lang="ts">
+  import { Component } from 'vue-property-decorator';
+
   // 1. 他のコンポーネントをインポート
   import GreetMessage from './greet-message.vue';
 
@@ -309,7 +333,7 @@ export default class ExampleView extends VueComponent {
       'greet-message': GreetMessage,
     },
   })
-  export default class ExampleView extends VueComponent {
+  export default class ExampleView extends mixins(ElementComponent) {
     private get greetMessage(): GreetMessage {
       return this.$refs.greetMessage as GreetMessage;
     }

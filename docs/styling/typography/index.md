@@ -1,67 +1,61 @@
- <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Inconsolata:300,400,700|Material+Icons" rel="stylesheet" type="text/css">
-
 # Typography
 
-VuetifyはMaterial Design spec Roboto Fontを使用します。各見出しサイズには、対応するヘルパークラスもあり、他の要素と同じスタイルになります。
+本プロジェクトではMaterial Design spec Roboto Fontを使用し、以下のCSSクラスを定義しています。
 
 ## CSSクラス
 
-### .display-4
+`src/assets/styles/_typography.styl`には次のCSSクラスが定義されています。
 
-font-size: 112px; font-weight: 300;
+| Scale Category | Class | Size | Weight |
+|:---------------|:------|:-----|:-------|
+|<div class="app-font-display4" style="color: var(--app-grey-600);">H1</div>|.app-font-display4|112px|300|
+|<div class="app-font-display3" style="color: var(--app-grey-600);">H2</div>|.app-font-display3|56px|400|
+|<div class="app-font-display2" style="color: var(--app-grey-600);">H3</div>|.app-font-display2|45px|400|
+|<div class="app-font-display1" style="color: var(--app-grey-600);">H4</div>|.app-font-display1|34px|400|
+|<div class="app-font-headline" style="color: var(--app-grey-600);">H5</div>|.app-font-headline|24px|400|
+|<div class="app-font-title" style="color: var(--app-grey-600);">H6</div>|.app-font-title|20px|500|
+|<div class="app-font-subhead" style="color: var(--app-grey-600);">Subhead</div>|.app-font-subhead|16px|400|
+|<div class="app-font-code2" style="color: var(--app-grey-600);">Code 2</div>|.app-font-code2|14px|700|
+|<div class="app-font-code1" style="color: var(--app-grey-600);">Code 1</div>|.app-font-code1|14px|500|
+|<div class="app-font-button" style="color: var(--app-grey-600);">Button</div>|.app-font-button|14px|500|
+|<div class="app-font-body2" style="color: var(--app-grey-600);">Body 2</div>|.app-font-body2|14px|500|
+|<div class="app-font-body1" style="color: var(--app-grey-600);">Body 1</div>|.app-font-body1|14px|400|
+|<div class="app-font-menu" style="color: var(--app-grey-600);">Menu</div>|.app-font-menu|13px|500|
+|<div class="app-font-caption" style="color: var(--app-grey-600);">Caption</div>|.app-font-caption|12px|400|
 
-<div style="font-family: Roboto; font-size: 112px;!important; font-weight: 300; line-height: 1!important; letter-spacing: -.04em!important; margin-bottom: 20px!important; color: #757575!important">Light 112sp</div>
 
-### .display-3
+## CSSクラス利用例
 
-font-size: 56px; font-weight: 400;
+次は.vueファイルのHTML要素に直接フォントのCSSクラスを適用する例です。
 
-<div style="font-family: Roboto; font-size: 56px;!important; font-weight: 400; line-height: 1.35!important; letter-spacing: -.02em!important; margin-bottom: 20px!important; color: #757575!important">Regular 56sp</div>
+```html
+<template>
+  <div>
+    <p class="app-font-body1">Hello</p>
+  </div>
+</template>
+```
 
-### .display-2
+<br>
 
-font-size: 45px; font-weight: 400;
+次は.vueファイルで定義したCSSクラスにフォントのCSSクラスを継承させて利用する例です。
 
-<div style="font-family: Roboto; font-size: 45px;!important; font-weight: 400; line-height: 48px!important; letter-spacing: normal!important; margin-bottom: 20px!important; color: #757575!important">Regular 45sp</div>
+```html
+<style lang="stylus" scoped>
+  @import '../assets/styles/_typography.styl'
+  .title {
+    @extend .app-font-title;
+    color: var(--app-grey-600);
+  }
+</style>
 
-### .display-1
+<template>
+  <div>
+    <h6 class="title">Welcome</h6>
+  </div>
+</template>
+```
 
-font-size: 34px; font-weight: 400;
+ここではStylusの機能を利用してフォントクラスを継承させています。
 
-<div style="font-family: Roboto; font-size: 34px;!important; font-weight: 400; line-height: 40px!important; letter-spacing: normal!important; margin-bottom: 20px!important; color: #757575!important">Regular 34sp</div>
-
-### .headline
-
-font-size: 24px; font-weight: 400;
-
-<div style="font-family: Roboto; font-size: 24px;!important; font-weight: 400; line-height: 32px!important; letter-spacing: normal!important; margin-bottom: 20px!important; color: #757575!important">Regular 24sp</div>
-
-### .title
-
-font-size: 20px; font-weight: 500;
-
-<div style="font-family: Roboto; font-size: 20px;!important; font-weight: 500; line-height: 1!important; letter-spacing: .02em!important; margin-bottom: 20px!important; color: #757575!important">Medium 20sp</div>
-
-### .subheading
-
-font-size: 16px; font-weight: 400;
-
-<div style="font-family: Roboto; font-size: 16px;!important; font-weight: 400; margin-bottom: 20px!important; color: #757575!important">Regular 16sp</div>
-
-### .body-2
-
-font-size: 14px; font-weight: 500;
-
-<div style="font-family: Roboto; font-size: 14px;!important; font-weight: 500; margin-bottom: 20px!important; color: #757575!important">Medium 14sp</div>
-
-### .body-1
-
-font-size: 14px; font-weight: 400;
-
-<div style="font-family: Roboto; font-size: 14px;!important; font-weight: 400; margin-bottom: 20px!important; color: #757575!important">Regular 14sp</div>
-
-### .caption
-
-font-size: 12px; font-weight: 400;
-
-<div style="font-family: Roboto; font-size: 12px;!important; font-weight: 400; margin-bottom: 20px!important; color: #757575!important">Regular 12sp</div>
+まず`@import`で`_typography.styl`ファイルをインポートし、フォントのCSSクラスを読み込みます。これにより`<style>`タグの中でフォントCSSクラスが利用できるようになるので、`@extend`で継承して定義されたフォントを利用しています。

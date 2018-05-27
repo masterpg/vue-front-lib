@@ -5,7 +5,7 @@
     "build:dev": "webpack --config build/webpack.dev.conf.js",
     "serve": "webpack-dev-server --config build/webpack.dev.conf.js",
     "serve:prod": "node_modules/.bin/browser-sync -s start '.dist' --port 5001 --ui-port 5002",
-    "docs": "cd docs && ../node_modules/.bin/gitbook serve"
+    "docs": "cd docs && ../node_modules/.bin/gitbook install && ../node_modules/.bin/gitbook serve"
   },
   "devDependencies": {
     "@types/chai": "^4.1.2",

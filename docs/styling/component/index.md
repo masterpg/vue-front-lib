@@ -1,20 +1,21 @@
-# Component
+# コンポーネント
 
 Vueで作成したコンポーネントはパブリックなプロパティやメソッドを提供することで外部とコミュニケーションする経路を限定し、自身をカプセル化します。
 
 スタイリングも同様に、コンポーネントの見た目をカスタマイズできる部分のみ公開するよう経路を限定し、カプセル化しましょう。経路を限定することで外部から意図しないスタイル変更が行われなくなります。
 
-この機能を実現するには[CSS変数](https://developer.mozilla.org/ja/docs/Web/CSS/Using_CSS_variables)を利用します。
+この機能を実現するには[CSS変数](/styling/css-variables/index.md)を利用します。
 
 
 ## CSS変数を定義する
 
 コンポーネントのスタイルをカスタマイズできる部分を公開するには、次のファイルにCSS変数を定義します。
 
-`src/assets/styles/_css-variables.styl`
+`src/assets/styles/main.styl`
 
 ```css
 :root {
+  /* greet-message */
   --greet-message-color: #0000FF;
 }
 ```

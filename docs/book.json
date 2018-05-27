@@ -1,0 +1,8 @@
+{
+  "plugins": [
+    "styles-stylus"
+  ],
+  "styles": {
+    "website": "book.styl"
+  }
+}
