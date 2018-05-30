@@ -1,6 +1,7 @@
 import '../assets/styles/main.styl';
 import '../assets/styles/custom-style';
 import * as apis from './apis';
+import * as config from './config';
 import * as stores from './stores';
 import * as sw from './service-worker';
 import AppView from './views/index.vue';
@@ -26,6 +27,7 @@ Vue.config.ignoredElements = [
   'paper-input',
 ];
 
+config.init();
 sw.init();
 apis.init();
 stores.init();

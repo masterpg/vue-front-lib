@@ -1,10 +1,14 @@
-const baseConfig = require('./webpack.base.conf.js');
+const base = require('./webpack.base.conf.js');
 const path = require('path');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+/**
+ * ターゲット環境
+ */
+const TARGET_ENV = 'development';
 
 /**
  * 基準パス
@@ -15,87 +19,16 @@ const BASE_PATH = '/';
 /**
  * ビルド結果の出力パス
  */
-const OUTPUT_PATH = path.resolve(__dirname,
-  path.join('../.dist', BASE_PATH));
+const OUTPUT_PATH = path.resolve(__dirname, path.join('../.dist', BASE_PATH));
 
-
-module.exports = merge(baseConfig, {
-
-  mode: 'development',
-
+module.exports = merge(base.config(TARGET_ENV, BASE_PATH, OUTPUT_PATH), {
   entry: {
-    'index': path.resolve(__dirname, '../src/app/index.ts'),
     'test': path.resolve(__dirname, '../test/app/index.ts'),
   },
 
-  output: {
-    path: OUTPUT_PATH,
-    filename: '[name].bundle.js',
-    chunkFilename: '[name].bundle.js',
-    // HMRに必要な設定①
-    // 参照: http://dackdive.hateblo.jp/entry/2016/05/07/183335
-    publicPath: BASE_PATH,
-  },
-
-  devtool: 'source-map',
-
-  // webpack-dev-serverの設定
-  devServer: {
-    contentBase: OUTPUT_PATH,
-    port: 5000,
-    host: '0.0.0.0',
-    disableHostCheck: true,
-    overlay: true,
-    // statsの設定は以下URLを参照:
-    // https://webpack.js.org/configuration/stats/
-    // https://github.com/webpack/webpack/blob/5b5775f9e2fc73fea46629f2d6a3ed7a1f8424d3/lib/Stats.js#L696-L730
-    // stats: 'minimal',
-    stats:  {
-      assets: false,
-      children: false,
-      chunks: false,
-      entrypoints: false,
-      hash: false,
-      moduleTrace: false,
-      modules: false,
-      publicPath: false,
-      reasons: false,
-      source: false,
-      timings: false,
-      version: false,
-      errors: true,
-      errorDetails: true,
-      warnings: true,
-    },
-    // historyApiFallbackの設定は以下URLを参照:
-    // https://github.com/webpack/docs/wiki/webpack-dev-server#the-historyapifallback-option
-    historyApiFallback: {
-      rewrites: [],
-    },
-    // HMRに必要な設定②
-    hot: true,
-  },
-
   plugins: [
-
-    new CleanWebpackPlugin(
-      [OUTPUT_PATH],
-      {
-        root: path.resolve(__dirname, '..'),
-        verbose: true
-      },
-    ),
-
-    // HMRに必要な設定③
+    // ★ HMRに必要な設定
     new webpack.HotModuleReplacementPlugin(),
-
-    new HtmlWebpackPlugin({
-      filename: 'index.html', // パスは`output.path`を基準
-      template: './src/index.html',
-      inject: false,
-      basePath: BASE_PATH,
-      bundledScript: 'index.bundle.js',
-    }),
 
     new HtmlWebpackPlugin({
       filename: 'test.html', // パスは`output.path`を基準
@@ -113,4 +46,7 @@ module.exports = merge(baseConfig, {
     ]),
   ],
 
+  devtool: 'source-map',
+
+  devServer: base.devServer(OUTPUT_PATH),
 });

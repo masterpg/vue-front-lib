@@ -20,7 +20,7 @@ $ yarn install
 開発サーバーを起動します。
 
 ```console
-$ yarn serve
+$ yarn dev
 ```
 
 起動したらブラウザで下記URLにアクセスすることで各画面を確認できます。
@@ -37,13 +37,13 @@ $ yarn serve
 $ yarn build
 ```
 
-ビルド結果を検証したい場合、次のコマンドでビルド結果の検証用サーバーを起動します。
+本番環境用のビルド結果を開発サーバーで確認するには次のコマンドを実行します。
 
 ```console
-$ yarn serve:prod
+$ yarn staging
 ```
 
-起動したらブラウザで http://localhost:5001 にアクセスすることで画面が表示されます。
+起動したらブラウザで http://localhost:5000 にアクセスすることで画面が表示されます。
 
 
 ## GitBook

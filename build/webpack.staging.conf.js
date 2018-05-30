@@ -5,7 +5,7 @@ const merge = require('webpack-merge');
 /**
  * ターゲット環境
  */
-const TARGET_ENV = 'production';
+const TARGET_ENV = 'staging';
 
 /**
  * 基準パス

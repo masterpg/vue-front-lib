@@ -2,6 +2,8 @@ import Component from 'vue-class-component';
 import { BaseApi } from '../base';
 import { Product, ShopApi } from '../types';
 
+import axios from 'axios';
+
 const SAMPLE_DATA: Product[] = [
   { id: 1, title: 'iPad 4 Mini', price: 500.01, inventory: 2 },
   { id: 2, title: 'H&M T-Shirt White', price: 10.99, inventory: 10 },
@@ -10,10 +12,11 @@ const SAMPLE_DATA: Product[] = [
 
 @Component
 class ShopApiImpl extends BaseApi implements ShopApi {
-  getProducts(): Promise<Product[]> {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(SAMPLE_DATA), 100);
-    });
+  async getProducts(): Promise<Product[]> {
+    const apiInfo = this.$config.apiInfo;
+    const url = `${apiInfo.protocol}://${apiInfo.host}:${apiInfo.port}/api/products`;
+    const response = await axios.get(url, {});
+    return response.data as Product[];
   }
 
   buyProducts(products: Array<{ id: number, quantity: number }>): Promise<void> {
