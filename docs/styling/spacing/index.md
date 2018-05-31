@@ -5,7 +5,7 @@
 
 本プロジェクトで定義した0〜12の範囲のサイズで要素にマージンまたはパディングを設定することができます。
 
-**margin**または**padding**は`{property}{direction}-{size}`のフォーマットにしたがったクラスを指定することで設定できます。
+**margin**または**padding**は`app-{property}{direction}-{size}`のフォーマットにしたがったクラスを指定することで設定できます。
 
 `{property}`、`{direction}`、`{size}`で指定する値を以下に示します。
 
@@ -45,17 +45,17 @@
 
 上部にサイズ`1`のパディングを指定
 ```html
-<div class="pt-1">hello</div>
+<div class="app-pt-1">hello</div>
 ```
 
 左右にサイズ`3`のマージンを指定
 ```html
-<div class="mx-3">hello</div>
+<div class="app-mx-3">hello</div>
 ```
 
 全方向(`top`, `right`, `bottom`, `left`)にサイズ`5`のマージンを指定
 ```html
-<div class="ma-5">hello</div>
+<div class="app-ma-5">hello</div>
 ```
 
 
