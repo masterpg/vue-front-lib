@@ -95,14 +95,12 @@
 
     private narrow: boolean = false;
 
-    private items: Array<{ icon: string, title: string, path: string }> = [
+    private items: Array<{ title: string, path: string }> = [
       {
-        icon: 'bubble_chart',
         title: 'ABC',
         path: '/abc',
       },
       {
-        icon: 'bubble_chart',
         title: 'Shopping',
         path: '/shopping',
       },
