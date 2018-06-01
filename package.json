@@ -70,7 +70,6 @@
     "lodash": "^4.17.10",
     "pubsub-js": "^1.6.0",
     "vue": "^2.5.16",
-    "vue-router": "^3.0.1",
-    "vuetify": "^1.0.12"
+    "vue-router": "^3.0.1"
   }
 }
