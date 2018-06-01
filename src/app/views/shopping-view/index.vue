@@ -15,8 +15,11 @@
 
   .error-text {
     @extend .app-font-body1;
-    color: var(--app-accent-text-color);
-    text-align right;
+    color: var(--app-error-text-color);
+  }
+
+  .checkout-button {
+    color: var(--app-link-color);
   }
 </style>
 
@@ -46,7 +49,6 @@
       <div class="layout horizontal center">
         <div class="title-text">Your Cart</div>
         <div class="flex"></div>
-        <paper-icon-button v-show="!cartIsEmpty" icon="icons:check" @click="checkout"></paper-icon-button>
       </div>
       <hr style="width: 100%;">
       <div v-for="(product, index) in cartProducts" class="layout horizontal center app-my-3">
@@ -57,7 +59,14 @@
           </div>
         </div>
       </div>
-      <div v-show="!checkoutStatus.result" class="error-text">{{ checkoutStatus.message }}</div>
+      <div class="layout horizontal center">
+        <div class="flex error-text">{{ checkoutStatus.message }}</div>
+        <paper-button
+          v-show="!cartIsEmpty"
+          class="checkout-button"
+          @click="checkout">Checkout
+        </paper-button>
+      </div>
     </div>
 
   </div>
