@@ -1,16 +1,14 @@
 import * as td from 'testdouble';
 import _productStore, { ProductState } from '../../../../src/app/stores/product-store';
-import { Apis, Product as ApiProduct } from '../../../../src/app/apis/types';
+import { Product as ApiProduct } from '../../../../src/app/apis/types';
 import { ProductStore, Stores } from '../../../../src/app/stores/types';
+import { TestStore } from '../../../types';
 
 const assert = chai.assert;
 
 suite('store/product-store', () => {
 
-  const productStore = _productStore as ProductStore & {
-    initState(state: ProductState): void,
-    $apis: Apis,
-  };
+  const productStore = _productStore as ProductStore & TestStore<ProductState>;
   const shopApi = productStore.$apis.shop;
 
   const PRODUCTS: ApiProduct[] = [
@@ -31,7 +29,7 @@ suite('store/product-store', () => {
     assert.deepEqual(actual, product);
   });
 
-  test('getProductById() - 取得できるないパターン', () => {
+  test('getProductById() - 取得できないパターン', () => {
     const actual = productStore.getProductById(9876);
     assert.isNull(actual);
   });

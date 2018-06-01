@@ -1,17 +1,15 @@
 import * as td from 'testdouble';
 import _cartStore, { CartState } from '../../../../src/app/stores/cart-store';
-import { Apis, Product as ApiProduct } from '../../../../src/app/apis/types';
-import { CartStore, CheckoutStatus, Stores } from '../../../../src/app/stores/types';
+import { CartStore, CheckoutStatus, Product } from '../../../../src/app/stores/types';
+import { Product as ApiProduct } from '../../../../src/app/apis/types';
+import { TestStore } from '../../../types';
 
 const assert = chai.assert;
 
 suite('store/cart-store', () => {
 
-  const cartStore = _cartStore as CartStore & {
-    initState(state: CartState): void,
-    state: CartState,
-    $apis: Apis,
-    $stores: Stores,
+  const cartStore = _cartStore as CartStore & TestStore<CartState> & {
+    getProductById(productId: number): Product;
   };
   const productStore = cartStore.$stores.product;
   const shopApi = cartStore.$apis.shop;
@@ -41,7 +39,7 @@ suite('store/cart-store', () => {
     cartStore.state.added = [{ id: 1, quantity: 1 }];
     const product = PRODUCTS[0];
     td.replace(cartStore, 'getProductById');
-    td.when((cartStore as any).getProductById(product.id)).thenReturn(product);
+    td.when(cartStore.getProductById(product.id)).thenReturn(product);
 
     const actual = cartStore.getCartProductById(product.id);
     assert.deepEqual(actual, {
@@ -62,7 +60,7 @@ suite('store/cart-store', () => {
     const product = PRODUCTS[1];
     // 【準備】
     td.replace(cartStore, 'getProductById');
-    td.when((cartStore as any).getProductById(product.id)).thenReturn(product);
+    td.when(cartStore.getProductById(product.id)).thenReturn(product);
 
     const decrementProductInventory =
       td.replace(productStore, 'decrementProductInventory');
