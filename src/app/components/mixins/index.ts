@@ -1,4 +1,6 @@
 import BreakpointMixin from './breakpoint-mixin';
+import clone from 'lodash/clone';
+import cloneDeep from 'lodash/cloneDeep';
 import cssVarPoly from '../css-var-polyfill';
 import { Component } from 'vue-property-decorator';
 import { mixins } from 'vue-class-component';
@@ -22,6 +24,14 @@ export class ElementComponent extends mixins(BreakpointMixin) {
 
   mounted() {
     cssVarPoly.init();
+  }
+
+  protected cloneDeep<T>(source: T): T {
+    return cloneDeep(source);
+  }
+
+  protected cloneShallow<T>(source: T): T {
+    return clone(source);
   }
 }
 
