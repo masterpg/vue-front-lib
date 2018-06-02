@@ -59,12 +59,12 @@ class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   //
   //----------------------------------------------------------------------
 
-  getCartProductById(productId): CartProduct | null {
+  getCartProductById(productId): CartProduct | undefined {
     const product = this.getProductById(productId);
     const cartProduct = this.state.added.find((item) => {
       return item.id === productId;
-    }) || null;
-    if (!cartProduct) return null;
+    });
+    if (!cartProduct) return undefined;
     return {
       id: cartProduct.id,
       title: product.title,

@@ -78,7 +78,7 @@ export function init(): void {
  * @param serviceWorker
  */
 function stateChangeFor(serviceWorker: ServiceWorker): void {
-  let info: StateChangeInfo | null = null;
+  let info: StateChangeInfo | undefined;
   switch (serviceWorker.state) {
     case 'installed':
       // この判定では、古いコンテンツが除去され、新しいコンテンツがキャッシュに追加された状態を示す。

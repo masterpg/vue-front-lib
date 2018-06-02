@@ -13,8 +13,7 @@ export abstract class BaseStore<S> extends Vue {
 
   protected readonly $apis: Apis;
 
-  // @ts-ignore
-  private m_state: S = null;
+  private m_state: S;
 
   protected get state(): S {
     return this.m_state;

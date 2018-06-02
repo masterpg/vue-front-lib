@@ -31,7 +31,7 @@ suite('store/product-store', () => {
 
   test('getProductById() - 取得できないパターン', () => {
     const actual = productStore.getProductById(9876);
-    assert.isNull(actual);
+    assert.isUndefined(actual);
   });
 
   test('decrementProductInventory() - 一般ケース', () => {

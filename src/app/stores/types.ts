@@ -15,7 +15,7 @@ export interface Stores {
 export interface ProductStore {
   readonly allProducts: Product[];
 
-  getProductById(productId: number): Product | null;
+  getProductById(productId: number): Product | undefined;
 
   decrementProductInventory(productId: number): void;
 
@@ -29,7 +29,7 @@ export interface CartStore {
 
   readonly cartTotalPrice: number;
 
-  getCartProductById(productId): CartProduct | null;
+  getCartProductById(productId): CartProduct | undefined;
 
   checkout(products: Array<{ id: number, quantity: number }>): Promise<void>;
 
