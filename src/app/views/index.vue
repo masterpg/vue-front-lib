@@ -1,6 +1,8 @@
 <style lang="stylus" scoped>
+  @import '../../assets/styles/_typography.styl';
+
   app-drawer-layout {
-    --app-drawer-width: 350px;
+    --app-drawer-width: 256px;
     &:not([narrow]) [drawer-toggle] {
       display: none;
     }
@@ -15,25 +17,23 @@
   }
 
   .drawer-list {
-    margin: var(--app-spacer-3) 0;
     .item {
       display: block;
-      padding: 0 var(--app-spacer-3);
-      text-decoration: none;
-      color: var(--app-link-color);
-      line-height: 50px;
+      padding: var(--app-spacer-2)  var(--app-spacer-5);
+      @extend .app-font-code1;
+      color: var(--app-secondary-text-color);
+      text-decoration none;
     }
 
     .item.router-link-active {
-      color: var(--app-primary-text-color);
-      font-weight: bold;
+      color: var(--app-accent-text-color);
     }
   }
 </style>
 
 
 <template>
-  <app-drawer-layout>
+  <app-drawer-layout responsive-width="960px">
 
     <!--
       Drawer content

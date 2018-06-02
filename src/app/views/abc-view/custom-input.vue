@@ -1,4 +1,4 @@
-<style lang="postcss" scoped>
+<style lang="stylus" scoped>
 </style>
 
 <template>

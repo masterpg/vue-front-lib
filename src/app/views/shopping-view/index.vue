@@ -1,6 +1,6 @@
 <style lang="stylus" scoped>
-  @import '../../../assets/styles/_spacing.styl'
-  @import '../../../assets/styles/_typography.styl'
+  @import '../../../assets/styles/_spacing.styl';
+  @import '../../../assets/styles/_typography.styl';
 
   .title-text {
     @extend .app-font-title;
