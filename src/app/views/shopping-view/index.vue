@@ -42,7 +42,10 @@
         <div class="title-text">Products</div>
       </div>
       <hr style="width: 100%;">
-      <div v-for="(product, index) in products" class="layout horizontal center product-item">
+      <div
+        v-for="(product, index) in products"
+        class="layout horizontal center product-item"
+      >
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
           <div class="detail">
