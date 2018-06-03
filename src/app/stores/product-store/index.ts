@@ -48,9 +48,9 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   }
 
   decrementProductInventory(productId: number): void {
-    const product = this.state.all.find((item) => item.id === productId);
-    if (product) {
-      product.inventory--;
+    const stateProduct = this.state.all.find((item) => item.id === productId);
+    if (stateProduct) {
+      stateProduct.inventory--;
     }
   }
 
