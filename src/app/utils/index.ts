@@ -20,25 +20,25 @@ export class Utils {
     return clone(source);
   }
 
-  protected assign<TObject, TSource>(
+  assign<TObject, TSource>(
     object: TObject,
     source: TSource,
   ): TObject & TSource;
 
-  protected assign<TObject, TSource1, TSource2>(
+  assign<TObject, TSource1, TSource2>(
     object: TObject,
     source1: TSource1,
     source2: TSource2,
   ): TObject & TSource1 & TSource2;
 
-  protected assign<TObject, TSource1, TSource2, TSource3>(
+  assign<TObject, TSource1, TSource2, TSource3>(
     object: TObject,
     source1: TSource1,
     source2: TSource2,
     source3: TSource3,
   ): TObject & TSource1 & TSource2 & TSource3;
 
-  protected assign<TObject, TSource1, TSource2, TSource3, TSource4>(
+  assign<TObject, TSource1, TSource2, TSource3, TSource4>(
     object: TObject,
     source1: TSource1,
     source2: TSource2,
@@ -46,7 +46,7 @@ export class Utils {
     source4: TSource4,
   ): TObject & TSource1 & TSource2 & TSource3 & TSource4;
 
-  protected assign<TObject, TSource1, TSource2, TSource3, TSource4, TSource5>(
+  assign<TObject, TSource1, TSource2, TSource3, TSource4, TSource5>(
     object: TObject,
     source1: TSource1,
     source2: TSource2,
@@ -64,29 +64,29 @@ export class Utils {
    * @param sources ソースオブジェクトを指定
    * @return 引数のobjectを返す
    */
-  protected assign<T = any>(object: any, ...sources: any[]): T {
+  assign<T = any>(object: any, ...sources: any[]): T {
     return assign(object, ...sources);
   }
 
-  protected assignIn<TObject, TSource>(
+  assignIn<TObject, TSource>(
     object: TObject,
     source: TSource,
   ): TObject & TSource;
 
-  protected assignIn<TObject, TSource1, TSource2>(
+  assignIn<TObject, TSource1, TSource2>(
     object: TObject,
     source1: TSource1,
     source2: TSource2,
   ): TObject & TSource1 & TSource2;
 
-  protected assignIn<TObject, TSource1, TSource2, TSource3>(
+  assignIn<TObject, TSource1, TSource2, TSource3>(
     object: TObject,
     source1: TSource1,
     source2: TSource2,
     source3: TSource3,
   ): TObject & TSource1 & TSource2 & TSource3;
 
-  protected assignIn<TObject, TSource1, TSource2, TSource3, TSource4>(
+  assignIn<TObject, TSource1, TSource2, TSource3, TSource4>(
     object: TObject,
     source1: TSource1,
     source2: TSource2,
@@ -94,7 +94,7 @@ export class Utils {
     source4: TSource4,
   ): TObject & TSource1 & TSource2 & TSource3 & TSource4;
 
-  protected assignIn<TObject, TSource1, TSource2, TSource3, TSource4, TSource5>(
+  assignIn<TObject, TSource1, TSource2, TSource3, TSource4, TSource5>(
     object: TObject,
     source1: TSource1,
     source2: TSource2,
@@ -112,7 +112,7 @@ export class Utils {
    * @param sources ソースオブジェクトを指定
    * @return 引数のobjectを返す
    */
-  protected assignIn<T = any>(object: any, ...sources: any[]): T {
+  assignIn<T = any>(object: any, ...sources: any[]): T {
     return assignIn(object, ...sources);
   }
 }
