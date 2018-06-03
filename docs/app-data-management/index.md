@@ -144,7 +144,7 @@ class ProductsStoreImpl extends BaseStore<ProductsState> implements ProductsStor
   @NoCache
   get allProducts(): Product[] {
     // アプリケーションデータのコピーを返している
-    return this.cloneDeep(this.state.all);
+    return this.$utils.cloneDeep(this.state.all);
   }
 }
 ```
@@ -178,7 +178,7 @@ getterに`@NoCache`をつけると算出プロパティがキャッシュをし�
 class ProductsStoreImpl extends BaseStore<ProductsState> implements ProductsStore {
   get allProducts(): Product[] {
     // アプリケーションデータのコピーを返している
-    return this.cloneDeep(this.state.all);
+    return this.$utils.cloneDeep(this.state.all);
   }
 }
 ```

@@ -1,9 +1,11 @@
-import '../assets/styles/main.styl';
 import '../assets/styles/custom-style';
+import '../assets/styles/main.styl';
+
 import * as apis from './apis';
 import * as config from './config';
 import * as stores from './stores';
 import * as sw from './service-worker';
+import * as utils from './utils';
 import AppView from './views/index.vue';
 import Vue from 'vue';
 import router from './router';
@@ -27,6 +29,7 @@ Vue.config.ignoredElements = [
 ];
 
 config.init();
+utils.init();
 sw.init();
 apis.init();
 stores.init();

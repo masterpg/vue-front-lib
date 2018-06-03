@@ -31,7 +31,7 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
 
   @NoCache
   get allProducts(): Product[] {
-    return this.cloneDeep(this.state.all);
+    return this.$utils.cloneDeep(this.state.all);
   }
 
   //----------------------------------------------------------------------
@@ -44,7 +44,7 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
     const result = this.state.all.find((item) => {
       return item.id === productId;
     });
-    return this.cloneDeep(result);
+    return this.$utils.cloneDeep(result);
   }
 
   decrementProductInventory(productId: number): void {
