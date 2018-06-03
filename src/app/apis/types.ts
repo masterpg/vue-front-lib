@@ -1,14 +1,14 @@
 //----------------------------------------------------------------------
 //
-//  Apis
+//  APIs
 //
 //----------------------------------------------------------------------
 
-export interface Apis {
-  readonly shop: ShopApi;
+export interface APIs {
+  readonly shop: ShopAPI;
 }
 
-export interface ShopApi {
+export interface ShopAPI {
   getProducts(): Promise<Product[]>;
 
   buyProducts(products: Array<{ id: number, quantity: number }>): Promise<void>;

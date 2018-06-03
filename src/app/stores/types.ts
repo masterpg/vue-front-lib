@@ -1,4 +1,4 @@
-import { Product as ApiProduct } from '../apis/types';
+import { Product as APIProduct } from '../apis/types';
 
 //----------------------------------------------------------------------
 //
@@ -42,7 +42,7 @@ export interface CartStore {
 //
 //----------------------------------------------------------------------
 
-export type Product = ApiProduct;
+export type Product = APIProduct;
 
 export interface CartProduct {
   id: number;

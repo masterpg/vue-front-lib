@@ -1,6 +1,6 @@
 import * as td from 'testdouble';
 import _productStore, { ProductState } from '../../../../src/app/stores/product-store';
-import { Product as ApiProduct } from '../../../../src/app/apis/types';
+import { Product as APIProduct } from '../../../../src/app/apis/types';
 import { ProductStore, Stores } from '../../../../src/app/stores/types';
 import { TestStore } from '../../../types';
 
@@ -9,9 +9,9 @@ const assert = chai.assert;
 suite('store/product-store', () => {
 
   const productStore = _productStore as ProductStore & TestStore<ProductState>;
-  const shopApi = productStore.$apis.shop;
+  const shopAPI = productStore.$apis.shop;
 
-  const PRODUCTS: ApiProduct[] = [
+  const PRODUCTS: APIProduct[] = [
     { id: 1, title: 'iPad 4 Mini', price: 500.01, inventory: 2 },
     { id: 2, title: 'H&M T-Shirt White', price: 10.99, inventory: 10 },
     { id: 3, title: 'Charli XCX - Sucker CD', price: 19.99, inventory: 5 },
@@ -53,8 +53,8 @@ suite('store/product-store', () => {
       { id: 1, title: 'product1', price: 101, inventory: 1 },
       { id: 2, title: 'product2', price: 102, inventory: 2 },
     ];
-    td.replace(shopApi, 'getProducts');
-    td.when(shopApi.getProducts()).thenResolve(API_PRODUCTS);
+    td.replace(shopAPI, 'getProducts');
+    td.when(shopAPI.getProducts()).thenResolve(API_PRODUCTS);
 
     await productStore.getAllProducts();
     assert.deepEqual(productStore.allProducts, API_PRODUCTS);

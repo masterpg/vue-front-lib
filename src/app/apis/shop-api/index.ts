@@ -1,9 +1,9 @@
 import Component from 'vue-class-component';
-import { BaseApi } from '../base';
-import { Product, ShopApi } from '../types';
+import { BaseAPI } from '../base';
+import { Product, ShopAPI } from '../types';
 
 @Component
-class ShopApiImpl extends BaseApi implements ShopApi {
+class ShopAPIImpl extends BaseAPI implements ShopAPI {
   async getProducts(): Promise<Product[]> {
     const response = await this.get<Product[]>('products');
     return response.data;
@@ -21,5 +21,5 @@ class ShopApiImpl extends BaseApi implements ShopApi {
   }
 }
 
-const shopApi: ShopApi = new ShopApiImpl();
-export default shopApi;
+const shopAPI: ShopAPI = new ShopAPIImpl();
+export default shopAPI;

@@ -1,21 +1,21 @@
 import Vue from 'vue';
-import shopApi from './shop-api';
-import { Apis, ShopApi } from './types';
+import shopAPI from './shop-api';
+import { APIs, ShopAPI } from './types';
 import { Component } from 'vue-property-decorator';
 
 const debug = process.env.NODE_ENV !== 'production';
 
 @Component
-class ApisImpl extends Vue implements Apis {
+class APIsImpl extends Vue implements APIs {
 
   constructor() {
     super();
-    this.m_shop = shopApi;
+    this.m_shop = shopAPI;
   }
 
-  private m_shop: ShopApi;
+  private m_shop: ShopAPI;
 
-  get shop(): ShopApi {
+  get shop(): ShopAPI {
     return this.m_shop;
   }
 
@@ -24,7 +24,7 @@ class ApisImpl extends Vue implements Apis {
 export function init(): void {
   Object.defineProperty(
     Vue.prototype, '$apis', {
-      value: new ApisImpl(),
+      value: new APIsImpl(),
       writable: false,
     },
   );

@@ -1,7 +1,7 @@
 import * as td from 'testdouble';
 import _cartStore, { CartState } from '../../../../src/app/stores/cart-store';
 import { CartStore, CheckoutStatus, Product } from '../../../../src/app/stores/types';
-import { Product as ApiProduct } from '../../../../src/app/apis/types';
+import { Product as APIProduct } from '../../../../src/app/apis/types';
 import { TestStore } from '../../../types';
 
 const assert = chai.assert;
@@ -12,9 +12,9 @@ suite('store/cart-store', () => {
     getProductById(productId: number): Product;
   };
   const productStore = cartStore.$stores.product;
-  const shopApi = cartStore.$apis.shop;
+  const shopAPI = cartStore.$apis.shop;
 
-  const PRODUCTS: ApiProduct[] = [
+  const PRODUCTS: APIProduct[] = [
     { id: 1, title: 'iPad 4 Mini', price: 500.01, inventory: 2 },
     { id: 2, title: 'H&M T-Shirt White', price: 10.99, inventory: 10 },
     { id: 3, title: 'Charli XCX - Sucker CD', price: 19.99, inventory: 5 },
@@ -89,14 +89,14 @@ suite('store/cart-store', () => {
       { id: 1, quantity: 1 },
       { id: 2, quantity: 1 },
     ];
-    const buyProducts = td.replace(shopApi, 'buyProducts');
-    td.when(shopApi.buyProducts(ADDED)).thenResolve();
+    const buyProducts = td.replace(shopAPI, 'buyProducts');
+    td.when(shopAPI.buyProducts(ADDED)).thenResolve();
 
     await cartStore.checkout(ADDED);
     assert.equal(cartStore.state.checkoutStatus, CheckoutStatus.Successful);
     assert.deepEqual(cartStore.state.added, []);
 
-    // `ShopApi#buyProducts()`の呼び出し回数と渡された引数を検証
+    // `ShopAPI#buyProducts()`の呼び出し回数と渡された引数を検証
     const buyProductsExplain = td.explain(buyProducts);
     assert.equal(buyProductsExplain.callCount, 1);
     assert.deepEqual(buyProductsExplain.calls[0].args[0], ADDED);
@@ -109,8 +109,8 @@ suite('store/cart-store', () => {
     ];
     cartStore.state.added = ADDED;
 
-    const buyProducts = td.replace(shopApi, 'buyProducts');
-    td.when(shopApi.buyProducts(ADDED)).thenReject(new Error());
+    const buyProducts = td.replace(shopAPI, 'buyProducts');
+    td.when(shopAPI.buyProducts(ADDED)).thenReject(new Error());
 
     await cartStore.checkout(ADDED);
     assert.equal(cartStore.state.checkoutStatus, CheckoutStatus.Failed);

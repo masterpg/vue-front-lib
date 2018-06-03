@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { Apis } from '../apis/types';
+import { APIs } from '../apis/types';
 
 export abstract class BaseStore<S> extends Vue {
 
@@ -9,7 +9,7 @@ export abstract class BaseStore<S> extends Vue {
   //
   //----------------------------------------------------------------------
 
-  protected readonly $apis: Apis;
+  protected readonly $apis: APIs;
 
   private m_state: S;
 
