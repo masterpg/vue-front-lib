@@ -23,24 +23,24 @@ function newConfig(): Config {
 
 class DevConfig implements Config {
   readonly apiInfo = {
-    protocol: 'http',
-    host: '0.0.0.0',
-    port: 5010,
+    protocol: '',
+    host: '',
+    port: 0,
   };
 }
 
 class StagingConfig implements Config {
   readonly apiInfo = {
-    protocol: 'http',
-    host: '0.0.0.0',
-    port: 5010,
+    protocol: '',
+    host: '',
+    port: 0,
   };
 }
 
 class ProdConfig implements Config {
   readonly apiInfo = {
-    protocol: 'http',
-    host: '0.0.0.0',
+    protocol: 'https',
+    host: 'mydomain.net',
     port: 80,
   };
 }

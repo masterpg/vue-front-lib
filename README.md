@@ -40,7 +40,7 @@ $ yarn build
 本番環境用のビルド結果を開発サーバーで確認するには次のコマンドを実行します。
 
 ```console
-$ yarn staging
+$ yarn stg
 ```
 
 起動したらブラウザで http://localhost:5000 にアクセスすることで画面が表示されます。

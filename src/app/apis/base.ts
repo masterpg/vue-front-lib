@@ -60,8 +60,14 @@ export abstract class BaseAPI extends Vue {
 
   request<T = any>(config: APIRequestInternalConfig): APIPromise<T> {
     const apiInfo = this.$config.apiInfo;
+    let baseURL = '';
+    if (!apiInfo.protocol && !apiInfo.host && !apiInfo.port) {
+      baseURL = 'api';
+    } else {
+      baseURL = `${apiInfo.protocol}://${apiInfo.host}:${apiInfo.port}/api/`;
+    }
     const axiosConfig = Object.assign(config || {}, {
-      baseURL: `${apiInfo.protocol}://${apiInfo.host}:${apiInfo.port}/api/`,
+      baseURL,
     });
     return axios.request(axiosConfig);
   }
