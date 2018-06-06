@@ -48,7 +48,7 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   }
 
   decrementProductInventory(productId: number): void {
-    const stateProduct = this.state.all.find((item) => item.id === productId);
+    const stateProduct = this.getStateProductById(productId);
     if (stateProduct) {
       stateProduct.inventory--;
     }
@@ -57,6 +57,16 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   async getAllProducts(): Promise<void> {
     const products = await this.$apis.shop.getProducts();
     this.state.all = products;
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
+
+  private getStateProductById(productId: number): Product | undefined {
+    return this.state.all.find((item) => item.id === productId);
   }
 
 }
