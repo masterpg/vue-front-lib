@@ -26,19 +26,19 @@
         ></greet-message>
         <button class="app-ml-3" @click="greetButtonOnClick">Greet</button>
       </div>
-      <div class="layout horizontal">
+      <p class="layout horizontal">
         <custom-input
           v-model="customInputValue"
           class="flex-3"
         ></custom-input>
-        <div class="flex-9 app-ml-3 app-mt-7">value: {{ customInputValue }}</div>
-      </div>
-      <div class="layout horizontal center">
+        <span class="flex-9 app-ml-3 app-mt-7">value: {{ customInputValue }}</span>
+      </p>
+      <p class="layout horizontal center">
         <custom-checkbox
           v-model="customChecked"
         ></custom-checkbox>
-        <div class="flex-9 app-ml-3">checked: {{ customChecked }}</div>
-      </div>
+        <span class="app-ml-3">checked: {{ customChecked }}</span>
+      </p>
       <div class="layout horizontal end-justified">
         <paper-button raised @click="postButtonOnClick">Post</paper-button>
         <paper-button raised @click="sleepButtonOnClick">Sleep</paper-button>

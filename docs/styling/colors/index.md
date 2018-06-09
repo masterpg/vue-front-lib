@@ -1,4 +1,4 @@
-# Color
+# Colors
 
 本プロジェクトでは[Material Design spec](https://material.io/guidelines/style/color.html)にしたがってCSS変数で色を定義しており、この変数を利用して色を設定することができます。
 
