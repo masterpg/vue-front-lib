@@ -27,6 +27,9 @@ suite('store/product-store', () => {
     const product = PRODUCTS[0];
     const actual = productStore.getProductById(product.id);
     assert.deepEqual(actual, product);
+    // actualとproductが同一オブジェクトでないことを検証
+    // (つまりコピーでないことを検証)
+    assert.notEqual(actual, product);
   });
 
   test('getProductById() - 取得できないパターン', () => {

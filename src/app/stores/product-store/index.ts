@@ -41,10 +41,8 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   //----------------------------------------------------------------------
 
   getProductById(productId: number): Product | undefined {
-    const result = this.state.all.find((item) => {
-      return item.id === productId;
-    });
-    return this.$utils.cloneDeep(result);
+    const stateProduct = this.getStateProductById(productId);
+    return this.$utils.cloneDeep(stateProduct);
   }
 
   decrementProductInventory(productId: number): void {
