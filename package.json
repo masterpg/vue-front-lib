@@ -62,6 +62,7 @@
     "@polymer/paper-icon-button": "^3.0.0-pre.19",
     "@polymer/paper-input": "^3.0.0-pre.19",
     "@polymer/paper-styles": "^3.0.0-pre.19",
+    "@polymer/paper-toast": "^3.0.0-pre.19",
     "@polymer/polymer": "^3.0.2",
     "@types/lodash": "^4.14.109",
     "@webcomponents/webcomponentsjs": "^2.0.0",

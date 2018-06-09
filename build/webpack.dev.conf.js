@@ -39,7 +39,6 @@ module.exports = merge(base.config(TARGET_ENV, BASE_PATH, OUTPUT_PATH), {
 
     // `to: xxx`の`xxx`は`output.path`が基準になる
     new CopyWebpackPlugin([
-      { from: path.resolve(__dirname, '../src/service-worker.js') },
       { from: 'node_modules/mocha/mocha.css', to: 'node_modules/mocha' },
       { from: 'node_modules/mocha/mocha.js', to: 'node_modules/mocha' },
       { from: 'node_modules/chai/chai.js', to: 'node_modules/chai' },

@@ -5,7 +5,7 @@
 //----------------------------------------------------------------------
 
 export enum ChangeState {
-  installed = 'installed',
+  updateIsRequired = 'updateIsRequired',
   cached = 'cached',
 }
 
@@ -44,6 +44,9 @@ export function addStateChangeListener(listener: StateChangeLister): void {
 export function init(): void {
   if (!('serviceWorker' in navigator)) return;
 
+  const prod = process.env.NODE_ENV === 'production';
+  if (!prod) return;
+
   const base = window.document.querySelector('html > head > base') as HTMLBaseElement;
   if (!base) {
     console.error('<base> element not found.');
@@ -54,6 +57,7 @@ export function init(): void {
     // service-worker.jsに変更があった際のハンドラ
     reg.onupdatefound = () => {
       const installingServiceWorker = reg.installing;
+      // インストール中のServiceWorkerがなかった場合は処理を終了
       if (!installingServiceWorker) return;
       // ServiceWorkerの状態が変更された際のハンドラ
       installingServiceWorker.onstatechange = () => {
@@ -86,7 +90,7 @@ function stateChangeFor(serviceWorker: ServiceWorker): void {
       // に促すのに最適な場所である
       if (navigator.serviceWorker.controller) {
         info = {
-          state: ChangeState.installed,
+          state: ChangeState.updateIsRequired,
           message: 'サイトの更新が見つかりました。再読み込みを行ってください。',
         };
       }

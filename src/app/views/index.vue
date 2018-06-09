@@ -19,7 +19,7 @@
   .drawer-list {
     .item {
       display: block;
-      padding: var(--app-spacer-2)  var(--app-spacer-5);
+      padding: var(--app-spacer-2) var(--app-spacer-5);
       @extend .app-font-code1;
       color: var(--app-secondary-text-color);
       text-decoration none;
@@ -29,38 +29,55 @@
       color: var(--app-accent-text-color);
     }
   }
+
+  .link-button {
+    color: var(--app-link-color);
+  }
 </style>
 
 
 <template>
-  <app-drawer-layout responsive-width="960px">
+  <div>
 
-    <!--
-      Drawer content
-    -->
-    <app-drawer ref="drawer" slot="drawer" :swipe-open="narrow">
-      <app-toolbar class="drawer-toolbar">
-        <iron-icon src="assets/images/manifest/icon-48x48.png"></iron-icon>
-        <div main-title class="app-ml-2">Vue WWW Base</div>
+    <app-drawer-layout responsive-width="960px">
+
+      <!--
+        Drawer content
+      -->
+      <app-drawer ref="drawer" slot="drawer" :swipe-open="narrow">
+        <app-toolbar class="drawer-toolbar">
+          <iron-icon src="assets/images/manifest/icon-48x48.png"></iron-icon>
+          <div main-title class="app-ml-2">Vue WWW Base</div>
+        </app-toolbar>
+        <div class="drawer-list">
+          <template v-for="item in items">
+            <router-link :to="item.path" class="item">{{ item.title }}</router-link>
+          </template>
+        </div>
+      </app-drawer>
+
+      <!--
+        Main content
+      -->
+      <app-toolbar class="content-toolbar">
+        <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+        <div main-title>View name</div>
       </app-toolbar>
-      <div class="drawer-list">
-        <template v-for="item in items">
-          <router-link :to="item.path" class="item">{{item.title}}</router-link>
-        </template>
-      </div>
-    </app-drawer>
 
-    <!--
-      Main content
-    -->
-    <app-toolbar class="content-toolbar">
-      <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-      <div main-title>View name</div>
-    </app-toolbar>
+      <router-view/>
 
-    <router-view/>
+    </app-drawer-layout>
 
-  </app-drawer-layout>
+    <paper-toast ref="swToast" :duration="swUpdateIsRequired ? 0 : 5000" :text="swMessage">
+      <paper-button
+        v-show="swUpdateIsRequired"
+        class="link-button"
+        @click="reload"
+      >再読み込み
+      </paper-button>
+    </paper-toast>
+
+  </div>
 </template>
 
 
@@ -81,6 +98,7 @@
   import '@polymer/iron-selector/iron-selector';
   import '@polymer/paper-button/paper-button';
   import '@polymer/paper-icon-button/paper-icon-button';
+  import '@polymer/paper-toast/paper-toast';
 
   @Component
   export default class AppView extends mixins(ElementComponent) {
@@ -106,6 +124,18 @@
       },
     ];
 
+    private swMessage: string = '';
+
+    private swUpdateIsRequired: boolean = false;
+
+    //--------------------------------------------------
+    //  Elements
+    //--------------------------------------------------
+
+    private get swToast(): { open: () => void } {
+      return this.$refs.swToast as any;
+    }
+
     //----------------------------------------------------------------------
     //
     //  Lifecycle hooks
@@ -121,13 +151,28 @@
 
     //----------------------------------------------------------------------
     //
+    //  Internal methods
+    //
+    //----------------------------------------------------------------------
+
+    private reload(): void {
+      window.location.reload();
+    }
+
+    //----------------------------------------------------------------------
+    //
     //  Event handlers
     //
     //----------------------------------------------------------------------
 
     private swOnStateChange(info: sw.StateChangeInfo) {
+      this.swMessage = info.message;
+      this.swUpdateIsRequired = info.state === sw.ChangeState.updateIsRequired;
+      this.$nextTick(() => this.swToast.open());
+
       // tslint:disable-next-line
       console.log(info);
     }
+
   }
 </script>
