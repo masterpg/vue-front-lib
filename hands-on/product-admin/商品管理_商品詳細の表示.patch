@@ -1,0 +1,135 @@
+Index: src/app/views/product-admin-view/index.vue
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/views/product-admin-view/index.vue	(date 1528511312000)
++++ src/app/views/product-admin-view/index.vue	(date 1528511404000)
+@@ -1,4 +1,5 @@
+ <style lang="stylus" scoped>
++  @import '../../../assets/styles/_flex-layout.styl';
+   @import '../../../assets/styles/_spacing.styl';
+   @import '../../../assets/styles/_typography.styl';
+ 
+@@ -27,6 +28,39 @@
+       color: var(--app-secondary-text-color);
+     }
+   }
++
++  .product-detail {
++    padding: 0 var(--app-spacer-3);
++
++    .row {
++      width: 500px;
++      &.sp {
++        width: 100%;
++      }
++    }
++
++    .title-area {
++      @extend .app-font-subhead;
++      @extend .flex-2;
++      @extend .app-mt-4;
++    }
++
++    .input-area {
++      @extend .flex-10;
++
++      .title-input {
++        width: 400px;
++        &.sp {
++          width: 100%;
++        }
++      }
++
++      .price-input, .inventory-input {
++        width: 100px;
++        text-align: right;
++      }
++    }
++  }
+ </style>
+ 
+ 
+@@ -60,12 +94,58 @@
+       </iron-selector>
+     </div>
+ 
++    <div class="app-mt-5">
++      <div class="layout horizontal center">
++        <div class="title-text">Detail</div>
++      </div>
++      <hr style="width: 100%;">
++      <div class="layout vertical product-detail">
++        <div class="layout horizontal center row" :class="{ 'sp': sp }">
++          <div class="title-area">Title</div>
++          <div class="input-area">
++            <paper-input
++              class="title-input" :class="{ 'sp': sp }"
++              :value="selectedProduct.title"
++              @input="selectedProduct.title = $event.target.value"
++            ></paper-input>
++          </div>
++        </div>
++        <div class="layout horizontal center row" :class="{ 'sp': sp }">
++          <div class="title-area">Price</div>
++          <div class="input-area">
++            <paper-input
++              class="price-input"
++              type="number"
++              :value="selectedProduct.price"
++              @input="selectedProduct.price = $event.target.value"
++              @change="selectedProduct.price = $event.target.value"
++            >
++              <div slot="prefix">$</div>
++            </paper-input>
++          </div>
++        </div>
++        <div class="layout horizontal center row" :class="{ 'sp': sp }">
++          <div class="title-area">Stock</div>
++          <div class="input-area">
++            <paper-input
++              class="inventory-input"
++              type="number"
++              :value="selectedProduct.inventory"
++              @input="selectedProduct.inventory = $event.target.value"
++              @change="selectedProduct.inventory = $event.target.value"
++            ></paper-input>
++          </div>
++        </div>
++      </div>
++    </div>
++
+   </div>
+ </template>
+ 
+ 
+ <script lang="ts">
+   import '@polymer/iron-selector/iron-selector';
++  import '@polymer/paper-input/paper-input';
+   import { Component } from 'vue-property-decorator';
+   import { ElementComponent } from '../../components';
+   import { Product } from '../../stores/types';
+@@ -80,6 +160,8 @@
+     //
+     //----------------------------------------------------------------------
+ 
++    private selectedProduct: Product | object = {};
++
+     private get products(): Product[] {
+       return this.$stores.product.allProducts;
+     }
+@@ -113,10 +195,10 @@
+       let selectedProduct: Product | undefined;
+       if (this.productSelector.selected) {
+         const productId = parseInt(this.productSelector.selected, 10);
+-        selectedProduct = this.products.find((item) => item.id === productId);
++        const product = this.products.find((item) => item.id === productId);
++        selectedProduct = this.$utils.cloneDeep(product);
+       }
+-      // tslint:disable-next-line
+-      console.log('selectedProduct:', selectedProduct);
++      this.selectedProduct = selectedProduct || {};
+     }
+ 
+   }

@@ -1,0 +1,126 @@
+Index: src/app/views/product-admin-view/index.vue
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/views/product-admin-view/index.vue	(date 1528511273000)
++++ src/app/views/product-admin-view/index.vue	(date 1528511312000)
+@@ -8,6 +8,15 @@
+ 
+   .product-item {
+     @extend .app-pa-3;
++    cursor: pointer;
++
++    &:hover {
++      background-color: var(--app-grid-selected-hover-item);
++    }
++
++    &.iron-selected {
++      background-color: var(--app-grid-selected-activ-item);
++    }
+ 
+     .title {
+       @extend .app-font-subhead;
+@@ -29,19 +38,26 @@
+         <div class="title-text">Products</div>
+       </div>
+       <hr style="width: 100%;">
+-      <div
+-        v-for="(product, index) in products"
+-        class="layout horizontal center product-item"
+-      >
+-        <div class="layout vertical center-justified">
+-          <div class="title">{{ product.title }}</div>
+-          <div class="detail">
+-            <span>Price</span> &mdash; {{ product.price | currency }},&nbsp;
+-            <span>Stock</span> &mdash; {{ product.inventory }}
+-          </div>
+-        </div>
+-        <div class="flex"></div>
+-      </div>
++      <iron-selector
++        ref="productSelector"
++        attr-for-selected="product-id"
++        @selected-changed="productSelectorOnSelectedItemChanged"
++      >
++        <div
++          v-for="(product, index) in products"
++          class="layout horizontal center product-item"
++          :product-id="product.id"
++        >
++          <div class="layout vertical center-justified">
++            <div class="title">{{ product.title }}</div>
++            <div class="detail">
++              <span>Price</span> &mdash; {{ product.price | currency }},&nbsp;
++              <span>Stock</span> &mdash; {{ product.inventory }}
++            </div>
++          </div>
++          <div class="flex"></div>
++        </div>
++      </iron-selector>
+     </div>
+ 
+   </div>
+@@ -49,6 +65,7 @@
+ 
+ 
+ <script lang="ts">
++  import '@polymer/iron-selector/iron-selector';
+   import { Component } from 'vue-property-decorator';
+   import { ElementComponent } from '../../components';
+   import { Product } from '../../stores/types';
+@@ -67,6 +84,16 @@
+       return this.$stores.product.allProducts;
+     }
+ 
++    //--------------------------------------------------
++    //  Elements
++    //--------------------------------------------------
++
++    private get productSelector(): {
++      selected: string,
++    } {
++      return this.$refs.productSelector as any;
++    }
++
+     //----------------------------------------------------------------------
+     //
+     //  Lifecycle hooks
+@@ -76,5 +103,21 @@
+     created() {
+     }
+ 
++    //----------------------------------------------------------------------
++    //
++    //  Event handlers
++    //
++    //----------------------------------------------------------------------
++
++    private productSelectorOnSelectedItemChanged(event) {
++      let selectedProduct: Product | undefined;
++      if (this.productSelector.selected) {
++        const productId = parseInt(this.productSelector.selected, 10);
++        selectedProduct = this.products.find((item) => item.id === productId);
++      }
++      // tslint:disable-next-line
++      console.log('selectedProduct:', selectedProduct);
++    }
++
+   }
+ </script>
+Index: src/assets/styles/main.styl
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/assets/styles/main.styl	(date 1528511273000)
++++ src/assets/styles/main.styl	(date 1528511312000)
+@@ -22,6 +22,8 @@
+   --app-link-color: var(--app-blue-800);
+   --app-link-visited-color: var(--app-indigo-300);
+   --app-default-border-color: var(--app-grey-300);
++  --app-grid-selected-hover-item: var(--app-grey-100);
++  --app-grid-selected-activ-item: var(--app-grey-300);
+ 
+   /**
+    * Grid

@@ -1,0 +1,90 @@
+Index: src/app/views/product-admin-view/index.vue
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/views/product-admin-view/index.vue	(date 1528511243000)
++++ src/app/views/product-admin-view/index.vue	(date 1528511273000)
+@@ -1,10 +1,49 @@
+ <style lang="stylus" scoped>
++  @import '../../../assets/styles/_spacing.styl';
++  @import '../../../assets/styles/_typography.styl';
++
++  .title-text {
++    @extend .app-font-title;
++  }
++
++  .product-item {
++    @extend .app-pa-3;
++
++    .title {
++      @extend .app-font-subhead;
++    }
++
++    .detail {
++      @extend .app-font-body1;
++      color: var(--app-secondary-text-color);
++    }
++  }
+ </style>
+ 
+ 
+ <template>
+-  <div>
+-    product-admin-view
++  <div class="layout vertical" :class="{ 'app-ma-12': pc, 'app-ma-6': tab, 'app-ma-3': sp }">
++
++    <div>
++      <div class="layout horizontal center">
++        <div class="title-text">Products</div>
++      </div>
++      <hr style="width: 100%;">
++      <div
++        v-for="(product, index) in products"
++        class="layout horizontal center product-item"
++      >
++        <div class="layout vertical center-justified">
++          <div class="title">{{ product.title }}</div>
++          <div class="detail">
++            <span>Price</span> &mdash; {{ product.price | currency }},&nbsp;
++            <span>Stock</span> &mdash; {{ product.inventory }}
++          </div>
++        </div>
++        <div class="flex"></div>
++      </div>
++    </div>
++
+   </div>
+ </template>
+ 
+@@ -12,10 +51,30 @@
+ <script lang="ts">
+   import { Component } from 'vue-property-decorator';
+   import { ElementComponent } from '../../components';
++  import { Product } from '../../stores/types';
+   import { mixins } from 'vue-class-component';
+ 
+   @Component
+   export default class ProductAdminView extends mixins(ElementComponent) {
+ 
++    //----------------------------------------------------------------------
++    //
++    //  Variables
++    //
++    //----------------------------------------------------------------------
++
++    private get products(): Product[] {
++      return this.$stores.product.allProducts;
++    }
++
++    //----------------------------------------------------------------------
++    //
++    //  Lifecycle hooks
++    //
++    //----------------------------------------------------------------------
++
++    created() {
++    }
++
+   }
+ </script>
