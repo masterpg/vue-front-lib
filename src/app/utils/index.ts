@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import { clone, cloneDeep, assign, assignIn } from 'lodash';
 
-export class Utils {
+export const Utils = new class {
   /**
    * 指定されたオブジェクトのディープコピーを返します。
    * @param source
@@ -115,12 +115,12 @@ export class Utils {
   assignIn<T = any>(object: any, ...sources: any[]): T {
     return assignIn(object, ...sources);
   }
-}
+}();
 
 export function init(): void {
   Object.defineProperty(
     Vue.prototype, '$utils', {
-      value: new Utils(),
+      value: Utils,
       writable: false,
     },
   );
