@@ -49,145 +49,149 @@
 
 
 <script lang="ts">
-  import '@polymer/paper-button/paper-button';
-  import '@polymer/paper-card/paper-card';
-  import '@polymer/paper-input/paper-input';
-  import CustomCheckbox from './custom-checkbox.vue';
-  import CustomInput from './custom-input.vue';
-  import GreetMessage from './greet-message.vue';
-  import { Component, Prop, Watch } from 'vue-property-decorator';
-  import { ElementComponent } from '../../components';
-  import { mixins } from 'vue-class-component';
+import '@polymer/paper-button/paper-button';
+import '@polymer/paper-card/paper-card';
+import '@polymer/paper-input/paper-input';
+import CustomCheckbox from './custom-checkbox.vue';
+import CustomInput from './custom-input.vue';
+import GreetMessage from './greet-message.vue';
+import { Component, Prop, Watch } from 'vue-property-decorator';
+import { ElementComponent } from '../../components';
+import { mixins } from 'vue-class-component';
 
-  interface Post {
-    title: string;
-    message: string;
+interface Post {
+  title: string;
+  message: string;
+}
+
+@Component({
+  components: {
+    'greet-message': GreetMessage,
+    'custom-checkbox': CustomCheckbox,
+    'custom-input': CustomInput,
+  },
+})
+export default class AbcView extends mixins(ElementComponent) {
+  //--------------------------------------------------
+  //  props
+  //--------------------------------------------------
+
+  // propの初期化は@Propのdefaultで行う
+
+  @Prop({ default: 'prop value A' })
+  propA: string;
+
+  @Prop({ default: 'prop value B' })
+  propB: string;
+
+  //--------------------------------------------------
+  //  data
+  //--------------------------------------------------
+
+  // dataは初期化が必要！
+
+  private message: string = '';
+
+  private customInputValue: string = '';
+
+  private customChecked: boolean = false;
+
+  // propの値を初期化に利用できる
+  private customPropA: string = 'custom ' + this.propA;
+
+  private post: Post = {
+    title: 'Dear Jhon',
+    message: '',
+  };
+
+  //--------------------------------------------------
+  //  computed
+  //--------------------------------------------------
+
+  private get reversedMessage() {
+    return this.message
+      .split('')
+      .reverse()
+      .join('');
   }
 
-  @Component({
-    components: {
-      'greet-message': GreetMessage,
-      'custom-checkbox': CustomCheckbox,
-      'custom-input': CustomInput,
-    },
-  })
-  export default class AbcView extends mixins(ElementComponent) {
-
-    //--------------------------------------------------
-    //  props
-    //--------------------------------------------------
-
-    // propの初期化は@Propのdefaultで行う
-
-    @Prop({ default: 'prop value A' })
-    propA: string;
-
-    @Prop({ default: 'prop value B' })
-    propB: string;
-
-    //--------------------------------------------------
-    //  data
-    //--------------------------------------------------
-
-    // dataは初期化が必要！
-
-    private message: string = '';
-
-    private customInputValue: string = '';
-
-    private customChecked: boolean = false;
-
-    // propの値を初期化に利用できる
-    private customPropA: string = 'custom ' + this.propA;
-
-    private post: Post = {
-      title: 'Dear Jhon',
-      message: '',
-    };
-
-    //--------------------------------------------------
-    //  computed
-    //--------------------------------------------------
-
-    private get reversedMessage() {
-      return this.message.split('').reverse().join('');
-    }
-
-    private get doubleReversedMessage() {
-      return this.reversedMessage.split('').reverse().join('');
-    }
-
-    //--------------------------------------------------
-    //  watch
-    //--------------------------------------------------
-
-    @Watch('message')
-    private messageOnChange(newValue: string, oldValue: string): void {
-      // tslint:disable-next-line
-      console.log(`messageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
-    }
-
-    @Watch('reversedMessage')
-    private reversedMessageOnChange(newValue: string, oldValue: string): void {
-      // tslint:disable-next-line
-      console.log(`reversedMessageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
-    }
-
-    @Watch('post', { deep: true })
-    private postOnChange(newValue: Post, oldValue: Post): void {
-      // tslint:disable-next-line
-      console.log('postOnChange: newValue:', newValue, ', oldValue:', oldValue);
-    }
-
-    @Watch('post.message')
-    private postMessageOnChange(newValue: string, oldValue: string): void {
-      // tslint:disable-next-line
-      console.log('postMessageOnChange: newValue:', newValue, ', oldValue:', oldValue);
-    }
-
-    //--------------------------------------------------
-    //  lifecycle hooks
-    //--------------------------------------------------
-
-    mounted() {
-      this.message = 'mounted';
-    }
-
-    //--------------------------------------------------
-    //  internal methods
-    //--------------------------------------------------
-
-    private async sleep(ms: number): Promise<string> {
-      return new Promise<string>((resolve) => {
-        setTimeout(() => {
-          resolve(`I slept for ${ms} ms.`);
-        }, ms);
-      });
-    }
-
-    //--------------------------------------------------
-    //  event handlers
-    //--------------------------------------------------
-
-    private greetButtonOnClick() {
-      this.greetMessage.greet();
-    }
-
-    private postButtonOnClick() {
-      this.post.message = this.message;
-    }
-
-    private async sleepButtonOnClick() {
-      alert(await this.sleep(2000));
-    }
-
-    //--------------------------------------------------
-    //  elements
-    //--------------------------------------------------
-
-    private get greetMessage(): GreetMessage {
-      return this.$refs.greetMessage as GreetMessage;
-    }
-
+  private get doubleReversedMessage() {
+    return this.reversedMessage
+      .split('')
+      .reverse()
+      .join('');
   }
+
+  //--------------------------------------------------
+  //  watch
+  //--------------------------------------------------
+
+  @Watch('message')
+  private messageOnChange(newValue: string, oldValue: string): void {
+    // tslint:disable-next-line
+    console.log(`messageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
+  }
+
+  @Watch('reversedMessage')
+  private reversedMessageOnChange(newValue: string, oldValue: string): void {
+    // tslint:disable-next-line
+    console.log(`reversedMessageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
+  }
+
+  @Watch('post', { deep: true })
+  private postOnChange(newValue: Post, oldValue: Post): void {
+    // tslint:disable-next-line
+    console.log('postOnChange: newValue:', newValue, ', oldValue:', oldValue);
+  }
+
+  @Watch('post.message')
+  private postMessageOnChange(newValue: string, oldValue: string): void {
+    // tslint:disable-next-line
+    console.log('postMessageOnChange: newValue:', newValue, ', oldValue:', oldValue);
+  }
+
+  //--------------------------------------------------
+  //  lifecycle hooks
+  //--------------------------------------------------
+
+  mounted() {
+    this.message = 'mounted';
+  }
+
+  //--------------------------------------------------
+  //  internal methods
+  //--------------------------------------------------
+
+  private async sleep(ms: number): Promise<string> {
+    return new Promise<string>((resolve) => {
+      setTimeout(() => {
+        resolve(`I slept for ${ms} ms.`);
+      }, ms);
+    });
+  }
+
+  //--------------------------------------------------
+  //  event handlers
+  //--------------------------------------------------
+
+  private greetButtonOnClick() {
+    this.greetMessage.greet();
+  }
+
+  private postButtonOnClick() {
+    this.post.message = this.message;
+  }
+
+  private async sleepButtonOnClick() {
+    alert(await this.sleep(2000));
+  }
+
+  //--------------------------------------------------
+  //  elements
+  //--------------------------------------------------
+
+  private get greetMessage(): GreetMessage {
+    return this.$refs.greetMessage as GreetMessage;
+  }
+}
 </script>

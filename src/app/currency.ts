@@ -6,18 +6,10 @@ export function currency(value: string, currencyMarks?: string, decimals?: numbe
   currencyMarks = currencyMarks ? currencyMarks : '$';
   decimals = decimals ? decimals : 2;
   const stringified = Math.abs(num).toFixed(decimals);
-  const _int = decimals
-    ? stringified.slice(0, -1 - decimals)
-    : stringified;
+  const _int = decimals ? stringified.slice(0, -1 - decimals) : stringified;
   const i = _int.length % 3;
-  const head = i > 0
-    ? (_int.slice(0, i) + (_int.length > 3 ? ',' : ''))
-    : '';
-  const _float = decimals
-    ? stringified.slice(-1 - decimals)
-    : '';
+  const head = i > 0 ? _int.slice(0, i) + (_int.length > 3 ? ',' : '') : '';
+  const _float = decimals ? stringified.slice(-1 - decimals) : '';
   const sign = num < 0 ? '-' : '';
-  return sign + currencyMarks + head +
-    _int.slice(i).replace(digitsRE, '$1,') +
-    _float;
+  return sign + currencyMarks + head + _int.slice(i).replace(digitsRE, '$1,') + _float;
 }

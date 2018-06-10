@@ -29,8 +29,9 @@ export class ElementComponent extends mixins(BreakpointMixin) {
  * Mixinのサンプルです。
  * @param superclass
  */
-export const SampleMixin = <T extends new (...args: any[]) => {}>(superclass: T) => class extends superclass {
-  constructor(...args: any[]) {
-    super(args);
-  }
-};
+export const SampleMixin = <T extends new (...args: any[]) => {}>(superclass: T) =>
+  class extends superclass {
+    constructor(...args: any[]) {
+      super(args);
+    }
+  };

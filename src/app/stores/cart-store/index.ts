@@ -3,13 +3,12 @@ import { BaseStore } from '../base';
 import { Component } from 'vue-property-decorator';
 
 export interface CartState {
-  added: Array<{ id: number, quantity: number }>;
+  added: Array<{ id: number; quantity: number }>;
   checkoutStatus: CheckoutStatus;
 }
 
 @Component
 class CartStoreImpl extends BaseStore<CartState> implements CartStore {
-
   //----------------------------------------------------------------------
   //
   //  Constructors
@@ -88,19 +87,22 @@ class CartStoreImpl extends BaseStore<CartState> implements CartStore {
     }
   }
 
-  checkout(products: Array<{ id: number, quantity: number }>): Promise<void> {
+  checkout(products: Array<{ id: number; quantity: number }>): Promise<void> {
     const savedCartItems = [...this.state.added];
     this.state.checkoutStatus = CheckoutStatus.None;
     // カートを空にする
     this.state.added = [];
 
-    return this.$apis.shop.buyProducts(products).then(() => {
-      this.state.checkoutStatus = CheckoutStatus.Successful;
-    }).catch((err) => {
-      this.state.checkoutStatus = CheckoutStatus.Failed;
-      // カートの内容をAPIリクエス前の状態にロールバックする
-      this.state.added = savedCartItems;
-    });
+    return this.$apis.shop
+      .buyProducts(products)
+      .then(() => {
+        this.state.checkoutStatus = CheckoutStatus.Successful;
+      })
+      .catch((err) => {
+        this.state.checkoutStatus = CheckoutStatus.Failed;
+        // カートの内容をAPIリクエス前の状態にロールバックする
+        this.state.added = savedCartItems;
+      });
   }
 
   //----------------------------------------------------------------------
@@ -126,11 +128,12 @@ class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   private getProductById(productId: number): Product {
     const result = this.$stores.product.getProductById(productId);
     if (!result) {
-      throw new Error(`A Product that matches the specified productId \`${productId}\` was not found.`);
+      throw new Error(
+        `A Product that matches the specified productId \`${productId}\` was not found.`,
+      );
     }
     return result;
   }
-
 }
 
 const cartStore: CartStore = new CartStoreImpl();

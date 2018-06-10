@@ -9,13 +9,11 @@ class ShopAPIImpl extends BaseAPI implements ShopAPI {
     return response.data;
   }
 
-  buyProducts(products: Array<{ id: number, quantity: number }>): Promise<void> {
+  buyProducts(products: Array<{ id: number; quantity: number }>): Promise<void> {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         // simulate random checkout failure.
-        (Math.random() > 0.5 || navigator.userAgent.indexOf('PhantomJS') > -1)
-          ? resolve()
-          : reject();
+        Math.random() > 0.5 || navigator.userAgent.indexOf('PhantomJS') > -1 ? resolve() : reject();
       }, 100);
     });
   }

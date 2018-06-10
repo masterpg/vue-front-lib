@@ -82,97 +82,95 @@
 
 
 <script lang="ts">
-  import * as sw from '../service-worker';
-  import { Component } from 'vue-property-decorator';
-  import { ElementComponent } from '../components';
-  import { mixins } from 'vue-class-component';
+import * as sw from '../service-worker';
+import { Component } from 'vue-property-decorator';
+import { ElementComponent } from '../components';
+import { mixins } from 'vue-class-component';
 
-  import '@polymer/app-layout/app-drawer-layout/app-drawer-layout';
-  import '@polymer/app-layout/app-drawer/app-drawer';
-  import '@polymer/app-layout/app-header-layout/app-header-layout';
-  import '@polymer/app-layout/app-header/app-header';
-  import '@polymer/app-layout/app-toolbar/app-toolbar';
-  import '@polymer/iron-icon/iron-icon';
-  import '@polymer/iron-icons/iron-icons';
-  import '@polymer/iron-pages/iron-pages';
-  import '@polymer/iron-selector/iron-selector';
-  import '@polymer/paper-button/paper-button';
-  import '@polymer/paper-icon-button/paper-icon-button';
-  import '@polymer/paper-toast/paper-toast';
+import '@polymer/app-layout/app-drawer-layout/app-drawer-layout';
+import '@polymer/app-layout/app-drawer/app-drawer';
+import '@polymer/app-layout/app-header-layout/app-header-layout';
+import '@polymer/app-layout/app-header/app-header';
+import '@polymer/app-layout/app-toolbar/app-toolbar';
+import '@polymer/iron-icon/iron-icon';
+import '@polymer/iron-icons/iron-icons';
+import '@polymer/iron-pages/iron-pages';
+import '@polymer/iron-selector/iron-selector';
+import '@polymer/paper-button/paper-button';
+import '@polymer/paper-icon-button/paper-icon-button';
+import '@polymer/paper-toast/paper-toast';
 
-  @Component
-  export default class AppView extends mixins(ElementComponent) {
+@Component
+export default class AppView extends mixins(ElementComponent) {
+  //----------------------------------------------------------------------
+  //
+  //  Variables
+  //
+  //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
-    //
-    //  Variables
-    //
-    //----------------------------------------------------------------------
+  private page: string = '';
 
-    private page: string = '';
+  private narrow: boolean = false;
 
-    private narrow: boolean = false;
+  private items: Array<{ title: string; path: string }> = [
+    {
+      title: 'ABC',
+      path: '/abc',
+    },
+    {
+      title: 'Shopping',
+      path: '/shopping',
+    },
+  ];
 
-    private items: Array<{ title: string, path: string }> = [
-      {
-        title: 'ABC',
-        path: '/abc',
-      },
-      {
-        title: 'Shopping',
-        path: '/shopping',
-      },
-    ];
+  private swMessage: string = '';
 
-    private swMessage: string = '';
+  private swUpdateIsRequired: boolean = false;
 
-    private swUpdateIsRequired: boolean = false;
+  //--------------------------------------------------
+  //  Elements
+  //--------------------------------------------------
 
-    //--------------------------------------------------
-    //  Elements
-    //--------------------------------------------------
-
-    private get swToast(): { open: () => void } {
-      return this.$refs.swToast as any;
-    }
-
-    //----------------------------------------------------------------------
-    //
-    //  Lifecycle hooks
-    //
-    //----------------------------------------------------------------------
-
-    created() {
-      sw.addStateChangeListener(this.swOnStateChange);
-
-      // 商品一覧のロード
-      this.$stores.product.getAllProducts();
-    }
-
-    //----------------------------------------------------------------------
-    //
-    //  Internal methods
-    //
-    //----------------------------------------------------------------------
-
-    private reload(): void {
-      window.location.reload();
-    }
-
-    //----------------------------------------------------------------------
-    //
-    //  Event handlers
-    //
-    //----------------------------------------------------------------------
-
-    private swOnStateChange(info: sw.StateChangeInfo) {
-      this.swMessage = info.message;
-      this.swUpdateIsRequired = info.state === sw.ChangeState.updateIsRequired;
-      this.$nextTick(() => this.swToast.open());
-
-      // tslint:disable-next-line
-      console.log(info);
-    }
-
+  private get swToast(): { open: () => void } {
+    return this.$refs.swToast as any;
   }
+
+  //----------------------------------------------------------------------
+  //
+  //  Lifecycle hooks
+  //
+  //----------------------------------------------------------------------
+
+  created() {
+    sw.addStateChangeListener(this.swOnStateChange);
+
+    // 商品一覧のロード
+    this.$stores.product.getAllProducts();
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
+
+  private reload(): void {
+    window.location.reload();
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Event handlers
+  //
+  //----------------------------------------------------------------------
+
+  private swOnStateChange(info: sw.StateChangeInfo) {
+    this.swMessage = info.message;
+    this.swUpdateIsRequired = info.state === sw.ChangeState.updateIsRequired;
+    this.$nextTick(() => this.swToast.open());
+
+    // tslint:disable-next-line
+    console.log(info);
+  }
+}
 </script>

@@ -20,10 +20,7 @@ export const Utils = new class {
     return clone(source);
   }
 
-  assign<TObject, TSource>(
-    object: TObject,
-    source: TSource,
-  ): TObject & TSource;
+  assign<TObject, TSource>(object: TObject, source: TSource): TObject & TSource;
 
   assign<TObject, TSource1, TSource2>(
     object: TObject,
@@ -68,10 +65,7 @@ export const Utils = new class {
     return assign(object, ...sources);
   }
 
-  assignIn<TObject, TSource>(
-    object: TObject,
-    source: TSource,
-  ): TObject & TSource;
+  assignIn<TObject, TSource>(object: TObject, source: TSource): TObject & TSource;
 
   assignIn<TObject, TSource1, TSource2>(
     object: TObject,
@@ -118,10 +112,8 @@ export const Utils = new class {
 }();
 
 export function init(): void {
-  Object.defineProperty(
-    Vue.prototype, '$utils', {
-      value: Utils,
-      writable: false,
-    },
-  );
+  Object.defineProperty(Vue.prototype, '$utils', {
+    value: Utils,
+    writable: false,
+  });
 }

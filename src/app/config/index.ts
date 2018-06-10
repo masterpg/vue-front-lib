@@ -2,9 +2,9 @@ import Vue from 'vue';
 
 export interface Config {
   apiInfo: {
-    protocol: string,
-    host: string,
-    port: number,
+    protocol: string;
+    host: string;
+    port: number;
   };
 }
 
@@ -46,10 +46,8 @@ class ProdConfig implements Config {
 }
 
 export function init(): void {
-  Object.defineProperty(
-    Vue.prototype, '$config', {
-      value: newConfig(),
-      writable: false,
-    },
-  );
+  Object.defineProperty(Vue.prototype, '$config', {
+    value: newConfig(),
+    writable: false,
+  });
 }

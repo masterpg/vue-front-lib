@@ -7,10 +7,10 @@ import { TestStore } from '../../../types';
 const assert = chai.assert;
 
 suite('store/product-store', () => {
-
-  const productStore = _productStore as ProductStore & TestStore<ProductState> & {
-    getStateProductById(productId: number): Product | undefined;
-  };
+  const productStore = _productStore as ProductStore &
+    TestStore<ProductState> & {
+      getStateProductById(productId: number): Product | undefined;
+    };
   const shopAPI = productStore.$apis.shop;
 
   const API_PRODUCTS: APIProduct[] = [
@@ -67,5 +67,4 @@ suite('store/product-store', () => {
     await productStore.getAllProducts();
     assert.deepEqual(productStore.allProducts, NEW_API_PRODUCTS);
   });
-
 });

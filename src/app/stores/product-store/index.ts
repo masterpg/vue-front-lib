@@ -9,7 +9,6 @@ export interface ProductState {
 
 @Component
 class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
-
   //----------------------------------------------------------------------
   //
   //  Constructors
@@ -66,7 +65,6 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   private getStateProductById(productId: number): Product | undefined {
     return this.state.all.find((item) => item.id === productId);
   }
-
 }
 
 const productStore: ProductStore = new ProductStoreImpl();

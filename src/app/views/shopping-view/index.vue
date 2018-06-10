@@ -90,70 +90,68 @@
 
 
 <script lang="ts">
-  import '@polymer/paper-button/paper-button';
-  import '@polymer/paper-card/paper-card';
-  import '@polymer/paper-icon-button/paper-icon-button';
-  import { CartProduct, CheckoutStatus, Product } from '../../stores/types';
-  import { Component } from 'vue-property-decorator';
-  import { ElementComponent } from '../../components';
-  import { mixins } from 'vue-class-component';
+import '@polymer/paper-button/paper-button';
+import '@polymer/paper-card/paper-card';
+import '@polymer/paper-icon-button/paper-icon-button';
+import { CartProduct, CheckoutStatus, Product } from '../../stores/types';
+import { Component } from 'vue-property-decorator';
+import { ElementComponent } from '../../components';
+import { mixins } from 'vue-class-component';
 
-  @Component
-  export default class ShoppingView extends mixins(ElementComponent) {
+@Component
+export default class ShoppingView extends mixins(ElementComponent) {
+  //----------------------------------------------------------------------
+  //
+  //  Variables
+  //
+  //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
-    //
-    //  Variables
-    //
-    //----------------------------------------------------------------------
-
-    private get cartIsEmpty(): boolean {
-      return this.cartProducts.length === 0;
-    }
-
-    private get products(): Product[] {
-      return this.$stores.product.allProducts;
-    }
-
-    private get cartProducts(): CartProduct[] {
-      return this.$stores.cart.cartProducts;
-    }
-
-    private get cartTotalPrice(): number {
-      return this.$stores.cart.cartTotalPrice;
-    }
-
-    private get checkoutStatus(): { result: boolean, message: string } {
-      const result =
-        this.$stores.cart.checkoutStatus === CheckoutStatus.None ||
-        this.$stores.cart.checkoutStatus === CheckoutStatus.Successful;
-      return {
-        result,
-        message: result ? '' : 'Checkout failed.',
-      };
-    }
-
-    //----------------------------------------------------------------------
-    //
-    //  Lifecycle hooks
-    //
-    //----------------------------------------------------------------------
-
-    created() {
-    }
-
-    //----------------------------------------------------------------------
-    //
-    //  Internal methods
-    //
-    //----------------------------------------------------------------------
-
-    private addProductToCart(product: Product): void {
-      this.$stores.cart.addProductToCart(product.id);
-    }
-
-    private async checkout(): Promise<void> {
-      await this.$stores.cart.checkout(this.cartProducts);
-    }
+  private get cartIsEmpty(): boolean {
+    return this.cartProducts.length === 0;
   }
+
+  private get products(): Product[] {
+    return this.$stores.product.allProducts;
+  }
+
+  private get cartProducts(): CartProduct[] {
+    return this.$stores.cart.cartProducts;
+  }
+
+  private get cartTotalPrice(): number {
+    return this.$stores.cart.cartTotalPrice;
+  }
+
+  private get checkoutStatus(): { result: boolean; message: string } {
+    const result =
+      this.$stores.cart.checkoutStatus === CheckoutStatus.None ||
+      this.$stores.cart.checkoutStatus === CheckoutStatus.Successful;
+    return {
+      result,
+      message: result ? '' : 'Checkout failed.',
+    };
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Lifecycle hooks
+  //
+  //----------------------------------------------------------------------
+
+  created() {}
+
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
+
+  private addProductToCart(product: Product): void {
+    this.$stores.cart.addProductToCart(product.id);
+  }
+
+  private async checkout(): Promise<void> {
+    await this.$stores.cart.checkout(this.cartProducts);
+  }
+}
 </script>

@@ -7,10 +7,10 @@ import { TestStore } from '../../../types';
 const assert = chai.assert;
 
 suite('store/cart-store', () => {
-
-  const cartStore = _cartStore as CartStore & TestStore<CartState> & {
-    getProductById(productId: number): Product;
-  };
+  const cartStore = _cartStore as CartStore &
+    TestStore<CartState> & {
+      getProductById(productId: number): Product;
+    };
   const productStore = cartStore.$stores.product;
   const shopAPI = cartStore.$apis.shop;
 
@@ -53,7 +53,9 @@ suite('store/cart-store', () => {
   test('getCartProductById() - 存在しない商品IDを指定した場合', () => {
     assert.throws(
       () => cartStore.getCartProductById(9876),
-      Error, 'A Product that matches the specified productId `9876` was not found.');
+      Error,
+      'A Product that matches the specified productId `9876` was not found.',
+    );
   });
 
   test('addProductToCart() - 一般ケース', () => {
@@ -62,8 +64,7 @@ suite('store/cart-store', () => {
     td.replace(cartStore, 'getProductById');
     td.when(cartStore.getProductById(product.id)).thenReturn(product);
 
-    const decrementProductInventory =
-      td.replace(productStore, 'decrementProductInventory');
+    const decrementProductInventory = td.replace(productStore, 'decrementProductInventory');
 
     // 【実行】
     // `addProductToCart()`を2回実行
@@ -85,10 +86,7 @@ suite('store/cart-store', () => {
   });
 
   test('checkout() - 一般ケース', async () => {
-    const ADDED = [
-      { id: 1, quantity: 1 },
-      { id: 2, quantity: 1 },
-    ];
+    const ADDED = [{ id: 1, quantity: 1 }, { id: 2, quantity: 1 }];
     const buyProducts = td.replace(shopAPI, 'buyProducts');
     td.when(shopAPI.buyProducts(ADDED)).thenResolve();
 
@@ -103,10 +101,7 @@ suite('store/cart-store', () => {
   });
 
   test('checkout() - エラーケース', async () => {
-    const ADDED = [
-      { id: 1, quantity: 1 },
-      { id: 2, quantity: 1 },
-    ];
+    const ADDED = [{ id: 1, quantity: 1 }, { id: 2, quantity: 1 }];
     cartStore.state.added = ADDED;
 
     const buyProducts = td.replace(shopAPI, 'buyProducts');
@@ -116,5 +111,4 @@ suite('store/cart-store', () => {
     assert.equal(cartStore.state.checkoutStatus, CheckoutStatus.Failed);
     assert.deepEqual(cartStore.state.added, ADDED);
   });
-
 });

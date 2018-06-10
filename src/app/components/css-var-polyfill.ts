@@ -24,7 +24,9 @@ let cssVarPoly = {
     // @ts-ignore
     if (window.CSS && window.CSS.supports && window.CSS.supports('(--foo: red)')) {
       // this browser does support variables, abort
-      console.info('your browser supports CSS variables, aborting and letting the native support handle things.');
+      console.info(
+        'your browser supports CSS variables, aborting and letting the native support handle things.',
+      );
       return;
     } else {
       // edge barfs on console statements if the console is not open... lame!
@@ -137,7 +139,6 @@ let cssVarPoly = {
           // find the fallback within the getter
           curCSS = curCSS.replace(match, match.match(/var\(.+,\s*(.+)\)/)[1]);
         });
-
       }
 
       // curCSS = curCSS.replace(getterRegex2,varList[theVar]);
@@ -194,7 +195,6 @@ let cssVarPoly = {
 
     request.send();
   },
-
 };
 
 export default cssVarPoly;

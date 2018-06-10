@@ -33,7 +33,6 @@ export interface BreakpointInfo {
 
 @Component
 export default class BreakpointMixin extends Vue {
-
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -47,9 +46,9 @@ export default class BreakpointMixin extends Vue {
   protected get breakpoint(): BreakpointInfo {
     const xs = this.clientWidth < 600;
     const sm = this.clientWidth < 960 && !xs;
-    const md = this.clientWidth < (1280 - 16) && !(sm || xs);
-    const lg = this.clientWidth < (1920 - 16) && !(md || sm || xs);
-    const xl = this.clientWidth >= (1920 - 16) && !(lg || md || sm || xs);
+    const md = this.clientWidth < 1280 - 16 && !(sm || xs);
+    const lg = this.clientWidth < 1920 - 16 && !(md || sm || xs);
+    const xl = this.clientWidth >= 1920 - 16 && !(lg || md || sm || xs);
 
     const xsOnly = xs;
     const smOnly = sm;
@@ -65,16 +64,16 @@ export default class BreakpointMixin extends Vue {
 
     let name: BreakpointName;
     switch (true) {
-      case (xs):
+      case xs:
         name = BreakpointName.xs;
         break;
-      case (sm):
+      case sm:
         name = BreakpointName.sm;
         break;
-      case (md):
+      case md:
         name = BreakpointName.md;
         break;
-      case (lg):
+      case lg:
         name = BreakpointName.lg;
         break;
       default:
@@ -151,19 +150,13 @@ export default class BreakpointMixin extends Vue {
   // https://stackoverflow.com/questions/1248081
   private getClientDimensionsWidth(): number {
     if (typeof document === 'undefined') return 0; // SSR
-    return Math.max(
-      document.documentElement.clientWidth,
-      window.innerWidth || 0,
-    );
+    return Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
   }
 
   // Cross-browser support as described in:
   // https://stackoverflow.com/questions/1248081
   private getClientDimensionsHeight(): number {
     if (typeof document === 'undefined') return 0; // SSR
-    return Math.max(
-      document.documentElement.clientHeight,
-      window.innerHeight || 0,
-    );
+    return Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
   }
 }

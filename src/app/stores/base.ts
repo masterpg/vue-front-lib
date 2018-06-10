@@ -2,7 +2,6 @@ import Vue from 'vue';
 import { APIs } from '../apis/types';
 
 export abstract class BaseStore<S> extends Vue {
-
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -30,5 +29,4 @@ export abstract class BaseStore<S> extends Vue {
   protected initState(state: S): void {
     this.m_state = state;
   }
-
 }

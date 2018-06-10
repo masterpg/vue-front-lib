@@ -7,7 +7,6 @@ const debug = process.env.NODE_ENV !== 'production';
 
 @Component
 class APIsImpl extends Vue implements APIs {
-
   constructor() {
     super();
     this.m_shop = shopAPI;
@@ -18,14 +17,11 @@ class APIsImpl extends Vue implements APIs {
   get shop(): ShopAPI {
     return this.m_shop;
   }
-
 }
 
 export function init(): void {
-  Object.defineProperty(
-    Vue.prototype, '$apis', {
-      value: new APIsImpl(),
-      writable: false,
-    },
-  );
+  Object.defineProperty(Vue.prototype, '$apis', {
+    value: new APIsImpl(),
+    writable: false,
+  });
 }

@@ -8,7 +8,6 @@ const debug = process.env.NODE_ENV !== 'production';
 
 @Component
 class StoresImpl extends Vue implements Stores {
-
   constructor() {
     super();
     this.m_product = productStore;
@@ -26,14 +25,11 @@ class StoresImpl extends Vue implements Stores {
   get cart(): CartStore {
     return this.m_cart;
   }
-
 }
 
 export function init(): void {
-  Object.defineProperty(
-    Vue.prototype, '$stores', {
-      value: new StoresImpl(),
-      writable: false,
-    },
-  );
+  Object.defineProperty(Vue.prototype, '$stores', {
+    value: new StoresImpl(),
+    writable: false,
+  });
 }

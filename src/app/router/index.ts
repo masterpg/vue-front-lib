@@ -12,7 +12,8 @@ export default new VueRouter({
     },
     {
       path: '/shopping',
-      component: () => import(/* webpackChunkName: "shopping-view" */ '../views/shopping-view/index.vue'),
+      component: () =>
+        import(/* webpackChunkName: "shopping-view" */ '../views/shopping-view/index.vue'),
     },
   ],
 });
