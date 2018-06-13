@@ -1,10 +1,10 @@
 import Vue from 'vue';
 
-export interface Config {
-  apiInfo: {
-    protocol: string;
-    host: string;
-    port: number;
+export abstract class Config {
+  apiInfo: { protocol: string; host: string; port: number } = {
+    protocol: '',
+    host: '',
+    port: 0,
   };
 }
 
@@ -21,23 +21,13 @@ function newConfig(): Config {
   }
 }
 
-class DevConfig implements Config {
-  readonly apiInfo = {
-    protocol: '',
-    host: '',
-    port: 0,
-  };
+class DevConfig extends Config {
 }
 
-class StagingConfig implements Config {
-  readonly apiInfo = {
-    protocol: '',
-    host: '',
-    port: 0,
-  };
+class StagingConfig extends Config {
 }
 
-class ProdConfig implements Config {
+class ProdConfig extends Config {
   readonly apiInfo = {
     protocol: 'https',
     host: 'mydomain.net',
