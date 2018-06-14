@@ -6,6 +6,22 @@ export abstract class Config {
     host: '',
     port: 0,
   };
+
+  firebase: {
+    apiKey: string;
+    authDomain: string;
+    databaseURL?: string;
+    projectId?: string;
+    storageBucket?: string;
+    messagingSenderId?: string;
+  } = {
+    apiKey: '<API_KEY>',
+    authDomain: '<PROJECT_ID>.firebaseapp.com',
+    databaseURL: 'https://<DATABASE_NAME>.firebaseio.com',
+    projectId: '<PROJECT_ID>',
+    storageBucket: '<BUCKET>.appspot.com',
+    messagingSenderId: '<SENDER_ID>',
+  };
 }
 
 function newConfig(): Config {
@@ -21,11 +37,9 @@ function newConfig(): Config {
   }
 }
 
-class DevConfig extends Config {
-}
+class DevConfig extends Config {}
 
-class StagingConfig extends Config {
-}
+class StagingConfig extends Config {}
 
 class ProdConfig extends Config {
   readonly api = {
