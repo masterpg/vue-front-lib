@@ -1,7 +1,7 @@
 import Vue from 'vue';
 
 export abstract class Config {
-  apiInfo: { protocol: string; host: string; port: number } = {
+  api: { protocol: string; host: string; port: number } = {
     protocol: '',
     host: '',
     port: 0,
@@ -28,7 +28,7 @@ class StagingConfig extends Config {
 }
 
 class ProdConfig extends Config {
-  readonly apiInfo = {
+  readonly api = {
     protocol: 'https',
     host: 'mydomain.net',
     port: 80,
