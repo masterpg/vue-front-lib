@@ -1,0 +1,407 @@
+Index: src/app/apis/shop-api/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/apis/shop-api/index.ts	(revision e050a4675efd8433a2f71647683098f4733179a9)
++++ src/app/apis/shop-api/index.ts	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
+@@ -17,6 +17,10 @@
+       }, 100);
+     });
+   }
++
++  async updateProduct(product: Product): Promise<void> {
++    await this.put(`products/${product.id}`, product);
++  }
+ }
+ 
+ const shopAPI: ShopAPI = new ShopAPIImpl();
+Index: src/app/apis/types.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/apis/types.ts	(revision e050a4675efd8433a2f71647683098f4733179a9)
++++ src/app/apis/types.ts	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
+@@ -12,6 +12,8 @@
+   getProducts(): Promise<Product[]>;
+ 
+   buyProducts(products: Array<{ id: number; quantity: number }>): Promise<void>;
++
++  updateProduct(product: Product): Promise<void>;
+ }
+ 
+ //----------------------------------------------------------------------
+Index: src/app/router/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/router/index.ts	(revision e050a4675efd8433a2f71647683098f4733179a9)
++++ src/app/router/index.ts	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
+@@ -15,5 +15,10 @@
+       component: () =>
+         import(/* webpackChunkName: "shopping-view" */ '../views/shopping-view/index.vue'),
+     },
++    {
++      path: '/product-admin',
++      component: () =>
++        import(/* webpackChunkName: "product-admin-view" */ '../views/product-admin-view/index.vue'),
++    },
+   ],
+ });
+Index: src/app/stores/product-store/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/stores/product-store/index.ts	(revision e050a4675efd8433a2f71647683098f4733179a9)
++++ src/app/stores/product-store/index.ts	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
+@@ -56,6 +56,14 @@
+     this.state.all = products;
+   }
+ 
++  async updateProduct(product: Product): Promise<void> {
++    const stateProduct = this.getStateProductById(product.id);
++    if (stateProduct) {
++      await this.$apis.shop.updateProduct(product);
++      this.$utils.assignIn(stateProduct, product);
++    }
++  }
++
+   //----------------------------------------------------------------------
+   //
+   //  Internal methods
+Index: src/app/stores/types.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/stores/types.ts	(revision e050a4675efd8433a2f71647683098f4733179a9)
++++ src/app/stores/types.ts	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
+@@ -20,6 +20,8 @@
+   decrementProductInventory(productId: number): void;
+ 
+   getAllProducts(): Promise<void>;
++
++  updateProduct(product: Product): Promise<void>;
+ }
+ 
+ export interface CartStore {
+Index: src/app/views/index.vue
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/views/index.vue	(revision e050a4675efd8433a2f71647683098f4733179a9)
++++ src/app/views/index.vue	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
+@@ -121,6 +121,10 @@
+       title: 'Shopping',
+       path: '/shopping',
+     },
++    {
++      title: 'Product Admin',
++      path: '/product-admin',
++    },
+   ];
+ 
+   private swMessage: string = '';
+Index: src/app/views/product-admin-view/index.vue
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/views/product-admin-view/index.vue	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
++++ src/app/views/product-admin-view/index.vue	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
+@@ -0,0 +1,228 @@
++<style lang="stylus" scoped>
++  @import '../../../assets/styles/_flex-layout.styl';
++  @import '../../../assets/styles/_spacing.styl';
++  @import '../../../assets/styles/_typography.styl';
++
++  .title-text {
++    @extend .app-font-title;
++  }
++
++  .product-item {
++    @extend .app-pa-3;
++    cursor: pointer;
++
++    &:hover {
++      background-color: var(--app-grid-selected-hover-item);
++    }
++
++    &.iron-selected {
++      background-color: var(--app-grid-selected-activ-item);
++    }
++
++    .title {
++      @extend .app-font-subhead;
++    }
++
++    .detail {
++      @extend .app-font-body1;
++      color: var(--app-secondary-text-color);
++    }
++  }
++
++  .product-detail {
++    padding: 0 var(--app-spacer-3);
++
++    .row {
++      width: 500px;
++      &.sp {
++        width: 100%;
++      }
++    }
++
++    .title-area {
++      @extend .app-font-subhead;
++      @extend .flex-2;
++      @extend .app-mt-4;
++    }
++
++    .input-area {
++      @extend .flex-10;
++
++      .title-input {
++        width: 400px;
++        &.sp {
++          width: 100%;
++        }
++      }
++
++      .price-input, .inventory-input {
++        width: 100px;
++        text-align: right;
++      }
++    }
++  }
++
++  .update-button {
++    color: var(--app-link-color);
++  }
++</style>
++
++
++<template>
++  <div class="layout vertical" :class="{ 'app-ma-12': pc, 'app-ma-6': tab, 'app-ma-3': sp }">
++
++    <div>
++      <div class="layout horizontal center">
++        <div class="title-text">Products</div>
++      </div>
++      <hr style="width: 100%;">
++      <iron-selector
++        ref="productSelector"
++        attr-for-selected="product-id"
++        @selected-changed="productSelectorOnSelectedItemChanged"
++      >
++        <div
++          v-for="(product, index) in products"
++          class="layout horizontal center product-item"
++          :product-id="product.id"
++        >
++          <div class="layout vertical center-justified">
++            <div class="title">{{ product.title }}</div>
++            <div class="detail">
++              <span>Price</span> &mdash; {{ product.price | currency }},&nbsp;
++              <span>Stock</span> &mdash; {{ product.inventory }}
++            </div>
++          </div>
++          <div class="flex"></div>
++        </div>
++      </iron-selector>
++    </div>
++
++    <div class="app-mt-5">
++      <div class="layout horizontal center">
++        <div class="title-text">Detail</div>
++      </div>
++      <hr style="width: 100%;">
++      <div class="layout vertical product-detail">
++        <div class="layout horizontal center row" :class="{ 'sp': sp }">
++          <div class="title-area">Title</div>
++          <div class="input-area">
++            <paper-input
++              class="title-input" :class="{ 'sp': sp }"
++              :value="selectedProduct.title"
++              @input="selectedProduct.title = $event.target.value"
++            ></paper-input>
++          </div>
++        </div>
++        <div class="layout horizontal center row" :class="{ 'sp': sp }">
++          <div class="title-area">Price</div>
++          <div class="input-area">
++            <paper-input
++              class="price-input"
++              type="number"
++              :value="selectedProduct.price"
++              @input="selectedProduct.price = $event.target.value"
++              @change="selectedProduct.price = $event.target.value"
++            >
++              <div slot="prefix">$</div>
++            </paper-input>
++          </div>
++        </div>
++        <div class="layout horizontal center row" :class="{ 'sp': sp }">
++          <div class="title-area">Stock</div>
++          <div class="input-area">
++            <paper-input
++              class="inventory-input"
++              type="number"
++              :value="selectedProduct.inventory"
++              @input="selectedProduct.inventory = $event.target.value"
++              @change="selectedProduct.inventory = $event.target.value"
++            ></paper-input>
++          </div>
++        </div>
++      </div>
++      <div class="layout horizontal center end-justified">
++        <paper-button
++          v-show="!!selectedProduct.id"
++          class="update-button"
++          @click="updateProduct"
++        >
++          Update
++        </paper-button>
++      </div>
++    </div>
++
++  </div>
++</template>
++
++
++<script lang="ts">
++import '@polymer/iron-selector/iron-selector';
++import '@polymer/paper-input/paper-input';
++import { Component } from 'vue-property-decorator';
++import { ElementComponent } from '../../components';
++import { Product } from '../../stores/types';
++import { mixins } from 'vue-class-component';
++
++@Component
++export default class ProductAdminView extends mixins(ElementComponent) {
++  //----------------------------------------------------------------------
++  //
++  //  Variables
++  //
++  //----------------------------------------------------------------------
++
++  private selectedProduct: Product | object = {};
++
++  private get products(): Product[] {
++    return this.$stores.product.allProducts;
++  }
++
++  //--------------------------------------------------
++  //  Elements
++  //--------------------------------------------------
++
++  private get productSelector(): {
++    selected: string;
++  } {
++    return this.$refs.productSelector as any;
++  }
++
++  //----------------------------------------------------------------------
++  //
++  //  Lifecycle hooks
++  //
++  //----------------------------------------------------------------------
++
++  created() {}
++
++  //----------------------------------------------------------------------
++  //
++  //  Internal methods
++  //
++  //----------------------------------------------------------------------
++
++  async updateProduct(): Promise<void> {
++    await this.$stores.product.updateProduct(this.selectedProduct as Product);
++  }
++
++  //----------------------------------------------------------------------
++  //
++  //  Event handlers
++  //
++  //----------------------------------------------------------------------
++
++  private productSelectorOnSelectedItemChanged(event) {
++    let selectedProduct: Product | undefined;
++    if (this.productSelector.selected) {
++      const productId = parseInt(this.productSelector.selected, 10);
++      selectedProduct = this.products.find((item) => item.id === productId);
++      const product = this.products.find((item) => item.id === productId);
++      selectedProduct = this.$utils.cloneDeep(product);
++    }
++    // tslint:disable-next-line
++    console.log('selectedProduct:', selectedProduct);
++    this.selectedProduct = selectedProduct || {};
++  }
++}
++</script>
+Index: src/assets/styles/main.styl
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/assets/styles/main.styl	(revision e050a4675efd8433a2f71647683098f4733179a9)
++++ src/assets/styles/main.styl	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
+@@ -22,6 +22,8 @@
+   --app-link-color: var(--app-light-blue-a400);
+   --app-link-visited-color: var(--app-indigo-300);
+   --app-default-border-color: var(--app-grey-300);
++  --app-grid-selected-hover-item: var(--app-grey-100);
++  --app-grid-selected-activ-item: var(--app-grey-300);
+ 
+   /**
+    * Grid
+Index: test/app/stores/product-store/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- test/app/stores/product-store/index.ts	(revision e050a4675efd8433a2f71647683098f4733179a9)
++++ test/app/stores/product-store/index.ts	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
+@@ -67,4 +67,39 @@
+     await productStore.getAllProducts();
+     assert.deepEqual(productStore.allProducts, NEW_API_PRODUCTS);
+   });
++
++  test('updateProduct() - 一般ケース', async () => {
++    // 対象の商品に更新データを設定
++    const PRODUCT_ID = 1;
++    const product = productStore.getProductById(PRODUCT_ID);
++    if (!product) throw new Error(`Product \`${PRODUCT_ID}\` was not found.`);
++    product.title = 'aaa';
++    product.price = 111;
++    product.inventory = 222;
++
++    // モック処理の設定
++    const stateProduct = {} as Product;
++    td.replace(productStore, 'getStateProductById');
++    td.when(productStore.getStateProductById(PRODUCT_ID)).thenReturn(stateProduct);
++    td.replace(shopAPI, 'updateProduct');
++
++    // 商品の更新を実行
++    await productStore.updateProduct(product);
++
++    // Stateの商品と引数の商品の内容が一致することを検証
++    // (Stateの商品に引数の商品の内容が反映されるため)
++    assert.deepEqual(stateProduct, product);
++    // `ShopAPI#updateProduct()`が呼び出されたことを検証
++    td.verify(shopAPI.updateProduct(product));
++  });
++
++  test('updateProduct() - 存在しない商品を指定した場合', async () => {
++    // 対象の商品に更新データを設定
++    const product = productStore.getProductById(1) as Product;
++    product.id = 9876;
++    // 商品の更新を実行
++    await productStore.updateProduct(product);
++    // 何も問題は起きない
++    assert(true);
++  });
+ });
