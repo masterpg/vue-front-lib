@@ -1,6 +1,6 @@
 import Vue from 'vue';
-import cartStore from './cart-store';
-import productStore from './product-store';
+import { newCartStore } from './cart-store';
+import { newProductStore } from './product-store';
 import { Stores, CartStore, ProductStore } from './types';
 import { Component } from 'vue-property-decorator';
 
@@ -10,8 +10,8 @@ const debug = process.env.NODE_ENV !== 'production';
 class StoresImpl extends Vue implements Stores {
   constructor() {
     super();
-    this.m_product = productStore;
-    this.m_cart = cartStore;
+    this.m_product = newProductStore();
+    this.m_cart = newCartStore();
   }
 
   private m_product: ProductStore;
