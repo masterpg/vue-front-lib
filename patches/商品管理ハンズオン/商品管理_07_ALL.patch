@@ -1,119 +1,11 @@
-Index: src/app/apis/shop-api/index.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/app/apis/shop-api/index.ts	(revision e050a4675efd8433a2f71647683098f4733179a9)
-+++ src/app/apis/shop-api/index.ts	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
-@@ -17,6 +17,10 @@
-       }, 100);
-     });
-   }
-+
-+  async updateProduct(product: Product): Promise<void> {
-+    await this.put(`products/${product.id}`, product);
-+  }
- }
- 
- const shopAPI: ShopAPI = new ShopAPIImpl();
-Index: src/app/apis/types.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/app/apis/types.ts	(revision e050a4675efd8433a2f71647683098f4733179a9)
-+++ src/app/apis/types.ts	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
-@@ -12,6 +12,8 @@
-   getProducts(): Promise<Product[]>;
- 
-   buyProducts(products: Array<{ id: number; quantity: number }>): Promise<void>;
-+
-+  updateProduct(product: Product): Promise<void>;
- }
- 
- //----------------------------------------------------------------------
-Index: src/app/router/index.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/app/router/index.ts	(revision e050a4675efd8433a2f71647683098f4733179a9)
-+++ src/app/router/index.ts	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
-@@ -15,5 +15,10 @@
-       component: () =>
-         import(/* webpackChunkName: "shopping-view" */ '../views/shopping-view/index.vue'),
-     },
-+    {
-+      path: '/product-admin',
-+      component: () =>
-+        import(/* webpackChunkName: "product-admin-view" */ '../views/product-admin-view/index.vue'),
-+    },
-   ],
- });
-Index: src/app/stores/product-store/index.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/app/stores/product-store/index.ts	(revision e050a4675efd8433a2f71647683098f4733179a9)
-+++ src/app/stores/product-store/index.ts	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
-@@ -56,6 +56,14 @@
-     this.state.all = products;
-   }
- 
-+  async updateProduct(product: Product): Promise<void> {
-+    const stateProduct = this.getStateProductById(product.id);
-+    if (stateProduct) {
-+      await this.$apis.shop.updateProduct(product);
-+      this.$utils.assignIn(stateProduct, product);
-+    }
-+  }
-+
-   //----------------------------------------------------------------------
-   //
-   //  Internal methods
-Index: src/app/stores/types.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/app/stores/types.ts	(revision e050a4675efd8433a2f71647683098f4733179a9)
-+++ src/app/stores/types.ts	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
-@@ -20,6 +20,8 @@
-   decrementProductInventory(productId: number): void;
- 
-   getAllProducts(): Promise<void>;
-+
-+  updateProduct(product: Product): Promise<void>;
- }
- 
- export interface CartStore {
-Index: src/app/views/index.vue
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/app/views/index.vue	(revision e050a4675efd8433a2f71647683098f4733179a9)
-+++ src/app/views/index.vue	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
-@@ -121,6 +121,10 @@
-       title: 'Shopping',
-       path: '/shopping',
-     },
-+    {
-+      title: 'Product Admin',
-+      path: '/product-admin',
-+    },
-   ];
- 
-   private swMessage: string = '';
 Index: src/app/views/product-admin-view/index.vue
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
-+++ src/app/views/product-admin-view/index.vue	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
-@@ -0,0 +1,228 @@
+--- src/app/views/product-admin-view/index.vue	(revision 6ab730d3eb8dad3e93b0440214c7a104b0e0a291)
++++ src/app/views/product-admin-view/index.vue	(revision 6ab730d3eb8dad3e93b0440214c7a104b0e0a291)
+@@ -0,0 +1,227 @@
 +<style lang="stylus" scoped>
 +  @import '../../../assets/styles/_flex-layout.styl';
 +  @import '../../../assets/styles/_spacing.styl';
@@ -331,10 +223,9 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  private productSelectorOnSelectedItemChanged(event) {
 +    let selectedProduct: Product | undefined;
 +    if (this.productSelector.selected) {
-+      const productId = parseInt(this.productSelector.selected, 10);
-+      selectedProduct = this.products.find((item) => item.id === productId);
-+      const product = this.products.find((item) => item.id === productId);
-+      selectedProduct = this.$utils.cloneDeep(product);
++      const productId = this.productSelector.selected;
++      const foundProduct = this.products.find((item) => item.id === productId);
++      selectedProduct = this.$utils.cloneDeep(foundProduct);
 +    }
 +    // tslint:disable-next-line
 +    console.log('selectedProduct:', selectedProduct);
@@ -342,13 +233,121 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  }
 +}
 +</script>
+Index: src/app/apis/shop-api/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/apis/shop-api/index.ts	(date 1529152859000)
++++ src/app/apis/shop-api/index.ts	(date 1529154060000)
+@@ -17,6 +17,10 @@
+       }, 100);
+     });
+   }
++
++  async updateProduct(product: Product): Promise<void> {
++    await this.put(`products/${product.id}`, product);
++  }
+ }
+ 
+ const shopAPI: ShopAPI = new ShopAPIImpl();
+Index: src/app/apis/types.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/apis/types.ts	(date 1529152859000)
++++ src/app/apis/types.ts	(date 1529154060000)
+@@ -12,6 +12,8 @@
+   getProducts(): Promise<Product[]>;
+ 
+   buyProducts(products: Array<{ id: string; quantity: number }>): Promise<void>;
++
++  updateProduct(product: Product): Promise<void>;
+ }
+ 
+ //----------------------------------------------------------------------
+Index: src/app/router/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/router/index.ts	(date 1529152859000)
++++ src/app/router/index.ts	(date 1529154060000)
+@@ -15,5 +15,10 @@
+       component: () =>
+         import(/* webpackChunkName: "shopping-view" */ '../views/shopping-view/index.vue'),
+     },
++    {
++      path: '/product-admin',
++      component: () =>
++        import(/* webpackChunkName: "product-admin-view" */ '../views/product-admin-view/index.vue'),
++    },
+   ],
+ });
+Index: src/app/stores/product-store/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/stores/product-store/index.ts	(date 1529152859000)
++++ src/app/stores/product-store/index.ts	(date 1529154060000)
+@@ -56,6 +56,14 @@
+     this.state.all = products;
+   }
+ 
++  async updateProduct(product: Product): Promise<void> {
++    const stateProduct = this.getStateProductById(product.id);
++    if (stateProduct) {
++      await this.$apis.shop.updateProduct(product);
++      this.$utils.assignIn(stateProduct, product);
++    }
++  }
++
+   //----------------------------------------------------------------------
+   //
+   //  Internal methods
+Index: src/app/stores/types.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/stores/types.ts	(date 1529152859000)
++++ src/app/stores/types.ts	(date 1529154060000)
+@@ -20,6 +20,8 @@
+   decrementProductInventory(productId: string): void;
+ 
+   getAllProducts(): Promise<void>;
++
++  updateProduct(product: Product): Promise<void>;
+ }
+ 
+ export interface CartStore {
+Index: src/app/views/index.vue
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/views/index.vue	(date 1529152859000)
++++ src/app/views/index.vue	(date 1529154060000)
+@@ -121,6 +121,10 @@
+       title: 'Shopping',
+       path: '/shopping',
+     },
++    {
++      title: 'Product Admin',
++      path: '/product-admin',
++    },
+   ];
+ 
+   private swMessage: string = '';
 Index: src/assets/styles/main.styl
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/assets/styles/main.styl	(revision e050a4675efd8433a2f71647683098f4733179a9)
-+++ src/assets/styles/main.styl	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
+--- src/assets/styles/main.styl	(date 1529152859000)
++++ src/assets/styles/main.styl	(date 1529154060000)
 @@ -22,6 +22,8 @@
    --app-link-color: var(--app-light-blue-a400);
    --app-link-visited-color: var(--app-indigo-300);
@@ -363,8 +362,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- test/app/stores/product-store/index.ts	(revision e050a4675efd8433a2f71647683098f4733179a9)
-+++ test/app/stores/product-store/index.ts	(revision d6330cb48eae57e25d8b667230e81ba074246abe)
+--- test/app/stores/product-store/index.ts	(date 1529152859000)
++++ test/app/stores/product-store/index.ts	(date 1529154060000)
 @@ -67,4 +67,39 @@
      await productStore.getAllProducts();
      assert.deepEqual(productStore.allProducts, NEW_API_PRODUCTS);
@@ -372,7 +371,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +
 +  test('updateProduct() - 一般ケース', async () => {
 +    // 対象の商品に更新データを設定
-+    const PRODUCT_ID = 1;
++    const PRODUCT_ID = '1';
 +    const product = productStore.getProductById(PRODUCT_ID);
 +    if (!product) throw new Error(`Product \`${PRODUCT_ID}\` was not found.`);
 +    product.title = 'aaa';
@@ -397,8 +396,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +
 +  test('updateProduct() - 存在しない商品を指定した場合', async () => {
 +    // 対象の商品に更新データを設定
-+    const product = productStore.getProductById(1) as Product;
-+    product.id = 9876;
++    const product = productStore.getProductById('1') as Product;
++    product.id = '9876';
 +    // 商品の更新を実行
 +    await productStore.updateProduct(product);
 +    // 何も問題は起きない

@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1529132342000)
-+++ src/app/views/product-admin-view/index.vue	(date 1529132508000)
+--- src/app/views/product-admin-view/index.vue	(date 1529153101000)
++++ src/app/views/product-admin-view/index.vue	(date 1529153674000)
 @@ -1,4 +1,5 @@
  <style lang="stylus" scoped>
 +  @import '../../../assets/styles/_flex-layout.styl';
@@ -119,12 +119,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    private get products(): Product[] {
      return this.$stores.product.allProducts;
    }
-@@ -112,9 +194,12 @@
+@@ -111,10 +193,12 @@
+     let selectedProduct: Product | undefined;
      if (this.productSelector.selected) {
-       const productId = parseInt(this.productSelector.selected, 10);
-       selectedProduct = this.products.find((item) => item.id === productId);
-+      const product = this.products.find((item) => item.id === productId);
-+      selectedProduct = this.$utils.cloneDeep(product);
+       const productId = this.productSelector.selected;
+-      selectedProduct = this.products.find((item) => item.id === productId);
++      const foundProduct = this.products.find((item) => item.id === productId);
++      selectedProduct = this.$utils.cloneDeep(foundProduct);
      }
      // tslint:disable-next-line
      console.log('selectedProduct:', selectedProduct);

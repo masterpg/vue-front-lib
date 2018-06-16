@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- test/app/stores/product-store/index.ts	(date 1529132832000)
-+++ test/app/stores/product-store/index.ts	(date 1529133037000)
+--- test/app/stores/product-store/index.ts	(date 1529153850000)
++++ test/app/stores/product-store/index.ts	(date 1529153986000)
 @@ -67,4 +67,39 @@
      await productStore.getAllProducts();
      assert.deepEqual(productStore.allProducts, NEW_API_PRODUCTS);
@@ -12,7 +12,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +
 +  test('updateProduct() - 一般ケース', async () => {
 +    // 対象の商品に更新データを設定
-+    const PRODUCT_ID = 1;
++    const PRODUCT_ID = '1';
 +    const product = productStore.getProductById(PRODUCT_ID);
 +    if (!product) throw new Error(`Product \`${PRODUCT_ID}\` was not found.`);
 +    product.title = 'aaa';
@@ -37,8 +37,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +
 +  test('updateProduct() - 存在しない商品を指定した場合', async () => {
 +    // 対象の商品に更新データを設定
-+    const product = productStore.getProductById(1) as Product;
-+    product.id = 9876;
++    const product = productStore.getProductById('1') as Product;
++    product.id = '9876';
 +    // 商品の更新を実行
 +    await productStore.updateProduct(product);
 +    // 何も問題は起きない

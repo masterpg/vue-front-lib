@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1529131996000)
-+++ src/app/views/product-admin-view/index.vue	(date 1529132342000)
+--- src/app/views/product-admin-view/index.vue	(date 1529152990000)
++++ src/app/views/product-admin-view/index.vue	(date 1529153101000)
 @@ -8,6 +8,15 @@
  
    .product-item {
@@ -100,7 +100,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  private productSelectorOnSelectedItemChanged(event) {
 +    let selectedProduct: Product | undefined;
 +    if (this.productSelector.selected) {
-+      const productId = parseInt(this.productSelector.selected, 10);
++      const productId = this.productSelector.selected;
 +      selectedProduct = this.products.find((item) => item.id === productId);
 +    }
 +    // tslint:disable-next-line
@@ -113,8 +113,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/assets/styles/main.styl	(date 1529131996000)
-+++ src/assets/styles/main.styl	(date 1529132342000)
+--- src/assets/styles/main.styl	(date 1529152990000)
++++ src/assets/styles/main.styl	(date 1529153101000)
 @@ -22,6 +22,8 @@
    --app-link-color: var(--app-light-blue-a400);
    --app-link-visited-color: var(--app-indigo-300);

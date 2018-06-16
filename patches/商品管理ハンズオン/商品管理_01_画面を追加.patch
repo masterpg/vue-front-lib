@@ -1,46 +1,10 @@
-Index: src/app/router/index.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/app/router/index.ts	(revision e050a4675efd8433a2f71647683098f4733179a9)
-+++ src/app/router/index.ts	(revision 82e402634c16bf7c98add281be776347d090c941)
-@@ -15,5 +15,10 @@
-       component: () =>
-         import(/* webpackChunkName: "shopping-view" */ '../views/shopping-view/index.vue'),
-     },
-+    {
-+      path: '/product-admin',
-+      component: () =>
-+        import(/* webpackChunkName: "product-admin-view" */ '../views/product-admin-view/index.vue'),
-+    },
-   ],
- });
-Index: src/app/views/index.vue
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/app/views/index.vue	(revision e050a4675efd8433a2f71647683098f4733179a9)
-+++ src/app/views/index.vue	(revision 82e402634c16bf7c98add281be776347d090c941)
-@@ -121,6 +121,10 @@
-       title: 'Shopping',
-       path: '/shopping',
-     },
-+    {
-+      title: 'Product Admin',
-+      path: '/product-admin',
-+    },
-   ];
- 
-   private swMessage: string = '';
 Index: src/app/views/product-admin-view/index.vue
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(revision 82e402634c16bf7c98add281be776347d090c941)
-+++ src/app/views/product-admin-view/index.vue	(revision 82e402634c16bf7c98add281be776347d090c941)
+--- src/app/views/product-admin-view/index.vue	(revision f72c0cf200912fd6a8c7e24bd6ee3a0cc740d582)
++++ src/app/views/product-admin-view/index.vue	(revision f72c0cf200912fd6a8c7e24bd6ee3a0cc740d582)
 @@ -0,0 +1,19 @@
 +<style lang="stylus" scoped>
 +</style>
@@ -61,3 +25,39 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +@Component
 +export default class ProductAdminView extends mixins(ElementComponent) {}
 +</script>
+Index: src/app/router/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/router/index.ts	(date 1529152859000)
++++ src/app/router/index.ts	(date 1529152891000)
+@@ -15,5 +15,10 @@
+       component: () =>
+         import(/* webpackChunkName: "shopping-view" */ '../views/shopping-view/index.vue'),
+     },
++    {
++      path: '/product-admin',
++      component: () =>
++        import(/* webpackChunkName: "product-admin-view" */ '../views/product-admin-view/index.vue'),
++    },
+   ],
+ });
+Index: src/app/views/index.vue
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/views/index.vue	(date 1529152859000)
++++ src/app/views/index.vue	(date 1529152891000)
+@@ -121,6 +121,10 @@
+       title: 'Shopping',
+       path: '/shopping',
+     },
++    {
++      title: 'Product Admin',
++      path: '/product-admin',
++    },
+   ];
+ 
+   private swMessage: string = '';
