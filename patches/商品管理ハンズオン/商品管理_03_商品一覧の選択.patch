@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1528511273000)
-+++ src/app/views/product-admin-view/index.vue	(date 1528511312000)
+--- src/app/views/product-admin-view/index.vue	(date 1529131996000)
++++ src/app/views/product-admin-view/index.vue	(date 1529132342000)
 @@ -8,6 +8,15 @@
  
    .product-item {
@@ -65,58 +65,58 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  
  
  <script lang="ts">
-+  import '@polymer/iron-selector/iron-selector';
-   import { Component } from 'vue-property-decorator';
-   import { ElementComponent } from '../../components';
-   import { Product } from '../../stores/types';
-@@ -67,6 +84,16 @@
-       return this.$stores.product.allProducts;
-     }
- 
-+    //--------------------------------------------------
-+    //  Elements
-+    //--------------------------------------------------
-+
-+    private get productSelector(): {
-+      selected: string,
-+    } {
-+      return this.$refs.productSelector as any;
-+    }
-+
-     //----------------------------------------------------------------------
-     //
-     //  Lifecycle hooks
-@@ -76,5 +103,21 @@
-     created() {
-     }
- 
-+    //----------------------------------------------------------------------
-+    //
-+    //  Event handlers
-+    //
-+    //----------------------------------------------------------------------
-+
-+    private productSelectorOnSelectedItemChanged(event) {
-+      let selectedProduct: Product | undefined;
-+      if (this.productSelector.selected) {
-+        const productId = parseInt(this.productSelector.selected, 10);
-+        selectedProduct = this.products.find((item) => item.id === productId);
-+      }
-+      // tslint:disable-next-line
-+      console.log('selectedProduct:', selectedProduct);
-+    }
-+
++import '@polymer/iron-selector/iron-selector';
+ import { Component } from 'vue-property-decorator';
+ import { ElementComponent } from '../../components';
+ import { Product } from '../../stores/types';
+@@ -66,6 +83,16 @@
+     return this.$stores.product.allProducts;
    }
+ 
++  //--------------------------------------------------
++  //  Elements
++  //--------------------------------------------------
++
++  private get productSelector(): {
++    selected: string;
++  } {
++    return this.$refs.productSelector as any;
++  }
++
+   //----------------------------------------------------------------------
+   //
+   //  Lifecycle hooks
+@@ -73,5 +100,21 @@
+   //----------------------------------------------------------------------
+ 
+   created() {}
++
++  //----------------------------------------------------------------------
++  //
++  //  Event handlers
++  //
++  //----------------------------------------------------------------------
++
++  private productSelectorOnSelectedItemChanged(event) {
++    let selectedProduct: Product | undefined;
++    if (this.productSelector.selected) {
++      const productId = parseInt(this.productSelector.selected, 10);
++      selectedProduct = this.products.find((item) => item.id === productId);
++    }
++    // tslint:disable-next-line
++    console.log('selectedProduct:', selectedProduct);
++  }
+ }
  </script>
 Index: src/assets/styles/main.styl
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/assets/styles/main.styl	(date 1528511273000)
-+++ src/assets/styles/main.styl	(date 1528511312000)
+--- src/assets/styles/main.styl	(date 1529131996000)
++++ src/assets/styles/main.styl	(date 1529132342000)
 @@ -22,6 +22,8 @@
-   --app-link-color: var(--app-blue-800);
+   --app-link-color: var(--app-light-blue-a400);
    --app-link-visited-color: var(--app-indigo-300);
    --app-default-border-color: var(--app-grey-300);
 +  --app-grid-selected-hover-item: var(--app-grey-100);

@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1528511243000)
-+++ src/app/views/product-admin-view/index.vue	(date 1528511273000)
+--- src/app/views/product-admin-view/index.vue	(date 1529133981000)
++++ src/app/views/product-admin-view/index.vue	(date 1529134219000)
 @@ -1,10 +1,49 @@
  <style lang="stylus" scoped>
 +  @import '../../../assets/styles/_spacing.styl';
@@ -57,34 +57,32 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    </div>
  </template>
  
-@@ -12,10 +51,30 @@
+@@ -12,8 +51,27 @@
  <script lang="ts">
-   import { Component } from 'vue-property-decorator';
-   import { ElementComponent } from '../../components';
-+  import { Product } from '../../stores/types';
-   import { mixins } from 'vue-class-component';
+ import { Component } from 'vue-property-decorator';
+ import { ElementComponent } from '../../components';
++import { Product } from '../../stores/types';
+ import { mixins } from 'vue-class-component';
  
-   @Component
-   export default class ProductAdminView extends mixins(ElementComponent) {
- 
-+    //----------------------------------------------------------------------
-+    //
-+    //  Variables
-+    //
-+    //----------------------------------------------------------------------
+ @Component
+-export default class ProductAdminView extends mixins(ElementComponent) {}
++export default class ProductAdminView extends mixins(ElementComponent) {
++  //----------------------------------------------------------------------
++  //
++  //  Variables
++  //
++  //----------------------------------------------------------------------
 +
-+    private get products(): Product[] {
-+      return this.$stores.product.allProducts;
-+    }
++  private get products(): Product[] {
++    return this.$stores.product.allProducts;
++  }
 +
-+    //----------------------------------------------------------------------
-+    //
-+    //  Lifecycle hooks
-+    //
-+    //----------------------------------------------------------------------
++  //----------------------------------------------------------------------
++  //
++  //  Lifecycle hooks
++  //
++  //----------------------------------------------------------------------
 +
-+    created() {
-+    }
-+
-   }
++  created() {}
++}
  </script>

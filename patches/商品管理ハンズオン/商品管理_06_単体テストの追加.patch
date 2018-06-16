@@ -3,12 +3,13 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- test/app/stores/product-store/index.ts	(date 1528606006000)
-+++ test/app/stores/product-store/index.ts	(date 1528606014000)
-@@ -68,4 +68,39 @@
+--- test/app/stores/product-store/index.ts	(date 1529132832000)
++++ test/app/stores/product-store/index.ts	(date 1529133037000)
+@@ -67,4 +67,39 @@
+     await productStore.getAllProducts();
      assert.deepEqual(productStore.allProducts, NEW_API_PRODUCTS);
    });
- 
++
 +  test('updateProduct() - 一般ケース', async () => {
 +    // 対象の商品に更新データを設定
 +    const PRODUCT_ID = 1;
@@ -43,5 +44,4 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +    // 何も問題は起きない
 +    assert(true);
 +  });
-+
  });
