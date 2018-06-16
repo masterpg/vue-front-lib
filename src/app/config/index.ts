@@ -21,11 +21,9 @@ function newConfig(): Config {
   }
 }
 
-class DevConfig extends Config {
-}
+class DevConfig extends Config {}
 
-class StagingConfig extends Config {
-}
+class StagingConfig extends Config {}
 
 class ProdConfig extends Config {
   readonly api = {

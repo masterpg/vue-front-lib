@@ -1,5 +1,5 @@
 import * as td from 'testdouble';
-import _productStore, { ProductState } from '../../../../src/app/stores/product-store';
+import { newProductStore, ProductState } from '../../../../src/app/stores/product-store';
 import { Product as APIProduct } from '../../../../src/app/apis/types';
 import { Product, ProductStore } from '../../../../src/app/stores/types';
 import { TestStore } from '../../../types';
@@ -7,7 +7,7 @@ import { TestStore } from '../../../types';
 const assert = chai.assert;
 
 suite('store/product-store', () => {
-  const productStore = _productStore as ProductStore &
+  const productStore = newProductStore() as ProductStore &
     TestStore<ProductState> & {
       getStateProductById(productId: number): Product | undefined;
     };

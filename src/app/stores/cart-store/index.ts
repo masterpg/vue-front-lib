@@ -136,5 +136,6 @@ class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   }
 }
 
-const cartStore: CartStore = new CartStoreImpl();
-export default cartStore;
+export function newCartStore(): CartStore {
+  return new CartStoreImpl();
+}

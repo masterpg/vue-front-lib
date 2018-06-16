@@ -67,5 +67,6 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   }
 }
 
-const productStore: ProductStore = new ProductStoreImpl();
-export default productStore;
+export function newProductStore(): ProductStore {
+  return new ProductStoreImpl();
+}
