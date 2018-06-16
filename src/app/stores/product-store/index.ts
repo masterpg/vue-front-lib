@@ -39,12 +39,12 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   //
   //----------------------------------------------------------------------
 
-  getProductById(productId: number): Product | undefined {
+  getProductById(productId: string): Product | undefined {
     const stateProduct = this.getStateProductById(productId);
     return this.$utils.cloneDeep(stateProduct);
   }
 
-  decrementProductInventory(productId: number): void {
+  decrementProductInventory(productId: string): void {
     const stateProduct = this.getStateProductById(productId);
     if (stateProduct) {
       stateProduct.inventory--;
@@ -62,7 +62,7 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   //
   //----------------------------------------------------------------------
 
-  private getStateProductById(productId: number): Product | undefined {
+  private getStateProductById(productId: string): Product | undefined {
     return this.state.all.find((item) => item.id === productId);
   }
 }

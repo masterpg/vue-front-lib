@@ -3,7 +3,7 @@ import { BaseStore } from '../base';
 import { Component } from 'vue-property-decorator';
 
 export interface CartState {
-  added: Array<{ id: number; quantity: number }>;
+  added: Array<{ id: string; quantity: number }>;
   checkoutStatus: CheckoutStatus;
 }
 
@@ -58,7 +58,7 @@ class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   //
   //----------------------------------------------------------------------
 
-  getCartProductById(productId): CartProduct | undefined {
+  getCartProductById(productId: string): CartProduct | undefined {
     const product = this.getProductById(productId);
     const cartProduct = this.state.added.find((item) => {
       return item.id === productId;
@@ -72,7 +72,7 @@ class CartStoreImpl extends BaseStore<CartState> implements CartStore {
     };
   }
 
-  addProductToCart(productId: number): void {
+  addProductToCart(productId: string): void {
     const product = this.getProductById(productId);
     this.state.checkoutStatus = CheckoutStatus.None;
     if (product.inventory > 0) {
@@ -87,7 +87,7 @@ class CartStoreImpl extends BaseStore<CartState> implements CartStore {
     }
   }
 
-  checkout(products: Array<{ id: number; quantity: number }>): Promise<void> {
+  checkout(products: Array<{ id: string; quantity: number }>): Promise<void> {
     const savedCartItems = [...this.state.added];
     this.state.checkoutStatus = CheckoutStatus.None;
     // カートを空にする
@@ -111,21 +111,21 @@ class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   //
   //----------------------------------------------------------------------
 
-  private pushProductToCart(productId: number): void {
+  private pushProductToCart(productId: string): void {
     this.state.added.push({
       id: productId,
       quantity: 1,
     });
   }
 
-  private incrementItemQuantity(productId: number): void {
+  private incrementItemQuantity(productId: string): void {
     const cartItem = this.state.added.find((item) => item.id === productId);
     if (cartItem) {
       cartItem.quantity++;
     }
   }
 
-  private getProductById(productId: number): Product {
+  private getProductById(productId: string): Product {
     const result = this.$stores.product.getProductById(productId);
     if (!result) {
       throw new Error(
