@@ -9,15 +9,15 @@ const assert = chai.assert;
 suite('store/cart-store', () => {
   const cartStore = newCartStore() as CartStore &
     TestStore<CartState> & {
-      getProductById(productId: number): Product;
+      getProductById(productId: string): Product;
     };
   const productStore = cartStore.$stores.product;
   const shopAPI = cartStore.$apis.shop;
 
   const PRODUCTS: APIProduct[] = [
-    { id: 1, title: 'iPad 4 Mini', price: 500.01, inventory: 2 },
-    { id: 2, title: 'H&M T-Shirt White', price: 10.99, inventory: 10 },
-    { id: 3, title: 'Charli XCX - Sucker CD', price: 19.99, inventory: 5 },
+    { id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 2 },
+    { id: '2', title: 'H&M T-Shirt White', price: 10.99, inventory: 10 },
+    { id: '3', title: 'Charli XCX - Sucker CD', price: 19.99, inventory: 5 },
   ];
 
   setup(() => {
@@ -36,7 +36,7 @@ suite('store/cart-store', () => {
   });
 
   test('getCartProductById() - 一般ケース', () => {
-    cartStore.state.added = [{ id: 1, quantity: 1 }];
+    cartStore.state.added = [{ id: '1', quantity: 1 }];
     const product = PRODUCTS[0];
     td.replace(cartStore, 'getProductById');
     td.when(cartStore.getProductById(product.id)).thenReturn(product);
@@ -52,7 +52,7 @@ suite('store/cart-store', () => {
 
   test('getCartProductById() - 存在しない商品IDを指定した場合', () => {
     assert.throws(
-      () => cartStore.getCartProductById(9876),
+      () => cartStore.getCartProductById('9876'),
       Error,
       'A Product that matches the specified productId `9876` was not found.',
     );
@@ -86,7 +86,7 @@ suite('store/cart-store', () => {
   });
 
   test('checkout() - 一般ケース', async () => {
-    const ADDED = [{ id: 1, quantity: 1 }, { id: 2, quantity: 1 }];
+    const ADDED = [{ id: '1', quantity: 1 }, { id: '2', quantity: 1 }];
     const buyProducts = td.replace(shopAPI, 'buyProducts');
     td.when(shopAPI.buyProducts(ADDED)).thenResolve();
 
@@ -101,7 +101,7 @@ suite('store/cart-store', () => {
   });
 
   test('checkout() - エラーケース', async () => {
-    const ADDED = [{ id: 1, quantity: 1 }, { id: 2, quantity: 1 }];
+    const ADDED = [{ id: '1', quantity: 1 }, { id: '2', quantity: 1 }];
     cartStore.state.added = ADDED;
 
     const buyProducts = td.replace(shopAPI, 'buyProducts');

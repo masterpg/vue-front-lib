@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/apis/shop-api/index.ts	(date 1529132508000)
-+++ src/app/apis/shop-api/index.ts	(date 1529132832000)
+--- src/app/apis/shop-api/index.ts	(date 1529153674000)
++++ src/app/apis/shop-api/index.ts	(date 1529153850000)
 @@ -17,6 +17,10 @@
        }, 100);
      });
@@ -21,12 +21,12 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/apis/types.ts	(date 1529132508000)
-+++ src/app/apis/types.ts	(date 1529132832000)
+--- src/app/apis/types.ts	(date 1529153674000)
++++ src/app/apis/types.ts	(date 1529153850000)
 @@ -12,6 +12,8 @@
    getProducts(): Promise<Product[]>;
  
-   buyProducts(products: Array<{ id: number; quantity: number }>): Promise<void>;
+   buyProducts(products: Array<{ id: string; quantity: number }>): Promise<void>;
 +
 +  updateProduct(product: Product): Promise<void>;
  }
@@ -37,8 +37,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/stores/product-store/index.ts	(date 1529132508000)
-+++ src/app/stores/product-store/index.ts	(date 1529132832000)
+--- src/app/stores/product-store/index.ts	(date 1529153674000)
++++ src/app/stores/product-store/index.ts	(date 1529153850000)
 @@ -56,6 +56,14 @@
      this.state.all = products;
    }
@@ -59,10 +59,10 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/stores/types.ts	(date 1529132508000)
-+++ src/app/stores/types.ts	(date 1529132832000)
+--- src/app/stores/types.ts	(date 1529153674000)
++++ src/app/stores/types.ts	(date 1529153850000)
 @@ -20,6 +20,8 @@
-   decrementProductInventory(productId: number): void;
+   decrementProductInventory(productId: string): void;
  
    getAllProducts(): Promise<void>;
 +
@@ -75,8 +75,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1529132508000)
-+++ src/app/views/product-admin-view/index.vue	(date 1529132832000)
+--- src/app/views/product-admin-view/index.vue	(date 1529153674000)
++++ src/app/views/product-admin-view/index.vue	(date 1529153850000)
 @@ -61,6 +61,10 @@
        }
      }

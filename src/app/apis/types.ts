@@ -11,7 +11,7 @@ export interface APIs {
 export interface ShopAPI {
   getProducts(): Promise<Product[]>;
 
-  buyProducts(products: Array<{ id: number; quantity: number }>): Promise<void>;
+  buyProducts(products: Array<{ id: string; quantity: number }>): Promise<void>;
 }
 
 //----------------------------------------------------------------------
@@ -21,7 +21,7 @@ export interface ShopAPI {
 //----------------------------------------------------------------------
 
 export interface Product {
-  id: number;
+  id: string;
   title: string;
   price: number;
   inventory: number;

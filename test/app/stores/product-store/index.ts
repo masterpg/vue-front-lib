@@ -9,14 +9,14 @@ const assert = chai.assert;
 suite('store/product-store', () => {
   const productStore = newProductStore() as ProductStore &
     TestStore<ProductState> & {
-      getStateProductById(productId: number): Product | undefined;
+      getStateProductById(productId: string): Product | undefined;
     };
   const shopAPI = productStore.$apis.shop;
 
   const API_PRODUCTS: APIProduct[] = [
-    { id: 1, title: 'iPad 4 Mini', price: 500.01, inventory: 2 },
-    { id: 2, title: 'H&M T-Shirt White', price: 10.99, inventory: 10 },
-    { id: 3, title: 'Charli XCX - Sucker CD', price: 19.99, inventory: 5 },
+    { id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 2 },
+    { id: '2', title: 'H&M T-Shirt White', price: 10.99, inventory: 10 },
+    { id: '3', title: 'Charli XCX - Sucker CD', price: 19.99, inventory: 5 },
   ];
 
   setup(() => {
@@ -30,7 +30,7 @@ suite('store/product-store', () => {
   });
 
   test('getProductById() - 取得できるパターン', () => {
-    const stateProduct = productStore.getStateProductById(1) as Product;
+    const stateProduct = productStore.getStateProductById('1') as Product;
     const actual = productStore.getProductById(stateProduct.id);
     assert.deepEqual(actual, stateProduct);
     // actualとproductが同一オブジェクトでないことを検証
@@ -39,27 +39,27 @@ suite('store/product-store', () => {
   });
 
   test('getProductById() - 取得できないパターン', () => {
-    const actual = productStore.getProductById(9876);
+    const actual = productStore.getProductById('9876');
     assert.isUndefined(actual);
   });
 
   test('decrementProductInventory() - 一般ケース', () => {
-    const stateProduct = productStore.getStateProductById(1) as Product;
+    const stateProduct = productStore.getStateProductById('1') as Product;
     const inventoryBk = stateProduct.inventory;
     productStore.decrementProductInventory(stateProduct.id);
     assert.equal(stateProduct.inventory, inventoryBk - 1);
   });
 
   test('decrementProductInventory() - 存在しない商品IDを指定した場合', () => {
-    productStore.decrementProductInventory(9876);
+    productStore.decrementProductInventory('9876');
     // 何も問題は起きない
     assert(true);
   });
 
   test('getAllProducts()', async () => {
     const NEW_API_PRODUCTS = [
-      { id: 1, title: 'product1', price: 101, inventory: 1 },
-      { id: 2, title: 'product2', price: 102, inventory: 2 },
+      { id: '1', title: 'product1', price: 101, inventory: 1 },
+      { id: '2', title: 'product2', price: 102, inventory: 2 },
     ];
     td.replace(shopAPI, 'getProducts');
     td.when(shopAPI.getProducts()).thenResolve(NEW_API_PRODUCTS);
