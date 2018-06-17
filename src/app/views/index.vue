@@ -143,9 +143,6 @@ export default class AppView extends mixins(ElementComponent) {
 
   created() {
     sw.addStateChangeListener(this.swOnStateChange);
-
-    // 商品一覧のロード
-    this.$stores.product.getAllProducts();
   }
 
   //----------------------------------------------------------------------
