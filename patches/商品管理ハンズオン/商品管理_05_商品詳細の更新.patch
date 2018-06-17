@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/apis/shop-api/index.ts	(date 1529153674000)
-+++ src/app/apis/shop-api/index.ts	(date 1529153850000)
+--- src/app/apis/shop-api/index.ts	(date 1529231274000)
++++ src/app/apis/shop-api/index.ts	(date 1529231775000)
 @@ -17,6 +17,10 @@
        }, 100);
      });
@@ -21,8 +21,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/apis/types.ts	(date 1529153674000)
-+++ src/app/apis/types.ts	(date 1529153850000)
+--- src/app/apis/types.ts	(date 1529231274000)
++++ src/app/apis/types.ts	(date 1529231775000)
 @@ -12,6 +12,8 @@
    getProducts(): Promise<Product[]>;
  
@@ -37,14 +37,14 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/stores/product-store/index.ts	(date 1529153674000)
-+++ src/app/stores/product-store/index.ts	(date 1529153850000)
-@@ -56,6 +56,14 @@
-     this.state.all = products;
+--- src/app/stores/product-store/index.ts	(date 1529231274000)
++++ src/app/stores/product-store/index.ts	(date 1529231775000)
+@@ -66,6 +66,14 @@
+     this.f_state.all = products;
    }
  
 +  async updateProduct(product: Product): Promise<void> {
-+    const stateProduct = this.getStateProductById(product.id);
++    const stateProduct = this.m_getStateProductById(product.id);
 +    if (stateProduct) {
 +      await this.$apis.shop.updateProduct(product);
 +      this.$utils.assignIn(stateProduct, product);
@@ -59,8 +59,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/stores/types.ts	(date 1529153674000)
-+++ src/app/stores/types.ts	(date 1529153850000)
+--- src/app/stores/types.ts	(date 1529231274000)
++++ src/app/stores/types.ts	(date 1529231775000)
 @@ -20,6 +20,8 @@
    decrementProductInventory(productId: string): void;
  
@@ -75,8 +75,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1529153674000)
-+++ src/app/views/product-admin-view/index.vue	(date 1529153850000)
+--- src/app/views/product-admin-view/index.vue	(date 1529231274000)
++++ src/app/views/product-admin-view/index.vue	(date 1529231775000)
 @@ -61,6 +61,10 @@
        }
      }
@@ -88,23 +88,23 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  </style>
  
  
-@@ -136,6 +140,15 @@
+@@ -135,6 +139,15 @@
              ></paper-input>
            </div>
          </div>
 +      </div>
 +      <div class="layout horizontal center end-justified">
 +        <paper-button
-+          v-show="!!selectedProduct.id"
++          v-show="!!m_selectedProduct.id"
 +          class="update-button"
-+          @click="updateProduct"
++          @click="m_updateProduct"
 +        >
 +          Update
 +        </paper-button>
        </div>
      </div>
  
-@@ -183,6 +196,16 @@
+@@ -180,6 +193,16 @@
  
    created() {}
  
@@ -114,8 +114,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  //
 +  //----------------------------------------------------------------------
 +
-+  async updateProduct(): Promise<void> {
-+    await this.$stores.product.updateProduct(this.selectedProduct as Product);
++  async m_updateProduct(): Promise<void> {
++    await this.$stores.product.updateProduct(this.m_selectedProduct as Product);
 +  }
 +
    //----------------------------------------------------------------------

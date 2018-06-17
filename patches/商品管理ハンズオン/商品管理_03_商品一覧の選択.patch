@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1529152990000)
-+++ src/app/views/product-admin-view/index.vue	(date 1529153101000)
+--- src/app/views/product-admin-view/index.vue	(date 1529229381000)
++++ src/app/views/product-admin-view/index.vue	(date 1529229626000)
 @@ -8,6 +8,15 @@
  
    .product-item {
@@ -21,12 +21,12 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  
      .title {
        @extend .app-font-subhead;
-@@ -29,19 +38,26 @@
+@@ -29,26 +38,33 @@
          <div class="title-text">Products</div>
        </div>
        <hr style="width: 100%;">
 -      <div
--        v-for="(product, index) in products"
+-        v-for="(product, index) in m_products"
 -        class="layout horizontal center product-item"
 -      >
 -        <div class="layout vertical center-justified">
@@ -38,13 +38,14 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 -        </div>
 -        <div class="flex"></div>
 -      </div>
+-    </div>
 +      <iron-selector
 +        ref="productSelector"
 +        attr-for-selected="product-id"
 +        @selected-changed="productSelectorOnSelectedItemChanged"
 +      >
 +        <div
-+          v-for="(product, index) in products"
++          v-for="(product, index) in m_products"
 +          class="layout horizontal center product-item"
 +          :product-id="product.id"
 +        >
@@ -57,11 +58,10 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +          </div>
 +          <div class="flex"></div>
 +        </div>
-+      </iron-selector>
-     </div>
++      </iron-selector>    </div>
  
    </div>
-@@ -49,6 +65,7 @@
+ </template>
  
  
  <script lang="ts">
@@ -69,7 +69,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  import { Component } from 'vue-property-decorator';
  import { ElementComponent } from '../../components';
  import { Product } from '../../stores/types';
-@@ -66,6 +83,16 @@
+@@ -66,6 +82,16 @@
      return this.$stores.product.allProducts;
    }
  
@@ -77,7 +77,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  //  Elements
 +  //--------------------------------------------------
 +
-+  private get productSelector(): {
++  get m_productSelector(): {
 +    selected: string;
 +  } {
 +    return this.$refs.productSelector as any;
@@ -86,7 +86,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    //----------------------------------------------------------------------
    //
    //  Lifecycle hooks
-@@ -73,5 +100,21 @@
+@@ -73,5 +99,21 @@
    //----------------------------------------------------------------------
  
    created() {}
@@ -99,9 +99,9 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +
 +  private productSelectorOnSelectedItemChanged(event) {
 +    let selectedProduct: Product | undefined;
-+    if (this.productSelector.selected) {
-+      const productId = this.productSelector.selected;
-+      selectedProduct = this.products.find((item) => item.id === productId);
++    if (this.m_productSelector.selected) {
++      const productId = this.m_productSelector.selected;
++      selectedProduct = this.m_products.find((item) => item.id === productId);
 +    }
 +    // tslint:disable-next-line
 +    console.log('selectedProduct:', selectedProduct);
@@ -113,8 +113,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/assets/styles/main.styl	(date 1529152990000)
-+++ src/assets/styles/main.styl	(date 1529153101000)
+--- src/assets/styles/main.styl	(date 1529229381000)
++++ src/assets/styles/main.styl	(date 1529229626000)
 @@ -22,6 +22,8 @@
    --app-link-color: var(--app-light-blue-a400);
    --app-link-visited-color: var(--app-indigo-300);
