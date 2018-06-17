@@ -1,5 +1,5 @@
 <template>
-  <div>greet times: {{ greetTimes }}</div>
+  <div>greet times: {{ m_greetTimes }}</div>
 </template>
 
 
@@ -13,13 +13,16 @@
 <script lang="ts">
 import { Component, Prop } from 'vue-property-decorator';
 import { ElementComponent } from '../../components';
+
 @Component
 export default class GreetMessage extends ElementComponent {
   @Prop() message: string;
-  private greetTimes: number = 0;
+
+  m_greetTimes: number = 0;
+
   greet(): void {
     alert('greeting: ' + this.message);
-    this.greetTimes++;
+    this.m_greetTimes++;
   }
 }
 </script>

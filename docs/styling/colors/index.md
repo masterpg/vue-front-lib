@@ -1,12 +1,12 @@
 # Colors
 
-本プロジェクトでは[Material Design spec](https://material.io/guidelines/style/color.html)にしたがってCSS変数で色を定義しており、この変数を利用して色を設定することができます。
+本プロジェクトでは [Material Design spec](https://material.io/guidelines/style/color.html) にしたがって CSS 変数で色を定義しており、この変数を利用して色を設定することができます。
 
 ## 色を設定する
 
-本プロジェクトでは[カラーパレット](#color-palettes)で示す色をCSS変数で定義しています。
+本プロジェクトでは[カラーパレット](#color-palettes)で示す色を CSS 変数で定義しています。
 
-以下は.vueファイルで色指定する例です。
+以下は .vue ファイルで色指定する例です。
 
 ```html
 <style lang="stylus" scoped>
@@ -16,10 +16,9 @@
 </style>
 ```
 
-
 ## <div id="color-palettes">カラーパレット</div>
 
-`src/assets/styles/_color.styl`には次の色がCSS変数で定義されています。
+`src/assets/styles/_colors.styl`には次の色が CSS 変数で定義されています。
 
 <div class="layout horizontal start" style="margin-top: 40px;">
   <div>

@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1529153101000)
-+++ src/app/views/product-admin-view/index.vue	(date 1529153674000)
+--- src/app/views/product-admin-view/index.vue	(date 1529229626000)
++++ src/app/views/product-admin-view/index.vue	(date 1529231274000)
 @@ -1,4 +1,5 @@
  <style lang="stylus" scoped>
 +  @import '../../../assets/styles/_flex-layout.styl';
@@ -51,9 +51,9 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  </style>
  
  
-@@ -60,12 +94,58 @@
-       </iron-selector>
-     </div>
+@@ -59,12 +93,58 @@
+         </div>
+       </iron-selector>    </div>
  
 +    <div class="app-mt-5">
 +      <div class="layout horizontal center">
@@ -61,39 +61,39 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +      </div>
 +      <hr style="width: 100%;">
 +      <div class="layout vertical product-detail">
-+        <div class="layout horizontal center row" :class="{ 'sp': sp }">
++        <div class="layout horizontal center row" :class="{ 'sp': f_sp }">
 +          <div class="title-area">Title</div>
 +          <div class="input-area">
 +            <paper-input
-+              class="title-input" :class="{ 'sp': sp }"
-+              :value="selectedProduct.title"
-+              @input="selectedProduct.title = $event.target.value"
++              class="title-input" :class="{ 'sp': f_sp }"
++              :value="m_selectedProduct.title"
++              @input="m_selectedProduct.title = $event.target.value"
 +            ></paper-input>
 +          </div>
 +        </div>
-+        <div class="layout horizontal center row" :class="{ 'sp': sp }">
++        <div class="layout horizontal center row" :class="{ 'sp': f_sp }">
 +          <div class="title-area">Price</div>
 +          <div class="input-area">
 +            <paper-input
 +              class="price-input"
 +              type="number"
-+              :value="selectedProduct.price"
-+              @input="selectedProduct.price = $event.target.value"
-+              @change="selectedProduct.price = $event.target.value"
++              :value="m_selectedProduct.price"
++              @input="m_selectedProduct.price = $event.target.value"
++              @change="m_selectedProduct.price = $event.target.value"
 +            >
 +              <div slot="prefix">$</div>
 +            </paper-input>
 +          </div>
 +        </div>
-+        <div class="layout horizontal center row" :class="{ 'sp': sp }">
++        <div class="layout horizontal center row" :class="{ 'sp': f_sp }">
 +          <div class="title-area">Stock</div>
 +          <div class="input-area">
 +            <paper-input
 +              class="inventory-input"
 +              type="number"
-+              :value="selectedProduct.inventory"
-+              @input="selectedProduct.inventory = $event.target.value"
-+              @change="selectedProduct.inventory = $event.target.value"
++              :value="m_selectedProduct.inventory"
++              @input="m_selectedProduct.inventory = $event.target.value"
++              @change="m_selectedProduct.inventory = $event.target.value"
 +            ></paper-input>
 +          </div>
 +        </div>
@@ -110,26 +110,37 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  import { Component } from 'vue-property-decorator';
  import { ElementComponent } from '../../components';
  import { Product } from '../../stores/types';
-@@ -79,6 +159,8 @@
+@@ -78,6 +158,8 @@
    //
    //----------------------------------------------------------------------
  
-+  private selectedProduct: Product | object = {};
++  m_selectedProduct: Product | object = {};
 +
-   private get products(): Product[] {
+   get m_products(): Product[] {
      return this.$stores.product.allProducts;
    }
-@@ -111,10 +193,12 @@
+@@ -86,9 +168,7 @@
+   //  Elements
+   //--------------------------------------------------
+ 
+-  get m_productSelector(): {
+-    selected: string;
+-  } {
++  get m_productSelector(): { selected: string } {
+     return this.$refs.productSelector as any;
+   }
+ 
+@@ -110,10 +190,12 @@
      let selectedProduct: Product | undefined;
-     if (this.productSelector.selected) {
-       const productId = this.productSelector.selected;
--      selectedProduct = this.products.find((item) => item.id === productId);
-+      const foundProduct = this.products.find((item) => item.id === productId);
+     if (this.m_productSelector.selected) {
+       const productId = this.m_productSelector.selected;
+-      selectedProduct = this.m_products.find((item) => item.id === productId);
++      const foundProduct = this.m_products.find((item) => item.id === productId);
 +      selectedProduct = this.$utils.cloneDeep(foundProduct);
      }
      // tslint:disable-next-line
      console.log('selectedProduct:', selectedProduct);
-+    this.selectedProduct = selectedProduct || {};
++    this.m_selectedProduct = selectedProduct || {};
    }
  }
  </script>

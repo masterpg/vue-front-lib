@@ -1,16 +1,17 @@
 import * as td from 'testdouble';
-import { newProductStore, ProductState } from '../../../../src/app/stores/product-store';
 import { Product as APIProduct } from '../../../../src/app/apis/types';
-import { Product, ProductStore } from '../../../../src/app/stores/types';
+import { Product } from '../../../../src/app/stores/types';
 import { TestStore } from '../../../types';
+import {
+  newProductStore,
+  ProductState,
+  ProductStoreImpl,
+} from '../../../../src/app/stores/product-store';
 
 const assert = chai.assert;
 
 suite('store/product-store', () => {
-  const productStore = newProductStore() as ProductStore &
-    TestStore<ProductState> & {
-      getStateProductById(productId: string): Product | undefined;
-    };
+  const productStore = newProductStore() as ProductStoreImpl & TestStore<ProductState>;
   const shopAPI = productStore.$apis.shop;
 
   const API_PRODUCTS: APIProduct[] = [
@@ -20,7 +21,7 @@ suite('store/product-store', () => {
   ];
 
   setup(() => {
-    productStore.initState({
+    productStore.f_initState({
       all: API_PRODUCTS,
     });
   });
@@ -30,7 +31,7 @@ suite('store/product-store', () => {
   });
 
   test('getProductById() - 取得できるパターン', () => {
-    const stateProduct = productStore.getStateProductById('1') as Product;
+    const stateProduct = productStore.m_getStateProductById('1') as Product;
     const actual = productStore.getProductById(stateProduct.id);
     assert.deepEqual(actual, stateProduct);
     // actualとproductが同一オブジェクトでないことを検証
@@ -44,7 +45,7 @@ suite('store/product-store', () => {
   });
 
   test('decrementProductInventory() - 一般ケース', () => {
-    const stateProduct = productStore.getStateProductById('1') as Product;
+    const stateProduct = productStore.m_getStateProductById('1') as Product;
     const inventoryBk = stateProduct.inventory;
     productStore.decrementProductInventory(stateProduct.id);
     assert.equal(stateProduct.inventory, inventoryBk - 1);

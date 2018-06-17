@@ -1,16 +1,13 @@
 import * as td from 'testdouble';
-import { CartState, newCartStore } from '../../../../src/app/stores/cart-store';
-import { CartStore, CheckoutStatus, Product } from '../../../../src/app/stores/types';
+import { CartState, CartStoreImpl, newCartStore } from '../../../../src/app/stores/cart-store';
+import { CheckoutStatus } from '../../../../src/app/stores/types';
 import { Product as APIProduct } from '../../../../src/app/apis/types';
 import { TestStore } from '../../../types';
 
 const assert = chai.assert;
 
 suite('store/cart-store', () => {
-  const cartStore = newCartStore() as CartStore &
-    TestStore<CartState> & {
-      getProductById(productId: string): Product;
-    };
+  const cartStore = newCartStore() as CartStoreImpl & TestStore<CartState>;
   const productStore = cartStore.$stores.product;
   const shopAPI = cartStore.$apis.shop;
 
@@ -21,14 +18,14 @@ suite('store/cart-store', () => {
   ];
 
   setup(() => {
-    cartStore.initState({
+    cartStore.f_initState({
       added: [],
       checkoutStatus: CheckoutStatus.None,
     });
   });
 
   teardown(() => {
-    cartStore.initState({
+    cartStore.f_initState({
       added: [],
       checkoutStatus: CheckoutStatus.None,
     });
@@ -36,10 +33,10 @@ suite('store/cart-store', () => {
   });
 
   test('getCartProductById() - 一般ケース', () => {
-    cartStore.state.added = [{ id: '1', quantity: 1 }];
+    cartStore.f_state.added = [{ id: '1', quantity: 1 }];
     const product = PRODUCTS[0];
-    td.replace(cartStore, 'getProductById');
-    td.when(cartStore.getProductById(product.id)).thenReturn(product);
+    td.replace(cartStore, 'm_getProductById');
+    td.when(cartStore.m_getProductById(product.id)).thenReturn(product);
 
     const actual = cartStore.getCartProductById(product.id);
     assert.deepEqual(actual, {
@@ -61,8 +58,8 @@ suite('store/cart-store', () => {
   test('addProductToCart() - 一般ケース', () => {
     const product = PRODUCTS[1];
     // 【準備】
-    td.replace(cartStore, 'getProductById');
-    td.when(cartStore.getProductById(product.id)).thenReturn(product);
+    td.replace(cartStore, 'm_getProductById');
+    td.when(cartStore.m_getProductById(product.id)).thenReturn(product);
 
     const decrementProductInventory = td.replace(productStore, 'decrementProductInventory');
 
@@ -72,7 +69,7 @@ suite('store/cart-store', () => {
     cartStore.addProductToCart(product.id);
 
     // 【検証】
-    assert.equal(cartStore.state.checkoutStatus, CheckoutStatus.None);
+    assert.equal(cartStore.f_state.checkoutStatus, CheckoutStatus.None);
     // カートに追加された商品とその数量を検証
     const cartProduct = cartStore.getCartProductById(product.id);
     assert.equal(cartProduct!.id, product.id);
@@ -91,8 +88,8 @@ suite('store/cart-store', () => {
     td.when(shopAPI.buyProducts(ADDED)).thenResolve();
 
     await cartStore.checkout(ADDED);
-    assert.equal(cartStore.state.checkoutStatus, CheckoutStatus.Successful);
-    assert.deepEqual(cartStore.state.added, []);
+    assert.equal(cartStore.f_state.checkoutStatus, CheckoutStatus.Successful);
+    assert.deepEqual(cartStore.f_state.added, []);
 
     // `ShopAPI#buyProducts()`の呼び出し回数と渡された引数を検証
     const buyProductsExplain = td.explain(buyProducts);
@@ -102,13 +99,13 @@ suite('store/cart-store', () => {
 
   test('checkout() - エラーケース', async () => {
     const ADDED = [{ id: '1', quantity: 1 }, { id: '2', quantity: 1 }];
-    cartStore.state.added = ADDED;
+    cartStore.f_state.added = ADDED;
 
     const buyProducts = td.replace(shopAPI, 'buyProducts');
     td.when(shopAPI.buyProducts(ADDED)).thenReject(new Error());
 
     await cartStore.checkout(ADDED);
-    assert.equal(cartStore.state.checkoutStatus, CheckoutStatus.Failed);
-    assert.deepEqual(cartStore.state.added, ADDED);
+    assert.equal(cartStore.f_state.checkoutStatus, CheckoutStatus.Failed);
+    assert.deepEqual(cartStore.f_state.added, ADDED);
   });
 });

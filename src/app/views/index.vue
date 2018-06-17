@@ -44,13 +44,13 @@
       <!--
         Drawer content
       -->
-      <app-drawer ref="drawer" slot="drawer" :swipe-open="narrow">
+      <app-drawer ref="drawer" slot="drawer" :swipe-open="m_narrow">
         <app-toolbar class="drawer-toolbar">
           <iron-icon src="assets/images/manifest/icon-48x48.png"></iron-icon>
           <div main-title class="app-ml-2">Vue WWW Base</div>
         </app-toolbar>
         <div class="drawer-list">
-          <template v-for="item in items">
+          <template v-for="item in m_items">
             <router-link :to="item.path" class="item">{{ item.title }}</router-link>
           </template>
         </div>
@@ -68,11 +68,11 @@
 
     </app-drawer-layout>
 
-    <paper-toast ref="swToast" :duration="swUpdateIsRequired ? 0 : 5000" :text="swMessage">
+    <paper-toast ref="swToast" :duration="m_swUpdateIsRequired ? 0 : 5000" :text="m_swMessage">
       <paper-button
-        v-show="swUpdateIsRequired"
+        v-show="m_swUpdateIsRequired"
         class="link-button"
-        @click="reload"
+        @click="m_reload"
       >再読み込み
       </paper-button>
     </paper-toast>
@@ -108,11 +108,9 @@ export default class AppView extends mixins(ElementComponent) {
   //
   //----------------------------------------------------------------------
 
-  private page: string = '';
+  m_narrow: boolean = false;
 
-  private narrow: boolean = false;
-
-  private items: Array<{ title: string; path: string }> = [
+  m_items: Array<{ title: string; path: string }> = [
     {
       title: 'ABC',
       path: '/abc',
@@ -123,15 +121,15 @@ export default class AppView extends mixins(ElementComponent) {
     },
   ];
 
-  private swMessage: string = '';
+  m_swMessage: string = '';
 
-  private swUpdateIsRequired: boolean = false;
+  m_swUpdateIsRequired: boolean = false;
 
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
 
-  private get swToast(): { open: () => void } {
+  get m_swToast(): { open: () => void } {
     return this.$refs.swToast as any;
   }
 
@@ -142,7 +140,7 @@ export default class AppView extends mixins(ElementComponent) {
   //----------------------------------------------------------------------
 
   created() {
-    sw.addStateChangeListener(this.swOnStateChange);
+    sw.addStateChangeListener(this.m_swOnStateChange);
   }
 
   //----------------------------------------------------------------------
@@ -151,7 +149,7 @@ export default class AppView extends mixins(ElementComponent) {
   //
   //----------------------------------------------------------------------
 
-  private reload(): void {
+  m_reload(): void {
     window.location.reload();
   }
 
@@ -161,10 +159,10 @@ export default class AppView extends mixins(ElementComponent) {
   //
   //----------------------------------------------------------------------
 
-  private swOnStateChange(info: sw.StateChangeInfo) {
-    this.swMessage = info.message;
-    this.swUpdateIsRequired = info.state === sw.ChangeState.updateIsRequired;
-    this.$nextTick(() => this.swToast.open());
+  m_swOnStateChange(info: sw.StateChangeInfo) {
+    this.m_swMessage = info.message;
+    this.m_swUpdateIsRequired = info.state === sw.ChangeState.updateIsRequired;
+    this.$nextTick(() => this.m_swToast.open());
 
     // tslint:disable-next-line
     console.log(info);
