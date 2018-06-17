@@ -1,15 +1,14 @@
 # Vue + TypeScript
 
-本プロジェクトでは[vue-class-component](https://github.com/vuejs/vue-class-component)と[vue-property-decorator](https://github.com/kaorun343/vue-property-decorator)を利用しています。これらのライブラリを利用してVueをTypeScriptで記述することにより、JavaScriptにくらべて簡潔で綺麗にコーディングすることができます。
-
+本プロジェクトでは [vue-class-component](https://github.com/vuejs/vue-class-component) と [vue-property-decorator](https://github.com/kaorun343/vue-property-decorator) を利用しています。これらのライブラリを利用して Vue を TypeScript で記述することにより、JavaScript にくらべて簡潔で綺麗にコーディングすることができます。
 
 ## Data
 
-TypeScriptでインスタンス変数を定義すると、その変数はHTMLでバインディング可能になります。
+TypeScript でインスタンス変数を定義すると、その変数は HTML でバインディング可能になります。
 
 ```html
 <template>
-  <div>{{ message }}</div>
+  <div>{{ m_message }}</div>
 </template>
 
 <script lang="ts">
@@ -17,18 +16,18 @@ TypeScriptでインスタンス変数を定義すると、その変数はHTMLで
 
   @Component
   export default class ExampleView extends mixins(ElementComponent) {
-    private message: string = '';
+    m_message: string = '';
   }
 </script>
 ```
 
-インスタンス変数の値が変わるとHTMLでバインドされた箇所も自動で更新されます。
+インスタンス変数の値が変わると HTML でバインドされた箇所も自動で更新されます。
 
 インスタンス変数にはオブジェクトも設定できます。
 
 ```html
 <template>
-  <div>{{ post.message }}</div>
+  <div>{{ m_post.message }}</div>
 </template>
 
 <script lang="ts">
@@ -36,14 +35,14 @@ TypeScriptでインスタンス変数を定義すると、その変数はHTMLで
 
   @Component
   export default class ExampleView extends mixins(ElementComponent) {
-    private post: Post = {
+    m_post: Post = {
       title: '',
       message: '',
     };
   }
 
-  private postButtonOnClick() {
-    this.post.message = this.message;
+  m_postButtonOnClick() {
+    this.m_post.message = this.m_message;
   }
 </script>
 ```
@@ -56,14 +55,13 @@ TypeScriptでインスタンス変数を定義すると、その変数はHTMLで
 @Component
 export default class ExampleView extends mixins(ElementComponent) {
   // 変数を初期化していないのでバインディングが機能しない
-  private message: string;
+  m_message: string;
 }
 ```
 
-
 ## Props
 
-`@Prop`を指定した変数はHTML属性として外部に公開され、その属性を経由して外部から値を受け取ることができます。
+`@Prop`を指定した変数は HTML 属性として外部に公開され、その属性を経由して外部から値を受け取ることができます。
 
 ```ts
 import { Component, Props } from 'vue-property-decorator';
@@ -71,8 +69,7 @@ import { Component, Props } from 'vue-property-decorator';
 @Component
 export default class BlogPost extends mixins(ElementComponent) {
   // 変数名はキャメルケース
-  @Prop()
-  postTitle: string;
+  @Prop() postTitle: string;
 }
 ```
 
@@ -81,7 +78,7 @@ export default class BlogPost extends mixins(ElementComponent) {
 <blog-post post-title="hello!"></blog-post>
 ```
 
-PropsはDataと同様にHTMLにもバインディング可能です。
+Props は Data と同様に HTML にもバインディング可能です。
 
 ```html
 <template>
@@ -114,14 +111,13 @@ postTitle: string = 'hello!';
 postTitle: string;
 ```
 
-
 ## Computed
 
-算出プロパティはgetterになります。getterの中でDataまたはPropsの変数を参照すると、変数の値変更を感知し、算出プロパティが自動で再実行されます。これによりHTMLでバインドしている箇所も自動で更新されます。
+算出プロパティは getter になります。getter の中で Data または Props の変数を参照すると、変数の値変更を感知し、算出プロパティが自動で再実行されます。これにより HTML でバインドしている箇所も自動で更新されます。
 
 ```html
 <template>
-  <div>{{ reversedMessage }}</div>
+  <div>{{ m_reversedMessage }}</div>
 </template>
 
 <script lang="ts">
@@ -129,11 +125,11 @@ postTitle: string;
 
   @Component()
   export default class ExampleView extends mixins(ElementComponent) {
-    private message: string = '';
+    m_message: string = '';
 
     // 算出プロパティ
-    private get reversedMessage() {
-      return this.message.split('').reverse().join('');
+    get m_reversedMessage() {
+      return this.m_message.split('').reverse().join('');
     }
   }
 </script>
@@ -142,12 +138,11 @@ postTitle: string;
 算出プロパティは他の算出プロパティを参照することもできます。
 
 ```ts
-private get doubleReversedMessage() {
+get m_doubleReversedMessage() {
   // 算出プロパティの中で他の算出プロパティを参照
-  return this.reversedMessage.split('').reverse().join('');
+  return this.m_reversedMessage.split('').reverse().join('');
 }
 ```
-
 
 ## Watch
 
@@ -160,10 +155,10 @@ import { Component, Watch } from 'vue-property-decorator';
 
 @Component()
 export default class ExampleView extends mixins(ElementComponent) {
-  private message: string = '';
+  m_message: string = '';
 
-  @Watch('message')
-  private messageOnChange(newValue: string, oldValue: string): void {
+  @Watch('m_message')
+  m_messageOnChange(newValue: string, oldValue: string): void {
     …
   }
 }
@@ -174,12 +169,12 @@ export default class ExampleView extends mixins(ElementComponent) {
 ```ts
 @Component()
 export default class ExampleView extends mixins(ElementComponent) {
-  private get reversedMessage() {
+  get m_reversedMessage() {
     …
   }
 
-  @Watch('reversedMessage')
-  private reversedMessageOnChange(newValue: string, oldValue: string): void {
+  @Watch('m_reversedMessage')
+  m_reversedMessageOnChange(newValue: string, oldValue: string): void {
     …
   }
 }
@@ -190,35 +185,34 @@ export default class ExampleView extends mixins(ElementComponent) {
 ```ts
 @Component()
 export default class ExampleView extends mixins(ElementComponent) {
-  private post: Post = {
+  m_post: Post = {
     title: '',
     message: '',
   };
 
-  @Watch('post', { deep: true })
-  private postOnChange(newValue: Post, oldValue: Post): void {
+  @Watch('m_post', { deep: true })
+  m_postOnChange(newValue: Post, oldValue: Post): void {
     …
   }
 }
 ```
 
-次はオブジェクトの特定のプロパティ変更(`post.message`)を監視しています。
+次はオブジェクトの特定のプロパティ変更(`m_post.message`)を監視しています。
 
 ```ts
 @Component()
 export default class ExampleView extends mixins(ElementComponent) {
-  private post: Post = {
+  m_post: Post = {
     title: '',
     message: '',
   };
 
-  @Watch('post.message')
-  private postMessageOnChange(newValue: string, oldValue: string): void {
+  @Watch('m_post.message')
+  m_postMessageOnChange(newValue: string, oldValue: string): void {
     …
   }
 }
 ```
-
 
 ## Event handlers
 
@@ -226,7 +220,7 @@ export default class ExampleView extends mixins(ElementComponent) {
 
 ```html
 <template>
-  <button v-on:click="sendButtonOnClick">Send</button>
+  <button v-on:click="m_sendButtonOnClick">Send</button>
 </template>
 
 <script lang="ts">
@@ -234,7 +228,7 @@ export default class ExampleView extends mixins(ElementComponent) {
 
   @Component()
   export default class ExampleView extends mixins(ElementComponent) {
-    private get sendButtonOnClick(event) {
+    get m_sendButtonOnClick(event) {
       console.log(event.target.tagName);
     }
   }
@@ -244,7 +238,7 @@ export default class ExampleView extends mixins(ElementComponent) {
 以下は`v-on`の省略記法`@`で上記と同じ意味になります。
 
 ```html
-<button @click="sendButtonOnClick">Send</button>
+<button @click="m_sendButtonOnClick">Send</button>
 ```
 
 イベントハンドラには引数をわたすことができます。
@@ -252,7 +246,7 @@ export default class ExampleView extends mixins(ElementComponent) {
 ```html
 <template>
   <template v-for="(product, index) in products">
-    <button @click="addButonOnClick(product)">Add</button>
+    <button @click="m_addButonOnClick(product)">Add</button>
   </template>
 </template>
 
@@ -261,7 +255,7 @@ export default class ExampleView extends mixins(ElementComponent) {
 
   @Component()
   export default class ExampleView extends mixins(ElementComponent) {
-    private get addButonOnClick(product: Product) {
+    get m_addButonOnClick(product: Product) {
       …
     }
   }
@@ -273,7 +267,7 @@ export default class ExampleView extends mixins(ElementComponent) {
 ```html
 <template>
   <template v-for="(product, index) in products">
-    <button @click="addButonOnClick(product, $event)">Add</button>
+    <button @click="m_addButonOnClick(product, $event)">Add</button>
   </template>
 </template>
 
@@ -282,36 +276,33 @@ export default class ExampleView extends mixins(ElementComponent) {
 
   @Component()
   export default class ExampleView extends mixins(ElementComponent) {
-    private get addButonOnClick(product: Product, event: Event) {
+    get m_addButonOnClick(product: Product, event: Event) {
       …
     }
   }
 </script>
 ```
 
-
 ## Lifecycle hooks
 
-Vueには`created`、`mounted`、`updated`、…といったライフサイクルがあり、これらのサイクルをフックできます。フックするにはこれらの名前のメソッドを定義します。この際、**必ずスーパークラスのライフサイクルメソッドを呼び出すようにしてください**。
+Vue には`created`、`mounted`、`updated`、…といったライフサイクルがあり、これらのサイクルをフックできます。フックするにはこれらの名前のメソッドを定義します。
 
 ```ts
 @Component()
 export default class ExampleView extends mixins(ElementComponent) {
   created() {
-    // 必ずスーパークラスのライフサイクルメソッドを呼び出すこと
-    supre.created();
     …
   }
 }
 ```
 
-
 ## 他のコンポーネントを使用する
 
 他で作成されたコンポーネントを使用する方法を次に示します。
-1. 他のコンポーネントをインポート
-2. インポートしたコンポーネントをHTML上でなんというタグ名前で使用するかを設定
-3. ｢2｣で設定したタグ名をHTML上で使用する
+
+1.  他のコンポーネントをインポート
+2.  インポートしたコンポーネントを HTML 上でなんというタグ名前で使用するかを設定
+3.  ｢2｣で設定したタグ名を HTML 上で使用する
 
 ```html
 <template>
@@ -334,20 +325,15 @@ export default class ExampleView extends mixins(ElementComponent) {
     },
   })
   export default class ExampleView extends mixins(ElementComponent) {
-    private get greetMessage(): GreetMessage {
+    get m_greetMessage(): GreetMessage {
       return this.$refs.greetMessage as GreetMessage;
     }
 
     created() {
-      // インポートしたコンポーネントのpublicなメソッドやプロパティは
+      // インポートしたコンポーネントのメソッドやプロパティは
       // コード補完で表示され、アクセスすることができる。
-      this.greetMessage.greet();
+      this.m_greetMessage.greet();
     }
   }
 </script>
 ```
-
-
-
-
-

@@ -7,7 +7,7 @@
     <input
       type="checkbox"
       v-bind:checked="checked"
-      v-on:change="checkboxOnChange"
+      v-on:change="m_checkboxOnChange"
     />
   </div>
 </template>
@@ -22,7 +22,7 @@ import { mixins } from 'vue-class-component';
 export default class CustomCheckbox extends mixins(ElementComponent) {
   @Model('change') checked: boolean = false;
 
-  private checkboxOnChange(event: Event) {
+  m_checkboxOnChange(event: Event) {
     // ■ v-modelを使ったコンポーネントのカスタマイズ
     //    https://jp.vuejs.org/v2/guide/components-custom-events.html#v-model-を使ったコンポーネントのカスタマイズ
     // ・`value`というプロパティ名はv-modelで使用される特別な名前である。

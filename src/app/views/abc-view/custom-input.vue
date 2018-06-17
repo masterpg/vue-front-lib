@@ -5,7 +5,7 @@
 <template>
   <div>
     <paper-input
-      @input="textFieldOnChange"
+      @input="m_textFieldOnChange"
     ></paper-input>
   </div>
 </template>
@@ -22,7 +22,7 @@ export default class CustomInput extends mixins(ElementComponent) {
   @Prop({ default: '' })
   value: string;
 
-  private textFieldOnChange(event: Event) {
+  m_textFieldOnChange(event: Event) {
     // ■ コンポーネントでv-modelを使う
     //    https://jp.vuejs.org/v2/guide/components.html#コンポーネントで-v-model-を使う
     // ・`value`というプロパティ名はv-modelで使用される特別な名前である。

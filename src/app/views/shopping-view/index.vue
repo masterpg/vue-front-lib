@@ -35,7 +35,7 @@
 
 
 <template>
-  <div class="layout vertical" :class="{ 'app-ma-12': pc, 'app-ma-6': tab, 'app-ma-3': sp }">
+  <div class="layout vertical" :class="{ 'app-ma-12': f_pc, 'app-ma-6': f_tab, 'app-ma-3': f_sp }">
 
     <div>
       <div class="layout horizontal center">
@@ -43,7 +43,7 @@
       </div>
       <hr style="width: 100%;">
       <div
-        v-for="(product, index) in products"
+        v-for="(product, index) in m_products"
         class="layout horizontal center product-item"
       >
         <div class="layout vertical center-justified">
@@ -54,7 +54,7 @@
           </div>
         </div>
         <div class="flex"></div>
-        <paper-icon-button icon="icons:add-box" @click="addProductToCart(product)"></paper-icon-button>
+        <paper-icon-button icon="icons:add-box" @click="m_addProductToCart(product)"></paper-icon-button>
       </div>
     </div>
 
@@ -65,7 +65,7 @@
       </div>
       <hr style="width: 100%;">
       <div
-        v-for="(product, index) in cartProducts"
+        v-for="(product, index) in m_cartProducts"
         class="layout horizontal center product-item"
       >
         <div class="layout vertical center-justified">
@@ -76,11 +76,11 @@
         </div>
       </div>
       <div class="layout horizontal center">
-        <div class="flex error-text">{{ checkoutStatus.message }}</div>
+        <div class="flex error-text">{{ m_checkoutStatus.message }}</div>
         <paper-button
-          v-show="!cartIsEmpty"
+          v-show="!m_cartIsEmpty"
           class="checkout-button"
-          @click="checkout">Checkout
+          @click="m_checkout">Checkout
         </paper-button>
       </div>
     </div>
@@ -106,23 +106,23 @@ export default class ShoppingView extends mixins(ElementComponent) {
   //
   //----------------------------------------------------------------------
 
-  private get cartIsEmpty(): boolean {
-    return this.cartProducts.length === 0;
+  get m_cartIsEmpty(): boolean {
+    return this.m_cartProducts.length === 0;
   }
 
-  private get products(): Product[] {
+  get m_products(): Product[] {
     return this.$stores.product.allProducts;
   }
 
-  private get cartProducts(): CartProduct[] {
+  get m_cartProducts(): CartProduct[] {
     return this.$stores.cart.cartProducts;
   }
 
-  private get cartTotalPrice(): number {
+  get m_cartTotalPrice(): number {
     return this.$stores.cart.cartTotalPrice;
   }
 
-  private get checkoutStatus(): { result: boolean; message: string } {
+  get m_checkoutStatus(): { result: boolean; message: string } {
     const result =
       this.$stores.cart.checkoutStatus === CheckoutStatus.None ||
       this.$stores.cart.checkoutStatus === CheckoutStatus.Successful;
@@ -146,12 +146,12 @@ export default class ShoppingView extends mixins(ElementComponent) {
   //
   //----------------------------------------------------------------------
 
-  private addProductToCart(product: Product): void {
+  m_addProductToCart(product: Product): void {
     this.$stores.cart.addProductToCart(product.id);
   }
 
-  private async checkout(): Promise<void> {
-    await this.$stores.cart.checkout(this.cartProducts);
+  async m_checkout(): Promise<void> {
+    await this.$stores.cart.checkout(this.m_cartProducts);
   }
 }
 </script>

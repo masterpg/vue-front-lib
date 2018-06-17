@@ -10,9 +10,9 @@ export abstract class BaseStore<S> extends Vue {
 
   protected readonly $apis: APIs;
 
-  private m_state: S;
+  m_state: S;
 
-  protected get state(): S {
+  get f_state(): S {
     return this.m_state;
   }
 
@@ -26,7 +26,7 @@ export abstract class BaseStore<S> extends Vue {
    * Storeにひも付くStateを初期化します。
    * @param state
    */
-  protected initState(state: S): void {
+  f_initState(state: S): void {
     this.m_state = state;
   }
 }

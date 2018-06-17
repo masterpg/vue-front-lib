@@ -8,7 +8,7 @@ export interface ProductState {
 }
 
 @Component
-class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
+export class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   //----------------------------------------------------------------------
   //
   //  Constructors
@@ -17,7 +17,7 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
 
   constructor() {
     super();
-    this.initState({
+    this.f_initState({
       all: [],
     });
   }
@@ -30,7 +30,7 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
 
   @NoCache
   get allProducts(): Product[] {
-    return this.$utils.cloneDeep(this.state.all);
+    return this.$utils.cloneDeep(this.f_state.all);
   }
 
   //----------------------------------------------------------------------
@@ -50,12 +50,12 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   //----------------------------------------------------------------------
 
   getProductById(productId: string): Product | undefined {
-    const stateProduct = this.getStateProductById(productId);
+    const stateProduct = this.m_getStateProductById(productId);
     return this.$utils.cloneDeep(stateProduct);
   }
 
   decrementProductInventory(productId: string): void {
-    const stateProduct = this.getStateProductById(productId);
+    const stateProduct = this.m_getStateProductById(productId);
     if (stateProduct) {
       stateProduct.inventory--;
     }
@@ -63,7 +63,7 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
 
   async getAllProducts(): Promise<void> {
     const products = await this.$apis.shop.getProducts();
-    this.state.all = products;
+    this.f_state.all = products;
   }
 
   //----------------------------------------------------------------------
@@ -72,8 +72,8 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   //
   //----------------------------------------------------------------------
 
-  private getStateProductById(productId: string): Product | undefined {
-    return this.state.all.find((item) => item.id === productId);
+  m_getStateProductById(productId: string): Product | undefined {
+    return this.f_state.all.find((item) => item.id === productId);
   }
 }
 

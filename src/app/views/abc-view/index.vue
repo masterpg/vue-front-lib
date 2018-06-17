@@ -7,41 +7,41 @@
 
 <template>
   <div class="layout vertical">
-    <paper-card class="app-pa-3" :class="{ 'app-ma-12': pc, 'app-ma-6': tab, 'app-ma-3': sp }">
+    <paper-card class="app-pa-3" :class="{ 'app-ma-12': f_pc, 'app-ma-6': f_tab, 'app-ma-3': f_sp }">
       <paper-input
         label="Input Message"
-        :value="message" @input="message = $event.target.value"
+        :value="m_message" @input="m_message = $event.target.value"
       ></paper-input>
       <p>propA: {{ propA }}</p>
       <p>propB: {{ propB }}</p>
-      <p>message: {{ message }}</p>
-      <p>custom propA: {{ customPropA }}</p>
-      <p>reversed message: {{ reversedMessage }}</p>
-      <p>double reversed message: {{ doubleReversedMessage }}</p>
+      <p>message: {{ m_message }}</p>
+      <p>custom propA: {{ m_customPropA }}</p>
+      <p>reversed message: {{ m_reversedMessage }}</p>
+      <p>double reversed message: {{ m_doubleReversedMessage }}</p>
       <div class="layout horizontal center">
         <greet-message
           ref="greetMessage"
-          :message="message"
+          :message="m_message"
           class="greet-message"
         ></greet-message>
-        <button class="app-ml-3" @click="greetButtonOnClick">Greet</button>
+        <button class="app-ml-3" @click="m_greetButtonOnClick">Greet</button>
       </div>
       <p class="layout horizontal">
         <custom-input
-          v-model="customInputValue"
+          v-model="m_customInputValue"
           class="flex-3"
         ></custom-input>
-        <span class="flex-9 app-ml-3 app-mt-7">value: {{ customInputValue }}</span>
+        <span class="flex-9 app-ml-3 app-mt-7">value: {{ m_customInputValue }}</span>
       </p>
       <p class="layout horizontal center">
         <custom-checkbox
-          v-model="customChecked"
+          v-model="m_customChecked"
         ></custom-checkbox>
-        <span class="app-ml-3">checked: {{ customChecked }}</span>
+        <span class="app-ml-3">checked: {{ m_customChecked }}</span>
       </p>
       <div class="layout horizontal end-justified">
-        <paper-button raised @click="postButtonOnClick">Post</paper-button>
-        <paper-button raised @click="sleepButtonOnClick">Sleep</paper-button>
+        <paper-button raised @click="m_postButtonOnClick">Post</paper-button>
+        <paper-button raised @click="m_sleepButtonOnClick">Sleep</paper-button>
       </div>
     </paper-card>
   </div>
@@ -90,16 +90,16 @@ export default class AbcView extends mixins(ElementComponent) {
 
   // dataは初期化が必要！
 
-  private message: string = '';
+  m_message: string = '';
 
-  private customInputValue: string = '';
+  m_customInputValue: string = '';
 
-  private customChecked: boolean = false;
+  m_customChecked: boolean = false;
 
   // propの値を初期化に利用できる
-  private customPropA: string = 'custom ' + this.propA;
+  m_customPropA: string = 'custom ' + this.propA;
 
-  private post: Post = {
+  m_post: Post = {
     title: 'Dear Jhon',
     message: '',
   };
@@ -108,15 +108,15 @@ export default class AbcView extends mixins(ElementComponent) {
   //  computed
   //--------------------------------------------------
 
-  private get reversedMessage() {
-    return this.message
+  get m_reversedMessage() {
+    return this.m_message
       .split('')
       .reverse()
       .join('');
   }
 
-  private get doubleReversedMessage() {
-    return this.reversedMessage
+  get m_doubleReversedMessage() {
+    return this.m_reversedMessage
       .split('')
       .reverse()
       .join('');
@@ -126,28 +126,28 @@ export default class AbcView extends mixins(ElementComponent) {
   //  watch
   //--------------------------------------------------
 
-  @Watch('message')
-  private messageOnChange(newValue: string, oldValue: string): void {
+  @Watch('m_message')
+  m_messageOnChange(newValue: string, oldValue: string): void {
     // tslint:disable-next-line
-    console.log(`messageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
+    console.log(`m_messageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
   }
 
-  @Watch('reversedMessage')
-  private reversedMessageOnChange(newValue: string, oldValue: string): void {
+  @Watch('m_reversedMessage')
+  m_reversedMessageOnChange(newValue: string, oldValue: string): void {
     // tslint:disable-next-line
-    console.log(`reversedMessageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
+    console.log(`m_reversedMessageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
   }
 
-  @Watch('post', { deep: true })
-  private postOnChange(newValue: Post, oldValue: Post): void {
+  @Watch('m_post', { deep: true })
+  m_postOnChange(newValue: Post, oldValue: Post): void {
     // tslint:disable-next-line
-    console.log('postOnChange: newValue:', newValue, ', oldValue:', oldValue);
+    console.log('m_postOnChange: newValue:', newValue, ', oldValue:', oldValue);
   }
 
-  @Watch('post.message')
-  private postMessageOnChange(newValue: string, oldValue: string): void {
+  @Watch('m_post.message')
+  m_postMessageOnChange(newValue: string, oldValue: string): void {
     // tslint:disable-next-line
-    console.log('postMessageOnChange: newValue:', newValue, ', oldValue:', oldValue);
+    console.log('m_postMessageOnChange: newValue:', newValue, ', oldValue:', oldValue);
   }
 
   //--------------------------------------------------
@@ -155,14 +155,14 @@ export default class AbcView extends mixins(ElementComponent) {
   //--------------------------------------------------
 
   mounted() {
-    this.message = 'mounted';
+    this.m_message = 'mounted';
   }
 
   //--------------------------------------------------
   //  internal methods
   //--------------------------------------------------
 
-  private async sleep(ms: number): Promise<string> {
+  async m_sleep(ms: number): Promise<string> {
     return new Promise<string>((resolve) => {
       setTimeout(() => {
         resolve(`I slept for ${ms} ms.`);
@@ -174,23 +174,23 @@ export default class AbcView extends mixins(ElementComponent) {
   //  event handlers
   //--------------------------------------------------
 
-  private greetButtonOnClick() {
-    this.greetMessage.greet();
+  m_greetButtonOnClick() {
+    this.m_greetMessage.greet();
   }
 
-  private postButtonOnClick() {
-    this.post.message = this.message;
+  m_postButtonOnClick() {
+    this.m_post.message = this.m_message;
   }
 
-  private async sleepButtonOnClick() {
-    alert(await this.sleep(2000));
+  async m_sleepButtonOnClick() {
+    alert(await this.m_sleep(2000));
   }
 
   //--------------------------------------------------
   //  elements
   //--------------------------------------------------
 
-  private get greetMessage(): GreetMessage {
+  get m_greetMessage(): GreetMessage {
     return this.$refs.greetMessage as GreetMessage;
   }
 }

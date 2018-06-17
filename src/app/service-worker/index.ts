@@ -22,7 +22,7 @@ export interface StateChangeInfo {
 //
 //----------------------------------------------------------------------
 
-const stateChangeListeners: StateChangeLister[] = [];
+const m_stateChangeListeners: StateChangeLister[] = [];
 
 //----------------------------------------------------------------------
 //
@@ -35,7 +35,7 @@ const stateChangeListeners: StateChangeLister[] = [];
  * @param listener
  */
 export function addStateChangeListener(listener: StateChangeLister): void {
-  stateChangeListeners.push(listener);
+  m_stateChangeListeners.push(listener);
 }
 
 /**
@@ -61,7 +61,7 @@ export function init(): void {
       if (!installingServiceWorker) return;
       // ServiceWorkerの状態が変更された際のハンドラ
       installingServiceWorker.onstatechange = () => {
-        stateChangeFor(installingServiceWorker);
+        m_stateChangeFor(installingServiceWorker);
       };
     };
   });
@@ -81,7 +81,7 @@ export function init(): void {
  * f
  * @param serviceWorker
  */
-function stateChangeFor(serviceWorker: ServiceWorker): void {
+function m_stateChangeFor(serviceWorker: ServiceWorker): void {
   let info: StateChangeInfo | undefined;
   switch (serviceWorker.state) {
     case 'installed':
@@ -106,7 +106,7 @@ function stateChangeFor(serviceWorker: ServiceWorker): void {
       break;
   }
   if (!info) return;
-  for (const listener of stateChangeListeners) {
+  for (const listener of m_stateChangeListeners) {
     listener(info);
   }
 }

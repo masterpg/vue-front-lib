@@ -8,16 +8,16 @@ import { mixins } from 'vue-class-component';
  */
 @Component
 export class ElementComponent extends mixins(BreakpointMixin) {
-  protected get pc() {
-    return this.breakpoint.xl || this.breakpoint.lg || this.breakpoint.md;
+  get f_pc() {
+    return this.f_breakpoint.xl || this.f_breakpoint.lg || this.f_breakpoint.md;
   }
 
-  protected get tab() {
-    return this.breakpoint.sm;
+  get f_tab() {
+    return this.f_breakpoint.sm;
   }
 
-  protected get sp() {
-    return this.breakpoint.xs;
+  get f_sp() {
+    return this.f_breakpoint.xs;
   }
 
   mounted() {
