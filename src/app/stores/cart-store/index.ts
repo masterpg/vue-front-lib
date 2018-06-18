@@ -87,15 +87,14 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
     }
   }
 
-  checkout(products: Array<{ id: string; quantity: number }>): Promise<void> {
+  checkout(): Promise<void> {
     const savedCartItems = [...this.f_state.added];
     this.f_state.checkoutStatus = CheckoutStatus.None;
-    // カートを空にする
-    this.f_state.added = [];
 
     return this.$apis.shop
-      .buyProducts(products)
+      .buyProducts(this.f_state.added)
       .then(() => {
+        this.f_state.added = []; // カートを空にする
         this.f_state.checkoutStatus = CheckoutStatus.Successful;
       })
       .catch((err) => {

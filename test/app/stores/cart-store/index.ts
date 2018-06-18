@@ -84,10 +84,11 @@ suite('store/cart-store', () => {
 
   test('checkout() - 一般ケース', async () => {
     const ADDED = [{ id: '1', quantity: 1 }, { id: '2', quantity: 1 }];
+    cartStore.f_state.added = ADDED;
     const buyProducts = td.replace(shopAPI, 'buyProducts');
     td.when(shopAPI.buyProducts(ADDED)).thenResolve();
 
-    await cartStore.checkout(ADDED);
+    await cartStore.checkout();
     assert.equal(cartStore.f_state.checkoutStatus, CheckoutStatus.Successful);
     assert.deepEqual(cartStore.f_state.added, []);
 
@@ -104,7 +105,7 @@ suite('store/cart-store', () => {
     const buyProducts = td.replace(shopAPI, 'buyProducts');
     td.when(shopAPI.buyProducts(ADDED)).thenReject(new Error());
 
-    await cartStore.checkout(ADDED);
+    await cartStore.checkout();
     assert.equal(cartStore.f_state.checkoutStatus, CheckoutStatus.Failed);
     assert.deepEqual(cartStore.f_state.added, ADDED);
   });
