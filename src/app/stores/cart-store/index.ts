@@ -128,7 +128,7 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
     const result = this.$stores.product.getProductById(productId);
     if (!result) {
       throw new Error(
-        `A Product that matches the specified productId \`${productId}\` was not found.`,
+        `A Product that matches the specified productId "${productId}" was not found.`,
       );
     }
     return result;
