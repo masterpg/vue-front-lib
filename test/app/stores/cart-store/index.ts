@@ -51,7 +51,7 @@ suite('store/cart-store', () => {
     assert.throws(
       () => cartStore.getCartProductById('9876'),
       Error,
-      'A Product that matches the specified productId `9876` was not found.',
+      'A Product that matches the specified productId "9876" was not found.',
     );
   });
 
