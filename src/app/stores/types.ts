@@ -31,7 +31,7 @@ export interface CartStore {
 
   getCartProductById(productId: string): CartProduct | undefined;
 
-  checkout(products: Array<{ id: string; quantity: number }>): Promise<void>;
+  checkout(): Promise<void>;
 
   addProductToCart(productId: string): void;
 }

@@ -151,7 +151,7 @@ export default class ShoppingView extends mixins(ElementComponent) {
   }
 
   async m_checkout(): Promise<void> {
-    await this.$stores.cart.checkout(this.m_cartProducts);
+    await this.$stores.cart.checkout();
   }
 }
 </script>
