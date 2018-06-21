@@ -85,28 +85,62 @@ suite('store/cart-store', () => {
   test('checkout() - 一般ケース', async () => {
     const ADDED = [{ id: '1', quantity: 1 }, { id: '2', quantity: 1 }];
     cartStore.f_state.added = ADDED;
-    const buyProducts = td.replace(shopAPI, 'buyProducts');
-    td.when(shopAPI.buyProducts(ADDED)).thenResolve();
+    td.replace(cartStore.f_db, 'runTransaction');
+    td.when(cartStore.f_db.runTransaction(td.matchers.anything())).thenResolve();
 
     await cartStore.checkout();
     assert.equal(cartStore.f_state.checkoutStatus, CheckoutStatus.Successful);
     assert.deepEqual(cartStore.f_state.added, []);
-
-    // `ShopAPI#buyProducts()`の呼び出し回数と渡された引数を検証
-    const buyProductsExplain = td.explain(buyProducts);
-    assert.equal(buyProductsExplain.callCount, 1);
-    assert.deepEqual(buyProductsExplain.calls[0].args[0], ADDED);
   });
 
   test('checkout() - エラーケース', async () => {
     const ADDED = [{ id: '1', quantity: 1 }, { id: '2', quantity: 1 }];
     cartStore.f_state.added = ADDED;
-
-    const buyProducts = td.replace(shopAPI, 'buyProducts');
-    td.when(shopAPI.buyProducts(ADDED)).thenReject(new Error());
+    td.replace(cartStore.f_db, 'runTransaction');
+    td.when(cartStore.f_db.runTransaction(td.matchers.anything())).thenReject(new Error());
 
     await cartStore.checkout();
     assert.equal(cartStore.f_state.checkoutStatus, CheckoutStatus.Failed);
     assert.deepEqual(cartStore.f_state.added, ADDED);
+  });
+
+  test('m_createCheckoutProcess() - 商品が存在しなかった場合', async () => {
+    const transaction = new class {
+      get(ref) {
+        return new Promise((resolve) => {
+          resolve({
+            exists: false,
+            data: () => new Object({ inventory: 10 }),
+          });
+        });
+      }
+    }() as any;
+    try {
+      await cartStore.m_createCheckoutProcess(transaction, { id: '9876', quantity: 5 });
+      assert(false, 'No exception occurred.');
+    } catch (err) {
+      assert.instanceOf(err, Error);
+      assert.equal(err.message, 'Product "9876" does not exist.');
+    }
+  });
+
+  test('m_createCheckoutProcess() - 在庫が足りなかった場合', async () => {
+    const transaction = new class {
+      get(ref) {
+        return new Promise((resolve) => {
+          resolve({
+            exists: true,
+            data: () => new Object({ inventory: 1 }),
+          });
+        });
+      }
+    }() as any;
+    try {
+      await cartStore.m_createCheckoutProcess(transaction, { id: '1', quantity: 10 });
+      assert(false, 'No exception occurred.');
+    } catch (err) {
+      assert.instanceOf(err, Error);
+      assert.equal(err.message, 'The inventory of the product "1" was insufficient.');
+    }
   });
 });

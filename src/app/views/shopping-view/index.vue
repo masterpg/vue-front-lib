@@ -30,6 +30,9 @@
 
   .checkout-button {
     color: var(--app-link-color);
+    &[disabled] {
+      color: white;
+    }
   }
 </style>
 
@@ -78,6 +81,7 @@
       <div class="layout horizontal center">
         <div class="flex error-text">{{ m_checkoutStatus.message }}</div>
         <paper-button
+          ref="checkoutButton"
           v-show="!m_cartIsEmpty"
           class="checkout-button"
           @click="m_checkout">Checkout
@@ -132,6 +136,14 @@ export default class ShoppingView extends mixins(ElementComponent) {
     };
   }
 
+  //--------------------------------------------------
+  //  Elements
+  //--------------------------------------------------
+
+  private get m_checkoutButton(): HTMLElement | any {
+    return this.$refs.checkoutButton;
+  }
+
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -151,7 +163,9 @@ export default class ShoppingView extends mixins(ElementComponent) {
   }
 
   async m_checkout(): Promise<void> {
+    this.m_checkoutButton.disabled = true;
     await this.$stores.cart.checkout();
+    this.m_checkoutButton.disabled = false;
   }
 }
 </script>

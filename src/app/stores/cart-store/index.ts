@@ -1,6 +1,8 @@
-import { CartStore, CartProduct, CheckoutStatus, Product } from '../types';
+import * as firebase from 'firebase';
 import { BaseStore } from '../base';
+import { CartStore, CartProduct, CheckoutStatus, Product } from '../types';
 import { Component } from 'vue-property-decorator';
+type Transaction = firebase.firestore.Transaction;
 
 export interface CartState {
   added: Array<{ id: string; quantity: number }>;
@@ -88,19 +90,25 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   }
 
   checkout(): Promise<void> {
-    const savedCartItems = [...this.f_state.added];
     this.f_state.checkoutStatus = CheckoutStatus.None;
-
-    return this.$apis.shop
-      .buyProducts(this.f_state.added)
+    // トランザクション開始
+    return this.f_db
+      .runTransaction((transaction) => {
+        // 配列に商品チェックアウト処理を格納する
+        const promises: Array<Promise<any>> = [];
+        for (const product of this.f_state.added) {
+          const promise = this.m_createCheckoutProcess(transaction, product);
+          promises.push(promise);
+        }
+        // 上記で配列に格納された商品チェックアウト処理を並列実行
+        return Promise.all(promises);
+      })
       .then(() => {
         this.f_state.added = []; // カートを空にする
         this.f_state.checkoutStatus = CheckoutStatus.Successful;
       })
       .catch((err) => {
         this.f_state.checkoutStatus = CheckoutStatus.Failed;
-        // カートの内容をAPIリクエス前の状態にロールバックする
-        this.f_state.added = savedCartItems;
       });
   }
 
@@ -132,6 +140,33 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
       );
     }
     return result;
+  }
+
+  /**
+   * チェックアウト処理による指定された商品の在庫更新を行います。
+   * @param transaction
+   * @param product
+   */
+  m_createCheckoutProcess(
+    transaction: Transaction,
+    product: { id: string; quantity: number },
+  ): Promise<Transaction> {
+    const ref = this.f_db.collection('products').doc(product.id);
+    return transaction.get(ref).then((doc) => {
+      // 商品が存在しなかった場合、エラーをスロー
+      if (!doc.exists) {
+        throw new Error(`Product "${product.id}" does not exist.`);
+      }
+      // 取得した商品の在庫から今回購入される数量をマイナスする
+      // 商品の在庫が足りなかったらエラーをスロー
+      const latestProduct = doc.data() as Product;
+      const inventory = latestProduct.inventory - product.quantity;
+      if (inventory < 0) {
+        throw new Error(`The inventory of the product "${product.id}" was insufficient.`);
+      }
+      // 在庫更新を実行
+      return transaction.update(ref, { inventory });
+    });
   }
 }
 

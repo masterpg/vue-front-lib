@@ -62,8 +62,15 @@ suite('store/product-store', () => {
       { id: '1', title: 'product1', price: 101, inventory: 1 },
       { id: '2', title: 'product2', price: 102, inventory: 2 },
     ];
-    td.replace(shopAPI, 'getProducts');
-    td.when(shopAPI.getProducts()).thenResolve(NEW_API_PRODUCTS);
+    td.replace(productStore.f_db, 'collection');
+    td.when(productStore.f_db.collection('products')).thenReturn({
+      get: () => {
+        return Promise.resolve([
+          { id: '1', data: () => new Object({ title: 'product1', price: 101, inventory: 1 }) },
+          { id: '2', data: () => new Object({ title: 'product2', price: 102, inventory: 2 }) },
+        ]);
+      },
+    });
 
     await productStore.getAllProducts();
     assert.deepEqual(productStore.allProducts, NEW_API_PRODUCTS);

@@ -1,7 +1,21 @@
+import 'firebase/firestore';
+import * as firebase from 'firebase';
 import Vue from 'vue';
 import { APIs } from '../apis/types';
 
 export abstract class BaseStore<S> extends Vue {
+  //----------------------------------------------------------------------
+  //
+  //  Constructors
+  //
+  //----------------------------------------------------------------------
+
+  constructor() {
+    super();
+    this.f_db = firebase.firestore();
+    this.f_db.settings({ timestampsInSnapshots: true });
+  }
+
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -15,6 +29,8 @@ export abstract class BaseStore<S> extends Vue {
   get f_state(): S {
     return this.m_state;
   }
+
+  readonly f_db: firebase.firestore.Firestore;
 
   //----------------------------------------------------------------------
   //
