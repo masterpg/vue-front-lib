@@ -1,13 +1,24 @@
-<template>
-  <div>greet times: {{ m_greetTimes }}</div>
-</template>
-
-
 <style lang="stylus" scoped>
-  div {
+  @import '../../../assets/styles/_typography.styl';
+
+  .title {
+    @extend .app-font-subhead;
+    font-weight: 500;
+  }
+
+  .value {
+    @extend .app-font-subhead;
+  }
+
+  span {
     color: var(--greet-message-color);
   }
 </style>
+
+
+<template>
+  <div><span class="title">greet times: </span><span class="value">{{ m_greetTimes }}</span></div>
+</template>
 
 
 <script lang="ts">
