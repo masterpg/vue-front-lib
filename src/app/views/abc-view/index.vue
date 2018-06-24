@@ -1,6 +1,17 @@
 <style lang="stylus" scoped>
+  @import '../../../assets/styles/_typography.styl';
+
   .greet-message {
     --greet-message-color: var(--paper-indigo-a200);
+  }
+
+  .title {
+    @extend .app-font-subhead;
+    font-weight: 500;
+  }
+
+  .value {
+    @extend .app-font-subhead;
   }
 </style>
 
@@ -12,12 +23,12 @@
         label="Input Message"
         :value="m_message" @input="m_message = $event.target.value"
       ></paper-input>
-      <p>propA: {{ propA }}</p>
-      <p>propB: {{ propB }}</p>
-      <p>message: {{ m_message }}</p>
-      <p>custom propA: {{ m_customPropA }}</p>
-      <p>reversed message: {{ m_reversedMessage }}</p>
-      <p>double reversed message: {{ m_doubleReversedMessage }}</p>
+      <p><span class="title">propA: </span><span class="value">{{ propA }}</span></p>
+      <p><span class="title">propB: </span><span class="value">{{ propB }}</span></p>
+      <p><span class="title">message: </span><span class="value">{{ m_message }}</span></p>
+      <p><span class="title">custom propA: </span><span class="value">{{ m_customPropA }}</span></p>
+      <p><span class="title">reversed message: </span><span class="value">{{ m_reversedMessage }}</span></p>
+      <p><span class="title">double reversed message: </span><span class="value">{{ m_doubleReversedMessage }}</span></p>
       <div class="layout horizontal center">
         <greet-message
           ref="greetMessage"
@@ -26,21 +37,28 @@
         ></greet-message>
         <button class="app-ml-3" @click="m_greetButtonOnClick">Greet</button>
       </div>
+      <p>
+        <span class="title">post times: </span><span class="value">{{ m_post.times }}</span>
+        <button class="app-ml-3" @click="m_postButtonOnClick">Post</button>
+      </p>
       <p class="layout horizontal">
         <custom-input
           v-model="m_customInputValue"
           class="flex-3"
         ></custom-input>
-        <span class="flex-9 app-ml-3 app-mt-7">value: {{ m_customInputValue }}</span>
+        <span class="flex-9 app-ml-3 app-mt-7">
+          <span class="title">value: </span><span class="value">{{ m_customInputValue }}</span>
+        </span>
       </p>
       <p class="layout horizontal center">
         <custom-checkbox
           v-model="m_customChecked"
         ></custom-checkbox>
-        <span class="app-ml-3">checked: {{ m_customChecked }}</span>
+        <span class="app-ml-3">
+          <span class="title">checked: </span><span class="value">{{ m_customChecked }}</span>
+        </span>
       </p>
       <div class="layout horizontal end-justified">
-        <paper-button raised @click="m_postButtonOnClick">Post</paper-button>
         <paper-button raised @click="m_sleepButtonOnClick">Sleep</paper-button>
       </div>
     </paper-card>
@@ -60,8 +78,8 @@ import { ElementComponent } from '../../components';
 import { mixins } from 'vue-class-component';
 
 interface Post {
-  title: string;
   message: string;
+  times: number;
 }
 
 @Component({
@@ -100,8 +118,8 @@ export default class AbcView extends mixins(ElementComponent) {
   m_customPropA: string = 'custom ' + this.propA;
 
   m_post: Post = {
-    title: 'Dear Jhon',
     message: '',
+    times: 0,
   };
 
   //--------------------------------------------------
@@ -144,10 +162,10 @@ export default class AbcView extends mixins(ElementComponent) {
     console.log('m_postOnChange: newValue:', newValue, ', oldValue:', oldValue);
   }
 
-  @Watch('m_post.message')
-  m_postMessageOnChange(newValue: string, oldValue: string): void {
+  @Watch('m_post.times')
+  m_postTimesOnChange(newValue: string, oldValue: string): void {
     // tslint:disable-next-line
-    console.log('m_postMessageOnChange: newValue:', newValue, ', oldValue:', oldValue);
+    console.log('m_postTimesOnChange: newValue:', newValue, ', oldValue:', oldValue);
   }
 
   //--------------------------------------------------
@@ -180,6 +198,7 @@ export default class AbcView extends mixins(ElementComponent) {
 
   m_postButtonOnClick() {
     this.m_post.message = this.m_message;
+    this.m_post.times++;
   }
 
   async m_sleepButtonOnClick() {
