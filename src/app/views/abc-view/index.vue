@@ -37,6 +37,10 @@
         ></greet-message>
         <button class="app-ml-3" @click="m_greetButtonOnClick">Greet</button>
       </div>
+      <p>
+        <span class="title">post times: </span><span class="value">{{ m_post.times }}</span>
+        <button class="app-ml-3" @click="m_postButtonOnClick">Post</button>
+      </p>
       <p class="layout horizontal">
         <custom-input
           v-model="m_customInputValue"
@@ -55,7 +59,6 @@
         </span>
       </p>
       <div class="layout horizontal end-justified">
-        <paper-button raised @click="m_postButtonOnClick">Post</paper-button>
         <paper-button raised @click="m_sleepButtonOnClick">Sleep</paper-button>
       </div>
     </paper-card>
@@ -75,8 +78,8 @@ import { ElementComponent } from '../../components';
 import { mixins } from 'vue-class-component';
 
 interface Post {
-  title: string;
   message: string;
+  times: number;
 }
 
 @Component({
@@ -115,8 +118,8 @@ export default class AbcView extends mixins(ElementComponent) {
   m_customPropA: string = 'custom ' + this.propA;
 
   m_post: Post = {
-    title: 'Dear Jhon',
     message: '',
+    times: 0,
   };
 
   //--------------------------------------------------
@@ -159,10 +162,10 @@ export default class AbcView extends mixins(ElementComponent) {
     console.log('m_postOnChange: newValue:', newValue, ', oldValue:', oldValue);
   }
 
-  @Watch('m_post.message')
-  m_postMessageOnChange(newValue: string, oldValue: string): void {
+  @Watch('m_post.times')
+  m_postTimesOnChange(newValue: string, oldValue: string): void {
     // tslint:disable-next-line
-    console.log('m_postMessageOnChange: newValue:', newValue, ', oldValue:', oldValue);
+    console.log('m_postTimesOnChange: newValue:', newValue, ', oldValue:', oldValue);
   }
 
   //--------------------------------------------------
@@ -195,6 +198,7 @@ export default class AbcView extends mixins(ElementComponent) {
 
   m_postButtonOnClick() {
     this.m_post.message = this.m_message;
+    this.m_post.times++;
   }
 
   async m_sleepButtonOnClick() {
