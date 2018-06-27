@@ -41,7 +41,7 @@
 
 ```html
 <style lang="stylus" scoped>
-  @import '../assets/styles/_typography.styl'
+  @import '../assets/styles/_typography.styl';
   .title {
     @extend .app-font-title;
     color: var(--app-grey-600);
