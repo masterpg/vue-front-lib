@@ -44,7 +44,7 @@
 
 ```html
 <style lang="stylus" scoped>
-  @import '../assets/styles/_shadow.styl'
+  @import '../assets/styles/_shadows.styl';
   .container {
     @extend .app-shadow-elevation-3dp;
   }
