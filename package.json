@@ -59,13 +59,18 @@
     "@polymer/iron-flex-layout": "^3.0.0-pre.21",
     "@polymer/iron-icon": "^3.0.0-pre.21",
     "@polymer/iron-icons": "^3.0.0-pre.21",
+    "@polymer/iron-image": "^3.0.0-pre.21",
     "@polymer/iron-pages": "^3.0.0-pre.21",
     "@polymer/iron-selector": "^3.0.0-pre.21",
     "@polymer/paper-button": "^3.0.0-pre.21",
     "@polymer/paper-card": "^3.0.0-pre.21",
     "@polymer/paper-checkbox": "^3.0.0-pre.21",
+    "@polymer/paper-dialog": "^3.0.0-pre.21",
     "@polymer/paper-icon-button": "^3.0.0-pre.21",
     "@polymer/paper-input": "^3.0.0-pre.21",
+    "@polymer/paper-item": "^3.0.0-pre.21",
+    "@polymer/paper-listbox": "^3.0.0-pre.21",
+    "@polymer/paper-menu-button": "^3.0.0-pre.21",
     "@polymer/paper-styles": "^3.0.0-pre.21",
     "@polymer/paper-toast": "^3.0.0-pre.21",
     "@polymer/polymer": "^3.0.2",
@@ -78,6 +83,7 @@
     "lodash": "^4.14.110",
     "pubsub-js": "^1.6.0",
     "vue": "^2.5.16",
-    "vue-router": "^3.0.1"
+    "vue-router": "^3.0.1",
+    "web-animations-js": "^2.3.1"
   }
 }
