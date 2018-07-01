@@ -1,6 +1,11 @@
+import * as firebase from 'firebase';
 import Vue from 'vue';
 
 export abstract class Config {
+  constructor() {
+    firebase.initializeApp(this.firebase);
+  }
+
   api: { protocol: string; host: string; port: number } = {
     protocol: '',
     host: '',
