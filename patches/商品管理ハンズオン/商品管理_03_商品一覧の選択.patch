@@ -3,25 +3,25 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1529229381000)
-+++ src/app/views/product-admin-view/index.vue	(date 1529229626000)
+--- src/app/views/product-admin-view/index.vue	(date 1530409443000)
++++ src/app/views/product-admin-view/index.vue	(date 1530409910000)
 @@ -8,6 +8,15 @@
  
-   .product-item {
-     @extend .app-pa-3;
-+    cursor: pointer;
+ .product-item {
+   @extend .app-pa-3;
++  cursor: pointer;
 +
-+    &:hover {
-+      background-color: var(--app-grid-selected-hover-item);
-+    }
++  &:hover {
++    background-color: var(--app-grid-selected-hover-item);
++  }
 +
-+    &.iron-selected {
-+      background-color: var(--app-grid-selected-activ-item);
-+    }
++  &.iron-selected {
++    background-color: var(--app-grid-selected-activ-item);
++  }
  
-     .title {
-       @extend .app-font-subhead;
-@@ -29,26 +38,33 @@
+   .title {
+     @extend .app-font-subhead;
+@@ -29,19 +38,26 @@
          <div class="title-text">Products</div>
        </div>
        <hr style="width: 100%;">
@@ -38,7 +38,6 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 -        </div>
 -        <div class="flex"></div>
 -      </div>
--    </div>
 +      <iron-selector
 +        ref="productSelector"
 +        attr-for-selected="product-id"
@@ -58,10 +57,11 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +          </div>
 +          <div class="flex"></div>
 +        </div>
-+      </iron-selector>    </div>
++      </iron-selector>
+     </div>
  
    </div>
- </template>
+@@ -49,6 +65,7 @@
  
  
  <script lang="ts">
@@ -69,7 +69,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  import { Component } from 'vue-property-decorator';
  import { ElementComponent } from '../../components';
  import { Product } from '../../stores/types';
-@@ -66,6 +82,16 @@
+@@ -66,6 +83,16 @@
      return this.$stores.product.allProducts;
    }
  
@@ -86,7 +86,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    //----------------------------------------------------------------------
    //
    //  Lifecycle hooks
-@@ -73,5 +99,21 @@
+@@ -73,5 +100,21 @@
    //----------------------------------------------------------------------
  
    created() {}
@@ -113,8 +113,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/assets/styles/main.styl	(date 1529229381000)
-+++ src/assets/styles/main.styl	(date 1529229626000)
+--- src/assets/styles/main.styl	(date 1530409443000)
++++ src/assets/styles/main.styl	(date 1530409910000)
 @@ -22,6 +22,8 @@
    --app-link-color: var(--app-light-blue-a400);
    --app-link-visited-color: var(--app-indigo-300);

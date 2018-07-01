@@ -3,57 +3,57 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1529229626000)
-+++ src/app/views/product-admin-view/index.vue	(date 1529231274000)
+--- src/app/views/product-admin-view/index.vue	(date 1530409910000)
++++ src/app/views/product-admin-view/index.vue	(date 1530410026000)
 @@ -1,4 +1,5 @@
  <style lang="stylus" scoped>
-+  @import '../../../assets/styles/_flex-layout.styl';
-   @import '../../../assets/styles/_spacing.styl';
-   @import '../../../assets/styles/_typography.styl';
++@import '../../../assets/styles/_flex-layout.styl';
+ @import '../../../assets/styles/_spacing.styl';
+ @import '../../../assets/styles/_typography.styl';
  
 @@ -27,6 +28,39 @@
-       color: var(--app-secondary-text-color);
-     }
+     color: var(--app-secondary-text-color);
    }
+ }
 +
-+  .product-detail {
-+    padding: 0 var(--app-spacer-3);
++.product-detail {
++  padding: 0 var(--app-spacer-3);
 +
-+    .row {
-+      width: 500px;
++  .row {
++    width: 500px;
++    &.sp {
++      width: 100%;
++    }
++  }
++
++  .title-area {
++    @extend .app-font-subhead;
++    @extend .flex-2;
++    @extend .app-mt-4;
++  }
++
++  .input-area {
++    @extend .flex-10;
++
++    .title-input {
++      width: 400px;
 +      &.sp {
 +        width: 100%;
 +      }
 +    }
 +
-+    .title-area {
-+      @extend .app-font-subhead;
-+      @extend .flex-2;
-+      @extend .app-mt-4;
-+    }
-+
-+    .input-area {
-+      @extend .flex-10;
-+
-+      .title-input {
-+        width: 400px;
-+        &.sp {
-+          width: 100%;
-+        }
-+      }
-+
-+      .price-input, .inventory-input {
-+        width: 100px;
-+        text-align: right;
-+      }
++    .price-input, .inventory-input {
++      width: 100px;
++      text-align: right;
 +    }
 +  }
++}
  </style>
  
  
-@@ -59,12 +93,58 @@
-         </div>
-       </iron-selector>    </div>
+@@ -60,12 +94,58 @@
+       </iron-selector>
+     </div>
  
 +    <div class="app-mt-5">
 +      <div class="layout horizontal center">
@@ -110,7 +110,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  import { Component } from 'vue-property-decorator';
  import { ElementComponent } from '../../components';
  import { Product } from '../../stores/types';
-@@ -78,6 +158,8 @@
+@@ -79,6 +159,8 @@
    //
    //----------------------------------------------------------------------
  
@@ -119,7 +119,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    get m_products(): Product[] {
      return this.$stores.product.allProducts;
    }
-@@ -86,9 +168,7 @@
+@@ -87,9 +169,7 @@
    //  Elements
    //--------------------------------------------------
  
@@ -130,7 +130,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
      return this.$refs.productSelector as any;
    }
  
-@@ -110,10 +190,12 @@
+@@ -111,10 +191,12 @@
      let selectedProduct: Product | undefined;
      if (this.m_productSelector.selected) {
        const productId = this.m_productSelector.selected;

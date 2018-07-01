@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/apis/shop-api/index.ts	(revision 2c1c1c8f46a68cc0671850e5070259a93b28c778)
-+++ src/app/apis/shop-api/index.ts	(date 1529231413000)
+--- src/app/apis/shop-api/index.ts	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
++++ src/app/apis/shop-api/index.ts	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
 @@ -17,6 +17,10 @@
        }, 100);
      });
@@ -16,13 +16,47 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  }
  
  const shopAPI: ShopAPI = new ShopAPIImpl();
+Index: src/app/apis/types.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/apis/types.ts	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
++++ src/app/apis/types.ts	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+@@ -12,6 +12,8 @@
+   getProducts(): Promise<Product[]>;
+ 
+   buyProducts(products: Array<{ id: string; quantity: number }>): Promise<void>;
++
++  updateProduct(product: Product): Promise<void>;
+ }
+ 
+ //----------------------------------------------------------------------
+Index: src/app/router/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/router/index.ts	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
++++ src/app/router/index.ts	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+@@ -15,5 +15,10 @@
+       component: () =>
+         import(/* webpackChunkName: "shopping-view" */ '../views/shopping-view/index.vue'),
+     },
++    {
++      path: '/product-admin',
++      component: () =>
++        import(/* webpackChunkName: "product-admin-view" */ '../views/product-admin-view/index.vue'),
++    },
+   ],
+ });
 Index: src/app/stores/product-store/index.ts
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/stores/product-store/index.ts	(revision 2c1c1c8f46a68cc0671850e5070259a93b28c778)
-+++ src/app/stores/product-store/index.ts	(date 1529231447000)
+--- src/app/stores/product-store/index.ts	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
++++ src/app/stores/product-store/index.ts	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
 @@ -66,6 +66,14 @@
      this.f_state.all = products;
    }
@@ -38,13 +72,29 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    //----------------------------------------------------------------------
    //
    //  Internal methods
+Index: src/app/stores/types.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/app/stores/types.ts	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
++++ src/app/stores/types.ts	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+@@ -20,6 +20,8 @@
+   decrementProductInventory(productId: string): void;
+ 
+   getAllProducts(): Promise<void>;
++
++  updateProduct(product: Product): Promise<void>;
+ }
+ 
+ export interface CartStore {
 Index: src/app/views/index.vue
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/index.vue	(revision 2c1c1c8f46a68cc0671850e5070259a93b28c778)
-+++ src/app/views/index.vue	(date 1529229122000)
+--- src/app/views/index.vue	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
++++ src/app/views/index.vue	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
 @@ -119,6 +119,10 @@
        title: 'Shopping',
        path: '/shopping',
@@ -56,178 +106,81 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    ];
  
    m_swMessage: string = '';
-Index: src/assets/styles/main.styl
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/assets/styles/main.styl	(revision 2c1c1c8f46a68cc0671850e5070259a93b28c778)
-+++ src/assets/styles/main.styl	(date 1529229548000)
-@@ -22,6 +22,8 @@
-   --app-link-color: var(--app-light-blue-a400);
-   --app-link-visited-color: var(--app-indigo-300);
-   --app-default-border-color: var(--app-grey-300);
-+  --app-grid-selected-hover-item: var(--app-grey-100);
-+  --app-grid-selected-activ-item: var(--app-grey-300);
- 
-   /**
-    * Grid
-Index: test/app/stores/product-store/index.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- test/app/stores/product-store/index.ts	(revision 2c1c1c8f46a68cc0671850e5070259a93b28c778)
-+++ test/app/stores/product-store/index.ts	(date 1529231903000)
-@@ -68,4 +68,39 @@
-     await productStore.getAllProducts();
-     assert.deepEqual(productStore.allProducts, NEW_API_PRODUCTS);
-   });
-+
-+  test('updateProduct() - 一般ケース', async () => {
-+    // 対象の商品に更新データを設定
-+    const PRODUCT_ID = '1';
-+    const product = productStore.getProductById(PRODUCT_ID);
-+    if (!product) throw new Error(`Product \`${PRODUCT_ID}\` was not found.`);
-+    product.title = 'aaa';
-+    product.price = 111;
-+    product.inventory = 222;
-+
-+    // モック処理の設定
-+    const stateProduct = {} as Product;
-+    td.replace(productStore, 'm_getStateProductById');
-+    td.when(productStore.m_getStateProductById(PRODUCT_ID)).thenReturn(stateProduct);
-+    td.replace(shopAPI, 'updateProduct');
-+
-+    // 商品の更新を実行
-+    await productStore.updateProduct(product);
-+
-+    // Stateの商品と引数の商品の内容が一致することを検証
-+    // (Stateの商品に引数の商品の内容が反映されるため)
-+    assert.deepEqual(stateProduct, product);
-+    // `ShopAPI#updateProduct()`が呼び出されたことを検証
-+    td.verify(shopAPI.updateProduct(product));
-+  });
-+
-+  test('updateProduct() - 存在しない商品を指定した場合', async () => {
-+    // 対象の商品に更新データを設定
-+    const product = productStore.getProductById('1') as Product;
-+    product.id = '9876';
-+    // 商品の更新を実行
-+    await productStore.updateProduct(product);
-+    // 何も問題は起きない
-+    assert(true);
-+  });
- });
-Index: src/app/router/index.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/app/router/index.ts	(revision 2c1c1c8f46a68cc0671850e5070259a93b28c778)
-+++ src/app/router/index.ts	(date 1529229121000)
-@@ -15,5 +15,10 @@
-       component: () =>
-         import(/* webpackChunkName: "shopping-view" */ '../views/shopping-view/index.vue'),
-     },
-+    {
-+      path: '/product-admin',
-+      component: () =>
-+        import(/* webpackChunkName: "product-admin-view" */ '../views/product-admin-view/index.vue'),
-+    },
-   ],
- });
-Index: src/app/apis/types.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/app/apis/types.ts	(revision 2c1c1c8f46a68cc0671850e5070259a93b28c778)
-+++ src/app/apis/types.ts	(date 1529231413000)
-@@ -12,6 +12,8 @@
-   getProducts(): Promise<Product[]>;
- 
-   buyProducts(products: Array<{ id: string; quantity: number }>): Promise<void>;
-+
-+  updateProduct(product: Product): Promise<void>;
- }
- 
- //----------------------------------------------------------------------
 Index: src/app/views/product-admin-view/index.vue
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1529231701000)
-+++ src/app/views/product-admin-view/index.vue	(date 1529231701000)
-@@ -0,0 +1,224 @@
+--- src/app/views/product-admin-view/index.vue	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
++++ src/app/views/product-admin-view/index.vue	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+@@ -0,0 +1,225 @@
 +<style lang="stylus" scoped>
-+  @import '../../../assets/styles/_flex-layout.styl';
-+  @import '../../../assets/styles/_spacing.styl';
-+  @import '../../../assets/styles/_typography.styl';
++@import '../../../assets/styles/_flex-layout.styl';
++@import '../../../assets/styles/_spacing.styl';
++@import '../../../assets/styles/_typography.styl';
 +
-+  .title-text {
-+    @extend .app-font-title;
++.title-text {
++  @extend .app-font-title;
++}
++
++.product-item {
++  @extend .app-pa-3;
++  cursor: pointer;
++
++  &:hover {
++    background-color: var(--app-grid-selected-hover-item);
 +  }
 +
-+  .product-item {
-+    @extend .app-pa-3;
-+    cursor: pointer;
++  &.iron-selected {
++    background-color: var(--app-grid-selected-activ-item);
++  }
 +
-+    &:hover {
-+      background-color: var(--app-grid-selected-hover-item);
-+    }
++  .title {
++    @extend .app-font-subhead;
++  }
 +
-+    &.iron-selected {
-+      background-color: var(--app-grid-selected-activ-item);
-+    }
++  .detail {
++    @extend .app-font-body1;
++    color: var(--app-secondary-text-color);
++  }
++}
 +
-+    .title {
-+      @extend .app-font-subhead;
-+    }
++.product-detail {
++  padding: 0 var(--app-spacer-3);
 +
-+    .detail {
-+      @extend .app-font-body1;
-+      color: var(--app-secondary-text-color);
++  .row {
++    width: 500px;
++    &.sp {
++      width: 100%;
 +    }
 +  }
 +
-+  .product-detail {
-+    padding: 0 var(--app-spacer-3);
++  .title-area {
++    @extend .app-font-subhead;
++    @extend .flex-2;
++    @extend .app-mt-4;
++  }
 +
-+    .row {
-+      width: 500px;
++  .input-area {
++    @extend .flex-10;
++
++    .title-input {
++      width: 400px;
 +      &.sp {
 +        width: 100%;
 +      }
 +    }
 +
-+    .title-area {
-+      @extend .app-font-subhead;
-+      @extend .flex-2;
-+      @extend .app-mt-4;
-+    }
-+
-+    .input-area {
-+      @extend .flex-10;
-+
-+      .title-input {
-+        width: 400px;
-+        &.sp {
-+          width: 100%;
-+        }
-+      }
-+
-+      .price-input, .inventory-input {
-+        width: 100px;
-+        text-align: right;
-+      }
++    .price-input, .inventory-input {
++      width: 100px;
++      text-align: right;
 +    }
 +  }
++}
 +
-+  .update-button {
-+    color: var(--app-link-color);
-+  }
++.update-button {
++  color: var(--app-link-color);
++}
 +</style>
 +
 +
@@ -258,7 +211,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +          </div>
 +          <div class="flex"></div>
 +        </div>
-+      </iron-selector>    </div>
++      </iron-selector>
++    </div>
 +
 +    <div class="app-mt-5">
 +      <div class="layout horizontal center">
@@ -385,19 +339,66 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  }
 +}
 +</script>
-Index: src/app/stores/types.ts
+Index: src/assets/styles/main.styl
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/stores/types.ts	(revision 2c1c1c8f46a68cc0671850e5070259a93b28c778)
-+++ src/app/stores/types.ts	(date 1529231413000)
-@@ -20,6 +20,8 @@
-   decrementProductInventory(productId: string): void;
+--- src/assets/styles/main.styl	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
++++ src/assets/styles/main.styl	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+@@ -22,6 +22,8 @@
+   --app-link-color: var(--app-light-blue-a400);
+   --app-link-visited-color: var(--app-indigo-300);
+   --app-default-border-color: var(--app-grey-300);
++  --app-grid-selected-hover-item: var(--app-grey-100);
++  --app-grid-selected-activ-item: var(--app-grey-300);
  
-   getAllProducts(): Promise<void>;
+   /**
+    * Grid
+Index: test/app/stores/product-store/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- test/app/stores/product-store/index.ts	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
++++ test/app/stores/product-store/index.ts	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+@@ -68,4 +68,39 @@
+     await productStore.getAllProducts();
+     assert.deepEqual(productStore.allProducts, NEW_API_PRODUCTS);
+   });
 +
-+  updateProduct(product: Product): Promise<void>;
- }
- 
- export interface CartStore {
++  test('updateProduct() - 一般ケース', async () => {
++    // 対象の商品に更新データを設定
++    const PRODUCT_ID = '1';
++    const product = productStore.getProductById(PRODUCT_ID);
++    if (!product) throw new Error(`Product \`${PRODUCT_ID}\` was not found.`);
++    product.title = 'aaa';
++    product.price = 111;
++    product.inventory = 222;
++
++    // モック処理の設定
++    const stateProduct = {} as Product;
++    td.replace(productStore, 'm_getStateProductById');
++    td.when(productStore.m_getStateProductById(PRODUCT_ID)).thenReturn(stateProduct);
++    td.replace(shopAPI, 'updateProduct');
++
++    // 商品の更新を実行
++    await productStore.updateProduct(product);
++
++    // Stateの商品と引数の商品の内容が一致することを検証
++    // (Stateの商品に引数の商品の内容が反映されるため)
++    assert.deepEqual(stateProduct, product);
++    // `ShopAPI#updateProduct()`が呼び出されたことを検証
++    td.verify(shopAPI.updateProduct(product));
++  });
++
++  test('updateProduct() - 存在しない商品を指定した場合', async () => {
++    // 対象の商品に更新データを設定
++    const product = productStore.getProductById('1') as Product;
++    product.id = '9876';
++    // 商品の更新を実行
++    await productStore.updateProduct(product);
++    // 何も問題は起きない
++    assert(true);
++  });
+ });

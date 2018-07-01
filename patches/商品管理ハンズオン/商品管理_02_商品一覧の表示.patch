@@ -3,29 +3,29 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1529229168000)
-+++ src/app/views/product-admin-view/index.vue	(date 1529229381000)
+--- src/app/views/product-admin-view/index.vue	(date 1530409387000)
++++ src/app/views/product-admin-view/index.vue	(date 1530409443000)
 @@ -1,10 +1,49 @@
  <style lang="stylus" scoped>
-+  @import '../../../assets/styles/_spacing.styl';
-+  @import '../../../assets/styles/_typography.styl';
++@import '../../../assets/styles/_spacing.styl';
++@import '../../../assets/styles/_typography.styl';
 +
-+  .title-text {
-+    @extend .app-font-title;
++.title-text {
++  @extend .app-font-title;
++}
++
++.product-item {
++  @extend .app-pa-3;
++
++  .title {
++    @extend .app-font-subhead;
 +  }
 +
-+  .product-item {
-+    @extend .app-pa-3;
-+
-+    .title {
-+      @extend .app-font-subhead;
-+    }
-+
-+    .detail {
-+      @extend .app-font-body1;
-+      color: var(--app-secondary-text-color);
-+    }
++  .detail {
++    @extend .app-font-body1;
++    color: var(--app-secondary-text-color);
 +  }
++}
  </style>
  
  

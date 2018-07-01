@@ -1,39 +1,39 @@
 <style lang="stylus" scoped>
-  @import '../../../assets/styles/_spacing.styl';
-  @import '../../../assets/styles/_typography.styl';
+@import '../../../assets/styles/_spacing.styl';
+@import '../../../assets/styles/_typography.styl';
 
-  .title-text {
-    @extend .app-font-title;
+.title-text {
+  @extend .app-font-title;
+}
+
+.product-item {
+  @extend .app-pa-3;
+
+  &.iron-selected {
+    background-color: var(--app-grid-selected-activ-item);
   }
 
-  .product-item {
-    @extend .app-pa-3;
-
-    &.iron-selected {
-      background-color: var(--app-grid-selected-activ-item);
-    }
-
-    .title {
-      @extend .app-font-subhead;
-    }
-
-    .detail {
-      @extend .app-font-body1;
-      color: var(--app-secondary-text-color);
-    }
+  .title {
+    @extend .app-font-subhead;
   }
 
-  .error-text {
+  .detail {
     @extend .app-font-body1;
-    color: var(--app-error-text-color);
+    color: var(--app-secondary-text-color);
   }
+}
 
-  .checkout-button {
-    color: var(--app-link-color);
-    &[disabled] {
-      color: white;
-    }
+.error-text {
+  @extend .app-font-body1;
+  color: var(--app-error-text-color);
+}
+
+.checkout-button {
+  color: var(--app-link-color);
+  &[disabled] {
+    color: white;
   }
+}
 </style>
 
 
