@@ -1,18 +1,18 @@
 <style lang="stylus" scoped>
-  @import '../../../assets/styles/_typography.styl';
+@import '../../../assets/styles/_typography.styl';
 
-  .title {
-    @extend .app-font-subhead;
-    font-weight: 500;
-  }
+.title {
+  @extend .app-font-subhead;
+  font-weight: 500;
+}
 
-  .value {
-    @extend .app-font-subhead;
-  }
+.value {
+  @extend .app-font-subhead;
+}
 
-  span {
-    color: var(--greet-message-color);
-  }
+span {
+  color: var(--greet-message-color);
+}
 </style>
 
 

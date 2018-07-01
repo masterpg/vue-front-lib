@@ -1,38 +1,38 @@
 <style lang="stylus" scoped>
-  @import '../../assets/styles/_typography.styl';
+@import '../../assets/styles/_typography.styl';
 
-  app-drawer-layout {
-    --app-drawer-width: 256px;
-    &:not([narrow]) [drawer-toggle] {
-      display: none;
-    }
+app-drawer-layout {
+  --app-drawer-width: 256px;
+  &:not([narrow]) [drawer-toggle] {
+    display: none;
+  }
+}
+
+.drawer-toolbar {
+}
+
+.content-toolbar {
+  background-color: var(--paper-indigo-a200);
+  color: #fff;
+}
+
+.drawer-list {
+  .item {
+    display: block;
+    padding: var(--app-spacer-2) var(--app-spacer-5);
+    @extend .app-font-code1;
+    color: var(--app-secondary-text-color);
+    text-decoration none;
   }
 
-  .drawer-toolbar {
+  .item.router-link-active {
+    color: var(--app-accent-text-color);
   }
+}
 
-  .content-toolbar {
-    background-color: var(--paper-indigo-a200);
-    color: #fff;
-  }
-
-  .drawer-list {
-    .item {
-      display: block;
-      padding: var(--app-spacer-2) var(--app-spacer-5);
-      @extend .app-font-code1;
-      color: var(--app-secondary-text-color);
-      text-decoration none;
-    }
-
-    .item.router-link-active {
-      color: var(--app-accent-text-color);
-    }
-  }
-
-  .link-button {
-    color: var(--app-link-color);
-  }
+.link-button {
+  color: var(--app-link-color);
+}
 </style>
 
 
