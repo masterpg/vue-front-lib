@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1530409910000)
-+++ src/app/views/product-admin-view/index.vue	(date 1530410026000)
+--- src/app/views/product-admin-view/index.vue	(date 1531011618000)
++++ src/app/views/product-admin-view/index.vue	(date 1531011641000)
 @@ -1,4 +1,5 @@
  <style lang="stylus" scoped>
 +@import '../../../assets/styles/_flex-layout.styl';
