@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/apis/shop-api/index.ts	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
-+++ src/app/apis/shop-api/index.ts	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+--- src/app/apis/shop-api/index.ts	(revision 217aab54982a695a801f68011578a85e01060875)
++++ src/app/apis/shop-api/index.ts	(revision 4f5fbd72ec684c70e64327ca7e22b90af473518c)
 @@ -17,6 +17,10 @@
        }, 100);
      });
@@ -21,8 +21,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/apis/types.ts	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
-+++ src/app/apis/types.ts	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+--- src/app/apis/types.ts	(revision 217aab54982a695a801f68011578a85e01060875)
++++ src/app/apis/types.ts	(revision 4f5fbd72ec684c70e64327ca7e22b90af473518c)
 @@ -12,6 +12,8 @@
    getProducts(): Promise<Product[]>;
  
@@ -37,8 +37,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/router/index.ts	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
-+++ src/app/router/index.ts	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+--- src/app/router/index.ts	(revision 217aab54982a695a801f68011578a85e01060875)
++++ src/app/router/index.ts	(revision 4f5fbd72ec684c70e64327ca7e22b90af473518c)
 @@ -15,5 +15,10 @@
        component: () =>
          import(/* webpackChunkName: "shopping-view" */ '../views/shopping-view/index.vue'),
@@ -55,8 +55,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/stores/product-store/index.ts	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
-+++ src/app/stores/product-store/index.ts	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+--- src/app/stores/product-store/index.ts	(revision 217aab54982a695a801f68011578a85e01060875)
++++ src/app/stores/product-store/index.ts	(revision 4f5fbd72ec684c70e64327ca7e22b90af473518c)
 @@ -66,6 +66,14 @@
      this.f_state.all = products;
    }
@@ -77,8 +77,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/stores/types.ts	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
-+++ src/app/stores/types.ts	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+--- src/app/stores/types.ts	(revision 217aab54982a695a801f68011578a85e01060875)
++++ src/app/stores/types.ts	(revision 4f5fbd72ec684c70e64327ca7e22b90af473518c)
 @@ -20,6 +20,8 @@
    decrementProductInventory(productId: string): void;
  
@@ -93,8 +93,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/index.vue	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
-+++ src/app/views/index.vue	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+--- src/app/views/index.vue	(revision 217aab54982a695a801f68011578a85e01060875)
++++ src/app/views/index.vue	(revision 4f5fbd72ec684c70e64327ca7e22b90af473518c)
 @@ -119,6 +119,10 @@
        title: 'Shopping',
        path: '/shopping',
@@ -111,8 +111,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
-+++ src/app/views/product-admin-view/index.vue	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+--- src/app/views/product-admin-view/index.vue	(revision 4f5fbd72ec684c70e64327ca7e22b90af473518c)
++++ src/app/views/product-admin-view/index.vue	(revision 4f5fbd72ec684c70e64327ca7e22b90af473518c)
 @@ -0,0 +1,225 @@
 +<style lang="stylus" scoped>
 +@import '../../../assets/styles/_flex-layout.styl';
@@ -195,7 +195,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +      <iron-selector
 +        ref="productSelector"
 +        attr-for-selected="product-id"
-+        @selected-changed="productSelectorOnSelectedItemChanged"
++        @selected-changed="m_productSelectorOnSelectedItemChanged"
 +      >
 +        <div
 +          v-for="(product, index) in m_products"
@@ -326,7 +326,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  //
 +  //----------------------------------------------------------------------
 +
-+  private productSelectorOnSelectedItemChanged(event) {
++  private m_productSelectorOnSelectedItemChanged(event) {
 +    let selectedProduct: Product | undefined;
 +    if (this.m_productSelector.selected) {
 +      const productId = this.m_productSelector.selected;
@@ -344,8 +344,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/assets/styles/main.styl	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
-+++ src/assets/styles/main.styl	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+--- src/assets/styles/main.styl	(revision 217aab54982a695a801f68011578a85e01060875)
++++ src/assets/styles/main.styl	(revision 4f5fbd72ec684c70e64327ca7e22b90af473518c)
 @@ -22,6 +22,8 @@
    --app-link-color: var(--app-light-blue-a400);
    --app-link-visited-color: var(--app-indigo-300);
@@ -360,8 +360,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- test/app/stores/product-store/index.ts	(revision 11202fe09eda657f3f8bb6b4a2e0274a4276ddf1)
-+++ test/app/stores/product-store/index.ts	(revision 3aed6655a9f61020d250dd898f979cae382c200d)
+--- test/app/stores/product-store/index.ts	(revision 217aab54982a695a801f68011578a85e01060875)
++++ test/app/stores/product-store/index.ts	(revision 4f5fbd72ec684c70e64327ca7e22b90af473518c)
 @@ -68,4 +68,39 @@
      await productStore.getAllProducts();
      assert.deepEqual(productStore.allProducts, NEW_API_PRODUCTS);

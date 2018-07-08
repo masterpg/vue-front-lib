@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1530409443000)
-+++ src/app/views/product-admin-view/index.vue	(date 1530409910000)
+--- src/app/views/product-admin-view/index.vue	(date 1531011587000)
++++ src/app/views/product-admin-view/index.vue	(date 1531011618000)
 @@ -8,6 +8,15 @@
  
  .product-item {
@@ -41,7 +41,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +      <iron-selector
 +        ref="productSelector"
 +        attr-for-selected="product-id"
-+        @selected-changed="productSelectorOnSelectedItemChanged"
++        @selected-changed="m_productSelectorOnSelectedItemChanged"
 +      >
 +        <div
 +          v-for="(product, index) in m_products"
@@ -97,7 +97,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  //
 +  //----------------------------------------------------------------------
 +
-+  private productSelectorOnSelectedItemChanged(event) {
++  private m_productSelectorOnSelectedItemChanged(event) {
 +    let selectedProduct: Product | undefined;
 +    if (this.m_productSelector.selected) {
 +      const productId = this.m_productSelector.selected;
@@ -113,8 +113,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/assets/styles/main.styl	(date 1530409443000)
-+++ src/assets/styles/main.styl	(date 1530409910000)
+--- src/assets/styles/main.styl	(date 1531011587000)
++++ src/assets/styles/main.styl	(date 1531011618000)
 @@ -22,6 +22,8 @@
    --app-link-color: var(--app-light-blue-a400);
    --app-link-visited-color: var(--app-indigo-300);
