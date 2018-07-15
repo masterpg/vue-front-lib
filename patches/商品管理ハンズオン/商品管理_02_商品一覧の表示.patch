@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1531011553000)
-+++ src/app/views/product-admin-view/index.vue	(date 1531011587000)
+--- src/app/views/product-admin-view/index.vue	(date 1531646785000)
++++ src/app/views/product-admin-view/index.vue	(date 1531646947000)
 @@ -1,10 +1,49 @@
  <style lang="stylus" scoped>
 +@import '../../../assets/styles/_spacing.styl';
@@ -15,7 +15,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +}
 +
 +.product-item {
-+  @extend .app-pa-3;
++  @extend .app-pa-12;
 +
 +  .title {
 +    @extend .app-font-subhead;
@@ -32,7 +32,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  <template>
 -  <div>
 -    product-admin-view
-+  <div class="layout vertical" :class="{ 'app-ma-12': f_pc, 'app-ma-6': f_tab, 'app-ma-3': f_sp }">
++  <div class="layout vertical" :class="{ 'app-ma-48': f_pc, 'app-ma-24': f_tab, 'app-ma-12': f_sp }">
 +
 +    <div>
 +      <div class="layout horizontal center">

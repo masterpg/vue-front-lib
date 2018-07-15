@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/router/index.ts	(revision 217aab54982a695a801f68011578a85e01060875)
-+++ src/app/router/index.ts	(revision 294f9fc435914a4eaa9ecd0fb6f7ee7eb59ebe17)
+--- src/app/router/index.ts	(revision 8405c0f6be5c1c747ab896ad22da4baa68a1da10)
++++ src/app/router/index.ts	(revision 2fc22452458e67d548d1838231b1f14811504218)
 @@ -15,5 +15,10 @@
        component: () =>
          import(/* webpackChunkName: "shopping-view" */ '../views/shopping-view/index.vue'),
@@ -21,8 +21,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/index.vue	(revision 217aab54982a695a801f68011578a85e01060875)
-+++ src/app/views/index.vue	(revision 294f9fc435914a4eaa9ecd0fb6f7ee7eb59ebe17)
+--- src/app/views/index.vue	(revision 8405c0f6be5c1c747ab896ad22da4baa68a1da10)
++++ src/app/views/index.vue	(revision 2fc22452458e67d548d1838231b1f14811504218)
 @@ -119,6 +119,10 @@
        title: 'Shopping',
        path: '/shopping',
@@ -39,8 +39,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(revision 294f9fc435914a4eaa9ecd0fb6f7ee7eb59ebe17)
-+++ src/app/views/product-admin-view/index.vue	(revision 294f9fc435914a4eaa9ecd0fb6f7ee7eb59ebe17)
+--- src/app/views/product-admin-view/index.vue	(revision 2fc22452458e67d548d1838231b1f14811504218)
++++ src/app/views/product-admin-view/index.vue	(revision 2fc22452458e67d548d1838231b1f14811504218)
 @@ -0,0 +1,19 @@
 +<style lang="stylus" scoped>
 +</style>

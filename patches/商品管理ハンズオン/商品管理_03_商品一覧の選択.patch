@@ -3,12 +3,12 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1531011587000)
-+++ src/app/views/product-admin-view/index.vue	(date 1531011618000)
+--- src/app/views/product-admin-view/index.vue	(date 1531646947000)
++++ src/app/views/product-admin-view/index.vue	(date 1531647742000)
 @@ -8,6 +8,15 @@
  
  .product-item {
-   @extend .app-pa-3;
+   @extend .app-pa-12;
 +  cursor: pointer;
 +
 +  &:hover {
@@ -97,7 +97,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  //
 +  //----------------------------------------------------------------------
 +
-+  private m_productSelectorOnSelectedItemChanged(event) {
++  m_productSelectorOnSelectedItemChanged(event) {
 +    let selectedProduct: Product | undefined;
 +    if (this.m_productSelector.selected) {
 +      const productId = this.m_productSelector.selected;
@@ -113,10 +113,10 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/assets/styles/main.styl	(date 1531011587000)
-+++ src/assets/styles/main.styl	(date 1531011618000)
-@@ -22,6 +22,8 @@
-   --app-link-color: var(--app-light-blue-a400);
+--- src/assets/styles/main.styl	(date 1531646947000)
++++ src/assets/styles/main.styl	(date 1531647742000)
+@@ -23,6 +23,8 @@
+   --app-link-color: var(--app-indigo-500);
    --app-link-visited-color: var(--app-indigo-300);
    --app-default-border-color: var(--app-grey-300);
 +  --app-grid-selected-hover-item: var(--app-grey-100);
