@@ -18,7 +18,7 @@
 
 <template>
   <div class="layout vertical">
-    <paper-card class="app-pa-3" :class="{ 'app-ma-12': f_pc, 'app-ma-6': f_tab, 'app-ma-3': f_sp }">
+    <paper-card class="app-pa-12" :class="{ 'app-ma-48': f_pc, 'app-ma-24': f_tab, 'app-ma-12': f_sp }">
       <paper-input
         label="Input Message"
         :value="m_message" @input="m_message = $event.target.value"
@@ -35,18 +35,18 @@
           :message="m_message"
           class="greet-message"
         ></greet-message>
-        <button class="app-ml-3" @click="m_greetButtonOnClick">Greet</button>
+        <button class="app-ml-12" @click="m_greetButtonOnClick">Greet</button>
       </div>
       <p>
         <span class="title">post times: </span><span class="value">{{ m_post.times }}</span>
-        <button class="app-ml-3" @click="m_postButtonOnClick">Post</button>
+        <button class="app-ml-12" @click="m_postButtonOnClick">Post</button>
       </p>
       <p class="layout horizontal">
         <custom-input
           v-model="m_customInputValue"
           class="flex-3"
         ></custom-input>
-        <span class="flex-9 app-ml-3 app-mt-7">
+        <span class="flex-9 app-ml-12 app-mt-28">
           <span class="title">value: </span><span class="value">{{ m_customInputValue }}</span>
         </span>
       </p>
@@ -54,7 +54,7 @@
         <custom-checkbox
           v-model="m_customChecked"
         ></custom-checkbox>
-        <span class="app-ml-3">
+        <span class="app-ml-12">
           <span class="title">checked: </span><span class="value">{{ m_customChecked }}</span>
         </span>
       </p>

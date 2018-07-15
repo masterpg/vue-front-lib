@@ -33,7 +33,7 @@ app-drawer-layout {
 .drawer-list {
   .item {
     display: block;
-    padding: var(--app-spacer-2) var(--app-spacer-5);
+    padding: 8px 20px;
     @extend .app-font-code1;
     color: var(--app-secondary-text-color);
     text-decoration none;
@@ -65,7 +65,7 @@ paper-item {
       <app-drawer ref="drawer" slot="drawer" :swipe-open="m_narrow">
         <app-toolbar class="drawer-toolbar">
           <iron-icon src="assets/images/manifest/icon-48x48.png"></iron-icon>
-          <div main-title class="app-ml-2">Vue WWW Base</div>
+          <div main-title class="app-ml-8">Vue WWW Base</div>
         </app-toolbar>
         <div class="drawer-list">
           <template v-for="item in m_items">

@@ -7,7 +7,7 @@
 }
 
 .product-item {
-  @extend .app-pa-3;
+  @extend .app-pa-12;
 
   &.iron-selected {
     background-color: var(--app-grid-selected-activ-item);
@@ -38,7 +38,7 @@
 
 
 <template>
-  <div class="layout vertical" :class="{ 'app-ma-12': f_pc, 'app-ma-6': f_tab, 'app-ma-3': f_sp }">
+  <div class="layout vertical" :class="{ 'app-ma-48': f_pc, 'app-ma-24': f_tab, 'app-ma-12': f_sp }">
 
     <div>
       <div class="layout horizontal center">
@@ -61,7 +61,7 @@
       </div>
     </div>
 
-    <div class="app-mt-5">
+    <div class="app-mt-20">
       <div class="layout horizontal center">
         <div class="title-text">Your Cart</div>
         <div class="flex"></div>
