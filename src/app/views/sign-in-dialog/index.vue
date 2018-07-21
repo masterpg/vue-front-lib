@@ -35,6 +35,11 @@
       background-color: #3b5998;
       color: white;
     }
+
+    &.email {
+      background-color: #db4437;
+      color: white;
+    }
   }
 
   .sign-in-button:not(:first-child) {
@@ -47,45 +52,82 @@
 <template>
   <paper-dialog
     ref="dialog"
+    modal
     with-backdrop
     entry-animation="fade-in-animation"
     exit-animation="fade-out-animation"
   >
-    <div class="title">Sign in</div>
+    <div>
 
-    <div class="sign-in-wrapper">
+      <!--
+        list
+      -->
       <div
-        ref="googleSignInButton"
-        class="layout horizontal center sign-in-button google"
-        @click="m_signInButtonOnClick"
+        v-show="m_state === 'list'"
+        class="sign-in-wrapper"
       >
-        <img class="icon" src="assets/images/icons/google.svg"/>
-        <div class="label">Sign in with Google</div>
+        <div class="title">Sign in</div>
+
+        <div
+          ref="googleSignInButton"
+          class="layout horizontal center sign-in-button google"
+          @click="m_signInWithGoogle"
+        >
+          <img class="icon" src="assets/images/icons/google.svg"/>
+          <div class="label">Sign in with Google</div>
+        </div>
+
+        <div
+          ref="facebookSignInButton"
+          class="layout horizontal center sign-in-button facebook"
+          @click="m_signInWithFacebook"
+        >
+          <img class="icon" src="assets/images/icons/facebook.svg"/>
+          <div class="label">Sign in with Facebook</div>
+        </div>
+
+        <div
+          ref="emailSignInButton"
+          class="layout horizontal center sign-in-button email"
+          @click="m_signInWithEmail"
+        >
+          <img class="icon" src="assets/images/icons/mail.svg"/>
+          <div class="label">Sign in with Email</div>
+        </div>
+
+        <div class="layout horizontal center end-justified app-mt-20">
+          <paper-button
+            @click="close()"
+          >Cancel</paper-button>
+        </div>
       </div>
 
-      <div
-        ref="facebookSignInButton"
-        class="layout horizontal center sign-in-button facebook"
-        @click="m_signInButtonOnClick"
-      >
-        <img class="icon" src="assets/images/icons/facebook.svg"/>
-        <div class="label">Sign in with Facebook</div>
-      </div>
+      <!--
+        email
+      -->
+      <email-sign-in-view
+        v-show="m_state === 'email'"
+        ref="emailSignInView"
+      ></email-sign-in-view>
+
     </div>
-
   </paper-dialog>
 </template>
 
 
 <script lang="ts">
+import '@polymer/paper-dialog/paper-dialog';
 import * as firebase from 'firebase';
+import EmailSignInView from './email-sign-in-view.vue';
 import { Component } from 'vue-property-decorator';
 import { ElementComponent } from '../../components';
 import { mixins } from 'vue-class-component';
 
-import '@polymer/paper-dialog/paper-dialog';
-
-@Component
+@Component({
+  components: {
+    'email-sign-in-view': EmailSignInView,
+  },
+})
 export default class SignInDialog extends mixins(ElementComponent) {
   //----------------------------------------------------------------------
   //
@@ -93,38 +135,18 @@ export default class SignInDialog extends mixins(ElementComponent) {
   //
   //----------------------------------------------------------------------
 
-  m_googleProvider: firebase.auth.GoogleAuthProvider;
-
-  m_facebookProvider: firebase.auth.FacebookAuthProvider;
+  m_state: 'list' | 'email' = 'list';
 
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
 
-  get m_dialog(): { open: () => void } {
+  get m_dialog(): { open: () => void; close: () => void; fit: () => void } {
     return this.$refs.dialog as any;
   }
 
-  get m_googleSignInButton() {
-    return this.$refs.googleSignInButton;
-  }
-
-  get m_facebookSignInButton() {
-    return this.$refs.facebookSignInButton;
-  }
-
-  //----------------------------------------------------------------------
-  //
-  //  Lifecycle hooks
-  //
-  //----------------------------------------------------------------------
-
-  created() {
-    this.m_googleProvider = new firebase.auth.GoogleAuthProvider();
-    this.m_googleProvider.addScope('https://www.googleapis.com/auth/contacts.readonly');
-
-    this.m_facebookProvider = new firebase.auth.FacebookAuthProvider();
-    this.m_facebookProvider.addScope('user_birthday');
+  get m_emailSignInView(): EmailSignInView {
+    return this.$refs.emailSignInView as any;
   }
 
   //----------------------------------------------------------------------
@@ -134,7 +156,17 @@ export default class SignInDialog extends mixins(ElementComponent) {
   //----------------------------------------------------------------------
 
   open(): void {
+    this.m_state = 'list';
     this.m_dialog.open();
+    this.correctPosition();
+  }
+
+  close(): void {
+    this.m_dialog.close();
+  }
+
+  correctPosition(): void {
+    this.$nextTick(() => this.m_dialog.fit());
   }
 
   //----------------------------------------------------------------------
@@ -143,33 +175,17 @@ export default class SignInDialog extends mixins(ElementComponent) {
   //
   //----------------------------------------------------------------------
 
-  /**
-   * サインイン(リダイレクト形式で)を行います。
-   */
-  async m_signIn(provider: firebase.auth.AuthProvider) {
-    await firebase.auth().signInWithRedirect(provider);
+  async m_signInWithGoogle() {
+    await this.$stores.auth.signInWithGoogle();
   }
 
-  //----------------------------------------------------------------------
-  //
-  //  Event handlers
-  //
-  //----------------------------------------------------------------------
+  async m_signInWithFacebook() {
+    await this.$stores.auth.signInWithFacebook();
+  }
 
-  /**
-   * サインインボタンがクリックされた際のハンドラです。
-   * @param e
-   */
-  async m_signInButtonOnClick(e: Event) {
-    let provider: firebase.auth.AuthProvider;
-    if (e.target === this.m_googleSignInButton) {
-      provider = this.m_googleProvider;
-    } else if (e.target === this.m_facebookSignInButton) {
-      provider = this.m_facebookProvider;
-    } else {
-      return;
-    }
-    await this.m_signIn(provider);
+  async m_signInWithEmail() {
+    this.m_state = 'email';
+    this.m_emailSignInView.init(this);
   }
 }
 </script>

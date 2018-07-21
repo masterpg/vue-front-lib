@@ -81,11 +81,15 @@ paper-item {
         <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
         <div main-title>View name</div>
         <iron-image
-          v-show="m_user.isSignedIn && !!m_user.photoURL"
-          :src="m_user.photoURL"
+          v-show="m_account.isSignedIn && !!m_account.photoURL"
+          :src="m_account.photoURL"
           sizing="contain"
           class="photo"
         ></iron-image>
+        <iron-icon
+          v-show="m_account.isSignedIn && !m_account.photoURL"
+          icon="social:person"
+        ></iron-icon>
         <paper-menu-button ref="systemMenu" dynamic-align>
           <paper-icon-button icon="more-vert" slot="dropdown-trigger" alt="menu"></paper-icon-button>
           <paper-listbox
@@ -94,9 +98,10 @@ paper-item {
             @iron-select="m_menuOnIronSelect"
             class="systemMenuList"
           >
-            <paper-item ref="signInItem" v-show="!m_user.isSignedIn">Sign in</paper-item>
-            <paper-item ref="signOutItem" v-show="m_user.isSignedIn">Sign out</paper-item>
-            <paper-item ref="deleteAccountItem" v-show="m_user.isSignedIn">Delete Account</paper-item>
+            <paper-item ref="signInItem" v-show="!m_account.isSignedIn">Sign in</paper-item>
+            <paper-item ref="signOutItem" v-show="m_account.isSignedIn">Sign out</paper-item>
+            <paper-item ref="changeEmailItem" v-show="m_account.isSignedIn">Change email</paper-item>
+            <paper-item ref="deleteAccountItem" v-show="m_account.isSignedIn">Delete account</paper-item>
           </paper-listbox>
         </paper-menu-button>
       </app-toolbar>
@@ -115,20 +120,13 @@ paper-item {
     </paper-toast>
 
     <sign-in-dialog ref="signInDialog"></sign-in-dialog>
+    <email-change-dialog ref="emailChangeDialog"></email-change-dialog>
 
   </div>
 </template>
 
 
 <script lang="ts">
-import 'web-animations-js/web-animations-next-lite.min.js';
-import * as firebase from 'firebase';
-import * as sw from '../service-worker';
-import SignInDialog from './sign-in-dialog/index.vue';
-import { Component } from 'vue-property-decorator';
-import { ElementComponent } from '../components';
-import { mixins } from 'vue-class-component';
-
 import '@polymer/app-layout/app-drawer-layout/app-drawer-layout';
 import '@polymer/app-layout/app-drawer/app-drawer';
 import '@polymer/app-layout/app-header-layout/app-header-layout';
@@ -136,6 +134,7 @@ import '@polymer/app-layout/app-header/app-header';
 import '@polymer/app-layout/app-toolbar/app-toolbar';
 import '@polymer/iron-icon/iron-icon';
 import '@polymer/iron-icons/iron-icons';
+import '@polymer/iron-icons/social-icons';
 import '@polymer/iron-image/iron-image';
 import '@polymer/iron-pages/iron-pages';
 import '@polymer/iron-selector/iron-selector';
@@ -145,10 +144,19 @@ import '@polymer/paper-item/paper-item';
 import '@polymer/paper-listbox/paper-listbox';
 import '@polymer/paper-menu-button/paper-menu-button';
 import '@polymer/paper-toast/paper-toast';
+import 'web-animations-js/web-animations-next-lite.min.js';
+import * as sw from '../service-worker';
+import EmailChangeDialog from './email-change-dialog/index';
+import SignInDialog from './sign-in-dialog/index.vue';
+import { Account } from '../stores/types';
+import { Component } from 'vue-property-decorator';
+import { ElementComponent } from '../components';
+import { mixins } from 'vue-class-component';
 
 @Component({
   components: {
     'sign-in-dialog': SignInDialog,
+    'email-change-dialog': EmailChangeDialog,
   },
 })
 export default class AppView extends mixins(ElementComponent) {
@@ -175,10 +183,9 @@ export default class AppView extends mixins(ElementComponent) {
 
   m_swUpdateIsRequired: boolean = false;
 
-  m_user: { isSignedIn: boolean; photoURL: string | null } = {
-    isSignedIn: false,
-    photoURL: null,
-  };
+  get m_account(): Account {
+    return this.$stores.auth.account;
+  }
 
   //--------------------------------------------------
   //  Elements
@@ -200,12 +207,20 @@ export default class AppView extends mixins(ElementComponent) {
     return this.$refs.signInDialog as any;
   }
 
+  get m_emailChangeDialog(): EmailChangeDialog {
+    return this.$refs.emailChangeDialog as any;
+  }
+
   get m_signInItem() {
     return this.$refs.signInItem as any;
   }
 
   get m_signOutItem() {
     return this.$refs.signOutItem as any;
+  }
+
+  get m_changeEmailItem() {
+    return this.$refs.changeEmailItem as any;
   }
 
   get m_deleteAccountItem() {
@@ -220,10 +235,6 @@ export default class AppView extends mixins(ElementComponent) {
 
   created() {
     sw.addStateChangeListener(this.m_swOnStateChange);
-
-    this.m_checkSingedIn().then(() => {
-      firebase.auth().onAuthStateChanged(this.m_firebaseOnAuthStateChanged.bind(this));
-    });
   }
 
   //----------------------------------------------------------------------
@@ -237,50 +248,9 @@ export default class AppView extends mixins(ElementComponent) {
   }
 
   /**
-   * サインイン(リダイレクト型式による)が行われているかチェックを行います。
-   */
-  async m_checkSingedIn() {
-    let redirected: firebase.auth.UserCredential;
-    try {
-      // リダイレクト型式によるサインインの認証情報を取得
-      redirected = await firebase.auth().getRedirectResult();
-    } catch (err) {
-      const errorCode = err.code;
-      const errorMessage = err.message;
-      const email = err.email;
-      const credential = err.credential;
-      console.error(err);
-      return;
-    }
-
-    if (redirected.credential) {
-      // Googleのアクセストークンを取得
-      // このトークンはGoogleAPIにアクセスする際に使用する
-      const token = (redirected.credential as any).accessToken;
-    }
-  }
-
-  /**
-   * ユーザーがサインインした状態の処理を行います。
-   * @param user
-   */
-  m_handleSignedInUser(user: firebase.User): void {
-    this.m_user.isSignedIn = true;
-    this.m_user.photoURL = user ? user.photoURL : '';
-  }
-
-  /**
-   * ユーザーがサインアウトした状態の処理を行います。
-   */
-  m_handleSignedOutUser(): void {
-    this.m_user.isSignedIn = false;
-    this.m_user.photoURL = '';
-  }
-
-  /**
    * サインインダイアログを表示します。
    */
-  async m_signIn() {
+  m_showSignInDialog(): void {
     this.m_signInDialog.open();
   }
 
@@ -288,29 +258,21 @@ export default class AppView extends mixins(ElementComponent) {
    * サインアウトを行います。
    */
   async m_signOut(): Promise<void> {
-    await firebase.auth().signOut();
+    await this.$stores.auth.signOut();
+  }
+
+  /**
+   * メールアドレス変更ダイアログを表示します。
+   */
+  m_showEmailChangeDialog(): void {
+    this.m_emailChangeDialog.open();
   }
 
   /**
    * ユーザーアカウントを削除します。
    */
   async m_deleteAccount(): Promise<void> {
-    const currentUser = firebase.auth().currentUser;
-    if (!currentUser) return;
-
-    try {
-      await currentUser.delete();
-    } catch (err) {
-      // ユーザーの認証情報が古すぎる場合、サインアウト
-      // (一旦サインアウトしてから再度サインインが必要なため)
-      if (err.code == 'auth/requires-recent-login') {
-        await this.m_signOut();
-      }
-      // ユーザーの認証情報が古すぎる以外のエラーの場合、そのままthrow
-      else {
-        throw err;
-      }
-    }
+    await this.$stores.auth.deleteAccount();
   }
 
   //----------------------------------------------------------------------
@@ -320,7 +282,7 @@ export default class AppView extends mixins(ElementComponent) {
   //----------------------------------------------------------------------
 
   /**
-   * ServecWorkerの状態が変化した際のハンドラです。
+   * ServiceWorkerの状態が変化した際のハンドラです。
    */
   m_swOnStateChange(info: sw.StateChangeInfo) {
     this.m_swMessage = info.message;
@@ -332,30 +294,19 @@ export default class AppView extends mixins(ElementComponent) {
   }
 
   /**
-   * Firebaseの認証状態が変化した際のハンドラです。
-   * @param user
-   */
-  m_firebaseOnAuthStateChanged(user?: firebase.User) {
-    this.m_systemMenu.close();
-    if (user) {
-      this.m_handleSignedInUser(user);
-    } else {
-      this.m_handleSignedOutUser();
-    }
-  }
-
-  /**
    * システムメニューで選択が行われた際のハンドラです。
    */
-  m_menuOnIronSelect(e: CustomEvent) {
+  async m_menuOnIronSelect(e: CustomEvent) {
     const selectedItemItem = e.detail.item;
     this.m_systemMenuList.selected = -1;
     if (selectedItemItem === this.m_signInItem) {
-      this.m_signIn();
+      this.m_showSignInDialog();
     } else if (selectedItemItem === this.m_signOutItem) {
-      this.m_signOut();
+      await this.m_signOut();
+    } else if (selectedItemItem === this.m_changeEmailItem) {
+      await this.m_showEmailChangeDialog();
     } else if (selectedItemItem === this.m_deleteAccountItem) {
-      this.m_deleteAccount();
+      await this.m_deleteAccount();
     }
   }
 }
