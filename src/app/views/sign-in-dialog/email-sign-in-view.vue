@@ -125,7 +125,6 @@
 <script lang="ts">
 import '@polymer/paper-button/paper-button';
 import '@polymer/paper-input/paper-input';
-import * as firebase from 'firebase';
 import { AuthProviderType } from '../../stores/types';
 import { Component } from 'vue-property-decorator';
 import { ElementComponent } from '../../components';
@@ -405,10 +404,7 @@ export default class EmailSignInView extends mixins(ElementComponent) {
   async m_reset(): Promise<void> {
     try {
       // アカウントのメールアドレスにパスワードリセットのメールを送信
-      await firebase.auth().sendPasswordResetEmail(this.m_inputEmail, {
-        url: 'http://localhost:5000/shopping',
-        handleCodeInApp: false,
-      });
+      await this.$stores.auth.sendPasswordResetEmail(this.m_inputEmail, 'http://localhost:5000');
       // パスワードリセット待ち画面へ遷移
       this.m_setupWaitReset();
     } catch (err) {

@@ -117,7 +117,6 @@
 
 <script lang="ts">
 import '@polymer/paper-dialog/paper-dialog';
-import * as firebase from 'firebase';
 import EmailSignInView from './email-sign-in-view.vue';
 import { Component } from 'vue-property-decorator';
 import { ElementComponent } from '../../components';

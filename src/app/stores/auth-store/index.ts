@@ -138,6 +138,14 @@ export class AuthStoreImpl extends BaseStore<AccountState> implements AuthStore 
     });
   }
 
+  async sendPasswordResetEmail(email: string, continueURL: string): Promise<void> {
+    firebase.auth().languageCode = 'ja';
+    await firebase.auth().sendPasswordResetEmail(email, {
+      url: continueURL,
+      handleCodeInApp: false,
+    });
+  }
+
   async signOut(): Promise<void> {
     await firebase.auth().signOut();
     await this.m_refreshAccount();

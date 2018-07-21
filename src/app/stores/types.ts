@@ -30,6 +30,8 @@ export interface AuthStore {
 
   sendEmailVerification(continueURL: string): Promise<void>;
 
+  sendPasswordResetEmail(email: string, continueURL: string): Promise<void>;
+
   createUserWithEmailAndPassword(
     email: string,
     password,
