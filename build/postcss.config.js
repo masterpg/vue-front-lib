@@ -5,5 +5,5 @@ module.exports = {
     'postcss-import': {},
     'postcss-media-variables': {},
     'postcss-nesting': {},
-  }
+  },
 };

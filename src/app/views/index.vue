@@ -31,7 +31,7 @@ app-drawer-layout {
 }
 
 .link-button {
-  color: var(--app-link-color);
+  color: var(--app-light-blue-a400);
 }
 </style>
 

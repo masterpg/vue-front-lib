@@ -18,13 +18,12 @@ const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
  * @param outputPath ビルド結果の出力パスを指定。
  */
 exports.config = (targetEnv, basePath, outputPath) => {
-
   const settings = (() => {
     let mode;
     if (targetEnv === 'development') {
-      mode = 'development'
+      mode = 'development';
     } else {
-      mode = 'production'
+      mode = 'production';
     }
     return { mode };
   })();
@@ -51,7 +50,7 @@ exports.config = (targetEnv, basePath, outputPath) => {
 
       alias: {
         'vue$': 'vue/dist/vue.esm.js',
-      }
+      },
     },
 
     module: {
@@ -68,7 +67,7 @@ exports.config = (targetEnv, basePath, outputPath) => {
           options: {
             // 「.vue」のファイルに接尾辞「.ts」がファイル名に追加されるよう設定
             // 参照: https://github.com/TypeStrong/ts-loader#user-content-appendtssuffixto-regexp-default
-            appendTsSuffixTo: [/\.vue$/]
+            appendTsSuffixTo: [/\.vue$/],
           },
         },
         // 「.vue」ファイルをvue-loaderがハンドルするよう設定
@@ -80,7 +79,7 @@ exports.config = (targetEnv, basePath, outputPath) => {
             esModule: true,
             scss: 'vue-style-loader!css-loader!sass-loader',
             loaders: {
-              ts: 'ts-loader!tslint-loader'
+              ts: 'ts-loader!tslint-loader',
             },
             postcss: {
               config: {
@@ -102,7 +101,7 @@ exports.config = (targetEnv, basePath, outputPath) => {
                 },
               },
             },
-          ]
+          ],
         },
         {
           test: /\.styl$/,
@@ -114,8 +113,8 @@ exports.config = (targetEnv, basePath, outputPath) => {
     plugins: [
       new webpack.DefinePlugin({
         'process.env': {
-          'TARGET_ENV': JSON.stringify(targetEnv)
-        }
+          TARGET_ENV: JSON.stringify(targetEnv),
+        },
       }),
 
       new HtmlWebpackPlugin({
@@ -126,29 +125,25 @@ exports.config = (targetEnv, basePath, outputPath) => {
         bundledScript: 'index.bundle.js',
       }),
 
-      new CleanWebpackPlugin(
-        [outputPath],
-        {
-          root: path.resolve(__dirname, '..'),
-          verbose: true
-        },
-      ),
+      new CleanWebpackPlugin([outputPath], {
+        root: path.resolve(__dirname, '..'),
+        verbose: true,
+      }),
 
       // `to: xxx`の`xxx`は`output.path`が基準になる
       new CopyWebpackPlugin([
         { from: path.resolve(__dirname, '../src/manifest.json') },
         {
           from: path.resolve(__dirname, '../src/assets/images'),
-          to: 'assets/images'
+          to: 'assets/images',
         },
         {
           from: path.resolve(__dirname, '../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js'),
-          to: 'node_modules/@webcomponents/webcomponentsjs'
+          to: 'node_modules/@webcomponents/webcomponentsjs',
         },
       ]),
     ],
   };
-
 };
 
 //--------------------------------------------------
@@ -168,8 +163,8 @@ exports.devServer = (outputPath) => {
     proxy: {
       '/api': {
         target: 'http://0.0.0.0:5010',
-        secure: false
-      }
+        secure: false,
+      },
     },
     // statsの設定は以下URLを参照:
     // https://webpack.js.org/configuration/stats/
@@ -209,11 +204,16 @@ exports.devServer = (outputPath) => {
 exports.newSWPrecacheWebpackPlugin = (basePath, outputPath) => {
   return new SWPrecacheWebpackPlugin({
     staticFileGlobs: [
-      path.join(outputPath, basePath, 'node_modules/**/*'),
       path.join(outputPath, basePath, 'assets/**/*'),
       path.join(outputPath, basePath, '*.bundle.js'),
       path.join(outputPath, basePath, 'index.html'),
       path.join(outputPath, basePath, 'manifest.json'),
+    ],
+    runtimeCaching: [
+      {
+        urlPattern: /\/node_modules\//,
+        handler: 'cacheFirst',
+      },
     ],
     navigateFallback: 'index.html',
     navigateFallbackWhitelist: [/^(?!\/api\/).*$/],
@@ -224,5 +224,5 @@ exports.newSWPrecacheWebpackPlugin = (basePath, outputPath) => {
 exports.newImageminPlugin = () => {
   return new ImageminPlugin({
     test: /assets\/images\/[^\.]+\.(jpe?g|png|gif|svg)$/i,
-  })
+  });
 };
