@@ -2,7 +2,7 @@
   "name": "vue-examples",
   "scripts": {
     "dev": "node json-server.js & webpack-dev-server --config build/webpack.dev.conf.js",
-    "stg": "npm run build:stg && (node json-server.js & browser-sync start --port 5000 --proxy '0.0.0.0:5010' --serveStatic '.dist')",
+    "stg": "npm run build:stg && (node json-server.js & browser-sync start --port 5000 --proxy '0.0.0.0:5010' --serveStatic '.dist' --no-open)",
     "build": "webpack --config build/webpack.prod.conf.js",
     "build:dev": "webpack --config build/webpack.dev.conf.js",
     "build:stg": "webpack --config build/webpack.stg.conf.js",
