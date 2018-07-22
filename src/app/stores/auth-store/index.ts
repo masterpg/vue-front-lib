@@ -1,4 +1,3 @@
-import * as firebase from 'firebase';
 import { Account, AuthStore, AuthProviderType } from '../types';
 import { BaseStore } from '../base';
 import { Component } from 'vue-property-decorator';
