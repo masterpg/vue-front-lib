@@ -33,9 +33,7 @@ export class AuthStoreImpl extends BaseStore<AccountState> implements AuthStore 
     this.m_facebookProvider = new firebase.auth.FacebookAuthProvider();
     this.m_facebookProvider.addScope('user_birthday');
 
-    this.checkSingedIn().then(() => {
-      firebase.auth().onAuthStateChanged(this.m_firebaseOnAuthStateChanged.bind(this));
-    });
+    firebase.auth().onAuthStateChanged(this.m_firebaseOnAuthStateChanged.bind(this));
   }
 
   //----------------------------------------------------------------------
@@ -57,6 +55,16 @@ export class AuthStoreImpl extends BaseStore<AccountState> implements AuthStore 
   @NoCache
   get account(): Account {
     return this.$utils.cloneDeep(this.f_state);
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Lifecycle hooks
+  //
+  //----------------------------------------------------------------------
+
+  async created() {
+    await this.checkSingedIn();
   }
 
   //----------------------------------------------------------------------
@@ -214,7 +222,7 @@ export class AuthStoreImpl extends BaseStore<AccountState> implements AuthStore 
       // アカウントがメールアドレスを持っている場合
       if (user.email) {
         // アカウントが持つ認証プロバイダの中にパスワード認証があるか調べる
-        const providers = await this.$stores.auth.fetchSignInMethodsForEmail(user.email);
+        const providers = await this.fetchSignInMethodsForEmail(user.email);
         const passwordProviderExists = providers.some(
           (provider) => provider === AuthProviderType.Password,
         );
