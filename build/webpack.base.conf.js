@@ -141,6 +141,9 @@ exports.config = (targetEnv, basePath, outputPath) => {
           from: path.resolve(__dirname, '../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js'),
           to: 'node_modules/@webcomponents/webcomponentsjs',
         },
+        {
+          from: path.resolve(__dirname, '../node_modules/firebase/firebase-*.js'),
+        },
       ]),
     ],
   };

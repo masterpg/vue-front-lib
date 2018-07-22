@@ -1,5 +1,3 @@
-import 'firebase/firestore';
-import * as firebase from 'firebase';
 import Vue from 'vue';
 import { APIs } from '../apis/types';
 

@@ -1,4 +1,3 @@
-import * as firebase from 'firebase';
 import Vue from 'vue';
 
 export abstract class Config {

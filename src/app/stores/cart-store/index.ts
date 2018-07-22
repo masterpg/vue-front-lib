@@ -1,4 +1,3 @@
-import * as firebase from 'firebase';
 import { BaseStore } from '../base';
 import { CartStore, CartProduct, CheckoutStatus, Product } from '../types';
 import { Component } from 'vue-property-decorator';
