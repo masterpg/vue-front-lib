@@ -209,7 +209,6 @@ exports.newSWPrecacheWebpackPlugin = (basePath, outputPath) => {
     staticFileGlobs: [
       path.join(outputPath, basePath, 'assets/**/*'),
       path.join(outputPath, basePath, '*.bundle.js'),
-      path.join(outputPath, basePath, 'index.html'),
       path.join(outputPath, basePath, 'manifest.json'),
     ],
     runtimeCaching: [
