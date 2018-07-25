@@ -220,6 +220,12 @@ exports.newSWPrecacheWebpackPlugin = (basePath, outputPath) => {
         handler: 'cacheFirst',
       },
     ],
+    runtimeCaching: [
+      {
+        urlPattern: /\/node_modules\//,
+        handler: 'cacheFirst',
+      },
+    ],
     navigateFallback: 'index.html',
     navigateFallbackWhitelist: [/^(?!\/api\/).*$/],
     stripPrefix: path.join(outputPath, basePath),
