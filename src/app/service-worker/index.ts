@@ -78,7 +78,7 @@ export function init(): void {
  *
  * この関数内での判定処理は下記URLを参考にしています:
  * https://github.com/GoogleChromeLabs/sw-precache/blob/master/demo/app/js/service-worker-registration.js
- * f
+ *
  * @param serviceWorker
  */
 function m_stateChangeFor(serviceWorker: ServiceWorker): void {
