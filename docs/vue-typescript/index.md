@@ -13,6 +13,7 @@ TypeScript でインスタンス変数を定義すると、その変数は HTML 
 
 <script lang="ts">
   import { Component } from 'vue-property-decorator';
+  …
 
   @Component
   export default class ExampleView extends mixins(ElementComponent) {
@@ -42,7 +43,7 @@ TypeScript でインスタンス変数を定義すると、その変数は HTML 
   }
 
   m_postButtonOnClick() {
-    this.m_post.message = this.m_message;
+    this.m_post.message = 'something';
   }
 </script>
 ```
@@ -69,7 +70,8 @@ import { Component, Props } from 'vue-property-decorator';
 @Component
 export default class BlogPost extends mixins(ElementComponent) {
   // 変数名はキャメルケース
-  @Prop() postTitle: string;
+  @Prop()
+  postTitle: string;
 }
 ```
 
