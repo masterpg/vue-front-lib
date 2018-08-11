@@ -23,3 +23,6 @@
   * データを編集する
     * [データを追加する](firestore/manage-data/add-data/index.md)
     * [トランザクションと一括書き込み](firestore/manage-data/transaction/index.md)
+* 認証
+  * [Google ログインで認証する](authentication/google/index.md)
+  * [メール / パスワードで認証する](authentication/mail/index.md)
