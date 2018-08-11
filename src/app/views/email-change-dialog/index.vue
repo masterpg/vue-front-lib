@@ -1,17 +1,25 @@
 <style lang="stylus" scoped>
-  @import '../../../assets/styles/_typography.styl';
+@import '../../../assets/styles/_typography.styl';
 
-  .container {
-    min-width: 312px;
-  }
+paper-dialog.sp {
+  margin: 24px 10px;
+}
 
-  .title {
-    @extend .app-font-title;
-  }
+.title {
+  @extend .app-font-title;
+}
 
-  .emphasis {
-    font-weight: bold;
-  }
+.emphasis {
+  font-weight: bold;
+}
+
+.input.pc, .input.tab {
+  width 320px;
+}
+
+.input.sp {
+  width 250px;
+}
 </style>
 
 
@@ -22,8 +30,9 @@
     with-backdrop
     entry-animation="fade-in-animation"
     exit-animation="fade-out-animation"
+    :class="{ sp: f_sp }"
   >
-    <div class="container">
+    <div>
 
       <!--
         タイトル
@@ -44,6 +53,8 @@
           type="email"
           required
           :readonly="m_currentStep !== 'first'"
+          class="input"
+          :class="{ 'pc': f_pc, 'tab': f_tab, 'sp': f_sp }"
         ></paper-input>
         <!-- メールアドレス確認メッセージ -->
         <div

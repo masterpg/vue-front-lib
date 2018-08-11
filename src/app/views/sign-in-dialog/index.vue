@@ -6,6 +6,10 @@
   @extend .app-font-title;
 }
 
+paper-dialog.sp {
+  margin: 24px 10px;
+}
+
 .sign-in-wrapper {
   .sign-in-button {
     @extend .app-shadow-elevation-2dp;
@@ -56,6 +60,7 @@
     with-backdrop
     entry-animation="fade-in-animation"
     exit-animation="fade-out-animation"
+    :class="{ sp: f_sp }"
   >
     <div>
 

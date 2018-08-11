@@ -1,7 +1,6 @@
 import BreakpointMixin from './breakpoint-mixin';
 import cssVarPoly from '../css-var-polyfill';
-import { Component } from 'vue-property-decorator';
-import { mixins } from 'vue-class-component';
+import Component, { mixins } from 'vue-class-component';
 
 /**
  * エレメントコンポーネントの基底クラスです。

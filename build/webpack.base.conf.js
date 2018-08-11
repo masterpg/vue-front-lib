@@ -144,6 +144,14 @@ exports.config = (targetEnv, basePath, outputPath) => {
         {
           from: path.resolve(__dirname, '../node_modules/firebase/firebase-*.js'),
         },
+        {
+          from: path.resolve(__dirname, '../node_modules/material-design-lite/material.min.css'),
+          to: 'node_modules/material-design-lite',
+        },
+        {
+          from: path.resolve(__dirname, '../node_modules/material-design-lite/material.min.js'),
+          to: 'node_modules/material-design-lite',
+        },
       ]),
     ],
   };

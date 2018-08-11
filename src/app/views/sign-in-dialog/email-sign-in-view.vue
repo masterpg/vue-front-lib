@@ -1,10 +1,6 @@
 <style lang="stylus" scoped>
 @import '../../../assets/styles/_typography.styl';
 
-.container {
-  min-width: 312px;
-}
-
 .title {
   @extend .app-font-title;
 }
@@ -12,51 +8,67 @@
 .emphasis {
   font-weight: bold;
 }
+
+.input.pc, .input.tab {
+  width 320px;
+}
+
+.input.sp {
+  width 250px;
+}
 </style>
 
 
 <template>
-  <div class="container">
-
+  <form>
     <!--
       タイトル
     -->
-    <div class="title">{{ m_title }}</div>
+    <div class="title app-mb-20">{{ m_title }}</div>
 
     <!--
       コンテンツエリア
     -->
     <div class="layout vertical">
       <!-- メールアドレスインプット -->
-      <paper-input
+      <sign-in-input
         ref="emailInput"
         v-show="m_currentStep === 'first' || m_currentStep === 'create' || m_currentStep === 'signIn'"
-        :value="m_inputEmail"
-        @input="m_inputEmail = $event.target.value; m_validateEmail();"
-        label="Email"
+        v-model="m_inputEmail"
         type="email"
+        name="email"
+        item-name="Email"
         required
         :readonly="m_currentStep !== 'first'"
-      ></paper-input>
+        @input="m_validateEmail()"
+        class="input"
+        :class="{ 'pc': f_pc, 'tab': f_tab, 'sp': f_sp }"
+      ></sign-in-input>
       <!-- 表示名インプット -->
-      <paper-input
+      <sign-in-input
         ref="displayNameInput"
         v-show="m_currentStep === 'create'"
-        :value="m_inputDisplayName"
-        @input="m_inputDisplayName = $event.target.value; m_validateDisplayName();"
-        label="Display name"
-        required
-      ></paper-input>
-      <!-- 表示名インプット -->
-      <paper-input
+        v-model="m_inputDisplayName"
+        type="text"
+        name="displayName"
+        item-name="Display name"
+        @input="m_validateDisplayName()"
+        class="input"
+        :class="{ 'pc': f_pc, 'tab': f_tab, 'sp': f_sp }"
+      ></sign-in-input>
+      <!-- パスワードインプット -->
+      <sign-in-input
         ref="passwordInput"
         v-show="m_currentStep === 'create' || m_currentStep === 'signIn'"
-        :value="m_inputPassword"
-        @input="m_inputPassword = $event.target.value; m_validatePassword();"
-        label="Password"
+        v-model="m_inputPassword"
         type="password"
+        name="password"
+        item-name="Password"
         required
-      ></paper-input>
+        @input="m_validatePassword()"
+        class="input"
+        :class="{ 'pc': f_pc, 'tab': f_tab, 'sp': f_sp }"
+      ></sign-in-input>
       <!-- メールアドレス確認メッセージ -->
       <div
         v-show="m_currentStep === 'waitVerify'"
@@ -118,13 +130,14 @@
       >Send</paper-button>
     </div>
 
-  </div>
+  </form>
 </template>
 
 
 <script lang="ts">
 import '@polymer/paper-button/paper-button';
 import '@polymer/paper-input/paper-input';
+import SignInInput from './sign-in-input.vue';
 import { AuthProviderType } from '../../stores/types';
 import { Component } from 'vue-property-decorator';
 import { ElementComponent } from '../../components';
@@ -144,7 +157,11 @@ interface ContainerDialog {
   correctPosition(): void;
 }
 
-@Component
+@Component({
+  components: {
+    'sign-in-input': SignInInput,
+  },
+})
 export default class EmailSignInView extends mixins(ElementComponent) {
   //----------------------------------------------------------------------
   //
@@ -168,27 +185,15 @@ export default class EmailSignInView extends mixins(ElementComponent) {
   //  Elements
   //--------------------------------------------------
 
-  get m_emailInput(): HTMLElement & {
-    invalid: boolean;
-    errorMessage: string;
-    validate: () => void;
-  } {
+  get m_emailInput(): SignInInput {
     return this.$refs.emailInput as any;
   }
 
-  get m_displayNameInput(): HTMLElement & {
-    invalid: boolean;
-    errorMessage: string;
-    validate: () => void;
-  } {
+  get m_displayNameInput(): SignInInput {
     return this.$refs.displayNameInput as any;
   }
 
-  get m_passwordInput(): HTMLElement & {
-    invalid: boolean;
-    errorMessage: string;
-    validate: () => void;
-  } {
+  get m_passwordInput(): SignInInput {
     return this.$refs.passwordInput as any;
   }
 
@@ -206,7 +211,7 @@ export default class EmailSignInView extends mixins(ElementComponent) {
     this.m_clear();
     this.m_currentStep = StepType.First;
     this.m_title = 'Sign in with email';
-    this.$nextTick(() => this.m_emailInput.focus());
+    this.m_emailInput.focus();
   }
 
   //----------------------------------------------------------------------
@@ -223,55 +228,30 @@ export default class EmailSignInView extends mixins(ElementComponent) {
     this.m_inputEmail = '';
     this.m_inputDisplayName = '';
     this.m_inputPassword = '';
-    this.m_emailInput.invalid = false;
-    this.m_displayNameInput.invalid = false;
-    this.m_passwordInput.invalid = false;
+    this.m_emailInput.init();
+    this.m_displayNameInput.init();
+    this.m_passwordInput.init();
   }
 
   /**
    * 入力されたメールアドレスを検証します。
    */
   m_validateEmail(): boolean {
-    if (!this.m_inputEmail) {
-      this.m_emailInput.invalid = true;
-      this.m_emailInput.errorMessage = 'Email is a required.';
-      return false;
-    } else {
-      const validated = this.m_emailInput.validate();
-      if (!validated) {
-        this.m_emailInput.invalid = true;
-        this.m_emailInput.errorMessage = 'Email is invalid.';
-        return false;
-      }
-    }
-    this.m_emailInput.invalid = false;
-    return true;
+    return this.m_emailInput.validate();
   }
 
   /**
    * 入力された表示名を検証します。
    */
   m_validateDisplayName(): boolean {
-    if (!this.m_inputDisplayName) {
-      this.m_displayNameInput.invalid = true;
-      this.m_displayNameInput.errorMessage = 'Display name is a required.';
-      return false;
-    }
-    this.m_displayNameInput.invalid = false;
-    return true;
+    return this.m_displayNameInput.validate();
   }
 
   /**
    * 入力されたパスワードを検証します。
    */
   m_validatePassword(): boolean {
-    if (!this.m_inputPassword) {
-      this.m_passwordInput.invalid = true;
-      this.m_passwordInput.errorMessage = 'Password is a required.';
-      return false;
-    }
-    this.m_passwordInput.invalid = false;
-    return true;
+    return this.m_passwordInput.validate();
   }
 
   /**
@@ -379,7 +359,6 @@ export default class EmailSignInView extends mixins(ElementComponent) {
       this.m_inputPassword,
     );
     if (!signInResult.result) {
-      this.m_passwordInput.invalid = true;
       this.m_passwordInput.errorMessage = signInResult.errorMessage;
       return;
     }
