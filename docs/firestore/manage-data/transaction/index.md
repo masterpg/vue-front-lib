@@ -55,7 +55,7 @@ return this.f_db
 
 ### トランザクションの中ではデータを直接変更してはいけない
 
-トランザクションの中でデータを直接変更すると、コンフリクトが発生し、トランザクションが再実行されます。ただし再実行が確実に成功する保証はないため、このようなことは行わないでください。
+トランザクションの中で、トランザクションを使用せず直接データを変更するとコンフリクトが発生し、トランザクションが再実行されます。ただし再実行が確実に成功する保証はないため、このようなことは行わないでください。
 
 次はトランザクションの中でデータを直接変更しています。このコードを実行すると、トランザクションが複数回実行された後、最終的にトランザクションが失敗することが確認できます。
 
@@ -70,11 +70,12 @@ return this.f_db
       if (!sfDoc.exists) {
         throw 'Document does not exist!';
       }
-      // トランザクションの中でデータを直接変更する
+      // トランザクションの中でtransactionを使用せず、直接データをupdateする
       const randPopulation = Math.floor(Math.random() * 1000000);
       return sfDocRef.update({ population: randPopulation }).then(() => {
-        // 上記のデータ直接変更により、次のコードを実行するとコンフリクトが発生して、
-        // トランザクションが失敗する
+        // 上記コードで直接データをupdateした後、
+        // 下記コードでtransactionを使用してデータをupdateすると、
+        // データ変更のコンフリクトが発生してトランザクションが失敗する
         const newPopulation = sfDoc.data()!.population + 1;
         transaction.update(sfDocRef, { population: newPopulation });
       });
