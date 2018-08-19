@@ -82,11 +82,6 @@ app-drawer-layout {
 
 
 <script lang="ts">
-import * as sw from '../service-worker';
-import { Component } from 'vue-property-decorator';
-import { ElementComponent } from '../components';
-import { mixins } from 'vue-class-component';
-
 import '@polymer/app-layout/app-drawer-layout/app-drawer-layout';
 import '@polymer/app-layout/app-drawer/app-drawer';
 import '@polymer/app-layout/app-header-layout/app-header-layout';
@@ -100,8 +95,13 @@ import '@polymer/paper-button/paper-button';
 import '@polymer/paper-icon-button/paper-icon-button';
 import '@polymer/paper-toast/paper-toast';
 
+import * as sw from '../base/service-worker';
+import { BaseComponent } from '../base/component';
+import { Component } from 'vue-property-decorator';
+import { mixins } from 'vue-class-component';
+
 @Component
-export default class AppView extends mixins(ElementComponent) {
+export default class AppView extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
   //
   //  Variables

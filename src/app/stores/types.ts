@@ -1,4 +1,4 @@
-import { Product as APIProduct } from '../apis/types';
+import { Product as APIProduct } from '../apis';
 
 //----------------------------------------------------------------------
 //

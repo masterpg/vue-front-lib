@@ -4,10 +4,10 @@ import { Component } from 'vue-property-decorator';
 import { mixins } from 'vue-class-component';
 
 /**
- * エレメントコンポーネントの基底クラスです。
+ * コンポーネントの基底クラスです。
  */
 @Component
-export class ElementComponent extends mixins(BreakpointMixin) {
+export class BaseComponent extends mixins(BreakpointMixin) {
   get f_pc() {
     return this.f_breakpoint.xl || this.f_breakpoint.lg || this.f_breakpoint.md;
   }

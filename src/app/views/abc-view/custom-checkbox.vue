@@ -14,13 +14,14 @@
 
 
 <script lang="ts">
+import { BaseComponent } from '../../base/component';
 import { Component, Model } from 'vue-property-decorator';
-import { ElementComponent } from '../../components';
 import { mixins } from 'vue-class-component';
 
 @Component
-export default class CustomCheckbox extends mixins(ElementComponent) {
-  @Model('change') checked: boolean = false;
+export default class CustomCheckbox extends mixins(BaseComponent) {
+  @Model('change')
+  checked: boolean = false;
 
   m_checkboxOnChange(event: Event) {
     // ■ v-modelを使ったコンポーネントのカスタマイズ

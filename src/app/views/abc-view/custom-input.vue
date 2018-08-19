@@ -13,12 +13,13 @@
 
 <script lang="ts">
 import '@polymer/paper-input/paper-input';
+
 import { Component, Prop } from 'vue-property-decorator';
-import { ElementComponent } from '../../components';
+import { BaseComponent } from '../../base/component';
 import { mixins } from 'vue-class-component';
 
 @Component
-export default class CustomInput extends mixins(ElementComponent) {
+export default class CustomInput extends mixins(BaseComponent) {
   @Prop({ default: '' })
   value: string;
 
