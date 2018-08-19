@@ -23,13 +23,25 @@
         label="Input Message"
         :value="m_message" @input="m_message = $event.target.value"
       ></paper-input>
-      <p><span class="title">propA: </span><span class="value">{{ propA }}</span></p>
-      <p><span class="title">propB: </span><span class="value">{{ propB }}</span></p>
-      <p><span class="title">message: </span><span class="value">{{ m_message }}</span></p>
-      <p><span class="title">custom propA: </span><span class="value">{{ m_customPropA }}</span></p>
-      <p><span class="title">reversed message: </span><span class="value">{{ m_reversedMessage }}</span></p>
-      <p><span class="title">double reversed message: </span><span class="value">{{ m_doubleReversedMessage }}</span></p>
-      <div class="layout horizontal center">
+      <div class="app-my-16">
+        <span class="title">propA: </span><span class="value">{{ propA }}</span>
+      </div>
+      <div class="app-my-16">
+        <span class="title">propB: </span><span class="value">{{ propB }}</span>
+      </div>
+      <div class="app-my-16">
+        <span class="title">message: </span><span class="value">{{ m_message }}</span>
+      </div>
+      <div class="app-my-16">
+        <span class="title">custom propA: </span><span class="value">{{ m_customPropA }}</span>
+      </div>
+      <div class="app-my-16">
+        <span class="title">reversed message: </span><span class="value">{{ m_reversedMessage }}</span>
+      </div>
+      <div class="app-my-16">
+        <span class="title">double reversed message: </span><span class="value">{{ m_doubleReversedMessage }}</span>
+      </div>
+      <div class="layout horizontal center app-my-16">
         <greet-message
           ref="greetMessage"
           :message="m_message"
@@ -37,11 +49,11 @@
         ></greet-message>
         <button class="app-ml-12" @click="m_greetButtonOnClick">Greet</button>
       </div>
-      <p>
+      <div class="app-my-16">
         <span class="title">post times: </span><span class="value">{{ m_post.times }}</span>
         <button class="app-ml-12" @click="m_postButtonOnClick">Post</button>
-      </p>
-      <p class="layout horizontal">
+      </div>
+      <div class="layout horizontal app-my-16">
         <custom-input
           v-model="m_customInputValue"
           class="flex-3"
@@ -49,15 +61,15 @@
         <span class="flex-9 app-ml-12 app-mt-28">
           <span class="title">value: </span><span class="value">{{ m_customInputValue }}</span>
         </span>
-      </p>
-      <p class="layout horizontal center">
+      </div>
+      <div class="layout horizontal center app-my-16">
         <custom-checkbox
           v-model="m_customChecked"
         ></custom-checkbox>
         <span class="app-ml-12">
           <span class="title">checked: </span><span class="value">{{ m_customChecked }}</span>
         </span>
-      </p>
+      </div>
       <div class="layout horizontal end-justified">
         <paper-button raised @click="m_sleepButtonOnClick">Sleep</paper-button>
       </div>
