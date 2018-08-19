@@ -145,12 +145,13 @@ import '@polymer/paper-listbox/paper-listbox';
 import '@polymer/paper-menu-button/paper-menu-button';
 import '@polymer/paper-toast/paper-toast';
 import 'web-animations-js/web-animations-next-lite.min.js';
-import * as sw from '../service-worker';
+
+import * as sw from '../base/service-worker';
 import EmailChangeDialog from './email-change-dialog/index';
 import SignInDialog from './sign-in-dialog/index.vue';
 import { Account } from '../stores/types';
+import { BaseComponent } from '../base/component';
 import { Component } from 'vue-property-decorator';
-import { ElementComponent } from '../components';
 import { mixins } from 'vue-class-component';
 
 @Component({
@@ -159,7 +160,7 @@ import { mixins } from 'vue-class-component';
     'email-change-dialog': EmailChangeDialog,
   },
 })
-export default class AppView extends mixins(ElementComponent) {
+export default class AppView extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
   //
   //  Variables

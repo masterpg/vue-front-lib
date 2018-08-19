@@ -70,11 +70,12 @@
 import '@polymer/paper-button/paper-button';
 import '@polymer/paper-card/paper-card';
 import '@polymer/paper-input/paper-input';
+
 import CustomCheckbox from './custom-checkbox.vue';
 import CustomInput from './custom-input.vue';
 import GreetMessage from './greet-message.vue';
+import { BaseComponent } from '../../base/component';
 import { Component, Prop, Watch } from 'vue-property-decorator';
-import { ElementComponent } from '../../components';
 import { mixins } from 'vue-class-component';
 
 interface Post {
@@ -89,7 +90,7 @@ interface Post {
     'custom-input': CustomInput,
   },
 })
-export default class AbcView extends mixins(ElementComponent) {
+export default class AbcView extends mixins(BaseComponent) {
   //--------------------------------------------------
   //  props
   //--------------------------------------------------

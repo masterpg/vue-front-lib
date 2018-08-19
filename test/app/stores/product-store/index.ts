@@ -1,6 +1,6 @@
 import * as td from 'testdouble';
-import { Product as APIProduct } from '../../../../src/app/apis/types';
-import { Product } from '../../../../src/app/stores/types';
+import { Product as APIProduct } from '../../../../src/app/apis';
+import { Product } from '../../../../src/app/stores';
 import { TestStore } from '../../../types';
 import {
   newProductStore,

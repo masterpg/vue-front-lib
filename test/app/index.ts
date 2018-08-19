@@ -1,13 +1,13 @@
 (async () => {
   mocha.setup({ ui: 'tdd' });
 
+  const utils = await import('../../src/app/base/utils');
+  const config = await import('../../src/app/base/config');
   const apis = await import('../../src/app/apis');
-  const config = await import('../../src/app/config');
   const stores = await import('../../src/app/stores');
-  const utils = await import('../../src/app/utils');
 
-  config.init();
   utils.init();
+  config.init();
   apis.init();
   stores.init();
 

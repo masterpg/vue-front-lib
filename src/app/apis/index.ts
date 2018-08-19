@@ -25,3 +25,5 @@ export function init(): void {
     writable: false,
   });
 }
+
+export * from './types';

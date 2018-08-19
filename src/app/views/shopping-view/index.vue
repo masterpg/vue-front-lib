@@ -97,13 +97,14 @@
 import '@polymer/paper-button/paper-button';
 import '@polymer/paper-card/paper-card';
 import '@polymer/paper-icon-button/paper-icon-button';
-import { CartProduct, CheckoutStatus, Product } from '../../stores/types';
+
+import { BaseComponent } from '../../base/component';
+import { CartProduct, CheckoutStatus, Product } from '../../stores';
 import { Component } from 'vue-property-decorator';
-import { ElementComponent } from '../../components';
 import { mixins } from 'vue-class-component';
 
 @Component
-export default class ShoppingView extends mixins(ElementComponent) {
+export default class ShoppingView extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
   //
   //  Variables

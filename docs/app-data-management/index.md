@@ -69,7 +69,7 @@ State にアクセスするには対応する **Store** を経由する必要が
 
 <script lang="ts">
 @Component
-export default class CartModal extends mixins(ElementComponent) {
+export default class CartModal extends mixins(BaseComponent) {
   …
   get m_cartProducts(): CartProduct[] {
     return this.$stores.cart.cartProducts;
