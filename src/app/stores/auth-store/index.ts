@@ -1,7 +1,7 @@
 import { Account, AuthStore, AuthProviderType } from '../types';
 import { BaseStore } from '../base';
 import { Component } from 'vue-property-decorator';
-import { NoCache } from '../../components';
+import { NoCache } from '../../base/component';
 
 export interface AccountState {
   isSignedIn: boolean;

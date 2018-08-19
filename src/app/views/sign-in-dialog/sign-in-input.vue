@@ -53,12 +53,12 @@
 
 
 <script lang="ts">
-import { Component, Prop, Watch } from 'vue-property-decorator';
-import { ElementComponent } from '../../components';
+import { Component, Prop } from 'vue-property-decorator';
+import { BaseComponent } from '../../base/component';
 import { mixins } from 'vue-class-component';
 
 @Component
-export default class SignInInput extends mixins(ElementComponent) {
+export default class SignInInput extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
   //
   //  Variables

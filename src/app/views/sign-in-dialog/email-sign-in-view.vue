@@ -137,10 +137,11 @@
 <script lang="ts">
 import '@polymer/paper-button/paper-button';
 import '@polymer/paper-input/paper-input';
+
 import SignInInput from './sign-in-input.vue';
 import { AuthProviderType } from '../../stores/types';
 import { Component } from 'vue-property-decorator';
-import { ElementComponent } from '../../components';
+import { BaseComponent } from '../../base/component';
 import { mixins } from 'vue-class-component';
 
 enum StepType {
@@ -162,7 +163,7 @@ interface ContainerDialog {
     'sign-in-input': SignInInput,
   },
 })
-export default class EmailSignInView extends mixins(ElementComponent) {
+export default class EmailSignInView extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
   //
   //  Variables

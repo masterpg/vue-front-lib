@@ -122,9 +122,10 @@ paper-dialog.sp {
 
 <script lang="ts">
 import '@polymer/paper-dialog/paper-dialog';
+
 import EmailSignInView from './email-sign-in-view.vue';
 import { Component } from 'vue-property-decorator';
-import { ElementComponent } from '../../components';
+import { BaseComponent } from '../../base/component';
 import { mixins } from 'vue-class-component';
 
 @Component({
@@ -132,7 +133,7 @@ import { mixins } from 'vue-class-component';
     'email-sign-in-view': EmailSignInView,
   },
 })
-export default class SignInDialog extends mixins(ElementComponent) {
+export default class SignInDialog extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
   //
   //  Variables

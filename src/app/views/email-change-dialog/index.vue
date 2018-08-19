@@ -90,8 +90,9 @@ paper-dialog.sp {
 <script lang="ts">
 import '@polymer/paper-button/paper-button';
 import '@polymer/paper-input/paper-input';
+
 import { Component } from 'vue-property-decorator';
-import { ElementComponent } from '../../components';
+import { BaseComponent } from '../../base/component';
 import { mixins } from 'vue-class-component';
 
 enum StepType {
@@ -100,7 +101,7 @@ enum StepType {
 }
 
 @Component
-export default class EmailChangeDialog extends mixins(ElementComponent) {
+export default class EmailChangeDialog extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
   //
   //  Variables
