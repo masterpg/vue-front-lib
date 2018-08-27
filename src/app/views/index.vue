@@ -1,5 +1,5 @@
-<style lang="stylus" scoped>
-@import '../../assets/styles/_typography.styl';
+<style lang="postcss" scoped>
+@import '../../assets/styles/typography.css';
 
 app-drawer-layout {
   --app-drawer-width: 256px;
@@ -17,15 +17,15 @@ app-drawer-layout {
 }
 
 .drawer-list {
-  .item {
+  & .item {
     display: block;
     padding: 8px 20px;
-    @extend .app-font-code1;
+    @extend %app-font-code1;
     color: var(--app-secondary-text-color);
-    text-decoration none;
+    text-decoration: none;
   }
 
-  .item.router-link-active {
+  & .item.router-link-active {
     color: var(--app-accent-text-color);
   }
 }

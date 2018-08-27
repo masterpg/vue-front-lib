@@ -4,7 +4,7 @@
 
 ## CSS 変数の定義と使用方法
 
-`src/assets/styles/_color.styl`にはさまざまな色が CSS 変数として定義されています。
+`src/assets/styles/_colors.css`にはさまざまな色が CSS 変数として定義されています。
 
 ```css
 :root {
@@ -23,7 +23,7 @@ CSS 変数は`.vue`、`.css`、`.styl`、`.scss`などさまざまファイル�
 以下は CSS 変数を利用する例です。
 
 ```html
-<style lang="stylus" scoped>
+<style lang="postcss" scoped>
   div {
     color: var(--app-red-50);
   }
@@ -34,7 +34,7 @@ CSS 変数は`.vue`、`.css`、`.styl`、`.scss`などさまざまファイル�
 
 上記では`div`の`color`に CSS 変数`--app-red-50`で設定された値が適用されます。
 
-また上記では stylus が使用されていますが、sass のような他のプリプロセッサやプレーンな css でも CSS 変数を使用することができます。
+また上記では postcss が使用されていますが、sass のような他のプリプロセッサやプレーンな css でも CSS 変数を使用することができます。
 
 ## CSS 変数のスコープ
 

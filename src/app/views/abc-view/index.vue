@@ -1,17 +1,17 @@
-<style lang="stylus" scoped>
-@import '../../../assets/styles/_typography.styl';
+<style lang="postcss" scoped>
+@import '../../../assets/styles/typography.css';
 
 .greet-message {
   --greet-message-color: var(--paper-indigo-a200);
 }
 
 .title {
-  @extend .app-font-subhead;
+  @extend %app-font-subhead;
   font-weight: 500;
 }
 
 .value {
-  @extend .app-font-subhead;
+  @extend %app-font-subhead;
 }
 </style>
 

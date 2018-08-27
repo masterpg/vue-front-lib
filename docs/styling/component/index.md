@@ -10,7 +10,7 @@ Vue で作成したコンポーネントはパブリックなプロパティや�
 
 コンポーネントのスタイルをカスタマイズできる部分を公開するには、次のファイルに CSS 変数を定義します。
 
-`src/assets/styles/main.styl`
+`src/assets/styles/main.css`
 
 ```css
 :root {
@@ -34,7 +34,7 @@ CSS 変数は接頭辞に`--`を付ける決まりがあります。
 `src/app/views/abc-view/greet-message.vue`
 
 ```html
-<style lang="stylus" scoped>
+<style lang="postcss" scoped>
   div {
     color: var(--greet-message-color);
   }
@@ -45,7 +45,7 @@ CSS 変数は接頭辞に`--`を付ける決まりがあります。
 
 上記では`div`の`color`に CSS 変数`--greet-message-color`で設定された値が適用されます。
 
-また上記では stylus が使用されていますが、sass のような他のプリプロセッサやプレーンな css でも CSS 変数を使用することができます。
+また上記では postcss が使用されていますが、sass のような他のプリプロセッサやプレーンな css でも CSS 変数を使用することができます。
 
 ## CSS 変数の値を設定する
 
@@ -56,7 +56,7 @@ CSS 変数の値を状況によって切り替えたいことがあるでしょ�
 以下にこのケースを想定した .vue ファイルでの実装例を示します。
 
 ```html
-<style lang="stylus" scoped>
+<style lang="postcss" scoped>
   .normal {
     --greet-message-color: blue;
   }

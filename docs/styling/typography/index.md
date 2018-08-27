@@ -4,7 +4,7 @@
 
 ## CSS クラス
 
-`src/assets/styles/_typography.styl`には次の CSS クラスが定義されています。
+`src/assets/styles/_typography.css`には次の CSS クラスが定義されています。
 
 | Scale Category                                                                  | Class              | Size  | Weight |
 | :------------------------------------------------------------------------------ | :----------------- | :---- | :----- |
@@ -40,10 +40,10 @@
 次は .vue ファイルで定義した CSS クラスにフォントの CSS クラスを継承させて利用する例です。
 
 ```html
-<style lang="stylus" scoped>
-  @import '../assets/styles/_typography.styl';
+<style lang="postcss" scoped>
+  @import '../assets/styles/typography.css';
   .title {
-    @extend .app-font-title;
+    @extend %app-font-title;
     color: var(--app-grey-600);
   }
 </style>
@@ -55,6 +55,6 @@
 </template>
 ```
 
-ここでは Stylus の機能を利用してフォントクラスを継承させています。
+ここでは PostCSS の機能を利用してフォントクラスを継承させています。
 
-まず`@import`で`_typography.styl`ファイルをインポートし、フォントの CSS クラスを読み込みます。これにより`<style>`タグの中でフォント CSS クラスが利用できるようになるので、`@extend`で継承して定義されたフォントを利用しています。
+まず`@import`で`typography.css`ファイルをインポートし、フォントの CSS クラスを読み込みます。これにより`<style>`タグの中でフォント CSS クラスが利用できるようになるので、`@extend`で継承して定義されたフォントを利用しています。
