@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- test/app/stores/product-store/index.ts	(date 1531647926000)
-+++ test/app/stores/product-store/index.ts	(date 1531647969000)
+--- test/app/stores/product-store/index.ts	(date 1535361134000)
++++ test/app/stores/product-store/index.ts	(date 1535361181000)
 @@ -68,4 +68,39 @@
      await productStore.getAllProducts();
      assert.deepEqual(productStore.allProducts, NEW_API_PRODUCTS);
