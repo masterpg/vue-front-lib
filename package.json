@@ -7,7 +7,7 @@
     "build:dev": "webpack --config build/webpack.dev.conf.js",
     "build:stg": "webpack --config build/webpack.stg.conf.js",
     "build:styles": "postcss --config build/postcss.config.js src/assets/styles/main.css -o .dist/main.css",
-    "docs": "postcss --config build/postcss.config.js docs/book.pcss -o docs/book.css && cd docs && ../node_modules/.bin/gitbook install && ../node_modules/.bin/gitbook serve"
+    "docs": "postcss --config build/postcss.config.js docs/book.pcss -o docs/book.css && cd docs && ../node_modules/.bin/gitbook install && ../node_modules/.bin/gitbook serve",
     "db:backup": "firestore-backup-restore --accountCredentials serviceAccountKey.json --backupPath data/firestore-data",
     "db:restore": "firestore-backup-restore --backupPath data/firestore-data --restoreAccountCredentials serviceAccountKey.json"
   },

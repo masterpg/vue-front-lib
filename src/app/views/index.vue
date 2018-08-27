@@ -15,17 +15,17 @@ app-drawer-layout {
   background-color: var(--paper-indigo-a200);
   color: #fff;
 
-  paper-icon-button + [main-title] {
+  & paper-icon-button + [main-title] {
     margin-left: 24px;
   }
 
-  .photo {
+  & .photo {
     width: 32px;
     height: 32px;
     border-radius: 50%;
   }
 
-  .systemMenuList {
+  & .systemMenuList {
     min-width: 150px;
   }
 }

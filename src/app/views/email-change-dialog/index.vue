@@ -1,12 +1,12 @@
-<style lang="stylus" scoped>
-@import '../../../assets/styles/_typography.styl';
+<style lang="postcss" scoped>
+@import '../../../assets/styles/typography.css';
 
 paper-dialog.sp {
   margin: 24px 10px;
 }
 
 .title {
-  @extend .app-font-title;
+  @extend %app-font-title;
 }
 
 .emphasis {
@@ -14,11 +14,11 @@ paper-dialog.sp {
 }
 
 .input.pc, .input.tab {
-  width 320px;
+  width: 320px;
 }
 
 .input.sp {
-  width 250px;
+  width: 250px;
 }
 </style>
 

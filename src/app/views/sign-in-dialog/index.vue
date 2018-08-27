@@ -1,9 +1,9 @@
-<style lang="stylus" scoped>
-@import '../../../assets/styles/_typography.styl';
-@import '../../../assets/styles/_shadows.styl';
+<style lang="postcss" scoped>
+@import '../../../assets/styles/typography.css';
+@import '../../../assets/styles/shadows.css';
 
 .title {
-  @extend .app-font-title;
+  @extend %app-font-title;
 }
 
 paper-dialog.sp {
@@ -11,22 +11,22 @@ paper-dialog.sp {
 }
 
 .sign-in-wrapper {
-  .sign-in-button {
-    @extend .app-shadow-elevation-2dp;
+  & .sign-in-button {
+    @extend %app-shadow-elevation-2dp;
     width: 220px;
     height: 40px;
     border: none;
     padding: 0 20px;
     cursor: pointer;
-    .icon {
+    & .icon {
       width: 18px;
-      height 18px;
+      height: 18px;
     }
-    .label {
-      @extend .app-font-body2;
+    & .label {
+      @extend %app-font-body2;
       margin-left: 16px;
     }
-    * {
+    & * {
       pointer-events: none;
     }
 
@@ -46,7 +46,7 @@ paper-dialog.sp {
     }
   }
 
-  .sign-in-button:not(:first-child) {
+  & .sign-in-button:not(:first-child) {
     margin-top: 20px;
   }
 }

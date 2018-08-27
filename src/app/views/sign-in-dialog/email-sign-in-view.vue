@@ -1,8 +1,8 @@
-<style lang="stylus" scoped>
-@import '../../../assets/styles/_typography.styl';
+<style lang="postcss" scoped>
+@import '../../../assets/styles/typography.css';
 
 .title {
-  @extend .app-font-title;
+  @extend %app-font-title;
 }
 
 .emphasis {
@@ -10,11 +10,11 @@
 }
 
 .input.pc, .input.tab {
-  width 320px;
+  width: 320px;
 }
 
 .input.sp {
-  width 250px;
+  width: 250px;
 }
 </style>
 
