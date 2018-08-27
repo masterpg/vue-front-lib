@@ -9,7 +9,7 @@
 以下は .vue ファイルで色指定する例です。
 
 ```html
-<style lang="stylus" scoped>
+<style lang="postcss" scoped>
   div {
     color: var(--app-red-50);
   }
@@ -18,7 +18,7 @@
 
 ## <div id="color-palettes">カラーパレット</div>
 
-`src/assets/styles/_colors.styl`には次の色が CSS 変数で定義されています。
+`src/assets/styles/_colors.css`には次の色が CSS 変数で定義されています。
 
 <div class="layout horizontal start" style="margin-top: 40px;">
   <div>

@@ -3,12 +3,12 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1531646947000)
-+++ src/app/views/product-admin-view/index.vue	(date 1531647742000)
-@@ -8,6 +8,15 @@
+--- src/app/views/product-admin-view/index.vue	(date 1535360201000)
++++ src/app/views/product-admin-view/index.vue	(date 1535360679000)
+@@ -7,6 +7,15 @@
  
  .product-item {
-   @extend .app-pa-12;
+   padding: 12px;
 +  cursor: pointer;
 +
 +  &:hover {
@@ -20,8 +20,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  }
  
    .title {
-     @extend .app-font-subhead;
-@@ -29,19 +38,26 @@
+     @extend %app-font-subhead;
+@@ -28,19 +37,26 @@
          <div class="title-text">Products</div>
        </div>
        <hr style="width: 100%;">
@@ -61,15 +61,16 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
      </div>
  
    </div>
-@@ -49,6 +65,7 @@
+@@ -48,6 +64,8 @@
  
  
  <script lang="ts">
 +import '@polymer/iron-selector/iron-selector';
++
+ import { BaseComponent } from '../../base/component';
  import { Component } from 'vue-property-decorator';
- import { ElementComponent } from '../../components';
- import { Product } from '../../stores/types';
-@@ -66,6 +83,16 @@
+ import { Product } from '../../stores';
+@@ -65,6 +83,16 @@
      return this.$stores.product.allProducts;
    }
  
@@ -86,7 +87,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    //----------------------------------------------------------------------
    //
    //  Lifecycle hooks
-@@ -73,5 +100,21 @@
+@@ -72,5 +100,21 @@
    //----------------------------------------------------------------------
  
    created() {}
@@ -108,13 +109,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  }
  }
  </script>
-Index: src/assets/styles/main.styl
+Index: src/assets/styles/main.css
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/assets/styles/main.styl	(date 1531646947000)
-+++ src/assets/styles/main.styl	(date 1531647742000)
+--- src/assets/styles/main.css	(date 1535360201000)
++++ src/assets/styles/main.css	(date 1535360679000)
 @@ -23,6 +23,8 @@
    --app-link-color: var(--app-indigo-500);
    --app-link-visited-color: var(--app-indigo-300);

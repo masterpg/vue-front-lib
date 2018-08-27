@@ -3,26 +3,26 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1531646785000)
-+++ src/app/views/product-admin-view/index.vue	(date 1531646947000)
-@@ -1,10 +1,49 @@
- <style lang="stylus" scoped>
-+@import '../../../assets/styles/_spacing.styl';
-+@import '../../../assets/styles/_typography.styl';
+--- src/app/views/product-admin-view/index.vue	(date 1535359869000)
++++ src/app/views/product-admin-view/index.vue	(date 1535360201000)
+@@ -1,19 +1,76 @@
+-<style lang="stylus" scoped>
++<style lang="postcss" scoped>
++@import '../../../assets/styles/typography.css';
 +
 +.title-text {
-+  @extend .app-font-title;
++  @extend %app-font-title;
 +}
 +
 +.product-item {
-+  @extend .app-pa-12;
++  padding: 12px;
 +
 +  .title {
-+    @extend .app-font-subhead;
++    @extend %app-font-subhead;
 +  }
 +
 +  .detail {
-+    @extend .app-font-body1;
++    @extend %app-font-body1;
 +    color: var(--app-secondary-text-color);
 +  }
 +}
@@ -57,16 +57,17 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    </div>
  </template>
  
-@@ -12,8 +51,27 @@
+ 
  <script lang="ts">
++import { BaseComponent } from '../../base/component';
  import { Component } from 'vue-property-decorator';
- import { ElementComponent } from '../../components';
-+import { Product } from '../../stores/types';
+-import { BaseComponent } from '../../base/component';
++import { Product } from '../../stores';
  import { mixins } from 'vue-class-component';
  
  @Component
--export default class ProductAdminView extends mixins(ElementComponent) {}
-+export default class ProductAdminView extends mixins(ElementComponent) {
+-export default class ProductAdminView extends mixins(BaseComponent) {}
++export default class ProductAdminView extends mixins(BaseComponent) {
 +  //----------------------------------------------------------------------
 +  //
 +  //  Variables

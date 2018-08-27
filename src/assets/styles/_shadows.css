@@ -1,0 +1,43 @@
+@import './shadows.css';
+
+.app-shadow-transition {
+  transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-shadow-none {
+  box-shadow: none;
+}
+
+/* from http://codepen.io/shyndman/pen/c5394ddf2e8b2a5c9185904b57421cdb */
+
+.app-shadow-elevation-2dp {
+  @extend %app-shadow-elevation-2dp;
+}
+
+.app-shadow-elevation-3dp {
+  @extend %app-shadow-elevation-3dp;
+}
+
+.app-shadow-elevation-4dp {
+  @extend %app-shadow-elevation-4dp;
+}
+
+.app-shadow-elevation-6dp {
+  @extend %app-shadow-elevation-6dp;
+}
+
+.app-shadow-elevation-8dp {
+  @extend %app-shadow-elevation-8dp;
+}
+
+.app-shadow-elevation-12dp {
+  @extend %app-shadow-elevation-8dp;
+}
+
+.app-shadow-elevation-16dp {
+  @extend %app-shadow-elevation-16dp;
+}
+
+.app-shadow-elevation-24dp {
+  @extend %app-shadow-elevation-24dp;
+}

@@ -1,0 +1,57 @@
+@import './typography.css';
+
+.app-font-display4 {
+  @extend %app-font-display4;
+}
+
+.app-font-display3 {
+  @extend %app-font-display3;
+}
+
+.app-font-display2 {
+  @extend %app-font-display2;
+}
+
+.app-font-display1 {
+  @extend %app-font-display1;
+}
+
+.app-font-headline {
+  @extend %app-font-headline;
+}
+
+.app-font-title {
+  @extend %app-font-title;
+}
+
+.app-font-subhead {
+  @extend %app-font-subhead;
+}
+
+.app-font-body2 {
+  @extend %app-font-body2;
+}
+
+.app-font-body1 {
+  @extend %app-font-body1;
+}
+
+.app-font-caption {
+  @extend %app-font-caption;
+}
+
+.app-font-menu {
+  @extend %app-font-menu;
+}
+
+.app-font-button {
+  @extend %app-font-button;
+}
+
+.app-font-code2 {
+  @extend %app-font-code2;
+}
+
+.app-font-code1 {
+  @extend %app-font-code1;
+}

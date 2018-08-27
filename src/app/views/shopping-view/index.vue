@@ -1,30 +1,25 @@
-<style lang="stylus" scoped>
-@import '../../../assets/styles/_spacing.styl';
-@import '../../../assets/styles/_typography.styl';
+<style lang="postcss" scoped>
+@import '../../../assets/styles/typography.css';
 
 .title-text {
-  @extend .app-font-title;
+  @extend %app-font-title;
 }
 
 .product-item {
-  @extend .app-pa-12;
+  padding: 12px;
 
-  &.iron-selected {
-    background-color: var(--app-grid-selected-activ-item);
+  & .title {
+    @extend %app-font-subhead;
   }
 
-  .title {
-    @extend .app-font-subhead;
-  }
-
-  .detail {
-    @extend .app-font-body1;
+  & .detail {
+    @extend %app-font-body1;
     color: var(--app-secondary-text-color);
   }
 }
 
 .error-text {
-  @extend .app-font-body1;
+  @extend %app-font-body1;
   color: var(--app-error-text-color);
 }
 

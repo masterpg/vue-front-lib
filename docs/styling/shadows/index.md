@@ -2,7 +2,7 @@
 
 ## CSS クラス
 
-`src/assets/styles/_shadow.styl`には次の CSS クラスが定義されています。
+`src/assets/styles/_shadow.css`には次の CSS クラスが定義されています。
 
 ##### .app-shadow-elevation-2dp
 
@@ -43,10 +43,10 @@
 次は .vue ファイルで定義した CSS クラスにシャドウの CSS クラスを継承させて利用する例です。
 
 ```html
-<style lang="stylus" scoped>
-  @import '../assets/styles/_shadows.styl';
+<style lang="postcss" scoped>
+  @import '../assets/styles/shadows.css';
   .container {
-    @extend .app-shadow-elevation-3dp;
+    @extend %app-shadow-elevation-3dp;
   }
 </style>
 
@@ -57,6 +57,6 @@
 </template>
 ```
 
-ここでは Stylus の機能を利用してシャドウクラスを継承させています。
+ここでは PostCSS の機能を利用してシャドウクラスを継承させています。
 
-まず`@import`で`_shadow.styl`ファイルをインポートし、シャドウの CSS クラスを読み込みます。これにより`<style>`タグの中でシャドウ CSS クラスが利用できるようになるので、`@extend`で継承して定義されたシャドウを利用しています。
+まず`@import`で`shadow.css`ファイルをインポートし、シャドウの CSS クラスを読み込みます。これにより`<style>`タグの中でシャドウ CSS クラスが利用できるようになるので、`@extend`で継承して定義されたシャドウを利用しています。

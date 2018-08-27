@@ -3,15 +3,15 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1531647742000)
-+++ src/app/views/product-admin-view/index.vue	(date 1531647837000)
+--- src/app/views/product-admin-view/index.vue	(date 1535360679000)
++++ src/app/views/product-admin-view/index.vue	(date 1535360962000)
 @@ -1,4 +1,5 @@
- <style lang="stylus" scoped>
-+@import '../../../assets/styles/_flex-layout.styl';
- @import '../../../assets/styles/_spacing.styl';
- @import '../../../assets/styles/_typography.styl';
+ <style lang="postcss" scoped>
++@import '../../../assets/styles/_flex-layout.css';
+ @import '../../../assets/styles/typography.css';
  
-@@ -27,6 +28,39 @@
+ .title-text {
+@@ -26,6 +27,40 @@
      color: var(--app-secondary-text-color);
    }
  }
@@ -42,7 +42,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +      }
 +    }
 +
-+    .price-input, .inventory-input {
++    .price-input,
++    .inventory-input {
 +      width: 100px;
 +      text-align: right;
 +    }
@@ -51,7 +52,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  </style>
  
  
-@@ -60,12 +94,58 @@
+@@ -59,12 +94,58 @@
        </iron-selector>
      </div>
  
@@ -107,10 +108,10 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  <script lang="ts">
  import '@polymer/iron-selector/iron-selector';
 +import '@polymer/paper-input/paper-input';
+ 
+ import { BaseComponent } from '../../base/component';
  import { Component } from 'vue-property-decorator';
- import { ElementComponent } from '../../components';
- import { Product } from '../../stores/types';
-@@ -79,6 +159,8 @@
+@@ -79,6 +160,8 @@
    //
    //----------------------------------------------------------------------
  
@@ -119,7 +120,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    get m_products(): Product[] {
      return this.$stores.product.allProducts;
    }
-@@ -87,9 +169,7 @@
+@@ -87,9 +170,7 @@
    //  Elements
    //--------------------------------------------------
  
@@ -130,7 +131,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
      return this.$refs.productSelector as any;
    }
  
-@@ -111,10 +191,12 @@
+@@ -111,10 +192,12 @@
      let selectedProduct: Product | undefined;
      if (this.m_productSelector.selected) {
        const productId = this.m_productSelector.selected;

@@ -1,13 +1,13 @@
-<style lang="stylus" scoped>
-@import '../../../assets/styles/_typography.styl';
+<style lang="postcss" scoped>
+@import '../../../assets/styles/typography.css';
 
 .title {
-  @extend .app-font-subhead;
+  @extend %app-font-subhead;
   font-weight: 500;
 }
 
 .value {
-  @extend .app-font-subhead;
+  @extend %app-font-subhead;
 }
 
 span {

@@ -1,6 +1,6 @@
 .app-pseudo-link {
   color: var(--app-link-color);
-  font-weight 500;
+  font-weight: 500;
   cursor: pointer;
   &:hover {
     text-decoration: underline;

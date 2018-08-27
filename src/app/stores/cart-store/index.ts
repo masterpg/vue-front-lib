@@ -1,6 +1,7 @@
 import { BaseStore } from '../base';
 import { CartStore, CartProduct, CheckoutStatus, Product } from '../types';
 import { Component } from 'vue-property-decorator';
+import { NoCache } from '../../base/component';
 type Transaction = firebase.firestore.Transaction;
 
 export interface CartState {
@@ -34,14 +35,15 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
     return this.f_state.checkoutStatus;
   }
 
+  @NoCache
   get cartProducts(): CartProduct[] {
     const allProducts = this.$stores.product.allProducts;
     return this.f_state.added.map(({ id, quantity }) => {
-      const product = allProducts.find((item) => item.id === id);
+      const product = allProducts.find((item) => item.id === id)!;
       return {
-        id: product!.id,
-        title: product!.title,
-        price: product!.price,
+        id: product.id,
+        title: product.title,
+        price: product.price,
         quantity,
       };
     });
