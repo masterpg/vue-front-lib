@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1535360201000)
-+++ src/app/views/product-admin-view/index.vue	(date 1535360679000)
+--- src/app/views/product-admin-view/index.vue	(date 1535768878000)
++++ src/app/views/product-admin-view/index.vue	(date 1535769034000)
 @@ -7,6 +7,15 @@
  
  .product-item {
@@ -114,8 +114,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/assets/styles/main.css	(date 1535360201000)
-+++ src/assets/styles/main.css	(date 1535360679000)
+--- src/assets/styles/main.css	(date 1535768878000)
++++ src/assets/styles/main.css	(date 1535769034000)
 @@ -23,6 +23,8 @@
    --app-link-color: var(--app-indigo-500);
    --app-link-visited-color: var(--app-indigo-300);
