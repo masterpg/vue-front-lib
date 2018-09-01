@@ -24,6 +24,8 @@
 
 次は最もシンプルな横方向と縦方向のレイアウトのサンプルです。
 
+classes:
+
 ```html
 <div class="layout horizontal">
   <div>One</div>
@@ -36,6 +38,34 @@
   <div>Two</div>
   <div>Three</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container-horizontal {
+    @extend %layout-horizontal;
+  }
+  .container-vertical {
+    @extend %layout-vertical;
+  }
+</style>
+
+<template>
+  <div class="container-horizontal">
+    <div>One</div>
+    <div>Two</div>
+    <div>Three</div>
+  </div>
+
+  <div class="container-vertical">
+    <div>One</div>
+    <div>Two</div>
+    <div>Three</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-and-vertical.png)
@@ -105,7 +135,6 @@
   <div>Stretch Fill</div>
   <div>Stretch Fill</div>
 </div>
-
 <div class="layout vertical" style="height: 150px;">
   <div>Stretch Fill</div>
   <div>Stretch Fill</div>
@@ -126,12 +155,35 @@
 
 コンテナの子エレメントは、<term>flex</term>を使用することで自身のサイズを制御することができます。
 
+classes:
+
 ```html
 <div class="layout horizontal">
   <div>One</div>
   <div class="flex">Two (flex)</div>
   <div>Three</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-horizontal;
+  }
+  .flexchild {
+    @extend %layout-flex;
+  }
+</style>
+<template>
+  <div class="container">
+    <div>One</div>
+    <div class="flexchild">Two (flex)</div>
+    <div>Three</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-flex.png)
@@ -142,12 +194,35 @@
 
 Horizontal と同様に Vertical でもエレメントのサイズが柔軟に変化します。**ただし Vertical レイアウトではコンテナの`height`に値を指定する必要あります**。指定しない場合はレイアウトが崩れる場合があります:
 
+classes:
+
 ```html
 <div class="layout vertical" style="height: 250px;">
   <div>One</div>
   <div class="flex">Two (flex)</div>
   <div>Three</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-vertical;
+  }
+  .flexchild {
+    @extend %layout-flex;
+  }
+</style>
+<template>
+  <div class="container" style="height: 250px;">
+    <div>One</div>
+    <div class="flexchild">Two (flex)</div>
+    <div>Three</div>
+  </div>
+</template>
 ```
 
 ![](./images/vertical-flex-1.png)
@@ -164,12 +239,41 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
 
 子エレメントのサイズは割合を指定することができます。割合は`flex-2`のように、数字の部分を 1〜12 の範囲で指定します (`flex`は`flex-1`と同意) :
 
+classes:
+
 ```html
 <div class="layout horizontal">
   <div class="flex-2">One</div>
   <div class="flex">Two</div>
   <div class="flex-3">Three</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-horizontal;
+  }
+  .flexchild {
+    @extend %layout-flex;
+  }
+  .flex2child {
+    @extend %layout-flex-2;
+  }
+  .flex3child {
+    @extend %layout-flex-3;
+  }
+</style>
+<template>
+  <div class="container">
+    <div class="flex3child">One</div>
+    <div class="flexchild">Two</div>
+    <div class="flex2child">Three</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-flex-ratio.png)
@@ -183,10 +287,31 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
 - 幅のフィットは、<term>flex</term>を指定することによって行う。
 - 高さのフィットは、Main-axis が Horizontal の場合に子エレメントが縦方向へストレッチする性質を利用する (詳細は「[Main-axis と Cross-axis](#main-and-cross-axis)」を参照ください) 。
 
+classes:
+
 ```html
 <div class="layout horizontal" style="height: 150px;">
   <div class="flex">Fit</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-horizontal;
+  }
+  .flexchild {
+    @extend %layout-flex;
+  }
+</style>
+<template>
+  <div class="container" style="height: 150px;">
+    <div class="flexchild">Fit</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-fit.png)
@@ -200,11 +325,31 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
 <br>
 次のサンプルでは、Cross-axis (Vertical) のstart位置にエレメントを配置しています:
 
+classes:
+
 ```html
 <div class="layout horizontal start" style="height: 150px;">
   <div>start</div>
   <div>start</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-horizontal;
+    @extend %layout-start;
+  }
+</style>
+<template>
+  <div class="container" style="height: 150px;">
+    <div>start</div>
+    <div>start</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-start.png)
@@ -215,11 +360,31 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
 
 次のサンプルでは、Cross-axis (Vertical) の center 位置にエレメントを配置しています:
 
+classes:
+
 ```html
 <div class="layout horizontal center" style="height: 150px;">
   <div>center</div>
   <div>center</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-horizontal;
+    @extend %layout-center;
+  }
+</style>
+<template>
+  <div class="container" style="height: 150px;">
+    <div>center</div>
+    <div>center</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-center.png)
@@ -230,11 +395,31 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
 
 次のサンプルでは、Cross-axis (Vertical) の end 位置にエレメントを配置しています:
 
+classes:
+
 ```html
 <div class="layout horizontal end" style="height: 150px;">
   <div>end</div>
   <div>end</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-horizontal;
+    @extend %layout-end;
+  }
+</style>
+<template>
+  <div class="container" style="height: 150px;">
+    <div>end</div>
+    <div>end</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-end.png)
@@ -245,11 +430,31 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
 
 次のサンプルでは、上下左右中央にエレメントを配置しています:
 
+classes:
+
 ```html
 <div class="layout horizontal center-center" style="height: 150px;">
   <div>center-center</div>
   <div>center-center</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-horizontal;
+    @extend %layout-center-center;
+  }
+</style>
+<template>
+  <div class="container" style="height: 150px;">
+    <div>center-center</div>
+    <div>center-center</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-center-center.png)
@@ -265,10 +470,29 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
 <br>
 次のサンプルでは、Main-axis (Horizontal) のstart位置に子エレメントを配置しています:
 
+classes:
+
 ```html
 <div class="layout horizontal start-justified" style="height: 100px;">
   <div>start-justified</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-horizontal;
+    @extend %layout-start-justified;
+  }
+</style>
+<template>
+  <div class="container" style="height: 100px;">
+    <div>start-justified</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-start-justified.png)
@@ -279,10 +503,29 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
 
 次のサンプルでは、Main-axis (Horizontal) の center 位置に子エレメントを配置しています:
 
+classes:
+
 ```html
 <div class="layout horizontal center-justified" style="height: 100px;">
   <div>center-justified</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-horizontal;
+    @extend %layout-center-justified;
+  }
+</style>
+<template>
+  <div class="container" style="height: 100px;">
+    <div>center-justified</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-center-justified.png)
@@ -293,10 +536,29 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
 
 次のサンプルでは、Main-axis (Horizontal) の end 位置に子エレメントを配置しています:
 
+classes:
+
 ```html
 <div class="layout horizontal end-justified" style="height: 100px;">
   <div>end-justified</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-horizontal;
+    @extend %layout-end-justified;
+  }
+</style>
+<template>
+  <div class="container" style="height: 100px;">
+    <div>end-justified</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-end-justified.png)
@@ -307,12 +569,33 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
 
 次のサンプルでは、Main-axis (Horizontal) のエレメントとエレメント間のスペースが均等になります:
 
+classes:
+
 ```html
 <div class="layout horizontal justified" style="height: 100px;">
   <div>justified</div>
   <div>justified</div>
   <div>justified</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-horizontal;
+    @extend %layout-justified;
+  }
+</style>
+<template>
+  <div class="container" style="height: 100px;">
+    <div>justified</div>
+    <div>justified</div>
+    <div>justified</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-justified.png)
@@ -323,11 +606,31 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
 
 次のサンプルでは、Main-axis (Horizontal) のエレメントの周りのスペースが均等になります:
 
+classes:
+
 ```html
 <div class="layout horizontal around-justified" style="height: 100px;">
   <div>around-justified</div>
   <div>around-justified</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-horizontal;
+    @extend %layout-around-justified;
+  }
+</style>
+<template>
+  <div class="container" style="height: 100px;">
+    <div>around-justified</div>
+    <div>around-justified</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-around-justified.png)
@@ -338,6 +641,8 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
 
 「[Cross-axis にエレメントを配置](#cross-axis-alignment)」ではコンテナに`start`や`center`などを適用し、子エレメントの配置をしていました。ここでは子エレメントに直接`self-start`や`self-center`などを適用して子エレメントの配置を行います:
 
+classes:
+
 ```html
 <div class="layout horizontal justified" style="height: 150px;">
   <div class="flex self-start">Alpha</div>
@@ -345,6 +650,42 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
   <div class="flex self-end">Gamma</div>
   <div class="flex self-stretch">Delta</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-horizontal;
+    @extend %layout-justified;
+  }
+  .child1 {
+    @extend %layout-self-start;
+    @extend %layout-flex;
+  }
+  .child2 {
+    @extend %layout-self-center;
+    @extend %layout-flex;
+  }
+  .child3 {
+    @extend %layout-self-end;
+    @extend %layout-flex;
+  }
+  .child4 {
+    @extend %layout-self-stretch;
+    @extend %layout-flex;
+  }
+</style>
+<template>
+  <div class="container" style="height: 150px;">
+    <div class="child1">Alpha</div>
+    <div class="child2">Beta</div>
+    <div class="child3">Gamma</div>
+    <div class="child4">Delta</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-self.png)
@@ -355,6 +696,8 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
 
 ここでは収まりきらないエレメントを折り返します。
 
+classes:
+
 ```html
 <div class="layout horizontal wrap" style="width: 250px;">
   <div>Alpha</div>
@@ -362,6 +705,26 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
   <div>Gamma</div>
   <div>Delta</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout-horizontal;
+    @extend %layout-wrap;
+  }
+</style>
+<template>
+  <div class="container" style="width: 250px;">
+    <div>Alpha</div>
+    <div>Beta</div>
+    <div>Gamma</div>
+    <div>Delta</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-wrap.png)
@@ -376,6 +739,8 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
 - layout verical‑reverse
 - layout wrap‑reverse
 
+classes:
+
 ```html
 <div class="layout horizontal-reverse">
   <div>Alpha</div>
@@ -383,6 +748,26 @@ Horizontal と同様に Vertical でもエレメントのサイズが柔軟に�
   <div>Gamma</div>
   <div>Delta</div>
 </div>
+```
+
+placeholder:
+
+```html
+<style lang="postcss" scoped>
+  ...
+  .container {
+    @extend %layout;
+    @extend %layout-horizontal-reverse;
+  }
+</style>
+<template>
+  <div class="container">
+    <div>Alpha</div>
+    <div>Beta</div>
+    <div>Gamma</div>
+    <div>Delta</div>
+  </div>
+</template>
 ```
 
 ![](./images/horizontal-reverse.png)

@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1535359869000)
-+++ src/app/views/product-admin-view/index.vue	(date 1535360201000)
+--- src/app/views/product-admin-view/index.vue	(date 1535768831000)
++++ src/app/views/product-admin-view/index.vue	(date 1535768878000)
 @@ -1,19 +1,76 @@
 -<style lang="stylus" scoped>
 +<style lang="postcss" scoped>

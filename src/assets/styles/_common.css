@@ -1,8 +1,5 @@
+@import './common.css';
+
 .app-pseudo-link {
-  color: var(--app-link-color);
-  font-weight: 500;
-  cursor: pointer;
-  &:hover {
-    text-decoration: underline;
-  }
+  @extend %app-pseudo-link;
 }

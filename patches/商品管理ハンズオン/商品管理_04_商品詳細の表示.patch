@@ -3,11 +3,11 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1535360679000)
-+++ src/app/views/product-admin-view/index.vue	(date 1535360962000)
+--- src/app/views/product-admin-view/index.vue	(date 1535769034000)
++++ src/app/views/product-admin-view/index.vue	(date 1535769394000)
 @@ -1,4 +1,5 @@
  <style lang="postcss" scoped>
-+@import '../../../assets/styles/_flex-layout.css';
++@import '../../../assets/styles/flex-layout.css';
  @import '../../../assets/styles/typography.css';
  
  .title-text {
@@ -27,13 +27,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  }
 +
 +  .title-area {
-+    @extend .app-font-subhead;
-+    @extend .flex-2;
-+    @extend .app-mt-16;
++    @extend %app-font-subhead;
++    @extend %layout-flex-2;
++    margin-top: 16px;
 +  }
 +
 +  .input-area {
-+    @extend .flex-10;
++    @extend %layout-flex-10;
 +
 +    .title-input {
 +      width: 400px;

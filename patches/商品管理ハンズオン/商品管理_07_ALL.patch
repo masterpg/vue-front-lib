@@ -1,244 +1,10 @@
-Index: src/app/views/product-admin-view/index.vue
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/app/views/product-admin-view/index.vue	(revision 0990f88d4093272a58ccda9c09ccccd75057573b)
-+++ src/app/views/product-admin-view/index.vue	(revision 0990f88d4093272a58ccda9c09ccccd75057573b)
-@@ -0,0 +1,226 @@
-+<style lang="postcss" scoped>
-+@import '../../../assets/styles/_flex-layout.css';
-+@import '../../../assets/styles/typography.css';
-+
-+.title-text {
-+  @extend %app-font-title;
-+}
-+
-+.product-item {
-+  padding: 12px;
-+  cursor: pointer;
-+
-+  &:hover {
-+    background-color: var(--app-grid-selected-hover-item);
-+  }
-+
-+  &.iron-selected {
-+    background-color: var(--app-grid-selected-activ-item);
-+  }
-+
-+  .title {
-+    @extend %app-font-subhead;
-+  }
-+
-+  .detail {
-+    @extend %app-font-body1;
-+    color: var(--app-secondary-text-color);
-+  }
-+}
-+
-+.product-detail {
-+  padding: 0 var(--app-spacer-3);
-+
-+  .row {
-+    width: 500px;
-+    &.sp {
-+      width: 100%;
-+    }
-+  }
-+
-+  .title-area {
-+    @extend .app-font-subhead;
-+    @extend .flex-2;
-+    @extend .app-mt-16;
-+  }
-+
-+  .input-area {
-+    @extend .flex-10;
-+
-+    .title-input {
-+      width: 400px;
-+      &.sp {
-+        width: 100%;
-+      }
-+    }
-+
-+    .price-input,
-+    .inventory-input {
-+      width: 100px;
-+      text-align: right;
-+    }
-+  }
-+}
-+
-+.update-button {
-+  color: var(--app-link-color);
-+}
-+</style>
-+
-+
-+<template>
-+  <div class="layout vertical" :class="{ 'app-ma-48': f_pc, 'app-ma-24': f_tab, 'app-ma-12': f_sp }">
-+
-+    <div>
-+      <div class="layout horizontal center">
-+        <div class="title-text">Products</div>
-+      </div>
-+      <hr style="width: 100%;">
-+      <iron-selector
-+        ref="productSelector"
-+        attr-for-selected="product-id"
-+        @selected-changed="m_productSelectorOnSelectedItemChanged"
-+      >
-+        <div
-+          v-for="(product, index) in m_products"
-+          class="layout horizontal center product-item"
-+          :product-id="product.id"
-+        >
-+          <div class="layout vertical center-justified">
-+            <div class="title">{{ product.title }}</div>
-+            <div class="detail">
-+              <span>Price</span> &mdash; {{ product.price | currency }},&nbsp;
-+              <span>Stock</span> &mdash; {{ product.inventory }}
-+            </div>
-+          </div>
-+          <div class="flex"></div>
-+        </div>
-+      </iron-selector>
-+    </div>
-+
-+    <div class="app-mt-20">
-+      <div class="layout horizontal center">
-+        <div class="title-text">Detail</div>
-+      </div>
-+      <hr style="width: 100%;">
-+      <div class="layout vertical product-detail">
-+        <div class="layout horizontal center row" :class="{ 'sp': f_sp }">
-+          <div class="title-area">Title</div>
-+          <div class="input-area">
-+            <paper-input
-+              class="title-input" :class="{ 'sp': f_sp }"
-+              :value="m_selectedProduct.title"
-+              @input="m_selectedProduct.title = $event.target.value"
-+            ></paper-input>
-+          </div>
-+        </div>
-+        <div class="layout horizontal center row" :class="{ 'sp': f_sp }">
-+          <div class="title-area">Price</div>
-+          <div class="input-area">
-+            <paper-input
-+              class="price-input"
-+              type="number"
-+              :value="m_selectedProduct.price"
-+              @input="m_selectedProduct.price = $event.target.value"
-+              @change="m_selectedProduct.price = $event.target.value"
-+            >
-+              <div slot="prefix">$</div>
-+            </paper-input>
-+          </div>
-+        </div>
-+        <div class="layout horizontal center row" :class="{ 'sp': f_sp }">
-+          <div class="title-area">Stock</div>
-+          <div class="input-area">
-+            <paper-input
-+              class="inventory-input"
-+              type="number"
-+              :value="m_selectedProduct.inventory"
-+              @input="m_selectedProduct.inventory = $event.target.value"
-+              @change="m_selectedProduct.inventory = $event.target.value"
-+            ></paper-input>
-+          </div>
-+        </div>
-+      </div>
-+      <div class="layout horizontal center end-justified">
-+        <paper-button
-+          v-show="!!m_selectedProduct.id"
-+          class="update-button"
-+          @click="m_updateProduct"
-+        >
-+          Update
-+        </paper-button>
-+      </div>
-+    </div>
-+
-+  </div>
-+</template>
-+
-+
-+<script lang="ts">
-+import '@polymer/iron-selector/iron-selector';
-+import '@polymer/paper-input/paper-input';
-+
-+import { BaseComponent } from '../../base/component';
-+import { Component } from 'vue-property-decorator';
-+import { Product } from '../../stores';
-+import { mixins } from 'vue-class-component';
-+
-+@Component
-+export default class ProductAdminView extends mixins(BaseComponent) {
-+  //----------------------------------------------------------------------
-+  //
-+  //  Variables
-+  //
-+  //----------------------------------------------------------------------
-+
-+  m_selectedProduct: Product | object = {};
-+
-+  get m_products(): Product[] {
-+    return this.$stores.product.allProducts;
-+  }
-+
-+  //--------------------------------------------------
-+  //  Elements
-+  //--------------------------------------------------
-+
-+  get m_productSelector(): { selected: string } {
-+    return this.$refs.productSelector as any;
-+  }
-+
-+  //----------------------------------------------------------------------
-+  //
-+  //  Lifecycle hooks
-+  //
-+  //----------------------------------------------------------------------
-+
-+  created() {}
-+
-+  //----------------------------------------------------------------------
-+  //
-+  //  Internal methods
-+  //
-+  //----------------------------------------------------------------------
-+
-+  async m_updateProduct(): Promise<void> {
-+    await this.$stores.product.updateProduct(this.m_selectedProduct as Product);
-+  }
-+
-+  //----------------------------------------------------------------------
-+  //
-+  //  Event handlers
-+  //
-+  //----------------------------------------------------------------------
-+
-+  m_productSelectorOnSelectedItemChanged(event) {
-+    let selectedProduct: Product | undefined;
-+    if (this.m_productSelector.selected) {
-+      const productId = this.m_productSelector.selected;
-+      const foundProduct = this.m_products.find((item) => item.id === productId);
-+      selectedProduct = this.$utils.cloneDeep(foundProduct);
-+    }
-+    // tslint:disable-next-line
-+    console.log('selectedProduct:', selectedProduct);
-+    this.m_selectedProduct = selectedProduct || {};
-+  }
-+}
-+</script>
 Index: src/app/apis/shop-api/index.ts
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/apis/shop-api/index.ts	(date 1535359562000)
-+++ src/app/apis/shop-api/index.ts	(date 1535361527000)
+--- src/app/apis/shop-api/index.ts	(date 1535768688000)
++++ src/app/apis/shop-api/index.ts	(date 1535769899000)
 @@ -17,6 +17,10 @@
        }, 100);
      });
@@ -255,8 +21,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/apis/types.ts	(date 1535359562000)
-+++ src/app/apis/types.ts	(date 1535361527000)
+--- src/app/apis/types.ts	(date 1535768688000)
++++ src/app/apis/types.ts	(date 1535769899000)
 @@ -12,6 +12,8 @@
    getProducts(): Promise<Product[]>;
  
@@ -271,8 +37,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/router/index.ts	(date 1535359562000)
-+++ src/app/router/index.ts	(date 1535361527000)
+--- src/app/router/index.ts	(date 1535768688000)
++++ src/app/router/index.ts	(date 1535769899000)
 @@ -15,5 +15,10 @@
        component: () =>
          import(/* webpackChunkName: "shopping-view" */ '../views/shopping-view/index.vue'),
@@ -289,8 +55,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/stores/product-store/index.ts	(date 1535359562000)
-+++ src/app/stores/product-store/index.ts	(date 1535361527000)
+--- src/app/stores/product-store/index.ts	(date 1535768688000)
++++ src/app/stores/product-store/index.ts	(date 1535769899000)
 @@ -66,6 +66,14 @@
      this.f_state.all = products;
    }
@@ -311,8 +77,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/stores/types.ts	(date 1535359562000)
-+++ src/app/stores/types.ts	(date 1535361527000)
+--- src/app/stores/types.ts	(date 1535768688000)
++++ src/app/stores/types.ts	(date 1535769899000)
 @@ -20,6 +20,8 @@
    decrementProductInventory(productId: string): void;
  
@@ -327,8 +93,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/index.vue	(date 1535359562000)
-+++ src/app/views/index.vue	(date 1535361527000)
+--- src/app/views/index.vue	(date 1535768688000)
++++ src/app/views/index.vue	(date 1535769899000)
 @@ -119,6 +119,10 @@
        title: 'Shopping',
        path: '/shopping',
@@ -345,8 +111,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/assets/styles/main.css	(date 1535359562000)
-+++ src/assets/styles/main.css	(date 1535361527000)
+--- src/assets/styles/main.css	(date 1535768688000)
++++ src/assets/styles/main.css	(date 1535769899000)
 @@ -23,6 +23,8 @@
    --app-link-color: var(--app-indigo-500);
    --app-link-visited-color: var(--app-indigo-300);
@@ -361,8 +127,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- test/app/stores/product-store/index.ts	(date 1535359562000)
-+++ test/app/stores/product-store/index.ts	(date 1535361527000)
+--- test/app/stores/product-store/index.ts	(date 1535768688000)
++++ test/app/stores/product-store/index.ts	(date 1535769899000)
 @@ -68,4 +68,39 @@
      await productStore.getAllProducts();
      assert.deepEqual(productStore.allProducts, NEW_API_PRODUCTS);
