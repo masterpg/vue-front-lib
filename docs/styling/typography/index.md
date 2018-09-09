@@ -4,7 +4,7 @@
 
 ## CSS クラス
 
-`src/assets/styles/_typography.css`には次の CSS クラスが定義されています。
+`src/assets/styles/_typography.pcss`には次の CSS クラスが定義されています。
 
 | Scale Category                                                                  | Class              | Size  | Weight |
 | :------------------------------------------------------------------------------ | :----------------- | :---- | :----- |
@@ -41,7 +41,7 @@
 
 ```html
 <style lang="postcss" scoped>
-  @import '../assets/styles/typography.css';
+  @import '../assets/styles/typography.pcss';
   .title {
     @extend %app-font-title;
     color: var(--app-grey-600);
@@ -57,4 +57,4 @@
 
 ここでは PostCSS の機能を利用してフォントのプレースホルダーを継承しています。
 
-まず`@import`で`typography.css`ファイルをインポートし、フォントのプレースホルダーを読み込みます。これにより`<style>`タグの中でフォントのプレースホルダーが利用できるようになるので、`@extend`で継承して定義されたフォントを利用しています。
+まず`@import`で`typography.pcss`ファイルをインポートし、フォントのプレースホルダーを読み込みます。これにより`<style>`タグの中でフォントのプレースホルダーが利用できるようになるので、`@extend`で継承して定義されたフォントを利用しています。

@@ -89,7 +89,7 @@ exports.config = (targetEnv, basePath, outputPath) => {
           },
         },
         {
-          test: /\.css$/,
+          test: /src\/assets\/styles\/([^/]+\/)*[^/]+\.pcss$/,
           use: [
             'vue-style-loader',
             { loader: 'css-loader', options: { importLoaders: 1 } },

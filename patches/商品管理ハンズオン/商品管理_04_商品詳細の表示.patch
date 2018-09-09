@@ -3,47 +3,45 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1535769034000)
-+++ src/app/views/product-admin-view/index.vue	(date 1535769394000)
+--- src/app/views/product-admin-view/index.vue	(date 1536461852000)
++++ src/app/views/product-admin-view/index.vue	(date 1536462075000)
 @@ -1,4 +1,5 @@
  <style lang="postcss" scoped>
-+@import '../../../assets/styles/flex-layout.css';
- @import '../../../assets/styles/typography.css';
++@import '../../../assets/styles/flex-layout.pcss';
+ @import '../../../assets/styles/typography.pcss';
  
  .title-text {
-@@ -26,6 +27,40 @@
+@@ -26,6 +27,38 @@
      color: var(--app-secondary-text-color);
    }
  }
 +
 +.product-detail {
-+  padding: 0 var(--app-spacer-3);
-+
-+  .row {
++  & .row {
 +    width: 500px;
 +    &.sp {
 +      width: 100%;
 +    }
 +  }
 +
-+  .title-area {
++  & .title-area {
 +    @extend %app-font-subhead;
 +    @extend %layout-flex-2;
 +    margin-top: 16px;
 +  }
 +
-+  .input-area {
++  & .input-area {
 +    @extend %layout-flex-10;
 +
-+    .title-input {
++    & .title-input {
 +      width: 400px;
 +      &.sp {
 +        width: 100%;
 +      }
 +    }
 +
-+    .price-input,
-+    .inventory-input {
++    & .price-input,
++    & .inventory-input {
 +      width: 100px;
 +      text-align: right;
 +    }
@@ -52,7 +50,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  </style>
  
  
-@@ -59,12 +94,58 @@
+@@ -59,12 +92,58 @@
        </iron-selector>
      </div>
  
@@ -111,7 +109,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  
  import { BaseComponent } from '../../base/component';
  import { Component } from 'vue-property-decorator';
-@@ -79,6 +160,8 @@
+@@ -79,6 +158,8 @@
    //
    //----------------------------------------------------------------------
  
@@ -120,7 +118,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    get m_products(): Product[] {
      return this.$stores.product.allProducts;
    }
-@@ -87,9 +170,7 @@
+@@ -87,9 +168,7 @@
    //  Elements
    //--------------------------------------------------
  
@@ -131,7 +129,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
      return this.$refs.productSelector as any;
    }
  
-@@ -111,10 +192,12 @@
+@@ -111,10 +190,12 @@
      let selectedProduct: Product | undefined;
      if (this.m_productSelector.selected) {
        const productId = this.m_productSelector.selected;

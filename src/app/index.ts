@@ -1,5 +1,5 @@
 import '../assets/styles/custom-style.js';
-import '../assets/styles/main.css';
+import '../assets/styles/main.pcss';
 
 import * as utils from './base/utils';
 import * as config from './base/config';
