@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1535768878000)
-+++ src/app/views/product-admin-view/index.vue	(date 1535769034000)
+--- src/app/views/product-admin-view/index.vue	(date 1536461813000)
++++ src/app/views/product-admin-view/index.vue	(date 1536461852000)
 @@ -7,6 +7,15 @@
  
  .product-item {
@@ -19,7 +19,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +    background-color: var(--app-grid-selected-activ-item);
 +  }
  
-   .title {
+   & .title {
      @extend %app-font-subhead;
 @@ -28,19 +37,26 @@
          <div class="title-text">Products</div>
@@ -109,13 +109,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  }
  }
  </script>
-Index: src/assets/styles/main.css
+Index: src/assets/styles/main.pcss
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/assets/styles/main.css	(date 1535768878000)
-+++ src/assets/styles/main.css	(date 1535769034000)
+--- src/assets/styles/main.pcss	(date 1536461813000)
++++ src/assets/styles/main.pcss	(date 1536461852000)
 @@ -23,6 +23,8 @@
    --app-link-color: var(--app-indigo-500);
    --app-link-visited-color: var(--app-indigo-300);

@@ -3,12 +3,11 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1535768831000)
-+++ src/app/views/product-admin-view/index.vue	(date 1535768878000)
+--- src/app/views/product-admin-view/index.vue	(date 1536461778000)
++++ src/app/views/product-admin-view/index.vue	(date 1536461813000)
 @@ -1,19 +1,76 @@
--<style lang="stylus" scoped>
-+<style lang="postcss" scoped>
-+@import '../../../assets/styles/typography.css';
+ <style lang="postcss" scoped>
++@import '../../../assets/styles/typography.pcss';
 +
 +.title-text {
 +  @extend %app-font-title;
@@ -17,11 +16,11 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +.product-item {
 +  padding: 12px;
 +
-+  .title {
++  & .title {
 +    @extend %app-font-subhead;
 +  }
 +
-+  .detail {
++  & .detail {
 +    @extend %app-font-body1;
 +    color: var(--app-secondary-text-color);
 +  }
