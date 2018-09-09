@@ -10,7 +10,7 @@ Vue で作成したコンポーネントはパブリックなプロパティや�
 
 コンポーネントのスタイルをカスタマイズできる部分を公開するには、次のファイルに CSS 変数を定義します。
 
-`src/assets/styles/main.css`
+`src/assets/styles/main.pcss`
 
 ```css
 :root {
