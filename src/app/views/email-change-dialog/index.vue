@@ -1,5 +1,5 @@
 <style lang="postcss" scoped>
-@import '../../../assets/styles/typography.css';
+@import '../../../assets/styles/typography.pcss';
 
 paper-dialog.sp {
   margin: 24px 10px;

@@ -1,6 +1,6 @@
 <style lang="postcss" scoped>
-@import '../../../assets/styles/typography.css';
-@import '../../../assets/styles/shadows.css';
+@import '../../../assets/styles/typography.pcss';
+@import '../../../assets/styles/shadows.pcss';
 
 .title {
   @extend %app-font-title;
