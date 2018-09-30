@@ -91,8 +91,7 @@ exports.config = (targetEnv, basePath, outputPath) => {
         {
           test: /src\/index\.pcss$/,
           use: [
-            'vue-style-loader',
-            { loader: 'css-loader', options: { importLoaders: 1 } },
+            'style-loader',
             {
               loader: 'postcss-loader',
               options: {

@@ -6,7 +6,7 @@
     "build": "webpack --config build/webpack.prod.conf.js",
     "build:dev": "webpack --config build/webpack.dev.conf.js",
     "build:stg": "webpack --config build/webpack.stg.conf.js",
-    "build:styles": "postcss --config build/postcss.config.js src/assets/styles/main.css -o .dist/main.css",
+    "build:styles": "postcss --config build/postcss.config.js src/index.pcss -o .dist/index.css",
     "docs": "postcss --config build/postcss.config.js docs/book.pcss -o docs/book.css && cd docs && ../node_modules/.bin/gitbook install && ../node_modules/.bin/gitbook serve"
   },
   "devDependencies": {
