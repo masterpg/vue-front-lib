@@ -1,51 +1,17 @@
-Index: src/app/views/index.vue
+Index: src/views/product-admin-view/index.vue
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/index.vue	(revision 1d3048bed00fb9bda85af84fc119f910637bb651)
-+++ src/app/views/index.vue	(date 1536462439000)
-@@ -119,6 +119,10 @@
-       title: 'Shopping',
-       path: '/shopping',
-     },
-+    {
-+      title: 'Product Admin',
-+      path: '/product-admin',
-+    },
-   ];
- 
-   m_swMessage: string = '';
-Index: src/app/apis/types.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/app/apis/types.ts	(revision 1d3048bed00fb9bda85af84fc119f910637bb651)
-+++ src/app/apis/types.ts	(date 1536462469000)
-@@ -12,6 +12,8 @@
-   getProducts(): Promise<Product[]>;
- 
-   buyProducts(products: Array<{ id: string; quantity: number }>): Promise<void>;
-+
-+  updateProduct(product: Product): Promise<void>;
- }
- 
- //----------------------------------------------------------------------
-Index: src/app/views/product-admin-view/index.vue
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1536462469000)
-+++ src/app/views/product-admin-view/index.vue	(date 1536462469000)
+--- src/views/product-admin-view/index.vue	(date 1538296179000)
++++ src/views/product-admin-view/index.vue	(date 1538296179000)
 @@ -0,0 +1,222 @@
 +<style lang="postcss" scoped>
-+@import '../../../assets/styles/flex-layout.pcss';
-+@import '../../../assets/styles/typography.pcss';
++@import '../../styles/flex-layout.pcss';
++@import '../../styles/typography.pcss';
 +
 +.title-text {
-+  @extend %app-font-title;
++  @extend %comm-font-title;
 +}
 +
 +.product-item {
@@ -61,11 +27,11 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  }
 +
 +  & .title {
-+    @extend %app-font-subhead;
++    @extend %comm-font-subhead;
 +  }
 +
 +  & .detail {
-+    @extend %app-font-body1;
++    @extend %comm-font-body1;
 +    color: var(--app-secondary-text-color);
 +  }
 +}
@@ -109,7 +75,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +
 +
 +<template>
-+  <div class="layout vertical" :class="{ 'app-ma-48': f_pc, 'app-ma-24': f_tab, 'app-ma-12': f_sp }">
++  <div class="layout vertical" :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }">
 +
 +    <div>
 +      <div class="layout horizontal center">
@@ -262,13 +228,47 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  }
 +}
 +</script>
-Index: src/app/router/index.ts
+Index: src/views/index.vue
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/router/index.ts	(revision 1d3048bed00fb9bda85af84fc119f910637bb651)
-+++ src/app/router/index.ts	(date 1536462439000)
+--- src/views/index.vue	(date 1538293262000)
++++ src/views/index.vue	(date 1538294904000)
+@@ -119,6 +119,10 @@
+       title: 'Shopping',
+       path: '/shopping',
+     },
++    {
++      title: 'Product Admin',
++      path: '/product-admin',
++    },
+   ];
+ 
+   m_swMessage: string = '';
+Index: src/apis/types.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/apis/types.ts	(date 1538293262000)
++++ src/apis/types.ts	(date 1538296179000)
+@@ -12,6 +12,8 @@
+   getProducts(): Promise<Product[]>;
+ 
+   buyProducts(products: Array<{ id: string; quantity: number }>): Promise<void>;
++
++  updateProduct(product: Product): Promise<void>;
+ }
+ 
+ //----------------------------------------------------------------------
+Index: src/router/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/router/index.ts	(date 1538293262000)
++++ src/router/index.ts	(date 1538294904000)
 @@ -15,5 +15,10 @@
        component: () =>
          import(/* webpackChunkName: "shopping-view" */ '../views/shopping-view/index.vue'),
@@ -280,13 +280,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +    },
    ],
  });
-Index: src/app/apis/shop-api/index.ts
+Index: src/apis/shop-api/index.ts
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/apis/shop-api/index.ts	(revision 1d3048bed00fb9bda85af84fc119f910637bb651)
-+++ src/app/apis/shop-api/index.ts	(date 1536462469000)
+--- src/apis/shop-api/index.ts	(date 1538293262000)
++++ src/apis/shop-api/index.ts	(date 1538296179000)
 @@ -17,6 +17,10 @@
        }, 100);
      });
@@ -298,13 +298,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  }
  
  const shopAPI: ShopAPI = new ShopAPIImpl();
-Index: src/app/stores/types.ts
+Index: src/stores/types.ts
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/stores/types.ts	(revision 1d3048bed00fb9bda85af84fc119f910637bb651)
-+++ src/app/stores/types.ts	(date 1536462469000)
+--- src/stores/types.ts	(date 1538293262000)
++++ src/stores/types.ts	(date 1538296179000)
 @@ -20,6 +20,8 @@
    decrementProductInventory(productId: string): void;
  
@@ -314,29 +314,29 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  }
  
  export interface CartStore {
-Index: src/assets/styles/main.pcss
+Index: src/index.pcss
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/assets/styles/main.pcss	(revision 1d3048bed00fb9bda85af84fc119f910637bb651)
-+++ src/assets/styles/main.pcss	(date 1536462454000)
-@@ -23,6 +23,8 @@
-   --app-link-color: var(--app-indigo-500);
-   --app-link-visited-color: var(--app-indigo-300);
-   --app-default-border-color: var(--app-grey-300);
-+  --app-grid-selected-hover-item: var(--app-grey-100);
-+  --app-grid-selected-activ-item: var(--app-grey-300);
+--- src/index.pcss	(date 1538293262000)
++++ src/index.pcss	(date 1538295683000)
+@@ -18,6 +18,8 @@
+   --app-link-color: var(--comm-indigo-500);
+   --app-link-visited-color: var(--comm-indigo-300);
+   --app-default-border-color: var(--comm-grey-300);
++  --app-grid-selected-hover-item: var(--comm-grey-100);
++  --app-grid-selected-activ-item: var(--comm-grey-300);
  
-   /**
-    * Grid
-Index: src/app/stores/product-store/index.ts
+   /*------------------------------
+     Grid
+Index: src/stores/product-store/index.ts
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/stores/product-store/index.ts	(revision 1d3048bed00fb9bda85af84fc119f910637bb651)
-+++ src/app/stores/product-store/index.ts	(date 1536462469000)
+--- src/stores/product-store/index.ts	(date 1538293262000)
++++ src/stores/product-store/index.ts	(date 1538296179000)
 @@ -66,6 +66,14 @@
      this.f_state.all = products;
    }
@@ -352,14 +352,27 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    //----------------------------------------------------------------------
    //
    //  Internal methods
-Index: test/app/stores/product-store/index.ts
+Index: test/stores/product-store/index.ts
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- test/app/stores/product-store/index.ts	(revision 1d3048bed00fb9bda85af84fc119f910637bb651)
-+++ test/app/stores/product-store/index.ts	(date 1536462478000)
-@@ -68,4 +68,39 @@
+--- test/stores/product-store/index.ts	(date 1538293262000)
++++ test/stores/product-store/index.ts	(date 1538296368000)
+@@ -2,11 +2,7 @@
+ import { Product as APIProduct } from '../../../src/apis';
+ import { Product } from '../../../src/stores';
+ import { TestStore } from '../../types';
+-import {
+-  newProductStore,
+-  ProductState,
+-  ProductStoreImpl,
+-} from '../../../src/stores/product-store';
++import { newProductStore, ProductState, ProductStoreImpl } from '../../../src/stores/product-store';
+ 
+ const assert = chai.assert;
+ 
+@@ -68,4 +64,39 @@
      await productStore.getAllProducts();
      assert.deepEqual(productStore.allProducts, NEW_API_PRODUCTS);
    });

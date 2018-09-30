@@ -1,10 +1,10 @@
-Index: src/app/views/product-admin-view/index.vue
+Index: src/views/product-admin-view/index.vue
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(revision 0e51c00a25a4fe27878d352f8f32beb5058ed879)
-+++ src/app/views/product-admin-view/index.vue	(revision 0e51c00a25a4fe27878d352f8f32beb5058ed879)
+--- src/views/product-admin-view/index.vue	(revision 504e7abb04895aba2fcee84ed890adcb3fb36fb0)
++++ src/views/product-admin-view/index.vue	(revision 504e7abb04895aba2fcee84ed890adcb3fb36fb0)
 @@ -0,0 +1,19 @@
 +<style lang="postcss" scoped>
 +</style>
@@ -25,13 +25,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +@Component
 +export default class ProductAdminView extends mixins(BaseComponent) {}
 +</script>
-Index: src/app/router/index.ts
+Index: src/router/index.ts
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/router/index.ts	(date 1536461593000)
-+++ src/app/router/index.ts	(date 1536461778000)
+--- src/router/index.ts	(date 1538293262000)
++++ src/router/index.ts	(date 1538295256000)
 @@ -15,5 +15,10 @@
        component: () =>
          import(/* webpackChunkName: "shopping-view" */ '../views/shopping-view/index.vue'),
@@ -43,13 +43,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +    },
    ],
  });
-Index: src/app/views/index.vue
+Index: src/views/index.vue
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/index.vue	(date 1536461593000)
-+++ src/app/views/index.vue	(date 1536461778000)
+--- src/views/index.vue	(date 1538293262000)
++++ src/views/index.vue	(date 1538295256000)
 @@ -119,6 +119,10 @@
        title: 'Shopping',
        path: '/shopping',
