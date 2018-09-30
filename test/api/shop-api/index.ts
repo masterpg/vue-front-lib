@@ -1,4 +1,4 @@
-import _shopAPI from '../../../../src/app/apis/shop-api';
+import _shopAPI from '../../../src/apis/shop-api';
 
 const assert = chai.assert;
 

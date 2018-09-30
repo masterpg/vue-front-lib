@@ -1,72 +1,72 @@
 <style lang="postcss" scoped>
-@import '../../../assets/styles/typography.pcss';
+@import '../../styles/typography.pcss';
 
 .greet-message {
-  --greet-message-color: var(--paper-indigo-a200);
+  --greet-message-color: var(--comm-indigo-a200);
 }
 
 .title {
-  @extend %app-font-subhead;
+  @extend %comm-font-subhead;
   font-weight: 500;
 }
 
 .value {
-  @extend %app-font-subhead;
+  @extend %comm-font-subhead;
 }
 </style>
 
 
 <template>
   <div class="layout vertical">
-    <paper-card class="app-pa-12" :class="{ 'app-ma-48': f_pc, 'app-ma-24': f_tab, 'app-ma-12': f_sp }">
+    <paper-card class="comm-pa-12" :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }">
       <paper-input
         label="Input Message"
         :value="m_message" @input="m_message = $event.target.value"
       ></paper-input>
-      <div class="app-my-16">
+      <div class="comm-my-16">
         <span class="title">propA: </span><span class="value">{{ propA }}</span>
       </div>
-      <div class="app-my-16">
+      <div class="comm-my-16">
         <span class="title">propB: </span><span class="value">{{ propB }}</span>
       </div>
-      <div class="app-my-16">
+      <div class="comm-my-16">
         <span class="title">message: </span><span class="value">{{ m_message }}</span>
       </div>
-      <div class="app-my-16">
+      <div class="comm-my-16">
         <span class="title">custom propA: </span><span class="value">{{ m_customPropA }}</span>
       </div>
-      <div class="app-my-16">
+      <div class="comm-my-16">
         <span class="title">reversed message: </span><span class="value">{{ m_reversedMessage }}</span>
       </div>
-      <div class="app-my-16">
+      <div class="comm-my-16">
         <span class="title">double reversed message: </span><span class="value">{{ m_doubleReversedMessage }}</span>
       </div>
-      <div class="layout horizontal center app-my-16">
+      <div class="layout horizontal center comm-my-16">
         <greet-message
           ref="greetMessage"
           :message="m_message"
           class="greet-message"
         ></greet-message>
-        <button class="app-ml-12" @click="m_greetButtonOnClick">Greet</button>
+        <button class="comm-ml-12" @click="m_greetButtonOnClick">Greet</button>
       </div>
-      <div class="app-my-16">
+      <div class="comm-my-16">
         <span class="title">post times: </span><span class="value">{{ m_post.times }}</span>
-        <button class="app-ml-12" @click="m_postButtonOnClick">Post</button>
+        <button class="comm-ml-12" @click="m_postButtonOnClick">Post</button>
       </div>
-      <div class="layout horizontal app-my-16">
+      <div class="layout horizontal comm-my-16">
         <custom-input
           v-model="m_customInputValue"
           class="flex-3"
         ></custom-input>
-        <span class="flex-9 app-ml-12 app-mt-28">
+        <span class="flex-9 comm-ml-12 comm-mt-28">
           <span class="title">value: </span><span class="value">{{ m_customInputValue }}</span>
         </span>
       </div>
-      <div class="layout horizontal center app-my-16">
+      <div class="layout horizontal center comm-my-16">
         <custom-checkbox
           v-model="m_customChecked"
         ></custom-checkbox>
-        <span class="app-ml-12">
+        <span class="comm-ml-12">
           <span class="title">checked: </span><span class="value">{{ m_customChecked }}</span>
         </span>
       </div>

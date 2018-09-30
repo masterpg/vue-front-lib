@@ -1,7 +1,7 @@
 import 'vue';
-import { Config } from '../app/base/config';
-import { Utils } from '../app/base/utils';
-import { Stores } from '../app/stores';
+import { Config } from '../base/config';
+import { Utils } from '../base/utils';
+import { Stores } from '../stores';
 
 declare module 'vue/types/vue' {
   interface Vue {

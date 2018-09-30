@@ -1,13 +1,13 @@
 <style lang="postcss" scoped>
-@import '../../../assets/styles/typography.pcss';
+@import '../../styles/typography.pcss';
 
 .title {
-  @extend %app-font-subhead;
+  @extend %comm-font-subhead;
   font-weight: 500;
 }
 
 .value {
-  @extend %app-font-subhead;
+  @extend %comm-font-subhead;
 }
 
 span {

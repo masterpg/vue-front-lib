@@ -10,7 +10,7 @@ Vue で作成したコンポーネントはパブリックなプロパティや�
 
 コンポーネントのスタイルをカスタマイズできる部分を公開するには、次のファイルに CSS 変数を定義します。
 
-`src/assets/styles/main.pcss`
+`src/styles/main.pcss`
 
 ```css
 :root {
@@ -31,7 +31,7 @@ CSS 変数は接頭辞に`--`を付ける決まりがあります。
 
 さきほど定義した CSS 変数をコンポーネントに適用しましょう。
 
-`src/app/views/abc-view/greet-message.vue`
+`src/views/abc-view/greet-message.vue`
 
 ```html
 <style lang="postcss" scoped>

@@ -2,39 +2,39 @@
 
 ## CSS クラス
 
-`src/assets/styles/_shadow.pcss`には次の CSS クラスが定義されています。
+`src/styles/_shadow.pcss`には次の CSS クラスが定義されています。
 
-##### .app-shadow-elevation-2dp
+##### .comm-shadow-elevation-2dp
 
-<div class="shadow-tag app-shadow-elevation-2dp"></div>
+<div class="shadow-tag comm-shadow-elevation-2dp"></div>
 
-##### .app-shadow-elevation-3dp
+##### .comm-shadow-elevation-3dp
 
-<div class="shadow-tag app-shadow-elevation-3dp"></div>
+<div class="shadow-tag comm-shadow-elevation-3dp"></div>
 
-##### .app-shadow-elevation-4dp
+##### .comm-shadow-elevation-4dp
 
-<div class="shadow-tag app-shadow-elevation-4dp"></div>
+<div class="shadow-tag comm-shadow-elevation-4dp"></div>
 
-##### .app-shadow-elevation-6dp
+##### .comm-shadow-elevation-6dp
 
-<div class="shadow-tag app-shadow-elevation-6dp"></div>
+<div class="shadow-tag comm-shadow-elevation-6dp"></div>
 
-##### .app-shadow-elevation-8dp
+##### .comm-shadow-elevation-8dp
 
-<div class="shadow-tag app-shadow-elevation-8dp"></div>
+<div class="shadow-tag comm-shadow-elevation-8dp"></div>
 
-##### .app-shadow-elevation-12dp
+##### .comm-shadow-elevation-12dp
 
-<div class="shadow-tag app-shadow-elevation-12dp"></div>
+<div class="shadow-tag comm-shadow-elevation-12dp"></div>
 
-##### .app-shadow-elevation-16dp
+##### .comm-shadow-elevation-16dp
 
-<div class="shadow-tag app-shadow-elevation-16dp"></div>
+<div class="shadow-tag comm-shadow-elevation-16dp"></div>
 
-##### .app-shadow-elevation-24dp
+##### .comm-shadow-elevation-24dp
 
-<div class="shadow-tag app-shadow-elevation-24dp"></div>
+<div class="shadow-tag comm-shadow-elevation-24dp"></div>
 
 <br>
 
@@ -44,9 +44,9 @@
 
 ```html
 <style lang="postcss" scoped>
-  @import '../assets/styles/shadows.pcss';
+  @import '../styles/shadows.pcss';
   .container {
-    @extend %app-shadow-elevation-3dp;
+    @extend %comm-shadow-elevation-3dp;
   }
 </style>
 

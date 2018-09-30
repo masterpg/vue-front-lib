@@ -1,14 +1,14 @@
-Index: src/app/views/product-admin-view/index.vue
+Index: src/views/product-admin-view/index.vue
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1536461852000)
-+++ src/app/views/product-admin-view/index.vue	(date 1536462075000)
+--- src/views/product-admin-view/index.vue	(date 1538295904000)
++++ src/views/product-admin-view/index.vue	(date 1538296166000)
 @@ -1,4 +1,5 @@
  <style lang="postcss" scoped>
-+@import '../../../assets/styles/flex-layout.pcss';
- @import '../../../assets/styles/typography.pcss';
++@import '../../styles/flex-layout.pcss';
+ @import '../../styles/typography.pcss';
  
  .title-text {
 @@ -26,6 +27,38 @@

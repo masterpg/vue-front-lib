@@ -1,5 +1,5 @@
-import '../assets/styles/custom-style.js';
-import '../assets/styles/main.pcss';
+import './styles/polymer-styles.js';
+import './index.pcss';
 
 import * as utils from './base/utils';
 import * as config from './base/config';

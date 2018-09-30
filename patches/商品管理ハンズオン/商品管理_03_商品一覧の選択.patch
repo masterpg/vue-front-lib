@@ -1,10 +1,26 @@
-Index: src/app/views/product-admin-view/index.vue
+Index: src/index.pcss
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1536461813000)
-+++ src/app/views/product-admin-view/index.vue	(date 1536461852000)
+--- src/index.pcss	(date 1538295561000)
++++ src/index.pcss	(date 1538295904000)
+@@ -18,6 +18,8 @@
+   --app-link-color: var(--comm-indigo-500);
+   --app-link-visited-color: var(--comm-indigo-300);
+   --app-default-border-color: var(--comm-grey-300);
++  --app-grid-selected-hover-item: var(--comm-grey-100);
++  --app-grid-selected-activ-item: var(--comm-grey-300);
+ 
+   /*------------------------------
+     Grid
+Index: src/views/product-admin-view/index.vue
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/views/product-admin-view/index.vue	(date 1538295561000)
++++ src/views/product-admin-view/index.vue	(date 1538295904000)
 @@ -7,6 +7,15 @@
  
  .product-item {
@@ -20,7 +36,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  }
  
    & .title {
-     @extend %app-font-subhead;
+     @extend %comm-font-subhead;
 @@ -28,19 +37,26 @@
          <div class="title-text">Products</div>
        </div>
@@ -109,19 +125,3 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  }
  }
  </script>
-Index: src/assets/styles/main.pcss
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/assets/styles/main.pcss	(date 1536461813000)
-+++ src/assets/styles/main.pcss	(date 1536461852000)
-@@ -23,6 +23,8 @@
-   --app-link-color: var(--app-indigo-500);
-   --app-link-visited-color: var(--app-indigo-300);
-   --app-default-border-color: var(--app-grey-300);
-+  --app-grid-selected-hover-item: var(--app-grey-100);
-+  --app-grid-selected-activ-item: var(--app-grey-300);
- 
-   /**
-    * Grid

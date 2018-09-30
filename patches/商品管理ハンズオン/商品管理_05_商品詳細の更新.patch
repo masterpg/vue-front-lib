@@ -1,10 +1,10 @@
-Index: src/app/apis/shop-api/index.ts
+Index: src/apis/shop-api/index.ts
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/apis/shop-api/index.ts	(date 1536462075000)
-+++ src/app/apis/shop-api/index.ts	(date 1536462154000)
+--- src/apis/shop-api/index.ts	(date 1538296166000)
++++ src/apis/shop-api/index.ts	(date 1538296333000)
 @@ -17,6 +17,10 @@
        }, 100);
      });
@@ -16,13 +16,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  }
  
  const shopAPI: ShopAPI = new ShopAPIImpl();
-Index: src/app/apis/types.ts
+Index: src/apis/types.ts
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/apis/types.ts	(date 1536462075000)
-+++ src/app/apis/types.ts	(date 1536462154000)
+--- src/apis/types.ts	(date 1538296166000)
++++ src/apis/types.ts	(date 1538296333000)
 @@ -12,6 +12,8 @@
    getProducts(): Promise<Product[]>;
  
@@ -32,13 +32,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  }
  
  //----------------------------------------------------------------------
-Index: src/app/stores/product-store/index.ts
+Index: src/stores/product-store/index.ts
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/stores/product-store/index.ts	(date 1536462075000)
-+++ src/app/stores/product-store/index.ts	(date 1536462154000)
+--- src/stores/product-store/index.ts	(date 1538296166000)
++++ src/stores/product-store/index.ts	(date 1538296333000)
 @@ -66,6 +66,14 @@
      this.f_state.all = products;
    }
@@ -54,13 +54,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    //----------------------------------------------------------------------
    //
    //  Internal methods
-Index: src/app/stores/types.ts
+Index: src/stores/types.ts
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/stores/types.ts	(date 1536462075000)
-+++ src/app/stores/types.ts	(date 1536462154000)
+--- src/stores/types.ts	(date 1538296166000)
++++ src/stores/types.ts	(date 1538296333000)
 @@ -20,6 +20,8 @@
    decrementProductInventory(productId: string): void;
  
@@ -70,13 +70,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  }
  
  export interface CartStore {
-Index: src/app/views/product-admin-view/index.vue
+Index: src/views/product-admin-view/index.vue
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/app/views/product-admin-view/index.vue	(date 1536462075000)
-+++ src/app/views/product-admin-view/index.vue	(date 1536462154000)
+--- src/views/product-admin-view/index.vue	(date 1538296166000)
++++ src/views/product-admin-view/index.vue	(date 1538296333000)
 @@ -59,6 +59,10 @@
      }
    }

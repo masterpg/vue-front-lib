@@ -23,7 +23,7 @@ const OUTPUT_PATH = path.resolve(__dirname, path.join('../.dist', BASE_PATH));
 
 module.exports = merge(base.config(TARGET_ENV, BASE_PATH, OUTPUT_PATH), {
   entry: {
-    'test': path.resolve(__dirname, '../test/app/index.ts'),
+    'test': path.resolve(__dirname, '../test/test.ts'),
   },
 
   plugins: [
