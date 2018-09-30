@@ -2,24 +2,24 @@
 @import '../../styles/typography.pcss';
 
 .title-text {
-  @extend %app-font-title;
+  @extend %comm-font-title;
 }
 
 .product-item {
   padding: 12px;
 
   & .title {
-    @extend %app-font-subhead;
+    @extend %comm-font-subhead;
   }
 
   & .detail {
-    @extend %app-font-body1;
+    @extend %comm-font-body1;
     color: var(--app-secondary-text-color);
   }
 }
 
 .error-text {
-  @extend %app-font-body1;
+  @extend %comm-font-body1;
   color: var(--app-error-text-color);
 }
 
@@ -30,7 +30,7 @@
 
 
 <template>
-  <div class="layout vertical" :class="{ 'app-ma-48': f_pc, 'app-ma-24': f_tab, 'app-ma-12': f_sp }">
+  <div class="layout vertical" :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }">
 
     <div>
       <div class="layout horizontal center">
@@ -53,7 +53,7 @@
       </div>
     </div>
 
-    <div class="app-mt-20">
+    <div class="comm-mt-20">
       <div class="layout horizontal center">
         <div class="title-text">Your Cart</div>
         <div class="flex"></div>

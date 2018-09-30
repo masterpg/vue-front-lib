@@ -13,15 +13,15 @@ $_documentContainer.innerHTML = `
 
     app-drawer {
       --app-drawer-content-container: {
-        background-color: var(--app-grey-100);
+        background-color: var(--comm-grey-100);
       }
     }
 
     @media (min-width: 600px) {
       app-drawer {
         --app-drawer-content-container: {
-          background-color: var(--app-grey-100);
-          border-right: 1px solid var(--app-default-border-color);
+          background-color: var(--comm-grey-100);
+          border-right: 1px solid var(--comm-grey-300);
         }
       }
     }

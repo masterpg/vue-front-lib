@@ -12,7 +12,7 @@ app-drawer-layout {
 }
 
 .content-toolbar {
-  background-color: var(--paper-indigo-a200);
+  background-color: var(--comm-indigo-a200);
   color: #fff;
 }
 
@@ -20,7 +20,7 @@ app-drawer-layout {
   & .item {
     display: block;
     padding: 8px 20px;
-    @extend %app-font-code1;
+    @extend %comm-font-code1;
     color: var(--app-secondary-text-color);
     text-decoration: none;
   }
@@ -31,7 +31,7 @@ app-drawer-layout {
 }
 
 .link-button {
-  color: var(--app-light-blue-a400);
+  color: var(--comm-light-blue-a400);
 }
 </style>
 
@@ -47,7 +47,7 @@ app-drawer-layout {
       <app-drawer ref="drawer" slot="drawer" :swipe-open="m_narrow">
         <app-toolbar class="drawer-toolbar">
           <iron-icon src="assets/images/manifest/icon-48x48.png"></iron-icon>
-          <div main-title class="app-ml-8">Vue WWW Base</div>
+          <div main-title class="comm-ml-8">Vue WWW Base</div>
         </app-toolbar>
         <div class="drawer-list">
           <template v-for="item in m_items">

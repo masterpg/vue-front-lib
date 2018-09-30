@@ -4,15 +4,15 @@
 
 ## CSS 変数の定義と使用方法
 
-`src/assets/styles/_colors.pcss`にはさまざまな色が CSS 変数として定義されています。
+`src/styles/_colors.pcss`にはさまざまな色が CSS 変数として定義されています。
 
 ```css
 :root {
-  --app-red-50: #ffebee;
+  --comm-red-50: #ffebee;
 }
 ```
 
-ここでは CSS 変数`--app-red-50`に`#ffebee`という色が設定されています。
+ここでは CSS 変数`--comm-red-50`に`#ffebee`という色が設定されています。
 
 CSS 変数は接頭辞に`--`を付ける決まりがあります。
 
@@ -25,14 +25,14 @@ CSS 変数は`.vue`、`.css`、`.pcss`、`.styl`、`.scss`などさまざまフ�
 ```html
 <style lang="postcss" scoped>
   div {
-    color: var(--app-red-50);
+    color: var(--comm-red-50);
   }
 </style>
 ```
 
 定義した CSS 変数を適用するには`var()`関数を使用します。
 
-上記では`div`の`color`に CSS 変数`--app-red-50`で設定された値が適用されます。
+上記では`div`の`color`に CSS 変数`--comm-red-50`で設定された値が適用されます。
 
 また上記では postcss を使用していますが、sass のような他のプリプロセッサやプレーンな css でも CSS 変数を使用することができます。
 
