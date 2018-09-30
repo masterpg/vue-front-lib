@@ -32,7 +32,7 @@ exports.config = (targetEnv, basePath, outputPath) => {
     mode: settings.mode,
 
     entry: {
-      'index': path.resolve(__dirname, '../src/app/index.ts'),
+      'index': path.resolve(__dirname, '../src/index.ts'),
     },
 
     output: {
@@ -89,7 +89,7 @@ exports.config = (targetEnv, basePath, outputPath) => {
           },
         },
         {
-          test: /src\/assets\/styles\/([^/]+\/)*[^/]+\.pcss$/,
+          test: /src\/index\.pcss$/,
           use: [
             'vue-style-loader',
             { loader: 'css-loader', options: { importLoaders: 1 } },
@@ -134,7 +134,7 @@ exports.config = (targetEnv, basePath, outputPath) => {
       new CopyWebpackPlugin([
         { from: path.resolve(__dirname, '../src/manifest.json') },
         {
-          from: path.resolve(__dirname, '../src/assets/images'),
+          from: path.resolve(__dirname, '../assets/images'),
           to: 'assets/images',
         },
         {
