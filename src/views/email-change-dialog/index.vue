@@ -1,19 +1,20 @@
 <style lang="postcss" scoped>
-@import '../../../assets/styles/typography.pcss';
+@import '../../styles/typography.pcss';
 
 paper-dialog.sp {
   margin: 24px 10px;
 }
 
 .title {
-  @extend %app-font-title;
+  @extend %comm-font-title;
 }
 
 .emphasis {
   font-weight: bold;
 }
 
-.input.pc, .input.tab {
+.input.pc,
+.input.tab {
   width: 320px;
 }
 
@@ -59,7 +60,7 @@ paper-dialog.sp {
         <!-- メールアドレス確認メッセージ -->
         <div
           v-show="m_currentStep === 'waitVerify'"
-          class="app-mt-20"
+          class="comm-mt-20"
         >
           Follow the instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> to verify your email.
         </div>
@@ -68,7 +69,7 @@ paper-dialog.sp {
       <!--
         ボタンエリア
       -->
-      <div class="layout horizontal center end-justified app-mt-20">
+      <div class="layout horizontal center end-justified comm-mt-20">
         <!-- CANCELボタン -->
         <paper-button
           v-show="m_currentStep === 'first'"

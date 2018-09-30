@@ -1,15 +1,16 @@
 <style lang="postcss" scoped>
-@import '../../../assets/styles/typography.pcss';
+@import '../../styles/typography.pcss';
 
 .title {
-  @extend %app-font-title;
+  @extend %comm-font-title;
 }
 
 .emphasis {
   font-weight: bold;
 }
 
-.input.pc, .input.tab {
+.input.pc,
+.input.tab {
   width: 320px;
 }
 
@@ -24,7 +25,7 @@
     <!--
       タイトル
     -->
-    <div class="title app-mb-20">{{ m_title }}</div>
+    <div class="title comm-mb-20">{{ m_title }}</div>
 
     <!--
       コンテンツエリア
@@ -72,14 +73,14 @@
       <!-- メールアドレス確認メッセージ -->
       <div
         v-show="m_currentStep === 'waitVerify'"
-        class="app-mt-20"
+        class="comm-mt-20"
       >
         Follow the instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> to verify your email.
       </div>
       <!-- メールアドレスリセットメッセージ -->
       <div
         v-show="m_currentStep === 'reset' || m_currentStep === 'waitReset'"
-        class="app-mt-20"
+        class="comm-mt-20"
       >
         Get instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> that explain how to reset your password.
       </div>
@@ -88,12 +89,12 @@
     <!--
       ボタンエリア
     -->
-    <div class="layout horizontal center app-mt-20">
+    <div class="layout horizontal center comm-mt-20">
       <!-- メールアドレスリセットリンク -->
       <div
         v-show="m_currentStep === 'signIn'"
         @click="m_setupReset()"
-        class="app-pseudo-link"
+        class="comm-pseudo-link"
       >
         Trouble signing in?
       </div>

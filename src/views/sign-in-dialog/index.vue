@@ -1,9 +1,9 @@
 <style lang="postcss" scoped>
-@import '../../../assets/styles/typography.pcss';
-@import '../../../assets/styles/shadows.pcss';
+@import '../../styles/typography.pcss';
+@import '../../styles/shadows.pcss';
 
 .title {
-  @extend %app-font-title;
+  @extend %comm-font-title;
 }
 
 paper-dialog.sp {
@@ -12,7 +12,7 @@ paper-dialog.sp {
 
 .sign-in-wrapper {
   & .sign-in-button {
-    @extend %app-shadow-elevation-2dp;
+    @extend %comm-shadow-elevation-2dp;
     width: 220px;
     height: 40px;
     border: none;
@@ -23,7 +23,7 @@ paper-dialog.sp {
       height: 18px;
     }
     & .label {
-      @extend %app-font-body2;
+      @extend %comm-font-body2;
       margin-left: 16px;
     }
     & * {
@@ -100,7 +100,7 @@ paper-dialog.sp {
           <div class="label">Sign in with Email</div>
         </div>
 
-        <div class="layout horizontal center end-justified app-mt-20">
+        <div class="layout horizontal center end-justified comm-mt-20">
           <paper-button
             @click="close()"
           >Cancel</paper-button>
