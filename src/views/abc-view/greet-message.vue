@@ -11,7 +11,7 @@
 }
 
 span {
-  color: var(--greet-message-color);
+  color: var(--greet-message-color, var(--comm-red-500));
 }
 </style>
 
