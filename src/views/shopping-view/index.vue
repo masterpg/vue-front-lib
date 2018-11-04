@@ -34,7 +34,7 @@
 
     <div>
       <div class="layout horizontal center">
-        <div class="title-text">Products</div>
+        <div class="title-text">{{ $t('products') }}</div>
       </div>
       <hr style="width: 100%;">
       <div
@@ -44,8 +44,8 @@
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
           <div class="detail">
-            <span>Price</span> &mdash; {{ product.price | currency }},&nbsp;
-            <span>Stock</span> &mdash; {{ product.inventory }}
+            <span>{{ $t('price') }}</span> &mdash; {{ product.price | currency }},&nbsp;
+            <span>{{ $t('stock') }}</span> &mdash; {{ product.inventory }}
           </div>
         </div>
         <div class="flex"></div>
@@ -55,7 +55,7 @@
 
     <div class="comm-mt-20">
       <div class="layout horizontal center">
-        <div class="title-text">Your Cart</div>
+        <div class="title-text">{{ $t('yourCurt') }}</div>
         <div class="flex"></div>
       </div>
       <hr style="width: 100%;">
@@ -66,7 +66,7 @@
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
           <div class="detail">
-            <span>Price</span> &mdash; {{ product.price | currency }} x {{ product.quantity }}
+            <span>{{ $t('price') }}</span> &mdash; {{ product.price | currency }} x {{ product.quantity }}
           </div>
         </div>
       </div>
@@ -75,7 +75,7 @@
         <paper-button
           v-show="!m_cartIsEmpty"
           class="checkout-button"
-          @click="m_checkout">Checkout
+          @click="m_checkout">{{ $t('checkout') }}
         </paper-button>
       </div>
     </div>
@@ -151,3 +151,19 @@ export default class ShoppingView extends mixins(BaseComponent) {
   }
 }
 </script>
+
+
+<i18n>
+en:
+  products: "Products"
+  yourCurt: "Your Curt"
+  price: "Price"
+  stock: "Stock"
+  checkout: "Checkout"
+ja:
+  products: "商品一覧"
+  yourCurt: "あなたのカート"
+  price: "価格"
+  stock: "在庫"
+  checkout: "チェックアウト"
+</i18n>

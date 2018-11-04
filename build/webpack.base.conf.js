@@ -78,8 +78,12 @@ exports.config = (targetEnv, basePath, outputPath) => {
           options: {
             esModule: true,
             scss: 'vue-style-loader!css-loader!sass-loader',
+            preLoaders: {
+              i18n: 'yaml-loader'
+            },
             loaders: {
               ts: 'ts-loader!tslint-loader',
+              i18n: '@kazupon/vue-i18n-loader',
             },
             postcss: {
               config: {

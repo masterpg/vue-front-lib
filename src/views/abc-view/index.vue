@@ -19,6 +19,7 @@
 <template>
   <div class="layout vertical">
     <paper-card class="comm-pa-12" :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }">
+      <div class="comm-my-16">{{ $t('hello', { today: $d(new Date(), 'short') }) }}</div>
       <paper-input
         label="Input Message"
         :value="m_message" @input="m_message = $event.target.value"
@@ -227,3 +228,11 @@ export default class AbcView extends mixins(BaseComponent) {
   }
 }
 </script>
+
+
+<i18n>
+en:
+  hello: "Hello World! Today is {today}."
+ja:
+  hello: "こんにちは、世界！ 今日は {today} です。"
+</i18n>
