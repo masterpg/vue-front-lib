@@ -137,7 +137,7 @@ exports.config = (targetEnv, basePath, outputPath) => {
       new CopyWebpackPlugin([
         { from: path.resolve(__dirname, '../src/manifest.json') },
         {
-          from: path.resolve(__dirname, '../assets/images'),
+          from: path.resolve(__dirname, '../src/assets/images'),
           to: 'assets/images',
         },
         {
@@ -226,6 +226,6 @@ exports.newSWPrecacheWebpackPlugin = (basePath, outputPath) => {
 
 exports.newImageminPlugin = () => {
   return new ImageminPlugin({
-    test: /assets\/images\/[^\.]+\.(jpe?g|png|gif|svg)$/i,
+    test: /src\/assets\/images\/[^\.]+\.(jpe?g|png|gif|svg)$/i,
   });
 };
