@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/apis/shop-api/index.ts	(date 1538296166000)
-+++ src/apis/shop-api/index.ts	(date 1538296333000)
+--- src/apis/shop-api/index.ts	(date 1541863981000)
++++ src/apis/shop-api/index.ts	(date 1541864345000)
 @@ -17,6 +17,10 @@
        }, 100);
      });
@@ -21,8 +21,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/apis/types.ts	(date 1538296166000)
-+++ src/apis/types.ts	(date 1538296333000)
+--- src/apis/types.ts	(date 1541863981000)
++++ src/apis/types.ts	(date 1541864345000)
 @@ -12,6 +12,8 @@
    getProducts(): Promise<Product[]>;
  
@@ -37,8 +37,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/stores/product-store/index.ts	(date 1538296166000)
-+++ src/stores/product-store/index.ts	(date 1538296333000)
+--- src/stores/product-store/index.ts	(date 1541863981000)
++++ src/stores/product-store/index.ts	(date 1541864345000)
 @@ -66,6 +66,14 @@
      this.f_state.all = products;
    }
@@ -59,8 +59,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/stores/types.ts	(date 1538296166000)
-+++ src/stores/types.ts	(date 1538296333000)
+--- src/stores/types.ts	(date 1541863981000)
++++ src/stores/types.ts	(date 1541864345000)
 @@ -20,6 +20,8 @@
    decrementProductInventory(productId: string): void;
  
@@ -75,8 +75,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/views/product-admin-view/index.vue	(date 1538296166000)
-+++ src/views/product-admin-view/index.vue	(date 1538296333000)
+--- src/views/product-admin-view/index.vue	(date 1541863981000)
++++ src/views/product-admin-view/index.vue	(date 1541864345000)
 @@ -59,6 +59,10 @@
      }
    }
@@ -87,8 +87,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +}
  </style>
  
- 
-@@ -134,6 +138,13 @@
+ <template>
+@@ -136,6 +140,15 @@
              ></paper-input>
            </div>
          </div>
@@ -98,11 +98,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +          v-show="!!m_selectedProduct.id"
 +          class="update-button"
 +          @click="m_updateProduct"
-+        >Update</paper-button>
++        >
++          {{ $t('update') }}
++        </paper-button>
        </div>
      </div>
- 
-@@ -180,6 +191,16 @@
+   </div>
+@@ -182,6 +195,16 @@
  
    created() {}
  
@@ -119,3 +121,16 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    //----------------------------------------------------------------------
    //
    //  Event handlers
+@@ -209,10 +232,12 @@
+   title: "Title"
+   price: "Price"
+   stock: "Stock"
++  update: "Update"
+ ja:
+   products: "商品一覧"
+   detail: "詳細"
+   title: "タイトル"
+   price: "価格"
+   stock: "在庫"
++  update: "更新"
+ </i18n>

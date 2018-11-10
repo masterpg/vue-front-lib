@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- test/stores/product-store/index.ts	(date 1538296333000)
-+++ test/stores/product-store/index.ts	(date 1538296480000)
+--- test/stores/product-store/index.ts	(date 1541864345000)
++++ test/stores/product-store/index.ts	(date 1541864746000)
 @@ -2,11 +2,7 @@
  import { Product as APIProduct } from '../../../src/apis';
  import { Product } from '../../../src/stores';

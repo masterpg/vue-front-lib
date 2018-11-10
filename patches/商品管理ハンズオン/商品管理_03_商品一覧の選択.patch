@@ -3,8 +3,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/index.pcss	(date 1538295561000)
-+++ src/index.pcss	(date 1538295904000)
+--- src/index.pcss	(date 1541862443000)
++++ src/index.pcss	(date 1541862768000)
 @@ -18,6 +18,8 @@
    --app-link-color: var(--comm-indigo-500);
    --app-link-visited-color: var(--comm-indigo-300);
@@ -19,8 +19,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/views/product-admin-view/index.vue	(date 1538295561000)
-+++ src/views/product-admin-view/index.vue	(date 1538295904000)
+--- src/views/product-admin-view/index.vue	(date 1541862443000)
++++ src/views/product-admin-view/index.vue	(date 1541862768000)
 @@ -7,6 +7,15 @@
  
  .product-item {
@@ -37,19 +37,16 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  
    & .title {
      @extend %comm-font-subhead;
-@@ -28,19 +37,26 @@
-         <div class="title-text">Products</div>
+@@ -29,21 +38,33 @@
+         <div class="title-text">{{ $t('products') }}</div>
        </div>
-       <hr style="width: 100%;">
--      <div
--        v-for="(product, index) in m_products"
--        class="layout horizontal center product-item"
--      >
+       <hr style="width: 100%;" />
+-      <div v-for="(product, index) in m_products" class="layout horizontal center product-item">
 -        <div class="layout vertical center-justified">
 -          <div class="title">{{ product.title }}</div>
 -          <div class="detail">
--            <span>Price</span> &mdash; {{ product.price | currency }},&nbsp;
--            <span>Stock</span> &mdash; {{ product.inventory }}
+-            <span>{{ $t('price') }}</span> &mdash; {{ product.price | currency }},&nbsp;
+-            <span>{{ $t('stock') }}</span> &mdash; {{ product.inventory }}
 -          </div>
 -        </div>
 -        <div class="flex"></div>
@@ -75,18 +72,16 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +        </div>
 +      </iron-selector>
      </div>
- 
    </div>
-@@ -48,6 +64,8 @@
- 
+ </template>
  
  <script lang="ts">
 +import '@polymer/iron-selector/iron-selector';
 +
- import { BaseComponent } from '../../base/component';
  import { Component } from 'vue-property-decorator';
+ import { BaseComponent } from '../../base/component';
  import { Product } from '../../stores';
-@@ -65,6 +83,16 @@
+@@ -61,6 +82,16 @@
      return this.$stores.product.allProducts;
    }
  
@@ -103,7 +98,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
    //----------------------------------------------------------------------
    //
    //  Lifecycle hooks
-@@ -72,5 +100,21 @@
+@@ -68,6 +99,22 @@
    //----------------------------------------------------------------------
  
    created() {}
@@ -125,3 +120,4 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  }
  }
  </script>
+ 

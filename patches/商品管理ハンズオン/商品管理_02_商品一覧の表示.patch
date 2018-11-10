@@ -3,10 +3,11 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/views/product-admin-view/index.vue	(date 1538295256000)
-+++ src/views/product-admin-view/index.vue	(date 1538295561000)
-@@ -1,19 +1,76 @@
- <style lang="postcss" scoped>
+--- src/views/product-admin-view/index.vue	(date 1541860055000)
++++ src/views/product-admin-view/index.vue	(date 1541862443000)
+@@ -1,14 +1,83 @@
+-<style lang="postcss" scoped></style>
++<style lang="postcss" scoped>
 +@import '../../styles/typography.pcss';
 +
 +.title-text {
@@ -25,42 +26,36 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +    color: var(--app-secondary-text-color);
 +  }
 +}
- </style>
- 
++</style>
  
  <template>
--  <div>
--    product-admin-view
-+  <div class="layout vertical" :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }">
-+
+-  <div>product-admin-view</div>
++  <div
++    class="layout vertical"
++    :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }"
++  >
 +    <div>
 +      <div class="layout horizontal center">
-+        <div class="title-text">Products</div>
++        <div class="title-text">{{ $t('products') }}</div>
 +      </div>
-+      <hr style="width: 100%;">
-+      <div
-+        v-for="(product, index) in m_products"
-+        class="layout horizontal center product-item"
-+      >
++      <hr style="width: 100%;" />
++      <div v-for="(product, index) in m_products" class="layout horizontal center product-item">
 +        <div class="layout vertical center-justified">
 +          <div class="title">{{ product.title }}</div>
 +          <div class="detail">
-+            <span>Price</span> &mdash; {{ product.price | currency }},&nbsp;
-+            <span>Stock</span> &mdash; {{ product.inventory }}
++            <span>{{ $t('price') }}</span> &mdash; {{ product.price | currency }},&nbsp;
++            <span>{{ $t('stock') }}</span> &mdash; {{ product.inventory }}
 +          </div>
 +        </div>
 +        <div class="flex"></div>
 +      </div>
 +    </div>
-+
-   </div>
++  </div>
  </template>
  
- 
  <script lang="ts">
-+import { BaseComponent } from '../../base/component';
  import { Component } from 'vue-property-decorator';
--import { BaseComponent } from '../../base/component';
+ import { BaseComponent } from '../../base/component';
 +import { Product } from '../../stores';
  import { mixins } from 'vue-class-component';
  
@@ -86,3 +81,14 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  created() {}
 +}
  </script>
++
++<i18n>
++en:
++  products: "Products"
++  price: "Price"
++  stock: "Stock"
++ja:
++  products: "商品一覧"
++  price: "価格"
++  stock: "在庫"
++</i18n>
