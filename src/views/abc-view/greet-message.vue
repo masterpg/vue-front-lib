@@ -15,11 +15,11 @@ span {
 }
 </style>
 
-
 <template>
-  <div><span class="title">greet times: </span><span class="value">{{ m_greetTimes }}</span></div>
+  <div>
+    <span class="title">greet times: </span><span class="value">{{ m_greetTimes }}</span>
+  </div>
 </template>
-
 
 <script lang="ts">
 import { BaseComponent } from '../../base/component';

@@ -28,19 +28,17 @@
 }
 </style>
 
-
 <template>
-  <div class="layout vertical" :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }">
-
+  <div
+    class="layout vertical"
+    :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }"
+  >
     <div>
       <div class="layout horizontal center">
         <div class="title-text">{{ $t('products') }}</div>
       </div>
-      <hr style="width: 100%;">
-      <div
-        v-for="(product, index) in m_products"
-        class="layout horizontal center product-item"
-      >
+      <hr style="width: 100%;" />
+      <div v-for="(product, index) in m_products" class="layout horizontal center product-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
           <div class="detail">
@@ -49,7 +47,10 @@
           </div>
         </div>
         <div class="flex"></div>
-        <paper-icon-button icon="icons:add-box" @click="m_addProductToCart(product)"></paper-icon-button>
+        <paper-icon-button
+          icon="icons:add-box"
+          @click="m_addProductToCart(product);"
+        ></paper-icon-button>
       </div>
     </div>
 
@@ -58,31 +59,25 @@
         <div class="title-text">{{ $t('yourCurt') }}</div>
         <div class="flex"></div>
       </div>
-      <hr style="width: 100%;">
-      <div
-        v-for="(product, index) in m_cartProducts"
-        class="layout horizontal center product-item"
-      >
+      <hr style="width: 100%;" />
+      <div v-for="(product, index) in m_cartProducts" class="layout horizontal center product-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
           <div class="detail">
-            <span>{{ $t('price') }}</span> &mdash; {{ product.price | currency }} x {{ product.quantity }}
+            <span>{{ $t('price') }}</span> &mdash; {{ product.price | currency }} x
+            {{ product.quantity }}
           </div>
         </div>
       </div>
       <div class="layout horizontal center">
         <div class="flex error-text">{{ m_checkoutStatus.message }}</div>
-        <paper-button
-          v-show="!m_cartIsEmpty"
-          class="checkout-button"
-          @click="m_checkout">{{ $t('checkout') }}
+        <paper-button v-show="!m_cartIsEmpty" class="checkout-button" @click="m_checkout">
+          {{ $t('checkout') }}
         </paper-button>
       </div>
     </div>
-
   </div>
 </template>
-
 
 <script lang="ts">
 import '@polymer/paper-button/paper-button';
@@ -151,7 +146,6 @@ export default class ShoppingView extends mixins(BaseComponent) {
   }
 }
 </script>
-
 
 <i18n>
 en:
