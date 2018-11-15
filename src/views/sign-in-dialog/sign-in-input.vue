@@ -29,7 +29,6 @@
 }
 </style>
 
-
 <template>
   <div>
     <div
@@ -43,14 +42,13 @@
         :name="name"
         :required="required"
         :readonly="readonly"
-        @input="m_textInputOnChange($event)"
+        @input="m_textInputOnChange($event);"
         class="mdl-textfield__input textfield-input"
-      >
+      />
     </div>
     <p class="textfield-error">{{ m_errorMessage }}</p>
   </div>
 </template>
-
 
 <script lang="ts">
 import { Component, Prop } from 'vue-property-decorator';

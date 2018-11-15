@@ -32,7 +32,7 @@ paper-dialog.sp {
 
     &.google {
       background-color: white;
-      color: var(--app-secondary-text-color);
+      color: var(--comm-secondary-text-color);
     }
 
     &.facebook {
@@ -52,7 +52,6 @@ paper-dialog.sp {
 }
 </style>
 
-
 <template>
   <paper-dialog
     ref="dialog"
@@ -63,14 +62,8 @@ paper-dialog.sp {
     :class="{ sp: f_sp }"
   >
     <div>
-
-      <!--
-        list
-      -->
-      <div
-        v-show="m_state === 'list'"
-        class="sign-in-wrapper"
-      >
+      <!-- list -->
+      <div v-show="m_state === 'list'" class="sign-in-wrapper">
         <div class="title">Sign in</div>
 
         <div
@@ -78,7 +71,7 @@ paper-dialog.sp {
           class="layout horizontal center sign-in-button google"
           @click="m_signInWithGoogle"
         >
-          <img class="icon" src="assets/images/icons/google.svg"/>
+          <img class="icon" src="assets/images/icons/google.svg" />
           <div class="label">Sign in with Google</div>
         </div>
 
@@ -87,7 +80,7 @@ paper-dialog.sp {
           class="layout horizontal center sign-in-button facebook"
           @click="m_signInWithFacebook"
         >
-          <img class="icon" src="assets/images/icons/facebook.svg"/>
+          <img class="icon" src="assets/images/icons/facebook.svg" />
           <div class="label">Sign in with Facebook</div>
         </div>
 
@@ -96,29 +89,20 @@ paper-dialog.sp {
           class="layout horizontal center sign-in-button email"
           @click="m_signInWithEmail"
         >
-          <img class="icon" src="assets/images/icons/mail.svg"/>
+          <img class="icon" src="assets/images/icons/mail.svg" />
           <div class="label">Sign in with Email</div>
         </div>
 
         <div class="layout horizontal center end-justified comm-mt-20">
-          <paper-button
-            @click="close()"
-          >Cancel</paper-button>
+          <paper-button @click="close();">Cancel</paper-button>
         </div>
       </div>
 
-      <!--
-        email
-      -->
-      <email-sign-in-view
-        v-show="m_state === 'email'"
-        ref="emailSignInView"
-      ></email-sign-in-view>
-
+      <!-- email -->
+      <email-sign-in-view v-show="m_state === 'email'" ref="emailSignInView"></email-sign-in-view>
     </div>
   </paper-dialog>
 </template>
-
 
 <script lang="ts">
 import '@polymer/paper-dialog/paper-dialog';

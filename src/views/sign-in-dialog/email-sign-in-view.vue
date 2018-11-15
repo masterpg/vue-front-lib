@@ -19,31 +19,28 @@
 }
 </style>
 
-
 <template>
   <form>
-    <!--
-      タイトル
-    -->
+    <!-- タイトル -->
     <div class="title comm-mb-20">{{ m_title }}</div>
 
-    <!--
-      コンテンツエリア
-    -->
+    <!-- コンテンツエリア -->
     <div class="layout vertical">
       <!-- メールアドレスインプット -->
       <sign-in-input
         ref="emailInput"
-        v-show="m_currentStep === 'first' || m_currentStep === 'create' || m_currentStep === 'signIn'"
+        v-show="
+          m_currentStep === 'first' || m_currentStep === 'create' || m_currentStep === 'signIn'
+        "
         v-model="m_inputEmail"
         type="email"
         name="email"
         item-name="Email"
         required
         :readonly="m_currentStep !== 'first'"
-        @input="m_validateEmail()"
+        @input="m_validateEmail();"
         class="input"
-        :class="{ 'pc': f_pc, 'tab': f_tab, 'sp': f_sp }"
+        :class="{ pc: f_pc, tab: f_tab, sp: f_sp }"
       ></sign-in-input>
       <!-- 表示名インプット -->
       <sign-in-input
@@ -53,9 +50,9 @@
         type="text"
         name="displayName"
         item-name="Display name"
-        @input="m_validateDisplayName()"
+        @input="m_validateDisplayName();"
         class="input"
-        :class="{ 'pc': f_pc, 'tab': f_tab, 'sp': f_sp }"
+        :class="{ pc: f_pc, tab: f_tab, sp: f_sp }"
       ></sign-in-input>
       <!-- パスワードインプット -->
       <sign-in-input
@@ -66,74 +63,60 @@
         name="password"
         item-name="Password"
         required
-        @input="m_validatePassword()"
+        @input="m_validatePassword();"
         class="input"
-        :class="{ 'pc': f_pc, 'tab': f_tab, 'sp': f_sp }"
+        :class="{ pc: f_pc, tab: f_tab, sp: f_sp }"
       ></sign-in-input>
       <!-- メールアドレス確認メッセージ -->
-      <div
-        v-show="m_currentStep === 'waitVerify'"
-        class="comm-mt-20"
-      >
-        Follow the instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> to verify your email.
+      <div v-show="m_currentStep === 'waitVerify'" class="comm-mt-20">
+        Follow the instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> to verify
+        your email.
       </div>
       <!-- メールアドレスリセットメッセージ -->
-      <div
-        v-show="m_currentStep === 'reset' || m_currentStep === 'waitReset'"
-        class="comm-mt-20"
-      >
-        Get instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> that explain how to reset your password.
+      <div v-show="m_currentStep === 'reset' || m_currentStep === 'waitReset'" class="comm-mt-20">
+        Get instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> that explain how
+        to reset your password.
       </div>
     </div>
 
-    <!--
-      ボタンエリア
-    -->
+    <!-- ボタンエリア -->
     <div class="layout horizontal center comm-mt-20">
       <!-- メールアドレスリセットリンク -->
-      <div
-        v-show="m_currentStep === 'signIn'"
-        @click="m_setupReset()"
-        class="comm-pseudo-link"
-      >
+      <div v-show="m_currentStep === 'signIn'" @click="m_setupReset();" class="comm-pseudo-link">
         Trouble signing in?
       </div>
       <!-- スペーサー -->
       <div class="flex"></div>
       <!-- CANCELボタン -->
       <paper-button
-        v-show="m_currentStep === 'first' || m_currentStep === 'create' || m_currentStep === 'signIn' || m_currentStep === 'reset'"
-        @click="m_cancel()"
-      >Cancel</paper-button>
+        v-show="
+          m_currentStep === 'first' ||
+            m_currentStep === 'create' ||
+            m_currentStep === 'signIn' ||
+            m_currentStep === 'reset'
+        "
+        @click="m_cancel();"
+        >Cancel</paper-button
+      >
       <!-- NEXTボタン -->
-      <paper-button
-        v-show="m_currentStep === 'first'"
-        @click="m_setupNext()"
-        raised
-      >Next</paper-button>
+      <paper-button v-show="m_currentStep === 'first'" @click="m_setupNext();" raised>
+        Next
+      </paper-button>
       <!-- SAVEボタン -->
-      <paper-button
-        v-show="m_currentStep === 'create'"
-        @click="m_create()"
-        raised
-      >Save</paper-button>
+      <paper-button v-show="m_currentStep === 'create'" @click="m_create();" raised>
+        Save
+      </paper-button>
       <!-- SIGN INボタン -->
-      <paper-button
-        v-show="m_currentStep === 'signIn'"
-        @click="m_signIn()"
-        raised
-      >Sign in</paper-button>
+      <paper-button v-show="m_currentStep === 'signIn'" @click="m_signIn();" raised>
+        Sign in
+      </paper-button>
       <!-- SENDボタン -->
-      <paper-button
-        v-show="m_currentStep === 'reset'"
-        @click="m_reset()"
-        raised
-      >Send</paper-button>
+      <paper-button v-show="m_currentStep === 'reset'" @click="m_reset();" raised>
+        Send
+      </paper-button>
     </div>
-
   </form>
 </template>
-
 
 <script lang="ts">
 import '@polymer/paper-button/paper-button';

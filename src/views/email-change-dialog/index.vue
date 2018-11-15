@@ -23,7 +23,6 @@ paper-dialog.sp {
 }
 </style>
 
-
 <template>
   <paper-dialog
     ref="dialog"
@@ -34,59 +33,46 @@ paper-dialog.sp {
     :class="{ sp: f_sp }"
   >
     <div>
-
-      <!--
-        タイトル
-      -->
+      <!-- タイトル -->
       <div class="title">{{ m_title }}</div>
 
-      <!--
-        コンテンツエリア
-      -->
+      <!-- コンテンツエリア -->
       <div class="layout vertical">
         <!-- メールアドレスインプット -->
         <paper-input
           ref="emailInput"
           v-show="m_currentStep === 'first'"
           :value="m_inputEmail"
-          @input="m_inputEmail = $event.target.value; m_validateEmail();"
+          @input="
+            m_inputEmail = $event.target.value;
+            m_validateEmail();
+          "
           label="New email"
           type="email"
           required
           :readonly="m_currentStep !== 'first'"
           class="input"
-          :class="{ 'pc': f_pc, 'tab': f_tab, 'sp': f_sp }"
+          :class="{ pc: f_pc, tab: f_tab, sp: f_sp }"
         ></paper-input>
         <!-- メールアドレス確認メッセージ -->
-        <div
-          v-show="m_currentStep === 'waitVerify'"
-          class="comm-mt-20"
-        >
-          Follow the instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> to verify your email.
+        <div v-show="m_currentStep === 'waitVerify'" class="comm-mt-20">
+          Follow the instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> to verify
+          your email.
         </div>
       </div>
 
-      <!--
-        ボタンエリア
-      -->
+      <!-- ボタンエリア -->
       <div class="layout horizontal center end-justified comm-mt-20">
         <!-- CANCELボタン -->
-        <paper-button
-          v-show="m_currentStep === 'first'"
-          @click="m_cancel()"
-        >Cancel</paper-button>
+        <paper-button v-show="m_currentStep === 'first'" @click="m_cancel();">Cancel</paper-button>
         <!-- NEXTボタン -->
-        <paper-button
-          v-show="m_currentStep === 'first'"
-          @click="m_changeEmail()"
-          raised
-        >Next</paper-button>
+        <paper-button v-show="m_currentStep === 'first'" @click="m_changeEmail();" raised>
+          Next
+        </paper-button>
       </div>
-
     </div>
   </paper-dialog>
 </template>
-
 
 <script lang="ts">
 import '@polymer/paper-button/paper-button';
