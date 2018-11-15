@@ -1,17 +1,8 @@
-<style lang="postcss" scoped>
-</style>
-
+<style lang="postcss" scoped></style>
 
 <template>
-  <div>
-    <input
-      type="checkbox"
-      v-bind:checked="checked"
-      v-on:change="m_checkboxOnChange"
-    />
-  </div>
+  <div><input type="checkbox" v-bind:checked="checked" v-on:change="m_checkboxOnChange" /></div>
 </template>
-
 
 <script lang="ts">
 import { BaseComponent } from '../../base/component';

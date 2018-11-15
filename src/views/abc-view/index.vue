@@ -15,13 +15,17 @@
 }
 </style>
 
-
 <template>
   <div class="layout vertical">
-    <paper-card class="comm-pa-12" :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }">
+    <paper-card
+      class="comm-pa-12"
+      :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }"
+    >
+      <div class="comm-my-16">{{ $t('hello', { today: $d(new Date(), 'short') }) }}</div>
       <paper-input
         label="Input Message"
-        :value="m_message" @input="m_message = $event.target.value"
+        :value="m_message"
+        @input="m_message = $event.target.value;"
       ></paper-input>
       <div class="comm-my-16">
         <span class="title">propA: </span><span class="value">{{ propA }}</span>
@@ -36,10 +40,12 @@
         <span class="title">custom propA: </span><span class="value">{{ m_customPropA }}</span>
       </div>
       <div class="comm-my-16">
-        <span class="title">reversed message: </span><span class="value">{{ m_reversedMessage }}</span>
+        <span class="title">reversed message: </span>
+        <span class="value">{{ m_reversedMessage }}</span>
       </div>
       <div class="comm-my-16">
-        <span class="title">double reversed message: </span><span class="value">{{ m_doubleReversedMessage }}</span>
+        <span class="title">double reversed message: </span>
+        <span class="value">{{ m_doubleReversedMessage }}</span>
       </div>
       <div class="layout horizontal center comm-my-16">
         <greet-message
@@ -54,18 +60,13 @@
         <button class="comm-ml-12" @click="m_postButtonOnClick">Post</button>
       </div>
       <div class="layout horizontal comm-my-16">
-        <custom-input
-          v-model="m_customInputValue"
-          class="flex-3"
-        ></custom-input>
+        <custom-input v-model="m_customInputValue" class="flex-3"></custom-input>
         <span class="flex-9 comm-ml-12 comm-mt-28">
           <span class="title">value: </span><span class="value">{{ m_customInputValue }}</span>
         </span>
       </div>
       <div class="layout horizontal center comm-my-16">
-        <custom-checkbox
-          v-model="m_customChecked"
-        ></custom-checkbox>
+        <custom-checkbox v-model="m_customChecked"></custom-checkbox>
         <span class="comm-ml-12">
           <span class="title">checked: </span><span class="value">{{ m_customChecked }}</span>
         </span>
@@ -76,7 +77,6 @@
     </paper-card>
   </div>
 </template>
-
 
 <script lang="ts">
 import '@polymer/paper-button/paper-button';
@@ -227,3 +227,10 @@ export default class AbcView extends mixins(BaseComponent) {
   }
 }
 </script>
+
+<i18n>
+en:
+  hello: "Hello World! Today is {today}."
+ja:
+  hello: "こんにちは、世界！ 今日は {today} です。"
+</i18n>

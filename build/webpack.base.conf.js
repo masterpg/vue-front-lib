@@ -78,8 +78,12 @@ exports.config = (targetEnv, basePath, outputPath) => {
           options: {
             esModule: true,
             scss: 'vue-style-loader!css-loader!sass-loader',
+            preLoaders: {
+              i18n: 'yaml-loader'
+            },
             loaders: {
               ts: 'ts-loader!tslint-loader',
+              i18n: '@kazupon/vue-i18n-loader',
             },
             postcss: {
               config: {
@@ -133,7 +137,7 @@ exports.config = (targetEnv, basePath, outputPath) => {
       new CopyWebpackPlugin([
         { from: path.resolve(__dirname, '../src/manifest.json') },
         {
-          from: path.resolve(__dirname, '../assets/images'),
+          from: path.resolve(__dirname, '../src/assets/images'),
           to: 'assets/images',
         },
         {
@@ -235,6 +239,6 @@ exports.newSWPrecacheWebpackPlugin = (basePath, outputPath) => {
 
 exports.newImageminPlugin = () => {
   return new ImageminPlugin({
-    test: /assets\/images\/[^\.]+\.(jpe?g|png|gif|svg)$/i,
+    test: /src\/assets\/images\/[^\.]+\.(jpe?g|png|gif|svg)$/i,
   });
 };

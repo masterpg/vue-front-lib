@@ -1,15 +1,8 @@
-<style lang="postcss" scoped>
-</style>
-
+<style lang="postcss" scoped></style>
 
 <template>
-  <div>
-    <paper-input
-      @input="m_textFieldOnChange"
-    ></paper-input>
-  </div>
+  <div><paper-input @input="m_textFieldOnChange"></paper-input></div>
 </template>
-
 
 <script lang="ts">
 import '@polymer/paper-input/paper-input';

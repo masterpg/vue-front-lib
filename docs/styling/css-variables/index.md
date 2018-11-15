@@ -56,5 +56,5 @@ CSS 変数は`.vue`、`.css`、`.pcss`、`.styl`、`.scss`などさまざまフ�
 <a class="blue" href="#" >hello</a>
 
 <!-- テキストが青色にならない -->
-<div class="blue">hello</a>
+<div class="blue">hello</div>
 ```

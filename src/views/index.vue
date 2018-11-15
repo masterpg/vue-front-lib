@@ -53,15 +53,10 @@ paper-item {
 }
 </style>
 
-
 <template>
   <div>
-
     <app-drawer-layout responsive-width="960px">
-
-      <!--
-        Drawer content
-      -->
+      <!-- Drawer content -->
       <app-drawer ref="drawer" slot="drawer" :swipe-open="m_narrow">
         <app-toolbar class="drawer-toolbar">
           <iron-icon src="assets/images/manifest/icon-48x48.png"></iron-icon>
@@ -74,9 +69,7 @@ paper-item {
         </div>
       </app-drawer>
 
-      <!--
-        Main content
-      -->
+      <!-- Main content -->
       <app-toolbar class="content-toolbar">
         <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
         <div main-title>View name</div>
@@ -91,7 +84,11 @@ paper-item {
           icon="social:person"
         ></iron-icon>
         <paper-menu-button ref="systemMenu" dynamic-align>
-          <paper-icon-button icon="more-vert" slot="dropdown-trigger" alt="menu"></paper-icon-button>
+          <paper-icon-button
+            icon="more-vert"
+            slot="dropdown-trigger"
+            alt="menu"
+          ></paper-icon-button>
           <paper-listbox
             ref="systemMenuList"
             slot="dropdown-content"
@@ -100,31 +97,29 @@ paper-item {
           >
             <paper-item ref="signInItem" v-show="!m_account.isSignedIn">Sign in</paper-item>
             <paper-item ref="signOutItem" v-show="m_account.isSignedIn">Sign out</paper-item>
-            <paper-item ref="changeEmailItem" v-show="m_account.isSignedIn">Change email</paper-item>
-            <paper-item ref="deleteAccountItem" v-show="m_account.isSignedIn">Delete account</paper-item>
+            <paper-item ref="changeEmailItem" v-show="m_account.isSignedIn">
+              Change email
+            </paper-item>
+            <paper-item ref="deleteAccountItem" v-show="m_account.isSignedIn">
+              Delete account
+            </paper-item>
           </paper-listbox>
         </paper-menu-button>
       </app-toolbar>
 
-      <router-view/>
-
+      <router-view />
     </app-drawer-layout>
 
     <paper-toast ref="swToast" :duration="m_swUpdateIsRequired ? 0 : 5000" :text="m_swMessage">
-      <paper-button
-        v-show="m_swUpdateIsRequired"
-        class="link-button"
-        @click="m_reload"
-      >再読み込み
+      <paper-button v-show="m_swUpdateIsRequired" class="link-button" @click="m_reload">
+        再読み込み
       </paper-button>
     </paper-toast>
 
     <sign-in-dialog ref="signInDialog"></sign-in-dialog>
     <email-change-dialog ref="emailChangeDialog"></email-change-dialog>
-
   </div>
 </template>
-
 
 <script lang="ts">
 import '@polymer/app-layout/app-drawer-layout/app-drawer-layout';
