@@ -1,5 +1,5 @@
-<style lang="postcss" scoped>
-@import '../../styles/typography.pcss';
+<style scoped>
+@import '../../styles/typography.css';
 
 .title {
   @extend %comm-font-subhead;

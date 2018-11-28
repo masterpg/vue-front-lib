@@ -1,5 +1,5 @@
 import './styles/polymer-styles.js';
-import './index.pcss';
+import './index.css';
 
 import * as apis from './apis';
 import * as config from './base/config';

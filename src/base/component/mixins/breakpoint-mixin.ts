@@ -150,13 +150,13 @@ export default class BreakpointMixin extends Vue {
   // https://stackoverflow.com/questions/1248081
   m_getClientDimensionsWidth(): number {
     if (typeof document === 'undefined') return 0; // SSR
-    return Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    return Math.max(document.documentElement!.clientWidth, window.innerWidth || 0);
   }
 
   // Cross-browser support as described in:
   // https://stackoverflow.com/questions/1248081
   m_getClientDimensionsHeight(): number {
     if (typeof document === 'undefined') return 0; // SSR
-    return Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+    return Math.max(document.documentElement!.clientHeight, window.innerHeight || 0);
   }
 }
