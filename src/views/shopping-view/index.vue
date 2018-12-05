@@ -30,10 +30,7 @@
 </style>
 
 <template>
-  <div
-    class="layout vertical"
-    :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }"
-  >
+  <div class="layout vertical" :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }">
     <div>
       <div class="layout horizontal center">
         <div class="title-text">{{ $t('products') }}</div>
@@ -43,15 +40,12 @@
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
           <div class="detail">
-            <span>{{ $t('price') }}</span> &mdash; {{ product.price | currency }},&nbsp;
-            <span>{{ $t('stock') }}</span> &mdash; {{ product.inventory }}
+            <span>{{ $t('price') }}</span> &mdash; {{ product.price | currency }},&nbsp; <span>{{ $t('stock') }}</span> &mdash;
+            {{ product.inventory }}
           </div>
         </div>
         <div class="flex"></div>
-        <paper-icon-button
-          icon="icons:add-box"
-          @click="m_addProductToCart(product);"
-        ></paper-icon-button>
+        <paper-icon-button icon="icons:add-box" @click="m_addProductToCart(product);"></paper-icon-button>
       </div>
     </div>
 
@@ -65,16 +59,13 @@
         <div class="layout vertical center-justified">
           <div class="title">{{ cartItem.title }}</div>
           <div class="detail">
-            <span>{{ $t('price') }}</span> &mdash; {{ cartItem.price | currency }} x
-            {{ cartItem.quantity }}
+            <span>{{ $t('price') }}</span> &mdash; {{ cartItem.price | currency }} x {{ cartItem.quantity }}
           </div>
         </div>
       </div>
       <div class="layout horizontal center">
         <div class="flex error-text">{{ m_checkoutStatus.message }}</div>
-        <paper-button v-show="!m_cartIsEmpty" class="checkout-button" @click="m_checkout">
-          {{ $t('checkout') }}
-        </paper-button>
+        <paper-button v-show="!m_cartIsEmpty" class="checkout-button" @click="m_checkout">{{ $t('checkout') }}</paper-button>
       </div>
     </div>
   </div>
@@ -115,9 +106,7 @@ export default class ShoppingView extends mixins(BaseComponent) {
   }
 
   get m_checkoutStatus(): { result: boolean; message: string } {
-    const result =
-      this.$stores.cart.checkoutStatus === CheckoutStatus.None ||
-      this.$stores.cart.checkoutStatus === CheckoutStatus.Successful;
+    const result = this.$stores.cart.checkoutStatus === CheckoutStatus.None || this.$stores.cart.checkoutStatus === CheckoutStatus.Successful;
     return {
       result,
       message: result ? '' : 'Checkout failed.',
