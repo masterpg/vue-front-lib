@@ -27,9 +27,12 @@ class StoresImpl extends Vue implements Stores {
   }
 }
 
-export function init(): void {
+export let stores: Stores;
+
+export function initStores(): void {
+  stores = new StoresImpl();
   Object.defineProperty(Vue.prototype, '$stores', {
-    value: new StoresImpl(),
+    value: stores,
     writable: false,
   });
 }

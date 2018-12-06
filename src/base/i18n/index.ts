@@ -128,4 +128,8 @@ class LocaleUtil {
   }
 }
 
-export async function init(): Promise<void> {}
+export let i18n: VueI18n;
+
+export async function initI18n(): Promise<void> {
+  i18n = new AppI18n();
+}
