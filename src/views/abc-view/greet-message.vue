@@ -22,7 +22,7 @@ span {
 </template>
 
 <script lang="ts">
-import { BaseComponent } from '../../base/component';
+import { BaseComponent } from '@/base/component';
 import { Component, Prop } from 'vue-property-decorator';
 
 @Component

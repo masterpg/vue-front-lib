@@ -1,6 +1,6 @@
 import Vue from 'vue';
-import shopAPI from './shop-api';
-import { APIs, ShopAPI } from './types';
+import shopAPI from '@/apis/shop-api';
+import { APIs, ShopAPI } from '@/apis/types';
 import { Component } from 'vue-property-decorator';
 
 const debug = process.env.NODE_ENV !== 'production';
@@ -29,4 +29,4 @@ export function initAPI(): void {
   });
 }
 
-export * from './types';
+export * from '@/apis/types';

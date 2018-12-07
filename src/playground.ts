@@ -1,9 +1,9 @@
-import './styles/polymer-styles.js';
-import './index.css';
+import '@/styles/polymer-styles.js';
+import '@/index.css';
 
-import { i18n, initI18n } from './base/i18n';
+import { i18n, initI18n } from '@/base/i18n';
 import Vue from 'vue';
-import PlaygroundView from './playground.vue';
+import PlaygroundView from '@/playground.vue';
 
 (async () => {
   await initI18n();

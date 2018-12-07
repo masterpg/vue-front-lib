@@ -1,7 +1,7 @@
 import Vue from 'vue';
-import { newCartStore } from './cart-store';
-import { newProductStore } from './product-store';
-import { Stores, CartStore, ProductStore } from './types';
+import { newCartStore } from '@/stores/cart-store';
+import { newProductStore } from '@/stores/product-store';
+import { Stores, CartStore, ProductStore } from '@/stores/types';
 import { Component } from 'vue-property-decorator';
 
 const debug = process.env.NODE_ENV !== 'production';
@@ -37,4 +37,4 @@ export function initStores(): void {
   });
 }
 
-export * from './types';
+export * from '@/stores/types';
