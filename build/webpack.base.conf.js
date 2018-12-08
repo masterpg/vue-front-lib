@@ -5,6 +5,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ImageminPlugin = require('imagemin-webpack-plugin').default;
 const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 //--------------------------------------------------
 //  config
@@ -32,7 +33,7 @@ exports.config = (targetEnv, basePath, outputPath) => {
     mode: settings.mode,
 
     entry: {
-      'index': path.resolve(__dirname, '../src/index.ts'),
+      index: path.resolve(__dirname, '../src/index'),
     },
 
     output: {
@@ -49,53 +50,54 @@ exports.config = (targetEnv, basePath, outputPath) => {
       extensions: ['.ts', '.js', '.vue', '.json'],
 
       alias: {
-        'vue$': 'vue/dist/vue.esm.js',
+        '@': path.resolve('src'),
+        vue$: 'vue/dist/vue.esm.js',
       },
     },
 
     module: {
       rules: [
         {
-          enforce: 'pre',
-          test: /\.ts?$/,
-          loader: 'tslint-loader',
-        },
-        {
           test: /\.ts$/,
           exclude: /node_modules|vue\/src/,
-          loader: 'ts-loader',
-          options: {
-            // 「.vue」のファイルに接尾辞「.ts」がファイル名に追加されるよう設定
-            // 参照: https://github.com/TypeStrong/ts-loader#user-content-appendtssuffixto-regexp-default
-            appendTsSuffixTo: [/\.vue$/],
-          },
+          use: [
+            {
+              loader: 'ts-loader',
+              options: {
+                // 「.vue」のファイルに接尾辞「.ts」がファイル名に追加されるよう設定
+                // 参照: https://github.com/TypeStrong/ts-loader#user-content-appendtssuffixto-regexp-default
+                appendTsSuffixTo: [/\.vue$/],
+              },
+            },
+            {
+              loader: 'tslint-loader',
+            },
+          ],
         },
         // 「.vue」ファイルをvue-loaderがハンドルするよう設定
         // 参照: https://github.com/vuejs-templates/webpack-simple/blob/master/template/webpack.config.js
         {
           test: /\.vue$/,
-          loader: 'vue-loader',
-          options: {
-            esModule: true,
-            scss: 'vue-style-loader!css-loader!sass-loader',
-            preLoaders: {
-              i18n: 'yaml-loader'
-            },
-            loaders: {
-              ts: 'ts-loader!tslint-loader',
-              i18n: '@kazupon/vue-i18n-loader',
-            },
-            postcss: {
-              config: {
-                path: path.resolve(__dirname, 'postcss.config.js'),
+          use: [
+            {
+              loader: 'vue-loader',
+              options: {
+                esModule: true,
+                scss: 'vue-style-loader!css-loader!sass-loader',
+                postcss: {
+                  config: {
+                    path: path.resolve(__dirname, 'postcss.config.js'),
+                  },
+                },
               },
             },
-          },
+          ],
         },
         {
-          test: /src\/index\.pcss$/,
+          test: /\.css$/,
           use: [
-            'style-loader',
+            'vue-style-loader',
+            'css-loader',
             {
               loader: 'postcss-loader',
               options: {
@@ -110,10 +112,17 @@ exports.config = (targetEnv, basePath, outputPath) => {
           test: /\.styl$/,
           loader: ['vue-style-loader', 'css-loader', 'stylus-loader'],
         },
+        {
+          resourceQuery: /blockType=i18n/,
+          type: 'javascript/auto',
+          loader: ['@kazupon/vue-i18n-loader', 'yaml-loader'],
+        },
       ],
     },
 
     plugins: [
+      new VueLoaderPlugin(),
+
       new webpack.DefinePlugin({
         'process.env': {
           TARGET_ENV: JSON.stringify(targetEnv),

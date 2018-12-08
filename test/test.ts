@@ -6,16 +6,12 @@
   const apis = await import('../src/apis');
   const stores = await import('../src/stores');
 
-  utils.init();
-  config.init();
-  apis.init();
-  stores.init();
+  utils.initUtils();
+  config.initConfig();
+  apis.initAPI();
+  stores.initStores();
 
-  await Promise.all([
-    import('./api/shop-api'),
-    import('./stores/cart-store'),
-    import('./stores/product-store'),
-  ]);
+  await Promise.all([import('./api/shop-api'), import('./stores/cart-store'), import('./stores/product-store')]);
 
   mocha.run();
 })();

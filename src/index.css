@@ -1,4 +1,4 @@
-@import './styles/base-styles.pcss';
+@import './styles/base-styles.css';
 
 /*-------------------------------------------------
   Variables
@@ -28,19 +28,6 @@
   --app-grid-breakpoints-md: 960px;
   --app-grid-breakpoints-lg: calc(1280px - 16px); /* Desktop gets a 16dp reduction */
   --app-grid-breakpoints-xl: calc(1920px - 16px); /* https://material.io/guidelines/layout/responsive-ui.html#responsive-ui-breakpoints */
-
-  /*------------------------------
-    Components
-  ------------------------------*/
-
-  /* paper-drawer-panel */
-  --drawer-menu-color: #ffffff;
-  --drawer-border-color: 1px solid var(--app-default-border-color);
-  --drawer-toolbar-border-color: 1px solid var(--app-default-border-color);
-
-  /* paper-menu */
-  --paper-menu-background-color: #ffffff;
-  --menu-link-color: var(--app-primary-text-color);
 }
 
 /*-------------------------------------------------
@@ -60,5 +47,23 @@ paper-button {
   &[raised] {
     color: white;
     background-color: var(--comm-indigo-500);
+  }
+}
+
+/**
+ * Edge、IE11の対応
+ * Edge、IEはpaper-inputが影響して見えないところで幅が広く取られてしまい、
+ * 横スクロールバーが表示されてしまう不具合が見つかった。以下はこの不具合に対応している。
+ * 不具合は次の画面で確認できる: src/views/abc-view/index.vue
+ */
+paper-input {
+  & paper-input-container {
+    & div.input-wrapper {
+      & div.input-content {
+        & > label[slot="label"] {
+            width: 100% !important;
+        }
+      }
+    }
   }
 }

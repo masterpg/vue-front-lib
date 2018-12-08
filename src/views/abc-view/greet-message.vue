@@ -1,5 +1,5 @@
-<style lang="postcss" scoped>
-@import '../../styles/typography.pcss';
+<style scoped>
+@import '../../styles/typography.css';
 
 .title {
   @extend %comm-font-subhead;
@@ -22,7 +22,7 @@ span {
 </template>
 
 <script lang="ts">
-import { BaseComponent } from '../../base/component';
+import { BaseComponent } from '@/base/component';
 import { Component, Prop } from 'vue-property-decorator';
 
 @Component

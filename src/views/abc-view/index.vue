@@ -1,5 +1,5 @@
-<style lang="postcss" scoped>
-@import '../../styles/typography.pcss';
+<style scoped>
+@import '../../styles/typography.css';
 
 .greet-message {
   --greet-message-color: var(--comm-indigo-a200);
@@ -17,16 +17,9 @@
 
 <template>
   <div class="layout vertical">
-    <paper-card
-      class="comm-pa-12"
-      :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }"
-    >
+    <paper-card class="comm-pa-12" :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }">
       <div class="comm-my-16">{{ $t('hello', { today: $d(new Date(), 'short') }) }}</div>
-      <paper-input
-        label="Input Message"
-        :value="m_message"
-        @input="m_message = $event.target.value;"
-      ></paper-input>
+      <paper-input label="Input Message" :value="m_message" @input="m_message = $event.target.value;"></paper-input>
       <div class="comm-my-16">
         <span class="title">propA: </span><span class="value">{{ propA }}</span>
       </div>
@@ -40,19 +33,13 @@
         <span class="title">custom propA: </span><span class="value">{{ m_customPropA }}</span>
       </div>
       <div class="comm-my-16">
-        <span class="title">reversed message: </span>
-        <span class="value">{{ m_reversedMessage }}</span>
+        <span class="title">reversed message: </span> <span class="value">{{ m_reversedMessage }}</span>
       </div>
       <div class="comm-my-16">
-        <span class="title">double reversed message: </span>
-        <span class="value">{{ m_doubleReversedMessage }}</span>
+        <span class="title">double reversed message: </span> <span class="value">{{ m_doubleReversedMessage }}</span>
       </div>
       <div class="layout horizontal center comm-my-16">
-        <greet-message
-          ref="greetMessage"
-          :message="m_message"
-          class="greet-message"
-        ></greet-message>
+        <greet-message ref="greetMessage" :message="m_message" class="greet-message"></greet-message>
         <button class="comm-ml-12" @click="m_greetButtonOnClick">Greet</button>
       </div>
       <div class="comm-my-16">
@@ -71,9 +58,7 @@
           <span class="title">checked: </span><span class="value">{{ m_customChecked }}</span>
         </span>
       </div>
-      <div class="layout horizontal end-justified">
-        <paper-button raised @click="m_sleepButtonOnClick">Sleep</paper-button>
-      </div>
+      <div class="layout horizontal end-justified"><paper-button raised @click="m_sleepButtonOnClick">Sleep</paper-button></div>
     </paper-card>
   </div>
 </template>
@@ -83,10 +68,10 @@ import '@polymer/paper-button/paper-button';
 import '@polymer/paper-card/paper-card';
 import '@polymer/paper-input/paper-input';
 
-import CustomCheckbox from './custom-checkbox.vue';
-import CustomInput from './custom-input.vue';
-import GreetMessage from './greet-message.vue';
-import { BaseComponent } from '../../base/component';
+import CustomCheckbox from '@/views/abc-view/custom-checkbox.vue';
+import CustomInput from '@/views/abc-view/custom-input.vue';
+import GreetMessage from '@/views/abc-view/greet-message.vue';
+import { BaseComponent } from '@/base/component';
 import { Component, Prop, Watch } from 'vue-property-decorator';
 import { mixins } from 'vue-class-component';
 

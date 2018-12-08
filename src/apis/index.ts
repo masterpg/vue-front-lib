@@ -1,6 +1,6 @@
 import Vue from 'vue';
-import shopAPI from './shop-api';
-import { APIs, ShopAPI } from './types';
+import shopAPI from '@/apis/shop-api';
+import { APIs, ShopAPI } from '@/apis/types';
 import { Component } from 'vue-property-decorator';
 
 const debug = process.env.NODE_ENV !== 'production';
@@ -19,11 +19,14 @@ class APIsImpl extends Vue implements APIs {
   }
 }
 
-export function init(): void {
+export let apis: APIs;
+
+export function initAPI(): void {
+  apis = new APIsImpl();
   Object.defineProperty(Vue.prototype, '$apis', {
-    value: new APIsImpl(),
+    value: apis,
     writable: false,
   });
 }
 
-export * from './types';
+export * from '@/apis/types';

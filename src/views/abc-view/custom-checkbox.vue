@@ -1,11 +1,11 @@
-<style lang="postcss" scoped></style>
+<style scoped></style>
 
 <template>
   <div><input type="checkbox" v-bind:checked="checked" v-on:change="m_checkboxOnChange" /></div>
 </template>
 
 <script lang="ts">
-import { BaseComponent } from '../../base/component';
+import { BaseComponent } from '@/base/component';
 import { Component, Model } from 'vue-property-decorator';
 import { mixins } from 'vue-class-component';
 

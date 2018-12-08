@@ -1,6 +1,6 @@
 import VueI18n from 'vue-i18n';
 import Vue from 'vue';
-import { dateTimeFormats } from './date-time-formats';
+import { dateTimeFormats } from '@/base/i18n/date-time-formats';
 
 Vue.use(VueI18n);
 
@@ -53,11 +53,7 @@ export class AppI18n extends VueI18n {
   //
   //----------------------------------------------------------------------
 
-  d(
-    value: number | Date,
-    key?: VueI18n.Path,
-    locale?: VueI18n.Locale,
-  ): VueI18n.DateTimeFormatResult;
+  d(value: number | Date, key?: VueI18n.Path, locale?: VueI18n.Locale): VueI18n.DateTimeFormatResult;
   d(value: number | Date, args?: { [key: string]: string }): VueI18n.DateTimeFormatResult;
   d(arg1: number | Date, arg2?: any, arg3?: any): VueI18n.DateTimeFormatResult {
     let locale: VueI18n.Locale;
@@ -132,4 +128,8 @@ class LocaleUtil {
   }
 }
 
-export async function init(): Promise<void> {}
+export let i18n: VueI18n;
+
+export async function initI18n(): Promise<void> {
+  i18n = new AppI18n();
+}

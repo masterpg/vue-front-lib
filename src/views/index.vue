@@ -1,5 +1,5 @@
-<style lang="postcss" scoped>
-@import '../styles/typography.pcss';
+<style scoped>
+@import '../styles/typography.css';
 
 app-drawer-layout {
   --app-drawer-width: 256px;
@@ -111,9 +111,7 @@ paper-item {
     </app-drawer-layout>
 
     <paper-toast ref="swToast" :duration="m_swUpdateIsRequired ? 0 : 5000" :text="m_swMessage">
-      <paper-button v-show="m_swUpdateIsRequired" class="link-button" @click="m_reload">
-        再読み込み
-      </paper-button>
+      <paper-button v-show="m_swUpdateIsRequired" class="link-button" @click="m_reload">再読み込み</paper-button>
     </paper-toast>
 
     <sign-in-dialog ref="signInDialog"></sign-in-dialog>
@@ -141,11 +139,11 @@ import '@polymer/paper-menu-button/paper-menu-button';
 import '@polymer/paper-toast/paper-toast';
 import 'web-animations-js/web-animations-next-lite.min.js';
 
-import * as sw from '../base/service-worker';
-import EmailChangeDialog from './email-change-dialog/index';
-import SignInDialog from './sign-in-dialog/index.vue';
-import { Account } from '../stores/types';
-import { BaseComponent } from '../base/component';
+import * as sw from '@/base/service-worker';
+import EmailChangeDialog from '@/views/email-change-dialog/index';
+import SignInDialog from '@/views/sign-in-dialog/index.vue';
+import { Account } from '@/stores/types';
+import { BaseComponent } from '@/base/component';
 import { Component } from 'vue-property-decorator';
 import { mixins } from 'vue-class-component';
 

@@ -1,11 +1,11 @@
-import { BaseStore } from '../base';
-import { CartStore, CartProduct, CheckoutStatus, Product } from '../types';
+import { BaseStore } from '@/stores/base';
+import { CartStore, CartItem, CheckoutStatus, Product } from '@/stores/types';
 import { Component } from 'vue-property-decorator';
-import { NoCache } from '../../base/component';
+import { NoCache } from '@/base/component';
 type Transaction = firebase.firestore.Transaction;
 
 export interface CartState {
-  added: Array<{ id: string; quantity: number }>;
+  items: Array<{ id: string; quantity: number }>;
   checkoutStatus: CheckoutStatus;
 }
 
@@ -20,7 +20,7 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   constructor() {
     super();
     this.f_initState({
-      added: [],
+      items: [],
       checkoutStatus: CheckoutStatus.None,
     });
   }
@@ -36,9 +36,9 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   }
 
   @NoCache
-  get cartProducts(): CartProduct[] {
+  get cartItems(): CartItem[] {
     const allProducts = this.$stores.product.allProducts;
-    return this.f_state.added.map(({ id, quantity }) => {
+    return this.f_state.items.map(({ id, quantity }) => {
       const product = allProducts.find((item) => item.id === id)!;
       return {
         id: product.id,
@@ -50,7 +50,7 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   }
 
   get cartTotalPrice(): number {
-    return this.cartProducts.reduce((total, product) => {
+    return this.cartItems.reduce((total, product) => {
       return total + product.price * product.quantity;
     }, 0);
   }
@@ -61,17 +61,17 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   //
   //----------------------------------------------------------------------
 
-  getCartProductById(productId: string): CartProduct | undefined {
+  getCartItemById(productId: string): CartItem | undefined | null {
     const product = this.m_getProductById(productId);
-    const cartProduct = this.f_state.added.find((item) => {
+    const cartItem = this.f_state.items.find((item) => {
       return item.id === productId;
     });
-    if (!cartProduct) return undefined;
+    if (!cartItem) return undefined;
     return {
-      id: cartProduct.id,
+      id: cartItem.id,
       title: product.title,
       price: product.price,
-      quantity: cartProduct.quantity,
+      quantity: cartItem.quantity,
     };
   }
 
@@ -79,7 +79,7 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
     const product = this.m_getProductById(productId);
     this.f_state.checkoutStatus = CheckoutStatus.None;
     if (product.inventory > 0) {
-      const cartItem = this.f_state.added.find((item) => item.id === product.id);
+      const cartItem = this.f_state.items.find((item) => item.id === product.id);
       if (!cartItem) {
         this.m_pushProductToCart(product.id);
       } else {
@@ -97,7 +97,7 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
       .runTransaction((transaction) => {
         // 配列に商品チェックアウト処理を格納する
         const promises: Array<Promise<any>> = [];
-        for (const product of this.f_state.added) {
+        for (const product of this.f_state.items) {
           const promise = this.m_createCheckoutProcess(transaction, product);
           promises.push(promise);
         }
@@ -105,7 +105,7 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
         return Promise.all(promises);
       })
       .then(() => {
-        this.f_state.added = []; // カートを空にする
+        this.f_state.items = []; // カートを空にする
         this.f_state.checkoutStatus = CheckoutStatus.Successful;
       })
       .catch((err) => {
@@ -120,14 +120,14 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   //----------------------------------------------------------------------
 
   m_pushProductToCart(productId: string): void {
-    this.f_state.added.push({
+    this.f_state.items.push({
       id: productId,
       quantity: 1,
     });
   }
 
   m_incrementItemQuantity(productId: string): void {
-    const cartItem = this.f_state.added.find((item) => item.id === productId);
+    const cartItem = this.f_state.items.find((item) => item.id === productId);
     if (cartItem) {
       cartItem.quantity++;
     }
@@ -136,9 +136,7 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   m_getProductById(productId: string): Product {
     const result = this.$stores.product.getProductById(productId);
     if (!result) {
-      throw new Error(
-        `A Product that matches the specified productId "${productId}" was not found.`,
-      );
+      throw new Error(`A product that matches the specified productId "${productId}" was not found.`);
     }
     return result;
   }
