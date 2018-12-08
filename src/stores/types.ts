@@ -23,20 +23,13 @@ export interface AuthStore {
 
   signInWithFacebook(): Promise<void>;
 
-  signInWithEmailAndPassword(
-    email: string,
-    password: string,
-  ): Promise<{ result: boolean; errorMessage: string }>;
+  signInWithEmailAndPassword(email: string, password: string): Promise<{ result: boolean; errorMessage: string }>;
 
   sendEmailVerification(continueURL: string): Promise<void>;
 
   sendPasswordResetEmail(email: string, continueURL: string): Promise<void>;
 
-  createUserWithEmailAndPassword(
-    email: string,
-    password,
-    profile: { displayName: string; photoURL: string | null },
-  ): Promise<void>;
+  createUserWithEmailAndPassword(email: string, password, profile: { displayName: string; photoURL: string | null }): Promise<void>;
 
   signOut(): Promise<void>;
 

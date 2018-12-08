@@ -73,36 +73,15 @@ paper-item {
       <app-toolbar class="content-toolbar">
         <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
         <div main-title>View name</div>
-        <iron-image
-          v-show="m_account.isSignedIn && !!m_account.photoURL"
-          :src="m_account.photoURL"
-          sizing="contain"
-          class="photo"
-        ></iron-image>
-        <iron-icon
-          v-show="m_account.isSignedIn && !m_account.photoURL"
-          icon="social:person"
-        ></iron-icon>
+        <iron-image v-show="m_account.isSignedIn && !!m_account.photoURL" :src="m_account.photoURL" sizing="contain" class="photo"></iron-image>
+        <iron-icon v-show="m_account.isSignedIn && !m_account.photoURL" icon="social:person"></iron-icon>
         <paper-menu-button ref="systemMenu" dynamic-align>
-          <paper-icon-button
-            icon="more-vert"
-            slot="dropdown-trigger"
-            alt="menu"
-          ></paper-icon-button>
-          <paper-listbox
-            ref="systemMenuList"
-            slot="dropdown-content"
-            @iron-select="m_menuOnIronSelect"
-            class="systemMenuList"
-          >
+          <paper-icon-button icon="more-vert" slot="dropdown-trigger" alt="menu"></paper-icon-button>
+          <paper-listbox ref="systemMenuList" slot="dropdown-content" @iron-select="m_menuOnIronSelect" class="systemMenuList">
             <paper-item ref="signInItem" v-show="!m_account.isSignedIn">Sign in</paper-item>
             <paper-item ref="signOutItem" v-show="m_account.isSignedIn">Sign out</paper-item>
-            <paper-item ref="changeEmailItem" v-show="m_account.isSignedIn">
-              Change email
-            </paper-item>
-            <paper-item ref="deleteAccountItem" v-show="m_account.isSignedIn">
-              Delete account
-            </paper-item>
+            <paper-item ref="changeEmailItem" v-show="m_account.isSignedIn">Change email</paper-item>
+            <paper-item ref="deleteAccountItem" v-show="m_account.isSignedIn">Delete account</paper-item>
           </paper-listbox>
         </paper-menu-button>
       </app-toolbar>

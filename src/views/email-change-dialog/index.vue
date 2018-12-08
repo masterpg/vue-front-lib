@@ -1,5 +1,5 @@
-<style lang="postcss" scoped>
-@import '../../styles/typography.pcss';
+<style scoped>
+@import '../../styles/typography.css';
 
 paper-dialog.sp {
   margin: 24px 10px;
@@ -24,14 +24,7 @@ paper-dialog.sp {
 </style>
 
 <template>
-  <paper-dialog
-    ref="dialog"
-    modal
-    with-backdrop
-    entry-animation="fade-in-animation"
-    exit-animation="fade-out-animation"
-    :class="{ sp: f_sp }"
-  >
+  <paper-dialog ref="dialog" modal with-backdrop entry-animation="fade-in-animation" exit-animation="fade-out-animation" :class="{ sp: f_sp }">
     <div>
       <!-- タイトル -->
       <div class="title">{{ m_title }}</div>
@@ -56,8 +49,7 @@ paper-dialog.sp {
         ></paper-input>
         <!-- メールアドレス確認メッセージ -->
         <div v-show="m_currentStep === 'waitVerify'" class="comm-mt-20">
-          Follow the instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> to verify
-          your email.
+          Follow the instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> to verify your email.
         </div>
       </div>
 
@@ -66,9 +58,7 @@ paper-dialog.sp {
         <!-- CANCELボタン -->
         <paper-button v-show="m_currentStep === 'first'" @click="m_cancel();">Cancel</paper-button>
         <!-- NEXTボタン -->
-        <paper-button v-show="m_currentStep === 'first'" @click="m_changeEmail();" raised>
-          Next
-        </paper-button>
+        <paper-button v-show="m_currentStep === 'first'" @click="m_changeEmail();" raised>Next</paper-button>
       </div>
     </div>
   </paper-dialog>
@@ -79,7 +69,7 @@ import '@polymer/paper-button/paper-button';
 import '@polymer/paper-input/paper-input';
 
 import { Component } from 'vue-property-decorator';
-import { BaseComponent } from '../../base/component';
+import { BaseComponent } from '@/base/component';
 import { mixins } from 'vue-class-component';
 
 enum StepType {
@@ -112,7 +102,7 @@ export default class EmailChangeDialog extends mixins(BaseComponent) {
   get m_emailInput(): HTMLElement & {
     invalid: boolean;
     errorMessage: string;
-    validate: () => void;
+    validate: () => boolean;
   } {
     return this.$refs.emailInput as any;
   }

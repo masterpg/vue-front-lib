@@ -1,5 +1,5 @@
-<style lang="postcss" scoped>
-@import '../../styles/typography.pcss';
+<style scoped>
+@import '../../styles/typography.css';
 
 .title {
   @extend %comm-font-title;
@@ -29,9 +29,7 @@
       <!-- メールアドレスインプット -->
       <sign-in-input
         ref="emailInput"
-        v-show="
-          m_currentStep === 'first' || m_currentStep === 'create' || m_currentStep === 'signIn'
-        "
+        v-show="m_currentStep === 'first' || m_currentStep === 'create' || m_currentStep === 'signIn'"
         v-model="m_inputEmail"
         type="email"
         name="email"
@@ -69,51 +67,34 @@
       ></sign-in-input>
       <!-- メールアドレス確認メッセージ -->
       <div v-show="m_currentStep === 'waitVerify'" class="comm-mt-20">
-        Follow the instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> to verify
-        your email.
+        Follow the instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> to verify your email.
       </div>
       <!-- メールアドレスリセットメッセージ -->
       <div v-show="m_currentStep === 'reset' || m_currentStep === 'waitReset'" class="comm-mt-20">
-        Get instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> that explain how
-        to reset your password.
+        Get instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> that explain how to reset your password.
       </div>
     </div>
 
     <!-- ボタンエリア -->
     <div class="layout horizontal center comm-mt-20">
       <!-- メールアドレスリセットリンク -->
-      <div v-show="m_currentStep === 'signIn'" @click="m_setupReset();" class="comm-pseudo-link">
-        Trouble signing in?
-      </div>
+      <div v-show="m_currentStep === 'signIn'" @click="m_setupReset();" class="comm-pseudo-link">Trouble signing in?</div>
       <!-- スペーサー -->
       <div class="flex"></div>
       <!-- CANCELボタン -->
       <paper-button
-        v-show="
-          m_currentStep === 'first' ||
-            m_currentStep === 'create' ||
-            m_currentStep === 'signIn' ||
-            m_currentStep === 'reset'
-        "
+        v-show="m_currentStep === 'first' || m_currentStep === 'create' || m_currentStep === 'signIn' || m_currentStep === 'reset'"
         @click="m_cancel();"
         >Cancel</paper-button
       >
       <!-- NEXTボタン -->
-      <paper-button v-show="m_currentStep === 'first'" @click="m_setupNext();" raised>
-        Next
-      </paper-button>
+      <paper-button v-show="m_currentStep === 'first'" @click="m_setupNext();" raised>Next</paper-button>
       <!-- SAVEボタン -->
-      <paper-button v-show="m_currentStep === 'create'" @click="m_create();" raised>
-        Save
-      </paper-button>
+      <paper-button v-show="m_currentStep === 'create'" @click="m_create();" raised>Save</paper-button>
       <!-- SIGN INボタン -->
-      <paper-button v-show="m_currentStep === 'signIn'" @click="m_signIn();" raised>
-        Sign in
-      </paper-button>
+      <paper-button v-show="m_currentStep === 'signIn'" @click="m_signIn();" raised>Sign in</paper-button>
       <!-- SENDボタン -->
-      <paper-button v-show="m_currentStep === 'reset'" @click="m_reset();" raised>
-        Send
-      </paper-button>
+      <paper-button v-show="m_currentStep === 'reset'" @click="m_reset();" raised>Send</paper-button>
     </div>
   </form>
 </template>
@@ -122,10 +103,10 @@
 import '@polymer/paper-button/paper-button';
 import '@polymer/paper-input/paper-input';
 
-import SignInInput from './sign-in-input.vue';
-import { AuthProviderType } from '../../stores/types';
+import SignInInput from '@/views/sign-in-dialog/sign-in-input.vue';
+import { AuthProviderType } from '@/stores/types';
 import { Component } from 'vue-property-decorator';
-import { BaseComponent } from '../../base/component';
+import { BaseComponent } from '@/base/component';
 import { mixins } from 'vue-class-component';
 
 enum StepType {
@@ -248,9 +229,7 @@ export default class EmailSignInView extends mixins(BaseComponent) {
     const providers = await this.$stores.auth.fetchSignInMethodsForEmail(this.m_inputEmail);
 
     // 取得した認証プロバイダの中にパスワード認証があるかを取得
-    const passwordProviderContains = providers.some(
-      (provider) => provider === AuthProviderType.Password,
-    );
+    const passwordProviderContains = providers.some((provider) => provider === AuthProviderType.Password);
 
     // パスワード認証があった場合、サインイン画面へ遷移
     if (passwordProviderContains) {
@@ -317,14 +296,10 @@ export default class EmailSignInView extends mixins(BaseComponent) {
     if (!this.m_validateDisplayName()) return;
     if (!this.m_validatePassword()) return;
     // メールアドレス＋パスワードでアカウントを作成
-    await this.$stores.auth.createUserWithEmailAndPassword(
-      this.m_inputEmail,
-      this.m_inputPassword,
-      {
-        displayName: this.m_inputDisplayName,
-        photoURL: null,
-      },
-    );
+    await this.$stores.auth.createUserWithEmailAndPassword(this.m_inputEmail, this.m_inputPassword, {
+      displayName: this.m_inputDisplayName,
+      photoURL: null,
+    });
     // 作成されたアカウントのメールアドレスに確認メールを送信
     await this.$stores.auth.sendEmailVerification('http://localhost:5000');
     // メールアドレス確認待ち画面へ遷移
@@ -339,10 +314,7 @@ export default class EmailSignInView extends mixins(BaseComponent) {
     if (!this.m_validatePassword()) return;
 
     // メールアドレス＋パスワードでサインイン
-    const signInResult = await this.$stores.auth.signInWithEmailAndPassword(
-      this.m_inputEmail,
-      this.m_inputPassword,
-    );
+    const signInResult = await this.$stores.auth.signInWithEmailAndPassword(this.m_inputEmail, this.m_inputPassword);
     if (!signInResult.result) {
       this.m_passwordInput.errorMessage = signInResult.errorMessage;
       return;

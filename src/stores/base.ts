@@ -1,6 +1,8 @@
 import Vue from 'vue';
 import { APIs } from '@/apis';
 
+let db: firebase.firestore.Firestore;
+
 export abstract class BaseStore<S> extends Vue {
   //----------------------------------------------------------------------
   //
@@ -27,10 +29,8 @@ export abstract class BaseStore<S> extends Vue {
     return this.m_state;
   }
 
-  static m_db: firebase.firestore.Firestore;
-
   get f_db(): firebase.firestore.Firestore {
-    return BaseStore.m_db;
+    return db;
   }
 
   //----------------------------------------------------------------------
@@ -44,13 +44,13 @@ export abstract class BaseStore<S> extends Vue {
    */
   m_initFirestore(): void {
     // Firestoreのインスタンスが既に初期化されている場合、処理を抜ける
-    if (BaseStore.m_db) return;
+    if (db) return;
 
     // Firestoreインスタンスを初期化
-    BaseStore.m_db = firebase.firestore();
+    db = firebase.firestore();
     // Firestoreで日付オブジェクトを扱うのに必要な設定
     // 現段階ではこの設定がないとエラーになるため必須
-    BaseStore.m_db.settings({ timestampsInSnapshots: true });
+    db.settings({ timestampsInSnapshots: true });
   }
 
   /**

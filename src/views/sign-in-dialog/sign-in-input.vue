@@ -1,4 +1,4 @@
-<style lang="postcss" scoped>
+<style scoped>
 .textfield-wrapper {
   width: 100%;
 }
@@ -31,10 +31,7 @@
 
 <template>
   <div>
-    <div
-      ref="textInputWrapper"
-      class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label textfield-wrapper"
-    >
+    <div ref="textInputWrapper" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label textfield-wrapper">
       <label class="mdl-textfield__label textfield-label">{{ itemName }}</label>
       <input
         ref="textInput"
@@ -52,7 +49,7 @@
 
 <script lang="ts">
 import { Component, Prop } from 'vue-property-decorator';
-import { BaseComponent } from '../../base/component';
+import { BaseComponent } from '@/base/component';
 import { mixins } from 'vue-class-component';
 
 @Component

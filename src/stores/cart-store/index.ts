@@ -146,10 +146,7 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
    * @param transaction
    * @param product
    */
-  m_createCheckoutProcess(
-    transaction: Transaction,
-    product: { id: string; quantity: number },
-  ): Promise<Transaction> {
+  m_createCheckoutProcess(transaction: Transaction, product: { id: string; quantity: number }): Promise<Transaction> {
     const ref = this.f_db.collection('products').doc(product.id);
     return transaction.get(ref).then((doc) => {
       // 商品が存在しなかった場合、エラーをスロー

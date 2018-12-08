@@ -1,7 +1,7 @@
-import { Account, AuthStore, AuthProviderType } from '../types';
-import { BaseStore } from '../base';
+import { Account, AuthStore, AuthProviderType } from '@/stores/types';
+import { BaseStore } from '@/stores/base';
 import { Component } from 'vue-property-decorator';
-import { NoCache } from '../../base/component';
+import { NoCache } from '@/base/component';
 
 export interface AccountState {
   isSignedIn: boolean;
@@ -97,10 +97,7 @@ export class AuthStoreImpl extends BaseStore<AccountState> implements AuthStore 
     await firebase.auth().signInWithRedirect(this.m_facebookProvider);
   }
 
-  async signInWithEmailAndPassword(
-    email: string,
-    password: string,
-  ): Promise<{ result: boolean; errorMessage: string }> {
+  async signInWithEmailAndPassword(email: string, password: string): Promise<{ result: boolean; errorMessage: string }> {
     try {
       await firebase.auth().signInWithEmailAndPassword(email, password);
       await this.m_refreshAccount();
@@ -114,11 +111,7 @@ export class AuthStoreImpl extends BaseStore<AccountState> implements AuthStore 
     return { result: true, errorMessage: '' };
   }
 
-  async createUserWithEmailAndPassword(
-    email: string,
-    password,
-    profile: { displayName: string; photoURL: string | null },
-  ): Promise<void> {
+  async createUserWithEmailAndPassword(email: string, password, profile: { displayName: string; photoURL: string | null }): Promise<void> {
     try {
       // メールアドレス＋パスワードでアカウント作成
       await firebase.auth().createUserWithEmailAndPassword(email, password);
@@ -223,9 +216,7 @@ export class AuthStoreImpl extends BaseStore<AccountState> implements AuthStore 
       if (user.email) {
         // アカウントが持つ認証プロバイダの中にパスワード認証があるか調べる
         const providers = await this.fetchSignInMethodsForEmail(user.email);
-        const passwordProviderExists = providers.some(
-          (provider) => provider === AuthProviderType.Password,
-        );
+        const passwordProviderExists = providers.some((provider) => provider === AuthProviderType.Password);
         // アカウントが持つ認証プロバイダがパスワード認証のみでかつ、
         // メールアドレス確認が行われていない場合
         if (passwordProviderExists && providers.length === 1 && !user.emailVerified) {

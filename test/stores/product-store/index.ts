@@ -54,10 +54,7 @@ suite('store/product-store', () => {
   });
 
   test('getAllProducts()', async () => {
-    const NEW_API_PRODUCTS = [
-      { id: '1', title: 'product1', price: 101, inventory: 1 },
-      { id: '2', title: 'product2', price: 102, inventory: 2 },
-    ];
+    const NEW_API_PRODUCTS = [{ id: '1', title: 'product1', price: 101, inventory: 1 }, { id: '2', title: 'product2', price: 102, inventory: 2 }];
     td.replace(productStore.f_db, 'collection');
     td.when(productStore.f_db.collection('products')).thenReturn({
       get: () => {
