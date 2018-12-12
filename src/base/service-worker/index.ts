@@ -1,4 +1,5 @@
 import { register } from 'register-service-worker';
+import { i18n } from '@/base/i18n';
 
 //----------------------------------------------------------------------
 //
@@ -29,7 +30,7 @@ export interface StateChangeInfo {
 //
 //----------------------------------------------------------------------
 
-const m_stateChangeListeners: StateChangeLister[] = [];
+const stateChangeListeners: StateChangeLister[] = [];
 
 //----------------------------------------------------------------------
 //
@@ -42,7 +43,7 @@ const m_stateChangeListeners: StateChangeLister[] = [];
  * @param listener
  */
 export function addStateChangeListener(listener: StateChangeLister): void {
-  m_stateChangeListeners.push(listener);
+  stateChangeListeners.push(listener);
 }
 
 /**
@@ -56,25 +57,25 @@ export function initServiceWorker(): void {
 
   register(`${process.env.BASE_URL}service-worker.js`, {
     ready() {
-      m_dispatchToListeners(ChangeState.ready, 'App is being served from cache by a service worker.\nFor more details, visit https://goo.gl/AFskqB');
+      dispatchToListeners(ChangeState.ready, i18n.t('sw.ready') as string);
     },
     registered() {
-      m_dispatchToListeners(ChangeState.registered, 'Service worker has been registered.');
+      dispatchToListeners(ChangeState.registered, i18n.t('sw.registered') as string);
     },
     cached() {
-      m_dispatchToListeners(ChangeState.cached, 'Content has been cached for offline use.');
+      dispatchToListeners(ChangeState.cached, i18n.t('sw.cached') as string);
     },
     updatefound() {
-      m_dispatchToListeners(ChangeState.updatefound, 'New content is downloading.');
+      dispatchToListeners(ChangeState.updatefound, i18n.t('sw.updatefound') as string);
     },
     updated() {
-      m_dispatchToListeners(ChangeState.updated, 'New content is available; please refresh.');
+      dispatchToListeners(ChangeState.updated, i18n.t('sw.updated') as string);
     },
     offline() {
-      m_dispatchToListeners(ChangeState.offline, 'No internet connection found. App is running in offline mode.');
+      dispatchToListeners(ChangeState.offline, i18n.t('sw.offline') as string);
     },
     error(error) {
-      m_dispatchToListeners(ChangeState.error, 'Error during service worker registration:' + error);
+      dispatchToListeners(ChangeState.error, i18n.t('sw.offline', { error }) as string);
     },
   });
 }
@@ -90,8 +91,8 @@ export function initServiceWorker(): void {
  * @param state
  * @param message
  */
-function m_dispatchToListeners(state: ChangeState, message: string): void {
-  for (const listener of m_stateChangeListeners) {
+function dispatchToListeners(state: ChangeState, message: string): void {
+  for (const listener of stateChangeListeners) {
     listener({ state, message });
   }
 }

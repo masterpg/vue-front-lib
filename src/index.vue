@@ -61,7 +61,7 @@ app-drawer-layout {
     </app-drawer-layout>
 
     <paper-toast ref="swToast" :duration="m_swUpdateIsRequired ? 0 : 5000" :text="m_swMessage">
-      <paper-button v-show="m_swUpdateIsRequired" class="link-button" @click="m_reload">再読み込み</paper-button>
+      <paper-button v-show="m_swUpdateIsRequired" class="link-button" @click="m_reload">{{ $t('reload') }}</paper-button>
     </paper-toast>
   </div>
 </template>
@@ -165,3 +165,10 @@ export default class AppView extends mixins(BaseComponent) {
   }
 }
 </script>
+
+<i18n>
+en:
+  reload: "Reload"
+ja:
+  reload: "再読み込み"
+</i18n>
