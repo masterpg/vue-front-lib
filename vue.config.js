@@ -57,9 +57,9 @@ module.exports = {
   },
 
   chainWebpack: (config) => {
+    // Vue I18n 単一ファイルコンポーネントの設定
+    // http://kazupon.github.io/vue-i18n/guide/sfc.html
     config.module
-      // Vue I18n 単一ファイルコンポーネントの設定
-      // http://kazupon.github.io/vue-i18n/guide/sfc.html
       .rule('i18n')
       .resourceQuery(/blockType=i18n/)
       .type('javascript/auto')
