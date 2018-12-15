@@ -98,11 +98,11 @@ export default class AppView extends mixins(BaseComponent) {
   m_items: Array<{ title: string; path: string }> = [
     {
       title: 'ABC',
-      path: '/abc',
+      path: '/pages/abc',
     },
     {
       title: 'Shopping',
-      path: '/shopping',
+      path: '/pages/shopping',
     },
   ];
 
