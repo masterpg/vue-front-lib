@@ -9,7 +9,7 @@
 以下は .vue ファイルで色指定する例です。
 
 ```html
-<style scoped lang="postcss">
+<style scoped>
   div {
     color: var(--comm-red-50);
   }

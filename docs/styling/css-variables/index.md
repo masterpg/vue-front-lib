@@ -23,7 +23,7 @@ CSS 変数は`.vue`、`.css`、`.pcss`、`.styl`、`.scss`などさまざまフ�
 以下は CSS 変数を利用する例です。
 
 ```html
-<style scoped lang="postcss">
+<style scoped>
   div {
     color: var(--comm-red-50);
   }

@@ -43,7 +43,7 @@
 次は .vue ファイルで定義した CSS クラスにシャドウのプレースホルダーを継承して利用する例です。
 
 ```html
-<style scoped lang="postcss">
+<style scoped>
   @import '../styles/shadows.pcss';
   .container {
     @extend %comm-shadow-elevation-3dp;

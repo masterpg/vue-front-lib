@@ -1,4 +1,4 @@
-<style scoped lang="postcss">
+<style scoped>
 @import './styles/typography.pcss';
 
 app-drawer-layout {

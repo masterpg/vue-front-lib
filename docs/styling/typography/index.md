@@ -40,7 +40,7 @@
 次は .vue ファイルで定義した CSS クラスにフォントのプレースホルダーを継承して利用する例です。
 
 ```html
-<style scoped lang="postcss">
+<style scoped>
   @import '../styles/typography.pcss';
   .title {
     @extend %comm-font-title;

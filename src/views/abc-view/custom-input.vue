@@ -1,4 +1,4 @@
-<style scoped lang="postcss"></style>
+<style scoped></style>
 
 <template>
   <div><paper-input @input="m_textFieldOnChange"></paper-input></div>

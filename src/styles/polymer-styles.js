@@ -5,7 +5,7 @@ $_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = `
 <custom-style>
-  <style is="custom-style">
+  <style>
   </style>
 </custom-style>
 `;
