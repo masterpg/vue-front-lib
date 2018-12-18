@@ -1,5 +1,5 @@
-<style scoped>
-@import '../../styles/typography.css';
+<style scoped lang="postcss">
+@import '../../styles/typography.pcss';
 
 .greet-message {
   --greet-message-color: var(--comm-indigo-a200);

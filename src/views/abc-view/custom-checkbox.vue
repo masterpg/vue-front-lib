@@ -1,4 +1,4 @@
-<style scoped></style>
+<style scoped lang="postcss"></style>
 
 <template>
   <div><input type="checkbox" v-bind:checked="checked" v-on:change="m_checkboxOnChange" /></div>

@@ -1,5 +1,5 @@
 import '@/styles/polymer-styles.js';
-import '@/index.css';
+import '@/index.pcss';
 
 import AppView from '@/index.vue';
 import Vue from 'vue';
