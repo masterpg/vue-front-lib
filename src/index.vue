@@ -1,5 +1,5 @@
 <style scoped>
-@import './styles/typography.pcss';
+@import './styles/typography.css';
 
 app-drawer-layout {
   --app-drawer-width: 256px;
