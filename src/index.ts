@@ -1,5 +1,5 @@
 import 'animate.css/animate.css';
-import '@/styles/polymer-styles.js';
+import '@/styles/polymer/polymer-styles.js';
 import '@/index.css';
 
 import AppView from '@/index.vue';

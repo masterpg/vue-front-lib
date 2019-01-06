@@ -1,17 +1,17 @@
 <style scoped>
-@import '../../styles/typography.css';
+@import '../../styles/placeholder/typography.css';
 
 .greet-message {
   --greet-message-color: var(--comm-indigo-a200);
 }
 
 .title {
-  @extend %comm-font-subhead;
+  @extend %comm-font-subhead1;
   font-weight: 500;
 }
 
 .value {
-  @extend %comm-font-subhead;
+  @extend %comm-font-subhead1;
 }
 </style>
 
