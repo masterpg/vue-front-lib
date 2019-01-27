@@ -1,8 +1,27 @@
+<style scoped lang="polymer">
+/* PolymerのCSS Mixinの設定はこの領域に記述すること */
+
+app-drawer {
+  --app-drawer-content-container: {
+    background-color: var(--comm-grey-100);
+  }
+}
+
+@media (min-width: 600px) {
+  app-drawer {
+    --app-drawer-content-container: {
+      background-color: var(--comm-grey-100);
+      border-right: 1px solid var(--comm-grey-300);
+    }
+  }
+}
+</style>
+
 <style scoped>
-@import '../styles/typography.css';
+@import './styles/placeholder/typography.css';
 
 app-drawer-layout {
-  --app-drawer-width: 256px;
+  --app-drawer-width: 300px;
   &:not([narrow]) [drawer-toggle] {
     display: none;
   }
@@ -51,6 +70,65 @@ app-drawer-layout {
 paper-item {
   cursor: pointer;
 }
+
+/* -----> */
+/**
+ * Animate.cssにある既存のアニメーションをコピーして変更している。
+ * コピー元: node_modules/animate.css/animate.css
+ */
+@keyframes tada {
+  from {
+    transform: scale3d(1, 1, 1);
+  }
+  10%,
+  20% {
+    transform: scale3d(0.9, 0.9, 0.9) rotate3d(0, 0, 1, -3deg);
+  }
+  30%,
+  70% {
+    transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg);
+  }
+  50%,
+  80% {
+    transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg);
+  }
+  to {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.tada {
+  animation-name: tada;
+}
+/* <----- */
+
+/* -----> */
+/**
+ * tada と bounceOutRight のアニメーションスピードを調整
+ */
+.animated.tada.faster {
+  animation-duration: 700ms;
+}
+
+.animated.bounceOutRight.faster {
+  animation-duration: 700ms;
+}
+/* <----- */
+
+/**
+ * フェードイン/アウトのサンプル。このアニメーションを有効にするには、下記のコメントを外し、
+ * transitionタグの enter-active-class と leave-active-class を削除るとこのアニメーションが有効になる。
+ */
+/*
+.view-enter-active,
+.view-leave-active {
+  transition: opacity 0.2s ease;
+}
+.view-enter,
+.view-leave-to {
+  opacity: 0;
+}
+*/
 </style>
 
 <template>
@@ -59,7 +137,7 @@ paper-item {
       <!-- Drawer content -->
       <app-drawer ref="drawer" slot="drawer" :swipe-open="m_narrow">
         <app-toolbar class="drawer-toolbar">
-          <iron-icon src="assets/images/manifest/icon-48x48.png"></iron-icon>
+          <iron-icon src="img/icons/manifest/icon-48x48.png"></iron-icon>
           <div main-title class="comm-ml-8">Vue WWW Base</div>
         </app-toolbar>
         <div class="drawer-list">
@@ -86,11 +164,13 @@ paper-item {
         </paper-menu-button>
       </app-toolbar>
 
-      <router-view />
+      <transition name="view" mode="out-in" enter-active-class="animated tada faster" leave-active-class="animated bounceOutRight faster">
+        <router-view />
+      </transition>
     </app-drawer-layout>
 
     <paper-toast ref="swToast" :duration="m_swUpdateIsRequired ? 0 : 5000" :text="m_swMessage">
-      <paper-button v-show="m_swUpdateIsRequired" class="link-button" @click="m_reload">再読み込み</paper-button>
+      <paper-button v-show="m_swUpdateIsRequired" class="link-button" @click="m_reload">{{ $t('reload') }}</paper-button>
     </paper-toast>
 
     <sign-in-dialog ref="signInDialog"></sign-in-dialog>
@@ -119,7 +199,7 @@ import '@polymer/paper-toast/paper-toast';
 import 'web-animations-js/web-animations-next-lite.min.js';
 
 import * as sw from '@/base/service-worker';
-import EmailChangeDialog from '@/views/email-change-dialog/index';
+import EmailChangeDialog from '@/views/email-change-dialog/index.vue';
 import SignInDialog from '@/views/sign-in-dialog/index.vue';
 import { Account } from '@/stores/types';
 import { BaseComponent } from '@/base/component';
@@ -144,11 +224,11 @@ export default class AppView extends mixins(BaseComponent) {
   m_items: Array<{ title: string; path: string }> = [
     {
       title: 'ABC',
-      path: '/abc',
+      path: '/pages/abc',
     },
     {
       title: 'Shopping',
-      path: '/shopping',
+      path: '/pages/shopping',
     },
   ];
 
@@ -258,12 +338,23 @@ export default class AppView extends mixins(BaseComponent) {
    * ServiceWorkerの状態が変化した際のハンドラです。
    */
   m_swOnStateChange(info: sw.StateChangeInfo) {
-    this.m_swMessage = info.message;
-    this.m_swUpdateIsRequired = info.state === sw.ChangeState.updateIsRequired;
-    this.$nextTick(() => this.m_swToast.open());
+    this.m_swUpdateIsRequired = false;
 
-    // tslint:disable-next-line
-    console.log(info);
+    if (info.state === sw.ChangeState.updated) {
+      this.m_swUpdateIsRequired = true;
+      this.m_swMessage = info.message;
+      this.$nextTick(() => this.m_swToast.open());
+    } else if (info.state === sw.ChangeState.cached) {
+      this.m_swMessage = info.message;
+      this.$nextTick(() => this.m_swToast.open());
+    }
+
+    if (info.state === sw.ChangeState.error) {
+      console.error(info.message);
+    } else {
+      // tslint:disable-next-line
+      console.log('Service Worker:\n', info);
+    }
   }
 
   /**
@@ -284,3 +375,10 @@ export default class AppView extends mixins(BaseComponent) {
   }
 }
 </script>
+
+<i18n>
+en:
+  reload: "Reload"
+ja:
+  reload: "再読み込み"
+</i18n>

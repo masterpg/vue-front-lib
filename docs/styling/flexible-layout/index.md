@@ -43,7 +43,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container-horizontal {
     @extend %layout-horizontal;
@@ -168,7 +168,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-horizontal;
@@ -207,7 +207,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-vertical;
@@ -252,7 +252,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-horizontal;
@@ -298,7 +298,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-horizontal;
@@ -337,7 +337,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-horizontal;
@@ -372,7 +372,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-horizontal;
@@ -407,7 +407,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-horizontal;
@@ -442,7 +442,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-horizontal;
@@ -481,7 +481,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-horizontal;
@@ -514,7 +514,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-horizontal;
@@ -547,7 +547,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-horizontal;
@@ -582,7 +582,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-horizontal;
@@ -618,7 +618,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-horizontal;
@@ -655,7 +655,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-horizontal;
@@ -710,7 +710,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout-horizontal;
@@ -753,7 +753,7 @@ classes:
 placeholder:
 
 ```html
-<style lang="postcss" scoped>
+<style scoped>
   ...
   .container {
     @extend %layout;
@@ -778,12 +778,12 @@ placeholder:
 
 次のような汎用的なルールも提供されます:
 
-| クラス    | 内容                                   |
+| クラス     | 内容                                   |
 | :-------- | :------------------------------------- |
 | block     | display: block                         |
 | invisible | visibility: hidden                     |
 | relative  | position: relative                     |
-| fit       | コンテナに子エレメントをフィットさせる |
+| fit       | コンテナに子エレメントをフィットさせる    |
 
 > Note: `fit`を使用する場合は、祖先でエレメントのサイズが決められてかつ`position: relative`の必要があります。
 

@@ -1,13 +1,13 @@
 <style scoped>
-@import '../../styles/typography.css';
+@import '../../styles/placeholder/typography.css';
 
 .title {
-  @extend %comm-font-subhead;
+  @extend %comm-font-subhead1;
   font-weight: 500;
 }
 
 .value {
-  @extend %comm-font-subhead;
+  @extend %comm-font-subhead1;
 }
 
 span {

@@ -1,14 +1,10 @@
 import Vue from 'vue';
 
-export abstract class Config {
-  constructor() {
-    firebase.initializeApp(this.firebase);
-  }
-
-  api: { protocol: string; host: string; port: number } = {
-    protocol: '',
-    host: '',
-    port: 0,
+export interface Config {
+  api: {
+    protocol: string;
+    host: string;
+    port: number;
   };
 
   firebase: {
@@ -18,7 +14,21 @@ export abstract class Config {
     projectId?: string;
     storageBucket?: string;
     messagingSenderId?: string;
-  } = {
+  };
+}
+
+class ConfigImpl implements Config {
+  constructor() {
+    firebase.initializeApp(this.firebase);
+  }
+
+  readonly api = {
+    protocol: String(process.env.VUE_APP_API_PROTOCOL),
+    host: String(process.env.VUE_APP_API_HOST),
+    port: Number(process.env.VUE_APP_API_PORT),
+  };
+
+  readonly firebase = {
     apiKey: '<API_KEY>',
     authDomain: '<PROJECT_ID>.firebaseapp.com',
     databaseURL: 'https://<DATABASE_NAME>.firebaseio.com',
@@ -28,35 +38,10 @@ export abstract class Config {
   };
 }
 
-function newConfig(): Config {
-  switch (process.env.TARGET_ENV) {
-    case 'development':
-      return new DevConfig();
-    case 'staging':
-      return new StagingConfig();
-    case 'production':
-      return new ProdConfig();
-    default:
-      throw new Error('The value set for process.env.TARGET_ENV is illegal.');
-  }
-}
-
-class DevConfig extends Config {}
-
-class StagingConfig extends Config {}
-
-class ProdConfig extends Config {
-  readonly api = {
-    protocol: 'https',
-    host: 'mydomain.net',
-    port: 80,
-  };
-}
-
 export let config: Config;
 
 export function initConfig(): void {
-  config = newConfig();
+  config = new ConfigImpl();
   Object.defineProperty(Vue.prototype, '$config', {
     value: config,
     writable: false,
