@@ -1,5 +1,5 @@
 <style scoped>
-@import '../../styles/typography.css';
+@import '../../styles/placeholder/typography.css';
 
 .title {
   @extend %comm-font-title;

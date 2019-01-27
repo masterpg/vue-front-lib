@@ -125,7 +125,18 @@ module.exports = {
         .end();
 
     // 必要なリソースファイルのコピー
-    let copyFiles = [{ from: 'node_modules/@webcomponents/webcomponentsjs/**/*.js' }];
+    let copyFiles = [
+      { from: 'node_modules/@webcomponents/webcomponentsjs/**/*.js' },
+      { from: 'node_modules/firebase/firebase-*.js' },
+      {
+        from: 'node_modules/material-design-lite/material.min.css',
+        to: 'node_modules/material-design-lite',
+      },
+      {
+        from: 'node_modules/material-design-lite/material.min.js',
+        to: 'node_modules/material-design-lite',
+      },
+    ];
     if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
       copyFiles = [
         ...copyFiles,

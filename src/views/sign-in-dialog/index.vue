@@ -1,6 +1,6 @@
 <style scoped>
-@import '../../styles/typography.css';
-@import '../../styles/shadows.css';
+@import '../../styles/placeholder/typography.css';
+@import '../../styles/placeholder/shadows.css';
 
 .title {
   @extend %comm-font-title;
@@ -60,17 +60,17 @@ paper-dialog.sp {
         <div class="title">Sign in</div>
 
         <div ref="googleSignInButton" class="layout horizontal center sign-in-button google" @click="m_signInWithGoogle">
-          <img class="icon" src="assets/images/icons/google.svg" />
+          <img class="icon" src="img/icons/google.svg" />
           <div class="label">Sign in with Google</div>
         </div>
 
         <div ref="facebookSignInButton" class="layout horizontal center sign-in-button facebook" @click="m_signInWithFacebook">
-          <img class="icon" src="assets/images/icons/facebook.svg" />
+          <img class="icon" src="img/icons/facebook.svg" />
           <div class="label">Sign in with Facebook</div>
         </div>
 
         <div ref="emailSignInButton" class="layout horizontal center sign-in-button email" @click="m_signInWithEmail">
-          <img class="icon" src="assets/images/icons/mail.svg" />
+          <img class="icon" src="img/icons/mail.svg" />
           <div class="label">Sign in with Email</div>
         </div>
 

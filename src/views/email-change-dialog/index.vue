@@ -1,5 +1,5 @@
 <style scoped>
-@import '../../styles/typography.css';
+@import '../../styles/placeholder/typography.css';
 
 paper-dialog.sp {
   margin: 24px 10px;
