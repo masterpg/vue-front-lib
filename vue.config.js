@@ -1,8 +1,8 @@
-const path = require('path');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const path = require('path')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 // ベースURLの設定
-const baseUrl = process.env.VUE_APP_BASE_URL;
+const baseUrl = process.env.VUE_APP_BASE_URL
 
 // 各エントリーポイントの設定
 const pages = {
@@ -16,7 +16,7 @@ const pages = {
     // template title tag needs to be <title><%= htmlWebpackPlugin.options.title %></title>
     title: 'Vue WWW Base',
   },
-};
+}
 if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
   Object.assign(pages, {
     test: {
@@ -31,7 +31,7 @@ if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
       filename: 'playground.html',
       title: 'Vue WWW Base Playground',
     },
-  });
+  })
 }
 
 module.exports = {
@@ -56,13 +56,13 @@ module.exports = {
       skipWaiting: true,
 
       // ServiceWorkerインストール時にキャッシュされるファイルを設定
-      include: [/\.html$/, /\.js$/, /\.css$/, /^favicon\.ico$/],
-      exclude: [/\.map$/],
+      include: [ /\.html$/, /\.js$/, /\.css$/, /^favicon\.ico$/ ],
+      exclude: [ /\.map$/ ],
 
       // `/`以下のパスで存在しないファイルまたはディレクトリが
       // 指定された場合にindex.htmlへフォールバックするよう設定
       navigateFallback: '/index.html',
-      navigateFallbackWhitelist: [/^\//],
+      navigateFallbackWhitelist: [ /^\// ],
 
       // フェッチ時にキャッシュされるパスを設定
       runtimeCaching: [
@@ -90,14 +90,14 @@ module.exports = {
         .end()
       .use('yaml')
         .loader('yaml-loader')
-        .end();
+        .end()
 
     // PolymerのCustom Properties、CSS Mixinを.vueファイルで記述するための設定
     const polymerRule = config.module
       .rule('polymer')
       .test(/\.polymer$/)
       .oneOf('vue')
-      .resourceQuery(/\?vue/);
+      .resourceQuery(/\?vue/)
     polymerRule
       .use('example-loader')
         .loader('./extension/example-loader/index.js')
@@ -122,22 +122,22 @@ module.exports = {
         .options({
           sourceMap: false,
         })
-        .end();
+        .end()
 
     // 必要なリソースファイルのコピー
-    let copyFiles = [{ from: 'node_modules/@webcomponents/webcomponentsjs/**/*.js' }];
+    let copyFiles = [ { from: 'node_modules/@webcomponents/webcomponentsjs/**/*.js' } ]
     if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
       copyFiles = [
         ...copyFiles,
         { from: 'node_modules/mocha/mocha.css', to: 'node_modules/mocha' },
         { from: 'node_modules/mocha/mocha.js', to: 'node_modules/mocha' },
         { from: 'node_modules/chai/chai.js', to: 'node_modules/chai' },
-      ];
+      ]
     }
     config
       .plugin('copy-prod')
-        .use(CopyWebpackPlugin, [copyFiles])
-        .after('copy');
+        .use(CopyWebpackPlugin, [ copyFiles ])
+        .after('copy')
   },
 
   devServer: {
@@ -151,4 +151,4 @@ module.exports = {
       },
     },
   },
-};
+}
