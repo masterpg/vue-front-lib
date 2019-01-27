@@ -13,6 +13,10 @@ import { initStores } from '@/stores';
 import { initUtils } from '@/base/utils';
 import { router } from '@/base/router';
 
+// TODO for JetBrainsIDE
+// import '@/views/abc-view/index.vue';
+// import '@/views/shopping-view/index.vue';
+
 (async () => {
   initUtils();
   initConfig();

@@ -179,11 +179,11 @@ export default class AbcView extends mixins(BaseComponent) {
   //--------------------------------------------------
 
   async m_sleep(ms: number): Promise<string> {
-    return new Promise<string>((resolve) => {
+    return new Promise((resolve) => {
       setTimeout(() => {
         resolve(`I slept for ${ms} ms.`);
       }, ms);
-    });
+    }) as Promise<string>;
   }
 
   //--------------------------------------------------
