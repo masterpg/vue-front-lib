@@ -89,21 +89,18 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
     }
   }
 
-  checkout(): Promise<void> {
+  async checkout(): Promise<void> {
     const savedCartItems = [ ...this.f_state.items ]
     this.f_state.checkoutStatus = CheckoutStatus.None
-
-    return this.$apis.shop
-      .buyProducts(this.f_state.items)
-      .then(() => {
-        this.f_state.items = [] // カートを空にする
-        this.f_state.checkoutStatus = CheckoutStatus.Successful
-      })
-      .catch((err) => {
-        this.f_state.checkoutStatus = CheckoutStatus.Failed
-        // カートの内容をAPIリクエス前の状態にロールバックする
-        this.f_state.items = savedCartItems
-      })
+    try {
+      await this.$apis.shop.buyProducts(this.f_state.items)
+      this.f_state.items = [] // カートを空にする
+      this.f_state.checkoutStatus = CheckoutStatus.Successful
+    } catch (err) {
+      this.f_state.checkoutStatus = CheckoutStatus.Failed
+      // カートの内容をAPIリクエス前の状態にロールバックする
+      this.f_state.items = savedCartItems
+    }
   }
 
   //----------------------------------------------------------------------
