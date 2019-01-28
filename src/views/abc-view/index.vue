@@ -144,25 +144,21 @@ export default class AbcView extends mixins(BaseComponent) {
 
   @Watch('m_message')
   m_messageOnChange(newValue: string, oldValue: string): void {
-    // tslint:disable-next-line
     console.log(`m_messageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`)
   }
 
   @Watch('m_reversedMessage')
   m_reversedMessageOnChange(newValue: string, oldValue: string): void {
-    // tslint:disable-next-line
     console.log(`m_reversedMessageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`)
   }
 
   @Watch('m_post', { deep: true })
   m_postOnChange(newValue: Post, oldValue: Post): void {
-    // tslint:disable-next-line
     console.log('m_postOnChange: newValue:', newValue, ', oldValue:', oldValue)
   }
 
   @Watch('m_post.times')
   m_postTimesOnChange(newValue: string, oldValue: string): void {
-    // tslint:disable-next-line
     console.log('m_postTimesOnChange: newValue:', newValue, ', oldValue:', oldValue)
   }
 
