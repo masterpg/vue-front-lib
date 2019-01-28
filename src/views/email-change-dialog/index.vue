@@ -33,19 +33,19 @@ paper-dialog.sp {
       <div class="layout vertical">
         <!-- メールアドレスインプット -->
         <paper-input
-          ref="emailInput"
           v-show="m_currentStep === 'first'"
+          ref="emailInput"
           :value="m_inputEmail"
-          @input="
-            m_inputEmail = $event.target.value;
-            m_validateEmail();
-          "
           label="New email"
           type="email"
           required
           :readonly="m_currentStep !== 'first'"
           class="input"
           :class="{ pc: f_pc, tab: f_tab, sp: f_sp }"
+          @input="
+            m_inputEmail = $event.target.value;
+            m_validateEmail();
+          "
         ></paper-input>
         <!-- メールアドレス確認メッセージ -->
         <div v-show="m_currentStep === 'waitVerify'" class="comm-mt-20">
@@ -56,21 +56,21 @@ paper-dialog.sp {
       <!-- ボタンエリア -->
       <div class="layout horizontal center end-justified comm-mt-20">
         <!-- CANCELボタン -->
-        <paper-button v-show="m_currentStep === 'first'" @click="m_cancel();">Cancel</paper-button>
+        <paper-button v-show="m_currentStep === 'first'" @click="m_cancel()">Cancel</paper-button>
         <!-- NEXTボタン -->
-        <paper-button v-show="m_currentStep === 'first'" @click="m_changeEmail();" raised>Next</paper-button>
+        <paper-button v-show="m_currentStep === 'first'" raised @click="m_changeEmail()">Next</paper-button>
       </div>
     </div>
   </paper-dialog>
 </template>
 
 <script lang="ts">
-import '@polymer/paper-button/paper-button';
-import '@polymer/paper-input/paper-input';
+import '@polymer/paper-button/paper-button'
+import '@polymer/paper-input/paper-input'
 
-import { Component } from 'vue-property-decorator';
-import { BaseComponent } from '@/base/component';
-import { mixins } from 'vue-class-component';
+import { Component } from 'vue-property-decorator'
+import { BaseComponent } from '@/base/component'
+import { mixins } from 'vue-class-component'
 
 enum StepType {
   First = 'first',
@@ -85,26 +85,26 @@ export default class EmailChangeDialog extends mixins(BaseComponent) {
   //
   //----------------------------------------------------------------------
 
-  m_currentStep: StepType = StepType.First;
+  m_currentStep: StepType = StepType.First
 
-  m_title: string = '';
+  m_title: string = ''
 
-  m_inputEmail: string = '';
+  m_inputEmail: string = ''
 
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
 
-  get m_dialog(): { open: () => void; close: () => void; fit: () => void } {
-    return this.$refs.dialog as any;
+  get m_dialog(): { open: () => void, close: () => void, fit: () => void } {
+    return this.$refs.dialog as any
   }
 
   get m_emailInput(): HTMLElement & {
-    invalid: boolean;
-    errorMessage: string;
-    validate: () => boolean;
+    invalid: boolean,
+    errorMessage: string,
+    validate: () => boolean,
   } {
-    return this.$refs.emailInput as any;
+    return this.$refs.emailInput as any
   }
 
   //----------------------------------------------------------------------
@@ -114,20 +114,20 @@ export default class EmailChangeDialog extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
 
   open(): void {
-    this.m_clear();
-    this.m_currentStep = StepType.First;
-    this.m_title = 'Change email';
-    this.$nextTick(() => this.m_emailInput.focus());
-    this.m_dialog.open();
-    this.correctPosition();
+    this.m_clear()
+    this.m_currentStep = StepType.First
+    this.m_title = 'Change email'
+    this.$nextTick(() => this.m_emailInput.focus())
+    this.m_dialog.open()
+    this.correctPosition()
   }
 
   close(): void {
-    this.m_dialog.close();
+    this.m_dialog.close()
   }
 
   correctPosition(): void {
-    this.$nextTick(() => this.m_dialog.fit());
+    this.$nextTick(() => this.m_dialog.fit())
   }
 
   //----------------------------------------------------------------------
@@ -140,9 +140,9 @@ export default class EmailChangeDialog extends mixins(BaseComponent) {
    * 変数、入力項目などのクリアを行います。
    */
   m_clear(): void {
-    this.m_title = '';
-    this.m_inputEmail = '';
-    this.m_emailInput.invalid = false;
+    this.m_title = ''
+    this.m_inputEmail = ''
+    this.m_emailInput.invalid = false
   }
 
   /**
@@ -150,46 +150,46 @@ export default class EmailChangeDialog extends mixins(BaseComponent) {
    */
   m_validateEmail(): boolean {
     if (!this.m_inputEmail) {
-      this.m_emailInput.invalid = true;
-      this.m_emailInput.errorMessage = 'Email is a required.';
-      return false;
+      this.m_emailInput.invalid = true
+      this.m_emailInput.errorMessage = 'Email is a required.'
+      return false
     } else {
-      const validated = this.m_emailInput.validate();
+      const validated = this.m_emailInput.validate()
       if (!validated) {
-        this.m_emailInput.invalid = true;
-        this.m_emailInput.errorMessage = 'Email is invalid.';
-        return false;
+        this.m_emailInput.invalid = true
+        this.m_emailInput.errorMessage = 'Email is invalid.'
+        return false
       }
     }
-    this.m_emailInput.invalid = false;
-    return true;
+    this.m_emailInput.invalid = false
+    return true
   }
 
   /**
    * メールアドレスの変更を実行します。
    */
   async m_changeEmail(): Promise<void> {
-    if (!this.m_validateEmail()) return;
+    if (!this.m_validateEmail()) return
     // メールアドレスを変更
     // (変更前のメールアドレスに変更通知のメールが送られる)
-    await this.$stores.auth.updateEmail(this.m_inputEmail);
+    await this.$stores.auth.updateEmail(this.m_inputEmail)
     // 変更されたメールアドレスに確認メールを送信
-    await this.$stores.auth.sendEmailVerification('http://localhost:5000');
+    await this.$stores.auth.sendEmailVerification('http://localhost:5000')
     // メールアドレス確認待ち画面へ遷移
-    this.m_setupWaitVerify();
+    this.m_setupWaitVerify()
   }
 
   /**
    * メールアドレス確認待ち画面へ遷移するための設定を行います。
    */
   m_setupWaitVerify(): void {
-    this.m_currentStep = StepType.WaitVerify;
-    this.m_title = 'Check your email';
-    this.correctPosition();
+    this.m_currentStep = StepType.WaitVerify
+    this.m_title = 'Check your email'
+    this.correctPosition()
   }
 
   m_cancel(): void {
-    this.close();
+    this.close()
   }
 }
 </script>

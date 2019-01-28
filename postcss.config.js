@@ -8,4 +8,4 @@ module.exports = {
     'postcss-each': {},
     'postcss-for': {},
   },
-};
+}

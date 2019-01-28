@@ -1,4 +1,4 @@
-import { Product as APIProduct } from '@/apis';
+import { Product as APIProduct } from '@/apis'
 
 //----------------------------------------------------------------------
 //
@@ -7,61 +7,61 @@ import { Product as APIProduct } from '@/apis';
 //----------------------------------------------------------------------
 
 export interface Stores {
-  readonly auth: AuthStore;
+  readonly auth: AuthStore
 
-  readonly product: ProductStore;
+  readonly product: ProductStore
 
-  readonly cart: CartStore;
+  readonly cart: CartStore
 }
 
 export interface AuthStore {
-  readonly account: Account;
+  readonly account: Account
 
-  checkSingedIn(): Promise<void>;
+  checkSingedIn(): Promise<void>
 
-  signInWithGoogle(): Promise<void>;
+  signInWithGoogle(): Promise<void>
 
-  signInWithFacebook(): Promise<void>;
+  signInWithFacebook(): Promise<void>
 
-  signInWithEmailAndPassword(email: string, password: string): Promise<{ result: boolean; errorMessage: string }>;
+  signInWithEmailAndPassword(email: string, password: string): Promise<{ result: boolean, errorMessage: string }>
 
-  sendEmailVerification(continueURL: string): Promise<void>;
+  sendEmailVerification(continueURL: string): Promise<void>
 
-  sendPasswordResetEmail(email: string, continueURL: string): Promise<void>;
+  sendPasswordResetEmail(email: string, continueURL: string): Promise<void>
 
-  createUserWithEmailAndPassword(email: string, password, profile: { displayName: string; photoURL: string | null }): Promise<void>;
+  createUserWithEmailAndPassword(email: string, password, profile: { displayName: string, photoURL: string | null }): Promise<void>
 
-  signOut(): Promise<void>;
+  signOut(): Promise<void>
 
-  deleteAccount(): Promise<void>;
+  deleteAccount(): Promise<void>
 
-  updateEmail(newEmail: string): Promise<void>;
+  updateEmail(newEmail: string): Promise<void>
 
-  fetchSignInMethodsForEmail(email: string): Promise<AuthProviderType[]>;
+  fetchSignInMethodsForEmail(email: string): Promise<AuthProviderType[]>
 }
 
 export interface ProductStore {
-  readonly allProducts: Product[];
+  readonly allProducts: Product[]
 
-  getProductById(productId: string): Product | undefined | null;
+  getProductById(productId: string): Product | undefined | null
 
-  decrementProductInventory(productId: string): void;
+  decrementProductInventory(productId: string): void
 
-  getAllProducts(): Promise<void>;
+  getAllProducts(): Promise<void>
 }
 
 export interface CartStore {
-  readonly checkoutStatus: CheckoutStatus;
+  readonly checkoutStatus: CheckoutStatus
 
-  readonly cartItems: CartItem[];
+  readonly cartItems: CartItem[]
 
-  readonly cartTotalPrice: number;
+  readonly cartTotalPrice: number
 
-  getCartItemById(productId: string): CartItem | undefined | null;
+  getCartItemById(productId: string): CartItem | undefined | null
 
-  checkout(): Promise<void>;
+  checkout(): Promise<void>
 
-  addProductToCart(productId: string): void;
+  addProductToCart(productId: string): void
 }
 
 //----------------------------------------------------------------------
@@ -71,19 +71,19 @@ export interface CartStore {
 //----------------------------------------------------------------------
 
 export interface Account {
-  isSignedIn: boolean;
-  displayName: string;
-  photoURL: string;
-  emailVerified: boolean;
+  isSignedIn: boolean
+  displayName: string
+  photoURL: string
+  emailVerified: boolean
 }
 
-export type Product = APIProduct;
+export type Product = APIProduct
 
 export interface CartItem {
-  id: string;
-  title: string;
-  price: number;
-  quantity: number;
+  id: string
+  title: string
+  price: number
+  quantity: number
 }
 
 //----------------------------------------------------------------------

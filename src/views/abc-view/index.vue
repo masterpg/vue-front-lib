@@ -64,20 +64,20 @@
 </template>
 
 <script lang="ts">
-import '@polymer/paper-button/paper-button';
-import '@polymer/paper-card/paper-card';
-import '@polymer/paper-input/paper-input';
+import '@polymer/paper-button/paper-button'
+import '@polymer/paper-card/paper-card'
+import '@polymer/paper-input/paper-input'
 
-import CustomCheckbox from '@/views/abc-view/custom-checkbox.vue';
-import CustomInput from '@/views/abc-view/custom-input.vue';
-import GreetMessage from '@/views/abc-view/greet-message.vue';
-import { BaseComponent } from '@/base/component';
-import { Component, Prop, Watch } from 'vue-property-decorator';
-import { mixins } from 'vue-class-component';
+import CustomCheckbox from '@/views/abc-view/custom-checkbox.vue'
+import CustomInput from '@/views/abc-view/custom-input.vue'
+import GreetMessage from '@/views/abc-view/greet-message.vue'
+import { BaseComponent } from '@/base/component'
+import { Component, Prop, Watch } from 'vue-property-decorator'
+import { mixins } from 'vue-class-component'
 
 interface Post {
-  message: string;
-  times: number;
+  message: string
+  times: number
 }
 
 @Component({
@@ -95,10 +95,10 @@ export default class AbcView extends mixins(BaseComponent) {
   // propの初期化は@Propのdefaultで行う
 
   @Prop({ default: 'prop value A' })
-  propA: string;
+  propA: string
 
   @Prop({ default: 'prop value B' })
-  propB: string;
+  propB: string
 
   //--------------------------------------------------
   //  data
@@ -106,19 +106,19 @@ export default class AbcView extends mixins(BaseComponent) {
 
   // dataは初期化が必要！
 
-  m_message: string = '';
+  m_message: string = ''
 
-  m_customInputValue: string = '';
+  m_customInputValue: string = ''
 
-  m_customChecked: boolean = false;
+  m_customChecked: boolean = false
 
   // propの値を初期化に利用できる
-  m_customPropA: string = 'custom ' + this.propA;
+  m_customPropA: string = 'custom ' + this.propA
 
   m_post: Post = {
     message: '',
     times: 0,
-  };
+  }
 
   //--------------------------------------------------
   //  computed
@@ -128,14 +128,14 @@ export default class AbcView extends mixins(BaseComponent) {
     return this.m_message
       .split('')
       .reverse()
-      .join('');
+      .join('')
   }
 
   get m_doubleReversedMessage() {
     return this.m_reversedMessage
       .split('')
       .reverse()
-      .join('');
+      .join('')
   }
 
   //--------------------------------------------------
@@ -145,25 +145,25 @@ export default class AbcView extends mixins(BaseComponent) {
   @Watch('m_message')
   m_messageOnChange(newValue: string, oldValue: string): void {
     // tslint:disable-next-line
-    console.log(`m_messageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
+    console.log(`m_messageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`)
   }
 
   @Watch('m_reversedMessage')
   m_reversedMessageOnChange(newValue: string, oldValue: string): void {
     // tslint:disable-next-line
-    console.log(`m_reversedMessageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`);
+    console.log(`m_reversedMessageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`)
   }
 
   @Watch('m_post', { deep: true })
   m_postOnChange(newValue: Post, oldValue: Post): void {
     // tslint:disable-next-line
-    console.log('m_postOnChange: newValue:', newValue, ', oldValue:', oldValue);
+    console.log('m_postOnChange: newValue:', newValue, ', oldValue:', oldValue)
   }
 
   @Watch('m_post.times')
   m_postTimesOnChange(newValue: string, oldValue: string): void {
     // tslint:disable-next-line
-    console.log('m_postTimesOnChange: newValue:', newValue, ', oldValue:', oldValue);
+    console.log('m_postTimesOnChange: newValue:', newValue, ', oldValue:', oldValue)
   }
 
   //--------------------------------------------------
@@ -171,7 +171,7 @@ export default class AbcView extends mixins(BaseComponent) {
   //--------------------------------------------------
 
   mounted() {
-    this.m_message = 'mounted';
+    this.m_message = 'mounted'
   }
 
   //--------------------------------------------------
@@ -179,11 +179,11 @@ export default class AbcView extends mixins(BaseComponent) {
   //--------------------------------------------------
 
   async m_sleep(ms: number): Promise<string> {
-    return new Promise<string>((resolve) => {
+    return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(`I slept for ${ms} ms.`);
-      }, ms);
-    });
+        resolve(`I slept for ${ms} ms.`)
+      }, ms)
+    }) as Promise<string>
   }
 
   //--------------------------------------------------
@@ -191,16 +191,16 @@ export default class AbcView extends mixins(BaseComponent) {
   //--------------------------------------------------
 
   m_greetButtonOnClick() {
-    this.m_greetMessage.greet();
+    this.m_greetMessage.greet()
   }
 
   m_postButtonOnClick() {
-    this.m_post.message = this.m_message;
-    this.m_post.times++;
+    this.m_post.message = this.m_message
+    this.m_post.times++
   }
 
   async m_sleepButtonOnClick() {
-    alert(await this.m_sleep(2000));
+    alert(await this.m_sleep(2000))
   }
 
   //--------------------------------------------------
@@ -208,7 +208,7 @@ export default class AbcView extends mixins(BaseComponent) {
   //--------------------------------------------------
 
   get m_greetMessage(): GreetMessage {
-    return this.$refs.greetMessage as GreetMessage;
+    return this.$refs.greetMessage as GreetMessage
   }
 }
 </script>

@@ -1,7 +1,7 @@
-import Vue from 'vue';
-import { APIs } from '@/apis';
+import Vue from 'vue'
+import { APIs } from '@/apis'
 
-let db: firebase.firestore.Firestore;
+let db: firebase.firestore.Firestore
 
 export abstract class BaseStore<S> extends Vue {
   //----------------------------------------------------------------------
@@ -11,8 +11,8 @@ export abstract class BaseStore<S> extends Vue {
   //----------------------------------------------------------------------
 
   constructor() {
-    super();
-    this.m_initFirestore();
+    super()
+    this.m_initFirestore()
   }
 
   //----------------------------------------------------------------------
@@ -21,16 +21,16 @@ export abstract class BaseStore<S> extends Vue {
   //
   //----------------------------------------------------------------------
 
-  protected readonly $apis: APIs;
+  protected readonly $apis: APIs
 
-  m_state: S;
+  m_state: S
 
   get f_state(): S {
-    return this.m_state;
+    return this.m_state
   }
 
   get f_db(): firebase.firestore.Firestore {
-    return db;
+    return db
   }
 
   //----------------------------------------------------------------------
@@ -44,13 +44,13 @@ export abstract class BaseStore<S> extends Vue {
    */
   m_initFirestore(): void {
     // Firestoreのインスタンスが既に初期化されている場合、処理を抜ける
-    if (db) return;
+    if (db) return
 
     // Firestoreインスタンスを初期化
-    db = firebase.firestore();
+    db = firebase.firestore()
     // Firestoreで日付オブジェクトを扱うのに必要な設定
     // 現段階ではこの設定がないとエラーになるため必須
-    db.settings({ timestampsInSnapshots: true });
+    db.settings({ timestampsInSnapshots: true })
   }
 
   /**
@@ -58,6 +58,6 @@ export abstract class BaseStore<S> extends Vue {
    * @param state
    */
   f_initState(state: S): void {
-    this.m_state = state;
+    this.m_state = state
   }
 }

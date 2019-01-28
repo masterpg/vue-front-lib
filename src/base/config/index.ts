@@ -1,25 +1,25 @@
-import Vue from 'vue';
+import Vue from 'vue'
 
 export interface Config {
   api: {
-    protocol: string;
-    host: string;
-    port: number;
-  };
+    protocol: string,
+    host: string,
+    port: number,
+  }
 
   firebase: {
-    apiKey: string;
-    authDomain: string;
-    databaseURL?: string;
-    projectId?: string;
-    storageBucket?: string;
-    messagingSenderId?: string;
-  };
+    apiKey: string,
+    authDomain: string,
+    databaseURL?: string,
+    projectId?: string,
+    storageBucket?: string,
+    messagingSenderId?: string,
+  }
 }
 
 class ConfigImpl implements Config {
   constructor() {
-    firebase.initializeApp(this.firebase);
+    firebase.initializeApp(this.firebase)
   }
 
   readonly api = {
@@ -38,12 +38,12 @@ class ConfigImpl implements Config {
   };
 }
 
-export let config: Config;
+export let config: Config
 
 export function initConfig(): void {
-  config = new ConfigImpl();
+  config = new ConfigImpl()
   Object.defineProperty(Vue.prototype, '$config', {
     value: config,
     writable: false,
-  });
+  })
 }

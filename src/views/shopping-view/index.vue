@@ -39,7 +39,7 @@
         <div class="title-text">{{ $t('products') }}</div>
       </div>
       <hr style="width: 100%;" />
-      <div v-for="(product, index) in m_products" class="layout horizontal center product-item">
+      <div v-for="(product) in m_products" :key="product.id" class="layout horizontal center product-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
           <div class="detail">
@@ -48,7 +48,7 @@
           </div>
         </div>
         <div class="flex"></div>
-        <paper-icon-button icon="icons:add-box" @click="m_addProductToCart(product);"></paper-icon-button>
+        <paper-icon-button icon="icons:add-box" @click="m_addProductToCart(product)"></paper-icon-button>
       </div>
     </div>
 
@@ -58,7 +58,7 @@
         <div class="flex"></div>
       </div>
       <hr style="width: 100%;" />
-      <div v-for="(cartItem, index) in m_cartItems" class="layout horizontal center cart-item">
+      <div v-for="(cartItem) in m_cartItems" :key="cartItem.id" class="layout horizontal center cart-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ cartItem.title }}</div>
           <div class="detail">
@@ -68,21 +68,21 @@
       </div>
       <div class="layout horizontal center">
         <div class="flex error-text">{{ m_checkoutStatus.message }}</div>
-        <paper-button ref="checkoutButton" v-show="!m_cartIsEmpty" class="checkout-button" @click="m_checkout">{{ $t('checkout') }}</paper-button>
+        <paper-button v-show="!m_cartIsEmpty" ref="checkoutButton" class="checkout-button" @click="m_checkout">{{ $t('checkout') }}</paper-button>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import '@polymer/paper-button/paper-button';
-import '@polymer/paper-card/paper-card';
-import '@polymer/paper-icon-button/paper-icon-button';
+import '@polymer/paper-button/paper-button'
+import '@polymer/paper-card/paper-card'
+import '@polymer/paper-icon-button/paper-icon-button'
 
-import { BaseComponent } from '@/base/component';
-import { CartItem, CheckoutStatus, Product } from '@/stores';
-import { Component } from 'vue-property-decorator';
-import { mixins } from 'vue-class-component';
+import { BaseComponent } from '@/base/component'
+import { CartItem, CheckoutStatus, Product } from '@/stores'
+import { Component } from 'vue-property-decorator'
+import { mixins } from 'vue-class-component'
 
 @Component
 export default class ShoppingView extends mixins(BaseComponent) {
@@ -93,27 +93,27 @@ export default class ShoppingView extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
 
   get m_cartIsEmpty(): boolean {
-    return this.m_cartItems.length === 0;
+    return this.m_cartItems.length === 0
   }
 
   get m_products(): Product[] {
-    return this.$stores.product.allProducts;
+    return this.$stores.product.allProducts
   }
 
   get m_cartItems(): CartItem[] {
-    return this.$stores.cart.cartItems;
+    return this.$stores.cart.cartItems
   }
 
   get m_cartTotalPrice(): number {
-    return this.$stores.cart.cartTotalPrice;
+    return this.$stores.cart.cartTotalPrice
   }
 
-  get m_checkoutStatus(): { result: boolean; message: string } {
-    const result = this.$stores.cart.checkoutStatus === CheckoutStatus.None || this.$stores.cart.checkoutStatus === CheckoutStatus.Successful;
+  get m_checkoutStatus(): { result: boolean, message: string } {
+    const result = this.$stores.cart.checkoutStatus === CheckoutStatus.None || this.$stores.cart.checkoutStatus === CheckoutStatus.Successful
     return {
       result,
       message: result ? '' : 'Checkout failed.',
-    };
+    }
   }
 
   //--------------------------------------------------
@@ -121,7 +121,7 @@ export default class ShoppingView extends mixins(BaseComponent) {
   //--------------------------------------------------
 
   get m_checkoutButton(): HTMLElement | any {
-    return this.$refs.checkoutButton;
+    return this.$refs.checkoutButton
   }
 
   //----------------------------------------------------------------------
@@ -139,13 +139,13 @@ export default class ShoppingView extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
 
   m_addProductToCart(product: Product): void {
-    this.$stores.cart.addProductToCart(product.id);
+    this.$stores.cart.addProductToCart(product.id)
   }
 
   async m_checkout(): Promise<void> {
-    this.m_checkoutButton.disabled = true;
-    await this.$stores.cart.checkout();
-    this.m_checkoutButton.disabled = false;
+    this.m_checkoutButton.disabled = true
+    await this.$stores.cart.checkout()
+    this.m_checkoutButton.disabled = false
   }
 }
 </script>

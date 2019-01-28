@@ -39,8 +39,8 @@
         :name="name"
         :required="required"
         :readonly="readonly"
-        @input="m_textInputOnChange($event);"
         class="mdl-textfield__input textfield-input"
+        @input="m_textInputOnChange($event)"
       />
     </div>
     <p class="textfield-error">{{ m_errorMessage }}</p>
@@ -48,9 +48,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from 'vue-property-decorator';
-import { BaseComponent } from '@/base/component';
-import { mixins } from 'vue-class-component';
+import { Component, Prop } from 'vue-property-decorator'
+import { BaseComponent } from '@/base/component'
+import { mixins } from 'vue-class-component'
 
 @Component
 export default class SignInInput extends mixins(BaseComponent) {
@@ -65,11 +65,11 @@ export default class SignInInput extends mixins(BaseComponent) {
   //--------------------------------------------------
 
   get m_textInputWrapper(): HTMLDivElement {
-    return this.$refs.textInputWrapper as any;
+    return this.$refs.textInputWrapper as any
   }
 
   get m_textInput(): HTMLInputElement {
-    return this.$refs.textInput as any;
+    return this.$refs.textInput as any
   }
 
   //----------------------------------------------------------------------
@@ -79,35 +79,35 @@ export default class SignInInput extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
 
   @Prop({ default: '' })
-  value: string;
+  value: string
 
   @Prop({ default: '' })
-  type: 'text' | 'email' | 'password';
+  type: 'text' | 'email' | 'password'
 
   @Prop({ default: '' })
-  name: string;
+  name: string
 
   @Prop({ default: '' })
-  itemName: string;
+  itemName: string
 
   @Prop({ type: Boolean, default: false })
-  required: boolean;
+  required: boolean
 
   @Prop({ type: Boolean, default: false })
-  readonly: boolean;
+  readonly: boolean
 
-  m_errorMessage: string = '';
+  m_errorMessage: string = ''
 
   get errorMessage(): string {
-    return this.m_errorMessage;
+    return this.m_errorMessage
   }
 
   set errorMessage(value: string) {
-    this.m_errorMessage = value;
+    this.m_errorMessage = value
     if (value) {
-      this.m_textInputWrapper.classList.add('is-invalid');
+      this.m_textInputWrapper.classList.add('is-invalid')
     } else {
-      this.m_textInputWrapper.classList.remove('is-invalid');
+      this.m_textInputWrapper.classList.remove('is-invalid')
     }
   }
 
@@ -119,30 +119,30 @@ export default class SignInInput extends mixins(BaseComponent) {
 
   init(): void {
     if (this.m_textInput.value || this.value) {
-      this.m_textInput.value = '';
-      this.$emit('input', '');
+      this.m_textInput.value = ''
+      this.$emit('input', '')
     }
-    this.m_errorMessage = '';
-    this.m_textInputWrapper.classList.remove('is-invalid');
+    this.m_errorMessage = ''
+    this.m_textInputWrapper.classList.remove('is-invalid')
   }
 
   focus(): void {
-    this.$nextTick(() => this.m_textInput.focus());
+    this.$nextTick(() => this.m_textInput.focus())
   }
 
   validate(): boolean {
-    const result = this.m_textInput.checkValidity();
+    const result = this.m_textInput.checkValidity()
     if (!result) {
       if (this.m_textInput.value) {
-        this.m_errorMessage = `${this.itemName} is a invalid.`;
+        this.m_errorMessage = `${this.itemName} is a invalid.`
       } else {
-        this.m_errorMessage = `${this.itemName} is a required.`;
+        this.m_errorMessage = `${this.itemName} is a required.`
       }
     } else {
-      this.m_errorMessage = '';
-      this.m_textInputWrapper.classList.remove('is-invalid');
+      this.m_errorMessage = ''
+      this.m_textInputWrapper.classList.remove('is-invalid')
     }
-    return result;
+    return result
   }
 
   //----------------------------------------------------------------------
@@ -152,9 +152,9 @@ export default class SignInInput extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
 
   m_textInputOnChange(e: Event) {
-    this.errorMessage = '';
-    const value = (e.target as any).value;
-    this.$emit('input', value);
+    this.errorMessage = ''
+    const value = (e.target as any).value
+    this.$emit('input', value)
   }
 }
 </script>

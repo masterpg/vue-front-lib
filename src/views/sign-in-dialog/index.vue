@@ -84,12 +84,12 @@ paper-dialog.sp {
 </template>
 
 <script lang="ts">
-import '@polymer/paper-dialog/paper-dialog';
+import '@polymer/paper-dialog/paper-dialog'
 
-import EmailSignInView from '@/views/sign-in-dialog/email-sign-in-view.vue';
-import { Component } from 'vue-property-decorator';
-import { BaseComponent } from '@/base/component';
-import { mixins } from 'vue-class-component';
+import EmailSignInView from '@/views/sign-in-dialog/email-sign-in-view.vue'
+import { Component } from 'vue-property-decorator'
+import { BaseComponent } from '@/base/component'
+import { mixins } from 'vue-class-component'
 
 @Component({
   components: {
@@ -103,18 +103,18 @@ export default class SignInDialog extends mixins(BaseComponent) {
   //
   //----------------------------------------------------------------------
 
-  m_state: 'list' | 'email' = 'list';
+  m_state: 'list' | 'email' = 'list'
 
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
 
-  get m_dialog(): { open: () => void; close: () => void; fit: () => void } {
-    return this.$refs.dialog as any;
+  get m_dialog(): { open: () => void, close: () => void, fit: () => void } {
+    return this.$refs.dialog as any
   }
 
   get m_emailSignInView(): EmailSignInView {
-    return this.$refs.emailSignInView as any;
+    return this.$refs.emailSignInView as any
   }
 
   //----------------------------------------------------------------------
@@ -124,17 +124,17 @@ export default class SignInDialog extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
 
   open(): void {
-    this.m_state = 'list';
-    this.m_dialog.open();
-    this.correctPosition();
+    this.m_state = 'list'
+    this.m_dialog.open()
+    this.correctPosition()
   }
 
   close(): void {
-    this.m_dialog.close();
+    this.m_dialog.close()
   }
 
   correctPosition(): void {
-    this.$nextTick(() => this.m_dialog.fit());
+    this.$nextTick(() => this.m_dialog.fit())
   }
 
   //----------------------------------------------------------------------
@@ -144,16 +144,16 @@ export default class SignInDialog extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
 
   async m_signInWithGoogle() {
-    await this.$stores.auth.signInWithGoogle();
+    await this.$stores.auth.signInWithGoogle()
   }
 
   async m_signInWithFacebook() {
-    await this.$stores.auth.signInWithFacebook();
+    await this.$stores.auth.signInWithFacebook()
   }
 
   async m_signInWithEmail() {
-    this.m_state = 'email';
-    this.m_emailSignInView.init(this);
+    this.m_state = 'email'
+    this.m_emailSignInView.init(this)
   }
 }
 </script>
