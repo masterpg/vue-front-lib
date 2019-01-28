@@ -74,7 +74,7 @@ paper-dialog.sp {
           <div class="label">Sign in with Email</div>
         </div>
 
-        <div class="layout horizontal center end-justified comm-mt-20"><paper-button @click="close();">Cancel</paper-button></div>
+        <div class="layout horizontal center end-justified comm-mt-20"><paper-button @click="close()">Cancel</paper-button></div>
       </div>
 
       <!-- email -->
