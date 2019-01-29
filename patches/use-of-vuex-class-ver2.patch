@@ -1,32 +1,48 @@
-Index: src/store/index.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
+Index: src/store/counter-module/index.ts
 ===================================================================
---- src/store/index.ts	(date 1548694261000)
-+++ src/store/index.ts	(date 1548694261000)
-@@ -0,0 +1,134 @@
+--- src/store/counter-module/index.ts	(revision Shelved Version)
++++ src/store/counter-module/index.ts	(revision Shelved Version)
+@@ -0,0 +1,28 @@
++import { GetterTree, MutationTree, ActionTree } from 'vuex'
++import { CounterModule, CounterState, CounterTypes, RootState } from '../types'
++
++export class CounterModuleImpl implements CounterModule {
++  namespaced = true
++
++  state: CounterState = {
++    counter: 1,
++  }
++
++  getters: GetterTree<CounterState, RootState> = {
++    [CounterTypes.CURRENT](state: CounterState): number {
++      return state.counter
++    },
++  }
++
++  mutations: MutationTree<CounterState> = {
++    [CounterTypes.INCREMENT](state: CounterState): void {
++      state.counter++
++    },
++  }
++
++  actions: ActionTree<CounterState, RootState> = {}
++}
++
++export function newCounterModule() {
++  return new CounterModuleImpl()
++}
+Index: src/store/app-store.ts
+===================================================================
+--- src/store/app-store.ts	(revision Shelved Version)
++++ src/store/app-store.ts	(revision Shelved Version)
+@@ -0,0 +1,121 @@
 +import Vue from 'vue'
-+import Vuex, { Store, StoreOptions } from 'vuex'
++import { CartItem, CartTypes, CheckoutStatus, CounterTypes, Product, ProductTypes, RootState } from '@/store/types'
 +import { Component } from 'vue-property-decorator'
-+
-+import { CartItem, CartTypes, CheckoutStatus, CounterTypes, Product, ProductTypes, RootState } from './types'
-+import { newCartModule } from './cart-module'
-+import { newCounterModule } from './counter-module'
-+import { newProductModule } from './product-module'
-+
-+Vue.use(Vuex)
-+
-+export const store = new Store<RootState>({
-+  modules: {
-+    [ProductTypes.PATH]: newProductModule(),
-+    [CartTypes.PATH]: newCartModule(),
-+    [CounterTypes.PATH]: newCounterModule(),
-+  },
-+} as StoreOptions<RootState>)
++import { Store } from 'vuex'
 +
 +@Component
-+class AppStore extends Vue {
++export class AppStore extends Vue {
 +  m_store: Store<RootState>
 +
 +  setStore(store: Store<RootState>) {
@@ -136,18 +152,627 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  }
 +}
 +
-+export let appStore = new AppStore()
-+appStore.setStore(store)
-+
++export function newAppStore(store: Store<RootState>) {
++  const result = new AppStore()
++  result.setStore(store)
++  return result
++}
+Index: src/store/base.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/store/base.ts	(revision Local Version)
++++ src/store/base.ts	(revision Local Version)
+@@ -1,32 +0,0 @@
+-import Vue from 'vue'
+-import { APIs } from '@/apis'
+-
+-export abstract class BaseModule<S> extends Vue {
+-  //----------------------------------------------------------------------
+-  //
+-  //  Variables
+-  //
+-  //----------------------------------------------------------------------
+-
+-  protected readonly $apis: APIs
+-
+-  m_state: S
+-
+-  get f_state(): S {
+-    return this.m_state
+-  }
+-
+-  //----------------------------------------------------------------------
+-  //
+-  //  Internal methods
+-  //
+-  //----------------------------------------------------------------------
+-
+-  /**
+-   * Moduleにひも付くStateを初期化します。
+-   * @param state
+-   */
+-  f_initState(state: S): void {
+-    this.m_state = state
+-  }
+-}
+Index: test/api/shop-api/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- test/api/shop-api/index.ts	(revision Local Version)
++++ test/api/shop-api/index.ts	(revision Local Version)
+@@ -1,9 +0,0 @@
+-import _shopAPI from '@/apis/shop-api'
+-
+-const assert = chai.assert
+-
+-suite('api/shop-api', () => {
+-  test('サンプルテスト', () => {
+-    assert.equal(1, 1)
+-  })
+-})
+Index: test/store/cart-module/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- test/store/cart-module/index.ts	(revision Local Version)
++++ test/store/cart-module/index.ts	(revision Local Version)
+@@ -1,109 +0,0 @@
+-import * as td from 'testdouble'
+-import { newProductModule } from '@/store/product-module'
+-import { CartState, CartModuleImpl, newCartModule } from '@/store/cart-module'
+-import { CheckoutStatus } from '@/store'
+-import { Product as APIProduct } from '@/apis'
+-import { TestModule } from '../../types'
+-
+-const assert = chai.assert
+-
+-suite('store/cart-module', () => {
+-  const productModule = newProductModule()
+-  const cartModule = newCartModule({ product: productModule }) as CartModuleImpl & TestModule<CartState>
+-  const shopAPI = cartModule.$apis.shop
+-
+-  const PRODUCTS: APIProduct[] = [
+-    { id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 2 },
+-    { id: '2', title: 'H&M T-Shirt White', price: 10.99, inventory: 10 },
+-    { id: '3', title: 'Charli XCX - Sucker CD', price: 19.99, inventory: 5 },
+-  ]
+-
+-  setup(() => {
+-    cartModule.f_initState({
+-      items: [],
+-      checkoutStatus: CheckoutStatus.None,
+-    })
+-  })
+-
+-  teardown(() => {
+-    cartModule.f_initState({
+-      items: [],
+-      checkoutStatus: CheckoutStatus.None,
+-    })
+-    td.reset()
+-  })
+-
+-  test('getCartItemById() - 一般ケース', () => {
+-    cartModule.f_state.items = [ { id: '1', quantity: 1 } ]
+-    const product = PRODUCTS[0]
+-    td.replace(cartModule, 'm_getProductById')
+-    td.when(cartModule.m_getProductById(product.id)).thenReturn(product)
+-
+-    const actual = cartModule.getCartItemById(product.id)
+-    assert.deepEqual(actual, {
+-      id: product.id,
+-      title: product.title,
+-      price: product.price,
+-      quantity: 1,
+-    })
+-  })
+-
+-  test('getCartItemById() - 存在しない商品IDを指定した場合', () => {
+-    assert.throws(() => cartModule.getCartItemById('9876'), Error, 'A product that matches the specified productId "9876" was not found.')
+-  })
+-
+-  test('addProductToCart() - 一般ケース', () => {
+-    const product = PRODUCTS[1]
+-    // 【準備】
+-    td.replace(cartModule, 'm_getProductById')
+-    td.when(cartModule.m_getProductById(product.id)).thenReturn(product)
+-
+-    const decrementProductInventory = td.replace(productModule, 'decrementProductInventory')
+-
+-    // 【実行】
+-    // `addProductToCart()`を2回実行
+-    cartModule.addProductToCart(product.id)
+-    cartModule.addProductToCart(product.id)
+-
+-    // 【検証】
+-    assert.equal(cartModule.f_state.checkoutStatus, CheckoutStatus.None)
+-    // カートに追加された商品とその数量を検証
+-    const cartItem = cartModule.getCartItemById(product.id)
+-    assert.equal(cartItem!.id, product.id)
+-    assert.equal(cartItem!.quantity, 2)
+-
+-    // `ProductModule#decrementProductInventory()`の呼び出し回数と渡された引数を検証
+-    const decrementProductInventoryExplain = td.explain(decrementProductInventory)
+-    assert.equal(decrementProductInventoryExplain.callCount, 2)
+-    assert.equal(decrementProductInventoryExplain.calls[0].args[0], product.id)
+-    assert.equal(decrementProductInventoryExplain.calls[1].args[0], product.id)
+-  })
+-
+-  test('checkout() - 一般ケース', async () => {
+-    const CART_ITEMS = [ { id: '1', quantity: 1 }, { id: '2', quantity: 1 } ]
+-    cartModule.f_state.items = CART_ITEMS
+-    const buyProducts = td.replace(shopAPI, 'buyProducts')
+-    td.when(shopAPI.buyProducts(CART_ITEMS)).thenResolve()
+-
+-    await cartModule.checkout()
+-    assert.equal(cartModule.f_state.checkoutStatus, CheckoutStatus.Successful)
+-    assert.deepEqual(cartModule.f_state.items, [])
+-
+-    // `ShopAPI#buyProducts()`の呼び出し回数と渡された引数を検証
+-    const buyProductsExplain = td.explain(buyProducts)
+-    assert.equal(buyProductsExplain.callCount, 1)
+-    assert.deepEqual(buyProductsExplain.calls[0].args[0], CART_ITEMS)
+-  })
+-
+-  test('checkout() - エラーケース', async () => {
+-    const CART_ITEMS = [ { id: '1', quantity: 1 }, { id: '2', quantity: 1 } ]
+-    cartModule.f_state.items = CART_ITEMS
+-
+-    const buyProducts = td.replace(shopAPI, 'buyProducts')
+-    td.when(shopAPI.buyProducts(CART_ITEMS)).thenReject(new Error())
+-
+-    await cartModule.checkout()
+-    assert.equal(cartModule.f_state.checkoutStatus, CheckoutStatus.Failed)
+-    assert.deepEqual(cartModule.f_state.items, CART_ITEMS)
+-  })
+-})
+Index: test/store/product-module/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- test/store/product-module/index.ts	(revision Local Version)
++++ test/store/product-module/index.ts	(revision Local Version)
+@@ -1,64 +0,0 @@
+-import * as td from 'testdouble'
+-import { Product as APIProduct } from '@/apis'
+-import { Product } from '@/store'
+-import { TestModule } from '../../types'
+-import { newProductModule, ProductState, ProductModuleImpl } from '@/store/product-module'
+-
+-const assert = chai.assert
+-
+-suite('store/product-module', () => {
+-  const productModule = newProductModule() as ProductModuleImpl & TestModule<ProductState>
+-  const shopAPI = productModule.$apis.shop
+-
+-  const API_PRODUCTS: APIProduct[] = [
+-    { id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 2 },
+-    { id: '2', title: 'H&M T-Shirt White', price: 10.99, inventory: 10 },
+-    { id: '3', title: 'Charli XCX - Sucker CD', price: 19.99, inventory: 5 },
+-  ]
+-
+-  setup(() => {
+-    productModule.f_initState({
+-      all: API_PRODUCTS,
+-    })
+-  })
+-
+-  teardown(() => {
+-    td.reset()
+-  })
+-
+-  test('getProductById() - 取得できるパターン', () => {
+-    const stateProduct = productModule.m_getStateProductById('1') as Product
+-    const actual = productModule.getProductById(stateProduct.id)
+-    assert.deepEqual(actual, stateProduct)
+-    // actualとproductが同一オブジェクトでないことを検証
+-    // (つまりコピーであることを検証)
+-    assert.notEqual(actual, stateProduct)
+-  })
+-
+-  test('getProductById() - 取得できないパターン', () => {
+-    const actual = productModule.getProductById('9876')
+-    assert.isUndefined(actual)
+-  })
+-
+-  test('decrementProductInventory() - 一般ケース', () => {
+-    const stateProduct = productModule.m_getStateProductById('1') as Product
+-    const inventoryBk = stateProduct.inventory
+-    productModule.decrementProductInventory(stateProduct.id)
+-    assert.equal(stateProduct.inventory, inventoryBk - 1)
+-  })
+-
+-  test('decrementProductInventory() - 存在しない商品IDを指定した場合', () => {
+-    productModule.decrementProductInventory('9876')
+-    // 何も問題は起きない
+-    assert(true)
+-  })
+-
+-  test('getAllProducts()', async () => {
+-    const NEW_API_PRODUCTS = [ { id: '1', title: 'product1', price: 101, inventory: 1 }, { id: '2', title: 'product2', price: 102, inventory: 2 } ]
+-    td.replace(shopAPI, 'getProducts')
+-    td.when(shopAPI.getProducts()).thenResolve(NEW_API_PRODUCTS)
+-
+-    await productModule.getAllProducts()
+-    assert.deepEqual(productModule.allProducts, NEW_API_PRODUCTS)
+-  })
+-})
+Index: test/types/index.d.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- test/types/index.d.ts	(revision Local Version)
++++ test/types/index.d.ts	(revision Local Version)
+@@ -1,7 +0,0 @@
+-import { APIs } from '@/apis'
+-import { AppStore } from '@/store'
+-
+-declare interface TestModule<S> {
+-  $apis: APIs
+-  $appStore: AppStore
+-}
+Index: test/test.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- test/test.html	(revision Local Version)
++++ test/test.html	(revision Local Version)
+@@ -1,19 +0,0 @@
+-<!DOCTYPE html>
+-<html lang="en">
+-  <head>
+-    <meta charset="utf-8" />
+-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+-    <base href="<%= BASE_URL %>" />
+-    <link rel="icon" href="<%= BASE_URL %>favicon.ico" />
+-    <title><%= htmlWebpackPlugin.options.title %></title>
+-
+-    <link href="node_modules/mocha/mocha.css" rel="stylesheet" />
+-    <script src="node_modules/mocha/mocha.js"></script>
+-    <script src="node_modules/chai/chai.js"></script>
+-  </head>
+-  <body>
+-    <div id="mocha"></div>
+-    <!-- built files will be auto injected -->
+-  </body>
+-</html>
+Index: test/test.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- test/test.ts	(revision Local Version)
++++ test/test.ts	(revision Local Version)
+@@ -1,17 +0,0 @@
+-(async () => {
+-  mocha.setup({ ui: 'tdd' })
+-
+-  const utils = await import('../src/base/utils')
+-  const config = await import('../src/base/config')
+-  const apis = await import('../src/apis')
+-  const store = await import('../src/store')
+-
+-  utils.initUtils()
+-  config.initConfig()
+-  apis.initAPI()
+-  store.initStore()
+-
+-  await Promise.all([ import('./api/shop-api'), import('./store/cart-module'), import('./store/product-module') ])
+-
+-  mocha.run()
+-})()
+Index: src/store/product-module/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/store/product-module/index.ts	(revision Local Version)
++++ src/store/product-module/index.ts	(revision Shelved Version)
+@@ -1,80 +1,48 @@
+-import { BaseModule } from '@/store/base'
+-import { Component } from 'vue-property-decorator'
+-import { NoCache } from '@/base/component'
+-import { Product, ProductModule } from '@/store/types'
++import { GetterTree, MutationTree, ActionTree } from 'vuex'
++import { ProductModule, ProductState, RootState, Product, ProductTypes } from '../types'
++import { apis } from '@/apis'
+ 
+-export interface ProductState {
+-  all: Product[]
+-}
++export class ProductModuleImpl implements ProductModule {
++  namespaced = true
+ 
+-@Component
+-export class ProductModuleImpl extends BaseModule<ProductState> implements ProductModule {
+-  //----------------------------------------------------------------------
+-  //
+-  //  Constructors
+-  //
+-  //----------------------------------------------------------------------
+-
+-  constructor() {
+-    super()
+-    this.f_initState({
+-      all: [],
+-    })
++  state: ProductState = {
++    all: [],
+   }
+ 
+-  //----------------------------------------------------------------------
+-  //
+-  //  Properties
+-  //
+-  //----------------------------------------------------------------------
++  getters: GetterTree<ProductState, RootState> = {
++    [ProductTypes.ALL_PRODUCTS](state): Product[] {
++      return state.all
++    },
+ 
+-  @NoCache
+-  get allProducts(): Product[] {
+-    return this.$utils.cloneDeep(this.f_state.all)
+-  }
+-
+-  //----------------------------------------------------------------------
+-  //
+-  //  Lifecycle hooks
+-  //
+-  //----------------------------------------------------------------------
+-
+-  created() {}
+-
+-  //----------------------------------------------------------------------
+-  //
+-  //  Methods
+-  //
+-  //----------------------------------------------------------------------
+-
+-  getProductById(productId: string): Product | undefined {
+-    const stateProduct = this.m_getStateProductById(productId)
+-    return this.$utils.cloneDeep(stateProduct)
++    [ProductTypes.GET_PRODUCT_BY_ID](state) {
++      return (productId: string) => {
++        const product = state.all.find((item) => item.id === productId)
++        return product
++      }
++    },
+   }
+ 
+-  decrementProductInventory(productId: string): void {
+-    const stateProduct = this.m_getStateProductById(productId)
+-    if (stateProduct) {
+-      stateProduct.inventory--
+-    }
+-  }
++  mutations: MutationTree<ProductState> = {
++    [ProductTypes.SET_PRODUCTS](state, products: Product[]): void {
++      state.all = products
++    },
+ 
+-  async getAllProducts(): Promise<void> {
+-    const products = await this.$apis.shop.getProducts()
+-    this.f_state.all = products
++    [ProductTypes.DECREMENT_PRODUCT_INVENTORY](state, productId: string): void {
++      const product = state.all.find((item) => item.id === productId)
++      if (product) {
++        product.inventory--
++      }
++    },
+   }
+-
+-  //----------------------------------------------------------------------
+-  //
+-  //  Internal methods
+-  //
+-  //----------------------------------------------------------------------
+ 
+-  m_getStateProductById(productId: string): Product | undefined {
+-    return this.f_state.all.find((item) => item.id === productId)
++  actions: ActionTree<ProductState, RootState> = {
++    async [ProductTypes.GET_ALL_PRODUCTS](context): Promise<void> {
++      const products = await apis.shop.getProducts()
++      context.commit(ProductTypes.SET_PRODUCTS, products)
++    },
+   }
+ }
+ 
+-export function newProductModule(): ProductModule {
++export function newProductModule() {
+   return new ProductModuleImpl()
+ }
+Index: src/views/shopping-view/index.vue
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/views/shopping-view/index.vue	(revision Local Version)
++++ src/views/shopping-view/index.vue	(revision Shelved Version)
+@@ -117,8 +117,8 @@
+   //
+   //----------------------------------------------------------------------
+ 
+-  m_addProductToCart(product: Product): void {
+-    this.$appStore.cart.addProductToCart(product.id)
++  async m_addProductToCart(product: Product): Promise<void> {
++    await this.$appStore.cart.addProductToCart(product.id)
+   }
+ 
+   async m_checkout(): Promise<void> {
+Index: package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- package.json	(revision Local Version)
++++ package.json	(revision Shelved Version)
+@@ -36,7 +36,8 @@
+     "vue-class-component": "^6.3.2",
+     "vue-i18n": "^8.4.0",
+     "vue-property-decorator": "^7.2.0",
+-    "vue-router": "^3.0.2"
++    "vue-router": "^3.0.2",
++    "vuex": "^3.1.0"
+   },
+   "devDependencies": {
+     "@kazupon/vue-i18n-loader": "^0.3.0",
+@@ -48,9 +49,9 @@
+     "@vue/cli-plugin-pwa": "^3.2.0",
+     "@vue/cli-plugin-typescript": "^3.2.0",
+     "@vue/cli-service": "^3.2.0",
+-    "browser-sync": "^2.26.3",
+     "@vue/eslint-config-prettier": "^4.0.1",
+     "@vue/eslint-config-typescript": "^3.2.1",
++    "browser-sync": "^2.26.3",
+     "chai": "^4.2.0",
+     "copy-webpack-plugin": "^4.6.0",
+     "eslint": "^5.12.1",
+Index: src/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/index.ts	(revision Local Version)
++++ src/index.ts	(revision Shelved Version)
+@@ -9,13 +9,13 @@
+ import { initAPI } from '@/apis'
+ import { initConfig } from '@/base/config'
+ import { initServiceWorker } from '@/base/service-worker'
+-import { initStore } from '@/store'
++import { initStore, store } from '@/store'
+ import { initUtils } from '@/base/utils'
+ import { router } from '@/base/router'
+ 
+ // TODO JetBrainsIDE使用時の開発補助コード
+-// import '@/views/abc-view/index.vue'
+-// import '@/views/shopping-view/index.vue'
++import '@/views/abc-view/index.vue'
++import '@/views/shopping-view/index.vue'
+ 
+ (async () => {
+   initUtils()
+@@ -32,5 +32,6 @@
+     router,
+     render: (h) => h(AppView),
+     i18n,
++    store,
+   })
+ })()
+Index: src/store/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/store/index.ts	(revision Local Version)
++++ src/store/index.ts	(revision Shelved Version)
+@@ -1,40 +1,31 @@
+ import Vue from 'vue'
+-import { newCartModule } from '@/store/cart-module'
+-import { newProductModule } from '@/store/product-module'
+-import { AppStore, CartModule, ProductModule } from '@/store/types'
+-import { Component } from 'vue-property-decorator'
+-
+-const debug = process.env.NODE_ENV !== 'production'
++import Vuex, { Store, StoreOptions } from 'vuex'
+ 
+-@Component
+-class AppStoreImpl extends Vue implements AppStore {
+-  constructor() {
+-    super()
+-    this.m_product = newProductModule()
+-    this.m_cart = newCartModule({ product: this.product })
+-  }
++import { CartTypes, CounterTypes, ProductTypes, RootState } from './types'
++import { newCartModule } from './cart-module'
++import { newCounterModule } from './counter-module'
++import { newProductModule } from './product-module'
++import { AppStore, newAppStore } from '@/store/app-store'
+ 
+-  m_product: ProductModule
++Vue.use(Vuex)
+ 
+-  get product(): ProductModule {
+-    return this.m_product
+-  }
+-
+-  m_cart: CartModule
+-
+-  get cart(): CartModule {
+-    return this.m_cart
+-  }
+-}
++export const store = new Store<RootState>({
++  modules: {
++    [ProductTypes.PATH]: newProductModule(),
++    [CartTypes.PATH]: newCartModule(),
++    [CounterTypes.PATH]: newCounterModule(),
++  },
++} as StoreOptions<RootState>)
+ 
+ export let appStore: AppStore
+ 
+ export function initStore(): void {
+-  appStore = new AppStoreImpl()
++  appStore = newAppStore(store)
+   Object.defineProperty(Vue.prototype, '$appStore', {
+     value: appStore,
+     writable: false,
+   })
+ }
+ 
+-export * from '@/store/types'
 +export * from './types'
++export { AppStore }
+Index: src/views/abc-view/index.vue
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/views/abc-view/index.vue	(revision Local Version)
++++ src/views/abc-view/index.vue	(revision Shelved Version)
+@@ -58,7 +58,10 @@
+           <span class="title">checked: </span><span class="value">{{ m_customChecked }}</span>
+         </span>
+       </div>
+-      <div class="layout horizontal end-justified"><paper-button raised @click="m_sleepButtonOnClick">Sleep</paper-button></div>
++      <div class="layout horizontal end-justified">
++        <paper-button raised @click="m_incrementButtonOnClick">Increment</paper-button>
++        <paper-button raised @click="m_sleepButtonOnClick">Sleep</paper-button>
++      </div>
+     </paper-card>
+   </div>
+ </template>
+@@ -199,6 +202,11 @@
+     alert(await this.m_sleep(2000))
+   }
+ 
++  async m_incrementButtonOnClick() {
++    this.$appStore.counter.increment()
++    console.log(this.$appStore.counter.current)
++  }
++
+   //--------------------------------------------------
+   //  elements
+   //--------------------------------------------------
 Index: src/store/types.ts
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/store/types.ts	(date 1548693687000)
-+++ src/store/types.ts	(date 1548693687000)
-@@ -0,0 +1,118 @@
+--- src/store/types.ts	(revision Local Version)
++++ src/store/types.ts	(revision Shelved Version)
+@@ -1,4 +1,30 @@
+-import { Product as APIProduct } from '@/apis'
 +import { Module } from 'vuex'
 +import { Product as APIProduct } from '../apis'
 +
@@ -175,13 +800,15 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +export interface CounterState {
 +  counter: number
 +}
-+
-+//----------------------------------------------------------------------
-+//
-+//  Modules
-+//
-+//----------------------------------------------------------------------
-+
+ 
+ //----------------------------------------------------------------------
+ //
+@@ -6,34 +32,62 @@
+ //
+ //----------------------------------------------------------------------
+ 
+-export interface AppStore {
+-  readonly product: ProductModule
 +export interface ProductModule extends Module<ProductState, RootState> {}
 +
 +export interface CartModule extends Module<CartState, RootState> {}
@@ -198,24 +825,32 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  export const PATH = 'counter'
 +
 +  export const CURRENT = 'current'
-+
+ 
+-  readonly cart: CartModule
 +  export const INCREMENT = 'increment'
-+}
-+
+ }
+ 
+-export interface ProductModule {
+-  readonly allProducts: Product[]
 +export namespace ProductTypes {
 +  export const PATH = 'product'
 +
 +  export const ALL_PRODUCTS = 'allProducts'
 +
 +  export const GET_PRODUCT_BY_ID = 'getProductById'
-+
+ 
+-  getProductById(productId: string): Product | undefined
 +  export const GET_ALL_PRODUCTS = 'getAllProducts'
-+
+ 
+-  decrementProductInventory(productId: string): void
 +  export const SET_PRODUCTS = 'setProducts'
-+
+ 
+-  getAllProducts(): Promise<void>
 +  export const DECREMENT_PRODUCT_INVENTORY = 'decrementProductInventory'
-+}
-+
+ }
+ 
+-export interface CartModule {
+-  readonly checkoutStatus: CheckoutStatus
 +export namespace CartTypes {
 +  export const PATH = 'cart'
 +
@@ -226,163 +861,127 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  export const CART_TOTAL_PRICE = 'cartTotalPrice'
 +
 +  export const GET_CART_ITEM_BY_ID = 'getCartItemById'
-+
+ 
+-  readonly cartItems: CartItem[]
 +  export const CHECKOUT = 'checkout'
-+
+ 
+-  readonly cartTotalPrice: number
 +  export const ADD_PRODUCT_TO_CART = 'addProductToCart'
-+
+ 
+-  getCartItemById(productId: string): CartItem | undefined
 +  export const m_SET_CART_ITEMS = 'm_setCartItems'
-+
+ 
+-  checkout(): Promise<void>
 +  export const m_SET_CHECKOUT_STATUS = 'm_setCheckoutStatus'
-+
+ 
+-  addProductToCart(productId: string): void
 +  export const m_PUSH_PRODUCT_TO_CART = 'm_pushProductToCart'
 +
 +  export const m_INCREMENT_ITEM_QUANTITY = 'm_incrementItemQuantity'
-+}
-+
-+//----------------------------------------------------------------------
-+//
-+//  Entities
-+//
-+//----------------------------------------------------------------------
-+
-+export type Product = APIProduct
-+
-+export interface CartItem {
-+  id: string
-+  title: string
-+  price: number
-+  quantity: number
-+}
-+
-+//----------------------------------------------------------------------
-+//
-+//  Enumerations
-+//
-+//----------------------------------------------------------------------
-+
-+export enum CheckoutStatus {
-+  None = 'none',
-+  Failed = 'failed',
-+  Successful = 'successful',
-+}
-Index: src/store/counter-module/index.ts
+ }
+ 
+ //----------------------------------------------------------------------
+Index: vue.config.js
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/store/counter-module/index.ts	(date 1548691505000)
-+++ src/store/counter-module/index.ts	(date 1548691505000)
-@@ -0,0 +1,28 @@
-+import { GetterTree, MutationTree, ActionTree } from 'vuex'
-+import { CounterModule, CounterState, CounterTypes, RootState } from '../types'
-+
-+export class CounterModuleImpl implements CounterModule {
-+  namespaced = true
-+
-+  state: CounterState = {
-+    counter: 1,
-+  }
-+
-+  getters: GetterTree<CounterState, RootState> = {
-+    [CounterTypes.CURRENT](state: CounterState): number {
-+      return state.counter
-+    },
-+  }
-+
-+  mutations: MutationTree<CounterState> = {
-+    [CounterTypes.INCREMENT](state: CounterState): void {
-+      state.counter++
-+    },
-+  }
-+
-+  actions: ActionTree<CounterState, RootState> = {}
-+}
-+
-+export function newCounterModule() {
-+  return new CounterModuleImpl()
-+}
-Index: src/store/product-module/index.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/store/product-module/index.ts	(date 1548688697000)
-+++ src/store/product-module/index.ts	(date 1548688697000)
-@@ -0,0 +1,48 @@
-+import { GetterTree, MutationTree, ActionTree } from 'vuex'
-+import { ProductModule, ProductState, RootState, Product, ProductTypes } from '../types'
-+import { apis } from '@/apis'
-+
-+export class ProductModuleImpl implements ProductModule {
-+  namespaced = true
-+
-+  state: ProductState = {
-+    all: [],
-+  }
-+
-+  getters: GetterTree<ProductState, RootState> = {
-+    [ProductTypes.ALL_PRODUCTS](state): Product[] {
-+      return state.all
-+    },
-+
-+    [ProductTypes.GET_PRODUCT_BY_ID](state) {
-+      return (productId: string) => {
-+        const product = state.all.find((item) => item.id === productId)
-+        return product
-+      }
-+    },
-+  }
-+
-+  mutations: MutationTree<ProductState> = {
-+    [ProductTypes.SET_PRODUCTS](state, products: Product[]): void {
-+      state.all = products
-+    },
-+
-+    [ProductTypes.DECREMENT_PRODUCT_INVENTORY](state, productId: string): void {
-+      const product = state.all.find((item) => item.id === productId)
-+      if (product) {
-+        product.inventory--
-+      }
-+    },
-+  }
-+
-+  actions: ActionTree<ProductState, RootState> = {
-+    async [ProductTypes.GET_ALL_PRODUCTS](context): Promise<void> {
-+      const products = await apis.shop.getProducts()
-+      context.commit(ProductTypes.SET_PRODUCTS, products)
-+    },
-+  }
-+}
-+
-+export function newProductModule() {
-+  return new ProductModuleImpl()
-+}
+--- vue.config.js	(revision Local Version)
++++ vue.config.js	(revision Shelved Version)
+@@ -19,12 +19,6 @@
+ }
+ if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
+   Object.assign(pages, {
+-    test: {
+-      entry: 'test/test.ts',
+-      template: 'test/test.html',
+-      filename: 'test.html',
+-      title: 'Vue WWW Base Unit Test',
+-    },
+     playground: {
+       entry: 'src/playground.ts',
+       template: 'src/playground.html',
 Index: src/store/cart-module/index.ts
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/store/cart-module/index.ts	(date 1548688697000)
-+++ src/store/cart-module/index.ts	(date 1548688697000)
-@@ -0,0 +1,122 @@
+--- src/store/cart-module/index.ts	(revision Local Version)
++++ src/store/cart-module/index.ts	(revision Shelved Version)
+@@ -1,155 +1,122 @@
+-import { BaseModule } from '@/store/base'
+-import { CartModule, CartItem, CheckoutStatus, Product, ProductModule } from '@/store/types'
+-import { Component } from 'vue-property-decorator'
+-import { NoCache } from '@/base/component'
+-
+-export interface CartState {
+-  items: Array<{ id: string, quantity: number }>
+-  checkoutStatus: CheckoutStatus
+-}
 +import { CartModule, CartState, RootState, CartItem, CartTypes, CheckoutStatus, Product, ProductState, ProductTypes } from '../types'
 +import { GetterTree, MutationTree, ActionTree } from 'vuex'
 +import { apis } from '@/apis'
-+
+ 
+-interface CartModuleDependencies {
+-  product: ProductModule
+-}
 +class CartModuleImpl implements CartModule {
 +  namespaced = true
-+
+ 
+-@Component
+-export class CartModuleImpl extends BaseModule<CartState> implements CartModule {
+-  //----------------------------------------------------------------------
+-  //
+-  //  Constructors
+-  //
+-  //----------------------------------------------------------------------
+-
+-  constructor() {
+-    super()
+-    this.f_initState({
+-      items: [],
+-      checkoutStatus: CheckoutStatus.None,
+-    })
 +  state: CartState = {
 +    items: [],
 +    checkoutStatus: CheckoutStatus.None,
-+  }
-+
+   }
+ 
+-  //----------------------------------------------------------------------
+-  //
+-  //  Variables
+-  //
+-  //----------------------------------------------------------------------
+-
+-  m_dependencies!: CartModuleDependencies;
+-
+-  //----------------------------------------------------------------------
+-  //
+-  //  Properties
+-  //
+-  //----------------------------------------------------------------------
+-
+-  get checkoutStatus(): CheckoutStatus {
+-    return this.f_state.checkoutStatus
+-  }
 +  getters: GetterTree<CartState, RootState> = {
 +    [CartTypes.CHECKOUT_STATUS](state): CheckoutStatus {
 +      return state.checkoutStatus
 +    },
-+
+ 
+-  @NoCache
+-  get cartItems(): CartItem[] {
+-    const allProducts = this.m_dependencies.product.allProducts
+-    return this.f_state.items.map(({ id, quantity }) => {
+-      const product = allProducts.find((item) => item.id === id)!
+-      return {
+-        id: product.id,
+-        title: product.title,
+-        price: product.price,
+-        quantity,
+-      }
+-    })
+-  }
 +    [CartTypes.CART_ITEMS](state, getters, rootState): CartItem[] {
 +      const allProducts = (rootState.product as ProductState).all
 +      return state.items.map(({ id, quantity }) => {
@@ -395,15 +994,42 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +        }
 +      })
 +    },
-+
+ 
+-  get cartTotalPrice(): number {
+-    return this.cartItems.reduce((total, product) => {
+-      return total + product.price * product.quantity
+-    }, 0)
+-  }
+-
+-  //----------------------------------------------------------------------
+-  //
+-  //  Methods
+-  //
+-  //----------------------------------------------------------------------
 +    [CartTypes.CART_TOTAL_PRICE](state, getters): number {
 +      const cartItems = getters[CartTypes.CART_ITEMS] as CartItem[]
 +      return cartItems.reduce((total, product) => {
 +        return total + product.price * product.quantity
 +      }, 0)
 +    },
-+
-+    [CartTypes.GET_CART_ITEM_BY_ID](state, getters, rootState, rootGetters): (productId: string) => CartItem | undefined | null {
+ 
+-  init(dependencies: CartModuleDependencies): void {
+-    this.m_dependencies = dependencies
+-  }
+-
+-  getCartItemById(productId: string): CartItem | undefined {
+-    const product = this.m_getProductById(productId)
+-    const cartItem = this.f_state.items.find((item) => {
+-      return item.id === productId
+-    })
+-    if (!cartItem) return undefined
+-    return {
+-      id: cartItem.id,
+-      title: product.title,
+-      price: product.price,
+-      quantity: cartItem.quantity,
+-    }
++    [CartTypes.GET_CART_ITEM_BY_ID](state, getters, rootState, rootGetters): (productId: string) => CartItem | undefined {
 +      return (productId: string) => {
 +        const product = getProductById(rootGetters, productId)
 +        const cartItem = state.items.find((item) => {
@@ -418,7 +1044,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +        } as CartItem
 +      }
 +    },
-+  }
+   }
 +
 +  mutations: MutationTree<CartState> = {
 +    [CartTypes.m_SET_CART_ITEMS](state, items: Array<{ id: string, quantity: number }>) {
@@ -443,7 +1069,21 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +      }
 +    },
 +  }
-+
+ 
+-  addProductToCart(productId: string): void {
+-    const product = this.m_getProductById(productId)
+-    this.f_state.checkoutStatus = CheckoutStatus.None
+-    if (product.inventory > 0) {
+-      const cartItem = this.f_state.items.find((item) => item.id === product.id)
+-      if (!cartItem) {
+-        this.m_pushProductToCart(product.id)
+-      } else {
+-        this.m_incrementItemQuantity(cartItem.id)
+-      }
+-      // 在庫を1つ減らす
+-      this.m_dependencies.product.decrementProductInventory(product.id)
+-    }
+-  }
 +  actions: ActionTree<CartState, RootState> = {
 +    async [CartTypes.ADD_PRODUCT_TO_CART](context, productId: string): Promise<void> {
 +      context.commit(CartTypes.m_SET_CHECKOUT_STATUS, CheckoutStatus.None)
@@ -459,7 +1099,19 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +        context.commit(`${ProductTypes.PATH}/${ProductTypes.DECREMENT_PRODUCT_INVENTORY}`, productId, { root: true })
 +      }
 +    },
-+
+ 
+-  async checkout(): Promise<void> {
+-    const savedCartItems = [ ...this.f_state.items ]
+-    this.f_state.checkoutStatus = CheckoutStatus.None
+-    try {
+-      await this.$apis.shop.buyProducts(this.f_state.items)
+-      this.f_state.items = [] // カートを空にする
+-      this.f_state.checkoutStatus = CheckoutStatus.Successful
+-    } catch (err) {
+-      this.f_state.checkoutStatus = CheckoutStatus.Failed
+-      // カートの内容をAPIリクエス前の状態にロールバックする
+-      this.f_state.items = savedCartItems
+-    }
 +    async [CartTypes.CHECKOUT](context): Promise<void> {
 +      const cartProducts = [ ...context.state.items ]
 +      context.commit(CartTypes.m_SET_CHECKOUT_STATUS, CheckoutStatus.None)
@@ -473,163 +1125,51 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +        context.commit(CartTypes.m_SET_CHECKOUT_STATUS, CheckoutStatus.Failed)
 +      }
 +    },
-+  }
+   }
+-
+-  //----------------------------------------------------------------------
+-  //
+-  //  Internal methods
+-  //
+-  //----------------------------------------------------------------------
+-
+-  m_pushProductToCart(productId: string): void {
+-    this.f_state.items.push({
+-      id: productId,
+-      quantity: 1,
+-    })
+-  }
 +}
-+
+ 
+-  m_incrementItemQuantity(productId: string): void {
+-    const cartItem = this.f_state.items.find((item) => item.id === productId)
+-    if (cartItem) {
+-      cartItem.quantity++
+-    }
+-  }
+-
+-  m_getProductById(productId: string): Product {
+-    const result = this.m_dependencies.product.getProductById(productId)
+-    if (!result) {
+-      throw new Error(`A product that matches the specified productId "${productId}" was not found.`)
+-    }
+-    return result
+-  }
 +function getProductById(rootGetters: any, productId: string): Product {
 +  const path = `${ProductTypes.PATH}/${ProductTypes.GET_PRODUCT_BY_ID}`
-+  const result = rootGetters[path](productId) as Product | undefined | null
++  const result = rootGetters[path](productId) as Product | undefined
 +  if (!result) {
 +    throw new Error(`A Product that matches the specified productId "${productId}" was not found.`)
 +  }
 +  return result
-+}
-+
+ }
+ 
+-export function newCartModule(dependencies: CartModuleDependencies): CartModule {
+-  const result = new CartModuleImpl()
+-  result.init(dependencies)
+-  return result
+-}
 +export function newCartModule() {
 +  return new CartModuleImpl()
 +}
 \ No newline at end of file
-Index: src/views/shopping-view/index.vue
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/views/shopping-view/index.vue	(date 1548687751000)
-+++ src/views/shopping-view/index.vue	(date 1548693777000)
-@@ -77,8 +77,9 @@
- import '@polymer/paper-icon-button/paper-icon-button'
- 
- import { BaseComponent } from '@/base/component'
--import { CartItem, CheckoutStatus, Product } from '@/stores'
-+import { CartItem, CheckoutStatus, Product } from '@/store'
- import { Component } from 'vue-property-decorator'
-+import { appStore } from '@/store'
- import { mixins } from 'vue-class-component'
- 
- @Component
-@@ -94,19 +95,19 @@
-   }
- 
-   get m_products(): Product[] {
--    return this.$stores.product.allProducts
-+    return appStore.product.allProducts
-   }
- 
-   get m_cartItems(): CartItem[] {
--    return this.$stores.cart.cartItems
-+    return appStore.cart.cartItems
-   }
- 
-   get m_cartTotalPrice(): number {
--    return this.$stores.cart.cartTotalPrice
-+    return appStore.cart.cartTotalPrice
-   }
- 
-   get m_checkoutStatus(): { result: boolean, message: string } {
--    const result = this.$stores.cart.checkoutStatus === CheckoutStatus.None || this.$stores.cart.checkoutStatus === CheckoutStatus.Successful
-+    const result = appStore.cart.checkoutStatus === CheckoutStatus.None || appStore.cart.checkoutStatus === CheckoutStatus.Successful
-     return {
-       result,
-       message: result ? '' : 'Checkout failed.',
-@@ -119,7 +120,9 @@
-   //
-   //----------------------------------------------------------------------
- 
--  created() {}
-+  created() {
-+    appStore.product.getAllProducts()
-+  }
- 
-   //----------------------------------------------------------------------
-   //
-@@ -128,11 +131,11 @@
-   //----------------------------------------------------------------------
- 
-   m_addProductToCart(product: Product): void {
--    this.$stores.cart.addProductToCart(product.id)
-+    appStore.cart.addProductToCart(product.id)
-   }
- 
-   async m_checkout(): Promise<void> {
--    await this.$stores.cart.checkout()
-+    await appStore.cart.checkout()
-   }
- }
- </script>
-Index: src/index.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/index.ts	(date 1548687751000)
-+++ src/index.ts	(date 1548690676000)
-@@ -9,20 +9,19 @@
- import { initAPI } from '@/apis'
- import { initConfig } from '@/base/config'
- import { initServiceWorker } from '@/base/service-worker'
--import { initStores } from '@/stores'
- import { initUtils } from '@/base/utils'
- import { router } from '@/base/router'
-+import { store } from '@/store'
- 
- // TODO JetBrainsIDE使用時の開発補助コード
--// import '@/views/abc-view/index.vue'
--// import '@/views/shopping-view/index.vue'
-+import '@/views/abc-view/index.vue'
-+import '@/views/shopping-view/index.vue'
- 
- (async () => {
-   initUtils()
-   initConfig()
-   initServiceWorker()
-   initAPI()
--  initStores()
-   await initI18n()
- 
-   Vue.filter('currency', currency)
-@@ -32,5 +31,6 @@
-     router,
-     render: (h) => h(AppView),
-     i18n,
-+    store,
-   })
- })()
-Index: src/views/abc-view/index.vue
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- src/views/abc-view/index.vue	(date 1548687751000)
-+++ src/views/abc-view/index.vue	(date 1548690824000)
-@@ -58,7 +58,10 @@
-           <span class="title">checked: </span><span class="value">{{ m_customChecked }}</span>
-         </span>
-       </div>
--      <div class="layout horizontal end-justified"><paper-button raised @click="m_sleepButtonOnClick">Sleep</paper-button></div>
-+      <div class="layout horizontal end-justified">
-+        <paper-button raised @click="m_incrementButtonOnClick">Increment</paper-button>
-+        <paper-button raised @click="m_sleepButtonOnClick">Sleep</paper-button>
-+      </div>
-     </paper-card>
-   </div>
- </template>
-@@ -74,6 +77,7 @@
- import { BaseComponent } from '@/base/component'
- import { Component, Prop, Watch } from 'vue-property-decorator'
- import { mixins } from 'vue-class-component'
-+import { appStore } from '@/store'
- 
- interface Post {
-   message: string
-@@ -199,6 +203,11 @@
-     alert(await this.m_sleep(2000))
-   }
- 
-+  async m_incrementButtonOnClick() {
-+    appStore.counter.increment()
-+    console.log(appStore.counter.current)
-+  }
-+
-   //--------------------------------------------------
-   //  elements
-   //--------------------------------------------------
