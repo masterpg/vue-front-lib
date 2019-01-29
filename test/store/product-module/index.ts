@@ -1,14 +1,14 @@
 import * as td from 'testdouble'
 import { Product as APIProduct } from '@/apis'
-import { Product } from '@/stores'
-import { TestStore } from '../../types'
-import { newProductStore, ProductState, ProductStoreImpl } from '@/stores/product-store'
+import { Product } from '@/store'
+import { TestModule } from '../../types'
+import { newProductModule, ProductState, ProductModuleImpl } from '@/store/product-module'
 
 const assert = chai.assert
 
-suite('store/product-store', () => {
-  const productStore = newProductStore() as ProductStoreImpl & TestStore<ProductState>
-  const shopAPI = productStore.$apis.shop
+suite('store/product-module', () => {
+  const productModule = newProductModule() as ProductModuleImpl & TestModule<ProductState>
+  const shopAPI = productModule.$apis.shop
 
   const API_PRODUCTS: APIProduct[] = [
     { id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 2 },
@@ -17,7 +17,7 @@ suite('store/product-store', () => {
   ]
 
   setup(() => {
-    productStore.f_initState({
+    productModule.f_initState({
       all: API_PRODUCTS,
     })
   })
@@ -27,8 +27,8 @@ suite('store/product-store', () => {
   })
 
   test('getProductById() - 取得できるパターン', () => {
-    const stateProduct = productStore.m_getStateProductById('1') as Product
-    const actual = productStore.getProductById(stateProduct.id)
+    const stateProduct = productModule.m_getStateProductById('1') as Product
+    const actual = productModule.getProductById(stateProduct.id)
     assert.deepEqual(actual, stateProduct)
     // actualとproductが同一オブジェクトでないことを検証
     // (つまりコピーであることを検証)
@@ -36,19 +36,19 @@ suite('store/product-store', () => {
   })
 
   test('getProductById() - 取得できないパターン', () => {
-    const actual = productStore.getProductById('9876')
+    const actual = productModule.getProductById('9876')
     assert.isUndefined(actual)
   })
 
   test('decrementProductInventory() - 一般ケース', () => {
-    const stateProduct = productStore.m_getStateProductById('1') as Product
+    const stateProduct = productModule.m_getStateProductById('1') as Product
     const inventoryBk = stateProduct.inventory
-    productStore.decrementProductInventory(stateProduct.id)
+    productModule.decrementProductInventory(stateProduct.id)
     assert.equal(stateProduct.inventory, inventoryBk - 1)
   })
 
   test('decrementProductInventory() - 存在しない商品IDを指定した場合', () => {
-    productStore.decrementProductInventory('9876')
+    productModule.decrementProductInventory('9876')
     // 何も問題は起きない
     assert(true)
   })
@@ -58,7 +58,7 @@ suite('store/product-store', () => {
     td.replace(shopAPI, 'getProducts')
     td.when(shopAPI.getProducts()).thenResolve(NEW_API_PRODUCTS)
 
-    await productStore.getAllProducts()
-    assert.deepEqual(productStore.allProducts, NEW_API_PRODUCTS)
+    await productModule.getAllProducts()
+    assert.deepEqual(productModule.allProducts, NEW_API_PRODUCTS)
   })
 })

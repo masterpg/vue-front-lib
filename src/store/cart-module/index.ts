@@ -1,5 +1,5 @@
-import { BaseStore } from '@/stores/base'
-import { CartStore, CartItem, CheckoutStatus, Product } from '@/stores/types'
+import { BaseModule } from '@/store/base'
+import { CartModule, CartItem, CheckoutStatus, Product, ProductModule } from '@/store/types'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '@/base/component'
 
@@ -8,8 +8,12 @@ export interface CartState {
   checkoutStatus: CheckoutStatus
 }
 
+interface CartModuleDependencies {
+  product: ProductModule
+}
+
 @Component
-export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
+export class CartModuleImpl extends BaseModule<CartState> implements CartModule {
   //----------------------------------------------------------------------
   //
   //  Constructors
@@ -26,6 +30,14 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
 
   //----------------------------------------------------------------------
   //
+  //  Variables
+  //
+  //----------------------------------------------------------------------
+
+  m_dependencies!: CartModuleDependencies;
+
+  //----------------------------------------------------------------------
+  //
   //  Properties
   //
   //----------------------------------------------------------------------
@@ -36,7 +48,7 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
 
   @NoCache
   get cartItems(): CartItem[] {
-    const allProducts = this.$stores.product.allProducts
+    const allProducts = this.m_dependencies.product.allProducts
     return this.f_state.items.map(({ id, quantity }) => {
       const product = allProducts.find((item) => item.id === id)!
       return {
@@ -60,7 +72,11 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   //
   //----------------------------------------------------------------------
 
-  getCartItemById(productId: string): CartItem | undefined | null {
+  init(dependencies: CartModuleDependencies): void {
+    this.m_dependencies = dependencies
+  }
+
+  getCartItemById(productId: string): CartItem | undefined {
     const product = this.m_getProductById(productId)
     const cartItem = this.f_state.items.find((item) => {
       return item.id === productId
@@ -85,7 +101,7 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
         this.m_incrementItemQuantity(cartItem.id)
       }
       // 在庫を1つ減らす
-      this.$stores.product.decrementProductInventory(product.id)
+      this.m_dependencies.product.decrementProductInventory(product.id)
     }
   }
 
@@ -124,7 +140,7 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   }
 
   m_getProductById(productId: string): Product {
-    const result = this.$stores.product.getProductById(productId)
+    const result = this.m_dependencies.product.getProductById(productId)
     if (!result) {
       throw new Error(`A product that matches the specified productId "${productId}" was not found.`)
     }
@@ -132,6 +148,8 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   }
 }
 
-export function newCartStore(): CartStore {
-  return new CartStoreImpl()
+export function newCartModule(dependencies: CartModuleDependencies): CartModule {
+  const result = new CartModuleImpl()
+  result.init(dependencies)
+  return result
 }

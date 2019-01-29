@@ -36,7 +36,7 @@
         <div class="title-text">{{ $t('products') }}</div>
       </div>
       <hr style="width: 100%;" />
-      <div v-for="(product) in m_products" :key="product.id" class="layout horizontal center product-item">
+      <div v-for="(product) in $appStore.product.allProducts" :key="product.id" class="layout horizontal center product-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
           <div class="detail">
@@ -55,7 +55,7 @@
         <div class="flex"></div>
       </div>
       <hr style="width: 100%;" />
-      <div v-for="(cartItem) in m_cartItems" :key="cartItem.id" class="layout horizontal center cart-item">
+      <div v-for="(cartItem) in $appStore.cart.cartItems" :key="cartItem.id" class="layout horizontal center cart-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ cartItem.title }}</div>
           <div class="detail">
@@ -77,7 +77,7 @@ import '@polymer/paper-card/paper-card'
 import '@polymer/paper-icon-button/paper-icon-button'
 
 import { BaseComponent } from '@/base/component'
-import { CartItem, CheckoutStatus, Product } from '@/stores'
+import { CartItem, CheckoutStatus, Product } from '@/store'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 
@@ -90,23 +90,11 @@ export default class ShoppingView extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
 
   get m_cartIsEmpty(): boolean {
-    return this.m_cartItems.length === 0
-  }
-
-  get m_products(): Product[] {
-    return this.$stores.product.allProducts
-  }
-
-  get m_cartItems(): CartItem[] {
-    return this.$stores.cart.cartItems
-  }
-
-  get m_cartTotalPrice(): number {
-    return this.$stores.cart.cartTotalPrice
+    return this.$appStore.cart.cartItems.length === 0
   }
 
   get m_checkoutStatus(): { result: boolean, message: string } {
-    const result = this.$stores.cart.checkoutStatus === CheckoutStatus.None || this.$stores.cart.checkoutStatus === CheckoutStatus.Successful
+    const result = this.$appStore.cart.checkoutStatus === CheckoutStatus.None || this.$appStore.cart.checkoutStatus === CheckoutStatus.Successful
     return {
       result,
       message: result ? '' : 'Checkout failed.',
@@ -119,7 +107,9 @@ export default class ShoppingView extends mixins(BaseComponent) {
   //
   //----------------------------------------------------------------------
 
-  created() {}
+  async created() {
+    await this.$appStore.product.getAllProducts()
+  }
 
   //----------------------------------------------------------------------
   //
@@ -128,11 +118,11 @@ export default class ShoppingView extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
 
   m_addProductToCart(product: Product): void {
-    this.$stores.cart.addProductToCart(product.id)
+    this.$appStore.cart.addProductToCart(product.id)
   }
 
   async m_checkout(): Promise<void> {
-    await this.$stores.cart.checkout()
+    await this.$appStore.cart.checkout()
   }
 }
 </script>

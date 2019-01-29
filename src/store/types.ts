@@ -2,34 +2,34 @@ import { Product as APIProduct } from '@/apis'
 
 //----------------------------------------------------------------------
 //
-//  Stores
+//  Modules
 //
 //----------------------------------------------------------------------
 
-export interface Stores {
-  readonly product: ProductStore
+export interface AppStore {
+  readonly product: ProductModule
 
-  readonly cart: CartStore
+  readonly cart: CartModule
 }
 
-export interface ProductStore {
+export interface ProductModule {
   readonly allProducts: Product[]
 
-  getProductById(productId: string): Product | undefined | null
+  getProductById(productId: string): Product | undefined
 
   decrementProductInventory(productId: string): void
 
   getAllProducts(): Promise<void>
 }
 
-export interface CartStore {
+export interface CartModule {
   readonly checkoutStatus: CheckoutStatus
 
   readonly cartItems: CartItem[]
 
   readonly cartTotalPrice: number
 
-  getCartItemById(productId: string): CartItem | undefined | null
+  getCartItemById(productId: string): CartItem | undefined
 
   checkout(): Promise<void>
 

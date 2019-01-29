@@ -1,14 +1,14 @@
-import { BaseStore } from '@/stores/base'
+import { BaseModule } from '@/store/base'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '@/base/component'
-import { Product, ProductStore } from '@/stores/types'
+import { Product, ProductModule } from '@/store/types'
 
 export interface ProductState {
   all: Product[]
 }
 
 @Component
-export class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
+export class ProductModuleImpl extends BaseModule<ProductState> implements ProductModule {
   //----------------------------------------------------------------------
   //
   //  Constructors
@@ -39,9 +39,7 @@ export class ProductStoreImpl extends BaseStore<ProductState> implements Product
   //
   //----------------------------------------------------------------------
 
-  created() {
-    this.getAllProducts()
-  }
+  created() {}
 
   //----------------------------------------------------------------------
   //
@@ -49,7 +47,7 @@ export class ProductStoreImpl extends BaseStore<ProductState> implements Product
   //
   //----------------------------------------------------------------------
 
-  getProductById(productId: string): Product | undefined | null {
+  getProductById(productId: string): Product | undefined {
     const stateProduct = this.m_getStateProductById(productId)
     return this.$utils.cloneDeep(stateProduct)
   }
@@ -72,11 +70,11 @@ export class ProductStoreImpl extends BaseStore<ProductState> implements Product
   //
   //----------------------------------------------------------------------
 
-  m_getStateProductById(productId: string): Product | undefined | null {
+  m_getStateProductById(productId: string): Product | undefined {
     return this.f_state.all.find((item) => item.id === productId)
   }
 }
 
-export function newProductStore(): ProductStore {
-  return new ProductStoreImpl()
+export function newProductModule(): ProductModule {
+  return new ProductModuleImpl()
 }

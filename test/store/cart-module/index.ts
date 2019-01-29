@@ -1,15 +1,16 @@
 import * as td from 'testdouble'
-import { CartState, CartStoreImpl, newCartStore } from '@/stores/cart-store'
-import { CheckoutStatus } from '@/stores'
+import { newProductModule } from '@/store/product-module'
+import { CartState, CartModuleImpl, newCartModule } from '@/store/cart-module'
+import { CheckoutStatus } from '@/store'
 import { Product as APIProduct } from '@/apis'
-import { TestStore } from '../../types'
+import { TestModule } from '../../types'
 
 const assert = chai.assert
 
-suite('store/cart-store', () => {
-  const cartStore = newCartStore() as CartStoreImpl & TestStore<CartState>
-  const productStore = cartStore.$stores.product
-  const shopAPI = cartStore.$apis.shop
+suite('store/cart-module', () => {
+  const productModule = newProductModule()
+  const cartModule = newCartModule({ product: productModule }) as CartModuleImpl & TestModule<CartState>
+  const shopAPI = cartModule.$apis.shop
 
   const PRODUCTS: APIProduct[] = [
     { id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 2 },
@@ -18,14 +19,14 @@ suite('store/cart-store', () => {
   ]
 
   setup(() => {
-    cartStore.f_initState({
+    cartModule.f_initState({
       items: [],
       checkoutStatus: CheckoutStatus.None,
     })
   })
 
   teardown(() => {
-    cartStore.f_initState({
+    cartModule.f_initState({
       items: [],
       checkoutStatus: CheckoutStatus.None,
     })
@@ -33,12 +34,12 @@ suite('store/cart-store', () => {
   })
 
   test('getCartItemById() - 一般ケース', () => {
-    cartStore.f_state.items = [ { id: '1', quantity: 1 } ]
+    cartModule.f_state.items = [ { id: '1', quantity: 1 } ]
     const product = PRODUCTS[0]
-    td.replace(cartStore, 'm_getProductById')
-    td.when(cartStore.m_getProductById(product.id)).thenReturn(product)
+    td.replace(cartModule, 'm_getProductById')
+    td.when(cartModule.m_getProductById(product.id)).thenReturn(product)
 
-    const actual = cartStore.getCartItemById(product.id)
+    const actual = cartModule.getCartItemById(product.id)
     assert.deepEqual(actual, {
       id: product.id,
       title: product.title,
@@ -48,30 +49,30 @@ suite('store/cart-store', () => {
   })
 
   test('getCartItemById() - 存在しない商品IDを指定した場合', () => {
-    assert.throws(() => cartStore.getCartItemById('9876'), Error, 'A product that matches the specified productId "9876" was not found.')
+    assert.throws(() => cartModule.getCartItemById('9876'), Error, 'A product that matches the specified productId "9876" was not found.')
   })
 
   test('addProductToCart() - 一般ケース', () => {
     const product = PRODUCTS[1]
     // 【準備】
-    td.replace(cartStore, 'm_getProductById')
-    td.when(cartStore.m_getProductById(product.id)).thenReturn(product)
+    td.replace(cartModule, 'm_getProductById')
+    td.when(cartModule.m_getProductById(product.id)).thenReturn(product)
 
-    const decrementProductInventory = td.replace(productStore, 'decrementProductInventory')
+    const decrementProductInventory = td.replace(productModule, 'decrementProductInventory')
 
     // 【実行】
     // `addProductToCart()`を2回実行
-    cartStore.addProductToCart(product.id)
-    cartStore.addProductToCart(product.id)
+    cartModule.addProductToCart(product.id)
+    cartModule.addProductToCart(product.id)
 
     // 【検証】
-    assert.equal(cartStore.f_state.checkoutStatus, CheckoutStatus.None)
+    assert.equal(cartModule.f_state.checkoutStatus, CheckoutStatus.None)
     // カートに追加された商品とその数量を検証
-    const cartItem = cartStore.getCartItemById(product.id)
+    const cartItem = cartModule.getCartItemById(product.id)
     assert.equal(cartItem!.id, product.id)
     assert.equal(cartItem!.quantity, 2)
 
-    // `ProductStore#decrementProductInventory()`の呼び出し回数と渡された引数を検証
+    // `ProductModule#decrementProductInventory()`の呼び出し回数と渡された引数を検証
     const decrementProductInventoryExplain = td.explain(decrementProductInventory)
     assert.equal(decrementProductInventoryExplain.callCount, 2)
     assert.equal(decrementProductInventoryExplain.calls[0].args[0], product.id)
@@ -80,13 +81,13 @@ suite('store/cart-store', () => {
 
   test('checkout() - 一般ケース', async () => {
     const CART_ITEMS = [ { id: '1', quantity: 1 }, { id: '2', quantity: 1 } ]
-    cartStore.f_state.items = CART_ITEMS
+    cartModule.f_state.items = CART_ITEMS
     const buyProducts = td.replace(shopAPI, 'buyProducts')
     td.when(shopAPI.buyProducts(CART_ITEMS)).thenResolve()
 
-    await cartStore.checkout()
-    assert.equal(cartStore.f_state.checkoutStatus, CheckoutStatus.Successful)
-    assert.deepEqual(cartStore.f_state.items, [])
+    await cartModule.checkout()
+    assert.equal(cartModule.f_state.checkoutStatus, CheckoutStatus.Successful)
+    assert.deepEqual(cartModule.f_state.items, [])
 
     // `ShopAPI#buyProducts()`の呼び出し回数と渡された引数を検証
     const buyProductsExplain = td.explain(buyProducts)
@@ -96,13 +97,13 @@ suite('store/cart-store', () => {
 
   test('checkout() - エラーケース', async () => {
     const CART_ITEMS = [ { id: '1', quantity: 1 }, { id: '2', quantity: 1 } ]
-    cartStore.f_state.items = CART_ITEMS
+    cartModule.f_state.items = CART_ITEMS
 
     const buyProducts = td.replace(shopAPI, 'buyProducts')
     td.when(shopAPI.buyProducts(CART_ITEMS)).thenReject(new Error())
 
-    await cartStore.checkout()
-    assert.equal(cartStore.f_state.checkoutStatus, CheckoutStatus.Failed)
-    assert.deepEqual(cartStore.f_state.items, CART_ITEMS)
+    await cartModule.checkout()
+    assert.equal(cartModule.f_state.checkoutStatus, CheckoutStatus.Failed)
+    assert.deepEqual(cartModule.f_state.items, CART_ITEMS)
   })
 })
