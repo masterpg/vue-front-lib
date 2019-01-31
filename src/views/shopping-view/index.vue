@@ -45,7 +45,7 @@
           </div>
         </div>
         <div class="flex"></div>
-        <paper-icon-button icon="icons:add-box" @click="m_addProductToCart(product)"></paper-icon-button>
+        <paper-icon-button icon="icons:add-box" @click="m_addButtonOnClick(product)"></paper-icon-button>
       </div>
     </div>
 
@@ -65,7 +65,7 @@
       </div>
       <div class="layout horizontal center">
         <div class="flex error-text">{{ m_checkoutStatus.message }}</div>
-        <paper-button v-show="!m_cartIsEmpty" class="checkout-button" @click="m_checkout">{{ $t('checkout') }}</paper-button>
+        <paper-button v-show="!m_cartIsEmpty" class="checkout-button" @click="m_checkoutButtonOnClick">{{ $t('checkout') }}</paper-button>
       </div>
     </div>
   </div>
@@ -94,7 +94,8 @@ export default class ShoppingView extends mixins(BaseComponent) {
   }
 
   get m_checkoutStatus(): { result: boolean, message: string } {
-    const result = this.$appStore.cart.checkoutStatus === CheckoutStatus.None || this.$appStore.cart.checkoutStatus === CheckoutStatus.Successful
+    const checkoutStatus = this.$appStore.cart.checkoutStatus
+    const result = checkoutStatus === CheckoutStatus.None || checkoutStatus === CheckoutStatus.Successful
     return {
       result,
       message: result ? '' : 'Checkout failed.',
@@ -113,15 +114,15 @@ export default class ShoppingView extends mixins(BaseComponent) {
 
   //----------------------------------------------------------------------
   //
-  //  Internal methods
+  //  Event handlers
   //
   //----------------------------------------------------------------------
 
-  m_addProductToCart(product: Product): void {
+  m_addButtonOnClick(product: Product): void {
     this.$appStore.cart.addProductToCart(product.id)
   }
 
-  async m_checkout(): Promise<void> {
+  async m_checkoutButtonOnClick(): Promise<void> {
     await this.$appStore.cart.checkout()
   }
 }
