@@ -1,7 +1,10 @@
 Index: src/store/counter-module/index.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
 ===================================================================
---- src/store/counter-module/index.ts	(revision Shelved Version)
-+++ src/store/counter-module/index.ts	(revision Shelved Version)
+--- src/store/counter-module/index.ts	(date 1548951392000)
++++ src/store/counter-module/index.ts	(date 1548951392000)
 @@ -0,0 +1,28 @@
 +import { GetterTree, MutationTree, ActionTree } from 'vuex'
 +import { CounterModule, CounterState, CounterTypes, RootState } from '../types'
@@ -32,9 +35,12 @@ Index: src/store/counter-module/index.ts
 +  return new CounterModuleImpl()
 +}
 Index: src/store/app-store.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
 ===================================================================
---- src/store/app-store.ts	(revision Shelved Version)
-+++ src/store/app-store.ts	(revision Shelved Version)
+--- src/store/app-store.ts	(date 1548951392000)
++++ src/store/app-store.ts	(date 1548951392000)
 @@ -0,0 +1,121 @@
 +import Vue from 'vue'
 +import { CartItem, CartTypes, CheckoutStatus, CounterTypes, Product, ProductTypes, RootState } from '@/store/types'
@@ -105,8 +111,8 @@ Index: src/store/app-store.ts
 +    return this.m_store.getters[`${ProductTypes.PATH}/${ProductTypes.GET_PRODUCT_BY_ID}`](productId)
 +  }
 +
-+  getAllProducts(): Promise<void> {
-+    return this.m_store.dispatch(`${ProductTypes.PATH}/${ProductTypes.GET_ALL_PRODUCTS}`)
++  pullAllProducts(): Promise<void> {
++    return this.m_store.dispatch(`${ProductTypes.PATH}/${ProductTypes.PULL_ALL_PRODUCTS}`)
 +  }
 +
 +  setProducts(products: Product[]): void {
@@ -158,12 +164,9 @@ Index: src/store/app-store.ts
 +  return result
 +}
 Index: src/store/base.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
 ===================================================================
---- src/store/base.ts	(revision Local Version)
-+++ src/store/base.ts	(revision Local Version)
+--- src/store/base.ts	(date 1548949595000)
++++ src/store/base.ts	(date 1548949595000)
 @@ -1,32 +0,0 @@
 -import Vue from 'vue'
 -import { APIs } from '@/apis'
@@ -198,12 +201,9 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 -  }
 -}
 Index: test/api/shop-api/index.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
 ===================================================================
---- test/api/shop-api/index.ts	(revision Local Version)
-+++ test/api/shop-api/index.ts	(revision Local Version)
+--- test/api/shop-api/index.ts	(date 1548949595000)
++++ test/api/shop-api/index.ts	(date 1548949595000)
 @@ -1,9 +0,0 @@
 -import _shopAPI from '@/apis/shop-api'
 -
@@ -215,12 +215,9 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 -  })
 -})
 Index: test/store/cart-module/index.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
 ===================================================================
---- test/store/cart-module/index.ts	(revision Local Version)
-+++ test/store/cart-module/index.ts	(revision Local Version)
+--- test/store/cart-module/index.ts	(date 1548949595000)
++++ test/store/cart-module/index.ts	(date 1548949595000)
 @@ -1,109 +0,0 @@
 -import * as td from 'testdouble'
 -import { newProductModule } from '@/store/product-module'
@@ -332,12 +329,9 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 -  })
 -})
 Index: test/store/product-module/index.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
 ===================================================================
---- test/store/product-module/index.ts	(revision Local Version)
-+++ test/store/product-module/index.ts	(revision Local Version)
+--- test/store/product-module/index.ts	(date 1548949595000)
++++ test/store/product-module/index.ts	(date 1548949595000)
 @@ -1,64 +0,0 @@
 -import * as td from 'testdouble'
 -import { Product as APIProduct } from '@/apis'
@@ -394,22 +388,19 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 -    assert(true)
 -  })
 -
--  test('getAllProducts()', async () => {
+-  test('pullAllProducts()', async () => {
 -    const NEW_API_PRODUCTS = [ { id: '1', title: 'product1', price: 101, inventory: 1 }, { id: '2', title: 'product2', price: 102, inventory: 2 } ]
 -    td.replace(shopAPI, 'getProducts')
 -    td.when(shopAPI.getProducts()).thenResolve(NEW_API_PRODUCTS)
 -
--    await productModule.getAllProducts()
+-    await productModule.pullAllProducts()
 -    assert.deepEqual(productModule.allProducts, NEW_API_PRODUCTS)
 -  })
 -})
 Index: test/types/index.d.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
 ===================================================================
---- test/types/index.d.ts	(revision Local Version)
-+++ test/types/index.d.ts	(revision Local Version)
+--- test/types/index.d.ts	(date 1548949595000)
++++ test/types/index.d.ts	(date 1548949595000)
 @@ -1,7 +0,0 @@
 -import { APIs } from '@/apis'
 -import { AppStore } from '@/store'
@@ -419,12 +410,9 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 -  $appStore: AppStore
 -}
 Index: test/test.html
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
 ===================================================================
---- test/test.html	(revision Local Version)
-+++ test/test.html	(revision Local Version)
+--- test/test.html	(date 1548949595000)
++++ test/test.html	(date 1548949595000)
 @@ -1,19 +0,0 @@
 -<!DOCTYPE html>
 -<html lang="en">
@@ -446,12 +434,9 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 -  </body>
 -</html>
 Index: test/test.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
 ===================================================================
---- test/test.ts	(revision Local Version)
-+++ test/test.ts	(revision Local Version)
+--- test/test.ts	(date 1548949595000)
++++ test/test.ts	(date 1548949595000)
 @@ -1,17 +0,0 @@
 -(async () => {
 -  mocha.setup({ ui: 'tdd' })
@@ -475,9 +460,9 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/store/product-module/index.ts	(revision Local Version)
-+++ src/store/product-module/index.ts	(revision Shelved Version)
-@@ -1,80 +1,48 @@
+--- src/store/product-module/index.ts	(date 1548949595000)
++++ src/store/product-module/index.ts	(date 1548951392000)
+@@ -1,77 +1,45 @@
 -import { BaseModule } from '@/store/base'
 -import { Component } from 'vue-property-decorator'
 -import { NoCache } from '@/base/component'
@@ -543,7 +528,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 -    return this.$utils.cloneDeep(stateProduct)
 +    [ProductTypes.GET_PRODUCT_BY_ID](state) {
 +      return (productId: string) => {
-+        const product = state.all.find((item) => item.id === productId)
++        const product = state.all.find(item => item.id === productId)
 +        return product
 +      }
 +    },
@@ -560,11 +545,11 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +      state.all = products
 +    },
  
--  async getAllProducts(): Promise<void> {
+-  async pullAllProducts(): Promise<void> {
 -    const products = await this.$apis.shop.getProducts()
 -    this.f_state.all = products
 +    [ProductTypes.DECREMENT_PRODUCT_INVENTORY](state, productId: string): void {
-+      const product = state.all.find((item) => item.id === productId)
++      const product = state.all.find(item => item.id === productId)
 +      if (product) {
 +        product.inventory--
 +      }
@@ -580,53 +565,39 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 -  m_getStateProductById(productId: string): Product | undefined {
 -    return this.f_state.all.find((item) => item.id === productId)
 +  actions: ActionTree<ProductState, RootState> = {
-+    async [ProductTypes.GET_ALL_PRODUCTS](context): Promise<void> {
++    async [ProductTypes.PULL_ALL_PRODUCTS](context): Promise<void> {
 +      const products = await apis.shop.getProducts()
 +      context.commit(ProductTypes.SET_PRODUCTS, products)
 +    },
    }
  }
  
--export function newProductModule(): ProductModule {
-+export function newProductModule() {
-   return new ProductModuleImpl()
- }
 Index: src/views/shopping-view/index.vue
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/views/shopping-view/index.vue	(revision Local Version)
-+++ src/views/shopping-view/index.vue	(revision Shelved Version)
-@@ -117,8 +117,8 @@
+--- src/views/shopping-view/index.vue	(date 1548949595000)
++++ src/views/shopping-view/index.vue	(date 1548951392000)
+@@ -118,8 +118,8 @@
    //
    //----------------------------------------------------------------------
  
--  m_addProductToCart(product: Product): void {
+-  m_addButtonOnClick(product: Product): void {
 -    this.$appStore.cart.addProductToCart(product.id)
-+  async m_addProductToCart(product: Product): Promise<void> {
++  async m_addButtonOnClick(product: Product): Promise<void> {
 +    await this.$appStore.cart.addProductToCart(product.id)
    }
  
-   async m_checkout(): Promise<void> {
+   async m_checkoutButtonOnClick(): Promise<void> {
 Index: package.json
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- package.json	(revision Local Version)
-+++ package.json	(revision Shelved Version)
-@@ -36,7 +36,8 @@
-     "vue-class-component": "^6.3.2",
-     "vue-i18n": "^8.4.0",
-     "vue-property-decorator": "^7.2.0",
--    "vue-router": "^3.0.2"
-+    "vue-router": "^3.0.2",
-+    "vuex": "^3.1.0"
-   },
-   "devDependencies": {
-     "@kazupon/vue-i18n-loader": "^0.3.0",
-@@ -48,9 +49,9 @@
+--- package.json	(date 1548949595000)
++++ package.json	(date 1548951392000)
+@@ -48,9 +48,9 @@
      "@vue/cli-plugin-pwa": "^3.2.0",
      "@vue/cli-plugin-typescript": "^3.2.0",
      "@vue/cli-service": "^3.2.0",
@@ -642,8 +613,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/index.ts	(revision Local Version)
-+++ src/index.ts	(revision Shelved Version)
+--- src/index.ts	(date 1548949595000)
++++ src/index.ts	(date 1548951392000)
 @@ -9,13 +9,13 @@
  import { initAPI } from '@/apis'
  import { initConfig } from '@/base/config'
@@ -673,8 +644,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/store/index.ts	(revision Local Version)
-+++ src/store/index.ts	(revision Shelved Version)
+--- src/store/index.ts	(date 1548949595000)
++++ src/store/index.ts	(date 1548951392000)
 @@ -1,40 +1,31 @@
  import Vue from 'vue'
 -import { newCartModule } from '@/store/cart-module'
@@ -738,8 +709,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/views/abc-view/index.vue	(revision Local Version)
-+++ src/views/abc-view/index.vue	(revision Shelved Version)
+--- src/views/abc-view/index.vue	(date 1548949595000)
++++ src/views/abc-view/index.vue	(date 1548951392000)
 @@ -58,7 +58,10 @@
            <span class="title">checked: </span><span class="value">{{ m_customChecked }}</span>
          </span>
@@ -769,8 +740,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/store/types.ts	(revision Local Version)
-+++ src/store/types.ts	(revision Shelved Version)
+--- src/store/types.ts	(date 1548949595000)
++++ src/store/types.ts	(date 1548951392000)
 @@ -1,4 +1,30 @@
 -import { Product as APIProduct } from '@/apis'
 +import { Module } from 'vuex'
@@ -840,13 +811,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +  export const GET_PRODUCT_BY_ID = 'getProductById'
  
 -  getProductById(productId: string): Product | undefined
-+  export const GET_ALL_PRODUCTS = 'getAllProducts'
- 
--  decrementProductInventory(productId: string): void
 +  export const SET_PRODUCTS = 'setProducts'
  
--  getAllProducts(): Promise<void>
+-  decrementProductInventory(productId: string): void
 +  export const DECREMENT_PRODUCT_INVENTORY = 'decrementProductInventory'
+ 
+-  pullAllProducts(): Promise<void>
++  export const PULL_ALL_PRODUCTS = 'pullAllProducts'
  }
  
 -export interface CartModule {
@@ -886,8 +857,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- vue.config.js	(revision Local Version)
-+++ vue.config.js	(revision Shelved Version)
+--- vue.config.js	(date 1548949595000)
++++ vue.config.js	(date 1548951392000)
 @@ -19,12 +19,6 @@
  }
  if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
@@ -906,8 +877,8 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
---- src/store/cart-module/index.ts	(revision Local Version)
-+++ src/store/cart-module/index.ts	(revision Shelved Version)
+--- src/store/cart-module/index.ts	(date 1548949595000)
++++ src/store/cart-module/index.ts	(date 1548951392000)
 @@ -1,155 +1,122 @@
 -import { BaseModule } from '@/store/base'
 -import { CartModule, CartItem, CheckoutStatus, Product, ProductModule } from '@/store/types'
