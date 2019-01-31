@@ -19,7 +19,7 @@ export interface ProductModule {
 
   decrementProductInventory(productId: string): void
 
-  getAllProducts(): Promise<void>
+  pullAllProducts(): Promise<void>
 }
 
 export interface CartModule {

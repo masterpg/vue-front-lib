@@ -53,12 +53,12 @@ suite('store/product-module', () => {
     assert(true)
   })
 
-  test('getAllProducts()', async () => {
+  test('pullAllProducts()', async () => {
     const NEW_API_PRODUCTS = [ { id: '1', title: 'product1', price: 101, inventory: 1 }, { id: '2', title: 'product2', price: 102, inventory: 2 } ]
     td.replace(shopAPI, 'getProducts')
     td.when(shopAPI.getProducts()).thenResolve(NEW_API_PRODUCTS)
 
-    await productModule.getAllProducts()
+    await productModule.pullAllProducts()
     assert.deepEqual(productModule.allProducts, NEW_API_PRODUCTS)
   })
 })

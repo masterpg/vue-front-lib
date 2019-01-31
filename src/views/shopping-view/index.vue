@@ -108,7 +108,7 @@ export default class ShoppingView extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
 
   async created() {
-    await this.$appStore.product.getAllProducts()
+    await this.$appStore.product.pullAllProducts()
   }
 
   //----------------------------------------------------------------------

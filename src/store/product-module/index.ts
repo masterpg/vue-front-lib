@@ -59,7 +59,7 @@ export class ProductModuleImpl extends BaseModule<ProductState> implements Produ
     }
   }
 
-  async getAllProducts(): Promise<void> {
+  async pullAllProducts(): Promise<void> {
     const products = await this.$apis.shop.getProducts()
     this.f_state.all = products
   }
