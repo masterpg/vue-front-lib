@@ -50,11 +50,7 @@ suite('store/cart-module', () => {
   })
 
   test('getCartItemById() - 存在しない商品IDを指定した場合', () => {
-    assert.throws(
-      () => cartModule.getCartItemById('9876'),
-      Error,
-      'A product that matches the specified productId "9876" was not found.'
-    )
+    assert.throws(() => cartModule.getCartItemById('9876'), Error, 'A product that matches the specified productId "9876" was not found.')
   })
 
   test('addProductToCart() - 一般ケース', () => {

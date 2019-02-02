@@ -131,20 +131,13 @@ app-drawer-layout {
         <div main-title>View name</div>
       </app-toolbar>
 
-      <transition
-        name="view"
-        mode="out-in"
-        enter-active-class="animated tada faster"
-        leave-active-class="animated bounceOutRight faster"
-      >
+      <transition name="view" mode="out-in" enter-active-class="animated tada faster" leave-active-class="animated bounceOutRight faster">
         <router-view />
       </transition>
     </app-drawer-layout>
 
     <paper-toast ref="swToast" :duration="m_swUpdateIsRequired ? 0 : 5000" :text="m_swMessage">
-      <paper-button v-show="m_swUpdateIsRequired" class="link-button" @click="m_reload">{{
-        $t('reload')
-      }}</paper-button>
+      <paper-button v-show="m_swUpdateIsRequired" class="link-button" @click="m_reload">{{ $t('reload') }}</paper-button>
     </paper-toast>
   </div>
 </template>

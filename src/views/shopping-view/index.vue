@@ -36,16 +36,12 @@
         <div class="title-text">{{ $t('products') }}</div>
       </div>
       <hr style="width: 100%;" />
-      <div
-        v-for="product in $appStore.product.allProducts"
-        :key="product.id"
-        class="layout horizontal center product-item"
-      >
+      <div v-for="product in $appStore.product.allProducts" :key="product.id" class="layout horizontal center product-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
           <div class="detail">
-            <span>{{ $t('price') }}</span> &mdash; {{ product.price | currency }},&nbsp;
-            <span>{{ $t('stock') }}</span> &mdash; {{ product.inventory }}
+            <span>{{ $t('price') }}</span> &mdash; {{ product.price | currency }},&nbsp; <span>{{ $t('stock') }}</span> &mdash;
+            {{ product.inventory }}
           </div>
         </div>
         <div class="flex"></div>
@@ -69,9 +65,7 @@
       </div>
       <div class="layout horizontal center">
         <div class="flex error-text">{{ m_checkoutStatus.message }}</div>
-        <paper-button v-show="!m_cartIsEmpty" class="checkout-button" @click="m_checkoutButtonOnClick">{{
-          $t('checkout')
-        }}</paper-button>
+        <paper-button v-show="!m_cartIsEmpty" class="checkout-button" @click="m_checkoutButtonOnClick">{{ $t('checkout') }}</paper-button>
       </div>
     </div>
   </div>

@@ -55,10 +55,7 @@ suite('store/product-module', () => {
   })
 
   test('pullAllProducts()', async () => {
-    const NEW_API_PRODUCTS = [
-      {id: '1', title: 'product1', price: 101, inventory: 1},
-      {id: '2', title: 'product2', price: 102, inventory: 2},
-    ]
+    const NEW_API_PRODUCTS = [{id: '1', title: 'product1', price: 101, inventory: 1}, {id: '2', title: 'product2', price: 102, inventory: 2}]
     td.replace(shopAPI, 'getProducts')
     td.when(shopAPI.getProducts()).thenResolve(NEW_API_PRODUCTS)
 

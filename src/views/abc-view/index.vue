@@ -58,9 +58,7 @@
           <span class="title">checked: </span><span class="value">{{ m_customChecked }}</span>
         </span>
       </div>
-      <div class="layout horizontal end-justified">
-        <paper-button raised @click="m_sleepButtonOnClick">Sleep</paper-button>
-      </div>
+      <div class="layout horizontal end-justified"><paper-button raised @click="m_sleepButtonOnClick">Sleep</paper-button></div>
     </paper-card>
   </div>
 </template>
