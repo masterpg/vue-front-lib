@@ -1,5 +1,5 @@
 {
-  "name": "vue-www-base",
+  "name": "vue-base-project",
   "scripts": {
     "dev": "node json-server.js & vue-cli-service serve --mode development",
     "stg": "vue-cli-service build --mode staging || npm run serve",
@@ -48,9 +48,9 @@
     "@vue/cli-plugin-pwa": "^3.2.0",
     "@vue/cli-plugin-typescript": "^3.2.0",
     "@vue/cli-service": "^3.2.0",
-    "browser-sync": "^2.26.3",
     "@vue/eslint-config-prettier": "^4.0.1",
     "@vue/eslint-config-typescript": "^3.2.1",
+    "browser-sync": "^2.26.3",
     "chai": "^4.2.0",
     "copy-webpack-plugin": "^4.6.0",
     "eslint": "^5.12.1",
