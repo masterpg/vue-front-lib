@@ -2,6 +2,7 @@ import {BaseModule} from '@/store/base'
 import {CartModule, CartItem, CheckoutStatus, Product, ProductModule} from '@/store/types'
 import {Component} from 'vue-property-decorator'
 import {NoCache} from '@/base/component'
+import {apis} from '@/apis'
 
 export interface CartState {
   items: Array<{id: string, quantity: number}>
@@ -109,7 +110,7 @@ export class CartModuleImpl extends BaseModule<CartState> implements CartModule 
     const savedCartItems = [...this.f_state.items]
     this.f_state.checkoutStatus = CheckoutStatus.None
     try {
-      await this.$apis.shop.buyProducts(this.f_state.items)
+      await apis.shop.buyProducts(this.f_state.items)
       this.f_state.items = [] // カートを空にする
       this.f_state.checkoutStatus = CheckoutStatus.Successful
     } catch (err) {

@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import {APIs} from '@/apis'
 
 export abstract class BaseModule<S> extends Vue {
   //----------------------------------------------------------------------
@@ -7,8 +6,6 @@ export abstract class BaseModule<S> extends Vue {
   //  Variables
   //
   //----------------------------------------------------------------------
-
-  protected readonly $apis: APIs
 
   m_state: S
 

@@ -2,6 +2,7 @@ import {BaseModule} from '@/store/base'
 import {Component} from 'vue-property-decorator'
 import {NoCache} from '@/base/component'
 import {Product, ProductModule} from '@/store/types'
+import {apis} from '@/apis'
 
 export interface ProductState {
   all: Product[]
@@ -60,7 +61,7 @@ export class ProductModuleImpl extends BaseModule<ProductState> implements Produ
   }
 
   async pullAllProducts(): Promise<void> {
-    const products = await this.$apis.shop.getProducts()
+    const products = await apis.shop.getProducts()
     this.f_state.all = products
   }
 

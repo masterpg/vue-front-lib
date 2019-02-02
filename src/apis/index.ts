@@ -23,10 +23,6 @@ export let apis: APIs
 
 export function initAPI(): void {
   apis = new APIsImpl()
-  Object.defineProperty(Vue.prototype, '$apis', {
-    value: apis,
-    writable: false,
-  })
 }
 
 export * from '@/apis/types'

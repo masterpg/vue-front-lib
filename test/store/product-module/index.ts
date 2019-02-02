@@ -2,13 +2,14 @@ import * as td from 'testdouble'
 import {Product as APIProduct} from '@/apis'
 import {Product} from '@/store'
 import {TestModule} from '../../types'
+import {apis} from '@/apis'
 import {newProductModule, ProductState, ProductModuleImpl} from '@/store/product-module'
 
 const assert = chai.assert
 
 suite('store/product-module', () => {
   const productModule = newProductModule() as ProductModuleImpl & TestModule<ProductState>
-  const shopAPI = productModule.$apis.shop
+  const shopAPI = apis.shop
 
   const API_PRODUCTS: APIProduct[] = [
     {id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 2},

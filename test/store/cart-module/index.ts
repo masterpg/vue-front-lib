@@ -1,16 +1,17 @@
 import * as td from 'testdouble'
-import {newProductModule} from '@/store/product-module'
 import {CartState, CartModuleImpl, newCartModule} from '@/store/cart-module'
 import {CheckoutStatus} from '@/store'
 import {Product as APIProduct} from '@/apis'
 import {TestModule} from '../../types'
+import {apis} from '@/apis'
+import {newProductModule} from '@/store/product-module'
 
 const assert = chai.assert
 
 suite('store/cart-module', () => {
   const productModule = newProductModule()
   const cartModule = newCartModule({product: productModule}) as CartModuleImpl & TestModule<CartState>
-  const shopAPI = cartModule.$apis.shop
+  const shopAPI = apis.shop
 
   const PRODUCTS: APIProduct[] = [
     {id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 2},
