@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { clone, cloneDeep, assign, assignIn } from 'lodash'
+import {clone, cloneDeep, assign, assignIn} from 'lodash'
 
 export class Utils {
   /**
@@ -22,13 +22,17 @@ export class Utils {
 
   assign<TObject, TSource>(object: TObject, source: TSource): TObject & TSource
 
-  assign<TObject, TSource1, TSource2>(object: TObject, source1: TSource1, source2: TSource2): TObject & TSource1 & TSource2
+  assign<TObject, TSource1, TSource2>(
+    object: TObject,
+    source1: TSource1,
+    source2: TSource2
+  ): TObject & TSource1 & TSource2
 
   assign<TObject, TSource1, TSource2, TSource3>(
     object: TObject,
     source1: TSource1,
     source2: TSource2,
-    source3: TSource3,
+    source3: TSource3
   ): TObject & TSource1 & TSource2 & TSource3
 
   assign<TObject, TSource1, TSource2, TSource3, TSource4>(
@@ -36,7 +40,7 @@ export class Utils {
     source1: TSource1,
     source2: TSource2,
     source3: TSource3,
-    source4: TSource4,
+    source4: TSource4
   ): TObject & TSource1 & TSource2 & TSource3 & TSource4
 
   assign<TObject, TSource1, TSource2, TSource3, TSource4, TSource5>(
@@ -45,7 +49,7 @@ export class Utils {
     source2: TSource2,
     source3: TSource3,
     source4: TSource4,
-    source5: TSource5,
+    source5: TSource5
   ): TObject & TSource1 & TSource2 & TSource3 & TSource4 & TSource5
 
   /**
@@ -63,13 +67,17 @@ export class Utils {
 
   assignIn<TObject, TSource>(object: TObject, source: TSource): TObject & TSource
 
-  assignIn<TObject, TSource1, TSource2>(object: TObject, source1: TSource1, source2: TSource2): TObject & TSource1 & TSource2
+  assignIn<TObject, TSource1, TSource2>(
+    object: TObject,
+    source1: TSource1,
+    source2: TSource2
+  ): TObject & TSource1 & TSource2
 
   assignIn<TObject, TSource1, TSource2, TSource3>(
     object: TObject,
     source1: TSource1,
     source2: TSource2,
-    source3: TSource3,
+    source3: TSource3
   ): TObject & TSource1 & TSource2 & TSource3
 
   assignIn<TObject, TSource1, TSource2, TSource3, TSource4>(
@@ -77,7 +85,7 @@ export class Utils {
     source1: TSource1,
     source2: TSource2,
     source3: TSource3,
-    source4: TSource4,
+    source4: TSource4
   ): TObject & TSource1 & TSource2 & TSource3 & TSource4
 
   assignIn<TObject, TSource1, TSource2, TSource3, TSource4, TSource5>(
@@ -86,7 +94,7 @@ export class Utils {
     source2: TSource2,
     source3: TSource3,
     source4: TSource4,
-    source5: TSource5,
+    source5: TSource5
   ): TObject & TSource1 & TSource2 & TSource3 & TSource4 & TSource5
 
   /**

@@ -1,8 +1,8 @@
 import * as td from 'testdouble'
-import { Product as APIProduct } from '@/apis'
-import { Product } from '@/store'
-import { TestModule } from '../../types'
-import { newProductModule, ProductState, ProductModuleImpl } from '@/store/product-module'
+import {Product as APIProduct} from '@/apis'
+import {Product} from '@/store'
+import {TestModule} from '../../types'
+import {newProductModule, ProductState, ProductModuleImpl} from '@/store/product-module'
 
 const assert = chai.assert
 
@@ -11,9 +11,9 @@ suite('store/product-module', () => {
   const shopAPI = productModule.$apis.shop
 
   const API_PRODUCTS: APIProduct[] = [
-    { id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 2 },
-    { id: '2', title: 'H&M T-Shirt White', price: 10.99, inventory: 10 },
-    { id: '3', title: 'Charli XCX - Sucker CD', price: 19.99, inventory: 5 },
+    {id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 2},
+    {id: '2', title: 'H&M T-Shirt White', price: 10.99, inventory: 10},
+    {id: '3', title: 'Charli XCX - Sucker CD', price: 19.99, inventory: 5},
   ]
 
   setup(() => {
@@ -54,7 +54,10 @@ suite('store/product-module', () => {
   })
 
   test('pullAllProducts()', async () => {
-    const NEW_API_PRODUCTS = [ { id: '1', title: 'product1', price: 101, inventory: 1 }, { id: '2', title: 'product2', price: 102, inventory: 2 } ]
+    const NEW_API_PRODUCTS = [
+      {id: '1', title: 'product1', price: 101, inventory: 1},
+      {id: '2', title: 'product2', price: 102, inventory: 2},
+    ]
     td.replace(shopAPI, 'getProducts')
     td.when(shopAPI.getProducts()).thenResolve(NEW_API_PRODUCTS)
 

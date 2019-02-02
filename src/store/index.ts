@@ -1,8 +1,8 @@
 import Vue from 'vue'
-import { newCartModule } from '@/store/cart-module'
-import { newProductModule } from '@/store/product-module'
-import { AppStore, CartModule, ProductModule } from '@/store/types'
-import { Component } from 'vue-property-decorator'
+import {newCartModule} from '@/store/cart-module'
+import {newProductModule} from '@/store/product-module'
+import {AppStore, CartModule, ProductModule} from '@/store/types'
+import {Component} from 'vue-property-decorator'
 
 const debug = process.env.NODE_ENV !== 'production'
 
@@ -11,7 +11,7 @@ class AppStoreImpl extends Vue implements AppStore {
   constructor() {
     super()
     this.m_product = newProductModule()
-    this.m_cart = newCartModule({ product: this.product })
+    this.m_cart = newCartModule({product: this.product})
   }
 
   m_product: ProductModule

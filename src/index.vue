@@ -131,13 +131,20 @@ app-drawer-layout {
         <div main-title>View name</div>
       </app-toolbar>
 
-      <transition name="view" mode="out-in" enter-active-class="animated tada faster" leave-active-class="animated bounceOutRight faster">
+      <transition
+        name="view"
+        mode="out-in"
+        enter-active-class="animated tada faster"
+        leave-active-class="animated bounceOutRight faster"
+      >
         <router-view />
       </transition>
     </app-drawer-layout>
 
     <paper-toast ref="swToast" :duration="m_swUpdateIsRequired ? 0 : 5000" :text="m_swMessage">
-      <paper-button v-show="m_swUpdateIsRequired" class="link-button" @click="m_reload">{{ $t('reload') }}</paper-button>
+      <paper-button v-show="m_swUpdateIsRequired" class="link-button" @click="m_reload">{{
+        $t('reload')
+      }}</paper-button>
     </paper-toast>
   </div>
 </template>
@@ -157,9 +164,9 @@ import '@polymer/paper-icon-button/paper-icon-button'
 import '@polymer/paper-toast/paper-toast'
 
 import * as sw from '@/base/service-worker'
-import { BaseComponent } from '@/base/component'
-import { Component } from 'vue-property-decorator'
-import { mixins } from 'vue-class-component'
+import {BaseComponent} from '@/base/component'
+import {Component} from 'vue-property-decorator'
+import {mixins} from 'vue-class-component'
 
 @Component
 export default class AppView extends mixins(BaseComponent) {
@@ -171,7 +178,7 @@ export default class AppView extends mixins(BaseComponent) {
 
   m_narrow: boolean = false
 
-  m_items: Array<{ title: string, path: string }> = [
+  m_items: Array<{title: string, path: string}> = [
     {
       title: 'ABC',
       path: '/pages/abc',
@@ -190,7 +197,7 @@ export default class AppView extends mixins(BaseComponent) {
   //  Elements
   //--------------------------------------------------
 
-  get m_swToast(): { open: () => void } {
+  get m_swToast(): {open: () => void} {
     return this.$refs.swToast as any
   }
 

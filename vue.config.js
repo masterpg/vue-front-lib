@@ -56,13 +56,13 @@ module.exports = {
       skipWaiting: true,
 
       // ServiceWorkerインストール時にキャッシュされるファイルを設定
-      include: [ /\.html$/, /\.js$/, /\.css$/, /^favicon\.ico$/ ],
-      exclude: [ /\.map$/ ],
+      include: [/\.html$/, /\.js$/, /\.css$/, /^favicon\.ico$/],
+      exclude: [/\.map$/],
 
       // `/`以下のパスで存在しないファイルまたはディレクトリが
       // 指定された場合にindex.htmlへフォールバックするよう設定
       navigateFallback: '/index.html',
-      navigateFallbackWhitelist: [ /^\// ],
+      navigateFallbackWhitelist: [/^\//],
 
       // フェッチ時にキャッシュされるパスを設定
       runtimeCaching: [
@@ -78,7 +78,7 @@ module.exports = {
     },
   },
 
-  chainWebpack: (config) => {
+  chainWebpack: config => {
     // Vue I18n 単一ファイルコンポーネントの設定
     // http://kazupon.github.io/vue-i18n/guide/sfc.html
     config.module
@@ -125,18 +125,18 @@ module.exports = {
         .end()
 
     // 必要なリソースファイルのコピー
-    let copyFiles = [ { from: 'node_modules/@webcomponents/webcomponentsjs/**/*.js' } ]
+    let copyFiles = [{from: 'node_modules/@webcomponents/webcomponentsjs/**/*.js'}]
     if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
       copyFiles = [
         ...copyFiles,
-        { from: 'node_modules/mocha/mocha.css', to: 'node_modules/mocha' },
-        { from: 'node_modules/mocha/mocha.js', to: 'node_modules/mocha' },
-        { from: 'node_modules/chai/chai.js', to: 'node_modules/chai' },
+        {from: 'node_modules/mocha/mocha.css', to: 'node_modules/mocha'},
+        {from: 'node_modules/mocha/mocha.js', to: 'node_modules/mocha'},
+        {from: 'node_modules/chai/chai.js', to: 'node_modules/chai'},
       ]
     }
     config
       .plugin('copy-prod')
-        .use(CopyWebpackPlugin, [ copyFiles ])
+        .use(CopyWebpackPlugin, [copyFiles])
         .after('copy')
   },
 

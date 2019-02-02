@@ -1,21 +1,21 @@
 import * as td from 'testdouble'
-import { newProductModule } from '@/store/product-module'
-import { CartState, CartModuleImpl, newCartModule } from '@/store/cart-module'
-import { CheckoutStatus } from '@/store'
-import { Product as APIProduct } from '@/apis'
-import { TestModule } from '../../types'
+import {newProductModule} from '@/store/product-module'
+import {CartState, CartModuleImpl, newCartModule} from '@/store/cart-module'
+import {CheckoutStatus} from '@/store'
+import {Product as APIProduct} from '@/apis'
+import {TestModule} from '../../types'
 
 const assert = chai.assert
 
 suite('store/cart-module', () => {
   const productModule = newProductModule()
-  const cartModule = newCartModule({ product: productModule }) as CartModuleImpl & TestModule<CartState>
+  const cartModule = newCartModule({product: productModule}) as CartModuleImpl & TestModule<CartState>
   const shopAPI = cartModule.$apis.shop
 
   const PRODUCTS: APIProduct[] = [
-    { id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 2 },
-    { id: '2', title: 'H&M T-Shirt White', price: 10.99, inventory: 10 },
-    { id: '3', title: 'Charli XCX - Sucker CD', price: 19.99, inventory: 5 },
+    {id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 2},
+    {id: '2', title: 'H&M T-Shirt White', price: 10.99, inventory: 10},
+    {id: '3', title: 'Charli XCX - Sucker CD', price: 19.99, inventory: 5},
   ]
 
   setup(() => {
@@ -34,7 +34,7 @@ suite('store/cart-module', () => {
   })
 
   test('getCartItemById() - 一般ケース', () => {
-    cartModule.f_state.items = [ { id: '1', quantity: 1 } ]
+    cartModule.f_state.items = [{id: '1', quantity: 1}]
     const product = PRODUCTS[0]
     td.replace(cartModule, 'm_getProductById')
     td.when(cartModule.m_getProductById(product.id)).thenReturn(product)
@@ -49,7 +49,11 @@ suite('store/cart-module', () => {
   })
 
   test('getCartItemById() - 存在しない商品IDを指定した場合', () => {
-    assert.throws(() => cartModule.getCartItemById('9876'), Error, 'A product that matches the specified productId "9876" was not found.')
+    assert.throws(
+      () => cartModule.getCartItemById('9876'),
+      Error,
+      'A product that matches the specified productId "9876" was not found.'
+    )
   })
 
   test('addProductToCart() - 一般ケース', () => {
@@ -80,7 +84,7 @@ suite('store/cart-module', () => {
   })
 
   test('checkout() - 一般ケース', async () => {
-    const CART_ITEMS = [ { id: '1', quantity: 1 }, { id: '2', quantity: 1 } ]
+    const CART_ITEMS = [{id: '1', quantity: 1}, {id: '2', quantity: 1}]
     cartModule.f_state.items = CART_ITEMS
     const buyProducts = td.replace(shopAPI, 'buyProducts')
     td.when(shopAPI.buyProducts(CART_ITEMS)).thenResolve()
@@ -96,7 +100,7 @@ suite('store/cart-module', () => {
   })
 
   test('checkout() - エラーケース', async () => {
-    const CART_ITEMS = [ { id: '1', quantity: 1 }, { id: '2', quantity: 1 } ]
+    const CART_ITEMS = [{id: '1', quantity: 1}, {id: '2', quantity: 1}]
     cartModule.f_state.items = CART_ITEMS
 
     const buyProducts = td.replace(shopAPI, 'buyProducts')

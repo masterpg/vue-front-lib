@@ -1,7 +1,7 @@
-import { BaseModule } from '@/store/base'
-import { Component } from 'vue-property-decorator'
-import { NoCache } from '@/base/component'
-import { Product, ProductModule } from '@/store/types'
+import {BaseModule} from '@/store/base'
+import {Component} from 'vue-property-decorator'
+import {NoCache} from '@/base/component'
+import {Product, ProductModule} from '@/store/types'
 
 export interface ProductState {
   all: Product[]
@@ -71,7 +71,7 @@ export class ProductModuleImpl extends BaseModule<ProductState> implements Produ
   //----------------------------------------------------------------------
 
   m_getStateProductById(productId: string): Product | undefined {
-    return this.f_state.all.find((item) => item.id === productId)
+    return this.f_state.all.find(item => item.id === productId)
   }
 }
 

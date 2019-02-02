@@ -1,5 +1,5 @@
-(async () => {
-  mocha.setup({ ui: 'tdd' })
+;(async () => {
+  mocha.setup({ui: 'tdd'})
 
   const utils = await import('../src/base/utils')
   const config = await import('../src/base/config')
@@ -11,7 +11,7 @@
   apis.initAPI()
   store.initStore()
 
-  await Promise.all([ import('./api/shop-api'), import('./store/cart-module'), import('./store/product-module') ])
+  await Promise.all([import('./api/shop-api'), import('./store/cart-module'), import('./store/product-module')])
 
   mocha.run()
 })()

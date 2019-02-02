@@ -1,6 +1,7 @@
 export default {
   sw: {
-    ready: 'アプリケーションは Service Worker によってキャッシュからサーブされています。詳細は https://goo.gl/AFskqB を参照ください。',
+    ready:
+      'アプリケーションは Service Worker によってキャッシュからサーブされています。詳細は https://goo.gl/AFskqB を参照ください。',
     registered: 'Service Worker は既に登録されています。',
     cached: 'オフライン用にコンテンツがキャッシュされました。',
     updatefound: '新しいコンテンツがダウンロード中です。',
