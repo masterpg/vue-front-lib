@@ -10,7 +10,7 @@
     "build:styles": "postcss --config build/postcss.config.js src/index.pcss -o dist/index.css",
     "serve": "node json-server.js & browser-sync start --port 5000 --proxy '0.0.0.0:5010' --serveStatic 'dist' --no-open",
     "docs": "postcss --config build/postcss.config.js docs/book.pcss -o docs/book.css && cd docs && ../node_modules/.bin/gitbook install && ../node_modules/.bin/gitbook serve",
-    "lint": "vue-cli-service lint"
+    "lint": "./scripts/lint.sh"
   },
   "dependencies": {
     "@polymer/app-layout": "^3.0.2",
