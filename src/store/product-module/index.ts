@@ -1,14 +1,14 @@
-import { BaseStore } from '@/stores/base'
-import { Component } from 'vue-property-decorator'
-import { NoCache } from '@/base/component'
-import { Product, ProductStore } from '@/stores/types'
+import {BaseModule} from '@/store/base'
+import {Component} from 'vue-property-decorator'
+import {NoCache} from '@/base/component'
+import {Product, ProductModule} from '@/store/types'
 
 export interface ProductState {
   all: Product[]
 }
 
 @Component
-export class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
+export class ProductModuleImpl extends BaseModule<ProductState> implements ProductModule {
   //----------------------------------------------------------------------
   //
   //  Constructors
@@ -40,11 +40,9 @@ export class ProductStoreImpl extends BaseStore<ProductState> implements Product
   //----------------------------------------------------------------------
 
   async created() {
-    await this.getAllProducts()
-
     // "products"の変更をリッスン
-    this.f_db.collection('products').onSnapshot((snapshot) => {
-      snapshot.forEach((doc) => {
+    this.f_db.collection('products').onSnapshot(snapshot => {
+      snapshot.forEach(doc => {
         // ローカルデータ(バックエンドにまだ書き込みされていないデータ)は無視する
         if (doc.metadata.hasPendingWrites) return
         // 取得した商品をStateへ書き込み
@@ -52,7 +50,7 @@ export class ProductStoreImpl extends BaseStore<ProductState> implements Product
         if (stateProduct) {
           this.$utils.assignIn(stateProduct, doc.data())
         } else {
-          const product = this.$utils.assignIn({ id: doc.id }, doc.data()) as Product
+          const product = this.$utils.assignIn({id: doc.id}, doc.data()) as Product
           this.f_state.all.push(product)
         }
       })
@@ -65,7 +63,7 @@ export class ProductStoreImpl extends BaseStore<ProductState> implements Product
   //
   //----------------------------------------------------------------------
 
-  getProductById(productId: string): Product | undefined | null {
+  getProductById(productId: string): Product | undefined {
     const stateProduct = this.m_getStateProductById(productId)
     return this.$utils.cloneDeep(stateProduct)
   }
@@ -77,11 +75,11 @@ export class ProductStoreImpl extends BaseStore<ProductState> implements Product
     }
   }
 
-  async getAllProducts(): Promise<void> {
+  async pullAllProducts(): Promise<void> {
     const products: Product[] = []
     const snapshot = await this.f_db.collection('products').get()
-    snapshot.forEach((doc) => {
-      const product = this.$utils.assignIn({ id: doc.id }, doc.data()) as Product
+    snapshot.forEach(doc => {
+      const product = this.$utils.assignIn({id: doc.id}, doc.data()) as Product
       products.push(product)
     })
     this.f_state.all = products
@@ -93,11 +91,11 @@ export class ProductStoreImpl extends BaseStore<ProductState> implements Product
   //
   //----------------------------------------------------------------------
 
-  m_getStateProductById(productId: string): Product | undefined | null {
-    return this.f_state.all.find((item) => item.id === productId)
+  m_getStateProductById(productId: string): Product | undefined {
+    return this.f_state.all.find(item => item.id === productId)
   }
 }
 
-export function newProductStore(): ProductStore {
-  return new ProductStoreImpl()
+export function newProductModule(): ProductModule {
+  return new ProductModuleImpl()
 }

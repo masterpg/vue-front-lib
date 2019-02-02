@@ -1,9 +1,8 @@
 import Vue from 'vue'
-import { APIs } from '@/apis'
 
 let db: firebase.firestore.Firestore
 
-export abstract class BaseStore<S> extends Vue {
+export abstract class BaseModule<S> extends Vue {
   //----------------------------------------------------------------------
   //
   //  Constructors
@@ -20,8 +19,6 @@ export abstract class BaseStore<S> extends Vue {
   //  Variables
   //
   //----------------------------------------------------------------------
-
-  protected readonly $apis: APIs
 
   m_state: S
 
@@ -50,11 +47,11 @@ export abstract class BaseStore<S> extends Vue {
     db = firebase.firestore()
     // Firestoreで日付オブジェクトを扱うのに必要な設定
     // 現段階ではこの設定がないとエラーになるため必須
-    db.settings({ timestampsInSnapshots: true })
+    db.settings({timestampsInSnapshots: true})
   }
 
   /**
-   * Storeにひも付くStateを初期化します。
+   * Moduleにひも付くStateを初期化します。
    * @param state
    */
   f_initState(state: S): void {

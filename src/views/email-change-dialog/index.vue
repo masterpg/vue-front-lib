@@ -24,7 +24,7 @@ paper-dialog.sp {
 </style>
 
 <template>
-  <paper-dialog ref="dialog" modal with-backdrop entry-animation="fade-in-animation" exit-animation="fade-out-animation" :class="{ sp: f_sp }">
+  <paper-dialog ref="dialog" modal with-backdrop entry-animation="fade-in-animation" exit-animation="fade-out-animation" :class="{sp: f_sp}">
     <div>
       <!-- タイトル -->
       <div class="title">{{ m_title }}</div>
@@ -41,10 +41,10 @@ paper-dialog.sp {
           required
           :readonly="m_currentStep !== 'first'"
           class="input"
-          :class="{ pc: f_pc, tab: f_tab, sp: f_sp }"
+          :class="{pc: f_pc, tab: f_tab, sp: f_sp}"
           @input="
-            m_inputEmail = $event.target.value;
-            m_validateEmail();
+            m_inputEmail = $event.target.value
+            m_validateEmail()
           "
         ></paper-input>
         <!-- メールアドレス確認メッセージ -->
@@ -68,9 +68,9 @@ paper-dialog.sp {
 import '@polymer/paper-button/paper-button'
 import '@polymer/paper-input/paper-input'
 
-import { Component } from 'vue-property-decorator'
-import { BaseComponent } from '@/base/component'
-import { mixins } from 'vue-class-component'
+import {Component} from 'vue-property-decorator'
+import {BaseComponent} from '@/base/component'
+import {mixins} from 'vue-class-component'
 
 enum StepType {
   First = 'first',
@@ -95,7 +95,7 @@ export default class EmailChangeDialog extends mixins(BaseComponent) {
   //  Elements
   //--------------------------------------------------
 
-  get m_dialog(): { open: () => void, close: () => void, fit: () => void } {
+  get m_dialog(): {open: () => void, close: () => void, fit: () => void} {
     return this.$refs.dialog as any
   }
 
@@ -172,9 +172,9 @@ export default class EmailChangeDialog extends mixins(BaseComponent) {
     if (!this.m_validateEmail()) return
     // メールアドレスを変更
     // (変更前のメールアドレスに変更通知のメールが送られる)
-    await this.$stores.auth.updateEmail(this.m_inputEmail)
+    await this.$appStore.auth.updateEmail(this.m_inputEmail)
     // 変更されたメールアドレスに確認メールを送信
-    await this.$stores.auth.sendEmailVerification('http://localhost:5000')
+    await this.$appStore.auth.sendEmailVerification('http://localhost:5000')
     // メールアドレス確認待ち画面へ遷移
     this.m_setupWaitVerify()
   }

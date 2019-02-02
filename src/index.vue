@@ -138,7 +138,7 @@ paper-item {
       <app-drawer ref="drawer" slot="drawer" :swipe-open="m_narrow">
         <app-toolbar class="drawer-toolbar">
           <iron-icon src="img/icons/manifest/icon-48x48.png"></iron-icon>
-          <div main-title class="comm-ml-8">Vue WWW Base</div>
+          <div main-title class="comm-ml-8">Vue Base Project</div>
         </app-toolbar>
         <div class="drawer-list">
           <template v-for="(item, index) in m_items">
@@ -201,10 +201,10 @@ import 'web-animations-js/web-animations-next-lite.min.js'
 import * as sw from '@/base/service-worker'
 import EmailChangeDialog from '@/views/email-change-dialog/index.vue'
 import SignInDialog from '@/views/sign-in-dialog/index.vue'
-import { Account } from '@/stores/types'
-import { BaseComponent } from '@/base/component'
-import { Component } from 'vue-property-decorator'
-import { mixins } from 'vue-class-component'
+import {Account} from '@/store/types'
+import {BaseComponent} from '@/base/component'
+import {Component} from 'vue-property-decorator'
+import {mixins} from 'vue-class-component'
 
 @Component({
   components: {
@@ -221,7 +221,7 @@ export default class AppView extends mixins(BaseComponent) {
 
   m_narrow: boolean = false
 
-  m_items: Array<{ title: string, path: string }> = [
+  m_items: Array<{title: string, path: string}> = [
     {
       title: 'ABC',
       path: '/pages/abc',
@@ -237,22 +237,22 @@ export default class AppView extends mixins(BaseComponent) {
   m_swUpdateIsRequired: boolean = false
 
   get m_account(): Account {
-    return this.$stores.auth.account
+    return this.$appStore.auth.account
   }
 
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
 
-  get m_swToast(): { open: () => void } {
+  get m_swToast(): {open: () => void} {
     return this.$refs.swToast as any
   }
 
-  get m_systemMenu(): { close: () => void } {
+  get m_systemMenu(): {close: () => void} {
     return this.$refs.systemMenu as any
   }
 
-  get m_systemMenuList(): { selected: string | number } {
+  get m_systemMenuList(): {selected: string | number} {
     return this.$refs.systemMenuList as any
   }
 
@@ -311,7 +311,7 @@ export default class AppView extends mixins(BaseComponent) {
    * サインアウトを行います。
    */
   async m_signOut(): Promise<void> {
-    await this.$stores.auth.signOut()
+    await this.$appStore.auth.signOut()
   }
 
   /**
@@ -325,7 +325,7 @@ export default class AppView extends mixins(BaseComponent) {
    * ユーザーアカウントを削除します。
    */
   async m_deleteAccount(): Promise<void> {
-    await this.$stores.auth.deleteAccount()
+    await this.$appStore.auth.deleteAccount()
   }
 
   //----------------------------------------------------------------------

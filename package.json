@@ -1,5 +1,5 @@
 {
-  "name": "vue-www-base",
+  "name": "vue-base-project",
   "scripts": {
     "dev": "node json-server.js & vue-cli-service serve --mode development",
     "stg": "vue-cli-service build --mode staging || npm run serve",
@@ -10,7 +10,7 @@
     "build:styles": "postcss --config build/postcss.config.js src/index.pcss -o dist/index.css",
     "serve": "node json-server.js & browser-sync start --port 5000 --proxy '0.0.0.0:5010' --serveStatic 'dist' --no-open",
     "docs": "postcss --config build/postcss.config.js docs/book.pcss -o docs/book.css && cd docs && ../node_modules/.bin/gitbook install && ../node_modules/.bin/gitbook serve",
-    "lint": "vue-cli-service lint",
+    "lint": "./scripts/lint.sh",
     "db:backup": "firestore-backup-restore --accountCredentials serviceAccountKey.json --backupPath data/firestore-data",
     "db:restore": "firestore-backup-restore --backupPath data/firestore-data --restoreAccountCredentials serviceAccountKey.json"
   },

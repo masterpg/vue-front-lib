@@ -37,7 +37,7 @@
         required
         :readonly="m_currentStep !== 'first'"
         class="input"
-        :class="{ pc: f_pc, tab: f_tab, sp: f_sp }"
+        :class="{pc: f_pc, tab: f_tab, sp: f_sp}"
         @input="m_validateEmail()"
       ></sign-in-input>
       <!-- 表示名インプット -->
@@ -49,7 +49,7 @@
         name="displayName"
         item-name="Display name"
         class="input"
-        :class="{ pc: f_pc, tab: f_tab, sp: f_sp }"
+        :class="{pc: f_pc, tab: f_tab, sp: f_sp}"
         @input="m_validateDisplayName()"
       ></sign-in-input>
       <!-- パスワードインプット -->
@@ -62,7 +62,7 @@
         item-name="Password"
         required
         class="input"
-        :class="{ pc: f_pc, tab: f_tab, sp: f_sp }"
+        :class="{pc: f_pc, tab: f_tab, sp: f_sp}"
         @input="m_validatePassword()"
       ></sign-in-input>
       <!-- メールアドレス確認メッセージ -->
@@ -104,10 +104,10 @@ import '@polymer/paper-button/paper-button'
 import '@polymer/paper-input/paper-input'
 
 import SignInInput from '@/views/sign-in-dialog/sign-in-input.vue'
-import { AuthProviderType } from '@/stores/types'
-import { Component } from 'vue-property-decorator'
-import { BaseComponent } from '@/base/component'
-import { mixins } from 'vue-class-component'
+import {AuthProviderType} from '@/store/types'
+import {Component} from 'vue-property-decorator'
+import {BaseComponent} from '@/base/component'
+import {mixins} from 'vue-class-component'
 
 enum StepType {
   First = 'first',
@@ -226,10 +226,10 @@ export default class EmailSignInView extends mixins(BaseComponent) {
   async m_setupNext(): Promise<void> {
     if (!this.m_validateEmail()) return
     // 入力されたメールアドレスの認証プロバイダを取得
-    const providers = await this.$stores.auth.fetchSignInMethodsForEmail(this.m_inputEmail)
+    const providers = await this.$appStore.auth.fetchSignInMethodsForEmail(this.m_inputEmail)
 
     // 取得した認証プロバイダの中にパスワード認証があるかを取得
-    const passwordProviderContains = providers.some((provider) => provider === AuthProviderType.Password)
+    const passwordProviderContains = providers.some(provider => provider === AuthProviderType.Password)
 
     // パスワード認証があった場合、サインイン画面へ遷移
     if (passwordProviderContains) {
@@ -296,12 +296,12 @@ export default class EmailSignInView extends mixins(BaseComponent) {
     if (!this.m_validateDisplayName()) return
     if (!this.m_validatePassword()) return
     // メールアドレス＋パスワードでアカウントを作成
-    await this.$stores.auth.createUserWithEmailAndPassword(this.m_inputEmail, this.m_inputPassword, {
+    await this.$appStore.auth.createUserWithEmailAndPassword(this.m_inputEmail, this.m_inputPassword, {
       displayName: this.m_inputDisplayName,
       photoURL: null,
     })
     // 作成されたアカウントのメールアドレスに確認メールを送信
-    await this.$stores.auth.sendEmailVerification('http://localhost:5000')
+    await this.$appStore.auth.sendEmailVerification('http://localhost:5000')
     // メールアドレス確認待ち画面へ遷移
     this.m_setupWaitVerify()
   }
@@ -314,21 +314,21 @@ export default class EmailSignInView extends mixins(BaseComponent) {
     if (!this.m_validatePassword()) return
 
     // メールアドレス＋パスワードでサインイン
-    const signInResult = await this.$stores.auth.signInWithEmailAndPassword(this.m_inputEmail, this.m_inputPassword)
+    const signInResult = await this.$appStore.auth.signInWithEmailAndPassword(this.m_inputEmail, this.m_inputPassword)
     if (!signInResult.result) {
       this.m_passwordInput.errorMessage = signInResult.errorMessage
       return
     }
 
     // メールアドレス確認が行われている場合
-    if (this.$stores.auth.account.emailVerified) {
+    if (this.$appStore.auth.account.emailVerified) {
       // サインイン完了
       this.m_complete()
     }
     // メールアドレス確認が行われていない場合
     else {
       // アカウントのメールアドレスに確認メールを送信
-      await this.$stores.auth.sendEmailVerification('http://localhost:5000')
+      await this.$appStore.auth.sendEmailVerification('http://localhost:5000')
       // メールアドレス確認待ち画面へ遷移
       this.m_setupWaitVerify()
     }
@@ -340,7 +340,7 @@ export default class EmailSignInView extends mixins(BaseComponent) {
   async m_reset(): Promise<void> {
     try {
       // アカウントのメールアドレスにパスワードリセットのメールを送信
-      await this.$stores.auth.sendPasswordResetEmail(this.m_inputEmail, 'http://localhost:5000')
+      await this.$appStore.auth.sendPasswordResetEmail(this.m_inputEmail, 'http://localhost:5000')
       // パスワードリセット待ち画面へ遷移
       this.m_setupWaitReset()
     } catch (err) {

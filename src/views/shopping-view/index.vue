@@ -33,13 +33,13 @@
 </style>
 
 <template>
-  <div class="layout vertical" :class="{ 'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp }">
+  <div class="layout vertical" :class="{'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp}">
     <div>
       <div class="layout horizontal center">
         <div class="title-text">{{ $t('products') }}</div>
       </div>
       <hr style="width: 100%;" />
-      <div v-for="(product) in m_products" :key="product.id" class="layout horizontal center product-item">
+      <div v-for="product in $appStore.product.allProducts" :key="product.id" class="layout horizontal center product-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
           <div class="detail">
@@ -48,7 +48,7 @@
           </div>
         </div>
         <div class="flex"></div>
-        <paper-icon-button icon="icons:add-box" @click="m_addProductToCart(product)"></paper-icon-button>
+        <paper-icon-button icon="icons:add-box" @click="m_addButtonOnClick(product)"></paper-icon-button>
       </div>
     </div>
 
@@ -58,7 +58,7 @@
         <div class="flex"></div>
       </div>
       <hr style="width: 100%;" />
-      <div v-for="(cartItem) in m_cartItems" :key="cartItem.id" class="layout horizontal center cart-item">
+      <div v-for="cartItem in $appStore.cart.cartItems" :key="cartItem.id" class="layout horizontal center cart-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ cartItem.title }}</div>
           <div class="detail">
@@ -68,7 +68,9 @@
       </div>
       <div class="layout horizontal center">
         <div class="flex error-text">{{ m_checkoutStatus.message }}</div>
-        <paper-button v-show="!m_cartIsEmpty" ref="checkoutButton" class="checkout-button" @click="m_checkout">{{ $t('checkout') }}</paper-button>
+        <paper-button v-show="!m_cartIsEmpty" ref="checkoutButton" class="checkout-button" @click="m_checkoutButtonOnClick">{{
+          $t('checkout')
+        }}</paper-button>
       </div>
     </div>
   </div>
@@ -79,10 +81,10 @@ import '@polymer/paper-button/paper-button'
 import '@polymer/paper-card/paper-card'
 import '@polymer/paper-icon-button/paper-icon-button'
 
-import { BaseComponent } from '@/base/component'
-import { CartItem, CheckoutStatus, Product } from '@/stores'
-import { Component } from 'vue-property-decorator'
-import { mixins } from 'vue-class-component'
+import {BaseComponent} from '@/base/component'
+import {CartItem, CheckoutStatus, Product} from '@/store'
+import {Component} from 'vue-property-decorator'
+import {mixins} from 'vue-class-component'
 
 @Component
 export default class ShoppingView extends mixins(BaseComponent) {
@@ -93,23 +95,12 @@ export default class ShoppingView extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
 
   get m_cartIsEmpty(): boolean {
-    return this.m_cartItems.length === 0
+    return this.$appStore.cart.cartItems.length === 0
   }
 
-  get m_products(): Product[] {
-    return this.$stores.product.allProducts
-  }
-
-  get m_cartItems(): CartItem[] {
-    return this.$stores.cart.cartItems
-  }
-
-  get m_cartTotalPrice(): number {
-    return this.$stores.cart.cartTotalPrice
-  }
-
-  get m_checkoutStatus(): { result: boolean, message: string } {
-    const result = this.$stores.cart.checkoutStatus === CheckoutStatus.None || this.$stores.cart.checkoutStatus === CheckoutStatus.Successful
+  get m_checkoutStatus(): {result: boolean, message: string} {
+    const checkoutStatus = this.$appStore.cart.checkoutStatus
+    const result = checkoutStatus === CheckoutStatus.None || checkoutStatus === CheckoutStatus.Successful
     return {
       result,
       message: result ? '' : 'Checkout failed.',
@@ -130,21 +121,23 @@ export default class ShoppingView extends mixins(BaseComponent) {
   //
   //----------------------------------------------------------------------
 
-  created() {}
-
-  //----------------------------------------------------------------------
-  //
-  //  Internal methods
-  //
-  //----------------------------------------------------------------------
-
-  m_addProductToCart(product: Product): void {
-    this.$stores.cart.addProductToCart(product.id)
+  async created() {
+    await this.$appStore.product.pullAllProducts()
   }
 
-  async m_checkout(): Promise<void> {
+  //----------------------------------------------------------------------
+  //
+  //  Event handlers
+  //
+  //----------------------------------------------------------------------
+
+  m_addButtonOnClick(product: Product): void {
+    this.$appStore.cart.addProductToCart(product.id)
+  }
+
+  async m_checkoutButtonOnClick(): Promise<void> {
     this.m_checkoutButton.disabled = true
-    await this.$stores.cart.checkout()
+    await this.$appStore.cart.checkout()
     this.m_checkoutButton.disabled = false
   }
 }

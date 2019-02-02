@@ -1,17 +1,17 @@
-(async () => {
-  mocha.setup({ ui: 'tdd' })
+;(async () => {
+  mocha.setup({ui: 'tdd'})
 
   const utils = await import('../src/base/utils')
   const config = await import('../src/base/config')
   const apis = await import('../src/apis')
-  const stores = await import('../src/stores')
+  const store = await import('../src/store')
 
   utils.initUtils()
   config.initConfig()
   apis.initAPI()
-  stores.initStores()
+  store.initStore()
 
-  await Promise.all([ import('./api/shop-api'), import('./stores/cart-store'), import('./stores/product-store') ])
+  await Promise.all([import('./api/shop-api'), import('./store/cart-module'), import('./store/product-module')])
 
   mocha.run()
 })()

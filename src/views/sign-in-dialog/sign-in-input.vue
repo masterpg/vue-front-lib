@@ -48,9 +48,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from 'vue-property-decorator'
-import { BaseComponent } from '@/base/component'
-import { mixins } from 'vue-class-component'
+import {Component, Prop} from 'vue-property-decorator'
+import {BaseComponent} from '@/base/component'
+import {mixins} from 'vue-class-component'
 
 @Component
 export default class SignInInput extends mixins(BaseComponent) {
@@ -78,22 +78,22 @@ export default class SignInInput extends mixins(BaseComponent) {
   //
   //----------------------------------------------------------------------
 
-  @Prop({ default: '' })
+  @Prop({default: ''})
   value: string
 
-  @Prop({ default: '' })
+  @Prop({default: ''})
   type: 'text' | 'email' | 'password'
 
-  @Prop({ default: '' })
+  @Prop({default: ''})
   name: string
 
-  @Prop({ default: '' })
+  @Prop({default: ''})
   itemName: string
 
-  @Prop({ type: Boolean, default: false })
+  @Prop({type: Boolean, default: false})
   required: boolean
 
-  @Prop({ type: Boolean, default: false })
+  @Prop({type: Boolean, default: false})
   readonly: boolean
 
   m_errorMessage: string = ''
