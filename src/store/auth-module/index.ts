@@ -97,7 +97,7 @@ export class AuthModuleImpl extends BaseModule<AccountState> implements AuthModu
     await firebase.auth().signInWithRedirect(this.m_facebookProvider)
   }
 
-  async signInWithEmailAndPassword(email: string, password: string): Promise<{result: boolean, errorMessage: string}> {
+  async signInWithEmailAndPassword(email: string, password: string): Promise<{result: boolean; errorMessage: string}> {
     try {
       await firebase.auth().signInWithEmailAndPassword(email, password)
       await this.m_refreshAccount()
@@ -111,7 +111,7 @@ export class AuthModuleImpl extends BaseModule<AccountState> implements AuthModu
     return {result: true, errorMessage: ''}
   }
 
-  async createUserWithEmailAndPassword(email: string, password, profile: {displayName: string, photoURL: string | null}): Promise<void> {
+  async createUserWithEmailAndPassword(email: string, password, profile: {displayName: string; photoURL: string | null}): Promise<void> {
     try {
       // メールアドレス＋パスワードでアカウント作成
       await firebase.auth().createUserWithEmailAndPassword(email, password)

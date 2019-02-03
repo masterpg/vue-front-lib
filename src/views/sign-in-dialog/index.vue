@@ -109,7 +109,7 @@ export default class SignInDialog extends mixins(BaseComponent) {
   //  Elements
   //--------------------------------------------------
 
-  get m_dialog(): {open: () => void, close: () => void, fit: () => void} {
+  get m_dialog(): {open: () => void; close: () => void; fit: () => void} {
     return this.$refs.dialog as any
   }
 

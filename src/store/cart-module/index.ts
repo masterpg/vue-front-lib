@@ -5,7 +5,7 @@ import {NoCache} from '@/base/component'
 type Transaction = firebase.firestore.Transaction
 
 export interface CartState {
-  items: Array<{id: string, quantity: number}>
+  items: Array<{id: string; quantity: number}>
   checkoutStatus: CheckoutStatus
 }
 
@@ -162,7 +162,7 @@ export class CartModuleImpl extends BaseModule<CartState> implements CartModule 
    * @param transaction
    * @param product
    */
-  m_createCheckoutProcess(transaction: Transaction, product: {id: string, quantity: number}): Promise<Transaction> {
+  m_createCheckoutProcess(transaction: Transaction, product: {id: string; quantity: number}): Promise<Transaction> {
     const ref = this.f_db.collection('products').doc(product.id)
     return transaction.get(ref).then(doc => {
       // 商品が存在しなかった場合、エラーをスロー

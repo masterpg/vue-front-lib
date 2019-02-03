@@ -1,4 +1,4 @@
-;(async () => {
+(async () => {
   mocha.setup({ui: 'tdd'})
 
   const utils = await import('../src/base/utils')

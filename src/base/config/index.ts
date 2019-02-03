@@ -2,18 +2,18 @@ import Vue from 'vue'
 
 export interface Config {
   api: {
-    protocol: string,
-    host: string,
-    port: number,
+    protocol: string
+    host: string
+    port: number
   }
 
   firebase: {
-    apiKey: string,
-    authDomain: string,
-    databaseURL?: string,
-    projectId?: string,
-    storageBucket?: string,
-    messagingSenderId?: string,
+    apiKey: string
+    authDomain: string
+    databaseURL?: string
+    projectId?: string
+    storageBucket?: string
+    messagingSenderId?: string
   }
 }
 
