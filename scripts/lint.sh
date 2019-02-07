@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 if [ -z $1 ]; then
-  eslint --fix ./ --ext .js --ext .ts
+  eslint --fix ./ --ext .js --ext .ts --ext .vue
 else
   if [ -d $1 ]; then
     eslint --fix "$1"
