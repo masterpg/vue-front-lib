@@ -1,1 +1,6 @@
+.idea/
+docs/
+node_module/
+scripts/
+patches/
 src/types/firebase.d.ts

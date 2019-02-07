@@ -1,4 +1,4 @@
-(async () => {
+async function init() {
   mocha.setup({ui: 'tdd'})
 
   const utils = await import('../src/base/utils')
@@ -14,4 +14,5 @@
   await Promise.all([import('./api/shop-api'), import('./store/cart-module'), import('./store/product-module')])
 
   mocha.run()
-})()
+}
+init()
