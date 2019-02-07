@@ -200,8 +200,10 @@ export default class AppView extends mixins(BaseComponent) {
   //
   //----------------------------------------------------------------------
 
-  created() {
+  async created() {
     sw.addStateChangeListener(this.m_swOnStateChange)
+
+    await this.$appStore.product.pullAllProducts()
   }
 
   //----------------------------------------------------------------------
