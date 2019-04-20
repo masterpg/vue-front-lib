@@ -36,7 +36,7 @@
         <div class="title-text">{{ $t('products') }}</div>
       </div>
       <hr style="width: 100%;" />
-      <div v-for="product in $appStore.product.allProducts" :key="product.id" class="layout horizontal center product-item">
+      <div v-for="product in $logic.shop.allProducts" :key="product.id" class="layout horizontal center product-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
           <div class="detail">
@@ -55,7 +55,7 @@
         <div class="flex"></div>
       </div>
       <hr style="width: 100%;" />
-      <div v-for="cartItem in $appStore.cart.cartItems" :key="cartItem.id" class="layout horizontal center cart-item">
+      <div v-for="cartItem in $logic.shop.cartItems" :key="cartItem.id" class="layout horizontal center cart-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ cartItem.title }}</div>
           <div class="detail">
@@ -82,7 +82,7 @@ import {Component} from 'vue-property-decorator'
 import {mixins} from 'vue-class-component'
 
 @Component
-export default class ShoppingView extends mixins(BaseComponent) {
+export default class ShoppingPage extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -90,11 +90,11 @@ export default class ShoppingView extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
 
   get m_cartIsEmpty(): boolean {
-    return this.$appStore.cart.cartItems.length === 0
+    return this.$logic.shop.cartItems.length === 0
   }
 
   get m_checkoutStatus(): {result: boolean; message: string} {
-    const checkoutStatus = this.$appStore.cart.checkoutStatus
+    const checkoutStatus = this.$logic.shop.checkoutStatus
     const result = checkoutStatus === CheckoutStatus.None || checkoutStatus === CheckoutStatus.Successful
     return {
       result,
@@ -117,11 +117,11 @@ export default class ShoppingView extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
 
   m_addButtonOnClick(product: Product): void {
-    this.$appStore.cart.addProductToCart(product.id)
+    this.$logic.shop.addProductToCart(product.id)
   }
 
   async m_checkoutButtonOnClick(): Promise<void> {
-    await this.$appStore.cart.checkout()
+    await this.$logic.shop.checkout()
   }
 }
 </script>

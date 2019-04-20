@@ -1,12 +1,8 @@
 import 'vue'
-import {Config} from '@/base/config'
-import {Utils} from '@/base/utils'
-import {AppStore} from '@/store'
+import {Logic} from '@/logic'
 
 declare module 'vue/types/vue' {
   interface Vue {
-    $config: Config
-    $utils: Utils
-    $appStore: AppStore
+    $logic: Logic
   }
 }

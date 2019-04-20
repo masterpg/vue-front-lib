@@ -1,5 +1,5 @@
 .idea/
+dist/
 docs/
 node_module/
-scripts/
 patches/

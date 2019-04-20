@@ -68,9 +68,9 @@ import '@polymer/paper-button/paper-button'
 import '@polymer/paper-card/paper-card'
 import '@polymer/paper-input/paper-input'
 
-import CustomCheckbox from '@/views/abc-view/custom-checkbox.vue'
-import CustomInput from '@/views/abc-view/custom-input.vue'
-import GreetMessage from '@/views/abc-view/greet-message.vue'
+import CustomCheckbox from '@/pages/abc/custom-checkbox.vue'
+import CustomInput from '@/pages/abc/custom-input.vue'
+import GreetMessage from '@/pages/abc/greet-message.vue'
 import {BaseComponent} from '@/base/component'
 import {Component, Prop, Watch} from 'vue-property-decorator'
 import {mixins} from 'vue-class-component'
@@ -87,7 +87,7 @@ interface Post {
     'custom-input': CustomInput,
   },
 })
-export default class AbcView extends mixins(BaseComponent) {
+export default class AbcPage extends mixins(BaseComponent) {
   //--------------------------------------------------
   //  props
   //--------------------------------------------------
@@ -108,7 +108,7 @@ export default class AbcView extends mixins(BaseComponent) {
 
   m_message: string = ''
 
-  m_customInputValue: string = ''
+  m_customInputValue: string = 'hoge'
 
   m_customChecked: boolean = false
 

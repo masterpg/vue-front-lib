@@ -6,7 +6,8 @@ import AppView from '@/index.vue'
 import Vue from 'vue'
 import {currency} from '@/currency'
 import {i18n, initI18n} from '@/base/i18n'
-import {initAPI} from '@/apis'
+import {initLogic} from '@/logic'
+import {initAPI} from '@/api'
 import {initConfig} from '@/base/config'
 import {initServiceWorker} from '@/base/service-worker'
 import {initStore} from '@/store'
@@ -23,6 +24,7 @@ async function init() {
   initServiceWorker()
   initAPI()
   initStore()
+  initLogic()
   await initI18n()
 
   Vue.filter('currency', currency)

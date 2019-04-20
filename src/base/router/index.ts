@@ -9,11 +9,11 @@ export const router = new VueRouter({
   routes: [
     {
       path: '/pages/abc',
-      component: () => import(/* webpackChunkName: "abc-view" */ '@/views/abc-view/index.vue'),
+      component: () => import(/* webpackChunkName: "abc" */ '@/pages/abc/index.vue'),
     },
     {
       path: '/pages/shopping',
-      component: () => import(/* webpackChunkName: "shopping-view" */ '@/views/shopping-view/index.vue'),
+      component: () => import(/* webpackChunkName: "shopping" */ '@/pages/shopping/index.vue'),
     },
   ],
 })

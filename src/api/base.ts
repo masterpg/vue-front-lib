@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import axios from 'axios'
+import {config as appConfig} from '@/base/config'
 
 export interface APIRequestConfig {
   headers?: any
@@ -72,7 +73,7 @@ export abstract class BaseAPI extends Vue {
   }
 
   request<T = any>(config: APIRequestInternalConfig): APIPromise<T> {
-    const apiConfig = this.$config.api
+    const apiConfig = appConfig.api
     let baseURL = ''
     if (!apiConfig.protocol && !apiConfig.host && !apiConfig.port) {
       baseURL = 'api'

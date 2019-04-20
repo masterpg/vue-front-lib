@@ -67,7 +67,7 @@
     "postcss-mixins": "^6.2.1",
     "postcss-nesting": "^7.0.0",
     "prettier": "^1.16.4",
-    "testdouble": "^3.9.1",
+    "testdouble": "^3.11.0",
     "typescript": "^3.2.2",
     "vue-polymer-style-loader": "https://github.com/masterpg/vue-polymer-style-loader.git",
     "vue-template-compiler": "^2.5.21",

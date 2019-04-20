@@ -1,7 +1,7 @@
 <style scoped></style>
 
 <template>
-  <div><paper-input @input="m_textFieldOnChange"></paper-input></div>
+  <div><paper-input :value="value" @input="m_textFieldOnChange"></paper-input></div>
 </template>
 
 <script lang="ts">

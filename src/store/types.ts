@@ -1,4 +1,17 @@
-import {Product as APIProduct} from '@/apis'
+//----------------------------------------------------------------------
+//
+//  States
+//
+//----------------------------------------------------------------------
+
+export interface ProductsState {
+  all: Product[]
+}
+
+export interface CartState {
+  items: CartItem[]
+  checkoutStatus: CheckoutStatus
+}
 
 //----------------------------------------------------------------------
 //
@@ -6,43 +19,50 @@ import {Product as APIProduct} from '@/apis'
 //
 //----------------------------------------------------------------------
 
-export interface AppStore {
-  readonly product: ProductModule
+export interface Store {
+  readonly products: ProductsModule
 
   readonly cart: CartModule
 }
 
-export interface ProductModule {
-  readonly allProducts: Product[]
+export interface ProductsModule {
+  all: Product[]
 
-  getProductById(productId: string): Product | undefined
+  getById(productId: string): Product | undefined
 
-  decrementProductInventory(productId: string): void
+  setAll(products: Product[]): void
 
-  pullAllProducts(): Promise<void>
+  decrementInventory(productId: string): void
 }
 
 export interface CartModule {
-  readonly checkoutStatus: CheckoutStatus
+  items: CartItem[]
 
-  readonly cartItems: CartItem[]
+  totalPrice: number
 
-  readonly cartTotalPrice: number
+  checkoutStatus: CheckoutStatus
 
-  getCartItemById(productId: string): CartItem | undefined
+  setItems(items: CartItem[]): void
 
-  checkout(): Promise<void>
+  setCheckoutStatus(status: CheckoutStatus): void
 
-  addProductToCart(productId: string): void
+  addProductToCart(product: Product): CartItem
+
+  incrementItemQuantity(productId: string): void
 }
 
 //----------------------------------------------------------------------
 //
-//  Entities
+//  Data types
 //
 //----------------------------------------------------------------------
 
-export type Product = APIProduct
+export interface Product {
+  id: string
+  title: string
+  price: number
+  inventory: number
+}
 
 export interface CartItem {
   id: string

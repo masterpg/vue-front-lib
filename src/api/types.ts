@@ -4,7 +4,7 @@
 //
 //----------------------------------------------------------------------
 
-export interface APIs {
+export interface API {
   readonly shop: ShopAPI
 }
 
