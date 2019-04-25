@@ -92,38 +92,6 @@ module.exports = {
         .loader('yaml-loader')
         .end()
 
-    // PolymerのCustom Properties、CSS Mixinを.vueファイルで記述するための設定
-    const polymerRule = config.module
-      .rule('polymer')
-      .test(/\.polymer$/)
-      .oneOf('vue')
-      .resourceQuery(/\?vue/)
-    polymerRule
-      .use('example-loader')
-        .loader('./extension/example-loader/index.js')
-        .end()
-      .use('vue-polymer-style-loader')
-        .loader('vue-polymer-style-loader')
-        .options({
-          sourceMap: false,
-          shadowMode: false,
-        })
-        .end()
-      .use('css-loader')
-        .loader('css-loader')
-        .options({
-          sourceMap: false,
-          importLoaders: 1,
-          modules: false,
-        })
-        .end()
-      .use('postcss-loader')
-        .loader('postcss-loader')
-        .options({
-          sourceMap: false,
-        })
-        .end()
-
     // 必要なリソースファイルのコピー
     let copyFiles = [{from: 'node_modules/@webcomponents/webcomponentsjs/**/*.js'}]
     if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {

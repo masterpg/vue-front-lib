@@ -1,22 +1,3 @@
-<style scoped lang="polymer">
-/* PolymerのCSS Mixinの設定はこの領域に記述すること */
-
-app-drawer {
-  --app-drawer-content-container: {
-    background-color: var(--comm-grey-100);
-  }
-}
-
-@media (min-width: 600px) {
-  app-drawer {
-    --app-drawer-content-container: {
-      background-color: var(--comm-grey-100);
-      border-right: 1px solid var(--comm-grey-300);
-    }
-  }
-}
-</style>
-
 <style scoped>
 @import './styles/placeholder/typography.css';
 
