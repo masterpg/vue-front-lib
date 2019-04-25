@@ -4,16 +4,16 @@ module.exports = {
     'node': true,
   },
   'parserOptions': {
-    'parser': 'typescript-eslint-parser',
+    'parser': '@typescript-eslint/parser',
   },
   'extends': [
     'eslint:recommended',
-    'plugin:vue/essential',
+    'plugin:vue/recommended',
+    'plugin:prettier/recommended',
     '@vue/typescript',
   ],
-  'plugins': ['typescript', 'prettier'],
+  'plugins': ['@typescript-eslint'],
   'rules': {
-    'prettier/prettier': 'error',
     'array-bracket-spacing': ['error', 'never'],
     'comma-dangle': [
       'error',
@@ -54,21 +54,31 @@ module.exports = {
         'allow-snake-case',
       ],
     },
-    // TODO 現段階ではこのルールの実装が未完なのでoffにし、実装が完了次第、以下の設定を再考する
-    'typescript/member-delimiter-style': [
-      'off',
+    '@typescript-eslint/camelcase': ['error', {allow: ['^m_', '^f_']}],
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-member-accessibility': 'off',
+    '@typescript-eslint/indent': ['off', 2],
+    '@typescript-eslint/member-delimiter-style': [
+      'error',
       {
-        'delimiter': 'none',
-        'overrides': {
-          'typeLiteral': {
-            'delimiter': 'semi',
-            'requireLast': true,
-            'ignoreSingleLine': true,
-          },
+        'multiline': {
+          'delimiter': 'none',
+        },
+        'singleline': {
+          'delimiter': 'semi',
+          'requireLast': false,
         },
       },
     ],
-    'typescript/no-angle-bracket-type-assertion': ['error'],
-    'typescript/type-annotation-spacing': ['error'],
+    '@typescript-eslint/no-angle-bracket-type-assertion': ['error'],
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
+    '@typescript-eslint/no-use-before-define': 'off',
+    '@typescript-eslint/no-var-requires': 'off',
+    '@typescript-eslint/type-annotation-spacing': ['error'],
+    'vue/html-self-closing': 'off',
+    'vue/max-attributes-per-line': 'off',
+    'vue/singleline-html-element-content-newline': 'off',
   },
 }
