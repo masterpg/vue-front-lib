@@ -7,9 +7,9 @@ export abstract class BaseModule<S> extends Vue {
   //
   //----------------------------------------------------------------------
 
-  m_state: S
+  private m_state: S
 
-  get f_state(): S {
+  protected get state(): S {
     return this.m_state
   }
 
@@ -23,7 +23,7 @@ export abstract class BaseModule<S> extends Vue {
    * Moduleにひも付くStateを初期化します。
    * @param state
    */
-  f_initState(state: S): void {
+  protected initState(state: S): void {
     this.m_state = state
   }
 }

@@ -17,7 +17,7 @@
 
 <template>
   <div class="layout vertical">
-    <paper-card class="comm-pa-12" :class="{'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp}">
+    <paper-card class="comm-pa-12" :class="{'comm-ma-48': pcScreen, 'comm-ma-24': tabScreen, 'comm-ma-12': spScreen}">
       <div class="comm-my-16">{{ $t('hello', {today: $d(new Date(), 'short')}) }}</div>
       <paper-input label="Input Message" :value="m_message" @input="m_message = $event.target.value"></paper-input>
       <div class="comm-my-16">
@@ -106,16 +106,16 @@ export default class AbcPage extends mixins(BaseComponent) {
 
   // dataは初期化が必要！
 
-  m_message: string = ''
+  private m_message: string = ''
 
-  m_customInputValue: string = 'hoge'
+  private m_customInputValue: string = 'hoge'
 
-  m_customChecked: boolean = false
+  private m_customChecked: boolean = false
 
   // propの値を初期化に利用できる
-  m_customPropA: string = 'custom ' + this.propA
+  private m_customPropA: string = 'custom ' + this.propA
 
-  m_post: Post = {
+  private m_post: Post = {
     message: '',
     times: 0,
   }
@@ -124,14 +124,14 @@ export default class AbcPage extends mixins(BaseComponent) {
   //  computed
   //--------------------------------------------------
 
-  get m_reversedMessage() {
+  private get m_reversedMessage() {
     return this.m_message
       .split('')
       .reverse()
       .join('')
   }
 
-  get m_doubleReversedMessage() {
+  private get m_doubleReversedMessage() {
     return this.m_reversedMessage
       .split('')
       .reverse()
@@ -143,22 +143,22 @@ export default class AbcPage extends mixins(BaseComponent) {
   //--------------------------------------------------
 
   @Watch('m_message')
-  m_messageOnChange(newValue: string, oldValue: string): void {
+  private m_messageOnChange(newValue: string, oldValue: string): void {
     console.log(`m_messageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`)
   }
 
   @Watch('m_reversedMessage')
-  m_reversedMessageOnChange(newValue: string, oldValue: string): void {
+  private m_reversedMessageOnChange(newValue: string, oldValue: string): void {
     console.log(`m_reversedMessageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`)
   }
 
   @Watch('m_post', {deep: true})
-  m_postOnChange(newValue: Post, oldValue: Post): void {
+  private m_postOnChange(newValue: Post, oldValue: Post): void {
     console.log('m_postOnChange: newValue:', newValue, ', oldValue:', oldValue)
   }
 
   @Watch('m_post.times')
-  m_postTimesOnChange(newValue: string, oldValue: string): void {
+  private m_postTimesOnChange(newValue: string, oldValue: string): void {
     console.log('m_postTimesOnChange: newValue:', newValue, ', oldValue:', oldValue)
   }
 
@@ -174,7 +174,7 @@ export default class AbcPage extends mixins(BaseComponent) {
   //  internal methods
   //--------------------------------------------------
 
-  async m_sleep(ms: number): Promise<string> {
+  private async m_sleep(ms: number): Promise<string> {
     return new Promise(resolve => {
       setTimeout(() => {
         resolve(`I slept for ${ms} ms.`)
@@ -186,16 +186,16 @@ export default class AbcPage extends mixins(BaseComponent) {
   //  event handlers
   //--------------------------------------------------
 
-  m_greetButtonOnClick() {
+  private m_greetButtonOnClick() {
     this.m_greetMessage.greet()
   }
 
-  m_postButtonOnClick() {
+  private m_postButtonOnClick() {
     this.m_post.message = this.m_message
     this.m_post.times++
   }
 
-  async m_sleepButtonOnClick() {
+  private async m_sleepButtonOnClick() {
     alert(await this.m_sleep(2000))
   }
 
@@ -203,7 +203,7 @@ export default class AbcPage extends mixins(BaseComponent) {
   //  elements
   //--------------------------------------------------
 
-  get m_greetMessage(): GreetMessage {
+  private get m_greetMessage(): GreetMessage {
     return this.$refs.greetMessage as GreetMessage
   }
 }

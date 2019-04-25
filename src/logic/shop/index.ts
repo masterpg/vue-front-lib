@@ -74,7 +74,7 @@ export class ShopLogicImpl extends Vue implements ShopLogic {
   //
   //----------------------------------------------------------------------
 
-  m_getProductById(productId: string): Product {
+  private m_getProductById(productId: string): Product {
     const result = store.products.getById(productId)
     if (!result) {
       throw new Error(`A Product that matches the specified productId "${productId}" was not found.`)

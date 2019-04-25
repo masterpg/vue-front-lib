@@ -8,19 +8,17 @@ import {mixins} from 'vue-class-component'
  */
 @Component
 class BaseComponent extends mixins(BreakpointMixin) {
-  get f_pc() {
-    return this.f_breakpoint.xl || this.f_breakpoint.lg || this.f_breakpoint.md
+  protected get pcScreen() {
+    return this.breakpoint.xl || this.breakpoint.lg || this.breakpoint.md
   }
 
-  get f_tab() {
-    return this.f_breakpoint.sm
+  protected get tabScreen() {
+    return this.breakpoint.sm
   }
 
-  get f_sp() {
-    return this.f_breakpoint.xs
+  protected get spScreen() {
+    return this.breakpoint.xs
   }
-
-  mounted() {}
 }
 
 /**

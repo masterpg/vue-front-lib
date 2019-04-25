@@ -30,7 +30,7 @@ export default class GreetMessage extends BaseComponent {
   @Prop()
   message: string
 
-  m_greetTimes: number = 0
+  private m_greetTimes: number = 0
 
   greet(): void {
     alert('greeting: ' + this.message)

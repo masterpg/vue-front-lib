@@ -9,11 +9,11 @@
 .cart-item {
   padding: 12px;
 
-  & .title {
+  .title {
     @extend %comm-font-subhead1;
   }
 
-  & .detail {
+  .detail {
     @extend %comm-font-body1;
     color: var(--app-secondary-text-color);
   }
@@ -30,7 +30,7 @@
 </style>
 
 <template>
-  <div class="layout vertical" :class="{'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp}">
+  <div class="layout vertical" :class="{'comm-ma-48': pcScreen, 'comm-ma-24': tabScreen, 'comm-ma-12': spScreen}">
     <div>
       <div class="layout horizontal center">
         <div class="title-text">{{ $t('products') }}</div>
@@ -89,11 +89,11 @@ export default class ShoppingPage extends mixins(BaseComponent) {
   //
   //----------------------------------------------------------------------
 
-  get m_cartIsEmpty(): boolean {
+  private get m_cartIsEmpty(): boolean {
     return this.$logic.shop.cartItems.length === 0
   }
 
-  get m_checkoutStatus(): {result: boolean; message: string} {
+  private get m_checkoutStatus(): {result: boolean; message: string} {
     const checkoutStatus = this.$logic.shop.checkoutStatus
     const result = checkoutStatus === CheckoutStatus.None || checkoutStatus === CheckoutStatus.Successful
     return {
@@ -116,11 +116,11 @@ export default class ShoppingPage extends mixins(BaseComponent) {
   //
   //----------------------------------------------------------------------
 
-  m_addButtonOnClick(product: Product): void {
+  private m_addButtonOnClick(product: Product): void {
     this.$logic.shop.addProductToCart(product.id)
   }
 
-  async m_checkoutButtonOnClick(): Promise<void> {
+  private async m_checkoutButtonOnClick(): Promise<void> {
     await this.$logic.shop.checkout()
   }
 }

@@ -16,7 +16,7 @@ export default class CustomInput extends mixins(BaseComponent) {
   @Prop({default: ''})
   value: string
 
-  m_textFieldOnChange(event: Event) {
+  private m_textFieldOnChange(event: Event) {
     // ■ コンポーネントでv-modelを使う
     //    https://jp.vuejs.org/v2/guide/components.html#コンポーネントで-v-model-を使う
     // ・`value`というプロパティ名はv-modelで使用される特別な名前である。

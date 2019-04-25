@@ -14,7 +14,7 @@ export default class CustomCheckbox extends mixins(BaseComponent) {
   @Model('change')
   checked: boolean = false
 
-  m_checkboxOnChange(event: Event) {
+  private m_checkboxOnChange(event: Event) {
     // ■ v-modelを使ったコンポーネントのカスタマイズ
     //    https://jp.vuejs.org/v2/guide/components-custom-events.html#v-model-を使ったコンポーネントのカスタマイズ
     // ・`value`というプロパティ名はv-modelで使用される特別な名前である。

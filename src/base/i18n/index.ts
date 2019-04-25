@@ -90,7 +90,7 @@ export class AppI18n extends VueI18n {
   /**
    * ロケールデータを取得します。
    */
-  m_getLocaleData(): LocaleData {
+  private m_getLocaleData(): LocaleData {
     // ブラウザから言語+国を取得("en"や"en-US"などを取得)
     const locale =
       (window.navigator.languages && window.navigator.languages[0]) ||
@@ -105,7 +105,7 @@ export class AppI18n extends VueI18n {
    * ロケールデータの設定を行います。
    * @param localeData
    */
-  m_setLanguage(localeData: LocaleData): void {
+  private m_setLanguage(localeData: LocaleData): void {
     this.locale = localeData.language
     axios.defaults.headers.common['Accept-Language'] = localeData.language
     document.querySelector('html')!.setAttribute('lang', localeData.language)
@@ -156,7 +156,7 @@ class LocaleUtil {
    * @param language
    * @param country
    */
-  static m_getDefaultCountry(language: string, country?: string): string {
+  private static m_getDefaultCountry(language: string, country?: string): string {
     // 国が指定されている場合はその国を返す
     if (country) {
       return country.toUpperCase()

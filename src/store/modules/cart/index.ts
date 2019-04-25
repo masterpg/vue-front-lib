@@ -12,7 +12,7 @@ export class CartModuleImpl extends BaseModule<CartState> implements CartModule 
 
   constructor() {
     super()
-    this.f_initState({
+    this.initState({
       items: [],
       checkoutStatus: CheckoutStatus.None,
     })
@@ -25,17 +25,17 @@ export class CartModuleImpl extends BaseModule<CartState> implements CartModule 
   //----------------------------------------------------------------------
 
   get items(): CartItem[] {
-    return this.f_state.items
+    return this.state.items
   }
 
   get totalPrice(): number {
-    return this.f_state.items.reduce((total, product) => {
+    return this.state.items.reduce((total, product) => {
       return total + product.price * product.quantity
     }, 0)
   }
 
   get checkoutStatus(): CheckoutStatus {
-    return this.f_state.checkoutStatus
+    return this.state.checkoutStatus
   }
 
   //----------------------------------------------------------------------
@@ -45,11 +45,11 @@ export class CartModuleImpl extends BaseModule<CartState> implements CartModule 
   //----------------------------------------------------------------------
 
   setItems(items: CartItem[]): void {
-    this.f_state.items = items
+    this.state.items = items
   }
 
   setCheckoutStatus(status: CheckoutStatus): void {
-    this.f_state.checkoutStatus = status
+    this.state.checkoutStatus = status
   }
 
   addProductToCart(product: Product): CartItem {
@@ -59,12 +59,12 @@ export class CartModuleImpl extends BaseModule<CartState> implements CartModule 
       price: product.price,
       quantity: 1,
     }
-    this.f_state.items.push(cartItem)
+    this.state.items.push(cartItem)
     return cartItem
   }
 
   incrementItemQuantity(productId: string): void {
-    const cartItem = this.f_state.items.find(item => item.id === productId)
+    const cartItem = this.state.items.find(item => item.id === productId)
     if (cartItem) {
       cartItem.quantity++
     }

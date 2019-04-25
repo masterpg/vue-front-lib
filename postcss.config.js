@@ -2,7 +2,7 @@ module.exports = {
   plugins: {
     'autoprefixer': {},
     'postcss-import': {},
-    'postcss-nesting': {},
+    'postcss-nested': {},
     'postcss-extend': {},
     'postcss-mixins': {},
     'postcss-each': {},

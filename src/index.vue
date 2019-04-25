@@ -36,7 +36,7 @@ app-drawer-layout {
 }
 
 .drawer-list {
-  & .item {
+  .item {
     display: block;
     padding: 8px 20px;
     @extend %comm-font-code1;
@@ -44,7 +44,7 @@ app-drawer-layout {
     text-decoration: none;
   }
 
-  & .item.router-link-active {
+  .item.router-link-active {
     color: var(--app-accent-text-color);
   }
 }
@@ -169,9 +169,9 @@ export default class AppView extends mixins(BaseComponent) {
   //
   //----------------------------------------------------------------------
 
-  m_narrow: boolean = false
+  private m_narrow: boolean = false
 
-  m_items: Array<{title: string; path: string}> = [
+  private m_items: Array<{title: string; path: string}> = [
     {
       title: 'ABC',
       path: '/pages/abc',
@@ -182,15 +182,15 @@ export default class AppView extends mixins(BaseComponent) {
     },
   ]
 
-  m_swMessage: string = ''
+  private m_swMessage: string = ''
 
-  m_swUpdateIsRequired: boolean = false
+  private m_swUpdateIsRequired: boolean = false
 
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
 
-  get m_swToast(): {open: () => void} {
+  private get m_swToast(): {open: () => void} {
     return this.$refs.swToast as any
   }
 
@@ -212,7 +212,7 @@ export default class AppView extends mixins(BaseComponent) {
   //
   //----------------------------------------------------------------------
 
-  m_reload(): void {
+  private m_reload(): void {
     window.location.reload()
   }
 
@@ -222,7 +222,7 @@ export default class AppView extends mixins(BaseComponent) {
   //
   //----------------------------------------------------------------------
 
-  m_swOnStateChange(info: sw.StateChangeInfo) {
+  private m_swOnStateChange(info: sw.StateChangeInfo) {
     this.m_swUpdateIsRequired = false
 
     if (info.state === sw.ChangeState.updated) {
