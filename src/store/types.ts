@@ -1,21 +1,6 @@
 //----------------------------------------------------------------------
 //
-//  States
-//
-//----------------------------------------------------------------------
-
-export interface ProductsState {
-  all: Product[]
-}
-
-export interface CartState {
-  items: CartItem[]
-  checkoutStatus: CheckoutStatus
-}
-
-//----------------------------------------------------------------------
-//
-//  Modules
+//  Store
 //
 //----------------------------------------------------------------------
 
@@ -24,6 +9,12 @@ export interface Store {
 
   readonly cart: CartModule
 }
+
+//----------------------------------------------------------------------
+//
+//  Modules
+//
+//----------------------------------------------------------------------
 
 export interface ProductsModule {
   all: Product[]
@@ -81,4 +72,42 @@ export enum CheckoutStatus {
   None = 'none',
   Failed = 'failed',
   Successful = 'successful',
+}
+
+//----------------------------------------------------------------------
+//
+//  Errors
+//
+//----------------------------------------------------------------------
+
+export class StoreError<T> extends Error {
+  constructor(type: T) {
+    super()
+    this.errorType = type
+  }
+
+  errorType: T
+}
+
+export enum CartModuleErrorType {
+  ItemNotFound = 'itemNotFound',
+}
+
+export enum ProductsErrorType {
+  ItemNotFound = 'itemNotFound',
+}
+
+//----------------------------------------------------------------------
+//
+//  States
+//
+//----------------------------------------------------------------------
+
+export interface ProductsState {
+  all: Product[]
+}
+
+export interface CartState {
+  items: CartItem[]
+  checkoutStatus: CheckoutStatus
 }

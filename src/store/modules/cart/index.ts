@@ -1,6 +1,7 @@
 import {Component} from 'vue-property-decorator'
 import {BaseModule} from '@/store/base'
-import {CartModule, CartState, CartItem, CheckoutStatus, Product} from '@/store/types'
+import {CartModule, CartState, CartItem, CheckoutStatus, Product, StoreError, CartModuleErrorType} from '@/store/types'
+import {utils} from '@/base/utils'
 
 @Component
 export class CartModuleImpl extends BaseModule<CartState> implements CartModule {
@@ -45,7 +46,7 @@ export class CartModuleImpl extends BaseModule<CartState> implements CartModule 
   //----------------------------------------------------------------------
 
   setItems(items: CartItem[]): void {
-    this.state.items = items
+    this.state.items = utils.cloneDeep(items)
   }
 
   setCheckoutStatus(status: CheckoutStatus): void {
@@ -60,13 +61,15 @@ export class CartModuleImpl extends BaseModule<CartState> implements CartModule 
       quantity: 1,
     }
     this.state.items.push(cartItem)
-    return cartItem
+    return utils.cloneDeep(cartItem)
   }
 
   incrementItemQuantity(productId: string): void {
     const cartItem = this.state.items.find(item => item.id === productId)
     if (cartItem) {
       cartItem.quantity++
+    } else {
+      new StoreError(CartModuleErrorType.ItemNotFound)
     }
   }
 }

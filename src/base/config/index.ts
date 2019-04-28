@@ -20,8 +20,4 @@ export let config: Config
 
 export function initConfig(): void {
   config = new ConfigImpl()
-  Object.defineProperty(Vue.prototype, '$config', {
-    value: config,
-    writable: false,
-  })
 }

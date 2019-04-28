@@ -1,6 +1,7 @@
 import {Component} from 'vue-property-decorator'
 import {BaseModule} from '@/store/base'
-import {Product, ProductsModule, ProductsState} from '@/store/types'
+import {Product, ProductsErrorType, ProductsModule, ProductsState, StoreError} from '@/store/types'
+import {utils} from '@/base/utils'
 
 @Component
 export class ProductsModuleImpl extends BaseModule<ProductsState> implements ProductsModule {
@@ -39,13 +40,15 @@ export class ProductsModuleImpl extends BaseModule<ProductsState> implements Pro
   }
 
   setAll(products: Product[]): void {
-    this.state.all = products
+    this.state.all = utils.cloneDeep(products)
   }
 
   decrementInventory(productId: string): void {
     const product = this.state.all.find(item => item.id === productId)
     if (product) {
       product.inventory--
+    } else {
+      new StoreError(ProductsErrorType.ItemNotFound)
     }
   }
 }
