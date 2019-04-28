@@ -1,7 +1,7 @@
 import * as td from 'testdouble'
 
 import {ShopLogicImpl} from '@/logic/shop'
-import {CartModule, CheckoutStatus, ProductsModule, store} from '@/store'
+import {CartModule, CheckoutStatus, ProductModule, store} from '@/store'
 import {api, Product as APIProduct, ShopAPI} from '@/api'
 
 const shopLogic = new ShopLogicImpl()
@@ -16,19 +16,19 @@ const CART_ITEMS = [{id: '1', title: 'iPad 4 Mini', price: 500.01, quantity: 1},
 
 beforeEach(async () => {
   td.replace(store, 'cart', td.object<CartModule>())
-  td.replace(store, 'products', td.object<ProductsModule>())
+  td.replace(store, 'product', td.object<ProductModule>())
   td.replace(api, 'shop', td.object<ShopAPI>())
 })
 
 afterEach(() => {})
 
-describe('allProducts', () => {
+describe('products', () => {
   it('ベーシックケース', () => {
     // 【準備】
-    store.products.all = PRODUCTS
+    store.product.products = PRODUCTS
 
     // 【実行】
-    const actual = shopLogic.allProducts
+    const actual = shopLogic.products
 
     // 【検証】
     expect(actual).toEqual(PRODUCTS)
@@ -76,16 +76,16 @@ describe('checkoutStatus', () => {
   })
 })
 
-describe('pullAllProducts()', () => {
+describe('pullProducts()', () => {
   it('ベーシックケース', async () => {
     // 【準備】
     td.replace(api.shop, 'getProducts', () => Promise.resolve(PRODUCTS))
 
     // 【実行】
-    await shopLogic.pullAllProducts()
+    await shopLogic.pullProducts()
 
     // 【検証】
-    td.verify(store.products.setAll(PRODUCTS))
+    td.verify(store.product.setProducts(PRODUCTS))
   })
 })
 
@@ -106,7 +106,7 @@ describe('addProductToCart()', () => {
     // 【検証】
     td.verify(store.cart.setCheckoutStatus(CheckoutStatus.None))
     td.verify(store.cart.addProductToCart(product))
-    td.verify(store.products.decrementInventory(product.id))
+    td.verify(store.product.decrementInventory(product.id))
   })
 
   it('在庫がある商品かつ、既にカートにその商品が存在する状態で同じ商品また追加した場合', async () => {
@@ -126,7 +126,7 @@ describe('addProductToCart()', () => {
     // 【検証】
     td.verify(store.cart.setCheckoutStatus(CheckoutStatus.None))
     td.verify(store.cart.incrementItemQuantity(product.id))
-    td.verify(store.products.decrementInventory(product.id))
+    td.verify(store.product.decrementInventory(product.id))
   })
 })
 

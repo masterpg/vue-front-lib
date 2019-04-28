@@ -1,13 +1,13 @@
 import Vue from 'vue'
 import {Component} from 'vue-property-decorator'
 
-import {CartModule, ProductsModule, Store} from '@/store/types'
+import {CartModule, ProductModule, Store} from '@/store/types'
 import {CartModuleImpl} from '@/store/modules/cart'
-import {ProductsModuleImpl} from '@/store/modules/products'
+import {ProductModuleImpl} from '@/store/modules/product'
 
 @Component
 export class StoreImpl extends Vue implements Store {
-  readonly products: ProductsModule = new ProductsModuleImpl()
+  readonly product: ProductModule = new ProductModuleImpl()
   readonly cart: CartModule = new CartModuleImpl()
 }
 

@@ -36,7 +36,7 @@
         <div class="title-text">{{ $t('products') }}</div>
       </div>
       <hr style="width: 100%;" />
-      <div v-for="product in $logic.shop.allProducts" :key="product.id" class="layout horizontal center product-item">
+      <div v-for="product in $logic.shop.products" :key="product.id" class="layout horizontal center product-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
           <div class="detail">

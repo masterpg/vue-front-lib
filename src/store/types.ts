@@ -5,7 +5,7 @@
 //----------------------------------------------------------------------
 
 export interface Store {
-  readonly products: ProductsModule
+  readonly product: ProductModule
 
   readonly cart: CartModule
 }
@@ -16,12 +16,12 @@ export interface Store {
 //
 //----------------------------------------------------------------------
 
-export interface ProductsModule {
-  all: Product[]
+export interface ProductModule {
+  products: Product[]
 
-  getById(productId: string): Product | undefined
+  getProductById(productId: string): Product | undefined
 
-  setAll(products: Product[]): void
+  setProducts(products: Product[]): void
 
   decrementInventory(productId: string): void
 }
@@ -93,7 +93,7 @@ export enum CartModuleErrorType {
   ItemNotFound = 'itemNotFound',
 }
 
-export enum ProductsErrorType {
+export enum ProductErrorType {
   ItemNotFound = 'itemNotFound',
 }
 
@@ -103,8 +103,8 @@ export enum ProductsErrorType {
 //
 //----------------------------------------------------------------------
 
-export interface ProductsState {
-  all: Product[]
+export interface ProductState {
+  products: Product[]
 }
 
 export interface CartState {

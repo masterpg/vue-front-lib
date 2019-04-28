@@ -5,9 +5,9 @@ export interface Logic {
 }
 
 export interface ShopLogic {
-  allProducts: Product[]
+  products: Product[]
 
-  pullAllProducts(): Promise<void>
+  pullProducts(): Promise<void>
 
   cartItems: CartItem[]
 

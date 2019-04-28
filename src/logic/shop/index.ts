@@ -15,8 +15,8 @@ export class ShopLogicImpl extends Vue implements ShopLogic {
   //----------------------------------------------------------------------
 
   @NoCache
-  get allProducts(): Product[] {
-    return utils.cloneDeep(store.products.all)
+  get products(): Product[] {
+    return utils.cloneDeep(store.product.products)
   }
 
   @NoCache
@@ -38,9 +38,9 @@ export class ShopLogicImpl extends Vue implements ShopLogic {
   //
   //----------------------------------------------------------------------
 
-  async pullAllProducts(): Promise<void> {
+  async pullProducts(): Promise<void> {
     const products = await api.shop.getProducts()
-    store.products.setAll(products)
+    store.product.setProducts(products)
   }
 
   addProductToCart(productId: string): void {
@@ -53,7 +53,7 @@ export class ShopLogicImpl extends Vue implements ShopLogic {
       } else {
         store.cart.incrementItemQuantity(productId)
       }
-      store.products.decrementInventory(productId)
+      store.product.decrementInventory(productId)
     }
   }
 
@@ -75,7 +75,7 @@ export class ShopLogicImpl extends Vue implements ShopLogic {
   //----------------------------------------------------------------------
 
   private m_getProductById(productId: string): Product {
-    const result = store.products.getById(productId)
+    const result = store.product.getProductById(productId)
     if (!result) {
       throw new Error(`A Product that matches the specified productId "${productId}" was not found.`)
     }

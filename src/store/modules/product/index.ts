@@ -1,10 +1,10 @@
 import {Component} from 'vue-property-decorator'
 import {BaseModule} from '@/store/base'
-import {Product, ProductsErrorType, ProductsModule, ProductsState, StoreError} from '@/store/types'
+import {Product, ProductErrorType, ProductModule, ProductState, StoreError} from '@/store/types'
 import {utils} from '@/base/utils'
 
 @Component
-export class ProductsModuleImpl extends BaseModule<ProductsState> implements ProductsModule {
+export class ProductModuleImpl extends BaseModule<ProductState> implements ProductModule {
   //----------------------------------------------------------------------
   //
   //  Constructors
@@ -14,7 +14,7 @@ export class ProductsModuleImpl extends BaseModule<ProductsState> implements Pro
   constructor() {
     super()
     this.initState({
-      all: [],
+      products: [],
     })
   }
 
@@ -24,8 +24,8 @@ export class ProductsModuleImpl extends BaseModule<ProductsState> implements Pro
   //
   //----------------------------------------------------------------------
 
-  get all(): Product[] {
-    return this.state.all
+  get products(): Product[] {
+    return this.state.products
   }
 
   //----------------------------------------------------------------------
@@ -34,21 +34,21 @@ export class ProductsModuleImpl extends BaseModule<ProductsState> implements Pro
   //
   //----------------------------------------------------------------------
 
-  getById(productId: string): Product | undefined {
-    const product = this.state.all.find(item => item.id === productId)
+  getProductById(productId: string): Product | undefined {
+    const product = this.state.products.find(item => item.id === productId)
     return product
   }
 
-  setAll(products: Product[]): void {
-    this.state.all = utils.cloneDeep(products)
+  setProducts(products: Product[]): void {
+    this.state.products = utils.cloneDeep(products)
   }
 
   decrementInventory(productId: string): void {
-    const product = this.state.all.find(item => item.id === productId)
+    const product = this.state.products.find(item => item.id === productId)
     if (product) {
       product.inventory--
     } else {
-      new StoreError(ProductsErrorType.ItemNotFound)
+      new StoreError(ProductErrorType.ItemNotFound)
     }
   }
 }
