@@ -1,5 +1,5 @@
-const path = require('path')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const path = require('path')
 
 // ベースURLの設定
 const baseUrl = process.env.VUE_APP_BASE_URL

@@ -68,11 +68,11 @@ import '@polymer/paper-button/paper-button'
 import '@polymer/paper-card/paper-card'
 import '@polymer/paper-input/paper-input'
 
+import {Component, Prop, Watch} from 'vue-property-decorator'
+import {BaseComponent} from '@/base/component'
 import CustomCheckbox from '@/pages/abc/custom-checkbox.vue'
 import CustomInput from '@/pages/abc/custom-input.vue'
 import GreetMessage from '@/pages/abc/greet-message.vue'
-import {BaseComponent} from '@/base/component'
-import {Component, Prop, Watch} from 'vue-property-decorator'
 import {mixins} from 'vue-class-component'
 
 interface Post {

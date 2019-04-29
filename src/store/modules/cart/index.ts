@@ -1,6 +1,6 @@
-import {Component} from 'vue-property-decorator'
+import {CartItem, CartModule, CartState, CheckoutStatus, Product} from '@/store/types'
 import {BaseModule} from '@/store/base'
-import {CartModule, CartState, CartItem, CheckoutStatus, Product, StoreError, CartModuleErrorType} from '@/store/types'
+import {Component} from 'vue-property-decorator'
 import {utils} from '@/base/utils'
 
 @Component

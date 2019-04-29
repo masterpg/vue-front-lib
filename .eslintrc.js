@@ -35,6 +35,7 @@ module.exports = {
     'object-curly-spacing': ['error', 'never'],
     'quotes': ['error', 'single'],
     'semi': ['error', 'never', {'beforeStatementContinuationChars': 'never'}],
+    'sort-imports': ['error'],
     'space-before-function-paren': [
       'error',
       {

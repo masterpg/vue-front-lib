@@ -5,8 +5,8 @@
 </template>
 
 <script lang="ts">
-import {BaseComponent} from '@/base/component'
 import {Component, Model} from 'vue-property-decorator'
+import {BaseComponent} from '@/base/component'
 import {mixins} from 'vue-class-component'
 
 @Component

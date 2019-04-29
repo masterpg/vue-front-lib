@@ -1,6 +1,6 @@
-import Component from 'vue-class-component'
-import {BaseAPI} from '@/api/base'
 import {Product, ShopAPI} from '@/api/types'
+import {BaseAPI} from '@/api/base'
+import Component from 'vue-class-component'
 
 @Component
 export class ShopAPIImpl extends BaseAPI implements ShopAPI {

@@ -1,6 +1,6 @@
-import Vue from 'vue'
 import {Logic, ShopLogic} from '@/logic/types'
 import {ShopLogicImpl} from '@/logic/shop'
+import Vue from 'vue'
 
 class LogicImpl implements Logic {
   readonly shop: ShopLogic = new ShopLogicImpl()

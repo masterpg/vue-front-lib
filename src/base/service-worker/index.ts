@@ -1,5 +1,5 @@
-import {register} from 'register-service-worker'
 import {i18n} from '@/base/i18n'
+import {register} from 'register-service-worker'
 
 //----------------------------------------------------------------------
 //

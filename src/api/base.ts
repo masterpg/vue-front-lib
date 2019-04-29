@@ -1,6 +1,6 @@
 import Vue from 'vue'
-import axios from 'axios'
 import {config as appConfig} from '@/base/config'
+import axios from 'axios'
 
 export interface APIRequestConfig {
   headers?: any

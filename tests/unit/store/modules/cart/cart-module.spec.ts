@@ -1,5 +1,5 @@
+import {CartModule, CartState, CheckoutStatus, Product, store} from '@/store'
 import {TestStoreModule} from '../../../../helper'
-import {store, StoreError, CartModule, CartModuleErrorType, CartState, CheckoutStatus, Product} from '@/store'
 import {utils} from '@/base/utils'
 
 const cartModule = store.cart as TestStoreModule<CartState, CartModule>
