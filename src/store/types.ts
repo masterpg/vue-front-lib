@@ -17,21 +17,21 @@ export interface Store {
 //----------------------------------------------------------------------
 
 export interface ProductsModule {
-  products: Product[]
+  readonly all: Product[]
 
-  getProductById(productId: string): Product | undefined
+  getById(productId: string): Product | undefined
 
-  setProducts(products: Product[]): void
+  setAll(products: Product[]): void
 
   decrementInventory(productId: string): void
 }
 
 export interface CartModule {
-  all: CartItem[]
+  readonly all: CartItem[]
 
-  totalPrice: number
+  readonly totalPrice: number
 
-  checkoutStatus: CheckoutStatus
+  readonly checkoutStatus: CheckoutStatus
 
   setAll(items: CartItem[]): void
 
@@ -39,7 +39,7 @@ export interface CartModule {
 
   addProductToCart(product: Product): CartItem
 
-  incrementQuantity(productId: string): void
+  getById(productId: string): CartItem | undefined
 }
 
 //----------------------------------------------------------------------
@@ -104,7 +104,7 @@ export enum ProductErrorType {
 //----------------------------------------------------------------------
 
 export interface ProductsState {
-  products: Product[]
+  all: Product[]
 }
 
 export interface CartState {

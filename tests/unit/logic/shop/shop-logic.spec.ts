@@ -1,22 +1,32 @@
 import * as td from 'testdouble'
 
 import {ShopLogicImpl} from '@/logic/shop'
-import {CartModule, CheckoutStatus, ProductsModule, store} from '@/store'
+import {TestStoreModule} from '../../../helper'
 import {api, Product as APIProduct, ShopAPI} from '@/api'
+import {store, CartState, CartModule, CheckoutStatus, ProductsModule, ProductsState} from '@/store'
+import {utils} from '@/base/utils'
 
 const shopLogic = new ShopLogicImpl()
+const cartModule = store.cart as TestStoreModule<CartState, CartModule>
+const productModule = store.products as TestStoreModule<ProductsState, ProductsModule>
 
 const PRODUCTS: APIProduct[] = [
   {id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 1},
   {id: '2', title: 'Fire HD 8 Tablet', price: 80.99, inventory: 5},
   {id: '3', title: 'MediaPad 10', price: 150.8, inventory: 10},
+  {id: '4', title: 'Surface Go', price: 630, inventory: 0},
 ]
 
 const CART_ITEMS = [{id: '1', title: 'iPad 4 Mini', price: 500.01, quantity: 1}, {id: '2', title: 'Fire HD 8 Tablet', price: 80.99, quantity: 1}]
 
 beforeEach(async () => {
-  td.replace(store, 'cart', td.object<CartModule>())
-  td.replace(store, 'products', td.object<ProductsModule>())
+  cartModule.initState({
+    all: utils.cloneDeep(CART_ITEMS),
+    checkoutStatus: CheckoutStatus.None,
+  })
+  productModule.initState({
+    all: utils.cloneDeep(PRODUCTS),
+  })
   td.replace(api, 'shop', td.object<ShopAPI>())
 })
 
@@ -24,13 +34,8 @@ afterEach(() => {})
 
 describe('products', () => {
   it('ベーシックケース', () => {
-    // 【準備】
-    store.products.products = PRODUCTS
-
-    // 【実行】
     const actual = shopLogic.products
 
-    // 【検証】
     expect(actual).toEqual(PRODUCTS)
     expect(actual).not.toBe(PRODUCTS) // コピーであることを検証
   })
@@ -38,13 +43,8 @@ describe('products', () => {
 
 describe('cartItems', () => {
   it('ベーシックケース', () => {
-    // 【準備】
-    store.cart.all = CART_ITEMS
-
-    // 【実行】
     const actual = shopLogic.cartItems
 
-    // 【検証】
     expect(actual).toEqual(CART_ITEMS)
     expect(actual).not.toBe(CART_ITEMS) // コピーであることを検証
   })
@@ -52,118 +52,82 @@ describe('cartItems', () => {
 
 describe('cartTotalPrice', () => {
   it('ベーシックケース', () => {
-    // 【準備】
-    store.cart.totalPrice = 999
+    cartModule.state.all = [{id: '1', title: 'iPad 4 Mini', price: 100, quantity: 1}]
 
-    // 【実行】
-    const actual = store.cart.totalPrice
+    const actual = shopLogic.cartTotalPrice
 
-    // 【検証】
-    expect(actual).toBe(999)
+    expect(actual).toBe(100)
   })
 })
 
 describe('checkoutStatus', () => {
   it('ベーシックケース', () => {
-    // 【準備】
-    store.cart.checkoutStatus = CheckoutStatus.Successful
-
-    // 【実行】
     const actual = store.cart.checkoutStatus
 
-    // 【検証】
-    expect(actual).toBe(CheckoutStatus.Successful)
+    expect(actual).toBe(CheckoutStatus.None)
   })
 })
 
 describe('pullProducts()', () => {
   it('ベーシックケース', async () => {
-    // 【準備】
     td.replace(api.shop, 'getProducts', () => Promise.resolve(PRODUCTS))
 
-    // 【実行】
     await shopLogic.pullProducts()
+    const actual = shopLogic.products
 
-    // 【検証】
-    td.verify(store.products.setProducts(PRODUCTS))
+    expect(actual).toEqual(PRODUCTS)
   })
 })
 
 describe('addProductToCart()', () => {
-  it('在庫がある商品かつ、まだカートにない商品をカートへ追加した場合', async () => {
-    // 【準備】
-    const product = PRODUCTS[0]
+  it('在庫がある商品をカートへ追加する場合 & 追加しようとする商品がまだカートに存在しない場合', async () => {
+    const product = PRODUCTS[2]
 
-    td.replace(shopLogic, 'm_getProductById')
-    td.when((shopLogic as any).m_getProductById(product.id)).thenReturn(product)
-
-    // カートの中身を空にする
-    store.cart.all = []
-
-    // 【実行】
     shopLogic.addProductToCart(product.id)
 
-    // 【検証】
-    td.verify(store.cart.setCheckoutStatus(CheckoutStatus.None))
-    td.verify(store.cart.addProductToCart(product))
-    td.verify(store.products.decrementInventory(product.id))
+    expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.None)
+    const cartItem = cartModule.getById(product.id)!
+    expect(cartItem.quantity).toBe(1)
   })
 
-  it('在庫がある商品かつ、既にカートにその商品が存在する状態で同じ商品また追加した場合', async () => {
-    // 【準備】
+  it('在庫がある商品をカートへ追加する場合 & 追加しようとする商品が既に存在する場合', async () => {
     const product = PRODUCTS[0]
+    const cartItemBk = utils.cloneDeep(cartModule.getById(product.id)!)
 
-    td.replace(shopLogic, 'm_getProductById')
-    td.when((shopLogic as any).m_getProductById(product.id)).thenReturn(product)
-
-    // カートの中身を設定する
-    // (追加しようとする商品が既に存在する状態をつくる)
-    store.cart.all = CART_ITEMS
-
-    // 【実行】
     shopLogic.addProductToCart(product.id)
 
-    // 【検証】
-    td.verify(store.cart.setCheckoutStatus(CheckoutStatus.None))
-    td.verify(store.cart.incrementQuantity(product.id))
-    td.verify(store.products.decrementInventory(product.id))
+    expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.None)
+    const cartItem = cartModule.getById(product.id)!
+    expect(cartItem.quantity).toBe(cartItemBk.quantity + 1)
+  })
+
+  it('在庫が無い商品をカートへ追加しようとした場合', async () => {
+    const product = PRODUCTS[3]
+
+    // TODO 現状何も起こらないが、エラーをスローした方がよいか検討すること
+    shopLogic.addProductToCart(product.id)
+
+    expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.None)
   })
 })
 
 describe('checkout()', () => {
   it('ベーシックケース', async () => {
-    // 【準備】
-    const product = PRODUCTS[0]
-
-    store.cart.all = CART_ITEMS
-
-    const setCheckoutStatus = td.replace(store.cart, 'setCheckoutStatus')
-
-    // 【実行】
     await shopLogic.checkout()
 
-    // 【検証】
     td.verify(api.shop.buyProducts(CART_ITEMS))
-    // `store.cart.setCheckoutStatus()`の呼び出し回数と渡された引数を検証
-    const setCheckoutStatusExplain = td.explain(setCheckoutStatus)
-    expect(setCheckoutStatusExplain.callCount).toBe(2)
-    expect(setCheckoutStatusExplain.calls[0].args[0]).toBe(CheckoutStatus.None)
-    expect(setCheckoutStatusExplain.calls[1].args[0]).toBe(CheckoutStatus.Successful)
+    expect(shopLogic.cartItems).toEqual([])
+    expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.Successful)
   })
 
-  it('エラーケース', async () => {
-    // 【準備】
-    store.cart.all = CART_ITEMS
-
+  it('APIでエラーが発生してチェックアウトが失敗した場合', async () => {
     td.replace(api.shop, 'buyProducts', () => {
       throw new Error()
     })
 
-    // 【実行】
     await shopLogic.checkout()
 
-    // 【検証】
-    td.verify(store.cart.setCheckoutStatus(CheckoutStatus.Failed))
-    expect(store.cart.all).toEqual(CART_ITEMS)
+    expect(shopLogic.cartItems).toEqual(CART_ITEMS)
+    expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.Failed)
   })
 })

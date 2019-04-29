@@ -91,9 +91,8 @@ module.exports = {
     if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
       copyFiles = [
         ...copyFiles,
-        {from: 'node_modules/mocha/mocha.css', to: 'node_modules/mocha'},
-        {from: 'node_modules/mocha/mocha.js', to: 'node_modules/mocha'},
-        {from: 'node_modules/chai/chai.js', to: 'node_modules/chai'},
+        // その他必要であれば追記
+        // 例: {from: 'node_modules/aaa/bbb.css', to: 'node_modules/aaa'},
       ]
     }
     config

@@ -14,7 +14,7 @@ export class ProductsModuleImpl extends BaseModule<ProductsState> implements Pro
   constructor() {
     super()
     this.initState({
-      products: [],
+      all: [],
     })
   }
 
@@ -24,8 +24,8 @@ export class ProductsModuleImpl extends BaseModule<ProductsState> implements Pro
   //
   //----------------------------------------------------------------------
 
-  get products(): Product[] {
-    return this.state.products
+  get all(): Product[] {
+    return this.state.all
   }
 
   //----------------------------------------------------------------------
@@ -34,17 +34,17 @@ export class ProductsModuleImpl extends BaseModule<ProductsState> implements Pro
   //
   //----------------------------------------------------------------------
 
-  getProductById(productId: string): Product | undefined {
-    const product = this.state.products.find(item => item.id === productId)
+  getById(productId: string): Product | undefined {
+    const product = this.state.all.find(item => item.id === productId)
     return product
   }
 
-  setProducts(products: Product[]): void {
-    this.state.products = utils.cloneDeep(products)
+  setAll(products: Product[]): void {
+    this.state.all = utils.cloneDeep(products)
   }
 
   decrementInventory(productId: string): void {
-    const product = this.state.products.find(item => item.id === productId)
+    const product = this.state.all.find(item => item.id === productId)
     if (product) {
       product.inventory--
     } else {

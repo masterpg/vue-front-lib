@@ -1,5 +1,6 @@
 import {TestStoreModule} from '../../../../helper'
 import {store, StoreError, CartModule, CartModuleErrorType, CartState, CheckoutStatus, Product} from '@/store'
+import {utils} from '@/base/utils'
 
 const cartModule = store.cart as TestStoreModule<CartState, CartModule>
 
@@ -13,14 +14,14 @@ const PRODUCTS: Product[] = [
 
 beforeEach(async () => {
   cartModule.initState({
-    all: CART_ITEMS,
+    all: utils.cloneDeep(CART_ITEMS),
     checkoutStatus: CheckoutStatus.None,
   })
 })
 
 describe('all', () => {
   it('ベーシックケース', () => {
-    expect(cartModule.all).toBe(CART_ITEMS)
+    expect(cartModule.all).toEqual(CART_ITEMS)
   })
 })
 
@@ -33,6 +34,18 @@ describe('totalPrice', () => {
 describe('checkoutStatus', () => {
   it('ベーシックケース', () => {
     expect(cartModule.checkoutStatus).toBe(CheckoutStatus.None)
+  })
+})
+
+describe('getById', () => {
+  it('ベーシックケース', () => {
+    const cartItem = cartModule.state.all[0]
+    const actual = cartModule.getById(cartItem.id)
+    expect(actual).toEqual(cartItem)
+  })
+  it('カートに存在しない商品IDを指定した場合', () => {
+    const actual = cartModule.getById('9999')
+    expect(actual).toBeUndefined()
   })
 })
 
@@ -52,40 +65,22 @@ describe('setCheckoutStatus()', () => {
 })
 
 describe('addProductToCart()', () => {
-  it('ベーシックケース', () => {
+  it('追加しようとする商品がまだカートに存在しない場合', async () => {
     const product = PRODUCTS[2]
-    const expectItem = {
-      id: product.id,
-      title: product.title,
-      price: product.price,
-      quantity: 1,
-    }
 
-    const actual = cartModule.addProductToCart(product)
+    cartModule.addProductToCart(product)
 
-    expect(actual).toEqual(expectItem)
-    expect(cartModule.all[2]).toEqual(expectItem)
-    expect(cartModule.all[2]).not.toBe(expectItem)
-  })
-})
-
-describe('incrementQuantity()', () => {
-  const product = PRODUCTS[0]
-
-  it('ベーシックケース', () => {
-    cartModule.incrementQuantity(product.id)
-    expect(cartModule.all[0].id).toBe(product.id)
-    expect(cartModule.all[0].quantity).toBe(2)
+    const cartItem = cartModule.getById(product.id)!
+    expect(cartItem.quantity).toBe(1)
   })
 
-  it('カートに存在しない商品の数量をインクリメントしようとした場合', () => {
-    try {
-      cartModule.incrementQuantity('9999')
-    } catch (e) {
-      expect(e).toBeInstanceOf(StoreError)
-      if (e instanceof StoreError) {
-        expect(e.errorType).toBe(CartModuleErrorType.ItemNotFound)
-      }
-    }
+  it('追加しようとする商品が既に存在する場合', async () => {
+    const product = PRODUCTS[0]
+    const cartItemBk = utils.cloneDeep(cartModule.getById(product.id)!)
+
+    cartModule.addProductToCart(product)
+
+    const cartItem = cartModule.getById(product.id)!
+    expect(cartItem.quantity).toBe(cartItemBk.quantity + 1)
   })
 })

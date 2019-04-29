@@ -2,7 +2,7 @@ import {store, StoreError, Product, ProductErrorType, ProductsModule, ProductsSt
 import {utils} from '@/base/utils'
 import {TestStoreModule} from '../../../../helper'
 
-const productModule = store.products as TestStoreModule<ProductsState, ProductsModule>
+const productsModule = store.products as TestStoreModule<ProductsState, ProductsModule>
 
 const PRODUCTS: Product[] = [
   {id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 1},
@@ -11,48 +11,48 @@ const PRODUCTS: Product[] = [
 ]
 
 beforeEach(async () => {
-  productModule.initState({
-    products: PRODUCTS,
+  productsModule.initState({
+    all: utils.cloneDeep(PRODUCTS),
   })
 })
 
-describe('products', () => {
+describe('all', () => {
   it('ベーシックケース', () => {
-    expect(productModule.products).toBe(PRODUCTS)
+    expect(productsModule.all).toEqual(PRODUCTS)
   })
 })
 
-describe('getProductById', () => {
+describe('getById', () => {
   it('ベーシックケース', () => {
-    const product = utils.cloneDeep(productModule.state.products[0])
-    const actual = productModule.getProductById(product.id)
+    const product = productsModule.state.all[0]
+    const actual = productsModule.getById(product.id)
     expect(actual).toEqual(product)
   })
   it('存在しない商品IDを指定した場合', () => {
-    const actual = productModule.getProductById('9999')
+    const actual = productsModule.getById('9999')
     expect(actual).toBeUndefined()
   })
 })
 
-describe('setProducts', () => {
+describe('setAll', () => {
   it('ベーシックケース', () => {
-    productModule.setProducts(PRODUCTS)
-    expect(productModule.products).toEqual(PRODUCTS)
-    expect(productModule.products).not.toBe(PRODUCTS)
+    productsModule.setAll(PRODUCTS)
+    expect(productsModule.all).toEqual(PRODUCTS)
+    expect(productsModule.all).not.toBe(PRODUCTS)
   })
 })
 
 describe('decrementInventory', () => {
   it('ベーシックケース', () => {
-    const product = utils.cloneDeep(productModule.state.products[0])
-    productModule.decrementInventory(product.id)
-    const actual = productModule.state.products[0]
+    const product = utils.cloneDeep(productsModule.state.all[0])
+    productsModule.decrementInventory(product.id)
+    const actual = productsModule.state.all[0]
     expect(actual.id).toBe(product.id)
     expect(actual.inventory).toBe(product.inventory - 1)
   })
   it('存在しない商品の在庫をデクリメントしようとした場合', () => {
     try {
-      productModule.decrementInventory('9999')
+      productsModule.decrementInventory('9999')
     } catch (e) {
       expect(e).toBeInstanceOf(StoreError)
       if (e instanceof StoreError) {

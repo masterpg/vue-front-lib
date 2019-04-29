@@ -45,6 +45,11 @@ export class CartModuleImpl extends BaseModule<CartState> implements CartModule 
   //
   //----------------------------------------------------------------------
 
+  getById(productId: string): CartItem | undefined {
+    const item = this.state.all.find(item => item.id === productId)
+    return item
+  }
+
   setAll(items: CartItem[]): void {
     this.state.all = utils.cloneDeep(items)
   }
@@ -54,22 +59,18 @@ export class CartModuleImpl extends BaseModule<CartState> implements CartModule 
   }
 
   addProductToCart(product: Product): CartItem {
-    const cartItem = {
-      id: product.id,
-      title: product.title,
-      price: product.price,
-      quantity: 1,
-    }
-    this.state.all.push(cartItem)
-    return utils.cloneDeep(cartItem)
-  }
-
-  incrementQuantity(productId: string): void {
-    const cartItem = this.state.all.find(item => item.id === productId)
-    if (cartItem) {
-      cartItem.quantity++
+    let item = this.state.all.find(item => item.id === product.id)
+    if (!item) {
+      item = {
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        quantity: 1,
+      }
+      this.state.all.push(item)
     } else {
-      new StoreError(CartModuleErrorType.ItemNotFound)
+      item.quantity++
     }
+    return item
   }
 }
