@@ -1,8 +1,8 @@
-import {store, StoreError, Product, ProductErrorType, ProductModule, ProductState} from '@/store'
+import {store, StoreError, Product, ProductErrorType, ProductsModule, ProductsState} from '@/store'
 import {utils} from '@/base/utils'
 import {TestStoreModule} from '../../../../helper'
 
-const productModule = store.product as TestStoreModule<ProductState, ProductModule>
+const productModule = store.products as TestStoreModule<ProductsState, ProductsModule>
 
 const PRODUCTS: Product[] = [
   {id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 1},

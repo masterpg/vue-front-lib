@@ -1,10 +1,10 @@
 import {Component} from 'vue-property-decorator'
 import {BaseModule} from '@/store/base'
-import {Product, ProductErrorType, ProductModule, ProductState, StoreError} from '@/store/types'
+import {Product, ProductErrorType, ProductsModule, ProductsState, StoreError} from '@/store/types'
 import {utils} from '@/base/utils'
 
 @Component
-export class ProductModuleImpl extends BaseModule<ProductState> implements ProductModule {
+export class ProductsModuleImpl extends BaseModule<ProductsState> implements ProductsModule {
   //----------------------------------------------------------------------
   //
   //  Constructors

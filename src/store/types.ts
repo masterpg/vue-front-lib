@@ -5,7 +5,7 @@
 //----------------------------------------------------------------------
 
 export interface Store {
-  readonly product: ProductModule
+  readonly products: ProductsModule
 
   readonly cart: CartModule
 }
@@ -16,7 +16,7 @@ export interface Store {
 //
 //----------------------------------------------------------------------
 
-export interface ProductModule {
+export interface ProductsModule {
   products: Product[]
 
   getProductById(productId: string): Product | undefined
@@ -103,7 +103,7 @@ export enum ProductErrorType {
 //
 //----------------------------------------------------------------------
 
-export interface ProductState {
+export interface ProductsState {
   products: Product[]
 }
 
