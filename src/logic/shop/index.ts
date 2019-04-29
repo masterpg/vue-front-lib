@@ -21,7 +21,7 @@ export class ShopLogicImpl extends Vue implements ShopLogic {
 
   @NoCache
   get cartItems(): CartItem[] {
-    return utils.cloneDeep(store.cart.items)
+    return utils.cloneDeep(store.cart.all)
   }
 
   get cartTotalPrice(): number {
@@ -47,11 +47,11 @@ export class ShopLogicImpl extends Vue implements ShopLogic {
     store.cart.setCheckoutStatus(CheckoutStatus.None)
     const product = this.m_getProductById(productId)
     if (product.inventory > 0) {
-      const cartItem = store.cart.items.find(item => item.id === product.id)
+      const cartItem = store.cart.all.find(item => item.id === product.id)
       if (!cartItem) {
         store.cart.addProductToCart(product)
       } else {
-        store.cart.incrementItemQuantity(productId)
+        store.cart.incrementQuantity(productId)
       }
       store.products.decrementInventory(productId)
     }
@@ -61,7 +61,7 @@ export class ShopLogicImpl extends Vue implements ShopLogic {
     store.cart.setCheckoutStatus(CheckoutStatus.None)
     try {
       await api.shop.buyProducts(this.cartItems)
-      store.cart.setItems([]) // カートを空にする
+      store.cart.setAll([]) // カートを空にする
       store.cart.setCheckoutStatus(CheckoutStatus.Successful)
     } catch (err) {
       store.cart.setCheckoutStatus(CheckoutStatus.Failed)

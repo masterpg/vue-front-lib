@@ -9,7 +9,7 @@ const shopLogic = new ShopLogicImpl()
 const PRODUCTS: APIProduct[] = [
   {id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 1},
   {id: '2', title: 'Fire HD 8 Tablet', price: 80.99, inventory: 5},
-  {id: '3', title: 'HUAWEI MediaPad 10', price: 150.8, inventory: 10},
+  {id: '3', title: 'MediaPad 10', price: 150.8, inventory: 10},
 ]
 
 const CART_ITEMS = [{id: '1', title: 'iPad 4 Mini', price: 500.01, quantity: 1}, {id: '2', title: 'Fire HD 8 Tablet', price: 80.99, quantity: 1}]
@@ -39,7 +39,7 @@ describe('products', () => {
 describe('cartItems', () => {
   it('ベーシックケース', () => {
     // 【準備】
-    store.cart.items = CART_ITEMS
+    store.cart.all = CART_ITEMS
 
     // 【実行】
     const actual = shopLogic.cartItems
@@ -98,7 +98,7 @@ describe('addProductToCart()', () => {
     td.when((shopLogic as any).m_getProductById(product.id)).thenReturn(product)
 
     // カートの中身を空にする
-    store.cart.items = []
+    store.cart.all = []
 
     // 【実行】
     shopLogic.addProductToCart(product.id)
@@ -118,14 +118,14 @@ describe('addProductToCart()', () => {
 
     // カートの中身を設定する
     // (追加しようとする商品が既に存在する状態をつくる)
-    store.cart.items = CART_ITEMS
+    store.cart.all = CART_ITEMS
 
     // 【実行】
     shopLogic.addProductToCart(product.id)
 
     // 【検証】
     td.verify(store.cart.setCheckoutStatus(CheckoutStatus.None))
-    td.verify(store.cart.incrementItemQuantity(product.id))
+    td.verify(store.cart.incrementQuantity(product.id))
     td.verify(store.products.decrementInventory(product.id))
   })
 })
@@ -135,7 +135,7 @@ describe('checkout()', () => {
     // 【準備】
     const product = PRODUCTS[0]
 
-    store.cart.items = CART_ITEMS
+    store.cart.all = CART_ITEMS
 
     const setCheckoutStatus = td.replace(store.cart, 'setCheckoutStatus')
 
@@ -153,7 +153,7 @@ describe('checkout()', () => {
 
   it('エラーケース', async () => {
     // 【準備】
-    store.cart.items = CART_ITEMS
+    store.cart.all = CART_ITEMS
 
     td.replace(api.shop, 'buyProducts', () => {
       throw new Error()
@@ -164,6 +164,6 @@ describe('checkout()', () => {
 
     // 【検証】
     td.verify(store.cart.setCheckoutStatus(CheckoutStatus.Failed))
-    expect(store.cart.items).toEqual(CART_ITEMS)
+    expect(store.cart.all).toEqual(CART_ITEMS)
   })
 })

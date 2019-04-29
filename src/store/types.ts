@@ -27,19 +27,19 @@ export interface ProductsModule {
 }
 
 export interface CartModule {
-  items: CartItem[]
+  all: CartItem[]
 
   totalPrice: number
 
   checkoutStatus: CheckoutStatus
 
-  setItems(items: CartItem[]): void
+  setAll(items: CartItem[]): void
 
   setCheckoutStatus(status: CheckoutStatus): void
 
   addProductToCart(product: Product): CartItem
 
-  incrementItemQuantity(productId: string): void
+  incrementQuantity(productId: string): void
 }
 
 //----------------------------------------------------------------------
@@ -108,6 +108,6 @@ export interface ProductsState {
 }
 
 export interface CartState {
-  items: CartItem[]
+  all: CartItem[]
   checkoutStatus: CheckoutStatus
 }

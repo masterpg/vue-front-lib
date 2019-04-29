@@ -13,14 +13,14 @@ const PRODUCTS: Product[] = [
 
 beforeEach(async () => {
   cartModule.initState({
-    items: CART_ITEMS,
+    all: CART_ITEMS,
     checkoutStatus: CheckoutStatus.None,
   })
 })
 
-describe('items', () => {
+describe('all', () => {
   it('ベーシックケース', () => {
-    expect(cartModule.items).toBe(CART_ITEMS)
+    expect(cartModule.all).toBe(CART_ITEMS)
   })
 })
 
@@ -36,11 +36,11 @@ describe('checkoutStatus', () => {
   })
 })
 
-describe('setItems()', () => {
+describe('setAll()', () => {
   it('ベーシックケース', () => {
-    cartModule.setItems(CART_ITEMS)
-    expect(cartModule.items).toEqual(CART_ITEMS)
-    expect(cartModule.items).not.toBe(CART_ITEMS)
+    cartModule.setAll(CART_ITEMS)
+    expect(cartModule.all).toEqual(CART_ITEMS)
+    expect(cartModule.all).not.toBe(CART_ITEMS)
   })
 })
 
@@ -64,23 +64,23 @@ describe('addProductToCart()', () => {
     const actual = cartModule.addProductToCart(product)
 
     expect(actual).toEqual(expectItem)
-    expect(cartModule.items[2]).toEqual(expectItem)
-    expect(cartModule.items[2]).not.toBe(expectItem)
+    expect(cartModule.all[2]).toEqual(expectItem)
+    expect(cartModule.all[2]).not.toBe(expectItem)
   })
 })
 
-describe('incrementItemQuantity()', () => {
+describe('incrementQuantity()', () => {
   const product = PRODUCTS[0]
 
   it('ベーシックケース', () => {
-    cartModule.incrementItemQuantity(product.id)
-    expect(cartModule.items[0].id).toBe(product.id)
-    expect(cartModule.items[0].quantity).toBe(2)
+    cartModule.incrementQuantity(product.id)
+    expect(cartModule.all[0].id).toBe(product.id)
+    expect(cartModule.all[0].quantity).toBe(2)
   })
 
   it('カートに存在しない商品の数量をインクリメントしようとした場合', () => {
     try {
-      cartModule.incrementItemQuantity('9999')
+      cartModule.incrementQuantity('9999')
     } catch (e) {
       expect(e).toBeInstanceOf(StoreError)
       if (e instanceof StoreError) {
