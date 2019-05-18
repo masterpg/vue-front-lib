@@ -1,33 +1,16 @@
 <style scoped>
 @import './styles/placeholder/typography.css';
 
-app-drawer-layout {
-  --app-drawer-width: 300px;
-  &:not([narrow]) [drawer-toggle] {
-    display: none;
-  }
+.header {
+  background-color: var(--comm-indigo-500);
 }
 
-.drawer-toolbar {
+.container {
+  height: 100vh;
 }
 
-.content-toolbar {
-  background-color: var(--comm-indigo-a200);
-  color: #fff;
-}
-
-.drawer-list {
-  .item {
-    display: block;
-    padding: 8px 20px;
-    @extend %comm-font-code1;
-    color: var(--app-secondary-text-color);
-    text-decoration: none;
-  }
-
-  .item.router-link-active {
-    color: var(--app-accent-text-color);
-  }
+.drawer-scroll-area {
+  height: 100%;
 }
 
 /* -----> */
@@ -90,57 +73,55 @@ app-drawer-layout {
 */
 </style>
 
+<style>
+.app-view-drawer-content-class {
+  background-color: var(--comm-grey-200);
+}
+</style>
+
 <template>
-  <div>
-    <app-drawer-layout responsive-width="960px">
-      <!-- Drawer content -->
-      <app-drawer ref="drawer" slot="drawer" :swipe-open="m_narrow">
-        <app-toolbar class="drawer-toolbar">
-          <iron-icon src="img/icons/manifest/icon-48x48.png"></iron-icon>
-          <div main-title class="comm-ml-8">Vue Base Project</div>
-        </app-toolbar>
-        <div class="drawer-list">
+  <q-layout view="lHh Lpr lFf">
+    <q-header elevated class="glossy header">
+      <q-toolbar>
+        <q-btn flat dense round aria-label="Menu" icon="menu" @click="m_leftDrawerOpen = !m_leftDrawerOpen" />
+
+        <q-toolbar-title>
+          Quasar App XXX
+        </q-toolbar-title>
+
+        <div>Quasar v{{ $q.version }}</div>
+      </q-toolbar>
+    </q-header>
+
+    <q-drawer v-model="m_leftDrawerOpen" :width="300" :breakpoint="500" show-if-above bordered content-class="app-view-drawer-content-class">
+      <q-scroll-area class="drawer-scroll-area">
+        <q-list padding>
           <template v-for="(item, index) in m_items">
-            <router-link :key="index" :to="item.path" class="item">{{ item.title }}</router-link>
+            <q-item :key="index" v-ripple :to="item.path" clickable>
+              <q-item-section avatar>
+                <q-icon :name="item.icon" />
+              </q-item-section>
+              <q-item-section>{{ item.title }}</q-item-section>
+            </q-item>
           </template>
-        </div>
-      </app-drawer>
+        </q-list>
+      </q-scroll-area>
+    </q-drawer>
 
-      <!-- Main content -->
-      <app-toolbar class="content-toolbar">
-        <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-        <div main-title>View name</div>
-      </app-toolbar>
-
+    <q-page-container class="container">
       <transition name="view" mode="out-in" enter-active-class="animated tada faster" leave-active-class="animated bounceOutRight faster">
         <router-view />
       </transition>
-    </app-drawer-layout>
-
-    <paper-toast ref="swToast" :duration="m_swUpdateIsRequired ? 0 : 5000" :text="m_swMessage">
-      <paper-button v-show="m_swUpdateIsRequired" class="link-button" @click="m_reload">{{ $t('reload') }}</paper-button>
-    </paper-toast>
-  </div>
+    </q-page-container>
+  </q-layout>
 </template>
 
 <script lang="ts">
-import '@polymer/app-layout/app-drawer-layout/app-drawer-layout'
-import '@polymer/app-layout/app-drawer/app-drawer'
-import '@polymer/app-layout/app-header-layout/app-header-layout'
-import '@polymer/app-layout/app-header/app-header'
-import '@polymer/app-layout/app-toolbar/app-toolbar'
-import '@polymer/iron-icon/iron-icon'
-import '@polymer/iron-icons/iron-icons'
-import '@polymer/iron-pages/iron-pages'
-import '@polymer/iron-selector/iron-selector'
-import '@polymer/paper-button/paper-button'
-import '@polymer/paper-icon-button/paper-icon-button'
-import '@polymer/paper-toast/paper-toast'
-
 import * as sw from '@/base/service-worker'
 import {BaseComponent} from '@/base/component'
 import {Component} from 'vue-property-decorator'
 import {mixins} from 'vue-class-component'
+import {router} from '@/base/router'
 
 @Component
 export default class AppView extends mixins(BaseComponent) {
@@ -150,20 +131,20 @@ export default class AppView extends mixins(BaseComponent) {
   //
   //----------------------------------------------------------------------
 
-  private m_narrow: boolean = false
-
-  private m_items: Array<{title: string; path: string}> = [
+  private m_items: Array<{title: string; path: string; icon: string}> = [
     {
       title: 'ABC',
-      path: '/pages/abc',
+      path: router.pages.abc.path,
+      icon: 'inbox',
     },
     {
       title: 'Shopping',
-      path: '/pages/shopping',
+      path: router.pages.shopping.path,
+      icon: 'star',
     },
   ]
 
-  private m_swMessage: string = ''
+  private m_leftDrawerOpen: boolean = false
 
   private m_swUpdateIsRequired: boolean = false
 
@@ -184,17 +165,9 @@ export default class AppView extends mixins(BaseComponent) {
   async created() {
     sw.addStateChangeListener(this.m_swOnStateChange)
 
+    this.m_leftDrawerOpen = this.$q.platform.is.desktop
+
     await this.$logic.shop.pullProducts()
-  }
-
-  //----------------------------------------------------------------------
-  //
-  //  Internal methods
-  //
-  //----------------------------------------------------------------------
-
-  private m_reload(): void {
-    window.location.reload()
   }
 
   //----------------------------------------------------------------------
@@ -206,13 +179,23 @@ export default class AppView extends mixins(BaseComponent) {
   private m_swOnStateChange(info: sw.StateChangeInfo) {
     this.m_swUpdateIsRequired = false
 
+    let message = ''
     if (info.state === sw.ChangeState.updated) {
       this.m_swUpdateIsRequired = true
-      this.m_swMessage = info.message
+      message = info.message
       this.$nextTick(() => this.m_swToast.open())
     } else if (info.state === sw.ChangeState.cached) {
-      this.m_swMessage = info.message
+      message = info.message
       this.$nextTick(() => this.m_swToast.open())
+    }
+    if (message) {
+      this.$q.notify({
+        icon: 'info',
+        position: 'bottom-left',
+        timeout: 0,
+        message,
+        actions: [{label: this.$t('reload'), color: 'white', handler: () => window.location.reload()}],
+      })
     }
 
     if (info.state === sw.ChangeState.error) {

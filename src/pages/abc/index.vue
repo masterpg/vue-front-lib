@@ -17,9 +17,9 @@
 
 <template>
   <div class="layout vertical">
-    <paper-card class="comm-pa-12" :class="{'comm-ma-48': pcScreen, 'comm-ma-24': tabScreen, 'comm-ma-12': spScreen}">
+    <q-card class="comm-pa-12" :class="{'comm-ma-48': pcScreen, 'comm-ma-24': tabScreen, 'comm-ma-12': spScreen}">
       <div class="comm-my-16">{{ $t('hello', {today: $d(new Date(), 'short')}) }}</div>
-      <paper-input label="Input Message" :value="m_message" @input="m_message = $event.target.value"></paper-input>
+      <q-input v-model="m_message" label="Input Message" />
       <div class="comm-my-16">
         <span class="title">propA: </span><span class="value">{{ propA }}</span>
       </div>
@@ -40,15 +40,15 @@
       </div>
       <div class="layout horizontal center comm-my-16">
         <greet-message ref="greetMessage" :message="m_message" class="greet-message"></greet-message>
-        <button class="comm-ml-12" @click="m_greetButtonOnClick">Greet</button>
+        <q-btn flat rounded color="primary" label="Greet" class="comm-ml-12" @click="m_greetButtonOnClick" />
       </div>
       <div class="comm-my-16">
         <span class="title">post times: </span><span class="value">{{ m_post.times }}</span>
-        <button class="comm-ml-12" @click="m_postButtonOnClick">Post</button>
+        <q-btn flat rounded color="primary" label="Post" class="comm-ml-12" @click="m_postButtonOnClick" />
       </div>
-      <div class="layout horizontal comm-my-16">
+      <div class="layout horizontal center comm-my-16">
         <custom-input v-model="m_customInputValue" class="flex-3"></custom-input>
-        <span class="flex-9 comm-ml-12 comm-mt-28">
+        <span class="flex-9 comm-ml-12">
           <span class="title">value: </span><span class="value">{{ m_customInputValue }}</span>
         </span>
       </div>
@@ -58,16 +58,14 @@
           <span class="title">checked: </span><span class="value">{{ m_customChecked }}</span>
         </span>
       </div>
-      <div class="layout horizontal end-justified"><paper-button raised @click="m_sleepButtonOnClick">Sleep</paper-button></div>
-    </paper-card>
+      <div class="layout horizontal end-justified">
+        <q-btn label="Sleep" color="primary" @click="m_sleepButtonOnClick" />
+      </div>
+    </q-card>
   </div>
 </template>
 
 <script lang="ts">
-import '@polymer/paper-button/paper-button'
-import '@polymer/paper-card/paper-card'
-import '@polymer/paper-input/paper-input'
-
 import {Component, Prop, Watch} from 'vue-property-decorator'
 import {BaseComponent} from '@/base/component'
 import CustomCheckbox from '@/pages/abc/custom-checkbox.vue'

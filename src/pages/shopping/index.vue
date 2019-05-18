@@ -23,10 +23,6 @@
   @extend %comm-font-body1;
   color: var(--app-error-text-color);
 }
-
-.checkout-button {
-  color: var(--app-link-color);
-}
 </style>
 
 <template>
@@ -45,7 +41,7 @@
           </div>
         </div>
         <div class="flex"></div>
-        <paper-icon-button icon="icons:add-box" @click="m_addButtonOnClick(product)"></paper-icon-button>
+        <q-btn round color="primary" size="xs" icon="add" @click="m_addButtonOnClick(product)" />
       </div>
     </div>
 
@@ -65,17 +61,13 @@
       </div>
       <div class="layout horizontal center">
         <div class="flex error-text">{{ m_checkoutStatus.message }}</div>
-        <paper-button v-show="!m_cartIsEmpty" class="checkout-button" @click="m_checkoutButtonOnClick">{{ $t('checkout') }}</paper-button>
+        <q-btn v-show="!m_cartIsEmpty" :label="$t('checkout')" color="primary" @click="m_checkoutButtonOnClick" />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import '@polymer/paper-button/paper-button'
-import '@polymer/paper-card/paper-card'
-import '@polymer/paper-icon-button/paper-icon-button'
-
 import {CheckoutStatus, Product} from '@/store'
 import {BaseComponent} from '@/base/component'
 import {Component} from 'vue-property-decorator'

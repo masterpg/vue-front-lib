@@ -33,7 +33,16 @@ module.exports = {
 
   pages,
 
-  transpileDependencies: [],
+  transpileDependencies: [
+    /[\\/]node_modules[\\/]quasar[\\/]/,
+  ],
+
+  pluginOptions: {
+    quasar: {
+      rtlSupport: true,
+      treeShake: true,
+    },
+  },
 
   pwa: {
     name: 'vue-base-project',
@@ -65,7 +74,7 @@ module.exports = {
           handler: 'networkFirst',
         },
         {
-          urlPattern: /\/icons\//,
+          urlPattern: /\/img\//,
           handler: 'networkFirst',
         },
       ],
