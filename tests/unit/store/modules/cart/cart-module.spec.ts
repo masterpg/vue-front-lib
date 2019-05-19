@@ -1,15 +1,15 @@
-import {CartModule, CartState, CheckoutStatus, Product, store} from '@/store'
-import {TestStoreModule} from '../../../../helper'
-import {utils} from '@/base/utils'
+import { CartModule, CartState, CheckoutStatus, Product, store } from '@/store'
+import { TestStoreModule } from '../../../../helper'
+import { utils } from '@/base/utils'
 
 const cartModule = store.cart as TestStoreModule<CartState, CartModule>
 
-const CART_ITEMS = [{id: '1', title: 'iPad 4 Mini', price: 500.01, quantity: 1}, {id: '2', title: 'Fire HD 8 Tablet', price: 80.99, quantity: 2}]
+const CART_ITEMS = [{ id: '1', title: 'iPad 4 Mini', price: 500.01, quantity: 1 }, { id: '2', title: 'Fire HD 8 Tablet', price: 80.99, quantity: 2 }]
 
 const PRODUCTS: Product[] = [
-  {id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 1},
-  {id: '2', title: 'Fire HD 8 Tablet', price: 80.99, inventory: 5},
-  {id: '3', title: 'MediaPad T5 10', price: 150.8, inventory: 10},
+  { id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 1 },
+  { id: '2', title: 'Fire HD 8 Tablet', price: 80.99, inventory: 5 },
+  { id: '3', title: 'MediaPad T5 10', price: 150.8, inventory: 10 },
 ]
 
 beforeEach(async () => {

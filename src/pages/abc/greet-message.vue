@@ -22,12 +22,12 @@ span {
 </template>
 
 <script lang="ts">
-import {Component, Prop} from 'vue-property-decorator'
-import {BaseComponent} from '@/base/component'
+import { Component, Prop } from 'vue-property-decorator'
+import { BaseComponent } from '@/base/component'
 
 @Component
 export default class GreetMessage extends BaseComponent {
-  @Prop({default: ''})
+  @Prop({ default: '' })
   message!: string
 
   private m_greetTimes: number = 0

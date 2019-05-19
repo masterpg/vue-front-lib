@@ -1,7 +1,7 @@
-import {Product, ProductErrorType, ProductsModule, ProductsState, StoreError} from '@/store/types'
-import {BaseModule} from '@/store/base'
-import {Component} from 'vue-property-decorator'
-import {utils} from '@/base/utils'
+import { Product, ProductErrorType, ProductsModule, ProductsState, StoreError } from '@/store/types'
+import { BaseModule } from '@/store/base'
+import { Component } from 'vue-property-decorator'
+import { utils } from '@/base/utils'
 
 @Component
 export class ProductsModuleImpl extends BaseModule<ProductsState> implements ProductsModule {

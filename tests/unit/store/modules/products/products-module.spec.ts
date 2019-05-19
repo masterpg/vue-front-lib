@@ -1,13 +1,13 @@
-import {Product, ProductErrorType, ProductsModule, ProductsState, StoreError, store} from '@/store'
-import {TestStoreModule} from '../../../../helper'
-import {utils} from '@/base/utils'
+import { Product, ProductErrorType, ProductsModule, ProductsState, StoreError, store } from '@/store'
+import { TestStoreModule } from '../../../../helper'
+import { utils } from '@/base/utils'
 
 const productsModule = store.products as TestStoreModule<ProductsState, ProductsModule>
 
 const PRODUCTS: Product[] = [
-  {id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 1},
-  {id: '2', title: 'Fire HD 8 Tablet', price: 80.99, inventory: 5},
-  {id: '3', title: 'MediaPad T5 10', price: 150.8, inventory: 10},
+  { id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 1 },
+  { id: '2', title: 'Fire HD 8 Tablet', price: 80.99, inventory: 5 },
+  { id: '3', title: 'MediaPad T5 10', price: 150.8, inventory: 10 },
 ]
 
 beforeEach(async () => {

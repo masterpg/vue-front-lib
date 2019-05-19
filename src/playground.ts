@@ -4,8 +4,8 @@ import '@quasar/extras/material-icons/material-icons.css'
 import '@/styles/quasar.styl'
 import '@/index.css'
 
-import {QBtn, QCard, QCardActions, QCardSection, Quasar} from 'quasar'
-import {i18n, initI18n} from '@/base/i18n'
+import { QBtn, QCard, QCardActions, QCardSection, Quasar } from 'quasar'
+import { i18n, initI18n } from '@/base/i18n'
 import PlaygroundView from '@/playground.vue'
 import Vue from 'vue'
 

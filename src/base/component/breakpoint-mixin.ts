@@ -1,4 +1,4 @@
-import {Component} from 'vue-property-decorator'
+import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
 
 export enum BreakpointName {
@@ -120,7 +120,7 @@ export default class BreakpointMixin extends Vue {
   //----------------------------------------------------------------------
 
   mounted() {
-    window.addEventListener('resize', this.m_windowOnResize, {passive: true})
+    window.addEventListener('resize', this.m_windowOnResize, { passive: true })
   }
 
   destroyed() {

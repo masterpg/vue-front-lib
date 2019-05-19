@@ -118,10 +118,10 @@
 
 <script lang="ts">
 import * as sw from '@/base/service-worker'
-import {BaseComponent} from '@/base/component'
-import {Component} from 'vue-property-decorator'
-import {mixins} from 'vue-class-component'
-import {router} from '@/base/router'
+import { BaseComponent } from '@/base/component'
+import { Component } from 'vue-property-decorator'
+import { mixins } from 'vue-class-component'
+import { router } from '@/base/router'
 
 @Component
 export default class AppView extends mixins(BaseComponent) {
@@ -131,7 +131,7 @@ export default class AppView extends mixins(BaseComponent) {
   //
   //----------------------------------------------------------------------
 
-  private m_items: Array<{title: string; path: string; icon: string}> = [
+  private m_items: Array<{ title: string; path: string; icon: string }> = [
     {
       title: 'ABC',
       path: router.pages.abc.path,
@@ -152,7 +152,7 @@ export default class AppView extends mixins(BaseComponent) {
   //  Elements
   //--------------------------------------------------
 
-  private get m_swToast(): {open: () => void} {
+  private get m_swToast(): { open: () => void } {
     return this.$refs.swToast as any
   }
 
@@ -194,7 +194,7 @@ export default class AppView extends mixins(BaseComponent) {
         position: 'bottom-left',
         timeout: 0,
         message,
-        actions: [{label: this.$t('reload'), color: 'white', handler: () => window.location.reload()}],
+        actions: [{ label: this.$t('reload'), color: 'white', handler: () => window.location.reload() }],
       })
     }
 

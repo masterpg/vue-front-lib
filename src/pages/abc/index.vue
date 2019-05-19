@@ -17,8 +17,8 @@
 
 <template>
   <div class="layout vertical">
-    <q-card class="comm-pa-12" :class="{'comm-ma-48': pcScreen, 'comm-ma-24': tabScreen, 'comm-ma-12': spScreen}">
-      <div class="comm-my-16">{{ $t('hello', {today: $d(new Date(), 'short')}) }}</div>
+    <q-card class="comm-pa-12" :class="{ 'comm-ma-48': pcScreen, 'comm-ma-24': tabScreen, 'comm-ma-12': spScreen }">
+      <div class="comm-my-16">{{ $t('hello', { today: $d(new Date(), 'short') }) }}</div>
       <q-input v-model="m_message" label="Input Message" />
       <div class="comm-my-16">
         <span class="title">propA: </span><span class="value">{{ propA }}</span>
@@ -66,12 +66,12 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Watch} from 'vue-property-decorator'
-import {BaseComponent} from '@/base/component'
+import { Component, Prop, Watch } from 'vue-property-decorator'
+import { BaseComponent } from '@/base/component'
 import CustomCheckbox from '@/pages/abc/custom-checkbox.vue'
 import CustomInput from '@/pages/abc/custom-input.vue'
 import GreetMessage from '@/pages/abc/greet-message.vue'
-import {mixins} from 'vue-class-component'
+import { mixins } from 'vue-class-component'
 
 interface Post {
   message: string
@@ -92,10 +92,10 @@ export default class AbcPage extends mixins(BaseComponent) {
 
   // propの初期化は@Propのdefaultで行う
 
-  @Prop({default: 'prop value A'})
+  @Prop({ default: 'prop value A' })
   propA!: string
 
-  @Prop({default: 'prop value B'})
+  @Prop({ default: 'prop value B' })
   propB!: string
 
   //--------------------------------------------------
@@ -150,7 +150,7 @@ export default class AbcPage extends mixins(BaseComponent) {
     console.log(`m_reversedMessageOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`)
   }
 
-  @Watch('m_post', {deep: true})
+  @Watch('m_post', { deep: true })
   private m_postOnChange(newValue: Post, oldValue: Post): void {
     console.log('m_postOnChange: newValue:', newValue, ', oldValue:', oldValue)
   }

@@ -1,7 +1,7 @@
-import {CartItem, CartModule, CartState, CheckoutStatus, Product} from '@/store/types'
-import {BaseModule} from '@/store/base'
-import {Component} from 'vue-property-decorator'
-import {utils} from '@/base/utils'
+import { CartItem, CartModule, CartState, CheckoutStatus, Product } from '@/store/types'
+import { BaseModule } from '@/store/base'
+import { Component } from 'vue-property-decorator'
+import { utils } from '@/base/utils'
 
 @Component
 export class CartModuleImpl extends BaseModule<CartState> implements CartModule {

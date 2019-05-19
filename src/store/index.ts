@@ -1,7 +1,7 @@
-import {CartModule, ProductsModule, Store} from '@/store/types'
-import {CartModuleImpl} from '@/store/modules/cart'
-import {Component} from 'vue-property-decorator'
-import {ProductsModuleImpl} from '@/store/modules/products'
+import { CartModule, ProductsModule, Store } from '@/store/types'
+import { CartModuleImpl } from '@/store/modules/cart'
+import { Component } from 'vue-property-decorator'
+import { ProductsModuleImpl } from '@/store/modules/products'
 import Vue from 'vue'
 
 @Component

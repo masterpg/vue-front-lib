@@ -1,10 +1,10 @@
-import {CartItem, CheckoutStatus, Product, ShopLogic} from '@/logic/types'
-import {Component} from 'vue-property-decorator'
-import {NoCache} from '@/base/component'
+import { CartItem, CheckoutStatus, Product, ShopLogic } from '@/logic/types'
+import { Component } from 'vue-property-decorator'
+import { NoCache } from '@/base/component'
 import Vue from 'vue'
-import {api} from '@/api'
-import {store} from '@/store'
-import {utils} from '@/base/utils'
+import { api } from '@/api'
+import { store } from '@/store'
+import { utils } from '@/base/utils'
 
 @Component
 export class ShopLogicImpl extends Vue implements ShopLogic {

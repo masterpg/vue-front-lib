@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import {config as appConfig} from '@/base/config'
+import { config as appConfig } from '@/base/config'
 import axios from 'axios'
 
 export interface APIRequestConfig {

@@ -34,17 +34,17 @@ import {
   Quasar,
   Ripple,
 } from 'quasar'
-import {i18n, initI18n} from '@/base/i18n'
+import { i18n, initI18n } from '@/base/i18n'
 import AppView from '@/index.vue'
 import Vue from 'vue'
-import {currency} from '@/currency'
-import {initAPI} from '@/api'
-import {initConfig} from '@/base/config'
-import {initLogic} from '@/logic'
-import {initServiceWorker} from '@/base/service-worker'
-import {initStore} from '@/store'
-import {initUtils} from '@/base/utils'
-import {vueRouter} from '@/base/router'
+import { currency } from '@/currency'
+import { initAPI } from '@/api'
+import { initConfig } from '@/base/config'
+import { initLogic } from '@/logic'
+import { initServiceWorker } from '@/base/service-worker'
+import { initStore } from '@/store'
+import { initUtils } from '@/base/utils'
+import { vueRouter } from '@/base/router'
 
 Vue.use(Quasar, {
   components: {
@@ -73,7 +73,7 @@ Vue.use(Quasar, {
   config: {
     notify: {},
   },
-  directives: {Ripple},
+  directives: { Ripple },
   plugins: {
     Notify,
   },

@@ -26,7 +26,7 @@
 </style>
 
 <template>
-  <div class="layout vertical" :class="{'comm-ma-48': pcScreen, 'comm-ma-24': tabScreen, 'comm-ma-12': spScreen}">
+  <div class="layout vertical" :class="{ 'comm-ma-48': pcScreen, 'comm-ma-24': tabScreen, 'comm-ma-12': spScreen }">
     <div>
       <div class="layout horizontal center">
         <div class="title-text">{{ $t('products') }}</div>
@@ -68,10 +68,10 @@
 </template>
 
 <script lang="ts">
-import {CheckoutStatus, Product} from '@/store'
-import {BaseComponent} from '@/base/component'
-import {Component} from 'vue-property-decorator'
-import {mixins} from 'vue-class-component'
+import { CheckoutStatus, Product } from '@/store'
+import { BaseComponent } from '@/base/component'
+import { Component } from 'vue-property-decorator'
+import { mixins } from 'vue-class-component'
 
 @Component
 export default class ShoppingPage extends mixins(BaseComponent) {
@@ -85,7 +85,7 @@ export default class ShoppingPage extends mixins(BaseComponent) {
     return this.$logic.shop.cartItems.length === 0
   }
 
-  private get m_checkoutStatus(): {result: boolean; message: string} {
+  private get m_checkoutStatus(): { result: boolean; message: string } {
     const checkoutStatus = this.$logic.shop.checkoutStatus
     const result = checkoutStatus === CheckoutStatus.None || checkoutStatus === CheckoutStatus.Successful
     return {

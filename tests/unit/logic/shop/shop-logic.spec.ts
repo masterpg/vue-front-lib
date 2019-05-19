@@ -1,22 +1,22 @@
 import * as td from 'testdouble'
-import {Product as APIProduct, ShopAPI, api} from '@/api'
-import {CartModule, CartState, CheckoutStatus, ProductsModule, ProductsState, store} from '@/store'
-import {ShopLogicImpl} from '@/logic/shop'
-import {TestStoreModule} from '../../../helper'
-import {utils} from '@/base/utils'
+import { Product as APIProduct, ShopAPI, api } from '@/api'
+import { CartModule, CartState, CheckoutStatus, ProductsModule, ProductsState, store } from '@/store'
+import { ShopLogicImpl } from '@/logic/shop'
+import { TestStoreModule } from '../../../helper'
+import { utils } from '@/base/utils'
 
 const shopLogic = new ShopLogicImpl()
 const cartModule = store.cart as TestStoreModule<CartState, CartModule>
 const productModule = store.products as TestStoreModule<ProductsState, ProductsModule>
 
 const PRODUCTS: APIProduct[] = [
-  {id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 1},
-  {id: '2', title: 'Fire HD 8 Tablet', price: 80.99, inventory: 5},
-  {id: '3', title: 'MediaPad 10', price: 150.8, inventory: 10},
-  {id: '4', title: 'Surface Go', price: 630, inventory: 0},
+  { id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 1 },
+  { id: '2', title: 'Fire HD 8 Tablet', price: 80.99, inventory: 5 },
+  { id: '3', title: 'MediaPad 10', price: 150.8, inventory: 10 },
+  { id: '4', title: 'Surface Go', price: 630, inventory: 0 },
 ]
 
-const CART_ITEMS = [{id: '1', title: 'iPad 4 Mini', price: 500.01, quantity: 1}, {id: '2', title: 'Fire HD 8 Tablet', price: 80.99, quantity: 1}]
+const CART_ITEMS = [{ id: '1', title: 'iPad 4 Mini', price: 500.01, quantity: 1 }, { id: '2', title: 'Fire HD 8 Tablet', price: 80.99, quantity: 1 }]
 
 beforeEach(async () => {
   cartModule.initState({
@@ -51,7 +51,7 @@ describe('cartItems', () => {
 
 describe('cartTotalPrice', () => {
   it('ベーシックケース', () => {
-    cartModule.state.all = [{id: '1', title: 'iPad 4 Mini', price: 100, quantity: 1}]
+    cartModule.state.all = [{ id: '1', title: 'iPad 4 Mini', price: 100, quantity: 1 }]
 
     const actual = shopLogic.cartTotalPrice
 

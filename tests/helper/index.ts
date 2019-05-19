@@ -1,6 +1,6 @@
 type Constructor<T = any> = new (...args: any[]) => T
 
-export type TestStoreModule<S, M> = {[P in keyof M]: M[P]} & {
+export type TestStoreModule<S, M> = { [P in keyof M]: M[P] } & {
   state: S
   initState(state: S): void
 }

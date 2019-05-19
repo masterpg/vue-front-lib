@@ -7,14 +7,14 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Watch} from 'vue-property-decorator'
-import {BaseComponent} from '@/base/component'
-import {mixins} from 'vue-class-component'
+import { Component, Prop, Watch } from 'vue-property-decorator'
+import { BaseComponent } from '@/base/component'
+import { mixins } from 'vue-class-component'
 
 @Component
 export default class CustomInput extends mixins(BaseComponent) {
-  @Prop({default: ''})
-  value: string
+  @Prop({ default: '' })
+  private value!: string
 
   private m_value = ''
 
@@ -33,7 +33,7 @@ export default class CustomInput extends mixins(BaseComponent) {
     this.$emit('input', value)
   }
 
-  @Watch('value', {immediate: true})
+  @Watch('value', { immediate: true })
   private m_valueChanged(newValue: string, oldValue: string) {
     this.m_value = newValue
   }

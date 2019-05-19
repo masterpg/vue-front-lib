@@ -1,5 +1,5 @@
-import {Logic, ShopLogic} from '@/logic/types'
-import {ShopLogicImpl} from '@/logic/shop'
+import { Logic, ShopLogic } from '@/logic/types'
+import { ShopLogicImpl } from '@/logic/shop'
 import Vue from 'vue'
 
 class LogicImpl implements Logic {

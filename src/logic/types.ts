@@ -1,4 +1,4 @@
-import {CartItem, CheckoutStatus, Product} from '@/store'
+import { CartItem, CheckoutStatus, Product } from '@/store'
 
 export interface Logic {
   readonly shop: ShopLogic
@@ -20,4 +20,4 @@ export interface ShopLogic {
   checkout(): Promise<void>
 }
 
-export {CartItem, CheckoutStatus, Product}
+export { CartItem, CheckoutStatus, Product }
