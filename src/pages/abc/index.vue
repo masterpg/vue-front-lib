@@ -93,10 +93,10 @@ export default class AbcPage extends mixins(BaseComponent) {
   // propの初期化は@Propのdefaultで行う
 
   @Prop({default: 'prop value A'})
-  propA: string
+  propA!: string
 
   @Prop({default: 'prop value B'})
-  propB: string
+  propB!: string
 
   //--------------------------------------------------
   //  data

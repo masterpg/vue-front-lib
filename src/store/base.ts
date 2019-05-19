@@ -7,7 +7,7 @@ export abstract class BaseModule<S> extends Vue {
   //
   //----------------------------------------------------------------------
 
-  private m_state: S
+  private m_state!: S
 
   protected get state(): S {
     return this.m_state

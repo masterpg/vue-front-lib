@@ -36,9 +36,9 @@ export class AppI18n extends VueI18n {
   //
   //----------------------------------------------------------------------
 
-  m_localeData: LocaleData
+  private m_localeData!: LocaleData
 
-  m_loadedLanguages: string[]
+  private m_loadedLanguages: string[]
 
   //----------------------------------------------------------------------
   //

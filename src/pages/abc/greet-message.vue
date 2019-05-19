@@ -27,8 +27,8 @@ import {BaseComponent} from '@/base/component'
 
 @Component
 export default class GreetMessage extends BaseComponent {
-  @Prop()
-  message: string
+  @Prop({default: ''})
+  message!: string
 
   private m_greetTimes: number = 0
 
