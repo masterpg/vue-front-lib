@@ -85,7 +85,7 @@ interface Post {
     'custom-input': CustomInput,
   },
 })
-export default class AbcPage extends mixins(BaseComponent) {
+export default class ABCPage extends mixins(BaseComponent) {
   //--------------------------------------------------
   //  props
   //--------------------------------------------------
