@@ -93,7 +93,7 @@ export enum CartModuleErrorType {
   ItemNotFound = 'itemNotFound',
 }
 
-export enum ProductErrorType {
+export enum ProductsErrorType {
   ItemNotFound = 'itemNotFound',
 }
 

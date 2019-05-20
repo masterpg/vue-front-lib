@@ -1,4 +1,4 @@
-import { Product, ProductErrorType, ProductsModule, ProductsState, StoreError } from '@/store/types'
+import { Product, ProductsErrorType, ProductsModule, ProductsState, StoreError } from '@/store/types'
 import { BaseModule } from '@/store/base'
 import { Component } from 'vue-property-decorator'
 import { utils } from '@/base/utils'
@@ -48,7 +48,7 @@ export class ProductsModuleImpl extends BaseModule<ProductsState> implements Pro
     if (product) {
       product.inventory--
     } else {
-      new StoreError(ProductErrorType.ItemNotFound)
+      new StoreError(ProductsErrorType.ItemNotFound)
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Product, ProductErrorType, ProductsModule, ProductsState, StoreError, store } from '@/store'
+import { Product, ProductsErrorType, ProductsModule, ProductsState, StoreError, store } from '@/store'
 import { TestStoreModule } from '../../../../helper'
 import { utils } from '@/base/utils'
 
@@ -56,7 +56,7 @@ describe('decrementInventory', () => {
     } catch (e) {
       expect(e).toBeInstanceOf(StoreError)
       if (e instanceof StoreError) {
-        expect(e.errorType).toBe(ProductErrorType.ItemNotFound)
+        expect(e.errorType).toBe(ProductsErrorType.ItemNotFound)
       }
     }
   })
