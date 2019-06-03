@@ -2,7 +2,7 @@ import * as td from 'testdouble'
 import { Product as APIProduct, ShopAPI, api } from '@/api'
 import { CartModule, CartState, CheckoutStatus, ProductsModule, ProductsState, store } from '@/store'
 import { ShopLogicImpl } from '@/logic/shop'
-import { TestStoreModule } from '../../../helper'
+import { TestStoreModule } from '../../../helper/unit'
 import { utils } from '@/base/utils'
 
 const shopLogic = new ShopLogicImpl()

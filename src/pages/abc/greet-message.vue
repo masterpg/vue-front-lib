@@ -25,7 +25,7 @@ span {
 import { Component, Prop } from 'vue-property-decorator'
 import { BaseComponent } from '@/base/component'
 
-@Component
+@Component({ name: 'greet-message' })
 export default class GreetMessage extends BaseComponent {
   @Prop({ default: '' })
   message!: string

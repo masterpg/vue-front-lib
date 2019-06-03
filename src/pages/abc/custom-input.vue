@@ -11,7 +11,7 @@ import { Component, Prop, Watch } from 'vue-property-decorator'
 import { BaseComponent } from '@/base/component'
 import { mixins } from 'vue-class-component'
 
-@Component
+@Component({ name: 'custom-input' })
 export default class CustomInput extends mixins(BaseComponent) {
   @Prop({ default: '' })
   private value!: string

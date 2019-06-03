@@ -73,7 +73,7 @@ import { BaseComponent } from '@/base/component'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 
-@Component
+@Component({ name: 'shopping-page' })
 export default class ShoppingPage extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
   //

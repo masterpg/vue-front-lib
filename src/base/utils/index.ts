@@ -1,4 +1,3 @@
-import Vue from 'vue'
 const clone = require('lodash/clone')
 const cloneDeep = require('lodash/cloneDeep')
 const assign = require('lodash/assign')

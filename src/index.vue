@@ -123,7 +123,7 @@ import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import { router } from '@/base/router'
 
-@Component
+@Component({ name: 'app-view' })
 export default class AppView extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
   //

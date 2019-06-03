@@ -27,7 +27,7 @@ import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import { router } from '@/base/router'
 
-@Component
+@Component({ name: 'error404-page' })
 export default class Error404Page extends mixins(BaseComponent) {
   private m_backButtonOnClick() {
     router.pages.abc.move()

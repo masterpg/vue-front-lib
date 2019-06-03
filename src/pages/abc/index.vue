@@ -1,6 +1,5 @@
 <style scoped>
 @import '../../styles/placeholder/typography.css';
-
 .greet-message {
   --greet-message-color: var(--comm-indigo-a200);
 }
@@ -19,7 +18,7 @@
   <div class="layout vertical">
     <q-card class="comm-pa-12" :class="{ 'comm-ma-48': pcScreen, 'comm-ma-24': tabScreen, 'comm-ma-12': spScreen }">
       <div class="comm-my-16">{{ $t('hello', { today: $d(new Date(), 'short') }) }}</div>
-      <q-input v-model="m_message" label="Input Message" />
+      <q-input ref="messageInput" data-e2e-id="messageInput" v-model="m_message" label="Input Message" />
       <div class="comm-my-16">
         <span class="title">propA: </span><span class="value">{{ propA }}</span>
       </div>
@@ -27,24 +26,25 @@
         <span class="title">propB: </span><span class="value">{{ propB }}</span>
       </div>
       <div class="comm-my-16">
-        <span class="title">message: </span><span class="value">{{ m_message }}</span>
+        <span class="title">message: </span><span data-e2e-id="messageOut" class="value">{{ m_message }}</span>
       </div>
       <div class="comm-my-16">
         <span class="title">custom propA: </span><span class="value">{{ m_customPropA }}</span>
       </div>
       <div class="comm-my-16">
-        <span class="title">reversed message: </span><span class="value">{{ m_reversedMessage }}</span>
+        <span class="title">reversed message: </span><span data-e2e-id="reversedMessageOut" class="value">{{ m_reversedMessage }}</span>
       </div>
       <div class="comm-my-16">
-        <span class="title">double reversed message: </span><span class="value">{{ m_doubleReversedMessage }}</span>
+        <span class="title">double reversed message: </span>
+        <span data-e2e-id="doubleReversedMessageOut" class="value">{{ m_doubleReversedMessage }}</span>
       </div>
       <div class="layout horizontal center comm-my-16">
-        <greet-message ref="greetMessage" :message="m_message" class="greet-message"></greet-message>
-        <q-btn flat rounded color="primary" label="Greet" class="comm-ml-12" @click="m_greetButtonOnClick" />
+        <greet-message ref="greetMessage" data-e2e-id="greetMessage" :message="m_message" class="greet-message"></greet-message>
+        <q-btn data-e2e-id="greetButton" flat rounded color="primary" label="Greet" class="comm-ml-12" @click="m_greetButtonOnClick" />
       </div>
       <div class="comm-my-16">
         <span class="title">post times: </span><span class="value">{{ m_post.times }}</span>
-        <q-btn flat rounded color="primary" label="Post" class="comm-ml-12" @click="m_postButtonOnClick" />
+        <q-btn data-e2e-id="postButton" flat rounded color="primary" label="Post" class="comm-ml-12" @click="m_postButtonOnClick" />
       </div>
       <div class="layout horizontal center comm-my-16">
         <custom-input v-model="m_customInputValue" class="flex-3"></custom-input>
@@ -55,11 +55,11 @@
       <div class="layout horizontal center comm-my-16">
         <custom-checkbox v-model="m_customChecked"></custom-checkbox>
         <span class="comm-ml-12">
-          <span class="title">checked: </span><span class="value">{{ m_customChecked }}</span>
+          <span class="title" ref="aaa">checked: </span><span class="value">{{ m_customChecked }}</span>
         </span>
       </div>
       <div class="layout horizontal end-justified">
-        <q-btn label="Sleep" color="primary" @click="m_sleepButtonOnClick" />
+        <q-btn data-e2e-id="sleepButton" label="Sleep" color="primary" @click="m_sleepButtonOnClick" />
       </div>
     </q-card>
   </div>
@@ -79,6 +79,7 @@ interface Post {
 }
 
 @Component({
+  name: 'abc-page',
   components: {
     'greet-message': GreetMessage,
     'custom-checkbox': CustomCheckbox,
@@ -175,7 +176,7 @@ export default class ABCPage extends mixins(BaseComponent) {
   private async m_sleep(ms: number): Promise<string> {
     return new Promise(resolve => {
       setTimeout(() => {
-        resolve(`I slept for ${ms} ms.`)
+        resolve(`I slept for ${ms}ms.`)
       }, ms)
     }) as Promise<string>
   }
@@ -194,7 +195,7 @@ export default class ABCPage extends mixins(BaseComponent) {
   }
 
   private async m_sleepButtonOnClick() {
-    alert(await this.m_sleep(2000))
+    alert(await this.m_sleep(1000))
   }
 
   //--------------------------------------------------

@@ -1,5 +1,5 @@
 import { Product, ProductsErrorType, ProductsModule, ProductsState, StoreError, store } from '@/store'
-import { TestStoreModule } from '../../../../helper'
+import { TestStoreModule } from '../../../../helper/unit'
 import { utils } from '@/base/utils'
 
 const productsModule = store.products as TestStoreModule<ProductsState, ProductsModule>
