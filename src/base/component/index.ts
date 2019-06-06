@@ -1,25 +1,13 @@
-import BreakpointMixin from '@/base/component/breakpoint-mixin'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '@/base/component/decorators'
-import { mixins } from 'vue-class-component'
+import { ResizableMixin } from '@/base/component/resizable-mixin'
+import Vue from 'vue'
 
 /**
  * コンポーネントの基底クラスです。
  */
 @Component
-class BaseComponent extends mixins(BreakpointMixin) {
-  protected get pcScreen() {
-    return this.breakpoint.xl || this.breakpoint.lg || this.breakpoint.md
-  }
-
-  protected get tabScreen() {
-    return this.breakpoint.sm
-  }
-
-  protected get spScreen() {
-    return this.breakpoint.xs
-  }
-}
+class BaseComponent extends Vue {}
 
 /**
  * Mixinのサンプルです。
@@ -32,4 +20,4 @@ export const SampleMixin = <T extends new (...args: any[]) => {}>(superclass: T)
     }
   }
 
-export { BaseComponent, NoCache }
+export { BaseComponent, NoCache, ResizableMixin }

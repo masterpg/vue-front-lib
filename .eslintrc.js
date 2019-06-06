@@ -57,7 +57,6 @@ module.exports = {
         'allow-snake-case',
       ],
     },
-    '@typescript-eslint/camelcase': ['error', {allow: ['^m_', '^f_']}],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-member-accessibility': 'off',
     '@typescript-eslint/indent': ['off', 2],

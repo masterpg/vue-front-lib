@@ -80,7 +80,7 @@
 </style>
 
 <template>
-  <q-layout view="lHh Lpr lFf">
+  <q-layout view="lHh Lpr lFf" @component-resize.native="m_onComponentResize">
     <q-header elevated class="glossy header">
       <q-toolbar>
         <q-btn flat dense round aria-label="Menu" icon="menu" @click="m_leftDrawerOpen = !m_leftDrawerOpen" />
@@ -118,13 +118,13 @@
 
 <script lang="ts">
 import * as sw from '@/base/service-worker'
-import { BaseComponent } from '@/base/component'
+import { BaseComponent, ResizableMixin } from '@/base/component'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import { router } from '@/base/router'
 
 @Component({ name: 'app-view' })
-export default class AppView extends mixins(BaseComponent) {
+export default class AppView extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -203,6 +203,10 @@ export default class AppView extends mixins(BaseComponent) {
     } else {
       console.log('Service Worker:\n', info)
     }
+  }
+
+  private m_onComponentResize(e) {
+    console.log('app-view:', e)
   }
 }
 </script>

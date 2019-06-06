@@ -32,23 +32,19 @@ export interface BreakpointInfo {
 }
 
 @Component
-export default class BreakpointMixin extends Vue {
+export class BreakpointMixin extends Vue {
   //----------------------------------------------------------------------
   //
-  //  Variables
+  //  Properties
   //
   //----------------------------------------------------------------------
-
-  m_clientWidth: number = this.m_getClientDimensionsWidth()
-  m_clientHeight: number = this.m_getClientDimensionsHeight()
-  m_resizeTimeout: number = 0
 
   get breakpoint(): BreakpointInfo {
-    const xs = this.m_clientWidth < 600
-    const sm = this.m_clientWidth < 960 && !xs
-    const md = this.m_clientWidth < 1280 - 16 && !(sm || xs)
-    const lg = this.m_clientWidth < 1920 - 16 && !(md || sm || xs)
-    const xl = this.m_clientWidth >= 1920 - 16 && !(lg || md || sm || xs)
+    const xs = this.BreakpointMixin_clientWidth < 600
+    const sm = this.BreakpointMixin_clientWidth < 960 && !xs
+    const md = this.BreakpointMixin_clientWidth < 1280 - 16 && !(sm || xs)
+    const lg = this.BreakpointMixin_clientWidth < 1920 - 16 && !(md || sm || xs)
+    const xl = this.BreakpointMixin_clientWidth >= 1920 - 16 && !(lg || md || sm || xs)
 
     const xsOnly = xs
     const smOnly = sm
@@ -81,7 +77,7 @@ export default class BreakpointMixin extends Vue {
         break
     }
 
-    const result: BreakpointInfo = {
+    return {
       // Definite breakpoint.
       xs,
       sm,
@@ -106,26 +102,28 @@ export default class BreakpointMixin extends Vue {
       xlOnly,
 
       // For custom breakpoint logic.
-      width: this.m_clientWidth,
-      height: this.m_clientHeight,
+      width: this.BreakpointMixin_clientWidth,
+      height: this.BreakpointMixin_clientHeight,
     }
+  }
 
-    return result
+  get screenSize(): { pc: boolean; tab: boolean; sp: boolean } {
+    return {
+      pc: this.breakpoint.xl || this.breakpoint.lg || this.breakpoint.md,
+      tab: this.breakpoint.sm,
+      sp: this.breakpoint.xs,
+    }
   }
 
   //----------------------------------------------------------------------
   //
-  //  Lifecycle hooks
+  //  Variables
   //
   //----------------------------------------------------------------------
 
-  mounted() {
-    window.addEventListener('resize', this.m_windowOnResize, { passive: true })
-  }
-
-  destroyed() {
-    window.removeEventListener('resize', this.m_windowOnResize)
-  }
+  BreakpointMixin_clientWidth: number = this.BreakpointMixin_getClientDimensionsWidth()
+  BreakpointMixin_clientHeight: number = this.BreakpointMixin_getClientDimensionsHeight()
+  BreakpointMixin_resizeTimeout: number = 0
 
   //----------------------------------------------------------------------
   //
@@ -133,29 +131,29 @@ export default class BreakpointMixin extends Vue {
   //
   //----------------------------------------------------------------------
 
-  m_windowOnResize() {
-    clearTimeout(this.m_resizeTimeout)
+  protected BreakpointMixin_windowOnResize() {
+    clearTimeout(this.BreakpointMixin_resizeTimeout)
 
     // Added debounce to match what
     // v-resize used to do but was
     // removed due to a memory leak
     // https://github.com/vuetifyjs/vuetify/pull/2997
-    this.m_resizeTimeout = window.setTimeout(() => {
-      this.m_clientWidth = this.m_getClientDimensionsWidth()
-      this.m_clientHeight = this.m_getClientDimensionsHeight()
+    this.BreakpointMixin_resizeTimeout = window.setTimeout(() => {
+      this.BreakpointMixin_clientWidth = this.BreakpointMixin_getClientDimensionsWidth()
+      this.BreakpointMixin_clientHeight = this.BreakpointMixin_getClientDimensionsHeight()
     }, 200)
   }
 
   // Cross-browser support as described in:
   // https://stackoverflow.com/questions/1248081
-  m_getClientDimensionsWidth(): number {
+  private BreakpointMixin_getClientDimensionsWidth(): number {
     if (typeof document === 'undefined') return 0 // SSR
     return Math.max(document.documentElement!.clientWidth, window.innerWidth || 0)
   }
 
   // Cross-browser support as described in:
   // https://stackoverflow.com/questions/1248081
-  m_getClientDimensionsHeight(): number {
+  private BreakpointMixin_getClientDimensionsHeight(): number {
     if (typeof document === 'undefined') return 0 // SSR
     return Math.max(document.documentElement!.clientHeight, window.innerHeight || 0)
   }

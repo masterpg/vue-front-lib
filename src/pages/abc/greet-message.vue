@@ -16,17 +16,18 @@ span {
 </style>
 
 <template>
-  <div>
+  <div @component-resize="m_onComponentResize">
     <span class="title">greet times: </span><span class="value">{{ m_greetTimes }}</span>
   </div>
 </template>
 
 <script lang="ts">
+import { BaseComponent, ResizableMixin } from '@/base/component'
 import { Component, Prop } from 'vue-property-decorator'
-import { BaseComponent } from '@/base/component'
+import { mixins } from 'vue-class-component'
 
 @Component({ name: 'greet-message' })
-export default class GreetMessage extends BaseComponent {
+export default class GreetMessage extends mixins(BaseComponent, ResizableMixin) {
   @Prop({ default: '' })
   message!: string
 
@@ -35,6 +36,10 @@ export default class GreetMessage extends BaseComponent {
   greet(): void {
     alert('greeting: ' + this.message)
     this.m_greetTimes++
+  }
+
+  private m_onComponentResize(e) {
+    console.log('greet-message:', e)
   }
 }
 </script>

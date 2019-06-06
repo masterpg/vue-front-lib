@@ -26,7 +26,7 @@
 </style>
 
 <template>
-  <div class="layout vertical" :class="{ 'comm-ma-48': pcScreen, 'comm-ma-24': tabScreen, 'comm-ma-12': spScreen }">
+  <div class="layout vertical" :class="{ 'comm-ma-48': screenSize.pc, 'comm-ma-24': screenSize.tab, 'comm-ma-12': screenSize.sp }">
     <div>
       <div class="layout horizontal center">
         <div class="title-text">{{ $t('products') }}</div>
@@ -68,13 +68,13 @@
 </template>
 
 <script lang="ts">
+import { BaseComponent, ResizableMixin } from '@/base/component'
 import { CheckoutStatus, Product } from '@/store'
-import { BaseComponent } from '@/base/component'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 
 @Component({ name: 'shopping-page' })
-export default class ShoppingPage extends mixins(BaseComponent) {
+export default class ShoppingPage extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables

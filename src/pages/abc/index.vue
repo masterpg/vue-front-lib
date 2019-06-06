@@ -15,10 +15,10 @@
 </style>
 
 <template>
-  <div class="layout vertical">
-    <q-card class="comm-pa-12" :class="{ 'comm-ma-48': pcScreen, 'comm-ma-24': tabScreen, 'comm-ma-12': spScreen }">
+  <div class="layout vertical" @component-resize="m_onComponentResize">
+    <q-card class="comm-pa-12" :class="{ 'comm-ma-48': screenSize.pc, 'comm-ma-24': screenSize.tab, 'comm-ma-12': screenSize.sp }">
       <div class="comm-my-16">{{ $t('hello', { today: $d(new Date(), 'short') }) }}</div>
-      <q-input ref="messageInput" data-e2e-id="messageInput" v-model="m_message" label="Input Message" />
+      <q-input ref="messageInput" v-model="m_message" data-e2e-id="messageInput" label="Input Message" />
       <div class="comm-my-16">
         <span class="title">propA: </span><span class="value">{{ propA }}</span>
       </div>
@@ -55,7 +55,7 @@
       <div class="layout horizontal center comm-my-16">
         <custom-checkbox v-model="m_customChecked"></custom-checkbox>
         <span class="comm-ml-12">
-          <span class="title" ref="aaa">checked: </span><span class="value">{{ m_customChecked }}</span>
+          <span class="title">checked: </span><span class="value">{{ m_customChecked }}</span>
         </span>
       </div>
       <div class="layout horizontal end-justified">
@@ -66,8 +66,8 @@
 </template>
 
 <script lang="ts">
+import { BaseComponent, ResizableMixin } from '@/base/component'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import { BaseComponent } from '@/base/component'
 import CustomCheckbox from '@/pages/abc/custom-checkbox.vue'
 import CustomInput from '@/pages/abc/custom-input.vue'
 import GreetMessage from '@/pages/abc/greet-message.vue'
@@ -86,7 +86,7 @@ interface Post {
     'custom-input': CustomInput,
   },
 })
-export default class ABCPage extends mixins(BaseComponent) {
+export default class ABCPage extends mixins(BaseComponent, ResizableMixin) {
   //--------------------------------------------------
   //  props
   //--------------------------------------------------
@@ -196,6 +196,10 @@ export default class ABCPage extends mixins(BaseComponent) {
 
   private async m_sleepButtonOnClick() {
     alert(await this.m_sleep(1000))
+  }
+
+  private m_onComponentResize(e) {
+    console.log('abc-page:', e)
   }
 
   //--------------------------------------------------
