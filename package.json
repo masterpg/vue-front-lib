@@ -10,7 +10,7 @@
     "build:styles": "postcss --config build/postcss.config.js src/index.pcss -o dist/index.css",
     "serve": "node json-server.js & browser-sync start --port 5000 --proxy '0.0.0.0:5010' --serveStatic 'dist' --no-open",
     "test:unit": "vue-cli-service test:unit",
-    "test:e2e": "testcafe chrome:headless tests/e2e/*.test.ts -S -s screenshots --hostname localhost",
+    "test:e2e": "testcafe chrome:headless tests/e2e/**/*.test.ts -S -s screenshots --hostname localhost",
     "docs": "postcss --config build/postcss.config.js docs/book.pcss -o docs/book.css && cd docs && ../node_modules/.bin/gitbook install && ../node_modules/.bin/gitbook serve",
     "lint": "./scripts/lint.sh"
   },

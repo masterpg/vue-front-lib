@@ -2,7 +2,25 @@ import { Selector } from 'testcafe'
 import { Vue } from 'vue/types/vue'
 
 interface VueSelector extends Selector {
+  /**
+   * Vueコンポーネントを取得します。
+   * @param selector Vueのコンポーネント名を指定します。
+   * 例: 'abc-page'
+   */
   (selector: string): VueSelectorResultConverter<VueSelector>
+
+  /**
+   * ノードから指定されたフィールドの値を取得します。
+   * @param fieldName
+   * @param fn
+   */
+  getFieldValue(fieldName: string, fn?: (value: any) => any): Promise<any>
+
+  /**
+   * nodeからVueのデータを抽出します。
+   * @param fn
+   * @deprecated 引数のnodeによってはスタックオーバーフローが発生するため使用は非推奨
+   */
   getVue(fn?: (params: { props: any; state: any; computed: any; ref: any }) => any): Promise<any>
 }
 
@@ -174,11 +192,15 @@ export const VueSelector = Selector(componentSelector => {
 
   return filterNodes(rootVueInstance, componentTags)
 }).addCustomMethods({
-  /**
-   * nodeからVueのデータを抽出します。
-   * @param node
-   * @param fn
-   */
+  getFieldValue: (node: Element, fieldName: string, fn: (value: any) => any) => {
+    let value = undefined
+    const vueNode = (node as any).__vue__
+    if (vueNode) value = vueNode[fieldName]
+    if (!value) value = node[fieldName]
+    if (typeof fn === 'function') return fn(value)
+    return value
+  },
+
   getVue: (node: Element, fn?: (params: { props: any; state: any; computed: any; ref: any }) => any) => {
     /**
      * TestCafeでDOMエレメントを返すとエラーになってしまうため、

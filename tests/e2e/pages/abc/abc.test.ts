@@ -1,5 +1,5 @@
 import { Selector } from 'testcafe'
-import { VueSelector } from '../helper/e2e'
+import { VueSelector } from '../../../helper/e2e'
 
 fixture`ABC Page`.page`http://localhost:5000/pages/abc`
 
@@ -24,16 +24,14 @@ test('GREETボタンが押下された場合', async t => {
   const greetButton = VueSelector('abc-page').find('[data-e2e-id="greetButton"]')
   const greetMessage = VueSelector('abc-page').find('[data-e2e-id="greetMessage"]')
 
-  await t
-    .setNativeDialogHandler(() => true)
-    .click(greetButton)
+  await t.setNativeDialogHandler(() => true).click(greetButton)
 
   const history = await t.getNativeDialogHistory()
 
   await t
     .expect(history[0].type)
     .eql('alert')
-    .expect((greetMessage as any).getVue(({ state }) => state.m_greetTimes))
+    .expect((greetMessage as any).getFieldValue('m_greetTimes'))
     .eql(1)
 })
 
@@ -51,9 +49,7 @@ test('SLEEPボタンが押下された場合', async t => {
     .wait(1000)
 
   const history = await t.getNativeDialogHistory()
-  await t
-    .expect(history[0].type)
-    .eql('alert')
+  await t.expect(history[0].type).eql('alert')
 })
 
 test('POSTボタンが押下された場合', async t => {
@@ -65,6 +61,10 @@ test('POSTボタンが押下された場合', async t => {
     .selectText(messageInput)
     .typeText(messageInput, 'abc')
     .click(postButton)
-    .expect((abcPage as any).getVue(({ state }) => state.m_post))
+    .expect(
+      abcPage.getFieldValue('m_post', ({ message, times }) => {
+        return { message, times }
+      })
+    )
     .eql({ message: 'abc', times: 1 })
 })
