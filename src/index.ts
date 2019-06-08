@@ -1,7 +1,6 @@
 import 'animate.css/animate.css'
 
-import '@/styles/quasar.styl'
-import '@/index.css'
+import '@/index.styl'
 
 // TODO JetBrainsIDE使用時の開発補助コード
 import '@/pages/abc/index.vue'

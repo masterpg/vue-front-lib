@@ -1,16 +1,16 @@
-<style scoped>
-@import './styles/placeholder/typography.css';
+<style lang="stylus" scoped>
+@import './styles/app.variables.styl'
 
 .header {
-  background-color: var(--comm-indigo-500);
+  background-color: $indigo-5
 }
 
 .container {
-  height: 100vh;
+  height: 100vh
 }
 
 .drawer-scroll-area {
-  height: 100%;
+  height: 100%
 }
 
 /* -----> */
@@ -20,27 +20,27 @@
  */
 @keyframes tada {
   from {
-    transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1)
   }
   10%,
   20% {
-    transform: scale3d(0.9, 0.9, 0.9) rotate3d(0, 0, 1, -3deg);
+    transform: scale3d(0.9, 0.9, 0.9) rotate3d(0, 0, 1, -3deg)
   }
   30%,
   70% {
-    transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg);
+    transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg)
   }
   50%,
   80% {
-    transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg);
+    transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg)
   }
   to {
-    transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1)
   }
 }
 
 .tada {
-  animation-name: tada;
+  animation-name: tada
 }
 /* <----- */
 
@@ -49,11 +49,11 @@
  * tada と bounceOutRight のアニメーションスピードを調整
  */
 .animated.tada.faster {
-  animation-duration: 700ms;
+  animation-duration: 700ms
 }
 
 .animated.bounceOutRight.faster {
-  animation-duration: 700ms;
+  animation-duration: 700ms
 }
 /* <----- */
 
@@ -64,19 +64,13 @@
 /*
 .view-enter-active,
 .view-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease
 }
 .view-enter,
 .view-leave-to {
-  opacity: 0;
+  opacity: 0
 }
 */
-</style>
-
-<style>
-.app-view-drawer-content-class {
-  background-color: var(--comm-grey-200);
-}
 </style>
 
 <template>
@@ -93,7 +87,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="m_leftDrawerOpen" :width="300" :breakpoint="500" show-if-above bordered content-class="app-view-drawer-content-class">
+    <q-drawer v-model="m_leftDrawerOpen" :width="300" :breakpoint="500" show-if-above bordered content-class="bg-grey-2">
       <q-scroll-area class="drawer-scroll-area">
         <q-list padding>
           <template v-for="(item, index) in m_items">

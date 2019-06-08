@@ -1,4 +1,4 @@
-<style scoped></style>
+<style lang="stylus" scoped></style>
 
 <template>
   <div>

@@ -1,17 +1,17 @@
-<style scoped>
-@import '../../styles/placeholder/typography.css';
+<style lang="stylus" scoped>
+@import '../../styles/app.variables.styl'
 
 .title {
-  @extend %comm-font-subhead1;
-  font-weight: 500;
+  @extend $text-subtitle1
+  font-weight: $text-weights.medium
 }
 
 .value {
-  @extend %comm-font-subhead1;
+  @extend $text-subtitle1
 }
 
 span {
-  color: var(--greet-message-color, var(--comm-red-500));
+  color: var(--greet-message-color, $red-5)
 }
 </style>
 

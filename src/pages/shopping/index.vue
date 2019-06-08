@@ -1,32 +1,32 @@
-<style scoped>
-@import '../../styles/placeholder/typography.css';
+<style lang="stylus" scoped>
+@import '../../styles/app.variables.styl'
 
 .title-text {
-  @extend %comm-font-title;
+  @extend $text-h6
 }
 
 .product-item,
 .cart-item {
-  padding: 12px;
+  padding: 12px
 
   .title {
-    @extend %comm-font-subhead1;
+    @extend $text-subtitle1
   }
 
   .detail {
-    @extend %comm-font-body1;
-    color: var(--app-secondary-text-color);
+    @extend $text-body2
+    color: $text-secondary-color
   }
 }
 
 .error-text {
-  @extend %comm-font-body1;
-  color: var(--app-error-text-color);
+  @extend $text-body2
+  color: $text-error-color
 }
 </style>
 
 <template>
-  <div class="layout vertical" :class="{ 'comm-ma-48': screenSize.pc, 'comm-ma-24': screenSize.tab, 'comm-ma-12': screenSize.sp }">
+  <div class="layout vertical" :class="{ 'app-ma-48': screenSize.pc, 'app-ma-24': screenSize.tab, 'app-ma-12': screenSize.sp }">
     <div>
       <div class="layout horizontal center">
         <div class="title-text">{{ $t('products') }}</div>
@@ -45,7 +45,7 @@
       </div>
     </div>
 
-    <div class="comm-mt-20">
+    <div class="app-mt-20">
       <div class="layout horizontal center">
         <div class="title-text">{{ $t('yourCurt') }}</div>
         <div class="flex"></div>

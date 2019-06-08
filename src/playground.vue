@@ -1,13 +1,15 @@
-<style scoped>
+<style lang="stylus" scoped>
+@import './styles/app.variables.styl'
+
 .hello-world-color {
-  color: var(--comm-indigo-a200);
+  color: $indigo-12
 }
 </style>
 
 <template>
-  <q-card class="layout vertical comm-pa-20" :class="{ 'comm-ma-48': screenSize.pc, 'comm-ma-24': screenSize.tab, 'comm-ma-12': screenSize.sp }">
+  <q-card class="layout vertical app-pa-20" :class="{ 'app-ma-48': screenSize.pc, 'app-ma-24': screenSize.tab, 'app-ma-12': screenSize.sp }">
     <div class="hello-world-color">{{ $t('hello', { today: $d(new Date(), 'short') }) }}</div>
-    <div class="layout horizontal end-justified comm-mt-10">
+    <div class="layout horizontal end-justified app-mt-10">
       <q-btn color="primary" label="Sleep" @click="m_sleepButtonOnClick" />
     </div>
   </q-card>
@@ -41,7 +43,7 @@ export default class PlaygroundView extends mixins(BaseComponent, ResizableMixin
   //----------------------------------------------------------------------
 
   private async m_sleepButtonOnClick() {
-    alert(await this.m_sleep(2000))
+    alert(await this.m_sleep(1000))
   }
 }
 </script>

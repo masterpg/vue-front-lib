@@ -1,60 +1,61 @@
-<style scoped>
-@import '../../styles/placeholder/typography.css';
+<style lang="stylus" scoped>
+@import '../../styles/app.variables.styl'
+
 .greet-message {
-  --greet-message-color: var(--comm-indigo-a200);
+  --greet-message-color: $indigo-12
 }
 
 .title {
-  @extend %comm-font-subhead1;
-  font-weight: 500;
+  @extend $text-subtitle1
+  font-weight: $text-weights.medium
 }
 
 .value {
-  @extend %comm-font-subhead1;
+  @extend $text-subtitle1
 }
 </style>
 
 <template>
   <div class="layout vertical" @component-resize="m_onComponentResize">
-    <q-card class="comm-pa-12" :class="{ 'comm-ma-48': screenSize.pc, 'comm-ma-24': screenSize.tab, 'comm-ma-12': screenSize.sp }">
-      <div class="comm-my-16">{{ $t('hello', { today: $d(new Date(), 'short') }) }}</div>
+    <q-card class="app-pa-12" :class="{ 'app-ma-48': screenSize.pc, 'app-ma-24': screenSize.tab, 'app-ma-12': screenSize.sp }">
+      <div class="app-my-16">{{ $t('hello', { today: $d(new Date(), 'short') }) }}</div>
       <q-input ref="messageInput" v-model="m_message" data-e2e-id="messageInput" label="Input Message" />
-      <div class="comm-my-16">
+      <div class="app-my-16">
         <span class="title">propA: </span><span class="value">{{ propA }}</span>
       </div>
-      <div class="comm-my-16">
+      <div class="app-my-16">
         <span class="title">propB: </span><span class="value">{{ propB }}</span>
       </div>
-      <div class="comm-my-16">
+      <div class="app-my-16">
         <span class="title">message: </span><span data-e2e-id="messageOut" class="value">{{ m_message }}</span>
       </div>
-      <div class="comm-my-16">
+      <div class="app-my-16">
         <span class="title">custom propA: </span><span class="value">{{ m_customPropA }}</span>
       </div>
-      <div class="comm-my-16">
+      <div class="app-my-16">
         <span class="title">reversed message: </span><span data-e2e-id="reversedMessageOut" class="value">{{ m_reversedMessage }}</span>
       </div>
-      <div class="comm-my-16">
+      <div class="app-my-16">
         <span class="title">double reversed message: </span>
         <span data-e2e-id="doubleReversedMessageOut" class="value">{{ m_doubleReversedMessage }}</span>
       </div>
-      <div class="layout horizontal center comm-my-16">
+      <div class="layout horizontal center app-my-16">
         <greet-message ref="greetMessage" data-e2e-id="greetMessage" :message="m_message" class="greet-message"></greet-message>
-        <q-btn data-e2e-id="greetButton" flat rounded color="primary" label="Greet" class="comm-ml-12" @click="m_greetButtonOnClick" />
+        <q-btn data-e2e-id="greetButton" flat rounded color="primary" label="Greet" class="app-ml-12" @click="m_greetButtonOnClick" />
       </div>
-      <div class="comm-my-16">
+      <div class="app-my-16">
         <span class="title">post times: </span><span class="value">{{ m_post.times }}</span>
-        <q-btn data-e2e-id="postButton" flat rounded color="primary" label="Post" class="comm-ml-12" @click="m_postButtonOnClick" />
+        <q-btn data-e2e-id="postButton" flat rounded color="primary" label="Post" class="app-ml-12" @click="m_postButtonOnClick" />
       </div>
-      <div class="layout horizontal center comm-my-16">
+      <div class="layout horizontal center app-my-16">
         <custom-input v-model="m_customInputValue" class="flex-3"></custom-input>
-        <span class="flex-9 comm-ml-12">
+        <span class="flex-9 app-ml-12">
           <span class="title">value: </span><span class="value">{{ m_customInputValue }}</span>
         </span>
       </div>
-      <div class="layout horizontal center comm-my-16">
+      <div class="layout horizontal center app-my-16">
         <custom-checkbox v-model="m_customChecked"></custom-checkbox>
-        <span class="comm-ml-12">
+        <span class="app-ml-12">
           <span class="title">checked: </span><span class="value">{{ m_customChecked }}</span>
         </span>
       </div>

@@ -1,15 +1,15 @@
-<style scoped>
+<style lang="stylus" scoped>
 .main {
-  height: 100%;
+  height: 100%
 }
 
 .sad-img {
-  width: 30vw;
-  max-width: 150px;
+  width: 30vw
+  max-width: 150px
 }
 
 .back-button {
-  width: 200px;
+  width: 200px
 }
 </style>
 
