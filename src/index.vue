@@ -112,13 +112,13 @@
 
 <script lang="ts">
 import * as sw from '@/base/service-worker'
-import { BaseComponent, ResizableMixin } from '@/base/component'
+import { BaseComponent, ResizableMixin } from '@/components'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import { router } from '@/base/router'
 
-@Component({ name: 'app-view' })
-export default class AppView extends mixins(BaseComponent, ResizableMixin) {
+@Component({ name: 'app-page' })
+export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables

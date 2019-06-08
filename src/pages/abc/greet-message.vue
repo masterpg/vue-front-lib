@@ -22,7 +22,7 @@ span {
 </template>
 
 <script lang="ts">
-import { BaseComponent, ResizableMixin } from '@/base/component'
+import { BaseComponent, ResizableMixin } from '@/components'
 import { Component, Prop } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 

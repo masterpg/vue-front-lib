@@ -67,7 +67,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, ResizableMixin } from '@/base/component'
+import { BaseComponent, ResizableMixin } from '@/components'
 import { Component, Prop, Watch } from 'vue-property-decorator'
 import CustomCheckbox from '@/pages/abc/custom-checkbox.vue'
 import CustomInput from '@/pages/abc/custom-input.vue'
@@ -81,11 +81,7 @@ interface Post {
 
 @Component({
   name: 'abc-page',
-  components: {
-    'greet-message': GreetMessage,
-    'custom-checkbox': CustomCheckbox,
-    'custom-input': CustomInput,
-  },
+  components: { GreetMessage, CustomCheckbox, CustomInput },
 })
 export default class ABCPage extends mixins(BaseComponent, ResizableMixin) {
   //--------------------------------------------------

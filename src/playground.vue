@@ -16,12 +16,12 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, ResizableMixin } from '@/base/component'
+import { BaseComponent, ResizableMixin } from '@/components'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 
-@Component
-export default class PlaygroundView extends mixins(BaseComponent, ResizableMixin) {
+@Component({ name: 'playground-page' })
+export default class PlaygroundPage extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
   //
   //  Internal methods

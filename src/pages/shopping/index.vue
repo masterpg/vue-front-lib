@@ -68,7 +68,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, ResizableMixin } from '@/base/component'
+import { BaseComponent, ResizableMixin } from '@/components'
 import { CheckoutStatus, Product } from '@/store'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'

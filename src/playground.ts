@@ -5,7 +5,7 @@ import '@/index.styl'
 
 import { QBtn, QCard, QCardActions, QCardSection, Quasar } from 'quasar'
 import { i18n, initI18n } from '@/base/i18n'
-import PlaygroundView from '@/playground.vue'
+import PlaygroundPage from '@/playground.vue'
 import Vue from 'vue'
 
 Vue.use(Quasar, {
@@ -29,7 +29,7 @@ async function init() {
 
   new Vue({
     el: '#app',
-    render: h => h(PlaygroundView),
+    render: h => h(PlaygroundPage),
     i18n,
   })
 }

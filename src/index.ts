@@ -34,7 +34,7 @@ import {
   Ripple,
 } from 'quasar'
 import { i18n, initI18n } from '@/base/i18n'
-import AppView from '@/index.vue'
+import AppPage from '@/index.vue'
 import Vue from 'vue'
 import { currency } from '@/currency'
 import { initAPI } from '@/api'
@@ -92,7 +92,7 @@ async function init() {
   new Vue({
     el: '#app',
     router: vueRouter,
-    render: h => h(AppView),
+    render: h => h(AppPage),
     i18n,
   })
 }

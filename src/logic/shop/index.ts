@@ -1,6 +1,6 @@
 import { CartItem, CheckoutStatus, Product, ShopLogic } from '@/logic/types'
 import { Component } from 'vue-property-decorator'
-import { NoCache } from '@/base/component'
+import { NoCache } from '@/base/decorators'
 import Vue from 'vue'
 import { api } from '@/api'
 import { store } from '@/store'

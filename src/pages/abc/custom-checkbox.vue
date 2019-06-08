@@ -6,7 +6,7 @@
 
 <script lang="ts">
 import { Component, Model } from 'vue-property-decorator'
-import { BaseComponent } from '@/base/component'
+import { BaseComponent } from '@/components'
 import { mixins } from 'vue-class-component'
 
 @Component({ name: 'custom-checkbox' })

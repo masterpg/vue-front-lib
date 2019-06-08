@@ -1,4 +1,4 @@
-import { BreakpointMixin } from '@/base/component/breakpoint-mixin'
+import { BreakpointMixin } from '@/components/breakpoint-mixin'
 import { Component } from 'vue-property-decorator'
 
 /**
