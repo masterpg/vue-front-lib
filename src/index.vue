@@ -99,6 +99,15 @@
             </q-item>
           </template>
         </q-list>
+        <q-expansion-item icon="code" label="Demo">
+          <q-list padding>
+            <template v-for="(item, index) in m_demoItems">
+              <q-item :key="index" v-ripple :to="item.path" clickable class="app-ml-20">
+                <q-item-section>{{ item.title }}</q-item-section>
+              </q-item>
+            </template>
+          </q-list>
+        </q-expansion-item>
       </q-scroll-area>
     </q-drawer>
 
@@ -135,6 +144,13 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
       title: 'Shopping',
       path: router.pages.shopping.path,
       icon: 'star',
+    },
+  ]
+
+  private m_demoItems: Array<{ title: string; path: string }> = [
+    {
+      title: 'comp-tree-view',
+      path: router.pages.demo.compTreeView.path,
     },
   ]
 

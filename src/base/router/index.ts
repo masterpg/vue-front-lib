@@ -31,7 +31,7 @@ export const router = {
       })(`${this.path}/foo/:id`, this.component, this)
     })('/pages/abc', () => import(/* webpackChunkName: "abc" */ '@/pages/abc/index.vue')),
 
-    shopping: new (class ShoppingRoute extends Route {
+    shopping: new (class extends Route {
       move() {
         vueRouter.push(this.path)
       }
@@ -42,12 +42,20 @@ export const router = {
         vueRouter.push(this.path)
       }
     })('*', () => import(/* webpackChunkName: "error404" */ '@/pages/error404/index.vue')),
+
+    demo: {
+      compTreeView: new (class extends Route {
+        move() {
+          vueRouter.push(this.path)
+        }
+      })('/pages/demo/comp-tree-view', () => import(/* webpackChunkName: "demo/comp-tree-view" */ '@/pages/demo/comp-tree-view/index.vue')),
+    },
   },
 }
 
 export const vueRouter = new VueRouter({
   mode: 'history',
-  routes: [router.pages.abc, router.pages.abc.foo, router.pages.shopping, router.pages.error404],
+  routes: [router.pages.abc, router.pages.abc.foo, router.pages.shopping, router.pages.error404, router.pages.demo.compTreeView],
 })
 
 vueRouter.beforeEach((to, from, next) => {
