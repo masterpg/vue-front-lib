@@ -47,16 +47,6 @@ module.exports = {
       },
     ],
     'space-in-parens': ['error', 'never'],
-    'variable-name': {
-      'options': [
-        'ban-keywords',
-        'check-format',
-        'allow-leading-underscore',
-        'allow-trailing-underscore',
-        'allow-pascal-case',
-        'allow-snake-case',
-      ],
-    },
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-member-accessibility': 'off',
     '@typescript-eslint/indent': ['off', 2],
