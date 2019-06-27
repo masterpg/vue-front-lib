@@ -34,40 +34,38 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
   //----------------------------------------------------------------------
 
   mounted() {
-    this.m_treeView.buildNodes([
+    this.m_treeView.buildChildren([
       {
-        label: 'Item 1',
-        value: 'item-1',
+        label: 'Node 1',
+        value: 'node-1',
         opened: true,
         icon: 'star',
         iconColor: 'purple-5',
         children: [
           {
-            label: 'Item 1-1',
-            value: 'item-1-1',
+            label: 'Node 1-1',
+            value: 'node-1-1',
             opened: true,
             children: [
-              { label: 'Item 1-1-1', value: 'item-1-1-1', checked: true, itemClass: CheckboxNodeItem },
-              { label: 'Item 1-1-2', value: 'item-1-1-2', icon: 'inbox', itemClass: CheckboxNodeItem },
+              { label: 'Node 1-1-1', value: 'node-1-1-1', checked: true, itemClass: CheckboxNodeItem },
+              { label: 'Node 1-1-2', value: 'node-1-1-2', icon: 'inbox', itemClass: CheckboxNodeItem },
             ],
           },
           {
-            label: 'Item 1-2',
-            value: 'item-1-2',
+            label: 'Node 1-2',
+            value: 'node-1-2',
             unselectable: true,
-            children: [{ label: 'Item 1-2-1', value: 'item-1-2-1' }, { label: 'Item 1-2-2', value: 'item-1-2-2' }],
+            children: [{ label: 'Node 1-2-1', value: 'node-1-2-1' }, { label: 'Node 1-2-2', value: 'node-1-2-2' }],
           },
         ],
       },
     ] as CheckboxTreeNodeData[])
 
-    const node = this.m_treeView.getNodeByValue('item-1-2-2')
+    const node = this.m_treeView.getNodeByValue('node-1-2-2')
     node.buildChild({
-      label: 'Item 1-2-2-1',
-      value: 'item-1-2-2-1',
+      label: 'Node 1-2-2-1',
+      value: 'node-1-2-2-1',
     })
-
-    console.log(this.m_treeView.getNodeByValue('item-1-2-2-1'))
   }
 
   //----------------------------------------------------------------------

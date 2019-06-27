@@ -73,30 +73,40 @@ export default class CompTreeView<T extends CompTreeNodeData<T> = any> extends B
 
   /**
    * 指定されたノードデータからノードツリーを構築します。
-   * @param nodeDataList ノードツリーを構築するためのデータ
+   * @param nodeData ノードツリーを構築するためのデータ
+   * @param insertIndex ノードの挿入位置
    */
-  buildNodes(nodeDataList: T[]): void {
-    nodeDataList.forEach((nodeData, index) => {
-      const node = this.buildChild(nodeData)
-      this.m_nodes.push(node)
-      if (index === 0) {
-        node.isEldest = true
-      }
+  buildChild(nodeData: T, insertIndex?: number): CompTreeNode {
+    const node = treeViewUtils.buildNode(nodeData, this, insertIndex)
+    this.m_nodes.forEach((node, index) => {
+      node.isEldest = index === 0
     })
+    return node
   }
 
   /**
    * 指定されたノードデータからノードツリーを構築します。
-   * @param nodeData ノードツリーを構築するためのデータ
+   * @param nodeDataList ノードツリーを構築するためのデータ
+   * @param insertIndex ノードの挿入位置
    */
-  buildChild(nodeData: T): CompTreeNode {
-    const node = treeViewUtils.buildNode(nodeData, this)
-    return node
+  buildChildren(nodeDataList: T[], insertIndex?: number): void {
+    nodeDataList.forEach(nodeData => {
+      const node = this.buildChild(nodeData, insertIndex)
+      if (!(insertIndex === undefined || insertIndex === null)) {
+        insertIndex++
+      }
+    })
   }
 
-  addChild(childNode: CompTreeNode): void {
+  addChild(childNode: CompTreeNode, insertIndex?: number): void {
     childNode.$mount()
-    this.m_container.appendChild(childNode.$el)
+
+    if (insertIndex === undefined || insertIndex === null) {
+      insertIndex = this.m_nodes.length
+    }
+
+    this.m_insertChildIntoContainer(childNode, insertIndex)
+    this.m_nodes.splice(insertIndex, 0, childNode)
   }
 
   /**
@@ -113,9 +123,34 @@ export default class CompTreeView<T extends CompTreeNodeData<T> = any> extends B
   //
   //----------------------------------------------------------------------
 
+  /**
+   * ノードが発火する標準のイベントとは別に、独自イベント用のリスナを登録します。
+   * @param eventName
+   */
   m_addExtraNodeEventListener(eventName: string): void {
     this.m_container.removeEventListener(eventName, this.m_allNodesOnExtraNodeEvent)
     this.m_container.addEventListener(eventName, this.m_allNodesOnExtraNodeEvent)
+  }
+
+  /**
+   * 子ノードを子コンテナへ挿入します。
+   * @param childNode 追加する子ノード
+   * @param insertIndex ノードの挿入位置
+   */
+  private m_insertChildIntoContainer(childNode: CompTreeNode, insertIndex: number): void {
+    const childrenLength = this.m_container.children.length
+
+    // 挿入位置が大きすぎないかを検証
+    if (childrenLength < insertIndex) {
+      throw new Error('insertIndex is too big.')
+    }
+
+    if (insertIndex === 0 || childrenLength === insertIndex) {
+      this.m_container.appendChild(childNode.$el)
+    } else {
+      const afterNode = this.m_container.children[insertIndex]
+      this.m_container.insertBefore(childNode.$el, afterNode)
+    }
   }
 
   //----------------------------------------------------------------------

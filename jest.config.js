@@ -14,7 +14,7 @@ module.exports = {
   testURL: 'http://localhost/',
   globals: {
     'ts-jest': {
-      babelConfig: true,
+      babelConfig: false,
     },
   },
   // collectCoverage: true,

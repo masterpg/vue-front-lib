@@ -53,7 +53,7 @@
         </svg>
       </div>
     </div>
-    <div ref="childrenContainer" class="children-container" :class="{ opened: opened }"></div>
+    <div ref="childContainer" class="children-container" :class="{ opened: opened }"></div>
   </div>
 </template>
 
@@ -82,10 +82,10 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
       this.m_itemContainer.addEventListener(eventName, this.m_itemOnExtraEvent)
     }
 
-    // this.m_childrenContainerObserver = new MutationObserver(records => {
+    // this.m_childContainerObserver = new MutationObserver(records => {
     //   console.log(records)
     // })
-    // this.m_childrenContainerObserver.observe(this.m_childrenContainer, { childList: true })
+    // this.m_childContainerObserver.observe(this.m_childContainer, { childList: true })
   }
 
   //----------------------------------------------------------------------
@@ -190,7 +190,7 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
   //
   //----------------------------------------------------------------------
 
-  private m_childrenContainerObserver!: MutationObserver
+  private m_childContainerObserver!: MutationObserver
 
   get m_hasChildren() {
     return this.children.length > 0
@@ -204,8 +204,8 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
     return this.$refs.itemContainer as HTMLElement
   }
 
-  get m_childrenContainer(): HTMLElement {
-    return this.$refs.childrenContainer as HTMLElement
+  get m_childContainer(): HTMLElement {
+    return this.$refs.childContainer as HTMLElement
   }
 
   //----------------------------------------------------------------------
@@ -228,22 +228,28 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
   /**
    * 指定されたノードデータからノードツリーを構築します。
    * @param nodeData ノードツリーを構築するためのデータ
+   * @param insertIndex ノードの挿入位置
    */
-  buildChild(nodeData: T): CompTreeNode {
-    const node = treeViewUtils.buildNode(nodeData, this)
+  buildChild(nodeData: T, insertIndex?: number): CompTreeNode {
+    const node = treeViewUtils.buildNode(nodeData, this, insertIndex)
     return node
   }
 
-  addChild(childNode: CompTreeNode): void {
+  addChild(childNode: CompTreeNode, insertIndex?: number): void {
     childNode.$mount()
-    this.m_childrenContainer.appendChild(childNode.$el)
 
-    const childrenContainerHeight = this.m_getChildrenContainerHeight(this)
-    const childNodeHeight = childrenContainerHeight + childNode.$el.getBoundingClientRect().height
-    this.m_childrenContainer.style.height = `${childNodeHeight}px`
+    if (insertIndex === undefined || insertIndex === null) {
+      insertIndex = this.children.length
+    }
+
+    this.m_insertChildIntoContainer(childNode, insertIndex)
+
+    const childContainerHeight = this.m_getChildrenContainerHeight(this)
+    const childNodeHeight = childContainerHeight + childNode.$el.getBoundingClientRect().height
+    this.m_childContainer.style.height = `${childNodeHeight}px`
 
     childNode.m_parent = this
-    this.children.push(childNode)
+    this.children.splice(insertIndex, 0, childNode)
 
     if (this.parent) {
       this.parent.m_refreshChildrenContainerHeight(false)
@@ -283,6 +289,14 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
   private m_toggle(opened: boolean, animated: boolean = true): void {
     this.m_opened = opened
     this.m_refreshChildrenContainerHeight(animated)
+
+    this.$el.dispatchEvent(
+      new CustomEvent('opened-changed', {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+      })
+    )
   }
 
   /**
@@ -290,10 +304,10 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
    * @param animated
    */
   private m_refreshChildrenContainerHeight(animated: boolean): void {
-    this.m_childrenContainer.style.transition = animated ? 'height .5s' : ''
+    this.m_childContainer.style.transition = animated ? 'height .5s' : ''
 
     const newHeight = this.m_getChildrenContainerHeight(this)
-    this.m_childrenContainer.style.height = `${newHeight}px`
+    this.m_childContainer.style.height = `${newHeight}px`
 
     if (this.parent) {
       this.parent.m_refreshChildrenContainerHeight(animated)
@@ -308,7 +322,7 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
     let result = 0
 
     if (this.opened) {
-      const style = getComputedStyle(this.m_childrenContainer)
+      const style = getComputedStyle(this.m_childContainer)
       const borderTopWidth = parseInt(style.getPropertyValue('border-top-width'), 10)
       const borderBottomWidth = parseInt(style.getPropertyValue('border-bottom-width'), 10)
       const paddingTop = parseInt(style.getPropertyValue('padding-top'), 10)
@@ -328,24 +342,44 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
     return result
   }
 
+  /**
+   * 子ノードを子コンテナへ挿入します。
+   * @param childNode 追加する子ノード
+   * @param insertIndex ノードの挿入位置
+   */
+  private m_insertChildIntoContainer(childNode: CompTreeNode, insertIndex: number): void {
+    const childrenLength = this.m_childContainer.children.length
+
+    // 挿入位置が大きすぎないかを検証
+    if (childrenLength < insertIndex) {
+      throw new Error('insertIndex is too big.')
+    }
+
+    if (insertIndex === 0 || childrenLength === insertIndex) {
+      this.m_childContainer.appendChild(childNode.$el)
+    } else {
+      const afterNode = this.m_childContainer.children[insertIndex]
+      this.m_childContainer.insertBefore(childNode.$el, afterNode)
+    }
+  }
+
   //----------------------------------------------------------------------
   //
   //  Event listeners
   //
   //----------------------------------------------------------------------
 
+  /**
+   * トグルアイコンのクリック時のリスナです。
+   */
   private m_toggleIconOnClick() {
     this.toggle()
-
-    this.$el.dispatchEvent(
-      new CustomEvent('opened-changed', {
-        bubbles: true,
-        cancelable: true,
-        composed: true,
-      })
-    )
   }
 
+  /**
+   * ノードアイテムが選択された際のリスナです。
+   * @param e
+   */
   private m_itemOnSelected(e) {
     e.stopImmediatePropagation()
 
@@ -358,6 +392,10 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
     )
   }
 
+  /**
+   * ノードアイテムが発火する標準のイベントとは別に、独自イベントが発火した際のリスナです。
+   * @param e
+   */
   private m_itemOnExtraEvent(e) {
     e.stopImmediatePropagation()
 
