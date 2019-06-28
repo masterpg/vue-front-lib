@@ -15,7 +15,7 @@
 
 <script lang="ts">
 import { BaseComponent, ResizableMixin } from '@/components'
-import CheckboxNodeItem, { CheckboxTreeNodeData } from '@/pages/demo/comp-tree-view/checkbox-node-item.vue'
+import CompCheckboxNodeItem, { CompCheckboxTreeNodeData } from '@/components/comp-tree-view/comp-checkbox-node-item.vue'
 import CompTreeNode from '@/components/comp-tree-view/comp-tree-node.vue'
 import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
 import CompTreeView from '@/components/comp-tree-view/index.vue'
@@ -24,7 +24,7 @@ import { mixins } from 'vue-class-component'
 
 @Component({
   name: 'demo-comp-tree-view-page',
-  components: { CompTreeView, CompTreeNode, CompTreeNodeItem, CheckboxNodeItem },
+  components: { CompTreeView, CompTreeNode, CompTreeNodeItem, CheckboxNodeItem: CompCheckboxNodeItem },
 })
 export default class DemoCompTreeViewPage extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
@@ -47,8 +47,8 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
             value: 'node-1-1',
             opened: true,
             children: [
-              { label: 'Node 1-1-1', value: 'node-1-1-1', checked: true, itemClass: CheckboxNodeItem },
-              { label: 'Node 1-1-2', value: 'node-1-1-2', icon: 'inbox', itemClass: CheckboxNodeItem },
+              { label: 'Node 1-1-1', value: 'node-1-1-1', checked: true, itemClass: CompCheckboxNodeItem },
+              { label: 'Node 1-1-2', value: 'node-1-1-2', icon: 'inbox', itemClass: CompCheckboxNodeItem },
             ],
           },
           {
@@ -59,9 +59,9 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
           },
         ],
       },
-    ] as CheckboxTreeNodeData[])
+    ] as CompCheckboxTreeNodeData[])
 
-    const node = this.m_treeView.getNodeByValue('node-1-2-2')
+    const node = this.m_treeView.getNodeByValue('node-1-2-2')!
     node.buildChild({
       label: 'Node 1-2-2-1',
       value: 'node-1-2-2-1',
@@ -88,7 +88,7 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
   //
   //----------------------------------------------------------------------
 
-  private m_treeViewOnCheckedChanged(node: CompTreeNode<CheckboxNodeItem>) {
+  private m_treeViewOnCheckedChanged(node: CompTreeNode<CompCheckboxNodeItem>) {
     node.selected = true
     console.log(node)
   }

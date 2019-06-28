@@ -1,3 +1,4 @@
+import CompCheckboxNodeItem from '@/components/comp-tree-view/comp-checkbox-node-item.vue'
 import CompTreeView from '@/components/comp-tree-view/index.vue'
 import { mount } from '@vue/test-utils'
 
@@ -12,7 +13,18 @@ describe('標準ツリー', () => {
           label: 'Node 1-1',
           value: 'node-1-1',
           opened: true,
-          children: [{ label: 'Node 1-1-1', value: 'node-1-1-1', icon: 'inbox' }, { label: 'Node 1-1-2', value: 'node-1-1-2', unselectable: true }],
+          children: [
+            {
+              label: 'Node 1-1-1',
+              value: 'node-1-1-1',
+              icon: 'inbox',
+            },
+            {
+              label: 'Node 1-1-2',
+              value: 'node-1-1-2',
+              unselectable: true,
+            },
+          ],
         },
       ],
     },
@@ -324,7 +336,7 @@ describe('標準ツリー', () => {
     expect(wrapper.emitted('selected')[0][0]).toBe(node1_1_1)
     // ノードの選択状態を検証
     expect(node1_1_1.selected).toBeTruthy()
-    expect(node1_1_1.nodeItem.selected).toBeTruthy()
+    expect(node1_1_1.item.selected).toBeTruthy()
   })
 
   it('CompTreeNodeItem.selectedを変更', () => {
@@ -333,12 +345,52 @@ describe('標準ツリー', () => {
     treeView.buildChildren(nodeDataList)
 
     const node1_1_1 = treeView.getNodeByValue('node-1-1-1')
-    node1_1_1.nodeItem.selected = true
+    node1_1_1.item.selected = true
     // イベント発火を検証
     expect(wrapper.emitted('selected').length).toBe(1)
     expect(wrapper.emitted('selected')[0][0]).toBe(node1_1_1)
     // ノードの選択状態を検証
     expect(node1_1_1.selected).toBeTruthy()
-    expect(node1_1_1.nodeItem.selected).toBeTruthy()
+    expect(node1_1_1.item.selected).toBeTruthy()
+  })
+})
+
+describe('カスタムツリー', () => {
+  const nodeDataList = [
+    {
+      label: 'Node 1',
+      value: 'node-1',
+      children: [
+        {
+          label: 'Node 1-1',
+          value: 'node-1-1',
+          children: [
+            {
+              label: 'Node 1-1-1',
+              value: 'node-1-1-1',
+              checked: true,
+              itemClass: CompCheckboxNodeItem,
+            },
+          ],
+        },
+      ],
+    },
+  ]
+
+  it('独自イベントが発火されるかを検証', () => {
+    const wrapper = mount(CompTreeView)
+    const treeView = wrapper.vm as CompTreeView | any
+    treeView.buildChildren(nodeDataList)
+
+    const node1_1_1 = treeView.getNodeByValue('node-1-1-1')!
+    expect(node1_1_1.item.checked).toBe(true)
+
+    node1_1_1.item.checked = false
+
+    // イベント発火を検証
+    expect(wrapper.emitted('checked-changed').length).toBe(1)
+    expect(wrapper.emitted('checked-changed')[0][0]).toBe(node1_1_1)
+    // ノードのチェック状態を検証
+    expect(node1_1_1.item.checked).not.toBeTruthy()
   })
 })

@@ -44,7 +44,7 @@ export interface CompTreeNodeData<T extends CompTreeNodeData<T>> {
   children?: T[]
 }
 
-export interface CompTreeNodeParent extends HTMLElement {
+export interface CompTreeNodeParent {
   /**
    * 自身に子ノードを追加します。
    * @param childNode 追加する子ノード

@@ -1,5 +1,5 @@
 <style lang="stylus" scoped>
-@import '../../../styles/app.variables.styl'
+@import '../../styles/app.variables.styl'
 
 .item {
   cursor: pointer
@@ -33,12 +33,12 @@ import { CompTreeNodeData } from '@/components/comp-tree-view/types'
 import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
 import { Component } from 'vue-property-decorator'
 
-export interface CheckboxTreeNodeData extends CompTreeNodeData<CheckboxTreeNodeData> {
+export interface CompCheckboxTreeNodeData extends CompTreeNodeData<CompCheckboxTreeNodeData> {
   checked?: boolean
 }
 
 @Component
-export default class CheckboxNodeItem extends CompTreeNodeItem<CheckboxTreeNodeData> {
+export default class CompCheckboxNodeItem extends CompTreeNodeItem<CompCheckboxTreeNodeData> {
   private m_checked: boolean = false
 
   get checked(): boolean {
@@ -49,11 +49,11 @@ export default class CheckboxNodeItem extends CompTreeNodeItem<CheckboxTreeNodeD
     const changed = this.m_checked !== value
     this.m_checked = value
     if (changed) {
-      this.dispatchCheckedChanged()
+      this.m_dispatchCheckedChanged()
     }
   }
 
-  protected initPlaceholder(nodeData: CheckboxTreeNodeData): void {
+  protected initPlaceholder(nodeData: CompCheckboxTreeNodeData): void {
     this.m_checked = Boolean(nodeData.checked)
   }
 
@@ -61,7 +61,7 @@ export default class CheckboxNodeItem extends CompTreeNodeItem<CheckboxTreeNodeD
     return ['checked-changed']
   }
 
-  private dispatchCheckedChanged(): void {
+  private m_dispatchCheckedChanged(): void {
     this.$el.dispatchEvent(
       new CustomEvent('checked-changed', {
         bubbles: true,

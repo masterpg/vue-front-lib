@@ -75,10 +75,10 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
   //----------------------------------------------------------------------
 
   mounted() {
-    this.nodeItem.$mount()
-    this.m_itemContainer.appendChild(this.nodeItem.$el)
+    this.item.$mount()
+    this.m_itemContainer.appendChild(this.item.$el)
 
-    for (const eventName of this.nodeItem.extraEventNames) {
+    for (const eventName of this.item.extraEventNames) {
       this.m_itemContainer.addEventListener(eventName, this.m_itemOnExtraEvent)
     }
 
@@ -94,10 +94,10 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
   //
   //----------------------------------------------------------------------
 
-  private m_nodeItem: N = {} as any
+  private m_item: N = {} as any
 
-  get nodeItem(): N {
-    return this.m_nodeItem
+  get item(): N {
+    return this.m_item
   }
 
   /**
@@ -130,14 +130,14 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
    * ラベルです。
    */
   get label(): string {
-    return this.nodeItem.label
+    return this.item.label
   }
 
   /**
    * ノードを特定するための値です。
    */
   get value(): string {
-    return this.nodeItem.value
+    return this.item.value
   }
 
   /**
@@ -145,18 +145,18 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
    * true: 選択不可, false: 選択可
    */
   get unselectable(): boolean {
-    return this.nodeItem.unselectable
+    return this.item.unselectable
   }
 
   /**
    * 選択されているか否かです。
    */
   get selected(): boolean {
-    return this.nodeItem.selected
+    return this.item.selected
   }
 
   set selected(value: boolean) {
-    this.nodeItem.selected = value
+    this.item.selected = value
   }
 
   private m_parent?: CompTreeNode
@@ -181,7 +181,7 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
    * 標準で発火するイベントとは別に、追加で発火するイベント名のリストです。
    */
   get extraEventNames(): string[] {
-    return this.nodeItem.extraEventNames
+    return this.item.extraEventNames
   }
 
   //----------------------------------------------------------------------
@@ -219,7 +219,7 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
     const item = new NodeItemClass() as N
     item.init(nodeData)
 
-    this.m_nodeItem = item
+    this.m_item = item
     this.m_opened = Boolean(nodeData.opened)
     this.icon = nodeData.icon || ''
     this.iconColor = nodeData.iconColor || ''
