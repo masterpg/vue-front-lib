@@ -16,15 +16,12 @@
     @extend $layout-center-center
     width: 1.5em
     height: 1.5em
-    margin-right 6px
+    margin-right: 6px
   }
 
   .toggle-icon {
-    transition transform .5s
+    transition: transform .5s
     cursor: pointer
-  }
-
-  .icon {
   }
 }
 
@@ -44,7 +41,7 @@
       </div>
       <!-- 指定アイコン -->
       <div v-if="!!icon" class="icon-container">
-        <q-icon :name="icon" :color="iconColor" size="24px" class="icon" />
+        <q-icon :name="icon" :color="iconColor" size="24px" />
       </div>
       <!-- ドットアイコン -->
       <div v-else-if="!m_hasChildren" class="icon-container">
