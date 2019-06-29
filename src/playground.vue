@@ -38,7 +38,7 @@ export default class PlaygroundPage extends mixins(BaseComponent, ResizableMixin
 
   //----------------------------------------------------------------------
   //
-  //  Event handlers
+  //  Event listeners
   //
   //----------------------------------------------------------------------
 

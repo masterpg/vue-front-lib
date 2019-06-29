@@ -179,7 +179,7 @@ export default class ABCPage extends mixins(BaseComponent, ResizableMixin) {
   }
 
   //--------------------------------------------------
-  //  event handlers
+  //  event listeners
   //--------------------------------------------------
 
   private m_greetButtonOnClick() {

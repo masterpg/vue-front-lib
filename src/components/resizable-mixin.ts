@@ -10,7 +10,7 @@ const ORPHANS = new Set<ResizableMixin>()
 export class ResizableMixin extends BreakpointMixin {
   //----------------------------------------------------------------------
   //
-  //  Lifecycle callbacks
+  //  Lifecycle hooks
   //
   //----------------------------------------------------------------------
 
@@ -113,7 +113,7 @@ export class ResizableMixin extends BreakpointMixin {
 
   /**
    * 自身から指定された子孫を削除し、
-   * その子孫に登録されている自身のcomponent-resizeハンドラを解除します。
+   * その子孫に登録されている自身のcomponent-resizeリスナを解除します。
    * @param target
    */
   stopResizeNotificationsFor(target: ResizableMixin): void {
@@ -228,7 +228,7 @@ export class ResizableMixin extends BreakpointMixin {
   }
 
   /**
-   * target上のcomponent-resizeイベントに自身のハンドラを登録します。
+   * target上のcomponent-resizeイベントに自身のリスナを登録します。
    * @param target
    */
   private ResizableMixin_subscribeIronResize(target: ResizableMixin): void {
@@ -236,7 +236,7 @@ export class ResizableMixin extends BreakpointMixin {
   }
 
   /**
-   * target上のcomponent-resizeイベントに登録されている自身のハンドラを解除します。
+   * target上のcomponent-resizeイベントに登録されている自身のリスナを解除します。
    * @param target
    */
   private ResizableMixin_unsubscribeIronResize(target: ResizableMixin): void {
@@ -245,12 +245,12 @@ export class ResizableMixin extends BreakpointMixin {
 
   //----------------------------------------------------------------------
   //
-  //  Event handlers
+  //  Event listeners
   //
   //----------------------------------------------------------------------
 
   /**
-   * iron-request-resize-notificationsイベントのハンドラです。
+   * iron-request-resize-notificationsイベントのリスナです。
    * このイベントは、子孫が祖先との関連付けを必要とした場合発火されます。
    * @param e
    */
@@ -269,7 +269,7 @@ export class ResizableMixin extends BreakpointMixin {
   }
 
   /**
-   * component-resizeイベントのハンドラです。
+   * component-resizeイベントのリスナです。
    * @param event
    */
   private ResizableMixin_onDescendantIronResize(event) {

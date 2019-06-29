@@ -130,6 +130,20 @@ import { router } from '@/base/router'
 export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
   //
+  //  Lifecycle hooks
+  //
+  //----------------------------------------------------------------------
+
+  async created() {
+    sw.addStateChangeListener(this.m_swOnStateChange)
+
+    this.m_leftDrawerOpen = this.$q.platform.is.desktop
+
+    await this.$logic.shop.pullProducts()
+  }
+
+  //----------------------------------------------------------------------
+  //
   //  Variables
   //
   //----------------------------------------------------------------------
@@ -168,21 +182,7 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
 
   //----------------------------------------------------------------------
   //
-  //  Lifecycle hooks
-  //
-  //----------------------------------------------------------------------
-
-  async created() {
-    sw.addStateChangeListener(this.m_swOnStateChange)
-
-    this.m_leftDrawerOpen = this.$q.platform.is.desktop
-
-    await this.$logic.shop.pullProducts()
-  }
-
-  //----------------------------------------------------------------------
-  //
-  //  Event handlers
+  //  Event listeners
   //
   //----------------------------------------------------------------------
 
