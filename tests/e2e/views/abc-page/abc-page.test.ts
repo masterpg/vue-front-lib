@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 import { VueSelector } from '../../../helper/e2e'
 
-fixture`ABC Page`.page`http://localhost:5000/pages/abc`
+fixture`ABC Page`.page`http://localhost:5000/views/abc-page`
 
 test('メッセージを入力した際に影響がある箇所を検証', async t => {
   const messageInput = VueSelector('abc-page').find('[data-e2e-id="messageInput"]')

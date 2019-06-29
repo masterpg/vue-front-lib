@@ -3,9 +3,10 @@ import 'animate.css/animate.css'
 import '@/index.styl'
 
 // TODO JetBrainsIDE使用時の開発補助コード
-import '@/pages/abc/index.vue'
-import '@/pages/error404/index.vue'
-import '@/pages/shopping/index.vue'
+import '@/views/abc-page/index.vue'
+import '@/views/error404-page/index.vue'
+import '@/views/shopping-page/index.vue'
+import '@/views/demo/comp-tree-view-page/index.vue'
 
 import {
   Notify,

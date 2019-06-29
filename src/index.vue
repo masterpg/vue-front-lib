@@ -137,12 +137,12 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
   private m_items: Array<{ title: string; path: string; icon: string }> = [
     {
       title: 'ABC',
-      path: router.pages.abc.path,
+      path: router.views.abcPage.path,
       icon: 'inbox',
     },
     {
       title: 'Shopping',
-      path: router.pages.shopping.path,
+      path: router.views.shoppingPage.path,
       icon: 'star',
     },
   ]
@@ -150,7 +150,7 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
   private m_demoItems: Array<{ title: string; path: string }> = [
     {
       title: 'comp-tree-view',
-      path: router.pages.demo.compTreeView.path,
+      path: router.views.demo.compTreeViewPage.path,
     },
   ]
 
