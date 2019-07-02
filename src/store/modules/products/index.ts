@@ -1,4 +1,4 @@
-import { Product, ProductsErrorType, ProductsModule, ProductsState, StoreError } from '@/store/types'
+import { Product, ProductsErrorType, ProductsModule, ProductsState, StatePartial, StoreError } from '@/store/types'
 import { BaseModule } from '@/store/base'
 import { Component } from 'vue-property-decorator'
 import { utils } from '@/base/utils'
@@ -39,8 +39,22 @@ export class ProductsModuleImpl extends BaseModule<ProductsState> implements Pro
     return product
   }
 
+  set(product: StatePartial<Product>): Product | undefined {
+    const result = this.getById(product.id)
+    if (result) {
+      utils.assign(result, product)
+    }
+    return result
+  }
+
   setAll(products: Product[]): void {
     this.state.all = utils.cloneDeep(products)
+  }
+
+  add(product: Product): Product {
+    const result = utils.cloneDeep(product)
+    this.state.all.push(result)
+    return result
   }
 
   decrementInventory(productId: string): void {

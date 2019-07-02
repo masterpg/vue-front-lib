@@ -34,11 +34,49 @@ describe('getById', () => {
   })
 })
 
+describe('set', () => {
+  it('ベーシックケース', () => {
+    const product = utils.cloneDeep(PRODUCTS[0])
+    product.title = 'aaa'
+    product.price = 999
+    product.inventory = 888
+
+    const actual = productsModule.set(product)!
+
+    expect(actual).toEqual(product)
+    expect(actual).toBe(productsModule.getById(actual.id))
+  })
+
+  it('存在しない商品IDを指定した場合', () => {
+    const product = utils.cloneDeep(PRODUCTS[0])
+    product.id = '9999'
+
+    const actual = productsModule.set(product)
+
+    expect(actual).toBeUndefined()
+  })
+})
+
 describe('setAll', () => {
   it('ベーシックケース', () => {
     productsModule.setAll(PRODUCTS)
     expect(productsModule.all).toEqual(PRODUCTS)
     expect(productsModule.all).not.toBe(PRODUCTS)
+  })
+})
+
+describe('add', () => {
+  it('ベーシックケース', () => {
+    const product = utils.cloneDeep(PRODUCTS[0])
+    product.id = '50'
+    product.title = 'aaa'
+    product.price = 999
+    product.inventory = 888
+
+    const actual = productsModule.add(product)
+
+    expect(actual).toEqual(product)
+    expect(actual).toBe(productsModule.getById(actual.id))
   })
 })
 

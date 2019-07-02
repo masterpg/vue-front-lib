@@ -72,7 +72,6 @@ exports[`標準ツリー CompTreeView.buildChildren() ベーシックケース 1
                 class="icon-container"
               >
                 <q-icon
-                  class="icon"
                   color=""
                   name="inbox"
                   size="24px"

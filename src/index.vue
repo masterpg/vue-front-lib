@@ -80,7 +80,7 @@
         <q-btn flat dense round aria-label="Menu" icon="menu" @click="m_leftDrawerOpen = !m_leftDrawerOpen" />
 
         <q-toolbar-title>
-          Quasar App XXX
+          Quasar App
         </q-toolbar-title>
 
         <div>Quasar v{{ $q.version }}</div>

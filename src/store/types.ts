@@ -21,7 +21,11 @@ export interface ProductsModule {
 
   getById(productId: string): Product | undefined
 
+  set(product: StatePartial<Product>): Product | undefined
+
   setAll(products: Product[]): void
+
+  add(product: Product): Product
 
   decrementInventory(productId: string): void
 }
@@ -47,6 +51,8 @@ export interface CartModule {
 //  Data types
 //
 //----------------------------------------------------------------------
+
+export type StatePartial<T> = Partial<Omit<T, 'id'>> & { id: string }
 
 export interface Product {
   id: string
