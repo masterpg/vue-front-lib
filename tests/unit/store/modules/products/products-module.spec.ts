@@ -1,6 +1,6 @@
 import { Product, ProductsErrorType, ProductsModule, ProductsState, StoreError, store } from '@/store'
 import { TestStoreModule } from '../../../../helper/unit'
-import { utils } from '@/base/utils'
+const cloneDeep = require('lodash/cloneDeep')
 
 const productsModule = store.products as TestStoreModule<ProductsState, ProductsModule>
 
@@ -12,7 +12,7 @@ const PRODUCTS: Product[] = [
 
 beforeEach(async () => {
   productsModule.initState({
-    all: utils.cloneDeep(PRODUCTS),
+    all: cloneDeep(PRODUCTS),
   })
 })
 
@@ -36,7 +36,7 @@ describe('getById', () => {
 
 describe('set', () => {
   it('ベーシックケース', () => {
-    const product = utils.cloneDeep(PRODUCTS[0])
+    const product = cloneDeep(PRODUCTS[0])
     product.title = 'aaa'
     product.price = 999
     product.inventory = 888
@@ -48,7 +48,7 @@ describe('set', () => {
   })
 
   it('存在しない商品IDを指定した場合', () => {
-    const product = utils.cloneDeep(PRODUCTS[0])
+    const product = cloneDeep(PRODUCTS[0])
     product.id = '9999'
 
     const actual = productsModule.set(product)
@@ -67,7 +67,7 @@ describe('setAll', () => {
 
 describe('add', () => {
   it('ベーシックケース', () => {
-    const product = utils.cloneDeep(PRODUCTS[0])
+    const product = cloneDeep(PRODUCTS[0])
     product.id = '50'
     product.title = 'aaa'
     product.price = 999
@@ -82,7 +82,7 @@ describe('add', () => {
 
 describe('decrementInventory', () => {
   it('ベーシックケース', () => {
-    const product = utils.cloneDeep(productsModule.state.all[0])
+    const product = cloneDeep(productsModule.state.all[0])
     productsModule.decrementInventory(product.id)
     const actual = productsModule.state.all[0]
     expect(actual.id).toBe(product.id)

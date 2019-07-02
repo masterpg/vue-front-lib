@@ -1,6 +1,6 @@
 import { CartModule, CartState, CheckoutStatus, Product, store } from '@/store'
 import { TestStoreModule } from '../../../../helper/unit'
-import { utils } from '@/base/utils'
+const cloneDeep = require('lodash/cloneDeep')
 
 const cartModule = store.cart as TestStoreModule<CartState, CartModule>
 
@@ -14,7 +14,7 @@ const PRODUCTS: Product[] = [
 
 beforeEach(async () => {
   cartModule.initState({
-    all: utils.cloneDeep(CART_ITEMS),
+    all: cloneDeep(CART_ITEMS),
     checkoutStatus: CheckoutStatus.None,
   })
 })
@@ -76,7 +76,7 @@ describe('addProductToCart()', () => {
 
   it('追加しようとする商品が既に存在する場合', async () => {
     const product = PRODUCTS[0]
-    const cartItemBk = utils.cloneDeep(cartModule.getById(product.id)!)
+    const cartItemBk = cloneDeep(cartModule.getById(product.id)!)
 
     cartModule.addProductToCart(product)
 

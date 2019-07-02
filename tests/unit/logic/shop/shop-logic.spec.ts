@@ -3,7 +3,7 @@ import { Product as APIProduct, ShopAPI, api } from '@/api'
 import { CartModule, CartState, CheckoutStatus, ProductsModule, ProductsState, store } from '@/store'
 import { ShopLogicImpl } from '@/logic/shop'
 import { TestStoreModule } from '../../../helper/unit'
-import { utils } from '@/base/utils'
+const cloneDeep = require('lodash/cloneDeep')
 
 const shopLogic = new ShopLogicImpl()
 const cartModule = store.cart as TestStoreModule<CartState, CartModule>
@@ -20,11 +20,11 @@ const CART_ITEMS = [{ id: '1', title: 'iPad 4 Mini', price: 500.01, quantity: 1 
 
 beforeEach(async () => {
   cartModule.initState({
-    all: utils.cloneDeep(CART_ITEMS),
+    all: cloneDeep(CART_ITEMS),
     checkoutStatus: CheckoutStatus.None,
   })
   productModule.initState({
-    all: utils.cloneDeep(PRODUCTS),
+    all: cloneDeep(PRODUCTS),
   })
   td.replace(api, 'shop', td.object<ShopAPI>())
 })
@@ -91,7 +91,7 @@ describe('addProductToCart()', () => {
 
   it('在庫がある商品をカートへ追加する場合 & 追加しようとする商品が既に存在する場合', async () => {
     const product = PRODUCTS[0]
-    const cartItemBk = utils.cloneDeep(cartModule.getById(product.id)!)
+    const cartItemBk = cloneDeep(cartModule.getById(product.id)!)
 
     shopLogic.addProductToCart(product.id)
 

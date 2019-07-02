@@ -1,7 +1,7 @@
 import { CartItem, CartModule, CartState, CheckoutStatus, Product } from '@/store/types'
 import { BaseModule } from '@/store/base'
 import { Component } from 'vue-property-decorator'
-import { utils } from '@/base/utils'
+const cloneDeep = require('lodash/cloneDeep')
 
 @Component
 export class CartModuleImpl extends BaseModule<CartState> implements CartModule {
@@ -51,7 +51,7 @@ export class CartModuleImpl extends BaseModule<CartState> implements CartModule 
   }
 
   setAll(items: CartItem[]): void {
-    this.state.all = utils.cloneDeep(items)
+    this.state.all = cloneDeep(items)
   }
 
   setCheckoutStatus(status: CheckoutStatus): void {

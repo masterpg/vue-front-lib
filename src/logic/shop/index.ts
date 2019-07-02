@@ -4,7 +4,7 @@ import { NoCache } from '@/base/decorators'
 import Vue from 'vue'
 import { api } from '@/api'
 import { store } from '@/store'
-import { utils } from '@/base/utils'
+const cloneDeep = require('lodash/cloneDeep')
 
 @Component
 export class ShopLogicImpl extends Vue implements ShopLogic {
@@ -16,12 +16,12 @@ export class ShopLogicImpl extends Vue implements ShopLogic {
 
   @NoCache
   get products(): Product[] {
-    return utils.cloneDeep(store.products.all)
+    return cloneDeep(store.products.all)
   }
 
   @NoCache
   get cartItems(): CartItem[] {
-    return utils.cloneDeep(store.cart.all)
+    return cloneDeep(store.cart.all)
   }
 
   get cartTotalPrice(): number {

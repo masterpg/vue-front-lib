@@ -1,7 +1,8 @@
 import { Product, ProductsErrorType, ProductsModule, ProductsState, StatePartial, StoreError } from '@/store/types'
 import { BaseModule } from '@/store/base'
 import { Component } from 'vue-property-decorator'
-import { utils } from '@/base/utils'
+const cloneDeep = require('lodash/cloneDeep')
+const assign = require('lodash/assign')
 
 @Component
 export class ProductsModuleImpl extends BaseModule<ProductsState> implements ProductsModule {
@@ -42,17 +43,17 @@ export class ProductsModuleImpl extends BaseModule<ProductsState> implements Pro
   set(product: StatePartial<Product>): Product | undefined {
     const result = this.getById(product.id)
     if (result) {
-      utils.assign(result, product)
+      assign(result, product)
     }
     return result
   }
 
   setAll(products: Product[]): void {
-    this.state.all = utils.cloneDeep(products)
+    this.state.all = cloneDeep(products)
   }
 
   add(product: Product): Product {
-    const result = utils.cloneDeep(product)
+    const result = cloneDeep(product)
     this.state.all.push(result)
     return result
   }
