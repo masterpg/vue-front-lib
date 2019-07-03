@@ -1,74 +1,16 @@
-<style scoped lang="polymer">
-/* PolymerのCSS Mixinの設定はこの領域に記述すること */
+<style lang="stylus" scoped>
+@import './styles/app.variables.styl'
 
-app-drawer {
-  --app-drawer-content-container: {
-    background-color: var(--comm-grey-100);
-  }
+.header {
+  background-color: $indigo-5
 }
 
-@media (min-width: 600px) {
-  app-drawer {
-    --app-drawer-content-container: {
-      background-color: var(--comm-grey-100);
-      border-right: 1px solid var(--comm-grey-300);
-    }
-  }
-}
-</style>
-
-<style scoped>
-@import './styles/placeholder/typography.css';
-
-app-drawer-layout {
-  --app-drawer-width: 300px;
-  &:not([narrow]) [drawer-toggle] {
-    display: none;
-  }
+.container {
+  height: 100vh
 }
 
-.drawer-toolbar {
-}
-
-.content-toolbar {
-  background-color: var(--comm-indigo-a200);
-  color: #fff;
-
-  & paper-icon-button + [main-title] {
-    margin-left: 24px;
-  }
-
-  & .photo {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-  }
-
-  & .systemMenuList {
-    min-width: 150px;
-  }
-}
-
-.drawer-list {
-  & .item {
-    display: block;
-    padding: 8px 20px;
-    @extend %comm-font-code1;
-    color: var(--app-secondary-text-color);
-    text-decoration: none;
-  }
-
-  & .item.router-link-active {
-    color: var(--app-accent-text-color);
-  }
-}
-
-.link-button {
-  color: var(--comm-light-blue-a400);
-}
-
-paper-item {
-  cursor: pointer;
+.drawer-scroll-area {
+  height: 100%
 }
 
 /* -----> */
@@ -78,27 +20,27 @@ paper-item {
  */
 @keyframes tada {
   from {
-    transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1)
   }
   10%,
   20% {
-    transform: scale3d(0.9, 0.9, 0.9) rotate3d(0, 0, 1, -3deg);
+    transform: scale3d(0.9, 0.9, 0.9) rotate3d(0, 0, 1, -3deg)
   }
   30%,
   70% {
-    transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg);
+    transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg)
   }
   50%,
   80% {
-    transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg);
+    transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg)
   }
   to {
-    transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1)
   }
 }
 
 .tada {
-  animation-name: tada;
+  animation-name: tada
 }
 /* <----- */
 
@@ -107,11 +49,11 @@ paper-item {
  * tada と bounceOutRight のアニメーションスピードを調整
  */
 .animated.tada.faster {
-  animation-duration: 700ms;
+  animation-duration: 700ms
 }
 
 .animated.bounceOutRight.faster {
-  animation-duration: 700ms;
+  animation-duration: 700ms
 }
 /* <----- */
 
@@ -122,164 +64,70 @@ paper-item {
 /*
 .view-enter-active,
 .view-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease
 }
 .view-enter,
 .view-leave-to {
-  opacity: 0;
+  opacity: 0
 }
 */
 </style>
 
 <template>
-  <div>
-    <app-drawer-layout responsive-width="960px">
-      <!-- Drawer content -->
-      <app-drawer ref="drawer" slot="drawer" :swipe-open="m_narrow">
-        <app-toolbar class="drawer-toolbar">
-          <iron-icon src="img/icons/manifest/icon-48x48.png"></iron-icon>
-          <div main-title class="comm-ml-8">Vue Base Project</div>
-        </app-toolbar>
-        <div class="drawer-list">
+  <q-layout view="lHh Lpr lFf" @component-resize.native="m_onComponentResize">
+    <q-header elevated class="glossy header">
+      <q-toolbar>
+        <q-btn flat dense round aria-label="Menu" icon="menu" @click="m_leftDrawerOpen = !m_leftDrawerOpen" />
+
+        <q-toolbar-title>
+          Quasar App
+        </q-toolbar-title>
+
+        <div>Quasar v{{ $q.version }}</div>
+      </q-toolbar>
+    </q-header>
+
+    <q-drawer v-model="m_leftDrawerOpen" :width="300" :breakpoint="500" show-if-above bordered content-class="bg-grey-2">
+      <q-scroll-area class="drawer-scroll-area">
+        <q-list padding>
           <template v-for="(item, index) in m_items">
-            <router-link :key="index" :to="item.path" class="item">{{ item.title }}</router-link>
+            <q-item :key="index" v-ripple :to="item.path" clickable>
+              <q-item-section avatar>
+                <q-icon :name="item.icon" />
+              </q-item-section>
+              <q-item-section>{{ item.title }}</q-item-section>
+            </q-item>
           </template>
-        </div>
-      </app-drawer>
+        </q-list>
+        <q-expansion-item icon="code" label="Demo">
+          <q-list padding>
+            <template v-for="(item, index) in m_demoItems">
+              <q-item :key="index" v-ripple :to="item.path" clickable class="app-ml-20">
+                <q-item-section>{{ item.title }}</q-item-section>
+              </q-item>
+            </template>
+          </q-list>
+        </q-expansion-item>
+      </q-scroll-area>
+    </q-drawer>
 
-      <!-- Main content -->
-      <app-toolbar class="content-toolbar">
-        <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-        <div main-title>View name</div>
-        <iron-image v-show="m_account.isSignedIn && !!m_account.photoURL" :src="m_account.photoURL" sizing="contain" class="photo"></iron-image>
-        <iron-icon v-show="m_account.isSignedIn && !m_account.photoURL" icon="social:person"></iron-icon>
-        <paper-menu-button ref="systemMenu" dynamic-align>
-          <paper-icon-button slot="dropdown-trigger" icon="more-vert" alt="menu"></paper-icon-button>
-          <paper-listbox ref="systemMenuList" slot="dropdown-content" class="systemMenuList" @iron-select="m_menuOnIronSelect">
-            <paper-item v-show="!m_account.isSignedIn" ref="signInItem">Sign in</paper-item>
-            <paper-item v-show="m_account.isSignedIn" ref="signOutItem">Sign out</paper-item>
-            <paper-item v-show="m_account.isSignedIn" ref="changeEmailItem">Change email</paper-item>
-            <paper-item v-show="m_account.isSignedIn" ref="deleteAccountItem">Delete account</paper-item>
-          </paper-listbox>
-        </paper-menu-button>
-      </app-toolbar>
-
+    <q-page-container class="container">
       <transition name="view" mode="out-in" enter-active-class="animated tada faster" leave-active-class="animated bounceOutRight faster">
         <router-view />
       </transition>
-    </app-drawer-layout>
-
-    <paper-toast ref="swToast" :duration="m_swUpdateIsRequired ? 0 : 5000" :text="m_swMessage">
-      <paper-button v-show="m_swUpdateIsRequired" class="link-button" @click="m_reload">{{ $t('reload') }}</paper-button>
-    </paper-toast>
-
-    <sign-in-dialog ref="signInDialog"></sign-in-dialog>
-    <email-change-dialog ref="emailChangeDialog"></email-change-dialog>
-  </div>
+    </q-page-container>
+  </q-layout>
 </template>
 
 <script lang="ts">
-import '@polymer/app-layout/app-drawer-layout/app-drawer-layout'
-import '@polymer/app-layout/app-drawer/app-drawer'
-import '@polymer/app-layout/app-header-layout/app-header-layout'
-import '@polymer/app-layout/app-header/app-header'
-import '@polymer/app-layout/app-toolbar/app-toolbar'
-import '@polymer/iron-icon/iron-icon'
-import '@polymer/iron-icons/iron-icons'
-import '@polymer/iron-icons/social-icons'
-import '@polymer/iron-image/iron-image'
-import '@polymer/iron-pages/iron-pages'
-import '@polymer/iron-selector/iron-selector'
-import '@polymer/paper-button/paper-button'
-import '@polymer/paper-icon-button/paper-icon-button'
-import '@polymer/paper-item/paper-item'
-import '@polymer/paper-listbox/paper-listbox'
-import '@polymer/paper-menu-button/paper-menu-button'
-import '@polymer/paper-toast/paper-toast'
-import 'web-animations-js/web-animations-next-lite.min.js'
-
 import * as sw from '@/base/service-worker'
-import EmailChangeDialog from '@/views/email-change-dialog/index.vue'
-import SignInDialog from '@/views/sign-in-dialog/index.vue'
-import {Account} from '@/store/types'
-import {BaseComponent} from '@/base/component'
-import {Component} from 'vue-property-decorator'
-import {mixins} from 'vue-class-component'
+import { BaseComponent, ResizableMixin } from '@/components'
+import { Component } from 'vue-property-decorator'
+import { mixins } from 'vue-class-component'
+import { router } from '@/base/router'
 
-@Component({
-  components: {
-    'sign-in-dialog': SignInDialog,
-    'email-change-dialog': EmailChangeDialog,
-  },
-})
-export default class AppView extends mixins(BaseComponent) {
-  //----------------------------------------------------------------------
-  //
-  //  Variables
-  //
-  //----------------------------------------------------------------------
-
-  m_narrow: boolean = false
-
-  m_items: Array<{title: string; path: string}> = [
-    {
-      title: 'ABC',
-      path: '/pages/abc',
-    },
-    {
-      title: 'Shopping',
-      path: '/pages/shopping',
-    },
-  ]
-
-  m_swMessage: string = ''
-
-  m_swUpdateIsRequired: boolean = false
-
-  get m_account(): Account {
-    return this.$appStore.auth.account
-  }
-
-  //--------------------------------------------------
-  //  Elements
-  //--------------------------------------------------
-
-  get m_swToast(): {open: () => void} {
-    return this.$refs.swToast as any
-  }
-
-  get m_systemMenu(): {close: () => void} {
-    return this.$refs.systemMenu as any
-  }
-
-  get m_systemMenuList(): {selected: string | number} {
-    return this.$refs.systemMenuList as any
-  }
-
-  get m_signInDialog(): SignInDialog {
-    return this.$refs.signInDialog as any
-  }
-
-  get m_emailChangeDialog(): EmailChangeDialog {
-    return this.$refs.emailChangeDialog as any
-  }
-
-  get m_signInItem() {
-    return this.$refs.signInItem as any
-  }
-
-  get m_signOutItem() {
-    return this.$refs.signOutItem as any
-  }
-
-  get m_changeEmailItem() {
-    return this.$refs.changeEmailItem as any
-  }
-
-  get m_deleteAccountItem() {
-    return this.$refs.deleteAccountItem as any
-  }
-
+@Component({ name: 'app-page' })
+export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -289,66 +137,75 @@ export default class AppView extends mixins(BaseComponent) {
   async created() {
     sw.addStateChangeListener(this.m_swOnStateChange)
 
-    await this.$appStore.product.pullAllProducts()
+    this.m_leftDrawerOpen = this.$q.platform.is.desktop
+
+    await this.$logic.shop.pullProducts()
   }
 
   //----------------------------------------------------------------------
   //
-  //  Internal methods
+  //  Variables
   //
   //----------------------------------------------------------------------
 
-  m_reload(): void {
-    window.location.reload()
-  }
+  private m_items: Array<{ title: string; path: string; icon: string }> = [
+    {
+      title: 'ABC',
+      path: router.views.abcPage.path,
+      icon: 'inbox',
+    },
+    {
+      title: 'Shopping',
+      path: router.views.shoppingPage.path,
+      icon: 'star',
+    },
+  ]
 
-  /**
-   * サインインダイアログを表示します。
-   */
-  m_showSignInDialog(): void {
-    this.m_signInDialog.open()
-  }
+  private m_demoItems: Array<{ title: string; path: string }> = [
+    {
+      title: 'comp-tree-view',
+      path: router.views.demo.compTreeViewPage.path,
+    },
+  ]
 
-  /**
-   * サインアウトを行います。
-   */
-  async m_signOut(): Promise<void> {
-    await this.$appStore.auth.signOut()
-  }
+  private m_leftDrawerOpen: boolean = false
 
-  /**
-   * メールアドレス変更ダイアログを表示します。
-   */
-  m_showEmailChangeDialog(): void {
-    this.m_emailChangeDialog.open()
-  }
+  private m_swUpdateIsRequired: boolean = false
 
-  /**
-   * ユーザーアカウントを削除します。
-   */
-  async m_deleteAccount(): Promise<void> {
-    await this.$appStore.auth.deleteAccount()
+  //--------------------------------------------------
+  //  Elements
+  //--------------------------------------------------
+
+  private get m_swToast(): { open: () => void } {
+    return this.$refs.swToast as any
   }
 
   //----------------------------------------------------------------------
   //
-  //  Event handlers
+  //  Event listeners
   //
   //----------------------------------------------------------------------
 
-  /**
-   * ServiceWorkerの状態が変化した際のハンドラです。
-   */
-  m_swOnStateChange(info: sw.StateChangeInfo) {
+  private m_swOnStateChange(info: sw.StateChangeInfo) {
     this.m_swUpdateIsRequired = false
 
+    let message = ''
     if (info.state === sw.ChangeState.updated) {
       this.m_swUpdateIsRequired = true
-      this.m_swMessage = info.message
+      message = info.message
       this.$nextTick(() => this.m_swToast.open())
     } else if (info.state === sw.ChangeState.cached) {
-      this.m_swMessage = info.message
+      message = info.message
       this.$nextTick(() => this.m_swToast.open())
+    }
+    if (message) {
+      this.$q.notify({
+        icon: 'info',
+        position: 'bottom-left',
+        timeout: 0,
+        message,
+        actions: [{ label: this.$t('reload'), color: 'white', handler: () => window.location.reload() }],
+      })
     }
 
     if (info.state === sw.ChangeState.error) {
@@ -358,21 +215,8 @@ export default class AppView extends mixins(BaseComponent) {
     }
   }
 
-  /**
-   * システムメニューで選択が行われた際のハンドラです。
-   */
-  async m_menuOnIronSelect(e: CustomEvent) {
-    const selectedItemItem = e.detail.item
-    this.m_systemMenuList.selected = -1
-    if (selectedItemItem === this.m_signInItem) {
-      this.m_showSignInDialog()
-    } else if (selectedItemItem === this.m_signOutItem) {
-      await this.m_signOut()
-    } else if (selectedItemItem === this.m_changeEmailItem) {
-      await this.m_showEmailChangeDialog()
-    } else if (selectedItemItem === this.m_deleteAccountItem) {
-      await this.m_deleteAccount()
-    }
+  private m_onComponentResize(e) {
+    console.log('app-view:', e)
   }
 }
 </script>

@@ -5,7 +5,7 @@ class Vue {
 class Stores {
 }
 
-class ProductState {
+class ProductsState {
   +all: Product[]
 }
 
@@ -29,6 +29,6 @@ class CartStore {
 Vue -do-> "$stores" Stores
 Stores -do-> "product" ProductStore
 Stores -do-> "cart" CartStore
-ProductStore -do-> "f_state" ProductState
+ProductStore -do-> "f_state" ProductsState
 CartStore -do-> "f_state" CartState
 @enduml

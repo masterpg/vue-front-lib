@@ -1,5 +1,5 @@
-const path = require('path')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const path = require('path')
 
 // ベースURLの設定
 const baseUrl = process.env.VUE_APP_BASE_URL
@@ -19,12 +19,6 @@ const pages = {
 }
 if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
   Object.assign(pages, {
-    test: {
-      entry: 'test/test.ts',
-      template: 'test/test.html',
-      filename: 'test.html',
-      title: 'Vue Base Project Unit Test',
-    },
     playground: {
       entry: 'src/playground.ts',
       template: 'src/playground.html',
@@ -39,7 +33,16 @@ module.exports = {
 
   pages,
 
-  transpileDependencies: [],
+  transpileDependencies: [
+    /[\\/]node_modules[\\/]quasar[\\/]/,
+  ],
+
+  pluginOptions: {
+    quasar: {
+      rtlSupport: true,
+      treeShake: true,
+    },
+  },
 
   pwa: {
     name: 'vue-base-project',
@@ -71,7 +74,7 @@ module.exports = {
           handler: 'networkFirst',
         },
         {
-          urlPattern: /\/icons\//,
+          urlPattern: /\/img\//,
           handler: 'networkFirst',
         },
       ],
@@ -92,38 +95,6 @@ module.exports = {
         .loader('yaml-loader')
         .end()
 
-    // PolymerのCustom Properties、CSS Mixinを.vueファイルで記述するための設定
-    const polymerRule = config.module
-      .rule('polymer')
-      .test(/\.polymer$/)
-      .oneOf('vue')
-      .resourceQuery(/\?vue/)
-    polymerRule
-      .use('example-loader')
-        .loader('./extension/example-loader/index.js')
-        .end()
-      .use('vue-polymer-style-loader')
-        .loader('vue-polymer-style-loader')
-        .options({
-          sourceMap: false,
-          shadowMode: false,
-        })
-        .end()
-      .use('css-loader')
-        .loader('css-loader')
-        .options({
-          sourceMap: false,
-          importLoaders: 1,
-          modules: false,
-        })
-        .end()
-      .use('postcss-loader')
-        .loader('postcss-loader')
-        .options({
-          sourceMap: false,
-        })
-        .end()
-
     // 必要なリソースファイルのコピー
     let copyFiles = [
       {from: 'node_modules/@webcomponents/webcomponentsjs/**/*.js'},
@@ -140,9 +111,8 @@ module.exports = {
     if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
       copyFiles = [
         ...copyFiles,
-        {from: 'node_modules/mocha/mocha.css', to: 'node_modules/mocha'},
-        {from: 'node_modules/mocha/mocha.js', to: 'node_modules/mocha'},
-        {from: 'node_modules/chai/chai.js', to: 'node_modules/chai'},
+        // その他必要であれば追記
+        // 例: {from: 'node_modules/aaa/bbb.css', to: 'node_modules/aaa'},
       ]
     }
     config

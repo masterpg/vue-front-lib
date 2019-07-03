@@ -1,5 +1,0 @@
-@import '../placeholder/common.css';
-
-.comm-pseudo-link {
-  @extend %comm-pseudo-link;
-}

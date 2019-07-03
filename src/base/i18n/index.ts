@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueI18n from 'vue-i18n'
 import axios from 'axios'
-import {dateTimeFormats} from '@/base/i18n/date-time-formats'
+import { dateTimeFormats } from '@/base/i18n/date-time-formats'
 
 Vue.use(VueI18n)
 
@@ -36,9 +36,9 @@ export class AppI18n extends VueI18n {
   //
   //----------------------------------------------------------------------
 
-  m_localeData: LocaleData
+  private m_localeData!: LocaleData
 
-  m_loadedLanguages: string[]
+  private m_loadedLanguages: string[]
 
   //----------------------------------------------------------------------
   //
@@ -47,7 +47,7 @@ export class AppI18n extends VueI18n {
   //----------------------------------------------------------------------
 
   d(value: number | Date, key?: VueI18n.Path, locale?: VueI18n.Locale): VueI18n.DateTimeFormatResult
-  d(value: number | Date, args?: {[key: string]: string}): VueI18n.DateTimeFormatResult
+  d(value: number | Date, args?: { [key: string]: string }): VueI18n.DateTimeFormatResult
   d(arg1: number | Date, arg2?: any, arg3?: any): VueI18n.DateTimeFormatResult {
     let locale: VueI18n.Locale
     // 引数にロケールが指定された場合
@@ -90,7 +90,7 @@ export class AppI18n extends VueI18n {
   /**
    * ロケールデータを取得します。
    */
-  m_getLocaleData(): LocaleData {
+  private m_getLocaleData(): LocaleData {
     // ブラウザから言語+国を取得("en"や"en-US"などを取得)
     const locale =
       (window.navigator.languages && window.navigator.languages[0]) ||
@@ -105,7 +105,7 @@ export class AppI18n extends VueI18n {
    * ロケールデータの設定を行います。
    * @param localeData
    */
-  m_setLanguage(localeData: LocaleData): void {
+  private m_setLanguage(localeData: LocaleData): void {
     this.locale = localeData.language
     axios.defaults.headers.common['Accept-Language'] = localeData.language
     document.querySelector('html')!.setAttribute('lang', localeData.language)
@@ -148,7 +148,7 @@ class LocaleUtil {
         country = LocaleUtil.m_getDefaultCountry(language)
       }
     }
-    return {language, country, locale: `${language}-${country}`}
+    return { language, country, locale: `${language}-${country}` }
   }
 
   /**
@@ -156,7 +156,7 @@ class LocaleUtil {
    * @param language
    * @param country
    */
-  static m_getDefaultCountry(language: string, country?: string): string {
+  private static m_getDefaultCountry(language: string, country?: string): string {
     // 国が指定されている場合はその国を返す
     if (country) {
       return country.toUpperCase()

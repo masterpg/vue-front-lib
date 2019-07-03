@@ -24,7 +24,7 @@ paper-dialog.sp {
 </style>
 
 <template>
-  <paper-dialog ref="dialog" modal with-backdrop entry-animation="fade-in-animation" exit-animation="fade-out-animation" :class="{sp: f_sp}">
+  <paper-dialog ref="dialog" modal with-backdrop entry-animation="fade-in-animation" exit-animation="fade-out-animation" :class="{ sp: f_sp }">
     <div>
       <!-- タイトル -->
       <div class="title">{{ m_title }}</div>
@@ -41,7 +41,7 @@ paper-dialog.sp {
           required
           :readonly="m_currentStep !== 'first'"
           class="input"
-          :class="{pc: f_pc, tab: f_tab, sp: f_sp}"
+          :class="{ pc: f_pc, tab: f_tab, sp: f_sp }"
           @input="
             m_inputEmail = $event.target.value
             m_validateEmail()
@@ -68,9 +68,9 @@ paper-dialog.sp {
 import '@polymer/paper-button/paper-button'
 import '@polymer/paper-input/paper-input'
 
-import {Component} from 'vue-property-decorator'
-import {BaseComponent} from '@/base/component'
-import {mixins} from 'vue-class-component'
+import { Component } from 'vue-property-decorator'
+import { BaseComponent } from '@/base/component'
+import { mixins } from 'vue-class-component'
 
 enum StepType {
   First = 'first',
@@ -95,7 +95,7 @@ export default class EmailChangeDialog extends mixins(BaseComponent) {
   //  Elements
   //--------------------------------------------------
 
-  get m_dialog(): {open: () => void; close: () => void; fit: () => void} {
+  get m_dialog(): { open: () => void; close: () => void; fit: () => void } {
     return this.$refs.dialog as any
   }
 

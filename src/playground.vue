@@ -1,32 +1,34 @@
-<style scoped>
+<style lang="stylus" scoped>
+@import './styles/app.variables.styl'
+
 .hello-world-color {
-  color: var(--comm-indigo-a200);
+  color: $indigo-12
 }
 </style>
 
 <template>
-  <paper-card class="layout vertical comm-pa-20" :class="{'comm-ma-48': f_pc, 'comm-ma-24': f_tab, 'comm-ma-12': f_sp}">
-    <div class="hello-world-color">{{ $t('hello', {today: $d(new Date(), 'short')}) }}</div>
-    <div class="layout horizontal end-justified comm-mt-10"><paper-button raised @click="m_sleepButtonOnClick">Sleep</paper-button></div>
-  </paper-card>
+  <q-card class="layout vertical app-pa-20" :class="{ 'app-ma-48': screenSize.pc, 'app-ma-24': screenSize.tab, 'app-ma-12': screenSize.sp }">
+    <div class="hello-world-color">{{ $t('hello', { today: $d(new Date(), 'short') }) }}</div>
+    <div class="layout horizontal end-justified app-mt-10">
+      <q-btn color="primary" label="Sleep" @click="m_sleepButtonOnClick" />
+    </div>
+  </q-card>
 </template>
 
 <script lang="ts">
-import '@polymer/paper-button/paper-button'
-import '@polymer/paper-card/paper-card'
-import {BaseComponent} from '@/base/component'
-import {Component} from 'vue-property-decorator'
-import {mixins} from 'vue-class-component'
+import { BaseComponent, ResizableMixin } from '@/components'
+import { Component } from 'vue-property-decorator'
+import { mixins } from 'vue-class-component'
 
-@Component
-export default class PlaygroundView extends mixins(BaseComponent) {
+@Component({ name: 'playground-page' })
+export default class PlaygroundPage extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
   //
   //  Internal methods
   //
   //----------------------------------------------------------------------
 
-  async m_sleep(ms: number): Promise<string> {
+  private async m_sleep(ms: number): Promise<string> {
     return new Promise(resolve => {
       setTimeout(() => {
         resolve(`I slept for ${ms} ms.`)
@@ -36,12 +38,12 @@ export default class PlaygroundView extends mixins(BaseComponent) {
 
   //----------------------------------------------------------------------
   //
-  //  Event handlers
+  //  Event listeners
   //
   //----------------------------------------------------------------------
 
-  async m_sleepButtonOnClick() {
-    alert(await this.m_sleep(2000))
+  private async m_sleepButtonOnClick() {
+    alert(await this.m_sleep(1000))
   }
 }
 </script>

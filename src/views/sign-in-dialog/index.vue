@@ -53,7 +53,7 @@ paper-dialog.sp {
 </style>
 
 <template>
-  <paper-dialog ref="dialog" modal with-backdrop entry-animation="fade-in-animation" exit-animation="fade-out-animation" :class="{sp: f_sp}">
+  <paper-dialog ref="dialog" modal with-backdrop entry-animation="fade-in-animation" exit-animation="fade-out-animation" :class="{ sp: f_sp }">
     <div>
       <!-- list -->
       <div v-show="m_state === 'list'" class="sign-in-wrapper">
@@ -87,9 +87,9 @@ paper-dialog.sp {
 import '@polymer/paper-dialog/paper-dialog'
 
 import EmailSignInView from '@/views/sign-in-dialog/email-sign-in-view.vue'
-import {Component} from 'vue-property-decorator'
-import {BaseComponent} from '@/base/component'
-import {mixins} from 'vue-class-component'
+import { Component } from 'vue-property-decorator'
+import { BaseComponent } from '@/base/component'
+import { mixins } from 'vue-class-component'
 
 @Component({
   components: {
@@ -109,7 +109,7 @@ export default class SignInDialog extends mixins(BaseComponent) {
   //  Elements
   //--------------------------------------------------
 
-  get m_dialog(): {open: () => void; close: () => void; fit: () => void} {
+  get m_dialog(): { open: () => void; close: () => void; fit: () => void } {
     return this.$refs.dialog as any
   }
 

@@ -37,7 +37,7 @@
         required
         :readonly="m_currentStep !== 'first'"
         class="input"
-        :class="{pc: f_pc, tab: f_tab, sp: f_sp}"
+        :class="{ pc: f_pc, tab: f_tab, sp: f_sp }"
         @input="m_validateEmail()"
       ></sign-in-input>
       <!-- 表示名インプット -->
@@ -49,7 +49,7 @@
         name="displayName"
         item-name="Display name"
         class="input"
-        :class="{pc: f_pc, tab: f_tab, sp: f_sp}"
+        :class="{ pc: f_pc, tab: f_tab, sp: f_sp }"
         @input="m_validateDisplayName()"
       ></sign-in-input>
       <!-- パスワードインプット -->
@@ -62,7 +62,7 @@
         item-name="Password"
         required
         class="input"
-        :class="{pc: f_pc, tab: f_tab, sp: f_sp}"
+        :class="{ pc: f_pc, tab: f_tab, sp: f_sp }"
         @input="m_validatePassword()"
       ></sign-in-input>
       <!-- メールアドレス確認メッセージ -->
@@ -85,8 +85,9 @@
       <paper-button
         v-show="m_currentStep === 'first' || m_currentStep === 'create' || m_currentStep === 'signIn' || m_currentStep === 'reset'"
         @click="m_cancel()"
-        >Cancel</paper-button
       >
+        Cancel
+      </paper-button>
       <!-- NEXTボタン -->
       <paper-button v-show="m_currentStep === 'first'" raised @click="m_setupNext()">Next</paper-button>
       <!-- SAVEボタン -->
@@ -104,10 +105,10 @@ import '@polymer/paper-button/paper-button'
 import '@polymer/paper-input/paper-input'
 
 import SignInInput from '@/views/sign-in-dialog/sign-in-input.vue'
-import {AuthProviderType} from '@/store/types'
-import {Component} from 'vue-property-decorator'
-import {BaseComponent} from '@/base/component'
-import {mixins} from 'vue-class-component'
+import { AuthProviderType } from '@/store/types'
+import { Component } from 'vue-property-decorator'
+import { BaseComponent } from '@/base/component'
+import { mixins } from 'vue-class-component'
 
 enum StepType {
   First = 'first',
