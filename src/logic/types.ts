@@ -1,7 +1,14 @@
-import { CartItem, CheckoutStatus, Product } from '@/store'
+import { Account, CartItem, CheckoutStatus, Product } from '@/store'
+
+//----------------------------------------------------------------------
+//
+//  Logic
+//
+//----------------------------------------------------------------------
 
 export interface Logic {
   readonly shop: ShopLogic
+  readonly auth: AuthLogic
 }
 
 export interface ShopLogic {
@@ -20,4 +27,43 @@ export interface ShopLogic {
   checkout(): Promise<void>
 }
 
-export { CartItem, CheckoutStatus, Product }
+export interface AuthLogic {
+  readonly account: Account
+
+  checkSingedIn(): Promise<void>
+
+  signInWithGoogle(): Promise<void>
+
+  signInWithFacebook(): Promise<void>
+
+  signInWithEmailAndPassword(email: string, password: string): Promise<{ result: boolean; code: string; errorMessage: string }>
+
+  signInAnonymously(): Promise<{ result: boolean; code: string; errorMessage: string }>
+
+  sendEmailVerification(continueURL: string): Promise<void>
+
+  sendPasswordResetEmail(email: string, continueURL: string): Promise<void>
+
+  createUserWithEmailAndPassword(email: string, password, profile: { displayName: string; photoURL: string | null }): Promise<void>
+
+  signOut(): Promise<void>
+
+  deleteAccount(): Promise<void>
+
+  updateEmail(newEmail: string): Promise<void>
+
+  fetchSignInMethodsForEmail(email: string): Promise<AuthProviderType[]>
+}
+
+//----------------------------------------------------------------------
+//
+//  Enumerations
+//
+//----------------------------------------------------------------------
+
+enum AuthProviderType {
+  Google = 'google.com',
+  Password = 'password',
+}
+
+export { Account, AuthProviderType, CartItem, CheckoutStatus, Product }

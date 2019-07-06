@@ -8,6 +8,8 @@ export interface Store {
   readonly products: ProductsModule
 
   readonly cart: CartModule
+
+  readonly account: AccountModule
 }
 
 //----------------------------------------------------------------------
@@ -46,6 +48,12 @@ export interface CartModule {
   getById(productId: string): CartItem | undefined
 }
 
+export interface AccountModule {
+  readonly value: Account
+
+  set(account: Partial<Account>): Account
+}
+
 //----------------------------------------------------------------------
 //
 //  Data types
@@ -66,6 +74,13 @@ export interface CartItem {
   title: string
   price: number
   quantity: number
+}
+
+export interface Account {
+  isSignedIn: boolean
+  displayName: string
+  photoURL: string
+  emailVerified: boolean
 }
 
 //----------------------------------------------------------------------

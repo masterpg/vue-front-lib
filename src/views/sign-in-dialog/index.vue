@@ -1,118 +1,134 @@
-<style scoped>
-@import '../../styles/placeholder/typography.css';
-@import '../../styles/placeholder/shadows.css';
+<style lang="stylus" scoped>
+@import '../../styles/app.variables.styl'
 
 .title {
-  @extend %comm-font-title;
+  @extend $text-h6
 }
 
-paper-dialog.sp {
-  margin: 24px 10px;
-}
-
-.sign-in-wrapper {
-  & .sign-in-button {
-    @extend %comm-shadow-elevation-2dp;
-    width: 220px;
-    height: 40px;
-    border: none;
-    padding: 0 20px;
-    cursor: pointer;
-    & .icon {
-      width: 18px;
-      height: 18px;
+.sign-in-container {
+  .sign-in-button {
+    width: 220px
+    height: 40px
+    border: none
+    padding: 0 20px
+    cursor: pointer
+    box-shadow: $shadow-2
+    .icon {
+      width: 18px
+      height: 18px
     }
-    & .label {
-      @extend %comm-font-body2;
-      margin-left: 16px;
+    .label {
+      @extend $text-body2
+      font-weight: $text-weights.medium
+      margin-left: 16px
     }
-    & * {
-      pointer-events: none;
+    * {
+      pointer-events: none
     }
 
     &.google {
-      background-color: white;
-      color: var(--comm-secondary-text-color);
+      background-color: white
+      color: $text-secondary-color
     }
 
     &.facebook {
-      background-color: #3b5998;
-      color: white;
+      background-color: #3b5998
+      color: white
     }
 
     &.email {
-      background-color: #db4437;
-      color: white;
+      background-color: #db4437
+      color: white
+    }
+
+    &.anonymous {
+      background-color: #f4b400
+      color: white
     }
   }
 
-  & .sign-in-button:not(:first-child) {
-    margin-top: 20px;
+  .sign-in-button:not(:first-child) {
+    margin-top: 20px
   }
 }
 </style>
 
 <template>
-  <paper-dialog ref="dialog" modal with-backdrop entry-animation="fade-in-animation" exit-animation="fade-out-animation" :class="{ sp: f_sp }">
-    <div>
+  <q-dialog v-model="m_opened" :class="{ sp: screenSize.sp }" class="dialog">
+    <q-card>
       <!-- list -->
-      <div v-show="m_state === 'list'" class="sign-in-wrapper">
-        <div class="title">Sign in</div>
+      <div v-if="m_state === 'list'" class="sign-in-container">
+        <q-card-section>
+          <div class="title">Sign in</div>
+        </q-card-section>
+        <q-card-section>
+          <div ref="googleSignInButton" class="layout horizontal center sign-in-button google" @click="m_signInWithGoogle">
+            <img class="icon" src="@/assets/icons/google.svg" />
+            <div class="label">Sign in with Google</div>
+          </div>
 
-        <div ref="googleSignInButton" class="layout horizontal center sign-in-button google" @click="m_signInWithGoogle">
-          <img class="icon" src="img/icons/google.svg" />
-          <div class="label">Sign in with Google</div>
-        </div>
+          <div ref="facebookSignInButton" class="layout horizontal center sign-in-button facebook" @click="m_signInWithFacebook">
+            <img class="icon" src="@/assets/icons/facebook.svg" />
+            <div class="label">Sign in with Facebook</div>
+          </div>
 
-        <div ref="facebookSignInButton" class="layout horizontal center sign-in-button facebook" @click="m_signInWithFacebook">
-          <img class="icon" src="img/icons/facebook.svg" />
-          <div class="label">Sign in with Facebook</div>
-        </div>
+          <div ref="emailSignInButton" class="layout horizontal center sign-in-button email" @click="m_signInWithEmail">
+            <img class="icon" src="@/assets/icons/mail.svg" />
+            <div class="label">Sign in with Email</div>
+          </div>
 
-        <div ref="emailSignInButton" class="layout horizontal center sign-in-button email" @click="m_signInWithEmail">
-          <img class="icon" src="img/icons/mail.svg" />
-          <div class="label">Sign in with Email</div>
-        </div>
-
-        <div class="layout horizontal center end-justified comm-mt-20"><paper-button @click="close()">Cancel</paper-button></div>
+          <div ref="anonymousSignInButton" class="layout horizontal center sign-in-button anonymous" @click="m_signInWithAnonymous">
+            <q-icon name="person_outline" size="18px" />
+            <div class="label">Continue as guest</div>
+          </div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat rounded color="primary" label="Cancel" @click="close" />
+        </q-card-actions>
       </div>
 
       <!-- email -->
-      <email-sign-in-view v-show="m_state === 'email'" ref="emailSignInView"></email-sign-in-view>
-    </div>
-  </paper-dialog>
+      <email-sign-in-view v-else-if="m_state === 'email'" ref="emailSignInView"></email-sign-in-view>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script lang="ts">
-import '@polymer/paper-dialog/paper-dialog'
-
+import { BaseComponent, ResizableMixin } from '@/components'
+import { Component, Watch } from 'vue-property-decorator'
 import EmailSignInView from '@/views/sign-in-dialog/email-sign-in-view.vue'
-import { Component } from 'vue-property-decorator'
-import { BaseComponent } from '@/base/component'
+import { NoCache } from '@/base/decorators'
 import { mixins } from 'vue-class-component'
 
 @Component({
+  name: 'sign-in-dialog',
   components: {
-    'email-sign-in-view': EmailSignInView,
+    EmailSignInView,
   },
 })
-export default class SignInDialog extends mixins(BaseComponent) {
+export default class SignInDialog extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables
   //
   //----------------------------------------------------------------------
 
-  m_state: 'list' | 'email' = 'list'
+  private m_state: 'list' | 'email' = 'list'
+
+  private m_opened: boolean = false
+
+  @Watch('m_opened')
+  private m_openedChanged(newValue: boolean, oldValue: boolean) {
+    if (!newValue) {
+      this.$emit('closed')
+    }
+  }
 
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
 
-  get m_dialog(): { open: () => void; close: () => void; fit: () => void } {
-    return this.$refs.dialog as any
-  }
-
+  @NoCache
   get m_emailSignInView(): EmailSignInView {
     return this.$refs.emailSignInView as any
   }
@@ -125,16 +141,11 @@ export default class SignInDialog extends mixins(BaseComponent) {
 
   open(): void {
     this.m_state = 'list'
-    this.m_dialog.open()
-    this.correctPosition()
+    this.m_opened = true
   }
 
   close(): void {
-    this.m_dialog.close()
-  }
-
-  correctPosition(): void {
-    this.$nextTick(() => this.m_dialog.fit())
+    this.m_opened = false
   }
 
   //----------------------------------------------------------------------
@@ -143,17 +154,23 @@ export default class SignInDialog extends mixins(BaseComponent) {
   //
   //----------------------------------------------------------------------
 
-  async m_signInWithGoogle() {
-    await this.$appStore.auth.signInWithGoogle()
+  private async m_signInWithGoogle() {
+    await this.$logic.auth.signInWithGoogle()
   }
 
-  async m_signInWithFacebook() {
-    await this.$appStore.auth.signInWithFacebook()
+  private async m_signInWithFacebook() {
+    await this.$logic.auth.signInWithFacebook()
   }
 
-  async m_signInWithEmail() {
+  private async m_signInWithEmail() {
     this.m_state = 'email'
-    this.m_emailSignInView.init(this)
+    this.$nextTick(() => {
+      this.m_emailSignInView.init(this)
+    })
+  }
+
+  private async m_signInWithAnonymous() {
+    await this.$logic.auth.signInAnonymously()
   }
 }
 </script>

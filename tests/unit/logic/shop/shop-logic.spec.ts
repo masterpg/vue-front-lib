@@ -1,11 +1,13 @@
 import * as td from 'testdouble'
 import { Product as APIProduct, ShopAPI, api } from '@/api'
 import { CartModule, CartState, CheckoutStatus, ProductsModule, ProductsState, store } from '@/store'
+import { TestLogic, TestStoreModule } from '../../../helper/unit'
 import { ShopLogicImpl } from '@/logic/shop'
-import { TestStoreModule } from '../../../helper/unit'
+import { logic } from '@/logic'
+const assign = require('lodash/assign')
 const cloneDeep = require('lodash/cloneDeep')
 
-const shopLogic = new ShopLogicImpl()
+const shopLogic = logic.shop as TestLogic<ShopLogicImpl>
 const cartModule = store.cart as TestStoreModule<CartState, CartModule>
 const productModule = store.products as TestStoreModule<ProductsState, ProductsModule>
 
@@ -69,12 +71,20 @@ describe('checkoutStatus', () => {
 
 describe('pullProducts()', () => {
   it('ベーシックケース', async () => {
-    td.replace(api.shop, 'getProducts', () => Promise.resolve(PRODUCTS))
+    const EXPECT_PRODUCTS = [{ id: '1', title: 'product1', price: 101, inventory: 1 }, { id: '2', title: 'product2', price: 102, inventory: 2 }]
+
+    td.replace(shopLogic.db, 'collection')
+    td.when(shopLogic.db.collection('products')).thenReturn({
+      get: () => {
+        return Promise.resolve([
+          { id: '1', data: () => new Object({ title: 'product1', price: 101, inventory: 1 }) },
+          { id: '2', data: () => new Object({ title: 'product2', price: 102, inventory: 2 }) },
+        ])
+      },
+    })
 
     await shopLogic.pullProducts()
-    const actual = shopLogic.products
-
-    expect(actual).toEqual(PRODUCTS)
+    expect(shopLogic.products).toEqual(EXPECT_PRODUCTS)
   })
 })
 
@@ -112,21 +122,64 @@ describe('addProductToCart()', () => {
 
 describe('checkout()', () => {
   it('ベーシックケース', async () => {
+    td.replace(shopLogic.db, 'runTransaction')
+    td.when(shopLogic.db.runTransaction(td.matchers.anything())).thenResolve()
+
     await shopLogic.checkout()
 
-    td.verify(api.shop.buyProducts(CART_ITEMS))
     expect(shopLogic.cartItems).toEqual([])
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.Successful)
   })
 
-  it('APIでエラーが発生してチェックアウトが失敗した場合', async () => {
-    td.replace(api.shop, 'buyProducts', () => {
-      throw new Error()
-    })
+  it('Firestoreでエラーが発生した場合', async () => {
+    td.replace(shopLogic.db, 'runTransaction')
+    td.when(shopLogic.db.runTransaction(td.matchers.anything())).thenReject(new Error())
 
     await shopLogic.checkout()
-
     expect(shopLogic.cartItems).toEqual(CART_ITEMS)
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.Failed)
+  })
+
+  it('カートの商品が存在しなかった場合', async () => {
+    expect.assertions(2)
+
+    const cartItem = CART_ITEMS[0]
+    const transaction = new (class {
+      get(ref) {
+        return new Promise(resolve => {
+          resolve({ exists: false })
+        })
+      }
+    })() as any
+
+    try {
+      await shopLogic.m_createCheckoutProcess(transaction, cartItem)
+    } catch (err) {
+      expect(err).toBeInstanceOf(Error)
+      expect(err.message).toBe(`Product "${cartItem.id}" does not exist.`)
+    }
+  })
+
+  it('カートの商品の在庫が足りなかった場合', async () => {
+    expect.assertions(2)
+
+    const cartItem = CART_ITEMS[0]
+    const transaction = new (class {
+      get(ref) {
+        return new Promise(resolve => {
+          resolve({
+            exists: true,
+            data: () => new Object({ inventory: 0 }),
+          })
+        })
+      }
+    })() as any
+
+    try {
+      await shopLogic.m_createCheckoutProcess(transaction, cartItem)
+    } catch (err) {
+      expect(err).toBeInstanceOf(Error)
+      expect(err.message).toBe(`The inventory of the product "${cartItem.id}" was insufficient.`)
+    }
   })
 })

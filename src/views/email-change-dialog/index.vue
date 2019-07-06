@@ -1,109 +1,129 @@
-<style scoped>
-@import '../../styles/placeholder/typography.css';
+<style lang="stylus" scoped>
+@import '../../styles/app.variables.styl'
 
-paper-dialog.sp {
-  margin: 24px 10px;
+.title {
+  @extend $text-h6
+}
+
+.container {
+  &.pc, &.tab {
+    width: 340px
+  }
+  &.sp {
+    width: 270px
+  }
 }
 
 .title {
-  @extend %comm-font-title;
+  @extend $text-h6
 }
 
 .emphasis {
-  font-weight: bold;
+  font-weight: $text-weights.medium
 }
 
-.input.pc,
-.input.tab {
-  width: 320px;
-}
-
-.input.sp {
-  width: 250px;
+.error-message {
+  @extend $text-caption
+  color: $text-error-color
 }
 </style>
 
 <template>
-  <paper-dialog ref="dialog" modal with-backdrop entry-animation="fade-in-animation" exit-animation="fade-out-animation" :class="{ sp: f_sp }">
-    <div>
+  <q-dialog v-model="m_opened">
+    <q-card class="container" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
       <!-- タイトル -->
-      <div class="title">{{ m_title }}</div>
+      <q-card-section>
+        <div class="title">{{ m_title }}</div>
+      </q-card-section>
 
       <!-- コンテンツエリア -->
-      <div class="layout vertical">
+      <q-card-section>
         <!-- メールアドレスインプット -->
-        <paper-input
-          v-show="m_currentStep === 'first'"
+        <q-input
+          v-if="m_currentStep === 'first'"
           ref="emailInput"
-          :value="m_inputEmail"
-          label="New email"
+          v-model="m_inputEmail"
           type="email"
-          required
-          :readonly="m_currentStep !== 'first'"
-          class="input"
-          :class="{ pc: f_pc, tab: f_tab, sp: f_sp }"
-          @input="
-            m_inputEmail = $event.target.value
-            m_validateEmail()
-          "
-        ></paper-input>
+          name="email"
+          label="Email"
+          :rules="m_emailRules"
+          @input="m_clearErrorMessage()"
+        >
+          <template v-slot:prepend>
+            <q-icon name="mail" />
+          </template>
+        </q-input>
         <!-- メールアドレス確認メッセージ -->
-        <div v-show="m_currentStep === 'waitVerify'" class="comm-mt-20">
+        <div v-show="m_currentStep === 'waitVerify'">
           Follow the instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> to verify your email.
         </div>
-      </div>
+      </q-card-section>
+
+      <!-- エラーメッセージ -->
+      <q-card-section v-show="!!m_errorMessage">
+        <span class="error-message">{{ m_errorMessage }}</span>
+      </q-card-section>
 
       <!-- ボタンエリア -->
-      <div class="layout horizontal center end-justified comm-mt-20">
+      <q-card-section align="right">
         <!-- CANCELボタン -->
-        <paper-button v-show="m_currentStep === 'first'" @click="m_cancel()">Cancel</paper-button>
+        <q-btn v-show="m_currentStep === 'first'" flat rounded color="primary" label="Cancel" @click="m_cancel()" />
         <!-- NEXTボタン -->
-        <paper-button v-show="m_currentStep === 'first'" raised @click="m_changeEmail()">Next</paper-button>
-      </div>
-    </div>
-  </paper-dialog>
+        <q-btn v-show="m_currentStep === 'first'" flat rounded color="primary" label="Next" @click="m_changeEmail()" />
+      </q-card-section>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script lang="ts">
-import '@polymer/paper-button/paper-button'
-import '@polymer/paper-input/paper-input'
-
-import { Component } from 'vue-property-decorator'
-import { BaseComponent } from '@/base/component'
+import { BaseComponent, ResizableMixin } from '@/components'
+import { Component, Watch } from 'vue-property-decorator'
+import { NoCache } from '@/base/decorators'
+import { QInput } from 'quasar'
 import { mixins } from 'vue-class-component'
+const isEmail = require('validator/lib/isEmail')
 
 enum StepType {
   First = 'first',
   WaitVerify = 'waitVerify',
 }
 
-@Component
-export default class EmailChangeDialog extends mixins(BaseComponent) {
+@Component({
+  name: 'email-change-dialog',
+  components: {},
+})
+export default class EmailChangeDialog extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables
   //
   //----------------------------------------------------------------------
 
-  m_currentStep: StepType = StepType.First
+  private m_opened: boolean = false
 
-  m_title: string = ''
+  @Watch('m_opened')
+  private m_openedChanged(newValue: boolean, oldValue: boolean) {
+    if (!newValue) {
+      this.$emit('closed')
+    }
+  }
 
-  m_inputEmail: string = ''
+  private m_currentStep: StepType = StepType.First
+
+  private m_title: string = ''
+
+  private m_inputEmail: string = ''
+
+  m_errorMessage: string = ''
+
+  m_emailRules = [val => !!val || 'Email is a required.', val => (!!val && isEmail(val)) || 'Email is invalid.']
 
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
 
-  get m_dialog(): { open: () => void; close: () => void; fit: () => void } {
-    return this.$refs.dialog as any
-  }
-
-  get m_emailInput(): HTMLElement & {
-    invalid: boolean
-    errorMessage: string
-    validate: () => boolean
-  } {
+  @NoCache
+  get m_emailInput(): QInput {
     return this.$refs.emailInput as any
   }
 
@@ -114,20 +134,21 @@ export default class EmailChangeDialog extends mixins(BaseComponent) {
   //----------------------------------------------------------------------
 
   open(): void {
-    this.m_clear()
+    this.m_opened = true
     this.m_currentStep = StepType.First
-    this.m_title = 'Change email'
-    this.$nextTick(() => this.m_emailInput.focus())
-    this.m_dialog.open()
-    this.correctPosition()
+
+    const intervalId = setInterval(() => {
+      if (Object.keys(this.$refs).length === 0) return
+      clearInterval(intervalId)
+      this.m_clear()
+      this.m_title = 'Change email'
+      setTimeout(() => this.m_emailInput.focus(), 100)
+    }, 10)
   }
 
   close(): void {
-    this.m_dialog.close()
-  }
-
-  correctPosition(): void {
-    this.$nextTick(() => this.m_dialog.fit())
+    this.m_opened = false
+    this.$emit('closed')
   }
 
   //----------------------------------------------------------------------
@@ -142,39 +163,27 @@ export default class EmailChangeDialog extends mixins(BaseComponent) {
   m_clear(): void {
     this.m_title = ''
     this.m_inputEmail = ''
-    this.m_emailInput.invalid = false
+    this.m_clearErrorMessage()
+    this.m_emailInput.resetValidation()
   }
 
   /**
-   * 入力されたメールアドレスを検証します。
+   * エラーメッセージをクリアします。
    */
-  m_validateEmail(): boolean {
-    if (!this.m_inputEmail) {
-      this.m_emailInput.invalid = true
-      this.m_emailInput.errorMessage = 'Email is a required.'
-      return false
-    } else {
-      const validated = this.m_emailInput.validate()
-      if (!validated) {
-        this.m_emailInput.invalid = true
-        this.m_emailInput.errorMessage = 'Email is invalid.'
-        return false
-      }
-    }
-    this.m_emailInput.invalid = false
-    return true
+  m_clearErrorMessage(): void {
+    this.m_errorMessage = ''
   }
 
   /**
    * メールアドレスの変更を実行します。
    */
   async m_changeEmail(): Promise<void> {
-    if (!this.m_validateEmail()) return
+    if (this.m_emailInput.hasError) return
     // メールアドレスを変更
     // (変更前のメールアドレスに変更通知のメールが送られる)
-    await this.$appStore.auth.updateEmail(this.m_inputEmail)
+    await this.$logic.auth.updateEmail(this.m_inputEmail)
     // 変更されたメールアドレスに確認メールを送信
-    await this.$appStore.auth.sendEmailVerification('http://localhost:5000')
+    await this.$logic.auth.sendEmailVerification('http://localhost:5000')
     // メールアドレス確認待ち画面へ遷移
     this.m_setupWaitVerify()
   }
@@ -185,7 +194,6 @@ export default class EmailChangeDialog extends mixins(BaseComponent) {
   m_setupWaitVerify(): void {
     this.m_currentStep = StepType.WaitVerify
     this.m_title = 'Check your email'
-    this.correctPosition()
   }
 
   m_cancel(): void {

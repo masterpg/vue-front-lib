@@ -1,3 +1,4 @@
+import * as firebase from 'firebase/app'
 import Vue from 'vue'
 
 export interface Config {

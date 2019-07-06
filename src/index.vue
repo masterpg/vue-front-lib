@@ -3,6 +3,16 @@
 
 .header {
   background-color: $indigo-5
+
+  .photo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+  }
+}
+
+.menu-list {
+  min-width: 150px
 }
 
 .container {
@@ -83,7 +93,28 @@
           Quasar App
         </q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <div class="app-mr-16">Quasar v{{ $q.version }}</div>
+
+        <q-img v-show="m_account.isSignedIn && !!m_account.photoURL" :src="m_account.photoURL" contain class="photo app-mr-6"></q-img>
+        <q-icon v-show="m_account.isSignedIn && !m_account.photoURL" name="person" size="26px" class=" app-mr-6"></q-icon>
+        <q-btn flat round dense color="white" icon="more_vert">
+          <q-menu>
+            <q-list class="menu-list">
+              <q-item v-show="!m_account.isSignedIn" v-close-popup clickable>
+                <q-item-section @click="m_signInMenuItemOnClick">Sign in</q-item-section>
+              </q-item>
+              <q-item v-show="m_account.isSignedIn" v-close-popup clickable>
+                <q-item-section @click="m_signOutMenuItemOnClick">Sign out</q-item-section>
+              </q-item>
+              <q-item v-show="m_account.isSignedIn" v-close-popup clickable>
+                <q-item-section @click="m_changeEmailMenuItemOnClick">Change email</q-item-section>
+              </q-item>
+              <q-item v-show="m_account.isSignedIn" v-close-popup clickable>
+                <q-item-section @click="m_deleteAccountMenuItemOnClick">Delete account</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
       </q-toolbar>
     </q-header>
 
@@ -116,17 +147,33 @@
         <router-view />
       </transition>
     </q-page-container>
+
+    <sign-in-dialog ref="signInDialog" @closed="m_dialogOnClosed"></sign-in-dialog>
+    <email-change-dialog ref="emailChangeDialog" @closed="m_dialogOnClosed"></email-change-dialog>
   </q-layout>
 </template>
 
 <script lang="ts">
 import * as sw from '@/base/service-worker'
 import { BaseComponent, ResizableMixin } from '@/components'
-import { Component } from 'vue-property-decorator'
+import { Component, Watch } from 'vue-property-decorator'
+import { Account } from '@/logic'
+import EmailChangeDialog from '@/views/email-change-dialog/index.vue'
+import { NoCache } from '@/base/decorators'
+import { Route } from 'vue-router/types/router'
+import SignInDialog from '@/views/sign-in-dialog/index.vue'
 import { mixins } from 'vue-class-component'
 import { router } from '@/base/router'
 
-@Component({ name: 'app-page' })
+enum DialogType {
+  SignIn = 'signIn',
+  EmailChange = 'emailChange',
+}
+
+@Component({
+  name: 'app-page',
+  components: { SignInDialog, EmailChangeDialog },
+})
 export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
   //
@@ -140,6 +187,21 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
     this.m_leftDrawerOpen = this.$q.platform.is.desktop
 
     await this.$logic.shop.pullProducts()
+  }
+
+  @Watch('$route')
+  m_$routeOnChange(to: Route, from: Route) {
+    const dialog = router.getDialog(to)
+    if (dialog) {
+      switch (dialog.name) {
+        case DialogType.SignIn:
+          this.$nextTick(() => this.m_signInDialog.open())
+          break
+        case DialogType.EmailChange:
+          this.$nextTick(() => this.m_emailChangeDialog.open())
+          break
+      }
+    }
   }
 
   //----------------------------------------------------------------------
@@ -172,12 +234,60 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
 
   private m_swUpdateIsRequired: boolean = false
 
+  get m_account(): Account {
+    return this.$logic.auth.account
+  }
+
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
 
   private get m_swToast(): { open: () => void } {
     return this.$refs.swToast as any
+  }
+
+  @NoCache
+  private get m_signInDialog(): SignInDialog {
+    return this.$refs.signInDialog as any
+  }
+
+  @NoCache
+  private get m_emailChangeDialog(): EmailChangeDialog {
+    return this.$refs.emailChangeDialog as any
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
+
+  /**
+   * サインインダイアログを表示します。
+   */
+  m_showSignInDialog(): void {
+    router.openDialog(DialogType.SignIn)
+  }
+
+  /**
+   * サインアウトを行います。
+   */
+  async m_signOut(): Promise<void> {
+    await this.$logic.auth.signOut()
+  }
+
+  /**
+   * メールアドレス変更ダイアログを表示します。
+   */
+  m_showEmailChangeDialog(): void {
+    router.openDialog(DialogType.EmailChange)
+  }
+
+  /**
+   * ユーザーアカウントを削除します。
+   */
+  async m_deleteAccount(): Promise<void> {
+    await this.$logic.auth.deleteAccount()
   }
 
   //----------------------------------------------------------------------
@@ -217,6 +327,26 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
 
   private m_onComponentResize(e) {
     console.log('app-view:', e)
+  }
+
+  private m_dialogOnClosed() {
+    router.closeDialog()
+  }
+
+  private m_signInMenuItemOnClick() {
+    this.m_showSignInDialog()
+  }
+
+  private async m_signOutMenuItemOnClick() {
+    await this.m_signOut()
+  }
+
+  private async m_changeEmailMenuItemOnClick() {
+    await this.m_showEmailChangeDialog()
+  }
+
+  private async m_deleteAccountMenuItemOnClick() {
+    await this.m_deleteAccount()
   }
 }
 </script>

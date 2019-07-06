@@ -210,8 +210,8 @@ export default class ABCPage extends mixins(BaseComponent, ResizableMixin) {
 </script>
 
 <i18n>
-  en:
+en:
   hello: "Hello World! Today is {today}."
-  ja:
+ja:
   hello: "こんにちは、世界！ 今日は {today} です。"
 </i18n>
