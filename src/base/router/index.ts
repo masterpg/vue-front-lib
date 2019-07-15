@@ -113,11 +113,13 @@ export const router = new (class {
   }
 
   /**
-   * ダイアログを開くためのURLを作成して遷移します。
+   * ダイアログを開くための情報をURLに付与して遷移します。
+   * 例: https://example.com/views/abc-page?dialogName=signIn&dialogParams=%257B%2522account%2522%253A%2522taro%2522%257D
+   *
    * @param name ダイアログの名前
    * @param params ダイアログに渡すパラメータ
    */
-  openDialog(name: string, params?: {}): void {
+  openDialog(name: string, params?: string | {} | any[]): void {
     let dialogParams: {} | undefined
     if (params) {
       dialogParams = encodeURIComponent(JSON.stringify(params))
@@ -133,7 +135,16 @@ export const router = new (class {
   }
 
   /**
-   * ダイアログを開くための部分をURLから除去して遷移します。
+   * ダイアログを開くための情報をURLから除去して遷移します。
+   *
+   * このメソッドはダイアログを閉じた際に使用することを想定しています。
+   * `openDialog()`でダイアログを開くと、URLにダイアログを開くための情報が
+   * URLに付与されます。この状態でブラウザをリロードするとアプリケーション
+   * 起動時にダイアログが開くことになります。
+   *
+   * このような挙動が望ましい場合もありますが、そうでない場合もあります。
+   * このメソッドを呼び出すと、URLからダイアログを開くための情報を除去するため、
+   * アプリケーションリロード時にダイアログが開くという挙動を回避することができます。
    */
   closeDialog(): void {
     const query = assign({}, vueRouter.currentRoute.query)
@@ -146,7 +157,7 @@ export const router = new (class {
   }
 
   /**
-   * URLからダイアログを開くための部分を取得して返します。
+   * URLからダイアログを開くための情報を取得して返します。
    * @param route
    */
   getDialog(route: Route): { name: string; params?: {} } | undefined {

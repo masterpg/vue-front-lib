@@ -150,6 +150,7 @@
 
     <sign-in-dialog ref="signInDialog" @closed="m_dialogOnClosed"></sign-in-dialog>
     <email-change-dialog ref="emailChangeDialog" @closed="m_dialogOnClosed"></email-change-dialog>
+    <account-delete-dialog ref="accountDeleteDialog" @closed="m_dialogOnClosed"></account-delete-dialog>
   </q-layout>
 </template>
 
@@ -158,21 +159,27 @@ import * as sw from '@/base/service-worker'
 import { BaseComponent, ResizableMixin } from '@/components'
 import { Component, Watch } from 'vue-property-decorator'
 import { Account } from '@/logic'
-import EmailChangeDialog from '@/views/email-change-dialog/index.vue'
+import AccountDeleteDialog from '@/views/auth/account-delete-dialog/index.vue'
+import EmailChangeDialog from '@/views/auth/email-change-dialog/index.vue'
 import { NoCache } from '@/base/decorators'
 import { Route } from 'vue-router/types/router'
-import SignInDialog from '@/views/sign-in-dialog/index.vue'
+import SignInDialog from '@/views/auth/sign-in-dialog/index.vue'
 import { mixins } from 'vue-class-component'
 import { router } from '@/base/router'
 
 enum DialogType {
   SignIn = 'signIn',
+  AccountDelete = 'accountDelete',
   EmailChange = 'emailChange',
 }
 
 @Component({
   name: 'app-page',
-  components: { SignInDialog, EmailChangeDialog },
+  components: {
+    SignInDialog,
+    EmailChangeDialog,
+    AccountDeleteDialog,
+  },
 })
 export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
@@ -190,7 +197,7 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
   }
 
   @Watch('$route')
-  m_$routeOnChange(to: Route, from: Route) {
+  private m_$routeOnChange(to: Route, from: Route) {
     const dialog = router.getDialog(to)
     if (dialog) {
       switch (dialog.name) {
@@ -199,6 +206,9 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
           break
         case DialogType.EmailChange:
           this.$nextTick(() => this.m_emailChangeDialog.open())
+          break
+        case DialogType.AccountDelete:
+          this.$nextTick(() => this.m_accountDeleteDialog.open())
           break
       }
     }
@@ -234,7 +244,7 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
 
   private m_swUpdateIsRequired: boolean = false
 
-  get m_account(): Account {
+  private get m_account(): Account {
     return this.$logic.auth.account
   }
 
@@ -256,6 +266,11 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
     return this.$refs.emailChangeDialog as any
   }
 
+  @NoCache
+  private get m_accountDeleteDialog(): AccountDeleteDialog {
+    return this.$refs.accountDeleteDialog as any
+  }
+
   //----------------------------------------------------------------------
   //
   //  Internal methods
@@ -265,29 +280,29 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
   /**
    * サインインダイアログを表示します。
    */
-  m_showSignInDialog(): void {
+  private m_showSignInDialog(): void {
     router.openDialog(DialogType.SignIn)
   }
 
   /**
    * サインアウトを行います。
    */
-  async m_signOut(): Promise<void> {
+  private async m_signOut(): Promise<void> {
     await this.$logic.auth.signOut()
   }
 
   /**
    * メールアドレス変更ダイアログを表示します。
    */
-  m_showEmailChangeDialog(): void {
+  private m_showEmailChangeDialog(): void {
     router.openDialog(DialogType.EmailChange)
   }
 
   /**
    * ユーザーアカウントを削除します。
    */
-  async m_deleteAccount(): Promise<void> {
-    await this.$logic.auth.deleteAccount()
+  private async m_deleteAccount(): Promise<void> {
+    router.openDialog(DialogType.AccountDelete)
   }
 
   //----------------------------------------------------------------------

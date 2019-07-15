@@ -78,11 +78,7 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
       await firebase.auth().signInWithEmailAndPassword(email, password)
       await this.m_refreshAccount()
     } catch (err) {
-      if (err.code) {
-        return { result: false, code: err.code, errorMessage: err.message }
-      } else {
-        throw err
-      }
+      return { result: false, code: err.code || '', errorMessage: err.message || '' }
     }
     return { result: true, code: '', errorMessage: '' }
   }
@@ -91,22 +87,28 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
     try {
       await firebase.auth().signInAnonymously()
     } catch (err) {
-      if (err.code) {
-        return { result: false, code: err.code, errorMessage: err.message }
-      } else {
-        throw err
-      }
+      return { result: false, code: err.code || '', errorMessage: err.message || '' }
     }
     return { result: true, code: '', errorMessage: '' }
   }
 
-  async createUserWithEmailAndPassword(email: string, password, profile: { displayName: string; photoURL: string | null }): Promise<void> {
-    // メールアドレス＋パスワードでアカウント作成
-    await firebase.auth().createUserWithEmailAndPassword(email, password)
-    // 作成されたアカウントに表示名を設定
-    await firebase.auth().currentUser!.updateProfile(profile)
+  async createUserWithEmailAndPassword(
+    email: string,
+    password,
+    profile: { displayName: string; photoURL: string | null }
+  ): Promise<{ result: boolean; code: string; errorMessage: string }> {
+    try {
+      // メールアドレス＋パスワードでアカウント作成
+      await firebase.auth().createUserWithEmailAndPassword(email, password)
+      // 作成されたアカウントに表示名を設定
+      await firebase.auth().currentUser!.updateProfile(profile)
+    } catch (err) {
+      return { result: false, code: err.code || '', errorMessage: err.message || '' }
+    }
 
     await this.m_refreshAccount()
+
+    return { result: true, code: '', errorMessage: '' }
   }
 
   async sendEmailVerification(continueURL: string): Promise<void> {
@@ -123,12 +125,18 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
     })
   }
 
-  async sendPasswordResetEmail(email: string, continueURL: string): Promise<void> {
-    firebase.auth().languageCode = 'ja'
-    await firebase.auth().sendPasswordResetEmail(email, {
-      url: continueURL,
-      handleCodeInApp: false,
-    })
+  async sendPasswordResetEmail(email: string, continueURL: string): Promise<{ result: boolean; code: string; errorMessage: string }> {
+    try {
+      firebase.auth().languageCode = 'ja'
+      await firebase.auth().sendPasswordResetEmail(email, {
+        url: continueURL,
+        handleCodeInApp: false,
+      })
+    } catch (err) {
+      return { result: false, code: err.code || '', errorMessage: err.message || '' }
+    }
+
+    return { result: true, code: '', errorMessage: '' }
   }
 
   async signOut(): Promise<void> {
@@ -136,34 +144,26 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
     await this.m_refreshAccount()
   }
 
-  async deleteAccount(): Promise<void> {
+  async deleteAccount(): Promise<{ result: boolean; code: string; errorMessage: string }> {
     const user = firebase.auth().currentUser
     if (!user) {
-      const err = new Error('There is not account signed-in.')
-      throw err
+      return { result: false, code: '', errorMessage: 'There is not account signed-in.' }
     }
 
     try {
       await user.delete()
       await this.m_refreshAccount()
     } catch (err) {
-      // ユーザーの認証情報が古すぎる場合、サインアウト
-      // (一旦サインアウトしてから再度サインインが必要なため)
-      if (err.code === 'auth/requires-recent-login') {
-        await this.signOut()
-      }
-      // 上記以外のエラーの場合
-      else {
-        throw err
-      }
+      return { result: false, code: err.code || '', errorMessage: err.message || '' }
     }
+
+    return { result: true, code: '', errorMessage: '' }
   }
 
-  async updateEmail(newEmail: string): Promise<void> {
+  async updateEmail(newEmail: string): Promise<{ result: boolean; code: string; errorMessage: string }> {
     const user = firebase.auth().currentUser
     if (!user) {
-      const err = new Error('There is not account signed-in.')
-      throw err
+      return { result: false, code: '', errorMessage: 'There is not account signed-in.' }
     }
 
     try {
@@ -171,16 +171,10 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
       await user.updateEmail(newEmail)
       await this.m_refreshAccount()
     } catch (err) {
-      // ユーザーの認証情報が古すぎる場合、サインアウト
-      // (一旦サインアウトしてから再度サインインが必要なため)
-      if (err.code === 'auth/requires-recent-login') {
-        await this.signOut()
-      }
-      // 上記以外のエラーの場合
-      else {
-        throw err
-      }
+      return { result: false, code: err.code || '', errorMessage: err.message || '' }
     }
+
+    return { result: true, code: '', errorMessage: '' }
   }
 
   async fetchSignInMethodsForEmail(email: string): Promise<AuthProviderType[]> {
@@ -212,6 +206,7 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
         isSignedIn: isSignedIn,
         displayName: user.displayName || '',
         photoURL: user.photoURL || '',
+        email: user.email || '',
         emailVerified: user.emailVerified,
       })
     } else {
@@ -219,6 +214,7 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
         isSignedIn: false,
         displayName: '',
         photoURL: '',
+        email: '',
         emailVerified: false,
       })
     }

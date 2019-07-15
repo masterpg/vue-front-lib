@@ -42,15 +42,19 @@ export interface AuthLogic {
 
   sendEmailVerification(continueURL: string): Promise<void>
 
-  sendPasswordResetEmail(email: string, continueURL: string): Promise<void>
+  sendPasswordResetEmail(email: string, continueURL: string): Promise<{ result: boolean; code: string; errorMessage: string }>
 
-  createUserWithEmailAndPassword(email: string, password, profile: { displayName: string; photoURL: string | null }): Promise<void>
+  createUserWithEmailAndPassword(
+    email: string,
+    password,
+    profile: { displayName: string; photoURL: string | null }
+  ): Promise<{ result: boolean; code: string; errorMessage: string }>
 
   signOut(): Promise<void>
 
-  deleteAccount(): Promise<void>
+  deleteAccount(): Promise<{ result: boolean; code: string; errorMessage: string }>
 
-  updateEmail(newEmail: string): Promise<void>
+  updateEmail(newEmail: string): Promise<{ result: boolean; code: string; errorMessage: string }>
 
   fetchSignInMethodsForEmail(email: string): Promise<AuthProviderType[]>
 }
@@ -63,7 +67,9 @@ export interface AuthLogic {
 
 enum AuthProviderType {
   Google = 'google.com',
+  Facebook = 'facebook.com',
   Password = 'password',
+  Anonymous = 'anonymous',
 }
 
 export { Account, AuthProviderType, CartItem, CheckoutStatus, Product }

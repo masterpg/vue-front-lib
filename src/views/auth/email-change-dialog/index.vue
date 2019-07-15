@@ -1,9 +1,5 @@
 <style lang="stylus" scoped>
-@import '../../styles/app.variables.styl'
-
-.title {
-  @extend $text-h6
-}
+@import '../../../styles/app.variables.styl'
 
 .container {
   &.pc, &.tab {
@@ -29,18 +25,22 @@
 </style>
 
 <template>
-  <q-dialog v-model="m_opened">
-    <q-card class="container" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
+  <q-dialog v-model="m_opened" persistent>
+    <!-- サインインビュー -->
+    <email-sign-in-view v-if="m_viewType === 'signIn'" @signed-in="m_signInViewOnSignedIn()" @closed="close()" />
+
+    <!-- メールアドレス変更ビュー -->
+    <q-card v-else-if="m_viewType === 'emailChange'" class="container" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
       <!-- タイトル -->
       <q-card-section>
-        <div class="title">{{ m_title }}</div>
+        <div class="title">Change email</div>
       </q-card-section>
 
       <!-- コンテンツエリア -->
       <q-card-section>
         <!-- メールアドレスインプット -->
         <q-input
-          v-if="m_currentStep === 'first'"
+          v-show="m_viewType === 'emailChange'"
           ref="emailInput"
           v-model="m_inputEmail"
           type="email"
@@ -53,10 +53,6 @@
             <q-icon name="mail" />
           </template>
         </q-input>
-        <!-- メールアドレス確認メッセージ -->
-        <div v-show="m_currentStep === 'waitVerify'">
-          Follow the instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> to verify your email.
-        </div>
       </q-card-section>
 
       <!-- エラーメッセージ -->
@@ -67,9 +63,30 @@
       <!-- ボタンエリア -->
       <q-card-section align="right">
         <!-- CANCELボタン -->
-        <q-btn v-show="m_currentStep === 'first'" flat rounded color="primary" label="Cancel" @click="m_cancel()" />
+        <q-btn v-show="m_viewType === 'emailChange'" flat rounded color="primary" label="Cancel" @click="close()" />
         <!-- NEXTボタン -->
-        <q-btn v-show="m_currentStep === 'first'" flat rounded color="primary" label="Next" @click="m_changeEmail()" />
+        <q-btn v-show="m_viewType === 'emailChange'" flat rounded color="primary" label="Next" @click="m_changeEmail()" />
+      </q-card-section>
+    </q-card>
+
+    <!-- メールアドレス検証中ビュー -->
+    <q-card v-else-if="m_viewType === 'inVerification'" class="container" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
+      <!-- タイトル -->
+      <q-card-section>
+        <div class="title">Change email</div>
+      </q-card-section>
+
+      <!-- コンテンツエリア -->
+      <q-card-section>
+        <div>
+          Follow the instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> to verify your email.
+        </div>
+      </q-card-section>
+
+      <!-- ボタンエリア -->
+      <q-card-section align="right">
+        <!-- CLOSEボタン -->
+        <q-btn flat rounded color="primary" label="Close" @click="close()" />
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -78,19 +95,17 @@
 <script lang="ts">
 import { BaseComponent, ResizableMixin } from '@/components'
 import { Component, Watch } from 'vue-property-decorator'
+import EmailSignInView from '@/views/auth/email-sign-in-view.vue'
 import { NoCache } from '@/base/decorators'
 import { QInput } from 'quasar'
 import { mixins } from 'vue-class-component'
 const isEmail = require('validator/lib/isEmail')
 
-enum StepType {
-  First = 'first',
-  WaitVerify = 'waitVerify',
-}
-
 @Component({
   name: 'email-change-dialog',
-  components: {},
+  components: {
+    EmailSignInView,
+  },
 })
 export default class EmailChangeDialog extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
@@ -108,22 +123,20 @@ export default class EmailChangeDialog extends mixins(BaseComponent, ResizableMi
     }
   }
 
-  private m_currentStep: StepType = StepType.First
-
-  private m_title: string = ''
+  private m_viewType: 'signIn' | 'emailChange' | 'inVerification' = 'signIn'
 
   private m_inputEmail: string = ''
 
-  m_errorMessage: string = ''
+  private m_errorMessage: string = ''
 
-  m_emailRules = [val => !!val || 'Email is a required.', val => (!!val && isEmail(val)) || 'Email is invalid.']
+  private m_emailRules = [val => !!val || 'Email is a required.', val => (!!val && isEmail(val)) || 'Email is invalid.']
 
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
 
   @NoCache
-  get m_emailInput(): QInput {
+  private get m_emailInput(): QInput {
     return this.$refs.emailInput as any
   }
 
@@ -135,15 +148,9 @@ export default class EmailChangeDialog extends mixins(BaseComponent, ResizableMi
 
   open(): void {
     this.m_opened = true
-    this.m_currentStep = StepType.First
-
-    const intervalId = setInterval(() => {
-      if (Object.keys(this.$refs).length === 0) return
-      clearInterval(intervalId)
-      this.m_clear()
-      this.m_title = 'Change email'
-      setTimeout(() => this.m_emailInput.focus(), 100)
-    }, 10)
+    this.m_inputEmail = ''
+    this.m_clearErrorMessage()
+    this.m_viewType = 'signIn'
   }
 
   close(): void {
@@ -158,46 +165,35 @@ export default class EmailChangeDialog extends mixins(BaseComponent, ResizableMi
   //----------------------------------------------------------------------
 
   /**
-   * 変数、入力項目などのクリアを行います。
-   */
-  m_clear(): void {
-    this.m_title = ''
-    this.m_inputEmail = ''
-    this.m_clearErrorMessage()
-    this.m_emailInput.resetValidation()
-  }
-
-  /**
    * エラーメッセージをクリアします。
    */
-  m_clearErrorMessage(): void {
+  private m_clearErrorMessage(): void {
     this.m_errorMessage = ''
   }
 
   /**
    * メールアドレスの変更を実行します。
    */
-  async m_changeEmail(): Promise<void> {
+  private async m_changeEmail(): Promise<void> {
     if (this.m_emailInput.hasError) return
     // メールアドレスを変更
     // (変更前のメールアドレスに変更通知のメールが送られる)
     await this.$logic.auth.updateEmail(this.m_inputEmail)
     // 変更されたメールアドレスに確認メールを送信
     await this.$logic.auth.sendEmailVerification('http://localhost:5000')
-    // メールアドレス確認待ち画面へ遷移
-    this.m_setupWaitVerify()
+    // 画面をメールアドレス検証中へ変更
+    this.m_viewType = 'inVerification'
   }
 
-  /**
-   * メールアドレス確認待ち画面へ遷移するための設定を行います。
-   */
-  m_setupWaitVerify(): void {
-    this.m_currentStep = StepType.WaitVerify
-    this.m_title = 'Check your email'
-  }
+  //----------------------------------------------------------------------
+  //
+  //  Event listeners
+  //
+  //----------------------------------------------------------------------
 
-  m_cancel(): void {
-    this.close()
+  private m_signInViewOnSignedIn() {
+    this.m_viewType = 'emailChange'
+    this.$nextTick(() => this.m_emailInput.focus())
   }
 }
 </script>

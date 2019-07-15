@@ -80,6 +80,7 @@ export interface Account {
   isSignedIn: boolean
   displayName: string
   photoURL: string
+  email: string
   emailVerified: boolean
 }
 

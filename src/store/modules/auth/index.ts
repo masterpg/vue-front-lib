@@ -17,6 +17,7 @@ export class AccountModuleImpl extends BaseModule<Account> implements AccountMod
       isSignedIn: false,
       displayName: '',
       photoURL: '',
+      email: '',
       emailVerified: false,
     })
   }
