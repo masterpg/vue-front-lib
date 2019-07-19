@@ -172,14 +172,6 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
 
   private m_swUpdateIsRequired: boolean = false
 
-  //--------------------------------------------------
-  //  Elements
-  //--------------------------------------------------
-
-  private get m_swToast(): { open: () => void } {
-    return this.$refs.swToast as any
-  }
-
   //----------------------------------------------------------------------
   //
   //  Event listeners
@@ -189,22 +181,26 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
   private m_swOnStateChange(info: sw.StateChangeInfo) {
     this.m_swUpdateIsRequired = false
 
-    let message = ''
     if (info.state === sw.ChangeState.updated) {
-      this.m_swUpdateIsRequired = true
-      message = info.message
-      this.$nextTick(() => this.m_swToast.open())
-    } else if (info.state === sw.ChangeState.cached) {
-      message = info.message
-      this.$nextTick(() => this.m_swToast.open())
-    }
-    if (message) {
       this.$q.notify({
         icon: 'info',
         position: 'bottom-left',
+        message: info.message,
+        actions: [
+          {
+            label: this.$t('reload'),
+            color: 'white',
+            handler: () => window.location.reload(),
+          },
+        ],
         timeout: 0,
-        message,
-        actions: [{ label: this.$t('reload'), color: 'white', handler: () => window.location.reload() }],
+      })
+    } else if (info.state === sw.ChangeState.cached) {
+      this.$q.notify({
+        icon: 'info',
+        position: 'bottom-left',
+        message: info.message,
+        timeout: 3000,
       })
     }
 

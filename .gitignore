@@ -1,12 +1,13 @@
+**/*.log
+**/~$*
 .cache/
-.idea/
 .dist/
+.idea/
 dist/
 docs/_book/
 docs/book.css
 node_modules/
+screenshots/
 src/**/*.js.map
 tests/**/*.js.map
 tests/**/*.tmp
-**/*.log
-**/~$*

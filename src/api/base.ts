@@ -1,3 +1,4 @@
+import URI from 'urijs'
 import Vue from 'vue'
 import { config as appConfig } from '@/base/config'
 import axios from 'axios'
@@ -74,14 +75,18 @@ export abstract class BaseAPI extends Vue {
 
   request<T = any>(config: APIRequestInternalConfig): APIPromise<T> {
     const apiConfig = appConfig.api
-    let baseURL = ''
-    if (!apiConfig.protocol && !apiConfig.host && !apiConfig.port) {
-      baseURL = 'api'
+    const baseURL = new URI()
+    if (apiConfig.protocol) baseURL.protocol(apiConfig.protocol)
+    if (apiConfig.host) baseURL.hostname(apiConfig.host)
+    if (apiConfig.baseURL) {
+      baseURL.pathname(apiConfig.baseURL)
     } else {
-      baseURL = `${apiConfig.protocol}://${apiConfig.host}:${apiConfig.port}/api/`
+      baseURL.pathname('')
     }
+    if (apiConfig.port) baseURL.port(apiConfig.port.toString(10))
+
     const axiosConfig = Object.assign(config || {}, {
-      baseURL,
+      baseURL: baseURL.toString(),
     })
     return axios.request(axiosConfig)
   }

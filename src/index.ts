@@ -3,12 +3,14 @@ import 'animate.css/animate.css'
 import '@/index.styl'
 
 // TODO JetBrainsIDE使用時の開発補助コード
-import '@/views/abc-page/index.vue'
-import '@/views/error404-page/index.vue'
-import '@/views/shopping-page/index.vue'
-import '@/views/demo/comp-tree-view-page/index.vue'
+// import '@/views/abc-page/index.vue'
+// import '@/views/error404-page/index.vue'
+// import '@/views/shopping-page/index.vue'
+// import '@/views/demo/comp-tree-view-page/index.vue'
 
 import {
+  ClosePopup,
+  Dialog,
   Notify,
   QAvatar,
   QBtn,
@@ -16,8 +18,10 @@ import {
   QCardActions,
   QCardSection,
   QCheckbox,
+  QDialog,
   QDrawer,
   QExpansionItem,
+  QForm,
   QHeader,
   QIcon,
   QImg,
@@ -27,6 +31,7 @@ import {
   QItemSection,
   QLayout,
   QList,
+  QMenu,
   QPage,
   QPageContainer,
   QScrollArea,
@@ -37,6 +42,7 @@ import {
 } from 'quasar'
 import { i18n, initI18n } from '@/base/i18n'
 import AppPage from '@/index.vue'
+import Component from 'vue-class-component'
 import Vue from 'vue'
 import { currency } from '@/currency'
 import { initAPI } from '@/api'
@@ -47,6 +53,8 @@ import { initStore } from '@/store'
 import { initUtils } from '@/base/utils'
 import { vueRouter } from '@/base/router'
 
+Component.registerHooks(['beforeRouteEnter', 'beforeRouteLeave', 'beforeRouteUpdate'])
+
 Vue.use(Quasar, {
   components: {
     QAvatar,
@@ -55,8 +63,10 @@ Vue.use(Quasar, {
     QCardActions,
     QCardSection,
     QCheckbox,
-    QExpansionItem,
+    QDialog,
     QDrawer,
+    QExpansionItem,
+    QForm,
     QHeader,
     QIcon,
     QImg,
@@ -66,6 +76,7 @@ Vue.use(Quasar, {
     QItemSection,
     QLayout,
     QList,
+    QMenu,
     QPage,
     QPageContainer,
     QScrollArea,
@@ -75,8 +86,12 @@ Vue.use(Quasar, {
   config: {
     notify: {},
   },
-  directives: { Ripple },
+  directives: {
+    ClosePopup,
+    Ripple,
+  },
   plugins: {
+    Dialog,
     Notify,
   },
 })
