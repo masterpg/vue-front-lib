@@ -1,6 +1,7 @@
 .idea/
 dist/
 docs/
+functions/lib/
+functions/node_modules/
 node_module/
 patches/
-src/types/firebase.d.ts

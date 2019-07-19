@@ -13,4 +13,3 @@ public/
 tsconfig.json
 vue.config.js
 yarn.lock
-src/types/firebase.d.ts

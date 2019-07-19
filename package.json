@@ -1,17 +1,17 @@
 {
   "name": "vue-base-project",
   "scripts": {
-    "dev": "node json-server.js & vue-cli-service serve --mode development",
-    "stg": "vue-cli-service build --mode staging || npm run serve",
-    "prod": "vue-cli-service build --mode production || npm run serve",
+    "dev": "vue-cli-service serve --mode development & npm --prefix functions run serve",
+    "stg": "vue-cli-service build --mode staging & npm run serve & npm --prefix functions run serve",
     "build": "vue-cli-service build --mode production",
     "build:dev": "vue-cli-service build --mode development",
     "build:stg": "vue-cli-service build --mode staging",
-    "serve": "node json-server.js & browser-sync start --port 5000 --proxy '0.0.0.0:5010' --serveStatic 'dist' --no-open",
+    "serve": "firebase serve --only hosting --port=5000",
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "testcafe chrome:headless tests/e2e/**/*.test.ts -S -s screenshots --hostname localhost",
     "docs": "postcss --config build/postcss.config.js docs/book.pcss -o docs/book.css && cd docs && ../node_modules/.bin/gitbook install && ../node_modules/.bin/gitbook serve",
-    "lint": "./scripts/lint.sh"
+    "lint": "./scripts/lint.sh",
+    "deploy": "firebase deploy"
   },
   "dependencies": {
     "@quasar/extras": "^1.1.3",
@@ -23,6 +23,7 @@
     "quasar": "^1.0.0-rc.5",
     "reflect-metadata": "^0.1.13",
     "register-service-worker": "^1.6.2",
+    "urijs": "^1.19.1",
     "validator": "^11.0.0",
     "vue": "^2.6.10",
     "vue-class-component": "^7.1.0",
@@ -35,6 +36,7 @@
     "@types/jest": "^24.0.15",
     "@types/lodash": "^4.14.134",
     "@types/node": "^12.0.10",
+    "@types/urijs": "^1.19.3",
     "@typescript-eslint/eslint-plugin": "^1.11.0",
     "@typescript-eslint/parser": "^1.11.0",
     "@vue/cli-plugin-babel": "^3.8.0",
@@ -54,7 +56,6 @@
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-vue": "^5.2.3",
     "gitbook-cli": "^2.3.2",
-    "json-server": "^0.15.0",
     "prettier": "^1.18.2",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",

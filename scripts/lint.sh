@@ -4,7 +4,7 @@ if [ -z $1 ]; then
   eslint --fix ./ --ext .js,.ts,.vue
 else
   if [ -d $1 ]; then
-    eslint --fix "$1"
+    eslint --fix "$1" --ext .js,.ts,.vue
   elif [ -e $1 ]; then
     eslint --fix "$1"
   else

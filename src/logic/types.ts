@@ -9,6 +9,7 @@ import { Account, CartItem, CheckoutStatus, Product } from '@/store'
 export interface Logic {
   readonly shop: ShopLogic
   readonly auth: AuthLogic
+  readonly hello: HelloLogic
 }
 
 export interface ShopLogic {
@@ -57,6 +58,14 @@ export interface AuthLogic {
   updateEmail(newEmail: string): Promise<{ result: boolean; code: string; errorMessage: string }>
 
   fetchSignInMethodsForEmail(email: string): Promise<AuthProviderType[]>
+}
+
+export interface HelloLogic {
+  publicHello(message: string): Promise<string>
+
+  siteHello(message: string): Promise<string>
+
+  authHello(message: string): Promise<string>
 }
 
 //----------------------------------------------------------------------

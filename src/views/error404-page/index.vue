@@ -18,6 +18,11 @@
     <img src="@/assets/icons/sad.svg" class="sad-img" />
     <div class="text-faded">Sorry, nothing here...<strong>(404)</strong></div>
     <q-btn color="primary" class="back-button" @click="m_backButtonOnClick()">Go back</q-btn>
+    <div class="layout horizontal center end-justified app-mt-20">
+      <q-btn flat rounded label="Public Hello" color="primary" @click="$logic.hello.publicHello('Masaaki')" />
+      <q-btn flat rounded label="Site Hello" color="primary" @click="$logic.hello.siteHello('Masaaki')" />
+      <q-btn flat rounded label="Auth Hello" color="primary" @click="$logic.hello.authHello('Masaaki')" />
+    </div>
   </div>
 </template>
 
