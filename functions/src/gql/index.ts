@@ -18,13 +18,28 @@ function buildSchema(): GraphQLSchema {
   })
 }
 
+class ContextImpl implements Context {
+  constructor(public readonly req: express.Request, public readonly res: express.Response) {}
+
+  private m_user: any
+
+  get user() {
+    return this.m_user
+  }
+
+  setUser(user: any): void {
+    this.m_user = user
+  }
+}
+
 function setupApolloServer(router: express.Router, schema: GraphQLSchema) {
   const config = {
     schema,
     context: async ({ req, res }) => {
-      return { req, res } as Context
+      return new ContextImpl(req, res)
     },
   } as ApolloServerExpressConfig
+
   if (process.env.NODE_ENV !== 'production') {
     assign(config, {
       debug: true,
@@ -33,6 +48,7 @@ function setupApolloServer(router: express.Router, schema: GraphQLSchema) {
       introspection: true,
     })
   }
+
   const apolloServer = new ApolloServer(config)
   apolloServer.applyMiddleware({ app: router, path: '/' })
 }

@@ -11,14 +11,13 @@ export interface GQL {
 
 export interface GQLQuery {
   products(): Promise<GQLProduct[]>
-  cartItems(userId: string): Promise<GQLCartItem[]>
+  cartItems(): Promise<GQLCartItem[]>
 }
 
 export interface GQLMutation {
   addCartItems(
     items: {
       id?: string
-      userId: string
       productId: string
       title: string
       price: number
@@ -30,7 +29,7 @@ export interface GQLMutation {
 
   removeCartItems(cartItemIds: string[]): Promise<GQLCartItem[]>
 
-  checkoutCart(userId: string): Promise<boolean>
+  checkoutCart(): Promise<boolean>
 }
 
 //----------------------------------------------------------------------

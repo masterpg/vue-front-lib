@@ -24,9 +24,6 @@ export class CartItem {
 @InputType()
 export class AddCartItemInput implements Partial<CartItem> {
   @Field(type => ID)
-  userId!: string
-
-  @Field(type => ID)
   productId!: string
 
   @Field(type => String)

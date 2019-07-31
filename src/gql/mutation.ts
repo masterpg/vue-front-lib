@@ -9,7 +9,6 @@ export class GQLMutationImpl extends Vue implements GQLMutation {
   async addCartItems(
     items: {
       id?: string
-      userId: string
       productId: string
       title: string
       price: number
@@ -75,14 +74,13 @@ export class GQLMutationImpl extends Vue implements GQLMutation {
     return response.data.removeCartItems
   }
 
-  async checkoutCart(userId: string): Promise<boolean> {
+  async checkoutCart(): Promise<boolean> {
     const response = await gqlClient.mutate<{ checkoutCart: boolean }>({
       mutation: gql`
-        mutation CheckoutCart($userId: ID!) {
-          checkoutCart(userId: $userId)
+        mutation CheckoutCart {
+          checkoutCart
         }
       `,
-      variables: { userId },
       auth: true,
     })
     return response.data.checkoutCart

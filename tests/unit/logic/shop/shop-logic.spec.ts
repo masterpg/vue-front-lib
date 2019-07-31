@@ -136,7 +136,6 @@ describe('addItemToCart()', () => {
     td.verify(
       gql.mutation.addCartItems([
         {
-          userId: resultCartItem.userId,
           productId: resultCartItem.productId,
           title: resultCartItem.title,
           price: resultCartItem.price,
@@ -336,13 +335,13 @@ describe('checkout()', () => {
 
     await shopLogic.checkout()
 
-    td.verify(gql.mutation.checkoutCart(userModule.value.id))
+    td.verify(gql.mutation.checkoutCart())
     expect(shopLogic.cartItems).toEqual([])
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.Successful)
   })
 
   it('GQLでエラーが発生した場合', async () => {
-    td.when(gql.mutation.checkoutCart(td.matchers.anything())).thenThrow(new Error())
+    td.when(gql.mutation.checkoutCart()).thenThrow(new Error())
 
     await shopLogic.checkout()
 

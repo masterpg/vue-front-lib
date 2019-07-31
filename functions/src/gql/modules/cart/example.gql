@@ -1,5 +1,5 @@
 query GetCartItems {
-  cartItems(userId: "YsRuj2LOtIUbWDtnRygHdPzw1Lu1") {
+  cartItems {
     id
     userId
     productId
@@ -7,20 +7,6 @@ query GetCartItems {
     price
     quantity
   }
-}
-
-query GetCartItems($userId: ID!) {
-  cartItems(userId: $userId) {
-    id
-    userId
-    productId
-    title
-    price
-    quantity
-  }
-}
-{
-  "userId": "YsRuj2LOtIUbWDtnRygHdPzw1Lu1"
 }
 
 mutation AddCartItems($items: [AddCartItemInput!]!) {
@@ -36,14 +22,12 @@ mutation AddCartItems($items: [AddCartItemInput!]!) {
 {
   "items": [
     {
-      "userId": "YsRuj2LOtIUbWDtnRygHdPzw1Lu1",
       "productId": "1",
       "title": "iPad 4 Mini",
       "price": 500.01,
       "quantity": 1
     },
     {
-      "userId": "YsRuj2LOtIUbWDtnRygHdPzw1Lu1",
       "productId": "2",
       "title": "Fire HD 8 Tablet",
       "price": 80.99,
@@ -55,14 +39,12 @@ mutation AddCartItems($items: [AddCartItemInput!]!) {
 mutation AddCartItems {
   addCartItems(items: [
     {
-      userId: "YsRuj2LOtIUbWDtnRygHdPzw1Lu1"
       productId: "1"
       title: "iPad 4 Mini"
       price: 500.01
       quantity: 1
     },
     {
-      userId: "YsRuj2LOtIUbWDtnRygHdPzw1Lu1"
       productId: "2"
       title: "Fire HD 8 Tablet"
       price: 80.99
@@ -81,11 +63,11 @@ mutation AddCartItems {
 mutation UpdateCartItems {
   updateCartItems(items: [
     {
-      id: "abvlEFTLSE3lKZtrWEde"
+      id: "h0UMXlPkGc8N7N2Xf6Cm"
       quantity: 1
     },
     {
-      id: "nCXcDdyHd8ONOBiWIXuu"
+      id: "2g10SwdrH4wqDFm0tgRy"
       quantity: 2
     }
   ]) {
@@ -111,11 +93,11 @@ mutation UpdateCartItems($items: [UpdateCartItemInput!]!) {
 {
   "items": [
     {
-      "id": "rVszcvbJuI22nhO8wdg1",
+      "id": "h0UMXlPkGc8N7N2Xf6Cm",
       "quantity": 1
     },
     {
-      "id": "5LPP5CizvRegatleWKUN",
+      "id": "2g10SwdrH4wqDFm0tgRy",
       "quantity": 2
     }
   ]
@@ -123,8 +105,8 @@ mutation UpdateCartItems($items: [UpdateCartItemInput!]!) {
 
 mutation RemoveCartItems {
   removeCartItems(cartItemIds: [
-    "rVszcvbJuI22nhO8wdg1"
-    "5LPP5CizvRegatleWKUN"
+    "h0UMXlPkGc8N7N2Xf6Cm"
+    "2g10SwdrH4wqDFm0tgRy"
   ]) {
     id
     userId
@@ -146,9 +128,9 @@ mutation RemoveCartItems($cartItemIds: [ID!]!) {
   }
 }
 {
-  "cartItemIds": ["abvlEFTLSE3lKZtrWEde", "nCXcDdyHd8ONOBiWIXuu"]
+  "cartItemIds": ["h0UMXlPkGc8N7N2Xf6Cm", "2g10SwdrH4wqDFm0tgRy"]
 }
 
 mutation CheckoutCart {
-  checkoutCart(userId: "YsRuj2LOtIUbWDtnRygHdPzw1Lu1")
+  checkoutCart
 }

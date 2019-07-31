@@ -69,7 +69,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
   async pullCartItems(): Promise<void> {
     this.m_checkSignedIn()
 
-    const items = await gql.query.cartItems(store.user.value.id)
+    const items = await gql.query.cartItems()
     store.cart.setAll(items)
   }
 
@@ -117,7 +117,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
     this.m_checkSignedIn()
 
     try {
-      await gql.mutation.checkoutCart(store.user.value.id)
+      await gql.mutation.checkoutCart()
     } catch (err) {
       console.log(err)
       store.cart.setCheckoutStatus(CheckoutStatus.Failed)
@@ -137,7 +137,6 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
   private async m_addCartItem(productId: string): Promise<void> {
     const product = store.product.getById(productId)!
     const newCartItem = {
-      userId: store.user.value.id,
       productId,
       title: product.title,
       price: product.price,

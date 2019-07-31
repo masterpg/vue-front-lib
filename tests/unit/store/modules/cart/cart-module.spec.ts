@@ -23,12 +23,6 @@ const CART_ITEMS = [
   },
 ]
 
-const PRODUCTS: Product[] = [
-  { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 1 },
-  { id: 'product2', title: 'Fire HD 8 Tablet', price: 80.99, stock: 5 },
-  { id: 'product3', title: 'MediaPad T5 10', price: 150.8, stock: 10 },
-]
-
 beforeEach(async () => {
   cartModule.initState({
     all: cloneDeep(CART_ITEMS),

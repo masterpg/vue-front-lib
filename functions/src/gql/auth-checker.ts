@@ -36,7 +36,7 @@ export const authChecker: AuthChecker<Context> = async ({ context }: { context: 
     return false
   }
 
-  ;(req as any).user = decodedIdToken
+  context.setUser(decodedIdToken)
   // console.log('decodedIdToken:', decodedIdToken)
 
   return true

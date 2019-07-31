@@ -8,7 +8,7 @@ export interface Config {
     baseURL: string
   }
 
-  graphql: {
+  gql: {
     protocol: string
     host: string
     port: number
@@ -37,7 +37,7 @@ class ConfigImpl implements Config {
     baseURL: String(process.env.VUE_APP_API_BASE_URL),
   }
 
-  readonly graphql = {
+  readonly gql = {
     protocol: String(process.env.VUE_APP_GQL_PROTOCOL),
     host: String(process.env.VUE_APP_GQL_HOST),
     port: Number(process.env.VUE_APP_GQL_PORT),

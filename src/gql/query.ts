@@ -22,11 +22,11 @@ export class GQLQueryImpl extends Vue implements GQLQuery {
     return response.data.products
   }
 
-  async cartItems(userId: string): Promise<GQLCartItem[]> {
+  async cartItems(): Promise<GQLCartItem[]> {
     const response = await gqlClient.query<{ cartItems: GQLCartItem[] }>({
       query: gql`
-        query GetCartItems($userId: ID!) {
-          cartItems(userId: $userId) {
+        query GetCartItems {
+          cartItems {
             id
             userId
             productId
@@ -36,7 +36,6 @@ export class GQLQueryImpl extends Vue implements GQLQuery {
           }
         }
       `,
-      variables: { userId },
       auth: true,
     })
     return response.data.cartItems

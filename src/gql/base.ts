@@ -24,15 +24,15 @@ export class GQLClient extends Vue {
 
   private async m_getClient(auth: boolean = false): Promise<ApolloClient<NormalizedCacheObject>> {
     const baseURL = new URI()
-    if (appConfig.graphql.protocol) baseURL.protocol(appConfig.graphql.protocol)
-    if (appConfig.graphql.host) baseURL.hostname(appConfig.graphql.host)
-    if (appConfig.graphql.baseURL) {
-      baseURL.pathname(appConfig.graphql.baseURL)
+    if (appConfig.gql.protocol) baseURL.protocol(appConfig.gql.protocol)
+    if (appConfig.gql.host) baseURL.hostname(appConfig.gql.host)
+    if (appConfig.gql.baseURL) {
+      baseURL.pathname(appConfig.gql.baseURL)
     } else {
       baseURL.pathname('')
     }
     baseURL.query('')
-    if (appConfig.graphql.port) baseURL.port(appConfig.graphql.port.toString(10))
+    if (appConfig.gql.port) baseURL.port(appConfig.gql.port.toString(10))
 
     let link: ApolloLink = createHttpLink({
       uri: baseURL.toString(),
