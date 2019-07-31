@@ -5,11 +5,11 @@
 //----------------------------------------------------------------------
 
 export interface Store {
-  readonly products: ProductsModule
+  readonly product: ProductModule
 
   readonly cart: CartModule
 
-  readonly account: AccountModule
+  readonly user: UserModule
 }
 
 //----------------------------------------------------------------------
@@ -18,7 +18,7 @@ export interface Store {
 //
 //----------------------------------------------------------------------
 
-export interface ProductsModule {
+export interface ProductModule {
   readonly all: Product[]
 
   getById(productId: string): Product | undefined
@@ -29,7 +29,9 @@ export interface ProductsModule {
 
   add(product: Product): Product
 
-  decrementInventory(productId: string): void
+  decrementStock(productId: string): void
+
+  incrementStock(productId: string): void
 }
 
 export interface CartModule {
@@ -39,24 +41,32 @@ export interface CartModule {
 
   readonly checkoutStatus: CheckoutStatus
 
+  set(item: StatePartial<Omit<CartItem, 'userId' | 'productId'>>): CartItem | undefined
+
   setAll(items: CartItem[]): void
 
   setCheckoutStatus(status: CheckoutStatus): void
 
-  addProductToCart(product: Product): CartItem
+  add(item: CartItem): CartItem
 
-  getById(productId: string): CartItem | undefined
+  remove(id: string): CartItem | undefined
+
+  getById(id: string): CartItem | undefined
+
+  getByProductId(productId: string): CartItem | undefined
 }
 
-export interface AccountModule {
-  readonly value: Account
+export interface UserModule {
+  readonly value: User
 
-  set(account: Partial<Account>): Account
+  set(user: Partial<User>): User
+
+  clear(): void
 }
 
 //----------------------------------------------------------------------
 //
-//  Data types
+//  Value objects
 //
 //----------------------------------------------------------------------
 
@@ -66,17 +76,20 @@ export interface Product {
   id: string
   title: string
   price: number
-  inventory: number
+  stock: number
 }
 
 export interface CartItem {
   id: string
+  userId: string
+  productId: string
   title: string
   price: number
   quantity: number
 }
 
-export interface Account {
+export interface User {
+  id: string
   isSignedIn: boolean
   displayName: string
   photoURL: string
@@ -125,7 +138,7 @@ export enum ProductsErrorType {
 //
 //----------------------------------------------------------------------
 
-export interface ProductsState {
+export interface ProductState {
   all: Product[]
 }
 
@@ -133,3 +146,5 @@ export interface CartState {
   all: CartItem[]
   checkoutStatus: CheckoutStatus
 }
+
+export type UserState = User

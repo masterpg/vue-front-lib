@@ -53,13 +53,13 @@ const abcPageRoute = new (class ABCPageRoute extends ViewRoute {
   })(this)
 })()
 
-const shoppingPageRoute = new (class ShoppingPageRoute extends ViewRoute {
+const shopPageRoute = new (class ShopPageRoute extends ViewRoute {
   get path() {
-    return '/views/shopping-page'
+    return '/views/shop-page'
   }
 
   get component() {
-    return () => import(/* webpackChunkName: "shopping" */ '@/views/shopping-page/index.vue')
+    return () => import(/* webpackChunkName: "shop" */ '@/views/shop-page/index.vue')
   }
 
   move() {
@@ -105,7 +105,7 @@ export const router = new (class {
   views = {
     abcPage: abcPageRoute,
 
-    shoppingPage: shoppingPageRoute,
+    shopPage: shopPageRoute,
 
     error404Page: error404PageRoute,
 
@@ -175,7 +175,7 @@ export const router = new (class {
 
 export const vueRouter = new VueRouter({
   mode: 'history',
-  routes: [router.views.abcPage, router.views.abcPage.foo, router.views.shoppingPage, router.views.error404Page, router.views.demo.compTreeViewPage],
+  routes: [router.views.abcPage, router.views.abcPage.foo, router.views.shopPage, router.views.error404Page, router.views.demo.compTreeViewPage],
 })
 
 vueRouter.beforeEach((to, from, next) => {

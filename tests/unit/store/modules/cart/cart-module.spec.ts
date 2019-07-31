@@ -4,12 +4,29 @@ const cloneDeep = require('lodash/cloneDeep')
 
 const cartModule = store.cart as TestStoreModule<CartState, CartModule>
 
-const CART_ITEMS = [{ id: '1', title: 'iPad 4 Mini', price: 500.01, quantity: 1 }, { id: '2', title: 'Fire HD 8 Tablet', price: 80.99, quantity: 2 }]
+const CART_ITEMS = [
+  {
+    id: 'cartItem1',
+    userId: 'user1',
+    productId: 'product1',
+    title: 'iPad 4 Mini',
+    price: 500.01,
+    quantity: 1,
+  },
+  {
+    id: 'cartItem2',
+    userId: 'user1',
+    productId: 'product2',
+    title: 'Fire HD 8 Tablet',
+    price: 80.99,
+    quantity: 2,
+  },
+]
 
 const PRODUCTS: Product[] = [
-  { id: '1', title: 'iPad 4 Mini', price: 500.01, inventory: 1 },
-  { id: '2', title: 'Fire HD 8 Tablet', price: 80.99, inventory: 5 },
-  { id: '3', title: 'MediaPad T5 10', price: 150.8, inventory: 10 },
+  { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 1 },
+  { id: 'product2', title: 'Fire HD 8 Tablet', price: 80.99, stock: 5 },
+  { id: 'product3', title: 'MediaPad T5 10', price: 150.8, stock: 10 },
 ]
 
 beforeEach(async () => {
@@ -37,14 +54,69 @@ describe('checkoutStatus', () => {
   })
 })
 
-describe('getById', () => {
+describe('getById()', () => {
   it('ベーシックケース', () => {
-    const cartItem = cartModule.state.all[0]
-    const actual = cartModule.getById(cartItem.id)
-    expect(actual).toEqual(cartItem)
+    const stateCartItem = cartModule.state.all[0]
+
+    const actual = cartModule.getById(stateCartItem.id)
+
+    expect(actual).toEqual(stateCartItem)
+    expect(actual).not.toBe(stateCartItem)
   })
-  it('カートに存在しない商品IDを指定した場合', () => {
+
+  it('カートに存在しないカートアイテムIDを指定した場合', () => {
     const actual = cartModule.getById('9999')
+    expect(actual).toBeUndefined()
+  })
+})
+
+describe('getByProductId()', () => {
+  it('ベーシックケース', () => {
+    const stateCartItem = cartModule.state.all[0]
+
+    const actual = cartModule.getByProductId(stateCartItem.productId)
+
+    expect(actual).toEqual(stateCartItem)
+    expect(actual).not.toBe(stateCartItem)
+  })
+
+  it('カートに存在しない商品IDを指定した場合', () => {
+    const actual = cartModule.getByProductId('9999')
+    expect(actual).toBeUndefined()
+  })
+})
+
+describe('set()', () => {
+  it('ベーシックケース', () => {
+    const cartItem = cloneDeep(cartModule.state.all[0])
+    cartItem.title = 'aaa'
+
+    // 一部のプロパティだけを変更
+    const actual = cartModule.set({
+      id: cartItem.id,
+      title: cartItem.title,
+    })!
+
+    const stateProduct = cartModule.state.all[0]
+    expect(actual).toEqual(cartItem)
+    expect(actual).not.toBe(stateProduct)
+  })
+
+  it('余分なプロパティを含んだ場合', () => {
+    const cartItem = cloneDeep(cartModule.state.all[0])
+    cartItem.zzz = 'zzz'
+
+    const actual = cartModule.set(cartItem)!
+
+    expect(actual).not.toHaveProperty('zzz')
+  })
+
+  it('存在しないカートアイテムIDを指定した場合', () => {
+    const cartItem = cloneDeep(cartModule.state.all[0])
+    cartItem.id = '9999'
+
+    const actual = cartModule.set(cartItem)
+
     expect(actual).toBeUndefined()
   })
 })
@@ -52,8 +124,8 @@ describe('getById', () => {
 describe('setAll()', () => {
   it('ベーシックケース', () => {
     cartModule.setAll(CART_ITEMS)
-    expect(cartModule.all).toEqual(CART_ITEMS)
-    expect(cartModule.all).not.toBe(CART_ITEMS)
+    expect(cartModule.state.all).toEqual(CART_ITEMS)
+    expect(cartModule.state.all).not.toBe(CART_ITEMS)
   })
 })
 
@@ -64,23 +136,29 @@ describe('setCheckoutStatus()', () => {
   })
 })
 
-describe('addProductToCart()', () => {
-  it('追加しようとする商品がまだカートに存在しない場合', async () => {
-    const product = PRODUCTS[2]
+describe('add()', () => {
+  it('ベーシックケース', () => {
+    const cartItem = cloneDeep(cartModule.state.all[0])
+    cartItem.id = 'cartItemXXX'
+    cartItem.userId = 'user1'
+    cartItem.productId = 'product3'
+    cartItem.title = 'aaa'
+    cartItem.price = 999
+    cartItem.stock = 888
 
-    cartModule.addProductToCart(product)
+    const actual = cartModule.add(cartItem)
 
-    const cartItem = cartModule.getById(product.id)!
-    expect(cartItem.quantity).toBe(1)
+    const stateCartItem = cartModule.state.all[cartModule.state.all.length - 1]
+    expect(actual).toEqual(stateCartItem)
+    expect(actual).not.toBe(stateCartItem)
   })
+})
 
-  it('追加しようとする商品が既に存在する場合', async () => {
-    const product = PRODUCTS[0]
-    const cartItemBk = cloneDeep(cartModule.getById(product.id)!)
-
-    cartModule.addProductToCart(product)
-
-    const cartItem = cartModule.getById(product.id)!
-    expect(cartItem.quantity).toBe(cartItemBk.quantity + 1)
+describe('remove()', () => {
+  it('ベーシックケース', () => {
+    const cartItem = cartModule.state.all[1]
+    const actual = cartModule.remove(cartItem.id)
+    expect(actual).toEqual(cartItem)
+    expect(cartModule.getById(cartItem.id)).toBeUndefined()
   })
 })

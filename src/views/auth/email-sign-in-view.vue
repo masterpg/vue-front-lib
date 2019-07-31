@@ -166,7 +166,7 @@ export default class EmailSignInView extends mixins(BaseComponent, ResizableMixi
     }
 
     // メールアドレス確認が行われている場合
-    if (this.$logic.auth.account.emailVerified) {
+    if (this.$logic.auth.user.emailVerified) {
       // サインイン完了
       this.$emit('signed-in', this.m_inputEmail)
     }

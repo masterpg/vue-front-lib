@@ -8,6 +8,13 @@ export interface Config {
     baseURL: string
   }
 
+  graphql: {
+    protocol: string
+    host: string
+    port: number
+    baseURL: string
+  }
+
   firebase: {
     apiKey: string
     authDomain: string
@@ -28,6 +35,13 @@ class ConfigImpl implements Config {
     host: String(process.env.VUE_APP_API_HOST),
     port: Number(process.env.VUE_APP_API_PORT),
     baseURL: String(process.env.VUE_APP_API_BASE_URL),
+  }
+
+  readonly graphql = {
+    protocol: String(process.env.VUE_APP_GQL_PROTOCOL),
+    host: String(process.env.VUE_APP_GQL_HOST),
+    port: Number(process.env.VUE_APP_GQL_PORT),
+    baseURL: String(process.env.VUE_APP_GQL_BASE_URL),
   }
 
   readonly firebase = {

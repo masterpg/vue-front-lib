@@ -1,10 +1,10 @@
-import { Account, AccountModule } from '@/store/types'
+import { User, UserModule, UserState } from '@/store/types'
 import { BaseModule } from '@/store/base'
 import { Component } from 'vue-property-decorator'
 const assign = require('lodash/assign')
 
 @Component
-export class AccountModuleImpl extends BaseModule<Account> implements AccountModule {
+export class UserModuleImpl extends BaseModule<UserState> implements UserModule {
   //----------------------------------------------------------------------
   //
   //  Constructors
@@ -13,13 +13,7 @@ export class AccountModuleImpl extends BaseModule<Account> implements AccountMod
 
   constructor() {
     super()
-    this.initState({
-      isSignedIn: false,
-      displayName: '',
-      photoURL: '',
-      email: '',
-      emailVerified: false,
-    })
+    this.initState(this.m_createEmptyState())
   }
 
   //----------------------------------------------------------------------
@@ -28,7 +22,7 @@ export class AccountModuleImpl extends BaseModule<Account> implements AccountMod
   //
   //----------------------------------------------------------------------
 
-  get value(): Account {
+  get value(): User {
     return this.state
   }
 
@@ -38,8 +32,42 @@ export class AccountModuleImpl extends BaseModule<Account> implements AccountMod
   //
   //----------------------------------------------------------------------
 
-  set(account: Partial<Account>): Account {
-    assign(this.state, account)
-    return this.state
+  clone(value: User): User {
+    return {
+      id: value.id,
+      isSignedIn: value.isSignedIn,
+      displayName: value.displayName,
+      photoURL: value.photoURL,
+      email: value.email,
+      emailVerified: value.emailVerified,
+    }
+  }
+
+  set(user: Partial<User>): User {
+    const tmp = this.clone(this.state)
+    assign(tmp, user)
+    assign(this.state, tmp)
+    return this.clone(this.state)
+  }
+
+  clear(): void {
+    this.set(this.m_createEmptyState())
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
+
+  private m_createEmptyState(): User {
+    return {
+      id: '',
+      isSignedIn: false,
+      displayName: '',
+      photoURL: '',
+      email: '',
+      emailVerified: false,
+    }
   }
 }

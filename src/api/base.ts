@@ -83,6 +83,7 @@ export abstract class BaseAPI extends Vue {
     } else {
       baseURL.pathname('')
     }
+    baseURL.query('')
     if (apiConfig.port) baseURL.port(apiConfig.port.toString(10))
 
     const axiosConfig = Object.assign(config || {}, {

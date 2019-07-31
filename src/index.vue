@@ -95,21 +95,21 @@
 
         <div class="app-mr-16">Quasar v{{ $q.version }}</div>
 
-        <q-img v-show="m_account.isSignedIn && !!m_account.photoURL" :src="m_account.photoURL" contain class="photo app-mr-6"></q-img>
-        <q-icon v-show="m_account.isSignedIn && !m_account.photoURL" name="person" size="26px" class=" app-mr-6"></q-icon>
+        <q-img v-show="m_user.isSignedIn && !!m_user.photoURL" :src="m_user.photoURL" contain class="photo app-mr-6"></q-img>
+        <q-icon v-show="m_user.isSignedIn && !m_user.photoURL" name="person" size="26px" class=" app-mr-6"></q-icon>
         <q-btn flat round dense color="white" icon="more_vert">
           <q-menu>
             <q-list class="menu-list">
-              <q-item v-show="!m_account.isSignedIn" v-close-popup clickable>
+              <q-item v-show="!m_user.isSignedIn" v-close-popup clickable>
                 <q-item-section @click="m_signInMenuItemOnClick">Sign in</q-item-section>
               </q-item>
-              <q-item v-show="m_account.isSignedIn" v-close-popup clickable>
+              <q-item v-show="m_user.isSignedIn" v-close-popup clickable>
                 <q-item-section @click="m_signOutMenuItemOnClick">Sign out</q-item-section>
               </q-item>
-              <q-item v-show="m_account.isSignedIn" v-close-popup clickable>
+              <q-item v-show="m_user.isSignedIn" v-close-popup clickable>
                 <q-item-section @click="m_changeEmailMenuItemOnClick">Change email</q-item-section>
               </q-item>
-              <q-item v-show="m_account.isSignedIn" v-close-popup clickable>
+              <q-item v-show="m_user.isSignedIn" v-close-popup clickable>
                 <q-item-section @click="m_deleteAccountMenuItemOnClick">Delete account</q-item-section>
               </q-item>
             </q-list>
@@ -158,12 +158,12 @@
 import * as sw from '@/base/service-worker'
 import { BaseComponent, ResizableMixin } from '@/components'
 import { Component, Watch } from 'vue-property-decorator'
-import { Account } from '@/logic'
 import AccountDeleteDialog from '@/views/auth/account-delete-dialog/index.vue'
 import EmailChangeDialog from '@/views/auth/email-change-dialog/index.vue'
 import { NoCache } from '@/base/decorators'
 import { Route } from 'vue-router/types/router'
 import SignInDialog from '@/views/auth/sign-in-dialog/index.vue'
+import { User } from '@/logic'
 import { mixins } from 'vue-class-component'
 import { router } from '@/base/router'
 
@@ -208,7 +208,7 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
           this.$nextTick(() => this.m_emailChangeDialog.open())
           break
         case DialogType.AccountDelete:
-          this.$nextTick(() => this.m_accountDeleteDialog.open())
+          this.$nextTick(() => this.m_userDeleteDialog.open())
           break
       }
     }
@@ -228,7 +228,7 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
     },
     {
       title: 'Shopping',
-      path: router.views.shoppingPage.path,
+      path: router.views.shopPage.path,
       icon: 'star',
     },
   ]
@@ -244,8 +244,12 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
 
   private m_swUpdateIsRequired: boolean = false
 
-  private get m_account(): Account {
-    return this.$logic.auth.account
+  private get m_user(): User {
+    const user = this.$logic.auth.user
+    if (user.isSignedIn) {
+      this.$logic.shop.pullCartItems()
+    }
+    return user
   }
 
   //--------------------------------------------------
@@ -263,7 +267,7 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
   }
 
   @NoCache
-  private get m_accountDeleteDialog(): AccountDeleteDialog {
+  private get m_userDeleteDialog(): AccountDeleteDialog {
     return this.$refs.accountDeleteDialog as any
   }
 

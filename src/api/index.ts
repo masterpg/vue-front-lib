@@ -1,7 +1,7 @@
 import { API, HelloAPI, ShopAPI } from '@/api/types'
 import { Component } from 'vue-property-decorator'
-import { HelloAPIImpl } from '@/api/hello'
-import { ShopAPIImpl } from '@/api/shop'
+import { HelloAPIImpl } from '@/api/modules/hello'
+import { ShopAPIImpl } from '@/api/modules/shop'
 import Vue from 'vue'
 
 const debug = process.env.NODE_ENV !== 'production'

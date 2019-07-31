@@ -1,4 +1,4 @@
-import { Account, CartItem, CheckoutStatus, Product } from '@/store'
+import { CartItem, CheckoutStatus, Product, User } from '@/store'
 
 //----------------------------------------------------------------------
 //
@@ -19,17 +19,21 @@ export interface ShopLogic {
 
   cartItems: CartItem[]
 
+  pullCartItems(): Promise<void>
+
   cartTotalPrice: number
 
   checkoutStatus: CheckoutStatus
 
-  addProductToCart(productId: string): void
+  addItemToCart(productId: string): Promise<void>
+
+  removeItemFromCart(productId: string): Promise<void>
 
   checkout(): Promise<void>
 }
 
 export interface AuthLogic {
-  readonly account: Account
+  readonly user: User
 
   checkSingedIn(): Promise<void>
 
@@ -81,4 +85,4 @@ enum AuthProviderType {
   Anonymous = 'anonymous',
 }
 
-export { Account, AuthProviderType, CartItem, CheckoutStatus, Product }
+export { AuthProviderType, CartItem, CheckoutStatus, Product, User }

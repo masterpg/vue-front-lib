@@ -1,15 +1,15 @@
-import { AccountModule, CartModule, ProductsModule, Store } from '@/store/types'
-import { AccountModuleImpl } from '@/store/modules/auth'
+import { CartModule, ProductModule, Store, UserModule } from '@/store/types'
 import { CartModuleImpl } from '@/store/modules/cart'
 import { Component } from 'vue-property-decorator'
-import { ProductsModuleImpl } from '@/store/modules/products'
+import { ProductModuleImpl } from '@/store/modules/product'
+import { UserModuleImpl } from '@/store/modules/auth'
 import Vue from 'vue'
 
 @Component
 export class StoreImpl extends Vue implements Store {
-  readonly products: ProductsModule = new ProductsModuleImpl()
+  readonly product: ProductModule = new ProductModuleImpl()
   readonly cart: CartModule = new CartModuleImpl()
-  readonly account: AccountModule = new AccountModuleImpl()
+  readonly user: UserModule = new UserModuleImpl()
 }
 
 export let store: Store

@@ -1,4 +1,4 @@
-import '@/api/shop'
+import '@/api/modules/shop'
 
 describe('api/shop', () => {
   describe('parse()', () => {

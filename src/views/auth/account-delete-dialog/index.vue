@@ -32,7 +32,7 @@
       <!-- コンテンツエリア -->
       <q-card-section>
         <div>
-          Deleted accounts can not be recovered.<br />
+          Deleted account can not be recovered.<br />
           Are you sure you want to delete your account?
         </div>
       </q-card-section>
@@ -163,8 +163,8 @@ export default class AccountDeleteDialog extends mixins(BaseComponent, Resizable
   }
 
   private async m_visibleProviderList(): Promise<void> {
-    const account = this.$logic.auth.account
-    this.m_visibleProviders = await this.$logic.auth.fetchSignInMethodsForEmail(account.email)
+    const user = this.$logic.auth.user
+    this.m_visibleProviders = await this.$logic.auth.fetchSignInMethodsForEmail(user.email)
     this.m_viewType.set('providerList')
   }
 }

@@ -1,0 +1,154 @@
+query GetCartItems {
+  cartItems(userId: "YsRuj2LOtIUbWDtnRygHdPzw1Lu1") {
+    id
+    userId
+    productId
+    title
+    price
+    quantity
+  }
+}
+
+query GetCartItems($userId: ID!) {
+  cartItems(userId: $userId) {
+    id
+    userId
+    productId
+    title
+    price
+    quantity
+  }
+}
+{
+  "userId": "YsRuj2LOtIUbWDtnRygHdPzw1Lu1"
+}
+
+mutation AddCartItems($items: [AddCartItemInput!]!) {
+  addCartItems(items: $items) {
+    id
+    userId
+    productId
+    title
+    price
+    quantity
+  }
+}
+{
+  "items": [
+    {
+      "userId": "YsRuj2LOtIUbWDtnRygHdPzw1Lu1",
+      "productId": "1",
+      "title": "iPad 4 Mini",
+      "price": 500.01,
+      "quantity": 1
+    },
+    {
+      "userId": "YsRuj2LOtIUbWDtnRygHdPzw1Lu1",
+      "productId": "2",
+      "title": "Fire HD 8 Tablet",
+      "price": 80.99,
+      "quantity": 2
+    }
+  ]
+}
+
+mutation AddCartItems {
+  addCartItems(items: [
+    {
+      userId: "YsRuj2LOtIUbWDtnRygHdPzw1Lu1"
+      productId: "1"
+      title: "iPad 4 Mini"
+      price: 500.01
+      quantity: 1
+    },
+    {
+      userId: "YsRuj2LOtIUbWDtnRygHdPzw1Lu1"
+      productId: "2"
+      title: "Fire HD 8 Tablet"
+      price: 80.99
+      quantity: 2
+    }
+  ]) {
+    id
+    userId
+    productId
+    title
+    price
+    quantity
+  }
+}
+
+mutation UpdateCartItems {
+  updateCartItems(items: [
+    {
+      id: "abvlEFTLSE3lKZtrWEde"
+      quantity: 1
+    },
+    {
+      id: "nCXcDdyHd8ONOBiWIXuu"
+      quantity: 2
+    }
+  ]) {
+    id
+    userId
+    productId
+    title
+    price
+    quantity
+  }
+}
+
+mutation UpdateCartItems($items: [UpdateCartItemInput!]!) {
+  updateCartItems(items: $items) {
+    id
+    userId
+    productId
+    title
+    price
+    quantity
+  }
+}
+{
+  "items": [
+    {
+      "id": "rVszcvbJuI22nhO8wdg1",
+      "quantity": 1
+    },
+    {
+      "id": "5LPP5CizvRegatleWKUN",
+      "quantity": 2
+    }
+  ]
+}
+
+mutation RemoveCartItems {
+  removeCartItems(cartItemIds: [
+    "rVszcvbJuI22nhO8wdg1"
+    "5LPP5CizvRegatleWKUN"
+  ]) {
+    id
+    userId
+    productId
+    title
+    price
+    quantity
+  }
+}
+
+mutation RemoveCartItems($cartItemIds: [ID!]!) {
+  removeCartItems(cartItemIds: $cartItemIds) {
+    id
+    userId
+    productId
+    title
+    price
+    quantity
+  }
+}
+{
+  "cartItemIds": ["abvlEFTLSE3lKZtrWEde", "nCXcDdyHd8ONOBiWIXuu"]
+}
+
+mutation CheckoutCart {
+  checkoutCart(userId: "YsRuj2LOtIUbWDtnRygHdPzw1Lu1")
+}

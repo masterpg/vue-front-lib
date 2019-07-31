@@ -5,12 +5,13 @@ import '@/index.styl'
 // TODO JetBrainsIDE使用時の開発補助コード
 // import '@/views/abc-page/index.vue'
 // import '@/views/error404-page/index.vue'
-// import '@/views/shopping-page/index.vue'
+// import '@/views/shop-page/index.vue'
 // import '@/views/demo/comp-tree-view-page/index.vue'
 
 import {
   ClosePopup,
   Dialog,
+  Loading,
   Notify,
   QAvatar,
   QBtn,
@@ -47,6 +48,7 @@ import Vue from 'vue'
 import { currency } from '@/currency'
 import { initAPI } from '@/api'
 import { initConfig } from '@/base/config'
+import { initGQL } from '@/gql'
 import { initLogic } from '@/logic'
 import { initServiceWorker } from '@/base/service-worker'
 import { initStore } from '@/store'
@@ -85,6 +87,7 @@ Vue.use(Quasar, {
   },
   config: {
     notify: {},
+    loading: {},
   },
   directives: {
     ClosePopup,
@@ -92,6 +95,7 @@ Vue.use(Quasar, {
   },
   plugins: {
     Dialog,
+    Loading,
     Notify,
   },
 })
@@ -101,6 +105,7 @@ async function init() {
   initConfig()
   initServiceWorker()
   initAPI()
+  initGQL()
   initStore()
   initLogic()
   await initI18n()
