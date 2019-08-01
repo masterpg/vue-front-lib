@@ -1,5 +1,5 @@
 import * as express from 'express'
-import * as middlewares from '../middlewares'
+import * as middlewares from '../base/middlewares'
 import * as path from 'path'
 import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express'
 import { CartResolver, ProductResolver, RecipeResolver } from './modules'
@@ -55,6 +55,6 @@ function setupApolloServer(router: express.Router, schema: GraphQLSchema) {
 
 export function initGQL(app: express.Express) {
   const router = express.Router().use(middlewares.cors(true), cookieParser)
-  app.use('/', router)
+  app.use('/gql', router)
   setupApolloServer(router, buildSchema())
 }

@@ -1,10 +1,10 @@
 import * as express from 'express'
-import { publicRouter } from '../../../base'
+import { siteRouter } from '../../../base'
 
 export default function hello(req: express.Request, res: express.Response) {
-  console.log('/api/public/hello')
+  console.log('/rest/site/hello')
   const message = req.query.message
-  res.send(`Public Hello ${message}`)
+  res.send(`Site Hello ${message}`)
 }
 
-publicRouter.get('/hello', hello)
+siteRouter.get('/hello', hello)

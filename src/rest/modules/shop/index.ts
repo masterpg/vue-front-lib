@@ -1,5 +1,5 @@
-import { Product, ShopAPI } from '@/api/types'
-import { BaseAPI } from '@/api/base'
+import { Product, ShopAPI } from '@/rest/types'
+import { BaseAPI } from '@/rest/base'
 import Component from 'vue-class-component'
 
 @Component

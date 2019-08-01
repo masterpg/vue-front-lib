@@ -1,6 +1,6 @@
-import '@/api/modules/shop'
+import '@/rest/modules/shop'
 
-describe('api/shop', () => {
+describe('rest/shop', () => {
   describe('parse()', () => {
     it('ベーシックケース', () => {
       expect(1).toBe(1)

@@ -4,18 +4,18 @@ import * as firebase from 'firebase/app'
 import { BaseLogic } from '@/logic/base'
 import { Component } from 'vue-property-decorator'
 import { HelloLogic } from '@/logic/types'
-import { api } from '@/api'
+import { rest } from '@/rest'
 const assign = require('lodash/assign')
 const cloneDeep = require('lodash/cloneDeep')
 
 @Component
 export class HelloLogicImpl extends BaseLogic implements HelloLogic {
   async publicHello(message: string): Promise<string> {
-    return await api.hello.publicHello(message)
+    return await rest.hello.publicHello(message)
   }
 
   async siteHello(message: string): Promise<string> {
-    return await api.hello.siteHello(message)
+    return await rest.hello.siteHello(message)
   }
 
   async authHello(message: string): Promise<string> {
@@ -27,6 +27,6 @@ export class HelloLogicImpl extends BaseLogic implements HelloLogic {
     const domain = options.authDomain || ''
     if (!domain) throw new Error('Domain could not be acquired.')
 
-    return await api.hello.authHello(message, idToken)
+    return await rest.hello.authHello(message, idToken)
   }
 }

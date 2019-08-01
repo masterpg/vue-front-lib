@@ -22,10 +22,6 @@
         "function": "api"
       },
       {
-        "source": "/gql/**",
-        "function": "gql"
-      },
-      {
         "source": "**",
         "destination": "/index.html"
       }

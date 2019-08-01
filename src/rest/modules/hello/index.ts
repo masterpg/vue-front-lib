@@ -1,6 +1,6 @@
-import { BaseAPI } from '@/api/base'
+import { BaseAPI } from '@/rest/base'
 import Component from 'vue-class-component'
-import { HelloAPI } from '@/api/types'
+import { HelloAPI } from '@/rest/types'
 
 @Component
 export class HelloAPIImpl extends BaseAPI implements HelloAPI {

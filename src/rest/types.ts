@@ -1,10 +1,10 @@
 //----------------------------------------------------------------------
 //
-//  APIs
+//  API
 //
 //----------------------------------------------------------------------
 
-export interface API {
+export interface REST {
   readonly shop: ShopAPI
   readonly hello: HelloAPI
 }
