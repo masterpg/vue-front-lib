@@ -3,8 +3,8 @@
   "scripts": {
     "lint": "cd .. && ./scripts/lint.sh functions",
     "build": "tsc && cp ./src/serviceAccountKey.json ./lib && ./functions.config.sh",
-    "serve": "npm run build && firebase serve --only functions --port=5010",
-    "shell": "npm run build && firebase functions:shell",
+    "serve": "npm run build && firebase functions:config:get > .runtimeconfig.json && firebase serve --only functions --port=5010",
+    "shell": "npm run build && firebase functions:config:get > .runtimeconfig.json && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"
@@ -21,11 +21,14 @@
     "firebase-admin": "^8.2.0",
     "firebase-functions": "^3.1.0",
     "graphql": "^14.4.2",
+    "graphql-type-json": "^0.3.0",
     "reflect-metadata": "^0.1.13",
     "type-graphql": "^0.17.4"
   },
   "devDependencies": {
     "@types/graphql": "^14.2.3",
+    "@types/graphql-type-json": "^0.3.0",
+    "firebase-tools": "^7.2.2",
     "typescript": "^3.5.2"
   },
   "private": true

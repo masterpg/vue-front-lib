@@ -1,4 +1,5 @@
 import { Field, Float, ID, InputType, Int, ObjectType } from 'type-graphql'
+import { Product } from '../product/types'
 
 @ObjectType()
 export class CartItem {
@@ -6,7 +7,7 @@ export class CartItem {
   id!: string
 
   @Field(type => ID)
-  userId!: string
+  uid!: string
 
   @Field(type => ID)
   productId!: string
@@ -43,4 +44,10 @@ export class UpdateCartItemInput implements Partial<CartItem> {
 
   @Field(type => Int)
   quantity!: number
+}
+
+@ObjectType()
+export class EditCartItemResponse extends CartItem {
+  @Field(type => Product)
+  product!: Product
 }

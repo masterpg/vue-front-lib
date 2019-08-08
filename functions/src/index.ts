@@ -10,9 +10,8 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 })
 
-const app = express()
-
 export const api = (function() {
+  const app = express()
   initREST(app)
   initGQL(app)
   return functions.region('asia-northeast1').https.onRequest(app)

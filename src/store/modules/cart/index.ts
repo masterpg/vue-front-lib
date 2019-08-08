@@ -52,7 +52,7 @@ export class CartModuleImpl extends BaseModule<CartState> implements CartModule 
   clone(value: CartItem): CartItem {
     return {
       id: value.id,
-      userId: value.userId,
+      uid: value.uid,
       productId: value.productId,
       title: value.title,
       price: value.price,
@@ -70,7 +70,7 @@ export class CartModuleImpl extends BaseModule<CartState> implements CartModule 
     return stateItem ? this.clone(stateItem) : undefined
   }
 
-  set(item: StatePartial<Omit<CartItem, 'userId' | 'productId'>>): CartItem | undefined {
+  set(item: StatePartial<Omit<CartItem, 'uid' | 'productId'>>): CartItem | undefined {
     const stateItem = this.m_getById(item.id)
     if (stateItem) {
       const tmp = this.clone(stateItem)

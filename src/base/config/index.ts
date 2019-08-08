@@ -1,14 +1,14 @@
 import * as firebase from 'firebase/app'
 
 export interface Config {
-  rest: {
+  api: {
     protocol: string
     host: string
     port: number
     baseURL: string
   }
 
-  gql: {
+  test: {
     protocol: string
     host: string
     port: number
@@ -30,18 +30,18 @@ class ConfigImpl implements Config {
     firebase.initializeApp(this.firebase)
   }
 
-  readonly rest = {
-    protocol: String(process.env.VUE_APP_REST_PROTOCOL),
-    host: String(process.env.VUE_APP_REST_HOST),
-    port: Number(process.env.VUE_APP_REST_PORT),
-    baseURL: String(process.env.VUE_APP_REST_BASE_URL),
+  readonly api = {
+    protocol: String(process.env.VUE_APP_API_PROTOCOL),
+    host: String(process.env.VUE_APP_API_HOST),
+    port: Number(process.env.VUE_APP_API_PORT),
+    baseURL: String(process.env.VUE_APP_API_BASE_URL),
   }
 
-  readonly gql = {
-    protocol: String(process.env.VUE_APP_GQL_PROTOCOL),
-    host: String(process.env.VUE_APP_GQL_HOST),
-    port: Number(process.env.VUE_APP_GQL_PORT),
-    baseURL: String(process.env.VUE_APP_GQL_BASE_URL),
+  readonly test = {
+    protocol: String(process.env.VUE_APP_TEST_PROTOCOL),
+    host: String(process.env.VUE_APP_TEST_HOST),
+    port: Number(process.env.VUE_APP_TEST_PORT),
+    baseURL: String(process.env.VUE_APP_TEST_BASE_URL),
   }
 
   readonly firebase = {

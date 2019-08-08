@@ -1,19 +1,14 @@
-import { GQL, GQLMutation, GQLQuery } from '@/gql/types'
-import { Component } from 'vue-property-decorator'
-import { GQLMutationImpl } from '@/gql/mutation'
-import { GQLQueryImpl } from '@/gql/query'
-import Vue from 'vue'
+import { GQLFacade } from '@/gql/types'
+import { GQLFacadeImpl } from '@/gql/facade'
 
-@Component
-class GQLImpl extends Vue implements GQL {
-  readonly query: GQLQuery = new GQLQueryImpl()
-  readonly mutation: GQLMutation = new GQLMutationImpl()
-}
+export let gql: GQLFacade
 
-export let gql: GQLImpl
-
-export function initGQL(): void {
-  gql = new GQLImpl()
+export function initGQL(gqlFacade?: GQLFacade): void {
+  if (gqlFacade) {
+    gql = gqlFacade
+  } else {
+    gql = new GQLFacadeImpl()
+  }
 }
 
 export * from '@/gql/types'

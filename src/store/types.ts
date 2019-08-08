@@ -41,7 +41,7 @@ export interface CartModule {
 
   readonly checkoutStatus: CheckoutStatus
 
-  set(item: StatePartial<Omit<CartItem, 'userId' | 'productId'>>): CartItem | undefined
+  set(item: StatePartial<Omit<CartItem, 'uid' | 'productId'>>): CartItem | undefined
 
   setAll(items: CartItem[]): void
 
@@ -81,7 +81,7 @@ export interface Product {
 
 export interface CartItem {
   id: string
-  userId: string
+  uid: string
   productId: string
   title: string
   price: number

@@ -74,21 +74,24 @@ export abstract class BaseAPI extends Vue {
   }
 
   request<T = any>(config: APIRequestInternalConfig): APIPromise<T> {
-    const restConfig = appConfig.rest
-    const baseURL = new URI()
-    if (restConfig.protocol) baseURL.protocol(restConfig.protocol)
-    if (restConfig.host) baseURL.hostname(restConfig.host)
-    if (restConfig.baseURL) {
-      baseURL.pathname(restConfig.baseURL)
-    } else {
-      baseURL.pathname('')
-    }
-    baseURL.query('')
-    if (restConfig.port) baseURL.port(restConfig.port.toString(10))
-
     const axiosConfig = Object.assign(config || {}, {
-      baseURL: baseURL.toString(),
+      baseURL: this.getRequestURL(),
     })
     return axios.request(axiosConfig)
+  }
+
+  protected getRequestURL(): string {
+    const baseURL = new URI()
+    if (appConfig.api.protocol) baseURL.protocol(appConfig.api.protocol)
+    if (appConfig.api.host) baseURL.hostname(appConfig.api.host)
+    if (appConfig.api.baseURL) {
+      baseURL.path(URI.joinPaths(appConfig.api.baseURL, 'rest').path())
+    } else {
+      baseURL.path('rest')
+    }
+    baseURL.query('')
+    if (appConfig.api.port) baseURL.port(appConfig.api.port.toString(10))
+
+    return baseURL.toString()
   }
 }

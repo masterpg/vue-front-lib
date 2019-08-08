@@ -1,7 +1,8 @@
-import { Product, ProductModule, ProductState, ProductsErrorType, StoreError, store } from '@/store'
+import { Product, ProductModule, ProductState, ProductsErrorType, StoreError, initStore, store } from '@/store'
 import { TestStoreModule } from '../../../../helper/unit'
 const cloneDeep = require('lodash/cloneDeep')
 
+initStore()
 const productModule = store.product as TestStoreModule<ProductState, ProductModule>
 
 const PRODUCTS: Product[] = [

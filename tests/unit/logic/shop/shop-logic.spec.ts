@@ -1,11 +1,14 @@
 import * as td from 'testdouble'
-import { CartItem, CartModule, CartState, CheckoutStatus, ProductModule, ProductState, User, UserModule, UserState, store } from '@/store'
-import { GQLMutation, GQLProduct, GQLQuery, gql } from '@/gql'
+import { CartItem, CartModule, CartState, CheckoutStatus, ProductModule, ProductState, User, UserModule, UserState, initStore, store } from '@/store'
+import { GQLEditCartItemResponse, GQLFacade, GQLProduct, gql, initGQL } from '@/gql'
 import { TestLogic, TestStoreModule } from '../../../helper/unit'
+import { initLogic, logic } from '@/logic'
 import { ShopLogicImpl } from '@/logic/modules/shop'
-import { logic } from '@/logic'
-const assign = require('lodash/assign')
 const cloneDeep = require('lodash/cloneDeep')
+
+initGQL(td.object<GQLFacade>())
+initStore()
+initLogic()
 
 const shopLogic = logic.shop as TestLogic<ShopLogicImpl>
 const cartModule = store.cart as TestStoreModule<CartState, CartModule>
@@ -22,7 +25,7 @@ const PRODUCTS: GQLProduct[] = [
 const CART_ITEMS: CartItem[] = [
   {
     id: 'cartItem1',
-    userId: 'user1',
+    uid: 'user1',
     productId: 'product1',
     title: 'iPad 4 Mini',
     price: 500.01,
@@ -30,7 +33,7 @@ const CART_ITEMS: CartItem[] = [
   },
   {
     id: 'cartItem2',
-    userId: 'user1',
+    uid: 'user1',
     productId: 'product2',
     title: 'Fire HD 8 Tablet',
     price: 80.99,
@@ -56,8 +59,6 @@ beforeEach(async () => {
     all: cloneDeep(PRODUCTS),
   })
   userModule.initState(cloneDeep(USER))
-  td.replace(gql, 'query', td.object<GQLQuery>())
-  td.replace(gql, 'mutation', td.object<GQLMutation>())
 })
 
 afterEach(() => {})
@@ -100,12 +101,61 @@ describe('checkoutStatus', () => {
 
 describe('pullProducts()', () => {
   it('ベーシックケース', async () => {
-    td.replace(gql.query, 'products', () => Promise.resolve(PRODUCTS))
+    td.when(gql.products()).thenResolve(PRODUCTS)
 
     await shopLogic.pullProducts()
     const actual = shopLogic.products
 
     expect(actual).toEqual(PRODUCTS)
+  })
+
+  it('GQLでエラーが発生した場合', async () => {
+    td.when(gql.products()).thenThrow(new Error())
+    productModule.state.all = []
+
+    await shopLogic.pullProducts()
+    const actual = shopLogic.products
+
+    expect(actual.length).toBe(0)
+  })
+})
+
+describe('pullCartItems()', () => {
+  it('ベーシックケース', async () => {
+    // ユーザーがサインインしている状態へ変更
+    userModule.set({ isSignedIn: true })
+
+    td.when(gql.cartItems()).thenResolve(CART_ITEMS)
+
+    await shopLogic.pullCartItems()
+    const actual = shopLogic.cartItems
+
+    expect(actual).toEqual(CART_ITEMS)
+  })
+
+  it('GQLでエラーが発生した場合', async () => {
+    // ユーザーがサインインしている状態へ変更
+    userModule.set({ isSignedIn: true })
+
+    td.when(gql.cartItems()).thenThrow(new Error())
+    cartModule.state.all = []
+
+    await shopLogic.pullCartItems()
+    const actual = shopLogic.cartItems
+
+    expect(actual.length).toBe(0)
+  })
+
+  it('ユーザーがサインインしていない場合', async () => {
+    // ユーザーがサインインしていない状態へ変更
+    userModule.set({ isSignedIn: false })
+
+    try {
+      await shopLogic.pullCartItems()
+    } catch (err) {
+      expect(err).toBeInstanceOf(Error)
+      expect(err.message).toBe('Not signed in.')
+    }
   })
 })
 
@@ -113,42 +163,47 @@ describe('addItemToCart()', () => {
   it('追加しようとする商品がカートに存在しない場合', async () => {
     // ユーザーがサインインしている状態へ変更
     userModule.set({ isSignedIn: true })
-    // GQL実行後の期待値となるカートアイテムの設定
-    const resultCartItem = {
+    // GQL実行後のレスポンスの設定
+    const product3 = PRODUCTS[2]
+    const response = {
       id: 'cartItemXXX',
-      userId: 'user1',
-      productId: 'product3',
-      title: 'MediaPad 10',
-      price: 150.8,
+      uid: 'user1',
+      productId: product3.id,
+      title: product3.title,
+      price: product3.price,
       quantity: 1,
-    }
+      product: {
+        id: product3.id,
+        stock: 10 - 1,
+      },
+    } as GQLEditCartItemResponse
     // モック設定
-    td.when(gql.mutation.addCartItems(td.matchers.anything())).thenResolve([resultCartItem])
-    // 商品の在庫数を設定
+    td.when(gql.addCartItems(td.matchers.anything())).thenResolve([response])
+    // 現在の商品の在庫数を設定
     productModule.set({
-      id: resultCartItem.productId,
+      id: response.productId,
       stock: 10,
     })
 
-    await shopLogic.addItemToCart(resultCartItem.productId)
+    await shopLogic.addItemToCart(response.productId)
 
     // GQLが適切な引数でコールされたか検証
     td.verify(
-      gql.mutation.addCartItems([
+      gql.addCartItems([
         {
-          productId: resultCartItem.productId,
-          title: resultCartItem.title,
-          price: resultCartItem.price,
-          quantity: resultCartItem.quantity,
+          productId: response.productId,
+          title: response.title,
+          price: response.price,
+          quantity: response.quantity,
         },
       ])
     )
     // カートにアイテムが追加されたか検証
-    const cartItem = cartModule.getById(resultCartItem.id)!
-    expect(cartItem.quantity).toBe(resultCartItem.quantity)
+    const cartItem = cartModule.getById(response.id)!
+    expect(cartItem.quantity).toBe(response.quantity)
     // 商品の在庫数が適切にマイナスされたか検証
-    const product = productModule.getById(resultCartItem.productId)!
-    expect(product.stock).toBe(9)
+    const product = productModule.getById(response.productId)!
+    expect(product.stock).toBe(response.product.stock)
     // チェックアウトステータスの検証
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.None)
   })
@@ -156,34 +211,40 @@ describe('addItemToCart()', () => {
   it('追加しようとする商品がカートに存在する場合', async () => {
     // ユーザーがサインインしている状態へ変更
     userModule.set({ isSignedIn: true })
-    // GQL実行後の期待値となるカートアイテムの設定
-    const resultCartItem = cartModule.all[0]
-    resultCartItem.quantity++
+    // GQL実行後のレスポンスの設定
+    const response = {
+      ...cartModule.all[0],
+      quantity: cartModule.all[0].quantity + 1,
+      product: {
+        id: cartModule.all[0].productId,
+        stock: 10 - 1,
+      },
+    } as GQLEditCartItemResponse
     // モック設定
-    td.when(gql.mutation.updateCartItems(td.matchers.anything())).thenResolve([resultCartItem])
-    // 商品の在庫数を設定
+    td.when(gql.updateCartItems(td.matchers.anything())).thenResolve([response])
+    // 現在の商品の在庫数を設定
     productModule.set({
-      id: resultCartItem.productId,
+      id: response.productId,
       stock: 10,
     })
 
-    await shopLogic.addItemToCart(resultCartItem.productId)
+    await shopLogic.addItemToCart(response.productId)
 
     // GQLが適切な引数でコールされたか検証
     td.verify(
-      gql.mutation.updateCartItems([
+      gql.updateCartItems([
         {
-          id: resultCartItem.id,
-          quantity: resultCartItem.quantity,
+          id: response.id,
+          quantity: response.quantity,
         },
       ])
     )
     // カートアイテムの個数が適切にプラスされたか検証
-    const cartItem = cartModule.getById(resultCartItem.id)!
-    expect(cartItem.quantity).toBe(resultCartItem.quantity)
+    const cartItem = cartModule.getById(response.id)!
+    expect(cartItem.quantity).toBe(response.quantity)
     // 商品の在庫数が適切にマイナスされたか検証
-    const product = productModule.getById(resultCartItem.productId)!
-    expect(product.stock).toBe(9)
+    const product = productModule.getById(response.productId)!
+    expect(product.stock).toBe(response.product.stock)
     // チェックアウトステータスの検証
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.None)
   })
@@ -206,7 +267,7 @@ describe('addItemToCart()', () => {
     userModule.set({ isSignedIn: true })
     const prevCartItem = cartModule.all[0]
     const prevProduct = productModule.getById(prevCartItem.productId)!
-    td.when(gql.mutation.updateCartItems(td.matchers.anything())).thenThrow(new Error())
+    td.when(gql.updateCartItems(td.matchers.anything())).thenThrow(new Error())
     cartModule.setCheckoutStatus(CheckoutStatus.Successful)
 
     await shopLogic.addItemToCart(prevCartItem.productId)
@@ -226,39 +287,47 @@ describe('removeItemFromCart()', () => {
   it('カートアイテムの数が2個以上の場合', async () => {
     // ユーザーがサインインしている状態へ変更
     userModule.set({ isSignedIn: true })
-    // GQL実行後の期待値となるカートアイテムの設定
-    const resultCartItem = cartModule.all[0]
-    resultCartItem.quantity = 2
+    // GQL実行後のレスポンスの設定
+    const response = {
+      ...cartModule.all[0],
+      quantity: 1,
+      product: {
+        id: cartModule.all[0].productId,
+        stock: 9 + 1,
+      },
+    } as GQLEditCartItemResponse
     // モック設定
-    td.when(gql.mutation.updateCartItems(td.matchers.anything())).thenResolve([resultCartItem])
-    // カートアイテムの個数を設定
+    td.when(gql.updateCartItems(td.matchers.anything())).thenResolve([response])
+    // 現在のカートアイテムの個数を設定
     cartModule.set({
-      id: resultCartItem.id,
-      quantity: 3,
+      id: response.id,
+      // 現在のカートアイテムの個数を2に設定
+      // この場合はGQLの`updateCartItems`がコールされる
+      quantity: 2,
     })
-    // 商品の在庫数を設定
+    // 現在の商品の在庫数を設定
     productModule.set({
-      id: resultCartItem.productId,
+      id: response.productId,
       stock: 9,
     })
 
-    await shopLogic.removeItemFromCart(resultCartItem.productId)
+    await shopLogic.removeItemFromCart(response.productId)
 
     // GQLが適切な引数でコールされたか検証
     td.verify(
-      gql.mutation.updateCartItems([
+      gql.updateCartItems([
         {
-          id: resultCartItem.id,
-          quantity: resultCartItem.quantity,
+          id: response.id,
+          quantity: response.quantity,
         },
       ])
     )
     // カートアイテムの個数が適切にマイナスされたか検証
-    const cartItem = cartModule.getById(resultCartItem.id)!
-    expect(cartItem.quantity).toBe(resultCartItem.quantity)
+    const cartItem = cartModule.getById(response.id)!
+    expect(cartItem.quantity).toBe(response.quantity)
     // 商品の在庫数が適切にプラスされたか検証
-    const product = productModule.getById(resultCartItem.productId)!
-    expect(product.stock).toBe(10)
+    const product = productModule.getById(response.productId)!
+    expect(product.stock).toBe(response.product.stock)
     // チェックアウトステータスの検証
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.None)
   })
@@ -266,31 +335,37 @@ describe('removeItemFromCart()', () => {
   it('カートアイテムの数が1個の場合', async () => {
     // ユーザーがサインインしている状態へ変更
     userModule.set({ isSignedIn: true })
-    // GQL実行後の期待値となるカートアイテムの設定
-    const resultCartItem = cartModule.all[0]
-    resultCartItem.quantity = 0
+    // GQL実行後のレスポンスの設定
+    const response = {
+      ...cartModule.all[0],
+      quantity: 0,
+      product: {
+        id: cartModule.all[0].productId,
+        stock: 9 + 1,
+      },
+    } as GQLEditCartItemResponse
     // モック設定
-    td.when(gql.mutation.removeCartItems(td.matchers.anything())).thenResolve([resultCartItem])
-    // カートアイテムの個数を設定
+    td.when(gql.removeCartItems(td.matchers.anything())).thenResolve([response])
+    // 現在のカートアイテムの個数を設定
     cartModule.set({
-      id: resultCartItem.id,
+      id: response.id,
       quantity: 1,
     })
-    // 商品の在庫数を設定
+    // 現在の商品の在庫数を設定
     productModule.set({
-      id: resultCartItem.productId,
+      id: response.productId,
       stock: 9,
     })
 
-    await shopLogic.removeItemFromCart(resultCartItem.productId)
+    await shopLogic.removeItemFromCart(response.productId)
 
     // GQLが適切な引数でコールされたか検証
-    td.verify(gql.mutation.removeCartItems([resultCartItem.id]))
+    td.verify(gql.removeCartItems([response.id]))
     // カートアイテムが削除されたか検証
-    expect(cartModule.getById(resultCartItem.id)).toBeUndefined()
+    expect(cartModule.getById(response.id)).toBeUndefined()
     // 商品の在庫数が適切にプラスされたか検証
-    const product = productModule.getById(resultCartItem.productId)!
-    expect(product.stock).toBe(10)
+    const product = productModule.getById(response.productId)!
+    expect(product.stock).toBe(response.product.stock)
     // チェックアウトステータスの検証
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.None)
   })
@@ -313,7 +388,7 @@ describe('removeItemFromCart()', () => {
     userModule.set({ isSignedIn: true })
     const prevCartItem = cartModule.all[0]
     const prevProduct = productModule.getById(prevCartItem.productId)!
-    td.when(gql.mutation.updateCartItems(td.matchers.anything())).thenThrow(new Error())
+    td.when(gql.updateCartItems(td.matchers.anything())).thenThrow(new Error())
     cartModule.setCheckoutStatus(CheckoutStatus.Successful)
 
     await shopLogic.addItemToCart(prevCartItem.productId)
@@ -335,13 +410,13 @@ describe('checkout()', () => {
 
     await shopLogic.checkout()
 
-    td.verify(gql.mutation.checkoutCart())
+    td.verify(gql.checkoutCart())
     expect(shopLogic.cartItems).toEqual([])
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.Successful)
   })
 
   it('GQLでエラーが発生した場合', async () => {
-    td.when(gql.mutation.checkoutCart()).thenThrow(new Error())
+    td.when(gql.checkoutCart()).thenThrow(new Error())
 
     await shopLogic.checkout()
 

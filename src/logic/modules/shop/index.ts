@@ -1,7 +1,7 @@
 import { CartItem, CheckoutStatus, Product, ShopLogic } from '@/logic/types'
+import { GQLCartItem, GQLEditCartItemResponse, GQLProduct, gql } from '@/gql'
 import { BaseLogic } from '@/logic/base'
 import { Component } from 'vue-property-decorator'
-import { gql } from '@/gql'
 import { store } from '@/store'
 const assign = require('lodash/assign')
 const cloneDeep = require('lodash/cloneDeep')
@@ -62,14 +62,26 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
   //----------------------------------------------------------------------
 
   async pullProducts(): Promise<void> {
-    const products = await gql.query.products()
+    let products: GQLProduct[]
+    try {
+      products = await gql.products()
+    } catch (err) {
+      console.log(err)
+      return
+    }
     store.product.setAll(products)
   }
 
   async pullCartItems(): Promise<void> {
     this.m_checkSignedIn()
 
-    const items = await gql.query.cartItems()
+    let items: GQLCartItem[]
+    try {
+      items = await gql.cartItems()
+    } catch (err) {
+      console.log(err)
+      return
+    }
     store.cart.setAll(items)
   }
 
@@ -78,18 +90,19 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
 
     const cartItem = store.cart.getByProductId(productId)
 
+    let response: GQLEditCartItemResponse
     try {
       if (!cartItem) {
-        await this.m_addCartItem(productId)
+        response = await this.m_addCartItem(productId)
       } else {
-        await this.m_updateCartItem(productId, 1)
+        response = await this.m_updateCartItem(productId, 1)
       }
     } catch (err) {
       console.error(err)
       return
     }
 
-    store.product.decrementStock(productId)
+    store.product.set(response.product)
     store.cart.setCheckoutStatus(CheckoutStatus.None)
   }
 
@@ -98,18 +111,19 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
 
     const cartItem = this.m_getCartItemByProductId(productId)
 
+    let response: GQLEditCartItemResponse
     try {
       if (cartItem.quantity > 1) {
-        await this.m_updateCartItem(productId, -1)
+        response = await this.m_updateCartItem(productId, -1)
       } else {
-        await this.m_removeCartItem(productId)
+        response = await this.m_removeCartItem(productId)
       }
     } catch (err) {
       console.error(err)
       return
     }
 
-    store.product.incrementStock(productId)
+    store.product.set(response.product)
     store.cart.setCheckoutStatus(CheckoutStatus.None)
   }
 
@@ -117,7 +131,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
     this.m_checkSignedIn()
 
     try {
-      await gql.mutation.checkoutCart()
+      await gql.checkoutCart()
     } catch (err) {
       console.log(err)
       store.cart.setCheckoutStatus(CheckoutStatus.Failed)
@@ -134,7 +148,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
   //
   //----------------------------------------------------------------------
 
-  private async m_addCartItem(productId: string): Promise<void> {
+  private async m_addCartItem(productId: string): Promise<GQLEditCartItemResponse> {
     const product = store.product.getById(productId)!
     const newCartItem = {
       productId,
@@ -142,24 +156,27 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
       price: product.price,
       quantity: 1,
     }
-    const responseCartItem = (await gql.mutation.addCartItems([newCartItem]))[0]
-    store.cart.add(responseCartItem)
+    const response = (await gql.addCartItems([newCartItem]))[0]
+    store.cart.add(response)
+    return response
   }
 
-  private async m_updateCartItem(productId: string, quantity: number): Promise<void> {
+  private async m_updateCartItem(productId: string, quantity: number): Promise<GQLEditCartItemResponse> {
     const cartItem = this.m_getCartItemByProductId(productId)
     const newCartItem = {
       id: cartItem.id,
       quantity: cartItem.quantity + quantity,
     }
-    const responseCartItem = (await gql.mutation.updateCartItems([newCartItem]))[0]
-    store.cart.set(responseCartItem)
+    const response = (await gql.updateCartItems([newCartItem]))[0]
+    store.cart.set(response)
+    return response
   }
 
-  private async m_removeCartItem(productId: string): Promise<void> {
+  private async m_removeCartItem(productId: string): Promise<GQLEditCartItemResponse> {
     const cartItem = this.m_getCartItemByProductId(productId)
-    await gql.mutation.removeCartItems([cartItem.id])
-    store.cart.remove(cartItem.id)
+    const response = (await gql.removeCartItems([cartItem.id]))[0]
+    store.cart.remove(response.id)
+    return response
   }
 
   private m_getProductById(productId: string): Product {

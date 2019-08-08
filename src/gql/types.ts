@@ -4,30 +4,20 @@
 //
 //----------------------------------------------------------------------
 
-export interface GQL {
-  readonly query: GQLQuery
-  readonly mutation: GQLMutation
-}
+export interface GQLFacade {
+  product(id: string): Promise<GQLProduct | undefined>
 
-export interface GQLQuery {
-  products(): Promise<GQLProduct[]>
-  cartItems(): Promise<GQLCartItem[]>
-}
+  products(ids?: string[]): Promise<GQLProduct[]>
 
-export interface GQLMutation {
-  addCartItems(
-    items: {
-      id?: string
-      productId: string
-      title: string
-      price: number
-      quantity: number
-    }[]
-  ): Promise<GQLCartItem[]>
+  cartItem(id: string): Promise<GQLCartItem | undefined>
 
-  updateCartItems(items: { id: string; quantity: number }[]): Promise<GQLCartItem[]>
+  cartItems(ids?: string[]): Promise<GQLCartItem[]>
 
-  removeCartItems(cartItemIds: string[]): Promise<GQLCartItem[]>
+  addCartItems(items: GQLAddCartItemInput[]): Promise<GQLEditCartItemResponse[]>
+
+  updateCartItems(items: { id: string; quantity: number }[]): Promise<GQLEditCartItemResponse[]>
+
+  removeCartItems(cartItemIds: string[]): Promise<GQLEditCartItemResponse[]>
 
   checkoutCart(): Promise<boolean>
 }
@@ -47,9 +37,25 @@ export interface GQLProduct {
 
 export interface GQLCartItem {
   id: string
-  userId: string
+  uid: string
   productId: string
   title: string
   price: number
   quantity: number
+}
+
+export interface GQLAddCartItemInput {
+  productId: string
+  title: string
+  price: number
+  quantity: number
+}
+
+export interface GQLUpdateCartItemInput {
+  id: string
+  quantity: number
+}
+
+export interface GQLEditCartItemResponse extends GQLCartItem {
+  product: Pick<GQLProduct, 'id' | 'stock'>
 }

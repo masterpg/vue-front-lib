@@ -1,7 +1,7 @@
 query GetCartItems {
   cartItems {
     id
-    userId
+    uid
     productId
     title
     price
@@ -12,23 +12,27 @@ query GetCartItems {
 mutation AddCartItems($items: [AddCartItemInput!]!) {
   addCartItems(items: $items) {
     id
-    userId
+    uid
     productId
     title
     price
     quantity
+    product {
+      id
+      stock
+    }
   }
 }
 {
   "items": [
     {
-      "productId": "1",
+      "productId": "product1",
       "title": "iPad 4 Mini",
       "price": 500.01,
       "quantity": 1
     },
     {
-      "productId": "2",
+      "productId": "product2",
       "title": "Fire HD 8 Tablet",
       "price": 80.99,
       "quantity": 2
@@ -39,77 +43,89 @@ mutation AddCartItems($items: [AddCartItemInput!]!) {
 mutation AddCartItems {
   addCartItems(items: [
     {
-      productId: "1"
+      productId: "product1"
       title: "iPad 4 Mini"
       price: 500.01
       quantity: 1
     },
     {
-      productId: "2"
+      productId: "product2"
       title: "Fire HD 8 Tablet"
       price: 80.99
       quantity: 2
     }
   ]) {
     id
-    userId
+    uid
     productId
     title
     price
     quantity
+    product {
+      id
+      stock
+    }
   }
 }
 
 mutation UpdateCartItems {
   updateCartItems(items: [
     {
-      id: "h0UMXlPkGc8N7N2Xf6Cm"
+      id: "cartItem1"
       quantity: 1
     },
     {
-      id: "2g10SwdrH4wqDFm0tgRy"
+      id: "cartItem2"
       quantity: 2
     }
   ]) {
     id
-    userId
+    uid
     productId
     title
     price
     quantity
+    product {
+      id
+      stock
+    }
   }
 }
 
 mutation UpdateCartItems($items: [UpdateCartItemInput!]!) {
   updateCartItems(items: $items) {
     id
-    userId
+    uid
     productId
     title
     price
     quantity
+    product {
+      id
+      stock
+    }
   }
 }
 {
   "items": [
     {
-      "id": "h0UMXlPkGc8N7N2Xf6Cm",
+      "id": "cartItem1",
       "quantity": 1
     },
     {
-      "id": "2g10SwdrH4wqDFm0tgRy",
+      "id": "cartItem2",
       "quantity": 2
     }
   ]
 }
 
 mutation RemoveCartItems {
-  removeCartItems(cartItemIds: [
-    "h0UMXlPkGc8N7N2Xf6Cm"
-    "2g10SwdrH4wqDFm0tgRy"
+  removeCartItems(ids: [
+    "cartItem1"
+    "cartItem2"
   ]) {
     id
-    userId
+    uid
     productId
     title
     price
@@ -117,10 +133,10 @@ mutation RemoveCartItems {
   }
 }
 
-mutation RemoveCartItems($cartItemIds: [ID!]!) {
-  removeCartItems(cartItemIds: $cartItemIds) {
+mutation RemoveCartItems($ids: [ID!]!) {
+  removeCartItems(ids: $ids) {
     id
-    userId
+    uid
     productId
     title
     price
@@ -128,7 +144,7 @@ mutation RemoveCartItems($cartItemIds: [ID!]!) {
   }
 }
 {
-  "cartItemIds": ["h0UMXlPkGc8N7N2Xf6Cm", "2g10SwdrH4wqDFm0tgRy"]
+  "ids": ["cartItem1", "cartItem2"]
 }
 
 mutation CheckoutCart {

@@ -2,11 +2,6 @@ import * as cors from 'cors'
 import * as functions from 'firebase-functions'
 const options = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    if (process.env.NODE_ENV !== 'production') {
-      callback(null, true)
-      return
-    }
-
     if (!origin) {
       callback(new Error('Not allowed empty origin by CORS.'))
     } else {

@@ -1,13 +1,14 @@
-import { CartModule, CartState, CheckoutStatus, Product, store } from '@/store'
+import { CartModule, CartState, CheckoutStatus, initStore, store } from '@/store'
 import { TestStoreModule } from '../../../../helper/unit'
 const cloneDeep = require('lodash/cloneDeep')
 
+initStore()
 const cartModule = store.cart as TestStoreModule<CartState, CartModule>
 
 const CART_ITEMS = [
   {
     id: 'cartItem1',
-    userId: 'user1',
+    uid: 'user1',
     productId: 'product1',
     title: 'iPad 4 Mini',
     price: 500.01,
@@ -15,7 +16,7 @@ const CART_ITEMS = [
   },
   {
     id: 'cartItem2',
-    userId: 'user1',
+    uid: 'user1',
     productId: 'product2',
     title: 'Fire HD 8 Tablet',
     price: 80.99,
@@ -82,7 +83,7 @@ describe('getByProductId()', () => {
 
 describe('set()', () => {
   it('ベーシックケース', () => {
-    const cartItem = cloneDeep(cartModule.state.all[0])
+    const cartItem = cartModule.all[0]
     cartItem.title = 'aaa'
 
     // 一部のプロパティだけを変更
@@ -97,8 +98,8 @@ describe('set()', () => {
   })
 
   it('余分なプロパティを含んだ場合', () => {
-    const cartItem = cloneDeep(cartModule.state.all[0])
-    cartItem.zzz = 'zzz'
+    const cartItem = cartModule.all[0]
+    ;(cartItem as any).zzz = 'zzz'
 
     const actual = cartModule.set(cartItem)!
 
@@ -106,7 +107,7 @@ describe('set()', () => {
   })
 
   it('存在しないカートアイテムIDを指定した場合', () => {
-    const cartItem = cloneDeep(cartModule.state.all[0])
+    const cartItem = cartModule.all[0]
     cartItem.id = '9999'
 
     const actual = cartModule.set(cartItem)
@@ -132,13 +133,13 @@ describe('setCheckoutStatus()', () => {
 
 describe('add()', () => {
   it('ベーシックケース', () => {
-    const cartItem = cloneDeep(cartModule.state.all[0])
+    const cartItem = cartModule.all[0]
     cartItem.id = 'cartItemXXX'
-    cartItem.userId = 'user1'
+    cartItem.uid = 'user1'
     cartItem.productId = 'product3'
     cartItem.title = 'aaa'
     cartItem.price = 999
-    cartItem.stock = 888
+    cartItem.quantity = 999
 
     const actual = cartModule.add(cartItem)
 

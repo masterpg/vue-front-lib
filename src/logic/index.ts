@@ -17,6 +17,7 @@ export function initLogic(): void {
   Object.defineProperty(Vue.prototype, '$logic', {
     value: logic,
     writable: false,
+    configurable: true,
   })
 }
 
