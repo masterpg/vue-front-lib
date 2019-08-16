@@ -1,9 +1,9 @@
-import * as express from 'express'
-import * as middlewares from '../base/middlewares'
+import { config, middlewares } from '../base'
+import { Router } from 'express'
 const cookieParser = require('cookie-parser')()
 
-export const publicRouter = express.Router().use(middlewares.cors(false))
+export const publicRouter = Router()
 
-export const siteRouter = express.Router().use(middlewares.cors(true))
+export const siteRouter = Router().use(middlewares.cors({ whitelist: config.cors.whitelist }))
 
-export const authRouter = express.Router().use(middlewares.cors(true), cookieParser, middlewares.auth)
+export const authRouter = Router().use(middlewares.cors({ whitelist: config.cors.whitelist }), cookieParser, middlewares.auth)

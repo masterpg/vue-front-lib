@@ -1,4 +1,5 @@
 import { Field, Float, ID, InputType, Int, ObjectType } from 'type-graphql'
+import { IsPositive } from 'class-validator'
 import { Product } from '../product/types'
 
 @ObjectType()
@@ -19,6 +20,7 @@ export class CartItem {
   price!: number
 
   @Field(type => Int)
+  @IsPositive()
   quantity!: number
 }
 
@@ -34,6 +36,7 @@ export class AddCartItemInput implements Partial<CartItem> {
   price!: number
 
   @Field(type => Int)
+  @IsPositive()
   quantity!: number
 }
 
@@ -43,6 +46,7 @@ export class UpdateCartItemInput implements Partial<CartItem> {
   id!: string
 
   @Field(type => Int)
+  @IsPositive()
   quantity!: number
 }
 
@@ -50,4 +54,14 @@ export class UpdateCartItemInput implements Partial<CartItem> {
 export class EditCartItemResponse extends CartItem {
   @Field(type => Product)
   product!: Product
+}
+
+@InputType()
+export class ExampleInput {
+  @Field(type => ID)
+  id!: string
+
+  @Field(type => Int)
+  @IsPositive()
+  quantity!: number
 }

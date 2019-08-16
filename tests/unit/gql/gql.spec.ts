@@ -174,12 +174,15 @@ describe('cartItems', () => {
     await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
     const ids = [CART_ITEMS[0].id, CART_ITEMS[1].id]
 
+    let actual!: Error
     try {
       await gql.cartItems(ids)
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.message).toMatch(/Access denied/)
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toMatch(/Access denied/)
   })
 })
 
@@ -235,12 +238,15 @@ describe('addCartItems', () => {
     const addItem = cloneDeep(ADD_CART_ITEMS[0]) as GQLAddCartItemInput
     addItem.productId = 'abcdefg'
 
+    let actual!: Error
     try {
       await gql.addCartItems([addItem])
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.message).toMatch(/product was not found/i)
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toMatch(/product was not found/i)
   })
 
   it('既に存在するカートアイテムを追加しようとした場合', async () => {
@@ -248,38 +254,64 @@ describe('addCartItems', () => {
     setAuthUser(TEST_USER)
     const addItem = cloneDeep(ADD_CART_ITEMS[0]) as GQLAddCartItemInput
 
+    let actual!: Error
     try {
       await gql.addCartItems([addItem])
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.message).toMatch(/cart item already exists/i)
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toMatch(/cart item already exists/i)
   })
 
   it('在庫数を上回る数をカートアイテムに設定した場合', async () => {
     setAuthUser(TEST_USER)
     await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: [] }])
     const addItem = cloneDeep(ADD_CART_ITEMS[0]) as GQLAddCartItemInput
-    addItem.quantity = 2 // 在庫数を上回る数を設定
+    addItem.quantity = 4 // 在庫数を上回る数を設定
 
+    let actual!: Error
     try {
       await gql.addCartItems([addItem])
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.message).toMatch(/stock .* insufficient/i)
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toMatch(/stock .* insufficient/i)
+  })
+
+  it('カートアイテムの数量にマイナス値を設定した場合', async () => {
+    setAuthUser(TEST_USER)
+    await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: [] }])
+    const addItem = cloneDeep(ADD_CART_ITEMS[0]) as GQLAddCartItemInput
+    addItem.quantity = -1 // マイナス値を設定
+
+    let actual!: Error
+    try {
+      await gql.addCartItems([addItem])
+    } catch (err) {
+      actual = err
+    }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toMatch('GraphQL error: Argument Validation Error')
   })
 
   it('サインインしていない場合', async () => {
     await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: [] }])
     const addItems = cloneDeep(ADD_CART_ITEMS) as GQLAddCartItemInput[]
 
+    let actual!: Error
     try {
       await gql.addCartItems(addItems)
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.message).toMatch(/Access denied/)
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toMatch(/Access denied/)
   })
 
   it('トランザクションが効いているか検証', async () => {
@@ -288,11 +320,14 @@ describe('addCartItems', () => {
     const addItems = cloneDeep(ADD_CART_ITEMS) as GQLAddCartItemInput[]
     addItems[1].productId = 'abcdefg' // 2件目に存在しない商品IDを指定
 
+    let actual!: Error
     try {
       await gql.addCartItems(addItems)
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
 
     let cartItems!: GQLCartItem[]
     let products!: GQLProduct[]
@@ -360,12 +395,15 @@ describe('updateCartItems', () => {
       return { ...item, quantity: item.quantity + 1 }
     })
 
+    let actual!: Error
     try {
       await gql.updateCartItems(updateItems)
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.message).toMatch(/You can not access .* cart item/i)
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toMatch(/You can not access .* cart item/i)
   })
 
   it('在庫数を上回る数をカートアイテムに設定した場合', async () => {
@@ -375,24 +413,48 @@ describe('updateCartItems', () => {
     const product = PRODUCTS.find(product => product.id === updateItem.productId)!
     updateItem.quantity += product.stock + 1 // 在庫数を上回る数を設定
 
+    let actual!: Error
     try {
       await gql.updateCartItems([updateItem])
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.message).toMatch(/stock .* insufficient/i)
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toMatch(/stock .* insufficient/i)
+  })
+
+  it('カートアイテムの数量にマイナス値を設定した場合', async () => {
+    setAuthUser(TEST_USER)
+    await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
+    const updateItem = cloneDeep(CART_ITEMS[0]) as GQLCartItem
+    const product = PRODUCTS.find(product => product.id === updateItem.productId)!
+    updateItem.quantity = -1 // マイナス値を設定
+
+    let actual!: Error
+    try {
+      await gql.updateCartItems([updateItem])
+    } catch (err) {
+      actual = err
+    }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toMatch('GraphQL error: Argument Validation Error')
   })
 
   it('サインインしていない場合', async () => {
     await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
     const updateItems = cloneDeep(CART_ITEMS) as GQLCartItem[]
 
+    let actual!: Error
     try {
       await gql.updateCartItems(updateItems)
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.message).toMatch(/Access denied/)
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toMatch(/Access denied/)
   })
 
   it('トランザクションが効いているか検証', async () => {
@@ -402,11 +464,14 @@ describe('updateCartItems', () => {
     updateItems[0].quantity = 2
     updateItems[1].quantity = 9999999999 // 2件目に在庫数を上回る数を設定
 
+    let actual!: Error
     try {
       await gql.updateCartItems(updateItems)
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
 
     let cartItems!: GQLCartItem[]
     let products!: GQLProduct[]
@@ -478,24 +543,30 @@ describe('removeCartItems', () => {
     ])
     const removeIds = CART_ITEMS.map(item => item.id)
 
+    let actual!: Error
     try {
       await gql.removeCartItems(removeIds)
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.message).toMatch(/You can not access .* cart item/i)
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toMatch(/You can not access .* cart item/i)
   })
 
   it('サインインしていない場合', async () => {
     await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
     const removeIds = CART_ITEMS.map(item => item.id)
 
+    let actual!: Error
     try {
       await gql.removeCartItems(removeIds)
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.message).toMatch(/Access denied/)
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toMatch(/Access denied/)
   })
 
   it('トランザクションが効いているか検証', async () => {
@@ -504,11 +575,14 @@ describe('removeCartItems', () => {
     const removeIds = CART_ITEMS.map(item => item.id)
     removeIds[1] = 'cartItemXXX' // 2件目に存在しないカートアイテムIDを設定
 
+    let actual!: Error
     try {
       await gql.removeCartItems(removeIds)
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
 
     let cartItems!: GQLCartItem[]
     let products!: GQLProduct[]
@@ -544,11 +618,14 @@ describe('checkout', () => {
   it('サインインしていない場合', async () => {
     await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
 
+    let actual!: Error
     try {
       await gql.checkoutCart()
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.message).toMatch(/Access denied/)
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toMatch(/Access denied/)
   })
 })

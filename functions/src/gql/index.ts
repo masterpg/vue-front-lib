@@ -1,18 +1,24 @@
-import * as express from 'express'
-import * as middlewares from '../base/middlewares'
 import * as path from 'path'
 import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express'
+import { Express, Request, Response, Router } from 'express'
+import { LoggingMiddleware, authChecker } from './base'
+import { config, middlewares } from '../base'
 import { CartResolver } from './modules/cart'
 import { Context } from './types'
 import { ProductResolver } from './modules/product'
 import { RecipeResolver } from './modules/recipe'
 import { TestResolver } from '../test/gql/'
-import { authChecker } from './auth-checker'
 import { buildSchemaSync } from 'type-graphql'
 const cookieParser = require('cookie-parser')()
 
+//************************************************************************
+//
+//  Basis
+//
+//************************************************************************
+
 class ContextImpl implements Context {
-  constructor(public readonly req: express.Request, public readonly res: express.Response) {}
+  constructor(public readonly req: Request, public readonly res: Response) {}
 
   private m_user: any
 
@@ -26,15 +32,15 @@ class ContextImpl implements Context {
 }
 
 class GQLServer {
-  constructor(app: express.Express) {
+  constructor(app: Express) {
     const router = this.getRouter()
     app.use('/gql', router)
     const apolloServer = new ApolloServer(this.createConfig())
     apolloServer.applyMiddleware({ app: router, path: '/' })
   }
 
-  protected getRouter(): express.Router {
-    return express.Router().use(middlewares.cors(true), cookieParser)
+  protected getRouter(): Router {
+    return Router().use(middlewares.cors({ whitelist: config.cors.whitelist }), cookieParser)
   }
 
   protected get resolvers(): Array<Function | string> {
@@ -46,6 +52,7 @@ class GQLServer {
       resolvers: this.resolvers,
       // emitSchemaFile: path.resolve(__dirname, 'schema.gql'),
       authChecker: authChecker,
+      globalMiddlewares: [LoggingMiddleware],
     })
 
     return {
@@ -57,11 +64,13 @@ class GQLServer {
   }
 }
 
-class GQLDevServer extends GQLServer {
-  protected getRouter(): express.Router {
-    return express.Router().use(cookieParser)
-  }
+//************************************************************************
+//
+//  Concrete
+//
+//************************************************************************
 
+class GQLDevServer extends GQLServer {
   protected createConfig(): ApolloServerExpressConfig {
     return {
       ...super.createConfig(),
@@ -72,12 +81,23 @@ class GQLDevServer extends GQLServer {
     }
   }
 
+  protected getRouter(): Router {
+    return Router().use(cookieParser)
+    // return Router().use(expressUtils.middlewares.cors({ whitelist: config.cors.whitelist }), cookieParser)
+  }
+
   protected get resolvers(): Array<Function | string> {
     return [...super.resolvers, TestResolver]
   }
 }
 
-export function initGQL(app: express.Express): void {
+//************************************************************************
+//
+//  Export
+//
+//************************************************************************
+
+export function initGQL(app: Express): void {
   if (process.env.NODE_ENV === 'production') {
     new GQLServer(app)
   } else {

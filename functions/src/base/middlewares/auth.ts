@@ -8,7 +8,7 @@ import * as functions from 'firebase-functions'
  * `Authorization: Bearer <Firebase ID Token>`
  * デコードが成功すると、`req.user`としてIDトークンのコンテンツに追加されます。
  */
-export default async (req: functions.Request, res: functions.Response, next: express.NextFunction) => {
+export const auth = async (req: functions.Request, res: functions.Response, next: express.NextFunction) => {
   // 認証リクエストがFirebase IDトークンを持っているかチェック
   const authorization = req.headers.authorization as string
   if ((!authorization || !authorization.startsWith('Bearer ')) && !req.cookies.__session) {

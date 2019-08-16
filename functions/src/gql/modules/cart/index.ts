@@ -1,9 +1,10 @@
 import * as firebaseAdmin from 'firebase-admin'
-import { AddCartItemInput, CartItem, EditCartItemResponse, Product, UpdateCartItemInput } from '../../types'
+import { AddCartItemInput, CartItem, EditCartItemResponse, ExampleInput, Product, UpdateCartItemInput } from '../../types'
 import { Arg, Authorized, Ctx, ID, Mutation, Query, Resolver } from 'type-graphql'
 import { DocumentReference, Transaction } from '@google-cloud/firestore'
+import { GQLError, validateArray } from '../../base'
 import { Context } from '../../types'
-import { WriteReadyObserver } from '../../../base/firestore'
+import { FirestoreWriteReadyObserver } from '../../../base'
 const assign = require('lodash/assign')
 
 @Resolver(of => CartItem)
@@ -14,8 +15,8 @@ export class CartResolver {
   //
   //----------------------------------------------------------------------
 
-  @Authorized()
   @Query(returns => [CartItem])
+  @Authorized()
   async cartItems(@Ctx() ctx: Context, @Arg('ids', returns => [ID], { nullable: true }) ids?: string[]): Promise<CartItem[]> {
     const db = firebaseAdmin.firestore()
 
@@ -57,12 +58,14 @@ export class CartResolver {
     }
   }
 
-  @Authorized()
   @Mutation(returns => [EditCartItemResponse])
+  @Authorized()
   async addCartItems(@Ctx() ctx: Context, @Arg('items', returns => [AddCartItemInput]) items: AddCartItemInput[]): Promise<EditCartItemResponse[]> {
+    await validateArray(ExampleInput, items)
+
     const db = firebaseAdmin.firestore()
     return await db.runTransaction(async transaction => {
-      const writeReady = new WriteReadyObserver(items.length)
+      const writeReady = new FirestoreWriteReadyObserver(items.length)
       const promises: Promise<EditCartItemResponse>[] = []
       for (const item of items) {
         promises.push(this.m_addCartItem(transaction, item, ctx.user.uid, writeReady))
@@ -71,15 +74,17 @@ export class CartResolver {
     })
   }
 
-  @Authorized()
   @Mutation(returns => [EditCartItemResponse])
+  @Authorized()
   async updateCartItems(
     @Ctx() ctx: Context,
     @Arg('items', returns => [UpdateCartItemInput]) items: UpdateCartItemInput[]
   ): Promise<EditCartItemResponse[]> {
+    await validateArray(ExampleInput, items)
+
     const db = firebaseAdmin.firestore()
     return await db.runTransaction(async transaction => {
-      const writeReady = new WriteReadyObserver(items.length)
+      const writeReady = new FirestoreWriteReadyObserver(items.length)
       const promises: Promise<EditCartItemResponse>[] = []
       for (const item of items) {
         promises.push(this.m_updateCartItem(transaction, item, ctx.user.uid, writeReady))
@@ -88,12 +93,12 @@ export class CartResolver {
     })
   }
 
-  @Authorized()
   @Mutation(returns => [EditCartItemResponse])
+  @Authorized()
   async removeCartItems(@Ctx() ctx: Context, @Arg('ids', returns => [ID]) ids: string[]): Promise<EditCartItemResponse[]> {
     const db = firebaseAdmin.firestore()
     return await db.runTransaction(async transaction => {
-      const writeReady = new WriteReadyObserver(ids.length)
+      const writeReady = new FirestoreWriteReadyObserver(ids.length)
       const promises: Promise<EditCartItemResponse>[] = []
       for (const cartItemId of ids) {
         promises.push(this.m_removeCartItem(transaction, cartItemId, ctx.user.uid, writeReady))
@@ -102,8 +107,8 @@ export class CartResolver {
     })
   }
 
-  @Authorized()
   @Mutation(returns => Boolean)
+  @Authorized()
   async checkoutCart(@Ctx() ctx: Context): Promise<boolean> {
     const db = firebaseAdmin.firestore()
 
@@ -119,6 +124,14 @@ export class CartResolver {
     })
 
     return true
+  }
+
+  @Mutation(returns => Boolean, { nullable: true })
+  async example1(@Arg('item') item: ExampleInput) {}
+
+  @Mutation(returns => Boolean, { nullable: true })
+  async example2(@Arg('items', returns => [ExampleInput]) items: ExampleInput[]) {
+    await validateArray(ExampleInput, items)
   }
 
   //----------------------------------------------------------------------
@@ -138,7 +151,7 @@ export class CartResolver {
     transaction: Transaction,
     itemInput: AddCartItemInput,
     uid: string,
-    writeReady: WriteReadyObserver
+    writeReady: FirestoreWriteReadyObserver
   ): Promise<EditCartItemResponse> {
     const db = firebaseAdmin.firestore()
 
@@ -152,7 +165,14 @@ export class CartResolver {
       .where('productId', '==', itemInput.productId)
     const snapshot = await transaction.get(query)
     if (snapshot.size > 0) {
-      throw new Error('The specified cart item already exists.')
+      const doc = snapshot.docs[0]
+      const cartItem = { id: doc.id, ...doc.data() } as CartItem
+      throw new GQLError('The specified cart item already exists.', {
+        cartItemId: cartItem.id,
+        uid: cartItem.uid,
+        productId: cartItem.productId,
+        title: cartItem.title,
+      })
     }
 
     // 新規カートアイテムの内容を作成
@@ -167,8 +187,14 @@ export class CartResolver {
 
     // 商品の在庫数を設定
     const newStock = product.data.stock - itemInput.quantity
+    console.log('★: stock:', product.data.stock, ', input.quantity:', itemInput.quantity, ', newStock:', newStock)
     if (newStock < 0) {
-      throw new Error('The stock of the product was insufficient.')
+      throw new GQLError('The stock of the product was insufficient.', {
+        productId: product.data.id,
+        title: product.data.title,
+        currentStock: product.data.stock,
+        addedQuantity: itemInput.quantity,
+      })
     }
 
     // 新規カートアイテム追加を実行
@@ -195,19 +221,29 @@ export class CartResolver {
     transaction: Transaction,
     itemInput: UpdateCartItemInput,
     uid: string,
-    writeReady: WriteReadyObserver
+    writeReady: FirestoreWriteReadyObserver
   ): Promise<EditCartItemResponse> {
     // カートアイテムを取得
     const cartItem = await this.m_getCartItemById(transaction, itemInput.id)
     // 取得したカートアイテムが自身のものかチェック
     if (cartItem.data.uid !== uid) {
-      throw new Error('You can not access the specified cart item.')
+      throw new GQLError('You can not access the specified cart item.', {
+        cartItemId: cartItem.data.id,
+        uid: cartItem.data.uid,
+        requestUID: uid,
+      })
     }
     // 商品の在庫数を再計算
     const product = await this.m_getProductById(transaction, cartItem.data.productId)
-    const newStock = product.data.stock - (itemInput.quantity - cartItem.data.quantity)
+    const addedQuantity = itemInput.quantity - cartItem.data.quantity
+    const newStock = product.data.stock - addedQuantity
     if (newStock < 0) {
-      throw new Error('The stock of the product was insufficient.')
+      throw new GQLError('The stock of the product was insufficient.', {
+        productId: product.data.id,
+        title: product.data.title,
+        currentStock: product.data.stock,
+        addedQuantity,
+      })
     }
 
     // 書き込み準備ができるまで待機
@@ -237,13 +273,17 @@ export class CartResolver {
     transaction: Transaction,
     cartItemId: string,
     uid: string,
-    writeReady: WriteReadyObserver
+    writeReady: FirestoreWriteReadyObserver
   ): Promise<EditCartItemResponse> {
     // カートアイテムを取得
     const cartItem = await this.m_getCartItemById(transaction, cartItemId)
     // 取得したカートアイテムが自身のものかチェック
     if (cartItem.data.uid !== uid) {
-      throw new Error('You can not access the specified cart item.')
+      throw new GQLError('You can not access the specified cart item.', {
+        cartItemId: cartItem.data.id,
+        uid: cartItem.data.uid,
+        requestUID: uid,
+      })
     }
     // 商品の取得
     const product = await this.m_getProductById(transaction, cartItem.data.productId)
@@ -271,7 +311,9 @@ export class CartResolver {
     const ref = db.collection('products').doc(id)
     const doc = await transaction.get(ref)
     if (!doc.exists) {
-      throw new Error('The specified product was not found.')
+      throw new GQLError('The specified product was not found.', {
+        productId: id,
+      })
     }
     return {
       ref,
@@ -284,7 +326,9 @@ export class CartResolver {
     const ref = db.collection('cart').doc(id)
     const doc = await transaction.get(ref)
     if (!doc.exists) {
-      throw new Error('The specified cart item was not found.')
+      throw new GQLError('The specified cart item was not found.', {
+        cartItemId: id,
+      })
     }
     return {
       ref: ref,
