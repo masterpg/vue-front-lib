@@ -16,6 +16,28 @@ const merge = require('lodash/merge')
 //
 //************************************************************************
 
+export const LoggingMiddleware: MiddlewareFn<Context> = async (action, next) => {
+  const latencyTimer = new LoggingLatencyTimer().start()
+  const req = action.context.req
+  const res = action.context.res
+
+  let result: any
+  try {
+    result = await next()
+  } catch (err) {
+    logger.logError(action, latencyTimer, err)
+    throw err
+  }
+
+  if (action.info.parentType.name === 'Query' || action.info.parentType.name === 'Mutation') {
+    res.on('finish', function onFinish() {
+      logger.logNormal(action, latencyTimer)
+    })
+  }
+
+  return result
+}
+
 class Logger {
   //----------------------------------------------------------------------
   //
@@ -129,12 +151,6 @@ class DevLogger extends Logger {
   }
 }
 
-//************************************************************************
-//
-//  Export
-//
-//************************************************************************
-
 const logger = (() => {
   let result: Logger
   if (process.env.NODE_ENV === 'production') {
@@ -144,25 +160,3 @@ const logger = (() => {
   }
   return result
 })()
-
-export const LoggingMiddleware: MiddlewareFn<Context> = async (action, next) => {
-  const latencyTimer = new LoggingLatencyTimer().start()
-  const req = action.context.req
-  const res = action.context.res
-
-  let result: any
-  try {
-    result = await next()
-  } catch (err) {
-    logger.logError(action, latencyTimer, err)
-    throw err
-  }
-
-  if (action.info.parentType.name === 'Query' || action.info.parentType.name === 'Mutation') {
-    res.on('finish', function onFinish() {
-      logger.logNormal(action, latencyTimer)
-    })
-  }
-
-  return result
-}

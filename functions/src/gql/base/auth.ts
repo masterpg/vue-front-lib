@@ -12,6 +12,10 @@ const merge = require('lodash/merge')
 //
 //************************************************************************
 
+export const authChecker: AuthChecker<Context> = async (action, roles) => {
+  return authValidator.execute(action, roles)
+}
+
 class DecodeError extends Error {
   constructor(message: string, public readonly idToken: string) {
     super(message)
@@ -161,12 +165,6 @@ class DevAuthValidator extends AuthValidator {
   }
 }
 
-//************************************************************************
-//
-//  Export
-//
-//************************************************************************
-
 const authValidator = (() => {
   let result: AuthValidator
   if (process.env.NODE_ENV === 'production') {
@@ -176,7 +174,3 @@ const authValidator = (() => {
   }
   return result
 })()
-
-export const authChecker: AuthChecker<Context> = async (action, roles) => {
-  return authValidator.execute(action, roles)
-}

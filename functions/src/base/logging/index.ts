@@ -13,6 +13,38 @@ import { config } from '../'
 //
 //************************************************************************
 
+export class LoggingLatencyTimer {
+  private m_startTime: [number, number] = [0, 0]
+
+  private m_diff: convertHrtime.HRTime = { seconds: 0, milliseconds: 0, nanoseconds: 0 }
+
+  get diff() {
+    return this.m_diff
+  }
+
+  private m_data: { seconds: number; nanos: number } = { seconds: 0, nanos: 0 }
+
+  get data() {
+    return this.m_data
+  }
+
+  start(): LoggingLatencyTimer {
+    this.m_startTime = process.hrtime()
+    this.m_diff = { seconds: 0, milliseconds: 0, nanoseconds: 0 }
+    this.m_data = { seconds: 0, nanos: 0 }
+    return this
+  }
+
+  stop(): LoggingLatencyTimer {
+    this.m_diff = convertHrtime(process.hrtime(this.m_startTime))
+    this.m_data = {
+      seconds: Math.floor(this.diff.seconds),
+      nanos: this.diff.nanoseconds - Math.floor(this.diff.seconds) * 1e9,
+    }
+    return this
+  }
+}
+
 export interface LoggingBaseMetadata {
   resource: LoggingResourceData
   httpRequest: LoggingRequestData
@@ -155,12 +187,6 @@ class DevLoggingUtils extends LoggingUtils {
   }
 }
 
-//************************************************************************
-//
-//  Export
-//
-//************************************************************************
-
 export const logging = (() => {
   let result: LoggingUtils
   if (process.env.NODE_ENV === 'production') {
@@ -170,35 +196,3 @@ export const logging = (() => {
   }
   return result
 })()
-
-export class LoggingLatencyTimer {
-  private m_startTime: [number, number] = [0, 0]
-
-  private m_diff: convertHrtime.HRTime = { seconds: 0, milliseconds: 0, nanoseconds: 0 }
-
-  get diff() {
-    return this.m_diff
-  }
-
-  private m_data: { seconds: number; nanos: number } = { seconds: 0, nanos: 0 }
-
-  get data() {
-    return this.m_data
-  }
-
-  start(): LoggingLatencyTimer {
-    this.m_startTime = process.hrtime()
-    this.m_diff = { seconds: 0, milliseconds: 0, nanoseconds: 0 }
-    this.m_data = { seconds: 0, nanos: 0 }
-    return this
-  }
-
-  stop(): LoggingLatencyTimer {
-    this.m_diff = convertHrtime(process.hrtime(this.m_startTime))
-    this.m_data = {
-      seconds: Math.floor(this.diff.seconds),
-      nanos: this.diff.nanoseconds - Math.floor(this.diff.seconds) * 1e9,
-    }
-    return this
-  }
-}

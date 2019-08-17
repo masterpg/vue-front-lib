@@ -187,7 +187,6 @@ export class CartResolver {
 
     // 商品の在庫数を設定
     const newStock = product.data.stock - itemInput.quantity
-    console.log('★: stock:', product.data.stock, ', input.quantity:', itemInput.quantity, ', newStock:', newStock)
     if (newStock < 0) {
       throw new GQLError('The stock of the product was insufficient.', {
         productId: product.data.id,

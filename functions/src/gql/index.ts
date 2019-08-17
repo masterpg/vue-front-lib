@@ -1,13 +1,11 @@
 import * as path from 'path'
 import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express'
+import { CartResolver, ProductResolver, RecipeResolver } from './modules'
 import { Express, Request, Response, Router } from 'express'
 import { LoggingMiddleware, authChecker } from './base'
 import { config, middlewares } from '../base'
-import { CartResolver } from './modules/cart'
 import { Context } from './types'
-import { ProductResolver } from './modules/product'
-import { RecipeResolver } from './modules/recipe'
-import { TestResolver } from '../test/gql/'
+import { TestResolver } from '../test/gql'
 import { buildSchemaSync } from 'type-graphql'
 const cookieParser = require('cookie-parser')()
 
@@ -16,6 +14,14 @@ const cookieParser = require('cookie-parser')()
 //  Basis
 //
 //************************************************************************
+
+export function initGQL(app: Express): void {
+  if (process.env.NODE_ENV === 'production') {
+    new ProdGQLServer(app)
+  } else {
+    new DevGQLServer(app)
+  }
+}
 
 class ContextImpl implements Context {
   constructor(public readonly req: Request, public readonly res: Response) {}
@@ -31,7 +37,7 @@ class ContextImpl implements Context {
   }
 }
 
-class GQLServer {
+abstract class GQLServer {
   constructor(app: Express) {
     const router = this.getRouter()
     app.use('/gql', router)
@@ -70,7 +76,9 @@ class GQLServer {
 //
 //************************************************************************
 
-class GQLDevServer extends GQLServer {
+class ProdGQLServer extends GQLServer {}
+
+class DevGQLServer extends GQLServer {
   protected createConfig(): ApolloServerExpressConfig {
     return {
       ...super.createConfig(),
@@ -88,19 +96,5 @@ class GQLDevServer extends GQLServer {
 
   protected get resolvers(): Array<Function | string> {
     return [...super.resolvers, TestResolver]
-  }
-}
-
-//************************************************************************
-//
-//  Export
-//
-//************************************************************************
-
-export function initGQL(app: Express): void {
-  if (process.env.NODE_ENV === 'production') {
-    new GQLServer(app)
-  } else {
-    new GQLDevServer(app)
   }
 }

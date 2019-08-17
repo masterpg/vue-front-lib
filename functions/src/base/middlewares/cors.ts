@@ -10,6 +10,13 @@ const merge = require('lodash/merge')
 //
 //************************************************************************
 
+export function cors(options: CorsOptions) {
+  return function(req: Request, res: Response, next: NextFunction) {
+    const o = { ...defaultOptions, ...options }
+    corsValidator.execute(o, req, res, next)
+  }
+}
+
 export interface CorsOptions {
   whitelist: string[]
   methods?: string[]
@@ -254,12 +261,6 @@ class DevCORS extends CORSValidator {
   }
 }
 
-//************************************************************************
-//
-//  Export
-//
-//************************************************************************
-
 const corsValidator = (() => {
   let result: CORSValidator
   if (process.env.NODE_ENV === 'production') {
@@ -269,10 +270,3 @@ const corsValidator = (() => {
   }
   return result
 })()
-
-export function cors(options: CorsOptions) {
-  return function(req: Request, res: Response, next: NextFunction) {
-    const o = { ...defaultOptions, ...options }
-    corsValidator.execute(o, req, res, next)
-  }
-}
