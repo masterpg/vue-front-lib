@@ -4,8 +4,10 @@
  */
 
 import { ArgumentValidationError, MiddlewareFn, ResolverData } from 'type-graphql'
-import { LoggingLatencyTimer, logging } from '../../base'
+import { Logger, LoggingLatencyTimer } from '../../base'
+import { container, inject, singleton } from 'tsyringe'
 import { Context } from '../types'
+import { DITypes } from '../../di.types'
 import { GQLError } from './errors'
 import { LogEntry } from '@google-cloud/logging/build/src/entry'
 const merge = require('lodash/merge')
@@ -17,28 +19,38 @@ const merge = require('lodash/merge')
 //************************************************************************
 
 export const LoggingMiddleware: MiddlewareFn<Context> = async (action, next) => {
+  const gqlLogger = container.resolve<GQLLogger>(DITypes.GQLLogger)
   const latencyTimer = new LoggingLatencyTimer().start()
-  const req = action.context.req
   const res = action.context.res
 
   let result: any
   try {
     result = await next()
   } catch (err) {
-    logger.logError(action, latencyTimer, err)
+    gqlLogger.logError(action, latencyTimer, err)
     throw err
   }
 
   if (action.info.parentType.name === 'Query' || action.info.parentType.name === 'Mutation') {
     res.on('finish', function onFinish() {
-      logger.logNormal(action, latencyTimer)
+      gqlLogger.logNormal(action, latencyTimer)
     })
   }
 
   return result
 }
 
-class Logger {
+export class GQLLogger {
+  //----------------------------------------------------------------------
+  //
+  //  Constructor
+  //
+  //----------------------------------------------------------------------
+
+  constructor(logger?: Logger) {
+    this.logger = logger!
+  }
+
   //----------------------------------------------------------------------
   //
   //  Constants
@@ -49,6 +61,14 @@ class Logger {
 
   //----------------------------------------------------------------------
   //
+  //  Variables
+  //
+  //----------------------------------------------------------------------
+
+  protected logger: Logger
+
+  //----------------------------------------------------------------------
+  //
   //  Methods
   //
   //----------------------------------------------------------------------
@@ -56,7 +76,7 @@ class Logger {
   logNormal(action: ResolverData<Context>, latencyTimer: LoggingLatencyTimer): void {
     const res = action.context.res
 
-    const metadata = logging.getBaseMetadataByGQL(action) as LogEntry
+    const metadata = this.logger.getBaseMetadataByGQL(action) as LogEntry
     merge(metadata, {
       severity: 100, // DEBUG
       httpRequest: {
@@ -66,13 +86,13 @@ class Logger {
       },
     })
 
-    logging.log(Logger.LOG_NAME, metadata, {})
+    this.logger.log(GQLLogger.LOG_NAME, metadata, {})
   }
 
   logError(action: ResolverData<Context>, latencyTimer: LoggingLatencyTimer, err: Error): void {
     const res = action.context.res
 
-    const metadata = logging.getBaseMetadataByGQL(action) as LogEntry
+    const metadata = this.logger.getBaseMetadataByGQL(action) as LogEntry
     merge(metadata, {
       severity: 500, // ERROR
       httpRequest: {
@@ -81,7 +101,7 @@ class Logger {
       },
     })
 
-    logging.log(Logger.LOG_NAME, metadata, this.getErrorData(action, err))
+    this.logger.log(GQLLogger.LOG_NAME, metadata, this.getErrorData(action, err))
   }
 
   //----------------------------------------------------------------------
@@ -136,12 +156,22 @@ class Logger {
 //
 //************************************************************************
 
-class ProdLogger extends Logger {}
+@singleton()
+export class ProdGQLLogger extends GQLLogger {
+  constructor(@inject(DITypes.Logger) logger?: Logger) {
+    super(logger)
+  }
+}
 
-class DevLogger extends Logger {
+@singleton()
+export class DevGQLLogger extends GQLLogger {
+  constructor(@inject(DITypes.Logger) logger?: Logger) {
+    super(logger)
+  }
+
   logNormal(action: ResolverData<Context>, latencyTimer: LoggingLatencyTimer) {
     super.logNormal(action, latencyTimer)
-    const functionName = logging.getBaseMetadataByGQL(action).resource.labels.function_name
+    const functionName = this.logger.getBaseMetadataByGQL(action).resource.labels.function_name
     console.log('[DEBUG]:', JSON.stringify({ functionName, latency: `${latencyTimer.diff.seconds}s` }, null, 2))
   }
 
@@ -150,13 +180,3 @@ class DevLogger extends Logger {
     console.error('[ERROR]:', JSON.stringify(errorData, null, 2))
   }
 }
-
-const logger = (() => {
-  let result: Logger
-  if (process.env.NODE_ENV === 'production') {
-    result = new ProdLogger()
-  } else {
-    result = new DevLogger()
-  }
-  return result
-})()

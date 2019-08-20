@@ -1,9 +1,11 @@
 import * as firebaseAdmin from 'firebase-admin'
 import { AuthChecker, ResolverData } from 'type-graphql'
+import { container, inject, singleton } from 'tsyringe'
 import { Context } from '../types'
+import { DITypes } from '../../di.types'
 import { LogEntry } from '@google-cloud/logging/build/src/entry'
+import { Logger } from '../../base/logging'
 import { Request } from 'express'
-import { logging } from '../../base/logging'
 const merge = require('lodash/merge')
 
 //************************************************************************
@@ -13,6 +15,7 @@ const merge = require('lodash/merge')
 //************************************************************************
 
 export const authChecker: AuthChecker<Context> = async (action, roles) => {
+  const authValidator = container.resolve<AuthValidator>(DITypes.AuthValidator)
   return authValidator.execute(action, roles)
 }
 
@@ -22,7 +25,17 @@ class DecodeError extends Error {
   }
 }
 
-abstract class AuthValidator {
+export abstract class AuthValidator {
+  //----------------------------------------------------------------------
+  //
+  //  Constructor
+  //
+  //----------------------------------------------------------------------
+
+  constructor(logger?: Logger) {
+    this.logger = logger!
+  }
+
   //----------------------------------------------------------------------
   //
   //  Constants
@@ -30,6 +43,14 @@ abstract class AuthValidator {
   //----------------------------------------------------------------------
 
   private static readonly LOG_NAME = 'api'
+
+  //----------------------------------------------------------------------
+  //
+  //  Variables
+  //
+  //----------------------------------------------------------------------
+
+  protected logger: Logger
 
   //----------------------------------------------------------------------
   //
@@ -68,12 +89,12 @@ abstract class AuthValidator {
   protected abstract decodeToken(idToken: string): Promise<firebaseAdmin.auth.DecodedIdToken>
 
   protected logError(action: ResolverData<Context>, err: Error) {
-    const metadata = logging.getBaseMetadataByGQL(action) as LogEntry
+    const metadata = this.logger.getBaseMetadataByGQL(action) as LogEntry
     merge(metadata, {
       severity: 500, // ERROR
     })
 
-    logging.log(AuthValidator.LOG_NAME, metadata, this.getErrorData(err))
+    this.logger.log(AuthValidator.LOG_NAME, metadata, this.getErrorData(err))
   }
 
   protected getErrorData(
@@ -119,14 +140,24 @@ abstract class AuthValidator {
 //
 //************************************************************************
 
-class ProdAuthValidator extends AuthValidator {
+@singleton()
+export class ProdAuthValidator extends AuthValidator {
+  constructor(@inject(DITypes.Logger) logger?: Logger) {
+    super(logger)
+  }
+
   protected async decodeToken(idToken: string): Promise<firebaseAdmin.auth.DecodedIdToken> {
     let decodedIdToken = await firebaseAdmin.auth().verifyIdToken(idToken)
     return decodedIdToken
   }
 }
 
-class DevAuthValidator extends AuthValidator {
+@singleton()
+export class DevAuthValidator extends AuthValidator {
+  constructor(@inject(DITypes.Logger) logger?: Logger) {
+    super(logger)
+  }
+
   protected async decodeToken(idToken: string): Promise<firebaseAdmin.auth.DecodedIdToken> {
     let decodedIdToken: firebaseAdmin.auth.DecodedIdToken
     try {
@@ -164,13 +195,3 @@ class DevAuthValidator extends AuthValidator {
     return data
   }
 }
-
-const authValidator = (() => {
-  let result: AuthValidator
-  if (process.env.NODE_ENV === 'production') {
-    result = new ProdAuthValidator()
-  } else {
-    result = new DevAuthValidator()
-  }
-  return result
-})()

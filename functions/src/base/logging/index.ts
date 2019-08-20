@@ -6,6 +6,7 @@ import { LogEntry } from '@google-cloud/logging/build/src/entry'
 import { Request } from 'express'
 import { ResolverData } from 'type-graphql'
 import { config } from '../'
+import { singleton } from 'tsyringe'
 
 //************************************************************************
 //
@@ -68,7 +69,7 @@ export interface LoggingRequestData {
   requestSize: number
 }
 
-abstract class LoggingUtils {
+export abstract class Logger {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -129,7 +130,7 @@ abstract class LoggingUtils {
         },
       },
       httpRequest: {
-        ...logging.m_getRequestData(req),
+        ...this.m_getRequestData(req),
       },
     }
   }
@@ -157,7 +158,8 @@ abstract class LoggingUtils {
 //
 //************************************************************************
 
-class ProdLoggingUtils extends LoggingUtils {
+@singleton()
+export class ProdLogger extends Logger {
   getFunctionNameByRequest(req: Request): string {
     // 例: function_name = "api/rest/hello"
     // ・req.baseUrl: "/rest"
@@ -170,7 +172,8 @@ class ProdLoggingUtils extends LoggingUtils {
   }
 }
 
-class DevLoggingUtils extends LoggingUtils {
+@singleton()
+export class DevLogger extends Logger {
   getFunctionNameByRequest(req: Request): string {
     // 例: function_name = "api/rest/hello"
     // ・req.baseUrl: " /vue-base-project-7295/asia-northeast1/api/rest"
@@ -186,13 +189,3 @@ class DevLoggingUtils extends LoggingUtils {
     return `${this.getProtocol(req)}://${req.headers.host}${req.originalUrl}`
   }
 }
-
-export const logging = (() => {
-  let result: LoggingUtils
-  if (process.env.NODE_ENV === 'production') {
-    result = new ProdLoggingUtils()
-  } else {
-    result = new DevLoggingUtils()
-  }
-  return result
-})()

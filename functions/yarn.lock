@@ -4155,6 +4155,13 @@ tslib@1.10.0, tslib@^1.9.0, tslib@^1.9.3:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.10.0.tgz#c3c19f95973fb0a62973fb09d90d961ee43e5c8a"
   integrity sha512-qOebF53frne81cf0S9B41ByenJ3/IuH8yJKngAX35CmiZySA0khhkovshKK+jGCaMnVomla7gVlIcc3EvKPbTQ==
 
+tsyringe@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/tsyringe/-/tsyringe-3.3.0.tgz#0845302b1d12121f5451e9e73dfae7bfb9f4f252"
+  integrity sha512-XWaZBMbYEnSCi+V9XNyzgDPuDAPdRVQuk5C0aIAJLM3jD7Z/na1b5p+/FWzZ36HfQtweH5bUCdWFlHP7DBj22Q==
+  dependencies:
+    tslib "^1.9.3"
+
 tunnel-agent@^0.6.0:
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/tunnel-agent/-/tunnel-agent-0.6.0.tgz#27a5dea06b36b04a0a9966774b290868f0fc40fd"

@@ -27,6 +27,7 @@
     "graphql": "^14.4.2",
     "graphql-type-json": "^0.3.0",
     "reflect-metadata": "^0.1.13",
+    "tsyringe": "^3.3.0",
     "type-graphql": "^0.17.4",
     "vary": "^1.1.2"
   },

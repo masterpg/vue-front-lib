@@ -7,6 +7,7 @@ import { config, middlewares } from '../base'
 import { Context } from './types'
 import { TestResolver } from '../test/gql'
 import { buildSchemaSync } from 'type-graphql'
+import { singleton } from 'tsyringe'
 const cookieParser = require('cookie-parser')()
 
 //************************************************************************
@@ -14,14 +15,6 @@ const cookieParser = require('cookie-parser')()
 //  Basis
 //
 //************************************************************************
-
-export function initGQL(app: Express): void {
-  if (process.env.NODE_ENV === 'production') {
-    new ProdGQLServer(app)
-  } else {
-    new DevGQLServer(app)
-  }
-}
 
 class ContextImpl implements Context {
   constructor(public readonly req: Request, public readonly res: Response) {}
@@ -76,9 +69,11 @@ abstract class GQLServer {
 //
 //************************************************************************
 
-class ProdGQLServer extends GQLServer {}
+@singleton()
+export class ProdGQLServer extends GQLServer {}
 
-class DevGQLServer extends GQLServer {
+@singleton()
+export class DevGQLServer extends GQLServer {
   protected createConfig(): ApolloServerExpressConfig {
     return {
       ...super.createConfig(),
@@ -91,7 +86,7 @@ class DevGQLServer extends GQLServer {
 
   protected getRouter(): Router {
     return Router().use(cookieParser)
-    // return Router().use(expressUtils.middlewares.cors({ whitelist: config.cors.whitelist }), cookieParser)
+    // return Router().use(middlewares.cors({ whitelist: config.cors.whitelist }), cookieParser)
   }
 
   protected get resolvers(): Array<Function | string> {

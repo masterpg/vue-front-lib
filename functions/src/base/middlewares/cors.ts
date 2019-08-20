@@ -1,7 +1,9 @@
 import * as vary from 'vary'
 import { NextFunction, Request, Response } from 'express'
+import { container, inject, singleton } from 'tsyringe'
+import { DITypes } from '../../di.types'
 import { LogEntry } from '@google-cloud/logging/build/src/entry'
-import { logging } from '../'
+import { Logger } from '../'
 const merge = require('lodash/merge')
 
 //************************************************************************
@@ -12,6 +14,7 @@ const merge = require('lodash/merge')
 
 export function cors(options: CorsOptions) {
   return function(req: Request, res: Response, next: NextFunction) {
+    const corsValidator = container.resolve<CORSValidator>(DITypes.CORSValidator)
     const o = { ...defaultOptions, ...options }
     corsValidator.execute(o, req, res, next)
   }
@@ -33,7 +36,17 @@ const defaultOptions: CorsOptions = {
   optionsSuccessStatus: 204,
 }
 
-abstract class CORSValidator {
+export abstract class CORSValidator {
+  //----------------------------------------------------------------------
+  //
+  //  Constructor
+  //
+  //----------------------------------------------------------------------
+
+  constructor(logger?: Logger) {
+    this.logger = logger!
+  }
+
   //----------------------------------------------------------------------
   //
   //  Constants
@@ -44,21 +57,29 @@ abstract class CORSValidator {
 
   //----------------------------------------------------------------------
   //
+  //  Variables
+  //
+  //----------------------------------------------------------------------
+
+  protected logger: Logger
+
+  //----------------------------------------------------------------------
+  //
   //  Methods
   //
   //----------------------------------------------------------------------
 
   execute(options: CorsOptions, req: Request, res: Response, next: NextFunction): void {
+    if (!this.isAllowed(options, req)) {
+      this.logNotAllowed(req, options)
+    }
+
     const headers = []
     const method = req.method && req.method.toUpperCase && req.method.toUpperCase()
 
     headers.push(this.m_configureOrigin(options, req))
     headers.push(this.m_configureCredentials(options))
     headers.push(this.m_configureExposedHeaders(options))
-
-    if (!this.m_isAllowed(options, req)) {
-      this.logNotAllowed(req, options)
-    }
 
     // プリフライトリクエスト
     if (method === 'OPTIONS') {
@@ -75,7 +96,7 @@ abstract class CORSValidator {
     // 通常リクエスト
     else {
       this.m_applyHeaders(headers, res)
-      if (this.m_isAllowed(options, req)) {
+      if (this.isAllowed(options, req)) {
         next()
       } else {
         res.send('Not allowed by CORS.')
@@ -90,7 +111,7 @@ abstract class CORSValidator {
   //----------------------------------------------------------------------
 
   protected logNotAllowed(req: Request, options: CorsOptions) {
-    const metadata = logging.getBaseMetadataByRequest(req) as LogEntry
+    const metadata = this.logger.getBaseMetadataByRequest(req) as LogEntry
     merge(metadata, {
       severity: 500, // ERROR
     })
@@ -103,10 +124,10 @@ abstract class CORSValidator {
       },
     }
 
-    logging.log(CORSValidator.LOG_NAME, metadata, data)
+    this.logger.log(CORSValidator.LOG_NAME, metadata, data)
   }
 
-  private m_isAllowed(options: CorsOptions, req: Request): boolean {
+  protected isAllowed(options: CorsOptions, req: Request): boolean {
     const requestOrigin = (req.headers.origin as string) || ''
     const whitelist = options.whitelist || []
 
@@ -241,9 +262,19 @@ abstract class CORSValidator {
 //
 //************************************************************************
 
-class ProdCORS extends CORSValidator {}
+@singleton()
+export class ProdCORSValidator extends CORSValidator {
+  constructor(@inject(DITypes.Logger) logger?: Logger) {
+    super(logger)
+  }
+}
 
-class DevCORS extends CORSValidator {
+@singleton()
+export class DevCORSValidator extends CORSValidator {
+  constructor(@inject(DITypes.Logger) logger?: Logger) {
+    super(logger)
+  }
+
   protected logNotAllowed(req: Request, options: CorsOptions) {
     super.logNotAllowed(req, options)
     console.error(
@@ -260,13 +291,3 @@ class DevCORS extends CORSValidator {
     )
   }
 }
-
-const corsValidator = (() => {
-  let result: CORSValidator
-  if (process.env.NODE_ENV === 'production') {
-    result = new ProdCORS()
-  } else {
-    result = new DevCORS()
-  }
-  return result
-})()
