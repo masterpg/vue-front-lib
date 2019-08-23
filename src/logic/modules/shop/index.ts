@@ -66,7 +66,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
     try {
       products = await gql.products()
     } catch (err) {
-      console.log(err)
+      console.error(err)
       return
     }
     store.product.setAll(products)
@@ -79,7 +79,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
     try {
       items = await gql.cartItems()
     } catch (err) {
-      console.log(err)
+      console.error(err)
       return
     }
     store.cart.setAll(items)

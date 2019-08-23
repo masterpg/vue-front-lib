@@ -2,9 +2,9 @@ import 'reflect-metadata'
 import * as admin from 'firebase-admin'
 import * as express from 'express'
 import * as functions from 'firebase-functions'
-import { config } from './base'
+import { config, corsMiddleware } from './base'
 import { initDI } from './di.config'
-import { initREST } from './rest'
+import { initHTTP } from './http'
 
 const serviceAccount = require('./serviceAccountKey.json')
 admin.initializeApp({
@@ -12,8 +12,8 @@ admin.initializeApp({
 })
 
 export const api = (function() {
-  const app = express()
+  const app = express().use(corsMiddleware)
   initDI(app)
-  initREST(app)
+  initHTTP(app)
   return functions.region(config.functions.region).https.onRequest(app)
 })()

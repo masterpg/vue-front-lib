@@ -45,7 +45,7 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
         }
       `,
       variables: { ids },
-      auth: true,
+      isAuth: true,
     })
     return response.data.cartItems
   }
@@ -78,7 +78,7 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
           } as GQLAddCartItemInput
         }),
       },
-      auth: true,
+      isAuth: true,
     })
     return response.data.addCartItems
   }
@@ -109,7 +109,7 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
           } as GQLUpdateCartItemInput
         }),
       },
-      auth: true,
+      isAuth: true,
     })
     return response.data.updateCartItems
   }
@@ -133,7 +133,7 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
         }
       `,
       variables: { ids },
-      auth: true,
+      isAuth: true,
     })
     return response.data.removeCartItems
   }
@@ -145,7 +145,7 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
           checkoutCart
         }
       `,
-      auth: true,
+      isAuth: true,
     })
     return response.data.checkoutCart
   }

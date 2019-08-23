@@ -1,9 +1,9 @@
 import * as vary from 'vary'
+import { Logger, config } from '../index'
 import { NextFunction, Request, Response } from 'express'
 import { container, inject, singleton } from 'tsyringe'
 import { DITypes } from '../../di.types'
 import { LogEntry } from '@google-cloud/logging/build/src/entry'
-import { Logger } from '../'
 const merge = require('lodash/merge')
 
 //************************************************************************
@@ -12,28 +12,20 @@ const merge = require('lodash/merge')
 //
 //************************************************************************
 
-export function cors(options: CorsOptions) {
-  return function(req: Request, res: Response, next: NextFunction) {
-    const corsValidator = container.resolve<CORSValidator>(DITypes.CORSValidator)
-    const o = { ...defaultOptions, ...options }
-    corsValidator.execute(o, req, res, next)
-  }
+export function corsMiddleware(req: Request, res: Response, next: NextFunction) {
+  const corsValidator = container.resolve<CORSValidator>(DITypes.CORSValidator)
+  corsValidator.execute(req, res, next)
 }
 
-export interface CorsOptions {
-  whitelist: string[]
+interface CORSOptions {
+  whitelist?: string[]
   methods?: string[]
   allowedHeaders?: string[]
   exposedHeaders?: string[]
   credentials?: boolean
   maxAge?: number
   optionsSuccessStatus?: number
-}
-
-const defaultOptions: CorsOptions = {
-  whitelist: [],
-  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-  optionsSuccessStatus: 204,
+  allowedBlankOrigin?: boolean
 }
 
 export abstract class CORSValidator {
@@ -63,13 +55,28 @@ export abstract class CORSValidator {
 
   protected logger: Logger
 
+  protected get defaultOptions(): CORSOptions {
+    return {
+      whitelist: config.cors.whitelist,
+      methods: ['GET', 'HEAD', 'PUT', 'POST', 'DELETE'],
+      credentials: false,
+      optionsSuccessStatus: 204,
+      allowedBlankOrigin: false,
+    }
+  }
+
   //----------------------------------------------------------------------
   //
   //  Methods
   //
   //----------------------------------------------------------------------
 
-  execute(options: CorsOptions, req: Request, res: Response, next: NextFunction): void {
+  execute(req: Request, res: Response, next: NextFunction, options?: CORSOptions): void {
+    options = {
+      ...this.defaultOptions,
+      ...(options || {}),
+    }
+
     if (!this.isAllowed(options, req)) {
       this.logNotAllowed(req, options)
     }
@@ -77,16 +84,16 @@ export abstract class CORSValidator {
     const headers = []
     const method = req.method && req.method.toUpperCase && req.method.toUpperCase()
 
-    headers.push(this.m_configureOrigin(options, req))
-    headers.push(this.m_configureCredentials(options))
-    headers.push(this.m_configureExposedHeaders(options))
+    headers.push(this.configureOrigin(options, req))
+    headers.push(this.configureCredentials(options))
+    headers.push(this.configureExposedHeaders(options))
 
     // プリフライトリクエスト
     if (method === 'OPTIONS') {
-      headers.push(this.m_configureMethods(options))
-      headers.push(this.m_configureAllowedHeaders(options, req))
-      headers.push(this.m_configureMaxAge(options))
-      this.m_applyHeaders(headers, res)
+      headers.push(this.configureMethods(options))
+      headers.push(this.configureAllowedHeaders(options, req))
+      headers.push(this.configureMaxAge(options))
+      this.applyHeaders(headers, res)
       // Safari (and potentially other browsers) need content-length 0,
       //   for 204 or they just hang waiting for a body
       res.statusCode = options.optionsSuccessStatus!
@@ -95,7 +102,7 @@ export abstract class CORSValidator {
     }
     // 通常リクエスト
     else {
-      this.m_applyHeaders(headers, res)
+      this.applyHeaders(headers, res)
       if (this.isAllowed(options, req)) {
         next()
       } else {
@@ -110,29 +117,16 @@ export abstract class CORSValidator {
   //
   //----------------------------------------------------------------------
 
-  protected logNotAllowed(req: Request, options: CorsOptions) {
-    const metadata = this.logger.getBaseMetadataByRequest(req) as LogEntry
-    merge(metadata, {
-      severity: 500, // ERROR
-    })
-
-    const data = {
-      error: {
-        message: 'Not allowed by CORS.',
-        requestOrigin: (req.headers.origin as string) || '',
-        whitelist: options.whitelist,
-      },
-    }
-
-    this.logger.log(CORSValidator.LOG_NAME, metadata, data)
-  }
-
-  protected isAllowed(options: CorsOptions, req: Request): boolean {
+  protected isAllowed(options: CORSOptions, req: Request): boolean {
     const requestOrigin = (req.headers.origin as string) || ''
     const whitelist = options.whitelist || []
 
+    // リクエストオリジンの空を許容していて、かつリクエストオリジンが空の場合
+    if (options.allowedBlankOrigin && !requestOrigin) {
+      return true
+    }
     // ホワイトリストが指定されていない場合
-    if (whitelist.length === 0) {
+    else if (whitelist.length === 0) {
       return false
     }
     // ホワイトリストが指定されている場合
@@ -142,14 +136,18 @@ export abstract class CORSValidator {
     }
   }
 
-  private m_configureOrigin(options: CorsOptions, req: Request) {
+  protected configureOrigin(options: CORSOptions, req: Request) {
     const headers: any = []
     const whitelist = options.whitelist || []
     const requestOrigin = (req.headers.origin as string) || ''
 
-    // リクエストオリジンがホワイトリストに含まれている場合、
-    // 'Access-Control-Allow-Origin'の設定を行う
-    if (whitelist.length > 0 && whitelist.indexOf(requestOrigin) >= 0) {
+    // リクエストオリジンの空を許容していて、かつリクエストオリジンが空の場合
+    if (options.allowedBlankOrigin && !requestOrigin) {
+      headers.push({ key: 'Access-Control-Allow-Origin', value: '*' })
+      headers.push({ key: 'Vary', value: 'Origin' })
+    }
+    // リクエストオリジンがホワイトリストに含まれている場合
+    else if (whitelist.length > 0 && whitelist.indexOf(requestOrigin) >= 0) {
       headers.push({ key: 'Access-Control-Allow-Origin', value: requestOrigin })
       headers.push({ key: 'Vary', value: 'Origin' })
     }
@@ -157,7 +155,7 @@ export abstract class CORSValidator {
     return headers
   }
 
-  private m_configureCredentials(options: CorsOptions) {
+  protected configureCredentials(options: CORSOptions) {
     if (options.credentials === true) {
       return {
         key: 'Access-Control-Allow-Credentials',
@@ -167,7 +165,7 @@ export abstract class CORSValidator {
     return null
   }
 
-  private m_configureMethods(options: CorsOptions) {
+  protected configureMethods(options: CORSOptions) {
     let methods: string | undefined
 
     if (options.methods) {
@@ -183,7 +181,7 @@ export abstract class CORSValidator {
     return null
   }
 
-  private m_configureAllowedHeaders(options: CorsOptions, req: Request) {
+  protected configureAllowedHeaders(options: CORSOptions, req: Request) {
     const headers = []
     let allowedHeaders: string | undefined
 
@@ -211,7 +209,7 @@ export abstract class CORSValidator {
     return headers
   }
 
-  private m_configureMaxAge(options: CorsOptions) {
+  protected configureMaxAge(options: CORSOptions) {
     const maxAge = (typeof options.maxAge === 'number' || options.maxAge) && options.maxAge.toString()
     if (maxAge && maxAge.length) {
       return {
@@ -222,7 +220,7 @@ export abstract class CORSValidator {
     return null
   }
 
-  private m_configureExposedHeaders(options: CorsOptions) {
+  protected configureExposedHeaders(options: CORSOptions) {
     let exposedHeaders: string | undefined
 
     if (!options.exposedHeaders) {
@@ -240,18 +238,40 @@ export abstract class CORSValidator {
     return null
   }
 
-  private m_applyHeaders(headers: any, res: Response) {
+  protected applyHeaders(headers: any, res: Response) {
     for (let i = 0; i < headers.length; i++) {
       const header = headers[i]
       if (header) {
         if (Array.isArray(header)) {
-          this.m_applyHeaders(header, res)
+          this.applyHeaders(header, res)
         } else if (header.key === 'Vary' && header.value) {
           vary(res, header.value)
         } else {
           res.setHeader(header.key, header.value)
         }
       }
+    }
+  }
+
+  protected logNotAllowed(req: Request, options: CORSOptions) {
+    const metadata = this.logger.getBaseMetadata(req) as LogEntry
+    merge(metadata, {
+      severity: 500, // ERROR
+    })
+
+    const data = this.getErrorData(req, options)
+
+    this.logger.log(CORSValidator.LOG_NAME, metadata, data)
+  }
+
+  protected getErrorData(req: Request, options: CORSOptions) {
+    return {
+      ...this.logger.getBaseData(req),
+      error: {
+        message: 'Not allowed by CORS.',
+        allowedBlankOrigin: !!options.allowedBlankOrigin,
+        whitelist: options.whitelist,
+      },
     }
   }
 }
@@ -275,19 +295,36 @@ export class DevCORSValidator extends CORSValidator {
     super(logger)
   }
 
-  protected logNotAllowed(req: Request, options: CorsOptions) {
+  protected get defaultOptions(): CORSOptions {
+    return {
+      ...super.defaultOptions,
+      allowedBlankOrigin: true,
+    }
+  }
+
+  protected logNotAllowed(req: Request, options: CORSOptions) {
     super.logNotAllowed(req, options)
-    console.error(
-      '[ERROR]:',
-      JSON.stringify(
-        {
-          message: 'Not allowed by CORS.',
-          requestOrigin: (req.headers.origin as string) || '',
-          whitelist: options.whitelist,
-        },
-        null,
-        2
-      )
-    )
+    const detail = this.getErrorData(req, options)
+    console.error('[ERROR]:', JSON.stringify(detail, null, 2))
+  }
+
+  /**
+   * TODO 今後下記の問題が解消された場合、このメソッドのオーバーロードは削除する予定。
+   *
+   * クライアント側の単体テストでは jest.config.js で testURL: 'http://localhost/' が
+   * 設定されている。単体テストを実行し、レスポンスヘッダーで Access-Control-Allow-Origin: http://localhost を返しても、クライアント側では "http://localhost, *" を受け取ったように
+   * 変換されてしまい、"http://localhost" とオリジンが一致しないためCORSエラーとなってしまう。
+   * このためリクエストオリジンが "http://localhost" の場合には強制的に "*" を返すよう設定している。
+   */
+  protected configureOrigin(options: CORSOptions, req: Request) {
+    const requestOrigin = (req.headers.origin as string) || ''
+    if (requestOrigin === 'http://localhost') {
+      const headers: any = []
+      headers.push({ key: 'Access-Control-Allow-Origin', value: '*' })
+      headers.push({ key: 'Vary', value: 'Origin' })
+      return headers
+    } else {
+      return super.configureOrigin(options, req)
+    }
   }
 }

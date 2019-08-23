@@ -1,8 +1,3 @@
-/**
- * Stackdriverのログ内容については下記参照
- * https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
- */
-
 import { ArgumentValidationError, MiddlewareFn, ResolverData } from 'type-graphql'
 import { Logger, LoggingLatencyTimer } from '../../base'
 import { container, inject, singleton } from 'tsyringe'
@@ -27,7 +22,7 @@ export const LoggingMiddleware: MiddlewareFn<Context> = async (action, next) => 
   try {
     result = await next()
   } catch (err) {
-    gqlLogger.logError(action, latencyTimer, err)
+    gqlLogger.logError(err, action, latencyTimer)
     throw err
   }
 
@@ -57,7 +52,7 @@ export class GQLLogger {
   //
   //----------------------------------------------------------------------
 
-  private static readonly LOG_NAME = 'gql'
+  private static readonly LOG_NAME = 'api'
 
   //----------------------------------------------------------------------
   //
@@ -74,9 +69,11 @@ export class GQLLogger {
   //----------------------------------------------------------------------
 
   logNormal(action: ResolverData<Context>, latencyTimer: LoggingLatencyTimer): void {
+    const req = action.context.req
     const res = action.context.res
+    const info = action.info
 
-    const metadata = this.logger.getBaseMetadataByGQL(action) as LogEntry
+    const metadata = this.logger.getBaseMetadata(req, info) as LogEntry
     merge(metadata, {
       severity: 100, // DEBUG
       httpRequest: {
@@ -86,13 +83,17 @@ export class GQLLogger {
       },
     })
 
-    this.logger.log(GQLLogger.LOG_NAME, metadata, {})
+    const data = this.logger.getBaseData(req)
+
+    this.logger.log(GQLLogger.LOG_NAME, metadata, data)
   }
 
-  logError(action: ResolverData<Context>, latencyTimer: LoggingLatencyTimer, err: Error): void {
+  logError(err: Error, action: ResolverData<Context>, latencyTimer: LoggingLatencyTimer): void {
+    const req = action.context.req
     const res = action.context.res
+    const info = action.info
 
-    const metadata = this.logger.getBaseMetadataByGQL(action) as LogEntry
+    const metadata = this.logger.getBaseMetadata(req, info) as LogEntry
     merge(metadata, {
       severity: 500, // ERROR
       httpRequest: {
@@ -124,6 +125,7 @@ export class GQLLogger {
     const req = action.context.req
 
     const data = {
+      ...this.logger.getBaseData(req),
       gql: req.body,
       error: {
         message: err.message,
@@ -170,12 +172,18 @@ export class DevGQLLogger extends GQLLogger {
   }
 
   logNormal(action: ResolverData<Context>, latencyTimer: LoggingLatencyTimer) {
+    const req = action.context.req
+    const info = action.info
     super.logNormal(action, latencyTimer)
-    const functionName = this.logger.getBaseMetadataByGQL(action).resource.labels.function_name
-    console.log('[DEBUG]:', JSON.stringify({ functionName, latency: `${latencyTimer.diff.seconds}s` }, null, 2))
+    const functionName = this.logger.getBaseMetadata(req, info).resource.labels.function_name
+    const detail = {
+      functionName,
+      latency: `${latencyTimer.diff.seconds}s`,
+    }
+    console.log('[DEBUG]:', JSON.stringify(detail, null, 2))
   }
 
-  logError(action: ResolverData<Context>, latencyTimer: LoggingLatencyTimer, err: Error): void {
+  logError(err: Error, action: ResolverData<Context>, latencyTimer: LoggingLatencyTimer): void {
     const errorData = this.getErrorData(action, err)
     console.error('[ERROR]:', JSON.stringify(errorData, null, 2))
   }

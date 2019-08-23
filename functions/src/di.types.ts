@@ -4,4 +4,5 @@ export const DITypes = {
   GQLLogger: Symbol.for('GQLLogger'),
   CORSValidator: Symbol.for('CORSValidator'),
   AuthValidator: Symbol.for('AuthValidator'),
+  HTTPLogger: Symbol.for('HTTPLogger'),
 }

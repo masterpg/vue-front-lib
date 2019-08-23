@@ -1,10 +1,9 @@
 import * as convertHrtime from 'convert-hrtime'
 import * as path from 'path'
 import { Log, Logging } from '@google-cloud/logging'
-import { Context } from '../../gql/types'
+import { GraphQLResolveInfo } from 'graphql'
 import { LogEntry } from '@google-cloud/logging/build/src/entry'
 import { Request } from 'express'
-import { ResolverData } from 'type-graphql'
 import { config } from '../'
 import { singleton } from 'tsyringe'
 
@@ -13,6 +12,11 @@ import { singleton } from 'tsyringe'
 //  Basis
 //
 //************************************************************************
+
+export interface LoggingLatencyData {
+  seconds: number
+  nanos: number
+}
 
 export class LoggingLatencyTimer {
   private m_startTime: [number, number] = [0, 0]
@@ -23,7 +27,7 @@ export class LoggingLatencyTimer {
     return this.m_diff
   }
 
-  private m_data: { seconds: number; nanos: number } = { seconds: 0, nanos: 0 }
+  private m_data: LoggingLatencyData = { seconds: 0, nanos: 0 }
 
   get data() {
     return this.m_data
@@ -94,16 +98,18 @@ export abstract class Logger {
     return targetLog.write(entry)
   }
 
-  getBaseMetadataByRequest(req: Request): LoggingBaseMetadata {
+  getBaseMetadata(req: Request, info?: GraphQLResolveInfo): LoggingBaseMetadata {
     const metadata = this.m_getBaseMetadata(req)
-    metadata.resource.labels.function_name = this.getFunctionNameByRequest(req)
+    if (info) {
+      metadata.resource.labels.function_name = this.m_getFunctionNameByGQL(info)
+    }
     return metadata
   }
 
-  getBaseMetadataByGQL(action: ResolverData<Context>): LoggingBaseMetadata {
-    const metadata = this.m_getBaseMetadata(action.context.req)
-    metadata.resource.labels.function_name = this.m_getFunctionNameByGQL(action)
-    return metadata
+  getBaseData(req: Request): { requestOrigin: string } {
+    return {
+      requestOrigin: (req.headers.origin as string) || '',
+    }
   }
 
   //----------------------------------------------------------------------
@@ -125,7 +131,7 @@ export abstract class Logger {
       resource: {
         type: 'cloud_function',
         labels: {
-          function_name: '',
+          function_name: this.getFunctionNameByRequest(req),
           region: config.functions.region,
         },
       },
@@ -147,8 +153,8 @@ export abstract class Logger {
     }
   }
 
-  private m_getFunctionNameByGQL(action: ResolverData<Context>): string {
-    return `api/gql/${action.info.path.key}`
+  private m_getFunctionNameByGQL(info: GraphQLResolveInfo): string {
+    return `api/gql/${info.path.key}`
   }
 }
 
@@ -164,7 +170,7 @@ export class ProdLogger extends Logger {
     // 例: function_name = "api/rest/hello"
     // ・req.baseUrl: "/rest"
     // ・req.path: "/hello"
-    return path.join('api', req.baseUrl, req.path)
+    return path.join('api', req.baseUrl, req.path).replace(/\/$/, '')
   }
 
   protected getRequestUrl(req: Request): string {

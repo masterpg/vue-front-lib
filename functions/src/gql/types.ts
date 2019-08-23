@@ -6,7 +6,7 @@ export interface Context {
 
   readonly res: express.Response
 
-  readonly user: firebaseAdmin.auth.DecodedIdToken
+  readonly user?: firebaseAdmin.auth.DecodedIdToken
 
   setUser(user: firebaseAdmin.auth.DecodedIdToken): void
 }

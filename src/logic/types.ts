@@ -9,7 +9,6 @@ import { CartItem, CheckoutStatus, Product, User } from '@/store'
 export interface Logic {
   readonly shop: ShopLogic
   readonly auth: AuthLogic
-  readonly hello: HelloLogic
 }
 
 export interface ShopLogic {

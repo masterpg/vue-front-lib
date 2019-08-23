@@ -1,31 +1,24 @@
 //----------------------------------------------------------------------
 //
-//  API
+//  REST API
 //
 //----------------------------------------------------------------------
 
-export interface REST {
-  readonly shop: ShopAPI
-  readonly hello: HelloAPI
-}
-
-export interface ShopAPI {
+export interface RESTFacade {
   getProducts(): Promise<Product[]>
 
-  buyProducts(products: Array<{ id: string; quantity: number }>): Promise<void>
-}
+  getProduct(id: string): Promise<Product>
 
-export interface HelloAPI {
-  publicHello(message: string): Promise<string>
+  getCartItems(): Promise<CartItem[]>
 
-  siteHello(message: string): Promise<string>
+  getCartItem(id: string): Promise<CartItem>
 
-  authHello(message: string, idToken: string): Promise<string>
+  putCartItem(id: string, quantity: number): Promise<CartItem>
 }
 
 //----------------------------------------------------------------------
 //
-//  Entities
+//  Value objects
 //
 //----------------------------------------------------------------------
 
@@ -34,4 +27,13 @@ export interface Product {
   title: string
   price: number
   stock: number
+}
+
+export interface CartItem {
+  id: string
+  uid: string
+  productId: string
+  title: string
+  price: number
+  quantity: number
 }

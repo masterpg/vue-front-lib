@@ -16,13 +16,13 @@ export abstract class BaseGQLClient {
   //
   //----------------------------------------------------------------------
 
-  async query<T = any, TVariables = OperationVariables>(options: QueryOptions<TVariables> & { auth?: boolean }): Promise<ApolloQueryResult<T>> {
-    const client = await this.m_getClient(options.auth)
+  async query<T = any, TVariables = OperationVariables>(options: QueryOptions<TVariables> & { isAuth?: boolean }): Promise<ApolloQueryResult<T>> {
+    const client = await this.m_getClient(options.isAuth)
     return client.query(options)
   }
 
-  async mutate<T = any, TVariables = OperationVariables>(options: MutationOptions<T, TVariables> & { auth?: boolean }): Promise<FetchResult<T>> {
-    const client = await this.m_getClient(options.auth)
+  async mutate<T = any, TVariables = OperationVariables>(options: MutationOptions<T, TVariables> & { isAuth?: boolean }): Promise<FetchResult<T>> {
+    const client = await this.m_getClient(options.isAuth)
     return client.mutate(options)
   }
 
@@ -32,12 +32,12 @@ export abstract class BaseGQLClient {
   //
   //----------------------------------------------------------------------
 
-  private async m_getClient(auth: boolean = false): Promise<ApolloClient<NormalizedCacheObject>> {
+  private async m_getClient(isAuth: boolean = false): Promise<ApolloClient<NormalizedCacheObject>> {
     let link: ApolloLink = createHttpLink({
       uri: this.getRequestURL,
     })
 
-    if (auth) {
+    if (isAuth) {
       const idToken = await this.getIdToken()
       const authLink = setContext((_, { headers }) => {
         return {

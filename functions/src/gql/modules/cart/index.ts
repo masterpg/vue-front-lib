@@ -38,7 +38,7 @@ export class CartResolver {
       }
       return (await Promise.all(promises)).reduce(
         (result, item) => {
-          if (item && item.uid === ctx.user.uid) {
+          if (item && item.uid === ctx.user!.uid) {
             result.push(item)
           }
           return result
@@ -49,7 +49,7 @@ export class CartResolver {
       const items: CartItem[] = []
       const snapshot = await db
         .collection('cart')
-        .where('uid', '==', ctx.user.uid)
+        .where('uid', '==', ctx.user!.uid)
         .get()
       snapshot.forEach(doc => {
         items.push({ id: doc.id, ...doc.data() } as CartItem)
@@ -68,7 +68,7 @@ export class CartResolver {
       const writeReady = new FirestoreWriteReadyObserver(items.length)
       const promises: Promise<EditCartItemResponse>[] = []
       for (const item of items) {
-        promises.push(this.m_addCartItem(transaction, item, ctx.user.uid, writeReady))
+        promises.push(this.m_addCartItem(transaction, item, ctx.user!.uid, writeReady))
       }
       return await Promise.all<EditCartItemResponse>(promises)
     })
@@ -87,7 +87,7 @@ export class CartResolver {
       const writeReady = new FirestoreWriteReadyObserver(items.length)
       const promises: Promise<EditCartItemResponse>[] = []
       for (const item of items) {
-        promises.push(this.m_updateCartItem(transaction, item, ctx.user.uid, writeReady))
+        promises.push(this.m_updateCartItem(transaction, item, ctx.user!.uid, writeReady))
       }
       return await Promise.all<EditCartItemResponse>(promises)
     })
@@ -101,7 +101,7 @@ export class CartResolver {
       const writeReady = new FirestoreWriteReadyObserver(ids.length)
       const promises: Promise<EditCartItemResponse>[] = []
       for (const cartItemId of ids) {
-        promises.push(this.m_removeCartItem(transaction, cartItemId, ctx.user.uid, writeReady))
+        promises.push(this.m_removeCartItem(transaction, cartItemId, ctx.user!.uid, writeReady))
       }
       return await Promise.all<EditCartItemResponse>(promises)
     })
@@ -114,7 +114,7 @@ export class CartResolver {
 
     const snapshot = await db
       .collection('cart')
-      .where('uid', '==', ctx.user.uid)
+      .where('uid', '==', ctx.user!.uid)
       .get()
 
     await db.runTransaction(async transaction => {
