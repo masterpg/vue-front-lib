@@ -1,4 +1,7 @@
 export default {
+  error: {
+    unexpected: 'An unexpected error has occurred.',
+  },
   sw: {
     ready: 'App is being served from cache by a service worker. For more details, visit https://goo.gl/AFskqB',
     registered: 'Service worker has been registered.',

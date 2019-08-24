@@ -5,6 +5,8 @@
 //----------------------------------------------------------------------
 
 export interface GQLFacade {
+  customToken(): Promise<string>
+
   product(id: string): Promise<GQLProduct | undefined>
 
   products(ids?: string[]): Promise<GQLProduct[]>

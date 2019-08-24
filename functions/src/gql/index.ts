@@ -1,10 +1,10 @@
-import * as firebaseAdmin from 'firebase-admin'
 import * as path from 'path'
 import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express'
-import { CartResolver, ProductResolver, RecipeResolver } from './modules'
+import { AppResolver, CartResolver, ProductResolver, RecipeResolver } from './modules'
 import { Express, Request, Response, Router } from 'express'
 import { LoggingMiddleware, authChecker } from './base'
 import { Context } from './types'
+import { IdToken } from '../base'
 import { TestResolver } from '../test/gql'
 import { buildSchemaSync } from 'type-graphql'
 import { singleton } from 'tsyringe'
@@ -19,13 +19,13 @@ const cookieParser = require('cookie-parser')()
 class ContextImpl implements Context {
   constructor(public readonly req: Request, public readonly res: Response) {}
 
-  private m_user: firebaseAdmin.auth.DecodedIdToken | undefined
+  private m_user: IdToken | undefined
 
-  get user(): firebaseAdmin.auth.DecodedIdToken | undefined {
+  get user(): IdToken | undefined {
     return this.m_user
   }
 
-  setUser(user: firebaseAdmin.auth.DecodedIdToken): void {
+  setUser(user: IdToken): void {
     this.m_user = user
   }
 }
@@ -43,7 +43,7 @@ abstract class GQLServer {
   }
 
   protected get resolvers(): Array<Function | string> {
-    return [CartResolver, ProductResolver, RecipeResolver]
+    return [AppResolver, CartResolver, ProductResolver, RecipeResolver]
   }
 
   protected createConfig(): ApolloServerExpressConfig {

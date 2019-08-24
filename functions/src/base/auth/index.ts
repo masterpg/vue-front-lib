@@ -1,5 +1,6 @@
 import * as firebaseAdmin from 'firebase-admin'
 import { GraphQLResolveInfo } from 'graphql'
+import { IdToken } from '../'
 import { Request } from 'express'
 import { singleton } from 'tsyringe'
 
@@ -12,7 +13,7 @@ import { singleton } from 'tsyringe'
 export interface AuthValidatorResult {
   result: boolean
   errorMessage: string
-  idToken?: firebaseAdmin.auth.DecodedIdToken
+  idToken?: IdToken
 }
 
 export abstract class AuthValidator {
@@ -37,7 +38,7 @@ export abstract class AuthValidator {
       }
     }
 
-    let decodedIdToken: firebaseAdmin.auth.DecodedIdToken
+    let decodedIdToken: IdToken
     try {
       decodedIdToken = await this.decodeToken(idToken)
     } catch (err) {
@@ -59,11 +60,11 @@ export abstract class AuthValidator {
    * このメソッドは検証を行わなず、純粋にIDトークン取得のみを行います。
    * @param req
    */
-  async getIdToken(req: Request): Promise<firebaseAdmin.auth.DecodedIdToken | undefined> {
+  async getIdToken(req: Request): Promise<IdToken | undefined> {
     const idToken = this.m_getIdToken(req)
     if (!idToken) return
 
-    let decodedIdToken: firebaseAdmin.auth.DecodedIdToken
+    let decodedIdToken: IdToken
     try {
       decodedIdToken = await this.decodeToken(idToken)
     } catch (err) {
@@ -79,7 +80,7 @@ export abstract class AuthValidator {
   //
   //----------------------------------------------------------------------
 
-  protected abstract decodeToken(idToken: string): Promise<firebaseAdmin.auth.DecodedIdToken>
+  protected abstract decodeToken(idToken: string): Promise<IdToken>
 
   private m_getIdToken(req: Request): string {
     // 認証リクエストがFirebase IDトークンを持っているかチェック
@@ -110,7 +111,7 @@ export abstract class AuthValidator {
 
 @singleton()
 export class ProdAuthValidator extends AuthValidator {
-  protected async decodeToken(idToken: string): Promise<firebaseAdmin.auth.DecodedIdToken> {
+  protected async decodeToken(idToken: string): Promise<IdToken> {
     let decodedIdToken = await firebaseAdmin.auth().verifyIdToken(idToken)
     return decodedIdToken
   }
@@ -118,8 +119,8 @@ export class ProdAuthValidator extends AuthValidator {
 
 @singleton()
 export class DevAuthValidator extends AuthValidator {
-  protected async decodeToken(idToken: string): Promise<firebaseAdmin.auth.DecodedIdToken> {
-    let decodedIdToken: firebaseAdmin.auth.DecodedIdToken
+  protected async decodeToken(idToken: string): Promise<IdToken> {
+    let decodedIdToken: IdToken
     try {
       decodedIdToken = await firebaseAdmin.auth().verifyIdToken(idToken)
     } catch (err) {

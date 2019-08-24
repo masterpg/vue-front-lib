@@ -3,6 +3,18 @@ import { BaseGQLClient } from '@/gql/base'
 import gql from 'graphql-tag'
 
 export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
+  async customToken(): Promise<string> {
+    const response = await this.query<{ customToken: string }>({
+      query: gql`
+        query GetCustomToken {
+          customToken
+        }
+      `,
+      isAuth: true,
+    })
+    return response.data.customToken
+  }
+
   async product(id: string): Promise<GQLProduct | undefined> {
     const products = await this.products([id])
     return products.length === 1 ? products[0] : undefined

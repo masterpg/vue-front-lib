@@ -1,6 +1,6 @@
-import * as firebaseAdmin from 'firebase-admin'
 import { Authorized, Body, CurrentUser, Get, JsonController, NotFoundError, Param, Put } from 'routing-controllers'
 import { CartItem, UpdateCartItemInput } from '../types'
+import { IdToken } from '../../../base'
 
 const CART_ITEMS: CartItem[] = [
   {
@@ -25,7 +25,7 @@ const CART_ITEMS: CartItem[] = [
 export class CartController {
   @Authorized()
   @Get('/rest/cartItems')
-  getAll(@CurrentUser({ required: true }) user: firebaseAdmin.auth.DecodedIdToken) {
+  getAll(@CurrentUser({ required: true }) user: IdToken) {
     return CART_ITEMS.map(item => {
       item.uid = user.uid
       return item
@@ -34,7 +34,7 @@ export class CartController {
 
   @Authorized()
   @Get('/rest/cartItems/:id')
-  getOne(@CurrentUser({ required: true }) user: firebaseAdmin.auth.DecodedIdToken, @Param('id') id: string) {
+  getOne(@CurrentUser({ required: true }) user: IdToken, @Param('id') id: string) {
     const cartItem = CART_ITEMS.find(item => item.id === id)
     if (!cartItem) {
       throw new NotFoundError('Cart item was not found.')
@@ -45,7 +45,7 @@ export class CartController {
 
   @Authorized()
   @Put('/rest/cartItems/:id')
-  put(@CurrentUser({ required: true }) user: firebaseAdmin.auth.DecodedIdToken, @Param('id') id: string, @Body() input: UpdateCartItemInput) {
+  put(@CurrentUser({ required: true }) user: IdToken, @Param('id') id: string, @Body() input: UpdateCartItemInput) {
     const cartItem = CART_ITEMS.find(item => item.id === id)
     if (!cartItem) {
       throw new NotFoundError('Cart item was not found.')

@@ -1,10 +1,12 @@
 import 'firebase/auth'
 import * as firebase from 'firebase/app'
-
 import { AuthLogic, AuthProviderType, User } from '@/logic/types'
 import { BaseLogic } from '@/logic/base'
 import { Component } from 'vue-property-decorator'
+import { Dialog } from 'quasar'
 import { NoCache } from '@/base/decorators'
+import { gql } from '@/gql'
+import { i18n } from '@/base/i18n'
 import { store } from '@/store'
 const cloneDeep = require('lodash/cloneDeep')
 
@@ -202,6 +204,17 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
           isSignedIn = false
         }
       }
+      // サインインした場合
+      if (isSignedIn) {
+        try {
+          const customToken = await gql.customToken()
+          await firebase.auth().signInWithCustomToken(customToken)
+        } catch (err) {
+          Dialog.create({ title: 'Error', message: String(i18n.t('error.unexpected')) })
+          console.error(err)
+        }
+      }
+      // ストアのユーザー設定
       store.user.set({
         id: user.uid,
         isSignedIn: isSignedIn,

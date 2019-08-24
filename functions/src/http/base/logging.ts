@@ -3,9 +3,8 @@
  * https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
  */
 
-import * as firebaseAdmin from 'firebase-admin'
 import { BadRequestError, ExpressErrorMiddlewareInterface, ExpressMiddlewareInterface, Middleware } from 'routing-controllers'
-import { Logger, LoggingLatencyData, LoggingLatencyTimer } from '../../base'
+import { IdToken, Logger, LoggingLatencyData, LoggingLatencyTimer } from '../../base'
 import { NextFunction, Request, Response } from 'express'
 import { container, inject, singleton } from 'tsyringe'
 import { DITypes } from '../../di.types'
@@ -146,7 +145,7 @@ export class HTTPLogger {
       })
     }
 
-    const user = (req as any).__idToken as firebaseAdmin.auth.DecodedIdToken | undefined
+    const user = (req as any).__idToken as IdToken | undefined
     if (user) {
       merge(data, {
         uid: user.uid,

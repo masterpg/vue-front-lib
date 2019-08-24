@@ -1,4 +1,7 @@
 export default {
+  error: {
+    unexpected: '予期しないエラーが発生しました。',
+  },
   sw: {
     ready: 'アプリケーションは Service Worker によってキャッシュからサーブされています。詳細は https://goo.gl/AFskqB を参照ください。',
     registered: 'Service Worker は既に登録されています。',

@@ -1,14 +1,14 @@
 import * as express from 'express'
-import * as firebaseAdmin from 'firebase-admin'
+import { IdToken } from '../base'
 
 export interface Context {
   readonly req: express.Request
 
   readonly res: express.Response
 
-  readonly user?: firebaseAdmin.auth.DecodedIdToken
+  readonly user?: IdToken
 
-  setUser(user: firebaseAdmin.auth.DecodedIdToken): void
+  setUser(user: IdToken): void
 }
 
 export * from './modules/cart/types'
