@@ -1,7 +1,7 @@
-import CompTreeNode from '@/components/comp-tree-view/comp-tree-node.vue'
 import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
+import { Constructor } from '@/base/types'
 
-export interface CompTreeNodeData<T extends CompTreeNodeData<T>> {
+export interface CompTreeNodeData {
   /**
    * ノードのラベルを指定します。
    */
@@ -37,18 +37,9 @@ export interface CompTreeNodeData<T extends CompTreeNodeData<T>> {
   /**
    * CompTreeNodeItemを拡張した場合、拡張したノードアイテムのクラスを指定します。
    */
-  itemClass?: { new (): CompTreeNodeItem }
+  itemClass?: Constructor<CompTreeNodeItem>
   /**
    * 子ノードを指定します。
    */
-  children?: T[]
-}
-
-export interface CompTreeNodeParent {
-  /**
-   * 自身に子ノードを追加します。
-   * @param childNode 追加する子ノード
-   * @param insertIndex ノードの挿入位置
-   */
-  addChild(childNode: CompTreeNode, insertIndex?: number): void
+  children?: this[]
 }

@@ -3,6 +3,7 @@
 
 .item {
   cursor: pointer
+
   &:hover {
     text-decoration: underline
   }
@@ -31,7 +32,7 @@ import { CompTreeNodeData } from '@/components/comp-tree-view/types'
 import { Component } from 'vue-property-decorator'
 
 @Component({ name: 'comp-tree-node-item' })
-export default class CompTreeNodeItem<T extends CompTreeNodeData<T> = any> extends BaseComponent {
+export default class CompTreeNodeItem<NodeData extends CompTreeNodeData = CompTreeNodeData> extends BaseComponent {
   //----------------------------------------------------------------------
   //
   //  Properties
@@ -84,7 +85,7 @@ export default class CompTreeNodeItem<T extends CompTreeNodeData<T> = any> exten
   //
   //----------------------------------------------------------------------
 
-  init(nodeData: T): void {
+  init(nodeData: NodeData): void {
     this.label = nodeData.label
     this.value = nodeData.value || ''
     this.unselectable = Boolean(nodeData.unselectable)
@@ -104,7 +105,7 @@ export default class CompTreeNodeItem<T extends CompTreeNodeData<T> = any> exten
    * 独自処理が必要な場合はこのメソッドをオーバーライドしてください。
    * @param nodeData
    */
-  protected initPlaceholder(nodeData: T): void {}
+  protected initPlaceholder(nodeData: NodeData): void {}
 
   protected selectItem(): void {
     if (this.unselectable) return

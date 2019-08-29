@@ -14,11 +14,8 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, ResizableMixin } from '@/components'
-import CompCheckboxNodeItem, { CompCheckboxTreeNodeData } from '@/components/comp-tree-view/comp-checkbox-node-item.vue'
-import CompTreeNode from '@/components/comp-tree-view/comp-tree-node.vue'
-import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
-import CompTreeView from '@/components/comp-tree-view/index.vue'
+import { BaseComponent, NoCache, ResizableMixin } from '@/components'
+import CompTreeView, { CompCheckboxNodeItem, CompCheckboxTreeNodeData, CompTreeNode, CompTreeNodeItem } from '@/components/comp-tree-view/index.vue'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 
@@ -34,12 +31,12 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
   //----------------------------------------------------------------------
 
   mounted() {
-    this.m_treeView.buildChildren([
+    this.m_treeView.buildTree([
       {
         label: 'Node 1',
         value: 'node-1',
         opened: true,
-        icon: 'star',
+        icon: 'folder',
         iconColor: 'purple-5',
         children: [
           {
@@ -48,21 +45,28 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
             opened: true,
             children: [
               { label: 'Node 1-1-1', value: 'node-1-1-1', checked: true, itemClass: CompCheckboxNodeItem },
-              { label: 'Node 1-1-2', value: 'node-1-1-2', icon: 'inbox', itemClass: CompCheckboxNodeItem },
+              { label: 'Node 1-1-2', value: 'node-1-1-2', icon: 'description', itemClass: CompCheckboxNodeItem },
             ],
           },
           {
             label: 'Node 1-2',
             value: 'node-1-2',
+            icon: 'folder',
             unselectable: true,
-            children: [{ label: 'Node 1-2-1', value: 'node-1-2-1' }, { label: 'Node 1-2-2', value: 'node-1-2-2' }],
+            children: [{ label: 'Node 1-2-1', value: 'node-1-2-1' }, { label: 'Node 1-2-2', value: 'node-1-2-2', icon: 'folder' }],
           },
         ],
+      },
+      {
+        label: 'Node 2',
+        value: 'node-2',
+        opened: true,
+        icon: 'folder',
       },
     ] as CompCheckboxTreeNodeData[])
 
     const node = this.m_treeView.getNodeByValue('node-1-2-2')!
-    node.buildChild({
+    node.addChild({
       label: 'Node 1-2-2-1',
       value: 'node-1-2-2-1',
     })
@@ -78,6 +82,7 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
   //  Elements
   //--------------------------------------------------
 
+  @NoCache
   get m_treeView(): CompTreeView {
     return this.$refs.treeView as CompTreeView
   }

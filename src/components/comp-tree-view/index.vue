@@ -15,10 +15,15 @@
 
 <script lang="ts">
 import * as treeViewUtils from '@/components/comp-tree-view/comp-tree-view-utils'
-import { CompTreeNodeData, CompTreeNodeParent } from '@/components/comp-tree-view/types'
+import CompCheckboxNodeItem, { CompCheckboxTreeNodeData } from '@/components/comp-tree-view/comp-checkbox-node-item.vue'
 import { BaseComponent } from '@/components'
 import CompTreeNode from '@/components/comp-tree-view/comp-tree-node.vue'
+import { CompTreeNodeData } from '@/components/comp-tree-view/types'
+import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
 import { Component } from 'vue-property-decorator'
+import Vue from 'vue'
+
+export { CompTreeNodeData, CompTreeNode, CompTreeNodeItem, CompCheckboxNodeItem, CompCheckboxTreeNodeData }
 
 /**
  * ツリーコンポーネントです。
@@ -35,7 +40,7 @@ import { Component } from 'vue-property-decorator'
  * `--comp-tree-unselectable-color` | 非選択ノードの文字色です | `grey-9`
  */
 @Component
-export default class CompTreeView<T extends CompTreeNodeData<T> = any> extends BaseComponent implements CompTreeNodeParent {
+export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNodeData> extends BaseComponent {
   //----------------------------------------------------------------------
   //
   //  Properties
@@ -73,40 +78,32 @@ export default class CompTreeView<T extends CompTreeNodeData<T> = any> extends B
 
   /**
    * 指定されたノードデータからノードツリーを構築します。
-   * @param nodeData ノードツリーを構築するためのデータ
-   * @param insertIndex ノードの挿入位置
-   */
-  buildChild(nodeData: T, insertIndex?: number): CompTreeNode {
-    const node = treeViewUtils.buildNode(nodeData, this, insertIndex)
-    this.m_nodes.forEach((node, index) => {
-      node.isEldest = index === 0
-    })
-    return node
-  }
-
-  /**
-   * 指定されたノードデータからノードツリーを構築します。
    * @param nodeDataList ノードツリーを構築するためのデータ
    * @param insertIndex ノードの挿入位置
    */
-  buildChildren(nodeDataList: T[], insertIndex?: number): void {
+  buildTree(nodeDataList: NodeData[], insertIndex?: number): void {
     nodeDataList.forEach(nodeData => {
-      const node = this.buildChild(nodeData, insertIndex)
+      this.m_buildChild(nodeData, 'tree', this, insertIndex)
       if (!(insertIndex === undefined || insertIndex === null)) {
         insertIndex++
       }
     })
   }
 
-  addChild(childNode: CompTreeNode, insertIndex?: number): void {
-    childNode.$mount()
-
-    if (insertIndex === undefined || insertIndex === null) {
-      insertIndex = this.m_nodes.length
+  /**
+   * 子ノードを追加します。
+   * @param child ノード、またはノードを構築するためのデータ
+   * @param insertIndex ノードの挿入位置
+   */
+  addChild(child: NodeData | CompTreeNode, insertIndex?: number): CompTreeNode {
+    let childNode: CompTreeNode
+    if (child instanceof Vue) {
+      childNode = child as CompTreeNode
+    } else {
+      childNode = this.m_buildChild(child, 'tree', this, insertIndex)
     }
 
-    this.m_insertChildIntoContainer(childNode, insertIndex)
-    this.m_nodes.splice(insertIndex, 0, childNode)
+    return childNode
   }
 
   /**
@@ -122,6 +119,49 @@ export default class CompTreeView<T extends CompTreeNodeData<T> = any> extends B
   //  Internal methods
   //
   //----------------------------------------------------------------------
+
+  /**
+   * 指定されたノードデータからノードツリーを構築します。
+   * @param nodeData ノードを構築するためのデータ
+   * @param parentType 追加するノードの親ノードのタイプ
+   * @param parent 追加するノードの親ノード
+   * @param insertIndex ノードの挿入位置
+   */
+  private m_buildChild(nodeData: NodeData, parentType: 'tree' | 'node', parent: CompTreeView | CompTreeNode, insertIndex?: number): CompTreeNode {
+    // ノードの作成
+    const node = treeViewUtils.newNode(nodeData)
+
+    // 作成したノードを親に追加
+    // ・親がツリービューの場合
+    if (parentType === 'tree') {
+      const parentTree = parent as CompTreeView
+      if (insertIndex === undefined || insertIndex === null) {
+        insertIndex = this.m_nodes.length
+      }
+      parentTree.m_insertChildIntoContainer(node, insertIndex)
+      this.m_nodes.splice(insertIndex, 0, node)
+      this.m_nodes.forEach((item, index) => {
+        item.isEldest = index === 0
+      })
+    }
+    // ・親がノードの場合
+    else if (parentType === 'node') {
+      const parentNode = parent as CompTreeNode
+      parentNode.addChild(node)
+    }
+
+    // ノードが追加されたことを通知するイベントを発火
+    treeViewUtils.dispatchNodeAdded(node)
+
+    // 作成したノードの子ノードを作成
+    if (nodeData.children && nodeData.children.length > 0) {
+      for (const childNodeData of nodeData.children) {
+        this.m_buildChild(childNodeData, 'node', node)
+      }
+    }
+
+    return node
+  }
 
   /**
    * ノードが発火する標準のイベントとは別に、独自イベント用のリスナを登録します。

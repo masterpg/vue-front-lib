@@ -34,11 +34,11 @@ describe('標準ツリー', () => {
     },
   ]
 
-  describe('CompTreeView.buildChildren()', () => {
+  describe('CompTreeView.buildTree()', () => {
     it('ベーシックケース', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildChildren(nodeDataList)
+      treeView.buildTree(nodeDataList)
 
       const node1 = treeView.nodes[0]
       expect(node1.value).toBe('node-1')
@@ -71,9 +71,9 @@ describe('標準ツリー', () => {
     it('先頭に挿入', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildChildren(nodeDataList)
+      treeView.buildTree(nodeDataList)
 
-      treeView.buildChildren(
+      treeView.buildTree(
         [
           {
             label: 'Node 3',
@@ -97,9 +97,9 @@ describe('標準ツリー', () => {
     it('中間に挿入', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildChildren(nodeDataList)
+      treeView.buildTree(nodeDataList)
 
-      treeView.buildChildren(
+      treeView.buildTree(
         [
           {
             label: 'Node 3',
@@ -123,9 +123,9 @@ describe('標準ツリー', () => {
     it('最後尾に挿入', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildChildren(nodeDataList)
+      treeView.buildTree(nodeDataList)
 
-      treeView.buildChildren(
+      treeView.buildTree(
         [
           {
             label: 'Node 3',
@@ -147,13 +147,13 @@ describe('標準ツリー', () => {
     })
   })
 
-  describe('CompTreeView.buildChild()', () => {
+  describe('CompTreeView.addChild()', () => {
     it('挿入位置の指定なし', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildChildren(nodeDataList)
+      treeView.buildTree(nodeDataList)
 
-      const node3 = treeView.buildChild({
+      const node3 = treeView.addChild({
         label: 'Node 3',
         value: 'node-3',
       })
@@ -169,9 +169,9 @@ describe('標準ツリー', () => {
     it('先頭に挿入', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildChildren(nodeDataList)
+      treeView.buildTree(nodeDataList)
 
-      const node3 = treeView.buildChild(
+      const node3 = treeView.addChild(
         {
           label: 'Node 3',
           value: 'node-3',
@@ -190,9 +190,9 @@ describe('標準ツリー', () => {
     it('中間に挿入', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildChildren(nodeDataList)
+      treeView.buildTree(nodeDataList)
 
-      const node3 = treeView.buildChild(
+      const node3 = treeView.addChild(
         {
           label: 'Node 3',
           value: 'node-3',
@@ -211,9 +211,9 @@ describe('標準ツリー', () => {
     it('最後尾に挿入', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildChildren(nodeDataList)
+      treeView.buildTree(nodeDataList)
 
-      const node3 = treeView.buildChild(
+      const node3 = treeView.addChild(
         {
           label: 'Node 3',
           value: 'node-3',
@@ -230,15 +230,15 @@ describe('標準ツリー', () => {
     })
   })
 
-  describe('CompTreeNode.buildChild()', () => {
+  describe('CompTreeNode.addChild()', () => {
     it('挿入位置の指定なし', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildChildren(nodeDataList)
+      treeView.buildTree(nodeDataList)
 
       const node1_1 = treeView.getNodeByValue('node-1-1')!
 
-      const node1_1_3 = node1_1.buildChild({
+      const node1_1_3 = node1_1.addChild({
         label: 'Node 1-1-3',
         value: 'node-1-1-3',
       })
@@ -250,11 +250,11 @@ describe('標準ツリー', () => {
     it('先頭に挿入', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildChildren(nodeDataList)
+      treeView.buildTree(nodeDataList)
 
       const node1_1 = treeView.getNodeByValue('node-1-1')!
 
-      const node1_1_3 = node1_1.buildChild(
+      const node1_1_3 = node1_1.addChild(
         {
           label: 'Node 1-1-3',
           value: 'node-1-1-3',
@@ -269,11 +269,11 @@ describe('標準ツリー', () => {
     it('中間に挿入', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildChildren(nodeDataList)
+      treeView.buildTree(nodeDataList)
 
       const node1_1 = treeView.getNodeByValue('node-1-1')!
 
-      const node1_1_3 = node1_1.buildChild(
+      const node1_1_3 = node1_1.addChild(
         {
           label: 'Node 1-1-3',
           value: 'node-1-1-3',
@@ -288,11 +288,11 @@ describe('標準ツリー', () => {
     it('最後尾に挿入', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildChildren(nodeDataList)
+      treeView.buildTree(nodeDataList)
 
       const node1_1 = treeView.getNodeByValue('node-1-1')!
 
-      const node1_1_3 = node1_1.buildChild(
+      const node1_1_3 = node1_1.addChild(
         {
           label: 'Node 1-1-3',
           value: 'node-1-1-3',
@@ -308,7 +308,7 @@ describe('標準ツリー', () => {
   it('CompTreeNodeの子ノード開閉', () => {
     const wrapper = mount(CompTreeView)
     const treeView = wrapper.vm as CompTreeView | any
-    treeView.buildChildren(nodeDataList)
+    treeView.buildTree(nodeDataList)
 
     const node1_1 = treeView.getNodeByValue('node-1-1')!
     expect(node1_1.opened).toBe(true)
@@ -327,7 +327,7 @@ describe('標準ツリー', () => {
   it('CompTreeNode.selectedを変更', () => {
     const wrapper = mount(CompTreeView)
     const treeView = wrapper.vm as CompTreeView | any
-    treeView.buildChildren(nodeDataList)
+    treeView.buildTree(nodeDataList)
 
     const node1_1_1 = treeView.getNodeByValue('node-1-1-1')
     node1_1_1.selected = true
@@ -342,7 +342,7 @@ describe('標準ツリー', () => {
   it('CompTreeNodeItem.selectedを変更', () => {
     const wrapper = mount(CompTreeView)
     const treeView = wrapper.vm as CompTreeView | any
-    treeView.buildChildren(nodeDataList)
+    treeView.buildTree(nodeDataList)
 
     const node1_1_1 = treeView.getNodeByValue('node-1-1-1')
     node1_1_1.item.selected = true
@@ -380,7 +380,7 @@ describe('カスタムツリー', () => {
   it('独自イベントが発火されるかを検証', () => {
     const wrapper = mount(CompTreeView)
     const treeView = wrapper.vm as CompTreeView | any
-    treeView.buildChildren(nodeDataList)
+    treeView.buildTree(nodeDataList)
 
     const node1_1_1 = treeView.getNodeByValue('node-1-1-1')!
     expect(node1_1_1.item.checked).toBe(true)

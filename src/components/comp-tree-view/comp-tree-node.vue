@@ -35,10 +35,15 @@
 <template>
   <div class="main">
     <div ref="itemContainer" class="item-container layout horizontal center" :class="{ eldest: isEldest }" @selected="m_itemOnSelected">
-      <!-- トグルアイコン -->
+      <!-- トグルアイコン有り -->
       <div v-if="m_hasChildren" class="icon-container">
         <q-icon name="arrow_right" size="26px" color="grey-6" class="toggle-icon" :class="[opened ? 'rotate-90' : '']" @click="m_toggleIconOnClick" />
       </div>
+      <!-- トグルアイコン無し -->
+      <div v-else class="icon-container">
+        <q-icon name="" size="26px" />
+      </div>
+
       <!-- 指定アイコン -->
       <div v-if="!!icon" class="icon-container">
         <q-icon :name="icon" :color="iconColor" size="24px" />
@@ -56,15 +61,14 @@
 
 <script lang="ts">
 import * as treeViewUtils from '@/components/comp-tree-view/comp-tree-view-utils'
-import { CompTreeNodeData, CompTreeNodeParent } from '@/components/comp-tree-view/types'
 import { BaseComponent } from '@/components'
+import { CompTreeNodeData } from '@/components/comp-tree-view/types'
 import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
 import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
 
 @Component({ name: 'comp-tree-node' })
-export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends CompTreeNodeData<T> = any> extends BaseComponent
-  implements CompTreeNodeParent {
+export default class CompTreeNode<Node extends CompTreeNodeItem = CompTreeNodeItem> extends BaseComponent {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -91,9 +95,9 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
   //
   //----------------------------------------------------------------------
 
-  private m_item: N = {} as any
+  private m_item: Node = {} as any
 
-  get item(): N {
+  get item(): Node {
     return this.m_item
   }
 
@@ -211,9 +215,9 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
   //
   //----------------------------------------------------------------------
 
-  init(nodeData: T): void {
+  init(nodeData: CompTreeNodeData): void {
     const NodeItemClass = Vue.extend(nodeData.itemClass || CompTreeNodeItem)
-    const item = new NodeItemClass() as N
+    const item = new NodeItemClass() as Node
     item.init(nodeData)
 
     this.m_item = item
@@ -223,17 +227,17 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
   }
 
   /**
-   * 指定されたノードデータからノードツリーを構築します。
-   * @param nodeData ノードツリーを構築するためのデータ
+   * 子ノードを追加します。
+   * @param child ノード、またはノードを構築するためのデータ
    * @param insertIndex ノードの挿入位置
    */
-  buildChild(nodeData: T, insertIndex?: number): CompTreeNode {
-    const node = treeViewUtils.buildNode(nodeData, this, insertIndex)
-    return node
-  }
-
-  addChild(childNode: CompTreeNode, insertIndex?: number): void {
-    childNode.$mount()
+  addChild(child: CompTreeNodeData | CompTreeNode, insertIndex?: number): CompTreeNode {
+    let childNode: CompTreeNode
+    if (child instanceof Vue) {
+      childNode = child as CompTreeNode
+    } else {
+      childNode = treeViewUtils.newNode(child)
+    }
 
     if (insertIndex === undefined || insertIndex === null) {
       insertIndex = this.children.length
@@ -251,6 +255,11 @@ export default class CompTreeNode<N extends CompTreeNodeItem = any, T extends Co
     if (this.parent) {
       this.parent.m_refreshChildrenContainerHeight(false)
     }
+
+    // ノードが追加されたことを通知するイベントを発火
+    treeViewUtils.dispatchNodeAdded(childNode)
+
+    return childNode
   }
 
   /**

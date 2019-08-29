@@ -1,8 +1,13 @@
 <style lang="stylus" scoped>
 @import '../../styles/app.variables.styl'
 
+.container {
+  height: var(--comp-tree-line-height, 26px)
+}
+
 .item {
   cursor: pointer
+
   &:hover {
     text-decoration: underline
   }
@@ -22,7 +27,7 @@
 </style>
 
 <template>
-  <div class="layout horizontal center">
+  <div class="layout horizontal center container">
     <q-checkbox v-model="checked" />
     <span class="item" :class="{ selected: selected, unselectable: unselectable }" @click="itemOnClick">{{ label }}</span>
   </div>
@@ -33,7 +38,7 @@ import { CompTreeNodeData } from '@/components/comp-tree-view/types'
 import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
 import { Component } from 'vue-property-decorator'
 
-export interface CompCheckboxTreeNodeData extends CompTreeNodeData<CompCheckboxTreeNodeData> {
+export interface CompCheckboxTreeNodeData extends CompTreeNodeData {
   checked?: boolean
 }
 

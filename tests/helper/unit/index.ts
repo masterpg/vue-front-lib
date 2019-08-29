@@ -1,6 +1,5 @@
 import * as firebase from 'firebase/app'
-
-type Constructor<T = any> = new (...args: any[]) => T
+import { Constructor } from '@/base/types'
 
 export type TestStoreModule<S, M> = { [P in keyof M]: M[P] } & {
   state: S
