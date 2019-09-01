@@ -110,13 +110,42 @@ describe('decrementStock', () => {
   })
 
   it('存在しない商品の在庫をデクリメントしようとした場合', () => {
+    let actual!: Error
     try {
       productModule.decrementStock('9999')
-    } catch (e) {
-      expect(e).toBeInstanceOf(StoreError)
-      if (e instanceof StoreError) {
-        expect(e.errorType).toBe(ProductsErrorType.ItemNotFound)
-      }
+    } catch (err) {
+      actual = err
+    }
+
+    expect(actual).toBeInstanceOf(StoreError)
+    if (actual instanceof StoreError) {
+      expect(actual.errorType).toBe(ProductsErrorType.ItemNotFound)
+    }
+  })
+})
+
+describe('incrementStock', () => {
+  it('ベーシックケース', () => {
+    const product = cloneDeep(productModule.state.all[0])
+
+    productModule.incrementStock(product.id)
+
+    const stateProduct = productModule.state.all[0]
+    expect(stateProduct.id).toBe(product.id)
+    expect(stateProduct.stock).toBe(product.stock + 1)
+  })
+
+  it('存在しない商品の在庫をインクリメントしようとした場合', () => {
+    let actual!: Error
+    try {
+      productModule.incrementStock('9999')
+    } catch (err) {
+      actual = err
+    }
+
+    expect(actual).toBeInstanceOf(StoreError)
+    if (actual instanceof StoreError) {
+      expect(actual.errorType).toBe(ProductsErrorType.ItemNotFound)
     }
   })
 })

@@ -150,12 +150,15 @@ describe('pullCartItems()', () => {
     // ユーザーがサインインしていない状態へ変更
     userModule.set({ isSignedIn: false })
 
+    let actual!: Error
     try {
       await shopLogic.pullCartItems()
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.message).toBe('Not signed in.')
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toBe('Not signed in.')
   })
 })
 
@@ -255,12 +258,15 @@ describe('addItemToCart()', () => {
     // チェックアウトステータスに成功を設定
     cartModule.setCheckoutStatus(CheckoutStatus.Successful)
 
+    let actual!: Error
     try {
       await shopLogic.addItemToCart('cartItem1')
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.message).toBe('Not signed in.')
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toBe('Not signed in.')
   })
 
   it('GQLでエラーが発生した場合', async () => {
@@ -376,12 +382,15 @@ describe('removeItemFromCart()', () => {
     // チェックアウトステータスに成功を設定
     cartModule.setCheckoutStatus(CheckoutStatus.Successful)
 
+    let actual!: Error
     try {
       await shopLogic.removeItemFromCart('cartItem1')
     } catch (err) {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.message).toBe('Not signed in.')
+      actual = err
     }
+
+    expect(actual).toBeInstanceOf(Error)
+    expect(actual.message).toBe('Not signed in.')
   })
 
   it('GQLでエラーが発生した場合', async () => {

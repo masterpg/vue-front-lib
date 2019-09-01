@@ -49,9 +49,9 @@
         <q-icon :name="icon" :color="iconColor" size="24px" />
       </div>
       <!-- ドットアイコン -->
-      <div v-else-if="!m_hasChildren" class="icon-container">
+      <div v-else class="icon-container">
         <svg class="dot" width="6px" height="6px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-          <circle cx="3" cy="3" r="3" stroke="blue" fill="#9b9b9b" stroke-width="0" />
+          <circle cx="3" cy="3" r="3" fill="#9b9b9b" stroke-width="0" />
         </svg>
       </div>
     </div>
@@ -61,14 +61,15 @@
 
 <script lang="ts">
 import * as treeViewUtils from '@/components/comp-tree-view/comp-tree-view-utils'
+import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
+import CompTreeView from '@/components/comp-tree-view/index.vue'
 import { BaseComponent } from '@/components'
 import { CompTreeNodeData } from '@/components/comp-tree-view/types'
-import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
 import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
 
 @Component({ name: 'comp-tree-node' })
-export default class CompTreeNode<Node extends CompTreeNodeItem = CompTreeNodeItem> extends BaseComponent {
+export default class CompTreeNode<NodeItem extends CompTreeNodeItem = CompTreeNodeItem> extends BaseComponent {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -95,10 +96,16 @@ export default class CompTreeNode<Node extends CompTreeNodeItem = CompTreeNodeIt
   //
   //----------------------------------------------------------------------
 
-  private m_item: Node = {} as any
+  private m_treeView: CompTreeView | null = null
 
-  get item(): Node {
-    return this.m_item
+  get treeView(): CompTreeView {
+    return this.m_treeView!
+  }
+
+  private m_item: NodeItem | null = null
+
+  get item(): NodeItem {
+    return this.m_item!
   }
 
   /**
@@ -134,6 +141,10 @@ export default class CompTreeNode<Node extends CompTreeNodeItem = CompTreeNodeIt
     return this.item.label
   }
 
+  set label(value: string) {
+    this.item.label = value
+  }
+
   /**
    * ノードを特定するための値です。
    */
@@ -160,13 +171,13 @@ export default class CompTreeNode<Node extends CompTreeNodeItem = CompTreeNodeIt
     this.item.selected = value
   }
 
-  private m_parent?: CompTreeNode
+  private m_parent?: CompTreeNode | null = null
 
   /**
    * 親ノードです。
    */
   get parent(): CompTreeNode | undefined {
-    return this.m_parent
+    return this.m_parent === null ? undefined : this.m_parent
   }
 
   private m_children: CompTreeNode[] = []
@@ -215,9 +226,16 @@ export default class CompTreeNode<Node extends CompTreeNodeItem = CompTreeNodeIt
   //
   //----------------------------------------------------------------------
 
-  init(nodeData: CompTreeNodeData): void {
+  /**
+   * ノードの初期化を行います。
+   * @param treeView
+   * @param nodeData
+   */
+  init(treeView: CompTreeView, nodeData: CompTreeNodeData): void {
+    this.m_treeView = treeView
+
     const NodeItemClass = Vue.extend(nodeData.itemClass || CompTreeNodeItem)
-    const item = new NodeItemClass() as Node
+    const item = new NodeItemClass() as NodeItem
     item.init(nodeData)
 
     this.m_item = item
@@ -229,37 +247,33 @@ export default class CompTreeNode<Node extends CompTreeNodeItem = CompTreeNodeIt
   /**
    * 子ノードを追加します。
    * @param child ノード、またはノードを構築するためのデータ
-   * @param insertIndex ノードの挿入位置
+   * @param insertIndex ノード挿入位置
    */
   addChild(child: CompTreeNodeData | CompTreeNode, insertIndex?: number): CompTreeNode {
-    let childNode: CompTreeNode
-    if (child instanceof Vue) {
-      childNode = child as CompTreeNode
-    } else {
-      childNode = treeViewUtils.newNode(child)
+    let node: CompTreeNode
+    const childType = child instanceof Vue ? 'Node' : 'Data'
+
+    // 引数のノードがノードコンポーネントで指定された場合
+    if (childType === 'Node') {
+      node = this.m_addChildByNode(child as CompTreeNode, insertIndex)
+    }
+    // 引数のノードがノードデータで指定された場合
+    else if (childType === 'Data') {
+      node = this.m_addChildByData(child as CompTreeNodeData, insertIndex)
     }
 
-    if (insertIndex === undefined || insertIndex === null) {
-      insertIndex = this.children.length
+    return node!
+  }
+
+  /**
+   * 子ノードを削除します。
+   * @param childNode
+   */
+  removeChild(childNode: CompTreeNode): void {
+    const removed = this.m_removeChild(childNode)
+    if (removed) {
+      treeViewUtils.dispatchNodeRemoved(this, childNode)
     }
-
-    this.m_insertChildIntoContainer(childNode, insertIndex)
-
-    const childContainerHeight = this.m_getChildrenContainerHeight(this)
-    const childNodeHeight = childContainerHeight + childNode.$el.getBoundingClientRect().height
-    this.m_childContainer.style.height = `${childNodeHeight}px`
-
-    childNode.m_parent = this
-    this.children.splice(insertIndex, 0, childNode)
-
-    if (this.parent) {
-      this.parent.m_refreshChildrenContainerHeight(false)
-    }
-
-    // ノードが追加されたことを通知するイベントを発火
-    treeViewUtils.dispatchNodeAdded(childNode)
-
-    return childNode
   }
 
   /**
@@ -291,6 +305,97 @@ export default class CompTreeNode<Node extends CompTreeNodeItem = CompTreeNodeIt
   //  Internal methods
   //
   //----------------------------------------------------------------------
+
+  private m_addChildByData(childNodeData: CompTreeNodeData, insertIndex?: number): CompTreeNode {
+    if (this.treeView.getNode(childNodeData.value)) {
+      throw new Error(`The node "${childNodeData.value}" already exists.`)
+    }
+
+    // 子ノードの作成
+    const childNode = treeViewUtils.newNode(this.treeView, childNodeData)
+
+    // ノード挿入位置を決定
+    if (insertIndex === undefined || insertIndex === null) {
+      insertIndex = this.children.length
+    }
+
+    // コンテナにノードを追加
+    this.m_insertChildIntoContainer(childNode, insertIndex)
+
+    // コンテナの高さを設定
+    const childrenContainerHeight = this.m_getChildrenContainerHeight(this)
+    const childNodeHeight = childrenContainerHeight + childNode.$el.getBoundingClientRect().height
+    this.m_childContainer.style.height = `${childNodeHeight}px`
+
+    // ノードの親子関係を設定
+    childNode.m_parent = this
+    this.children.splice(insertIndex, 0, childNode)
+
+    // 親ノードのコンテナの高さを設定
+    if (this.parent) {
+      this.parent.m_refreshChildrenContainerHeight(false)
+    }
+
+    // 子ノードの設定
+    const len = childNodeData.children ? childNodeData.children.length : 0
+    for (let i = 0; i < len; i++) {
+      childNode.addChild(childNodeData.children![i], i)
+    }
+
+    // ノードが追加されたことを通知するイベントを発火
+    treeViewUtils.dispatchNodeAdded(childNode)
+
+    return childNode
+  }
+
+  private m_addChildByNode(childNode: CompTreeNode, insertIndex?: number): CompTreeNode {
+    // 追加しようとするノードの子に自ノード(新しく親となるノード)が含まれないことを検証
+    const descendantMap = treeViewUtils.getDescendantMap(childNode)
+    if (descendantMap[this.value]) {
+      throw new Error(`The specified node "${childNode.value}" contains the new parent "${this.value}".`)
+    }
+
+    // 一旦親から子ノードを削除
+    if (childNode.parent) {
+      childNode.parent.m_removeChild(childNode)
+    } else {
+      // 親がない場合、ツリービューが親
+      childNode.treeView.removeNode(childNode.value)
+    }
+
+    // ノード挿入位置を決定
+    if (insertIndex === undefined || insertIndex === null) {
+      insertIndex = this.children.length
+    }
+
+    // コンテナにノードを追加
+    this.m_insertChildIntoContainer(childNode, insertIndex)
+
+    // コンテナの高さを設定
+    const childrenContainerHeight = this.m_getChildrenContainerHeight(this)
+    const childNodeHeight = childrenContainerHeight + childNode.$el.getBoundingClientRect().height
+    this.m_childContainer.style.height = `${childNodeHeight}px`
+
+    // ノードの親子関係を設定
+    childNode.m_parent = this
+    this.children.splice(insertIndex, 0, childNode)
+
+    // 親ノードのコンテナの高さを設定
+    if (this.parent) {
+      this.parent.m_refreshChildrenContainerHeight(false)
+    }
+
+    // 子ノードの設定
+    for (let i = 0; i < childNode.children.length; i++) {
+      const descendant = childNode.children[i]
+      childNode.addChild(descendant, i)
+    }
+
+    // ノードが追加されたことを通知するイベントを発火
+    treeViewUtils.dispatchNodeAdded(childNode)
+
+    return childNode
+  }
 
   private m_toggle(opened: boolean, animated: boolean = true): void {
     this.m_opened = opened
@@ -349,11 +454,11 @@ export default class CompTreeNode<Node extends CompTreeNodeItem = CompTreeNodeIt
   }
 
   /**
-   * 子ノードを子コンテナへ挿入します。
-   * @param childNode 追加する子ノード
-   * @param insertIndex ノードの挿入位置
+   * 子コンテナへノードを挿入します。
+   * @param node 追加するノード
+   * @param insertIndex ノード挿入位置
    */
-  private m_insertChildIntoContainer(childNode: CompTreeNode, insertIndex: number): void {
+  private m_insertChildIntoContainer(node: CompTreeNode, insertIndex: number): void {
     const childrenLength = this.m_childContainer.children.length
 
     // 挿入位置が大きすぎないかを検証
@@ -361,12 +466,38 @@ export default class CompTreeNode<Node extends CompTreeNodeItem = CompTreeNodeIt
       throw new Error('insertIndex is too big.')
     }
 
-    if (insertIndex === 0 || childrenLength === insertIndex) {
-      this.m_childContainer.appendChild(childNode.$el)
+    // コンテナにノードを追加
+    if (childrenLength === insertIndex) {
+      this.m_childContainer.appendChild(node.$el)
     } else {
       const afterNode = this.m_childContainer.children[insertIndex]
-      this.m_childContainer.insertBefore(childNode.$el, afterNode)
+      this.m_childContainer.insertBefore(node.$el, afterNode)
     }
+  }
+
+  /**
+   * 子ノードを削除します。
+   * @param childNode
+   * @return 削除された場合はtrue, 削除対象のノードがなく削除が行われなかった場合はfalse
+   */
+  private m_removeChild(childNode: CompTreeNode): boolean {
+    const index = this.children.indexOf(childNode)
+    if (index >= 0) {
+      childNode.m_parent = null
+      this.m_children.splice(index, 1)
+      this.m_removeChildFromContainer(childNode)
+      this.m_refreshChildrenContainerHeight(false)
+      return true
+    }
+    return false
+  }
+
+  /**
+   * 子コンテナからノードを削除します。
+   * @param node
+   */
+  private m_removeChildFromContainer(node: CompTreeNode): void {
+    this.m_childContainer.removeChild(node.$el)
   }
 
   //----------------------------------------------------------------------

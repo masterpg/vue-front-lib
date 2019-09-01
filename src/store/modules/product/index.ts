@@ -79,7 +79,7 @@ export class ProductModuleImpl extends BaseModule<ProductState> implements Produ
     if (product) {
       product.stock--
     } else {
-      new StoreError(ProductsErrorType.ItemNotFound)
+      throw new StoreError(ProductsErrorType.ItemNotFound)
     }
   }
 
@@ -88,7 +88,7 @@ export class ProductModuleImpl extends BaseModule<ProductState> implements Produ
     if (product) {
       product.stock++
     } else {
-      new StoreError(ProductsErrorType.ItemNotFound)
+      throw new StoreError(ProductsErrorType.ItemNotFound)
     }
   }
 

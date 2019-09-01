@@ -1,178 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`標準ツリー CompTreeView.buildChildren() ベーシックケース 1`] = `
-<div
-  class="container"
->
-  <div
-    class="main"
-  >
-    <div
-      class="item-container layout horizontal center eldest"
-    >
-      <div
-        class="icon-container"
-      >
-        <q-icon
-          class="toggle-icon rotate-90"
-          color="grey-6"
-          name="arrow_right"
-          size="26px"
-        />
-      </div>
-       
-      <!---->
-      <span
-        class="item"
-      >
-        Node 1
-      </span>
-    </div>
-     
-    <div
-      class="children-container opened"
-    >
-      <div
-        class="main"
-      >
-        <div
-          class="item-container layout horizontal center"
-        >
-          <div
-            class="icon-container"
-          >
-            <q-icon
-              class="toggle-icon rotate-90"
-              color="grey-6"
-              name="arrow_right"
-              size="26px"
-            />
-          </div>
-           
-          <!---->
-          <span
-            class="item"
-          >
-            Node 1-1
-          </span>
-        </div>
-         
-        <div
-          class="children-container opened"
-        >
-          <div
-            class="main"
-          >
-            <div
-              class="item-container layout horizontal center"
-            >
-              <!---->
-               
-              <div
-                class="icon-container"
-              >
-                <q-icon
-                  color=""
-                  name="inbox"
-                  size="24px"
-                />
-              </div>
-              <span
-                class="item"
-              >
-                Node 1-1-1
-              </span>
-            </div>
-             
-            <div
-              class="children-container"
-            />
-          </div>
-          <div
-            class="main"
-          >
-            <div
-              class="item-container layout horizontal center"
-            >
-              <!---->
-               
-              <div
-                class="icon-container"
-              >
-                <svg
-                  class="dot"
-                  height="6px"
-                  width="6px"
-                  xmlns="http://www.w3.org/2000/svg"
-                  xmlns:xlink="http://www.w3.org/1999/xlink"
-                >
-                  <circle
-                    cx="3"
-                    cy="3"
-                    fill="#9b9b9b"
-                    r="3"
-                    stroke="blue"
-                    stroke-width="0"
-                  />
-                </svg>
-              </div>
-              <span
-                class="item unselectable"
-              >
-                Node 1-1-2
-              </span>
-            </div>
-             
-            <div
-              class="children-container"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div
-    class="main"
-  >
-    <div
-      class="item-container layout horizontal center"
-    >
-      <!---->
-       
-      <div
-        class="icon-container"
-      >
-        <svg
-          class="dot"
-          height="6px"
-          width="6px"
-          xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
-        >
-          <circle
-            cx="3"
-            cy="3"
-            fill="#9b9b9b"
-            r="3"
-            stroke="blue"
-            stroke-width="0"
-          />
-        </svg>
-      </div>
-      <span
-        class="item"
-      >
-        Node 2
-      </span>
-    </div>
-     
-    <div
-      class="children-container"
-    />
-  </div>
-</div>
-`;
-
 exports[`標準ツリー CompTreeView.buildTree() ベーシックケース 1`] = `
 <div
   class="container"
@@ -194,11 +21,29 @@ exports[`標準ツリー CompTreeView.buildTree() ベーシックケース 1`] =
         />
       </div>
        
-      <!---->
+      <div
+        class="icon-container"
+      >
+        <svg
+          class="dot"
+          height="6px"
+          width="6px"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+        >
+          <circle
+            cx="3"
+            cy="3"
+            fill="#9b9b9b"
+            r="3"
+            stroke-width="0"
+          />
+        </svg>
+      </div>
       <span
         class="item"
       >
-        Node 1
+        Node1
       </span>
     </div>
      
@@ -222,11 +67,29 @@ exports[`標準ツリー CompTreeView.buildTree() ベーシックケース 1`] =
             />
           </div>
            
-          <!---->
+          <div
+            class="icon-container"
+          >
+            <svg
+              class="dot"
+              height="6px"
+              width="6px"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+            >
+              <circle
+                cx="3"
+                cy="3"
+                fill="#9b9b9b"
+                r="3"
+                stroke-width="0"
+              />
+            </svg>
+          </div>
           <span
             class="item"
           >
-            Node 1-1
+            Node1_1
           </span>
         </div>
          
@@ -260,7 +123,7 @@ exports[`標準ツリー CompTreeView.buildTree() ベーシックケース 1`] =
               <span
                 class="item"
               >
-                Node 1-1-1
+                Node1_1_1
               </span>
             </div>
              
@@ -298,7 +161,6 @@ exports[`標準ツリー CompTreeView.buildTree() ベーシックケース 1`] =
                     cy="3"
                     fill="#9b9b9b"
                     r="3"
-                    stroke="blue"
                     stroke-width="0"
                   />
                 </svg>
@@ -306,7 +168,52 @@ exports[`標準ツリー CompTreeView.buildTree() ベーシックケース 1`] =
               <span
                 class="item unselectable"
               >
-                Node 1-1-2
+                Node1_1_2
+              </span>
+            </div>
+             
+            <div
+              class="children-container"
+            />
+          </div>
+          <div
+            class="main"
+          >
+            <div
+              class="item-container layout horizontal center"
+            >
+              <div
+                class="icon-container"
+              >
+                <q-icon
+                  name=""
+                  size="26px"
+                />
+              </div>
+               
+              <div
+                class="icon-container"
+              >
+                <svg
+                  class="dot"
+                  height="6px"
+                  width="6px"
+                  xmlns="http://www.w3.org/2000/svg"
+                  xmlns:xlink="http://www.w3.org/1999/xlink"
+                >
+                  <circle
+                    cx="3"
+                    cy="3"
+                    fill="#9b9b9b"
+                    r="3"
+                    stroke-width="0"
+                  />
+                </svg>
+              </div>
+              <span
+                class="item"
+              >
+                Node1_1_3
               </span>
             </div>
              
@@ -348,7 +255,6 @@ exports[`標準ツリー CompTreeView.buildTree() ベーシックケース 1`] =
             cy="3"
             fill="#9b9b9b"
             r="3"
-            stroke="blue"
             stroke-width="0"
           />
         </svg>
@@ -356,7 +262,7 @@ exports[`標準ツリー CompTreeView.buildTree() ベーシックケース 1`] =
       <span
         class="item"
       >
-        Node 2
+        Node2
       </span>
     </div>
      
