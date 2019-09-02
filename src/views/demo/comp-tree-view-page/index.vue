@@ -20,22 +20,22 @@
     <comp-tree-view ref="treeView" class="tree-view" @checked-changed="m_treeViewOnCheckedChanged"></comp-tree-view>
     <div class="layout vertical app-mt-20">
       <div class="layout horizontal operation-row">
-        <q-input v-model="m_addedInput.value" label="Node value" dense />
-        <q-input v-model="m_addedInput.label" label="Node label" dense />
+        <q-input v-model="m_addedInput.nodeValue" label="Node value" dense />
+        <q-input v-model="m_addedInput.nodeLabel" label="Node label" dense />
         <q-input v-model="m_addedInput.parentValue" label="Parent" dense />
         <q-input v-model.number="m_addedInput.insertIndex" type="number" input-class="text-right" label="Insert index" dense />
         <div class="flex"></div>
         <q-btn label="Add" color="primary" dense flat rounded @click="m_addNode" />
       </div>
       <div class="layout horizontal operation-row">
-        <q-input v-model="m_removedNode" label="Target node" dense />
+        <q-input v-model="m_removedInput.nodeValue" label="Target node" dense />
         <div class="flex"></div>
         <q-btn label="Remove" color="primary" dense flat rounded @click="m_removeNode" />
       </div>
       <div class="layout horizontal operation-row">
-        <q-input v-model="m_movedNode" label="Target node" dense />
-        <q-input v-model="m_moveToParentNode" label="Parent" dense />
-        <q-input v-model.number="m_movedNodeInsertIndex" type="number" input-class="text-right" label="Insert index" dense />
+        <q-input v-model="m_movedInput.nodeValue" label="Target node" dense />
+        <q-input v-model="m_movedInput.parentValue" label="Parent" dense />
+        <q-input v-model.number="m_movedInput.insertIndex" type="number" input-class="text-right" label="Insert index" dense />
         <div class="flex"></div>
         <q-btn label="Move" color="primary" dense flat rounded @click="m_moveNode" />
       </div>
@@ -116,19 +116,21 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
   //----------------------------------------------------------------------
 
   private m_addedInput = {
-    value: '',
-    label: '',
+    nodeValue: '',
+    nodeLabel: '',
     parentValue: '',
     insertIndex: null,
   }
 
-  private m_removedNode = ''
+  private m_removedInput = {
+    nodeValue: '',
+  }
 
-  private m_moveToParentNode = ''
-
-  private m_movedNode = ''
-
-  private m_movedNodeInsertIndex = 0
+  private m_movedInput = {
+    nodeValue: '',
+    parentValue: '',
+    insertIndex: null,
+  }
 
   //--------------------------------------------------
   //  Elements
@@ -148,26 +150,25 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
   private m_addNode() {
     this.m_treeView.addNode(
       {
-        value: this.m_addedInput.value,
-        label: this.m_addedInput.label ? this.m_addedInput.label : this.m_addedInput.value,
+        value: this.m_addedInput.nodeValue,
+        label: this.m_addedInput.nodeLabel ? this.m_addedInput.nodeLabel : this.m_addedInput.nodeValue,
       },
       this.m_addedInput.parentValue
     )
   }
 
   private m_removeNode() {
-    const target = this.m_treeView.getNode(this.m_removedNode)!
+    const target = this.m_treeView.getNode(this.m_removedInput.nodeValue)!
     this.m_treeView.removeNode(target.value)
-    // target.parent.removeChild(target)
   }
 
   private m_moveNode() {
-    const target = this.m_treeView.getNode(this.m_movedNode)!
-    if (this.m_moveToParentNode) {
-      const parent = this.m_treeView.getNode(this.m_moveToParentNode)!
-      parent.addChild(target, this.m_movedNodeInsertIndex)
+    const target = this.m_treeView.getNode(this.m_movedInput.nodeValue)!
+    if (this.m_movedInput.parentValue) {
+      const parent = this.m_treeView.getNode(this.m_movedInput.parentValue)!
+      parent.addChild(target, this.m_movedInput.insertIndex)
     } else {
-      this.m_treeView.addNode(target, this.m_movedNodeInsertIndex)
+      this.m_treeView.addNode(target, this.m_movedInput.insertIndex)
     }
   }
 
