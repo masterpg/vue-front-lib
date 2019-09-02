@@ -34,7 +34,13 @@
 
 <template>
   <div class="main">
-    <div ref="itemContainer" class="item-container layout horizontal center" :class="{ eldest: isEldest }" @selected="m_itemOnSelected">
+    <div
+      ref="itemContainer"
+      class="item-container layout horizontal center"
+      :class="{ eldest: isEldest }"
+      @selected="m_itemOnSelected"
+      @value-changed="m_itemOnValueChanged"
+    >
       <!-- トグルアイコン有り -->
       <div v-if="m_hasChildren" class="icon-container">
         <q-icon name="arrow_right" size="26px" color="grey-6" class="toggle-icon" :class="[opened ? 'rotate-90' : '']" @click="m_toggleIconOnClick" />
@@ -61,10 +67,10 @@
 
 <script lang="ts">
 import * as treeViewUtils from '@/components/comp-tree-view/comp-tree-view-utils'
-import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
-import CompTreeView from '@/components/comp-tree-view/index.vue'
 import { BaseComponent } from '@/components'
 import { CompTreeNodeData } from '@/components/comp-tree-view/types'
+import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
+import CompTreeView from '@/components/comp-tree-view/index.vue'
 import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
 
@@ -150,6 +156,10 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = CompTreeNo
    */
   get value(): string {
     return this.item.value
+  }
+
+  set value(value: string) {
+    this.item.value = value
   }
 
   /**
@@ -520,13 +530,17 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = CompTreeNo
   private m_itemOnSelected(e) {
     e.stopImmediatePropagation()
 
-    this.$el.dispatchEvent(
-      new CustomEvent('selected', {
-        bubbles: true,
-        cancelable: true,
-        composed: true,
-      })
-    )
+    treeViewUtils.dispatchSelectedChanged(this)
+  }
+
+  /**
+   * ノードアイテムを特定する値が変更された際のリスナです。
+   * @param e
+   */
+  private m_itemOnValueChanged(e) {
+    e.stopImmediatePropagation()
+
+    treeViewUtils.dispatchValueChanged(this, e.detail)
   }
 
   /**

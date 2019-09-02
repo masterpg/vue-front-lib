@@ -1,5 +1,6 @@
 import CompTreeNode from '@/components/comp-tree-view/comp-tree-node.vue'
 import { CompTreeNodeData } from '@/components/comp-tree-view/types'
+import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
 import CompTreeView from '@/components/comp-tree-view/index.vue'
 import Vue from 'vue'
 
@@ -84,6 +85,36 @@ export function dispatchNodeRemoved(parent: CompTreeView | CompTreeNode, child: 
       cancelable: true,
       composed: true,
       detail: { node: child },
+    })
+  )
+}
+
+/**
+ * ノードの選択が変更された旨を通知するイベントを発火します。
+ * @param target
+ */
+export function dispatchSelectedChanged(target: CompTreeNode | CompTreeNodeItem): void {
+  target.$el.dispatchEvent(
+    new CustomEvent('selected', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+    })
+  )
+}
+
+/**
+ * ノードを特定する値が変更された旨を通知するイベントを発火します。
+ * @param target
+ * @param detail
+ */
+export function dispatchValueChanged(target: CompTreeNode | CompTreeNodeItem, detail: { newValue: string; oldValue: string }): void {
+  target.$el.dispatchEvent(
+    new CustomEvent('value-changed', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      detail,
     })
   )
 }

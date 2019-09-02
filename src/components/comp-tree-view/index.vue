@@ -17,6 +17,7 @@
     @node-added="m_nodeAdded"
     @node-removed="m_nodeRemoved"
     @selected="m_allNodesOnSelected"
+    @value-changed="m_allNodesOnValueChanged"
   ></div>
 </template>
 
@@ -358,6 +359,19 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
     for (const eventName of node.extraEventNames) {
       this.m_addExtraNodeEventListener(eventName)
     }
+  }
+
+  /**
+   * ノードでvalue-changedイベントが発火した際のリスナです。
+   * @param e
+   */
+  m_allNodesOnValueChanged(e) {
+    e.stopImmediatePropagation()
+
+    const node = e.target.__vue__ as CompTreeNode
+    const detail = e.detail as { newValue: string; oldValue: string }
+    delete this.m_allNodes[detail.oldValue]
+    this.m_allNodes[detail.newValue] = node
   }
 
   /**

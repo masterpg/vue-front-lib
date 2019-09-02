@@ -698,6 +698,42 @@ describe('標準ツリー', () => {
     })
   })
 
+  it('CompTreeNode.valueを変更', () => {
+    const wrapper = mount(CompTreeView)
+    const treeView = wrapper.vm as CompTreeView | any
+    treeView.buildTree(nodeDataList)
+
+    const node1_1_1 = treeView.getNode('node1_1_1')
+    const oldValue = node1_1_1.value
+    const newValue = `${node1_1_1.value}_changed`
+    node1_1_1.value = newValue
+
+    // ノードの値を検証
+    expect(node1_1_1.value).toBe(newValue)
+    expect(node1_1_1.item.value).toBe(newValue)
+    // ツリービューの検証
+    expect(treeView.getNode(oldValue)).toBeUndefined()
+    expect(treeView.getNode(newValue)).toBe(node1_1_1)
+  })
+
+  it('CompTreeNodeItem.valueを変更', () => {
+    const wrapper = mount(CompTreeView)
+    const treeView = wrapper.vm as CompTreeView | any
+    treeView.buildTree(nodeDataList)
+
+    const node1_1_1 = treeView.getNode('node1_1_1')
+    const oldValue = node1_1_1.value
+    const newValue = `${node1_1_1.value}_changed`
+    node1_1_1.item.value = newValue
+
+    // ノードの値を検証
+    expect(node1_1_1.value).toBe(newValue)
+    expect(node1_1_1.item.value).toBe(newValue)
+    // ツリービューの検証
+    expect(treeView.getNode(oldValue)).toBeUndefined()
+    expect(treeView.getNode(newValue)).toBe(node1_1_1)
+  })
+
   it('CompTreeNodeの子ノード開閉', () => {
     const wrapper = mount(CompTreeView)
     const treeView = wrapper.vm as CompTreeView | any
@@ -724,6 +760,7 @@ describe('標準ツリー', () => {
 
     const node1_1_1 = treeView.getNode('node1_1_1')
     node1_1_1.selected = true
+
     // イベント発火を検証
     expect(wrapper.emitted('selected').length).toBe(1)
     expect(wrapper.emitted('selected')[0][0]).toBe(node1_1_1)
@@ -739,6 +776,7 @@ describe('標準ツリー', () => {
 
     const node1_1_1 = treeView.getNode('node1_1_1')
     node1_1_1.item.selected = true
+
     // イベント発火を検証
     expect(wrapper.emitted('selected').length).toBe(1)
     expect(wrapper.emitted('selected')[0][0]).toBe(node1_1_1)

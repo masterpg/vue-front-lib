@@ -27,6 +27,7 @@
 </template>
 
 <script lang="ts">
+import * as treeViewUtils from '@/components/comp-tree-view/comp-tree-view-utils'
 import { BaseComponent } from '@/components'
 import { CompTreeNodeData } from '@/components/comp-tree-view/types'
 import { Component } from 'vue-property-decorator'
@@ -44,10 +45,20 @@ export default class CompTreeNodeItem<NodeData extends CompTreeNodeData = CompTr
    */
   label: string = ''
 
+  private m_value: string = ''
+
   /**
-   * 選択値です。
+   * ノードを特定するための値です。
    */
-  value: string = ''
+  get value(): string {
+    return this.m_value
+  }
+
+  set value(value: string) {
+    const oldValue = this.m_value
+    this.m_value = value
+    treeViewUtils.dispatchValueChanged(this, { newValue: value, oldValue })
+  }
 
   /**
    * 選択不可フラグです。
@@ -87,7 +98,7 @@ export default class CompTreeNodeItem<NodeData extends CompTreeNodeData = CompTr
 
   init(nodeData: NodeData): void {
     this.label = nodeData.label
-    this.value = nodeData.value || ''
+    this.m_value = nodeData.value || ''
     this.unselectable = Boolean(nodeData.unselectable)
     this.m_selected = Boolean(nodeData.selected)
 
@@ -112,13 +123,7 @@ export default class CompTreeNodeItem<NodeData extends CompTreeNodeData = CompTr
 
     this.m_selected = true
 
-    this.$el.dispatchEvent(
-      new CustomEvent('selected', {
-        bubbles: true,
-        cancelable: true,
-        composed: true,
-      })
-    )
+    treeViewUtils.dispatchSelectedChanged(this)
   }
 
   //----------------------------------------------------------------------
