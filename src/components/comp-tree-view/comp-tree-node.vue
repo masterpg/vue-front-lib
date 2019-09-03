@@ -14,7 +14,8 @@
   .icon-container {
     @extend $layout-horizontal
     @extend $layout-center-center
-    width: 1.5em
+    min-width: 1.5em
+    max-width: 1.5em
     height: 1.5em
     margin-right: 6px
   }
@@ -39,7 +40,7 @@
       class="item-container layout horizontal center"
       :class="{ eldest: isEldest }"
       @selected="m_itemOnSelected"
-      @value-changed="m_itemOnValueChanged"
+      @node-property-changed="m_itemOnNodePropertyChanged"
     >
       <!-- トグルアイコン有り -->
       <div v-if="m_hasChildren" class="icon-container">
@@ -67,11 +68,12 @@
 
 <script lang="ts">
 import * as treeViewUtils from '@/components/comp-tree-view/comp-tree-view-utils'
-import { BaseComponent } from '@/components'
+import { BaseComponent, NoCache } from '@/components'
 import { CompTreeNodeData } from '@/components/comp-tree-view/types'
 import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
 import CompTreeView from '@/components/comp-tree-view/index.vue'
 import { Component } from 'vue-property-decorator'
+import { NodePropertyChangeDetail } from '@/components/comp-tree-view/comp-tree-view-utils'
 import Vue from 'vue'
 
 @Component({ name: 'comp-tree-node' })
@@ -206,6 +208,39 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = CompTreeNo
     return this.item.extraEventNames
   }
 
+  private m_minWidth: number = 0
+
+  /**
+   * ノードの最小幅です。
+   */
+  get minWidth(): number {
+    this.m_setMinWidth()
+    return this.m_minWidth
+  }
+
+  private m_setMinWidth(): void {
+    // ノードアイテム部分の幅を取得
+    let itemContainerWidth = 0
+    for (const el of Array.from(this.m_itemContainer.children)) {
+      itemContainerWidth += treeViewUtils.getElementWidth(el)
+    }
+    itemContainerWidth += treeViewUtils.getElementFrameWidth(this.m_itemContainer)
+
+    // 子ノードの中で最大幅のものを取得
+    let childContainerWidth = 0
+    if (this.opened) {
+      for (const child of this.children) {
+        if (childContainerWidth < child.minWidth) {
+          childContainerWidth = child.minWidth
+          childContainerWidth += treeViewUtils.getElementFrameWidth(this.m_childContainer)
+        }
+      }
+    }
+
+    // 上記で取得したノードアイテム幅と子ノード幅を比較し、大きい方を採用する
+    this.m_minWidth = itemContainerWidth >= childContainerWidth ? itemContainerWidth : childContainerWidth
+  }
+
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -222,10 +257,12 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = CompTreeNo
   //  Elements
   //--------------------------------------------------
 
+  @NoCache
   get m_itemContainer(): HTMLElement {
     return this.$refs.itemContainer as HTMLElement
   }
 
+  @NoCache
   get m_childContainer(): HTMLElement {
     return this.$refs.childContainer as HTMLElement
   }
@@ -259,7 +296,7 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = CompTreeNo
    * @param child ノード、またはノードを構築するためのデータ
    * @param insertIndex ノード挿入位置
    */
-  addChild(child: CompTreeNodeData | CompTreeNode, insertIndex?: number): CompTreeNode {
+  addChild(child: CompTreeNodeData | CompTreeNode, insertIndex?: number | null): CompTreeNode {
     let node: CompTreeNode
     const childType = child instanceof Vue ? 'Node' : 'Data'
 
@@ -316,7 +353,7 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = CompTreeNo
   //
   //----------------------------------------------------------------------
 
-  private m_addChildByData(childNodeData: CompTreeNodeData, insertIndex?: number): CompTreeNode {
+  private m_addChildByData(childNodeData: CompTreeNodeData, insertIndex?: number | null): CompTreeNode {
     if (this.treeView.getNode(childNodeData.value)) {
       throw new Error(`The node "${childNodeData.value}" already exists.`)
     }
@@ -358,7 +395,7 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = CompTreeNo
     return childNode
   }
 
-  private m_addChildByNode(childNode: CompTreeNode, insertIndex?: number): CompTreeNode {
+  private m_addChildByNode(childNode: CompTreeNode, insertIndex?: number | null): CompTreeNode {
     // 追加しようとするノードの子に自ノード(新しく親となるノード)が含まれないことを検証
     const descendantMap = treeViewUtils.getDescendantMap(childNode)
     if (descendantMap[this.value]) {
@@ -424,15 +461,22 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = CompTreeNo
    * 子ノードが配置されるコンテナの高さを再計算し、高さをリフレッシュします。
    * @param animated
    */
-  private m_refreshChildrenContainerHeight(animated: boolean): void {
-    this.m_childContainer.style.transition = animated ? 'height .5s' : ''
+  private m_refreshChildrenContainerHeight(animated: boolean): Promise<void> {
+    const DURATION = 500
+    const duration = animated ? DURATION : 0
 
-    const newHeight = this.m_getChildrenContainerHeight(this)
-    this.m_childContainer.style.height = `${newHeight}px`
+    return new Promise<void>(resolve => {
+      this.m_childContainer.style.transition = animated ? `height ${duration / 1000}s` : ''
 
-    if (this.parent) {
-      this.parent.m_refreshChildrenContainerHeight(animated)
-    }
+      const newHeight = this.m_getChildrenContainerHeight(this)
+      this.m_childContainer.style.height = `${newHeight}px`
+
+      if (this.parent) {
+        this.parent.m_refreshChildrenContainerHeight(animated)
+      }
+
+      setTimeout(resolve, duration)
+    })
   }
 
   /**
@@ -443,13 +487,7 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = CompTreeNo
     let result = 0
 
     if (this.opened) {
-      const style = getComputedStyle(this.m_childContainer)
-      const borderTopWidth = parseInt(style.getPropertyValue('border-top-width'), 10)
-      const borderBottomWidth = parseInt(style.getPropertyValue('border-bottom-width'), 10)
-      const paddingTop = parseInt(style.getPropertyValue('padding-top'), 10)
-      const paddingBottom = parseInt(style.getPropertyValue('padding-bottom'), 10)
-      result = result + borderTopWidth + borderBottomWidth + paddingTop + paddingBottom
-
+      result += treeViewUtils.getElementFrameHeight(this.m_childContainer)
       for (let child of this.children) {
         result += child.m_getChildrenContainerHeight(base)
       }
@@ -534,13 +572,20 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = CompTreeNo
   }
 
   /**
-   * ノードアイテムを特定する値が変更された際のリスナです。
+   * ノードのプロパティが変更された際のリスナです。
    * @param e
    */
-  private m_itemOnValueChanged(e) {
+  private m_itemOnNodePropertyChanged(e) {
     e.stopImmediatePropagation()
 
-    treeViewUtils.dispatchValueChanged(this, e.detail)
+    const detail = e.detail as NodePropertyChangeDetail
+    treeViewUtils.dispatchNodePropertyChanged(this, detail)
+
+    if (detail.property === 'label') {
+      this.$nextTick(() => {
+        this.m_setMinWidth()
+      })
+    }
   }
 
   /**

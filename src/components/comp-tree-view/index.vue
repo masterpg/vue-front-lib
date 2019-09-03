@@ -6,6 +6,7 @@
   font-size: var(--comp-tree-view-font-size, 14px)
   font-weight: var(--comp-tree-font-weight, $text-weights.medium)
   line-height: var(--comp-tree-line-height, 26px)
+  padding: var(--comp-tree-padding, 10px)
 }
 </style>
 
@@ -13,22 +14,24 @@
   <div
     ref="container"
     class="container"
+    :style="{ minWidth: m_minWidth + 'px' }"
     @opened-changed="m_allNodesOnOpenedChanged"
     @node-added="m_nodeAdded"
     @node-removed="m_nodeRemoved"
     @selected="m_allNodesOnSelected"
-    @value-changed="m_allNodesOnValueChanged"
+    @node-property-changed="m_allNodesOnNodePropertyChanged"
   ></div>
 </template>
 
 <script lang="ts">
 import * as treeViewUtils from '@/components/comp-tree-view/comp-tree-view-utils'
+import { BaseComponent, NoCache } from '@/components'
 import CompCheckboxNodeItem, { CompCheckboxTreeNodeData } from '@/components/comp-tree-view/comp-checkbox-node-item.vue'
-import { BaseComponent } from '@/components'
 import CompTreeNode from '@/components/comp-tree-view/comp-tree-node.vue'
 import { CompTreeNodeData } from '@/components/comp-tree-view/types'
 import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
 import { Component } from 'vue-property-decorator'
+import { NodePropertyChangeDetail } from '@/components/comp-tree-view/comp-tree-view-utils'
 import Vue from 'vue'
 const isInteger = require('lodash/isInteger')
 const isString = require('lodash/isString')
@@ -48,6 +51,7 @@ export { CompTreeNodeData, CompTreeNode, CompTreeNodeItem, CompCheckboxNodeItem,
  * `--comp-tree-view-color` | ノードの文字色です | `indigo-8`
  * `--comp-tree-selected-color` | ノード選択時の文字色です | `pink-5`
  * `--comp-tree-unselectable-color` | 非選択ノードの文字色です | `grey-9`
+ * `--comp-tree-padding` | ツリービューのpaddingです | `10px`
  */
 @Component
 export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNodeData> extends BaseComponent {
@@ -91,6 +95,19 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
    */
   private m_allNodes: { [key: string]: CompTreeNode } = {}
 
+  /**
+   * ツリービューの最小幅です。
+   */
+  private get m_minWidth(): number {
+    let result = 0
+    for (const node of this.nodes) {
+      if (result < node.minWidth) {
+        result = node.minWidth
+      }
+    }
+    return result + treeViewUtils.getElementFrameWidth(this.m_container)
+  }
+
   //----------------------------------------------------------------------
   //
   //  Methods
@@ -116,7 +133,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
    * @param child ノード、またはノードを構築するためのデータ
    * @param insertIndex ノード挿入位置
    */
-  addNode(child: NodeData | CompTreeNode, insertIndex?: number): CompTreeNode
+  addNode(child: NodeData | CompTreeNode, insertIndex?: number | null): CompTreeNode
 
   /**
    * ノードを追加します。
@@ -124,9 +141,9 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
    * @param parent 親ノードを特定するための値
    * @param insertIndex ノード挿入位置
    */
-  addNode(child: NodeData | CompTreeNode, parent?: string, insertIndex?: number): CompTreeNode
+  addNode(child: NodeData | CompTreeNode, parent?: string, insertIndex?: number | null): CompTreeNode
 
-  addNode(child: NodeData | CompTreeNode, parentOrInsertIndex?: string | number, insertIndex?: number): CompTreeNode {
+  addNode(child: NodeData | CompTreeNode, parentOrInsertIndex?: string | number | null, insertIndex?: number | null): CompTreeNode {
     let node: CompTreeNode
     const childType = child instanceof Vue ? 'Node' : 'Data'
     let parent: string | undefined
@@ -193,7 +210,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
   //
   //----------------------------------------------------------------------
 
-  private m_addNodeByData(nodeData: NodeData, insertIndex?: number): CompTreeNode {
+  private m_addNodeByData(nodeData: NodeData, insertIndex?: number | null): CompTreeNode {
     if (this.getNode(nodeData.value)) {
       throw new Error(`The node "${nodeData.value}" already exists.`)
     }
@@ -221,7 +238,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
     return node
   }
 
-  private m_addNodeByNode(node: CompTreeNode, insertIndex?: number): CompTreeNode {
+  private m_addNodeByNode(node: CompTreeNode, insertIndex?: number | null): CompTreeNode {
     // 一旦親からノードを削除
     if (node.parent) {
       node.parent.removeChild(node)
@@ -335,6 +352,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
   //  Elements
   //--------------------------------------------------
 
+  @NoCache
   get m_container(): HTMLElement {
     return this.$refs.container as HTMLElement
   }
@@ -362,16 +380,19 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
   }
 
   /**
-   * ノードでvalue-changedイベントが発火した際のリスナです。
+   * ノードでnode-property-changedイベントが発火した際のリスナです。
    * @param e
    */
-  m_allNodesOnValueChanged(e) {
+  private m_allNodesOnNodePropertyChanged(e) {
     e.stopImmediatePropagation()
 
     const node = e.target.__vue__ as CompTreeNode
-    const detail = e.detail as { newValue: string; oldValue: string }
-    delete this.m_allNodes[detail.oldValue]
-    this.m_allNodes[detail.newValue] = node
+    const detail = e.detail as NodePropertyChangeDetail
+
+    if (detail.property === 'value') {
+      delete this.m_allNodes[detail.oldValue]
+      this.m_allNodes[detail.newValue] = node
+    }
   }
 
   /**

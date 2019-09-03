@@ -103,18 +103,145 @@ export function dispatchSelectedChanged(target: CompTreeNode | CompTreeNodeItem)
   )
 }
 
+export interface NodePropertyChangeDetail {
+  property: 'value' | 'label'
+  oldValue: any
+  newValue: any
+}
+
 /**
- * ノードを特定する値が変更された旨を通知するイベントを発火します。
+ * ノードのプロパティが変更された旨を通知するイベントを発火します。
  * @param target
  * @param detail
  */
-export function dispatchValueChanged(target: CompTreeNode | CompTreeNodeItem, detail: { newValue: string; oldValue: string }): void {
+export function dispatchNodePropertyChanged(target: CompTreeNode | CompTreeNodeItem, detail: NodePropertyChangeDetail): void {
   target.$el.dispatchEvent(
-    new CustomEvent('value-changed', {
+    new CustomEvent('node-property-changed', {
       bubbles: true,
       cancelable: true,
       composed: true,
       detail,
     })
   )
+}
+
+/**
+ * 文字列を浮動小数点数へ変換します。
+ * @param value
+ */
+export function toFloat(value?: string): number {
+  const result = parseFloat(value || '0')
+  return isNaN(result) ? 0 : result
+}
+
+/**
+ * 指定されたスタイルの幅を取得します。
+ * @param style
+ */
+export function getElementWidth(style: CSSStyleDeclaration): number
+
+/**
+ * 指定された要素の幅を取得します。
+ * @param element
+ */
+export function getElementWidth(element: Element): number
+
+export function getElementWidth(elementOrStyle: Element | CSSStyleDeclaration): number {
+  if (!elementOrStyle) return 0
+  let result = 0
+  let style: CSSStyleDeclaration
+  if (elementOrStyle instanceof Element) {
+    style = getComputedStyle(elementOrStyle)
+  } else {
+    style = elementOrStyle as CSSStyleDeclaration
+  }
+  result += toFloat(style.getPropertyValue('width'))
+  result += getElementFrameWidth(style)
+  return result
+}
+
+/**
+ * 指定されたスタイルの枠の幅を取得します。
+ * @param style
+ */
+export function getElementFrameWidth(style: CSSStyleDeclaration): number
+
+/**
+ * 指定された要素の枠の幅を取得します。
+ * @param element
+ */
+export function getElementFrameWidth(element: Element): number
+
+export function getElementFrameWidth(elementOrStyle: Element | CSSStyleDeclaration): number {
+  if (!elementOrStyle) return 0
+  let result = 0
+  let style: CSSStyleDeclaration
+  if (elementOrStyle instanceof Element) {
+    style = getComputedStyle(elementOrStyle)
+  } else {
+    style = elementOrStyle as CSSStyleDeclaration
+  }
+  result += toFloat(style.getPropertyValue('border-left-width'))
+  result += toFloat(style.getPropertyValue('border-right-width'))
+  result += toFloat(style.getPropertyValue('margin-left'))
+  result += toFloat(style.getPropertyValue('margin-right'))
+  result += toFloat(style.getPropertyValue('padding-left'))
+  result += toFloat(style.getPropertyValue('padding-right'))
+  return result
+}
+
+/**
+ * 指定された要素の高さを取得します。
+ * @param element
+ */
+export function getElementHeight(element: Element): number
+
+/**
+ * 指定されたスタイルの高さを取得します。
+ * @param style
+ */
+export function getElementHeight(style: CSSStyleDeclaration): number
+
+export function getElementHeight(elementOrStyle: Element | CSSStyleDeclaration): number {
+  if (!elementOrStyle) return 0
+  let result = 0
+  let style: CSSStyleDeclaration
+  if (elementOrStyle instanceof Element) {
+    style = getComputedStyle(elementOrStyle)
+  } else {
+    style = elementOrStyle as CSSStyleDeclaration
+  }
+  result += toFloat(style.getPropertyValue('height'))
+  result += getElementFrameHeight(style)
+  return result
+}
+
+/**
+ * 指定された要素の枠の高さを取得します。
+ * @param element
+ */
+export function getElementFrameHeight(element: Element): number
+
+/**
+ * 指定されたスタイルの枠の高さを取得します。
+ * @param style
+ */
+export function getElementFrameHeight(style: CSSStyleDeclaration): number
+
+export function getElementFrameHeight(elementOrStyle: Element | CSSStyleDeclaration): number {
+  if (!elementOrStyle) return 0
+  let result = 0
+  let style: CSSStyleDeclaration
+  if (elementOrStyle instanceof Element) {
+    style = getComputedStyle(elementOrStyle)
+  } else {
+    style = elementOrStyle as CSSStyleDeclaration
+  }
+  result += toFloat(style.getPropertyValue('border-left-height'))
+  result += toFloat(style.getPropertyValue('border-right-height'))
+  result += toFloat(style.getPropertyValue('margin-top'))
+  result += toFloat(style.getPropertyValue('margin-bottom'))
+  result += toFloat(style.getPropertyValue('padding-top'))
+  result += toFloat(style.getPropertyValue('padding-bottom'))
+  return result
 }

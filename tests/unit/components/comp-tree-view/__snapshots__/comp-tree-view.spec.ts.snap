@@ -3,6 +3,7 @@
 exports[`標準ツリー CompTreeView.buildTree() ベーシックケース 1`] = `
 <div
   class="container"
+  style="min-width: 0px;"
 >
   <div
     class="main"
@@ -49,6 +50,7 @@ exports[`標準ツリー CompTreeView.buildTree() ベーシックケース 1`] =
      
     <div
       class="children-container opened"
+      style="height: 0px;"
     >
       <div
         class="main"
@@ -95,6 +97,7 @@ exports[`標準ツリー CompTreeView.buildTree() ベーシックケース 1`] =
          
         <div
           class="children-container opened"
+          style="height: 0px;"
         >
           <div
             class="main"

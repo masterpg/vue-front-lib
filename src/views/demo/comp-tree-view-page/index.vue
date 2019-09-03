@@ -2,9 +2,10 @@
 @import '../../../styles/app.variables.styl'
 
 .tree-view {
-  /*--comp-tree-view-font-size: 18px*/
-  /*--comp-tree-node-indent: 20px*/
+  --comp-tree-padding: 0
   --comp-tree-node-distance: 10px
+  /*--comp-tree-node-indent: 20px*/
+  /*--comp-tree-view-font-size: 18px*/
 }
 
 .operation-row {
@@ -17,8 +18,16 @@
 
 <template>
   <div class="layout vertical" :class="{ 'app-ma-48': screenSize.pc, 'app-ma-24': screenSize.tab, 'app-ma-12': screenSize.sp }">
-    <comp-tree-view ref="treeView" class="tree-view" @checked-changed="m_treeViewOnCheckedChanged"></comp-tree-view>
+    <comp-tree-view ref="treeView" class="tree-view" @selected="m_treeViewOnSelected" @checked-changed="m_treeViewOnCheckedChanged" />
     <div class="layout vertical app-mt-20">
+      <!-- 編集 -->
+      <div class="layout horizontal operation-row">
+        <q-input v-model="m_editedInput.nodeValue" label="Node value" dense />
+        <q-input v-model="m_editedInput.nodeLabel" label="Node label" dense />
+        <div class="flex"></div>
+        <q-btn label="Edit" color="primary" dense flat rounded @click="m_editNode" />
+      </div>
+      <!-- 追加 -->
       <div class="layout horizontal operation-row">
         <q-input v-model="m_addedInput.nodeValue" label="Node value" dense />
         <q-input v-model="m_addedInput.nodeLabel" label="Node label" dense />
@@ -27,11 +36,13 @@
         <div class="flex"></div>
         <q-btn label="Add" color="primary" dense flat rounded @click="m_addNode" />
       </div>
+      <!-- 削除 -->
       <div class="layout horizontal operation-row">
         <q-input v-model="m_removedInput.nodeValue" label="Target node" dense />
         <div class="flex"></div>
         <q-btn label="Remove" color="primary" dense flat rounded @click="m_removeNode" />
       </div>
+      <!-- 移動 -->
       <div class="layout horizontal operation-row">
         <q-input v-model="m_movedInput.nodeValue" label="Target node" dense />
         <q-input v-model="m_movedInput.parentValue" label="Parent" dense />
@@ -115,6 +126,11 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
   //
   //----------------------------------------------------------------------
 
+  private m_editedInput = {
+    nodeValue: '',
+    nodeLabel: '',
+  }
+
   private m_addedInput = {
     nodeValue: '',
     nodeLabel: '',
@@ -147,6 +163,12 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
   //
   //----------------------------------------------------------------------
 
+  private m_editNode() {
+    const target = this.m_treeView.getNode(this.m_editedInput.nodeValue)!
+    target.value = this.m_editedInput.nodeValue
+    target.label = this.m_editedInput.nodeLabel
+  }
+
   private m_addNode() {
     this.m_treeView.addNode(
       {
@@ -170,6 +192,11 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
     } else {
       this.m_treeView.addNode(target, this.m_movedInput.insertIndex)
     }
+  }
+
+  private m_treeViewOnSelected(node: CompTreeNode<CompCheckboxNodeItem>) {
+    this.m_editedInput.nodeValue = node.value
+    this.m_editedInput.nodeLabel = node.label
   }
 
   private m_treeViewOnCheckedChanged(node: CompTreeNode<CompCheckboxNodeItem>) {

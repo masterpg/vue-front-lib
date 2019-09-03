@@ -40,10 +40,20 @@ export default class CompTreeNodeItem<NodeData extends CompTreeNodeData = CompTr
   //
   //----------------------------------------------------------------------
 
+  private m_label: string = ''
+
   /**
    * ラベルです。
    */
-  label: string = ''
+  get label(): string {
+    return this.m_label
+  }
+
+  set label(value: string) {
+    const oldValue = this.m_label
+    this.m_label = value
+    treeViewUtils.dispatchNodePropertyChanged(this, { property: 'label', newValue: value, oldValue })
+  }
 
   private m_value: string = ''
 
@@ -57,7 +67,7 @@ export default class CompTreeNodeItem<NodeData extends CompTreeNodeData = CompTr
   set value(value: string) {
     const oldValue = this.m_value
     this.m_value = value
-    treeViewUtils.dispatchValueChanged(this, { newValue: value, oldValue })
+    treeViewUtils.dispatchNodePropertyChanged(this, { property: 'value', newValue: value, oldValue })
   }
 
   /**
@@ -97,7 +107,7 @@ export default class CompTreeNodeItem<NodeData extends CompTreeNodeData = CompTr
   //----------------------------------------------------------------------
 
   init(nodeData: NodeData): void {
-    this.label = nodeData.label
+    this.m_label = nodeData.label
     this.m_value = nodeData.value || ''
     this.unselectable = Boolean(nodeData.unselectable)
     this.m_selected = Boolean(nodeData.selected)
