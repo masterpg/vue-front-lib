@@ -70,10 +70,14 @@ export default class CompTreeNodeItem<NodeData extends CompTreeNodeData = CompTr
     treeViewUtils.dispatchNodePropertyChanged(this, { property: 'value', newValue: value, oldValue })
   }
 
+  private m_unselectable: boolean = false
+
   /**
    * 選択不可フラグです。
    */
-  unselectable: boolean = false
+  get unselectable(): boolean {
+    return this.m_unselectable
+  }
 
   private m_selected: boolean = false
 
@@ -109,7 +113,7 @@ export default class CompTreeNodeItem<NodeData extends CompTreeNodeData = CompTr
   init(nodeData: NodeData): void {
     this.m_label = nodeData.label
     this.m_value = nodeData.value || ''
-    this.unselectable = Boolean(nodeData.unselectable)
+    this.m_unselectable = Boolean(nodeData.unselectable)
     this.m_selected = Boolean(nodeData.selected)
 
     this.initPlaceholder(nodeData)

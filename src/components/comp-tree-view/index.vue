@@ -53,7 +53,7 @@ export { CompTreeNodeData, CompTreeNode, CompTreeNodeItem, CompCheckboxNodeItem,
  * `--comp-tree-unselectable-color` | 非選択ノードの文字色です | `grey-9`
  * `--comp-tree-padding` | ツリービューのpaddingです | `10px`
  */
-@Component
+@Component({ name: 'comp-tree-view' })
 export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNodeData> extends BaseComponent {
   //----------------------------------------------------------------------
   //

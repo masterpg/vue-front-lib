@@ -370,9 +370,11 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = CompTreeNo
     this.m_insertChildIntoContainer(childNode, insertIndex)
 
     // コンテナの高さを設定
-    const childrenContainerHeight = this.m_getChildrenContainerHeight(this)
-    const childNodeHeight = childrenContainerHeight + childNode.$el.getBoundingClientRect().height
-    this.m_childContainer.style.height = `${childNodeHeight}px`
+    if (this.opened) {
+      const childrenContainerHeight = this.m_getChildrenContainerHeight(this)
+      const childNodeHeight = childrenContainerHeight + childNode.$el.getBoundingClientRect().height
+      this.m_childContainer.style.height = `${childNodeHeight}px`
+    }
 
     // ノードの親子関係を設定
     childNode.m_parent = this
@@ -419,9 +421,11 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = CompTreeNo
     this.m_insertChildIntoContainer(childNode, insertIndex)
 
     // コンテナの高さを設定
-    const childrenContainerHeight = this.m_getChildrenContainerHeight(this)
-    const childNodeHeight = childrenContainerHeight + childNode.$el.getBoundingClientRect().height
-    this.m_childContainer.style.height = `${childNodeHeight}px`
+    if (this.opened) {
+      const childrenContainerHeight = this.m_getChildrenContainerHeight(this)
+      const childNodeHeight = childrenContainerHeight + childNode.$el.getBoundingClientRect().height
+      this.m_childContainer.style.height = `${childNodeHeight}px`
+    }
 
     // ノードの親子関係を設定
     childNode.m_parent = this
