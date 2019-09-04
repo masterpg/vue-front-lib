@@ -173,6 +173,25 @@ class LocaleUtil {
   }
 }
 
+/**
+ * 以下のソースコードをコピーして一部改変:
+ * node_modules/vue-i18n/dist/vue-i18n.esm.js
+ *
+ * 改変理由:
+ * comp-tree-viewはテンプレートに記述するのではなくプログラムでnewしてインスタンス化
+ * している。プログラムでnewした場合、$i18nのようにインジェクションされないライブラリ
+ * が存在する。この対応として以下ではインジェクションされていない場合、アプリケーション
+ * がインスタンス化したi18nを使用するよう改変している。
+ */
+Vue.prototype.$t = function(key) {
+  const values: any[] = []
+  let len = arguments.length - 1
+  while (len-- > 0) values[len] = arguments[len + 1]
+
+  const currentI18n = this.$i18n || i18n
+  return currentI18n._t.apply(currentI18n, [key, currentI18n.locale, currentI18n._getMessages(), this].concat(values))
+}
+
 export let i18n: AppI18n
 
 export async function initI18n(): Promise<void> {
