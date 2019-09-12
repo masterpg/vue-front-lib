@@ -1,8 +1,9 @@
-import { GQLStorageNode, gql } from '@/gql'
-import { StorageLogic, StorageNode, StorageNodeBag } from '@/logic'
+import { StorageLogic, StorageNodeBag } from '@/logic'
+import { StorageUploadManager, toStorageNodeBag } from '@/logic/modules/storage/base'
 import { BaseLogic } from '@/logic/base'
 import { Component } from 'vue-property-decorator'
 import { config } from '@/base/config'
+import { gql } from '@/gql'
 
 @Component
 export class StorageLogicImpl extends BaseLogic implements StorageLogic {
@@ -13,46 +14,22 @@ export class StorageLogicImpl extends BaseLogic implements StorageLogic {
 
   async getUserNodes(dirPath?: string): Promise<StorageNodeBag> {
     const gqlNodes = await gql.userStorageNodes(dirPath)
-    return this.m_toStorageNodeBag(gqlNodes)
+    return toStorageNodeBag(gqlNodes)
   }
 
   async createStorageDir(dirPath: string): Promise<StorageNodeBag> {
     const gqlNodes = await gql.createStorageDir(dirPath)
-    return this.m_toStorageNodeBag(gqlNodes)
+    return toStorageNodeBag(gqlNodes)
   }
 
   async removeStorageNodes(nodePaths: string[]): Promise<StorageNodeBag> {
     const gqlNodes = await gql.removeStorageNodes(nodePaths)
-    return this.m_toStorageNodeBag(gqlNodes)
+    return toStorageNodeBag(gqlNodes)
   }
 
-  private m_toStorageNodeBag(gqlNodes: GQLStorageNode[]): StorageNodeBag {
-    const bag = { list: [], map: {} } as StorageNodeBag
-
-    for (const gqlNode of gqlNodes) {
-      const node = this.m_toStorageNode(gqlNode)
-      bag.list.push(node)
-      bag.map[node.path] = node
-    }
-
-    for (const node of bag.list) {
-      const parent = bag.map[node.dir]
-      if (parent) {
-        parent.children.push(node)
-        node.parent = parent
-      }
-    }
-
-    return bag
-  }
-
-  private m_toStorageNode(gqlNode: GQLStorageNode): StorageNode {
-    return {
-      nodeType: gqlNode.nodeType,
-      name: gqlNode.name,
-      dir: gqlNode.dir,
-      path: gqlNode.path,
-      children: [],
-    }
+  newUploadManager(owner: Element): StorageUploadManager {
+    return new StorageUploadManager(owner)
   }
 }
+
+export { StorageUploadManager }

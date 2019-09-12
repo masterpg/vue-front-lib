@@ -1,6 +1,45 @@
 import 'firebase/storage'
 import * as firebase from 'firebase/app'
-import { logic } from '@/logic'
+import { GQLStorageNode, gql } from '@/gql'
+import { StorageNode, StorageNodeBag } from '@/logic/types'
+
+/**
+ * `GQLStorageNode`を`StorageNode`へ変換します。
+ * @param gqlNode
+ */
+export function toStorageNode(gqlNode: GQLStorageNode): StorageNode {
+  return {
+    nodeType: gqlNode.nodeType,
+    name: gqlNode.name,
+    dir: gqlNode.dir,
+    path: gqlNode.path,
+    children: [],
+  }
+}
+
+/**
+ * `GQLStorageNode`の配列を`StorageNodeBag`へ変換します。
+ * @param gqlNodes
+ */
+export function toStorageNodeBag(gqlNodes: GQLStorageNode[]): StorageNodeBag {
+  const bag = { list: [], map: {} } as StorageNodeBag
+
+  for (const gqlNode of gqlNodes) {
+    const node = toStorageNode(gqlNode)
+    bag.list.push(node)
+    bag.map[node.path] = node
+  }
+
+  for (const node of bag.list) {
+    const parent = bag.map[node.dir]
+    if (parent) {
+      parent.children.push(node)
+      node.parent = parent
+    }
+  }
+
+  return bag
+}
 
 /**
  * パス末尾のスラッシュを除去します。
@@ -40,7 +79,7 @@ export function pushMaxDirPathToArray(dirPaths: string[], newDirPath: string): v
 /**
  * ファイルのアップロードを実際に行うクラスです。
  */
-export class StorageUploadingFile {
+export class StorageFileUploader {
   //----------------------------------------------------------------------
   //
   //  Constructor
@@ -60,6 +99,10 @@ export class StorageUploadingFile {
 
   get name(): string {
     return this.m_file.name
+  }
+
+  get path(): string {
+    return `${this.m_uploadDirPath}/${this.name}`
   }
 
   get size(): number {
@@ -147,9 +190,12 @@ export class StorageUploadManager {
   //
   //----------------------------------------------------------------------
 
-  constructor(uploadFileInput: HTMLInputElement) {
-    this.m_uploadFileInput = uploadFileInput
+  constructor(owner: Element) {
+    this.m_uploadFileInput = document.createElement('input')
+    this.m_uploadFileInput.style.display = 'none'
+    this.m_uploadFileInput.setAttribute('type', 'file')
     this.m_uploadFileInput.addEventListener('change', this.m_uploadFileInputOnChange.bind(this))
+    owner.appendChild(this.m_uploadFileInput)
   }
 
   //----------------------------------------------------------------------
@@ -158,12 +204,12 @@ export class StorageUploadManager {
   //
   //----------------------------------------------------------------------
 
-  m_uploadingFiles: StorageUploadingFile[] = []
+  m_uploadingFiles: StorageFileUploader[] = []
 
   /**
-   * ファイルアップロードオブジェクトです。
+   * アップロード中のファイルです。
    */
-  get uploadingFiles(): StorageUploadingFile[] {
+  get uploadingFiles(): StorageFileUploader[] {
     return this.m_uploadingFiles
   }
 
@@ -234,7 +280,7 @@ export class StorageUploadManager {
   //
   //----------------------------------------------------------------------
 
-  private m_uploadFileInput: HTMLInputElement
+  private m_uploadFileInput!: HTMLInputElement
 
   private m_uploadDirPath: string = ''
 
@@ -248,6 +294,7 @@ export class StorageUploadManager {
    * 状態をクリアします。
    */
   clear(): void {
+    this.m_uploadFileInput.value = ''
     this.m_uploadingFiles.splice(0)
     this.m_uploadDirPath = ''
     this.m_uploading = false
@@ -276,6 +323,7 @@ export class StorageUploadManager {
   //----------------------------------------------------------------------
 
   private m_openFileSelectDialog(uploadDirPath: string, isFolder: boolean): void {
+    this.m_uploadFileInput.value = ''
     this.m_uploadDirPath = removeEndSlash(uploadDirPath)
 
     if (isFolder) {
@@ -296,19 +344,41 @@ export class StorageUploadManager {
   //----------------------------------------------------------------------
 
   private async m_uploadFileInputOnChange(e) {
-    const dirPaths: string[] = []
-
-    // アップロードオブジェクトを作成(まだアップロードは実行しない)
     const files: File[] = Array.from(e.target!.files)
-    this.m_uploadingFiles = files.map(file => {
-      let dirPath = this.m_uploadDirPath
-      if ((file as any).webkitRelativePath) {
-        const relativePathSegments = (file as any).webkitRelativePath.split('/')
-        const relativePath = relativePathSegments.slice(0, relativePathSegments.length - 1).join('/')
-        dirPath = `${dirPath}/${relativePath}`
+    if (files.length === 0) {
+      return
+    }
+
+    // ファイルアップローダーを作成(まだアップロードは実行しない)
+    const dirPaths: string[] = []
+    this.m_uploadingFiles.push(
+      ...files.map(file => {
+        let dirPath = this.m_uploadDirPath
+        if ((file as any).webkitRelativePath) {
+          const relativePathSegments = (file as any).webkitRelativePath.split('/')
+          const relativePath = relativePathSegments.slice(0, relativePathSegments.length - 1).join('/')
+          dirPath = `${dirPath}/${relativePath}`
+        }
+        pushMaxDirPathToArray(dirPaths, dirPath)
+        return new StorageFileUploader(file, dirPath)
+      })
+    )
+
+    // ファイルアップローダー配列をソート
+    this.m_uploadingFiles.sort((a, b) => {
+      if (a.completed && !b.completed) {
+        return 1
+      } else if (!a.completed && b.completed) {
+        return -1
       }
-      pushMaxDirPathToArray(dirPaths, dirPath)
-      return new StorageUploadingFile(file, dirPath)
+
+      if (a.name < b.name) {
+        return -1
+      } else if (a.name > b.name) {
+        return 1
+      } else {
+        return 0
+      }
     })
 
     // 状態をアップロード中に設定
@@ -317,13 +387,15 @@ export class StorageUploadManager {
     // アップロード先のディレクトリを作成
     const promises: Promise<any>[] = []
     for (const dirPath of dirPaths) {
-      promises.push(logic.storage.createStorageDir(`${dirPath}/`))
+      promises.push(gql.createStorageDir(`${dirPath}/`))
     }
     await Promise.all(promises)
 
     // 実際にアップロードを実行
     for (const uploadingFile of this.m_uploadingFiles) {
-      uploadingFile.execute()
+      if (!uploadingFile.completed) {
+        uploadingFile.execute()
+      }
     }
   }
 }

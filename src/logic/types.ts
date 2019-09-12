@@ -1,5 +1,6 @@
 import { CartItem, CheckoutStatus, Product, User } from '@/store'
 import { GQLStorageNodeType as StorageNodeType } from '@/gql'
+import { StorageUploadManager } from '@/logic/modules/storage'
 
 //----------------------------------------------------------------------
 //
@@ -21,6 +22,8 @@ export interface StorageLogic {
   createStorageDir(dirPath: string): Promise<StorageNodeBag>
 
   removeStorageNodes(nodePaths: string[]): Promise<StorageNodeBag>
+
+  newUploadManager(owner: Element): StorageUploadManager
 }
 
 export interface ShopLogic {
@@ -73,14 +76,6 @@ export interface AuthLogic {
   updateEmail(newEmail: string): Promise<{ result: boolean; code: string; errorMessage: string }>
 
   fetchSignInMethodsForEmail(email: string): Promise<AuthProviderType[]>
-}
-
-export interface HelloLogic {
-  publicHello(message: string): Promise<string>
-
-  siteHello(message: string): Promise<string>
-
-  authHello(message: string): Promise<string>
 }
 
 //----------------------------------------------------------------------

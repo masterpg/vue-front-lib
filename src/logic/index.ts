@@ -1,7 +1,7 @@
-import { AuthLogic, HelloLogic, Logic, ShopLogic, StorageLogic } from '@/logic/types'
+import { AuthLogic, Logic, ShopLogic, StorageLogic } from '@/logic/types'
+import { StorageLogicImpl, StorageUploadManager } from '@/logic/modules/storage'
 import { AuthLogicImpl } from '@/logic/modules/auth'
 import { ShopLogicImpl } from '@/logic/modules/shop'
-import { StorageLogicImpl } from '@/logic/modules/storage'
 import Vue from 'vue'
 
 class LogicImpl implements Logic {
@@ -22,3 +22,4 @@ export function initLogic(): void {
 }
 
 export * from '@/logic/types'
+export { StorageUploadManager }

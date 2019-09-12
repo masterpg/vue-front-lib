@@ -243,7 +243,6 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
       return
     }
     for (const node of bag.list) {
-      console.log('■', node.path)
       this.m_treeView.removeNode(node.path)
     }
     this.$q.loading.hide()

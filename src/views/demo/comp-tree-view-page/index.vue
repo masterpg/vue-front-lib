@@ -201,7 +201,6 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
 
   private m_treeViewOnCheckedChanged(node: CompTreeNode<CompCheckboxNodeItem>) {
     node.selected = true
-    console.log(node)
   }
 }
 </script>

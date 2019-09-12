@@ -52,10 +52,6 @@
     margin-left: 4px
   }
 }
-
-.upload-file-input {
-  display: none
-}
 </style>
 
 <template>
@@ -73,20 +69,16 @@
         <q-linear-progress :value="item.progress" :stripe="!item.completed" class="progress flex-4" />
       </div>
     </div>
-    <input ref="uploadFileInput" class="upload-file-input" type="file" multiple />
   </div>
 </template>
 
 <script lang="ts">
-import { BaseComponent, NoCache, ResizableMixin } from '@/components'
+import { BaseComponent, ResizableMixin } from '@/components'
 import { Component, Watch } from 'vue-property-decorator'
-import { StorageUploadManager } from '@/views/demo/storage/storage-utils'
+import { StorageUploadManager } from '@/logic'
 import { mixins } from 'vue-class-component'
 
-@Component({
-  name: 'storage-upload-progress',
-  components: {},
-})
+@Component({ name: 'storage-upload-progress' })
 export default class StorageUploadProgress extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
   //
@@ -95,7 +87,7 @@ export default class StorageUploadProgress extends mixins(BaseComponent, Resizab
   //----------------------------------------------------------------------
 
   async mounted() {
-    this.m_uploadManager = new StorageUploadManager(this.m_uploadFileInput)
+    this.m_uploadManager = this.$logic.storage.newUploadManager(this.$el)
   }
 
   //----------------------------------------------------------------------
@@ -115,15 +107,6 @@ export default class StorageUploadProgress extends mixins(BaseComponent, Resizab
   }
 
   private m_minimize: boolean = false
-
-  //--------------------------------------------------
-  //  Elements
-  //--------------------------------------------------
-
-  @NoCache
-  private get m_uploadFileInput(): HTMLInputElement {
-    return this.$refs.uploadFileInput as HTMLInputElement
-  }
 
   //----------------------------------------------------------------------
   //

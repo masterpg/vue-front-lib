@@ -1,7 +1,7 @@
 import * as td from 'testdouble'
 import { CartItem, CartModule, CartState, CheckoutStatus, ProductModule, ProductState, User, UserModule, UserState, initStore, store } from '@/store'
 import { GQLEditCartItemResponse, GQLFacade, GQLProduct, gql, initGQL } from '@/gql'
-import { TestLogic, TestStoreModule } from '../../../helper/unit'
+import { TestLogic, TestStoreModule } from '../../../../helper/unit'
 import { initLogic, logic } from '@/logic'
 import { ShopLogicImpl } from '@/logic/modules/shop'
 const cloneDeep = require('lodash/cloneDeep')
