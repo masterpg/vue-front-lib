@@ -76,7 +76,7 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
       {
         label: 'node1',
         value: 'node1',
-        opened: true,
+        opened: false,
         icon: 'folder',
         iconColor: 'purple-5',
         children: [
@@ -175,7 +175,7 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
         value: this.m_addedInput.nodeValue,
         label: this.m_addedInput.nodeLabel ? this.m_addedInput.nodeLabel : this.m_addedInput.nodeValue,
       },
-      this.m_addedInput.parentValue
+      { parent: this.m_addedInput.parentValue }
     )
   }
 
@@ -188,9 +188,9 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
     const target = this.m_treeView.getNode(this.m_movedInput.nodeValue)!
     if (this.m_movedInput.parentValue) {
       const parent = this.m_treeView.getNode(this.m_movedInput.parentValue)!
-      parent.addChild(target, this.m_movedInput.insertIndex)
+      parent.addChild(target, { insertIndex: this.m_movedInput.insertIndex })
     } else {
-      this.m_treeView.addNode(target, this.m_movedInput.insertIndex)
+      this.m_treeView.addNode(target, { insertIndex: this.m_movedInput.insertIndex })
     }
   }
 

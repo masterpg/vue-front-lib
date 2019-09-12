@@ -17,8 +17,9 @@
     :style="{ minWidth: m_minWidth + 'px' }"
     @opened-changed="m_allNodesOnOpenedChanged"
     @node-added="m_nodeAdded"
+    @node-before-removed="m_nodeBeforeRemoved"
     @node-removed="m_nodeRemoved"
-    @selected="m_allNodesOnSelected"
+    @selected-changed="m_allNodesOnSelectedChanged"
     @node-property-changed="m_allNodesOnNodePropertyChanged"
   ></div>
 </template>
@@ -26,14 +27,15 @@
 <script lang="ts">
 import * as treeViewUtils from '@/components/comp-tree-view/comp-tree-view-utils'
 import { BaseComponent, NoCache } from '@/components'
+import { ChildrenSortFunc, CompTreeNodeData } from '@/components/comp-tree-view/types'
 import CompCheckboxNodeItem, { CompCheckboxTreeNodeData } from '@/components/comp-tree-view/comp-checkbox-node-item.vue'
 import CompTreeNode from '@/components/comp-tree-view/comp-tree-node.vue'
-import { CompTreeNodeData } from '@/components/comp-tree-view/types'
 import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
 import { Component } from 'vue-property-decorator'
 import { NodePropertyChangeDetail } from '@/components/comp-tree-view/comp-tree-view-utils'
 import Vue from 'vue'
 const isInteger = require('lodash/isInteger')
+const isFunction = require('lodash/isFunction')
 const isString = require('lodash/isString')
 
 export { CompTreeNodeData, CompTreeNode, CompTreeNodeItem, CompCheckboxNodeItem, CompCheckboxTreeNodeData }
@@ -54,7 +56,7 @@ export { CompTreeNodeData, CompTreeNode, CompTreeNodeItem, CompCheckboxNodeItem,
  * `--comp-tree-padding` | ツリービューのpaddingです | `10px`
  */
 @Component({ name: 'comp-tree-view' })
-export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNodeData> extends BaseComponent {
+export default class CompTreeView<NodeData extends CompTreeNodeData = any> extends BaseComponent {
   //----------------------------------------------------------------------
   //
   //  Properties
@@ -73,14 +75,26 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
   private m_selectedNode: CompTreeNode | null = null
 
   /**
-   * 選択されているノードです。
+   * 選択ノードです。
    */
   get selectedNode(): CompTreeNode | undefined {
-    return this.m_selectedNode === null ? undefined : this.m_selectedNode
+    return this.m_selectedNode ? this.m_selectedNode : undefined
   }
 
   set selectedNode(node: CompTreeNode | undefined) {
-    this.m_setSelectedNode(node)
+    const prevSelectedNode = this.selectedNode
+    if (node) {
+      if (prevSelectedNode && prevSelectedNode !== node) {
+        prevSelectedNode.selected = false
+      }
+      node.selected = true
+      this.m_selectedNode = node
+    } else {
+      if (prevSelectedNode) {
+        prevSelectedNode.selected = false
+      }
+      this.m_selectedNode = null
+    }
   }
 
   //----------------------------------------------------------------------
@@ -121,7 +135,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
    */
   buildTree(nodeDataList: NodeData[], insertIndex?: number): void {
     nodeDataList.forEach(nodeData => {
-      this.m_addNodeByData(nodeData, insertIndex)
+      this.m_addNodeByData(nodeData, { insertIndex })
       if (!(insertIndex === undefined || insertIndex === null)) {
         insertIndex++
       }
@@ -131,43 +145,35 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
   /**
    * ノードを追加します。
    * @param child ノード、またはノードを構築するためのデータ
-   * @param insertIndex ノード挿入位置
+   * @param options
+   * <ul>
+   *   <li>parent: 親ノードを特定するための値。</li>
+   *   <li>insertIndex: ノード挿入位置。sortFuncと同時に指定することはできない。</li>
+   *   <li>sortFunc: ノードをソートする関数。insertIndexと同時に指定することはできない。</li>
+   * </ul>
    */
-  addNode(child: NodeData | CompTreeNode, insertIndex?: number | null): CompTreeNode
-
-  /**
-   * ノードを追加します。
-   * @param child ノード、またはノードを構築するためのデータ
-   * @param parent 親ノードを特定するための値
-   * @param insertIndex ノード挿入位置
-   */
-  addNode(child: NodeData | CompTreeNode, parent?: string, insertIndex?: number | null): CompTreeNode
-
-  addNode(child: NodeData | CompTreeNode, parentOrInsertIndex?: string | number | null, insertIndex?: number | null): CompTreeNode {
-    let node: CompTreeNode
-    const childType = child instanceof Vue ? 'Node' : 'Data'
-    let parent: string | undefined
-
-    if (parentOrInsertIndex !== '' && isString(parentOrInsertIndex)) {
-      parent = parentOrInsertIndex as string
-    } else if (isInteger(parentOrInsertIndex)) {
-      insertIndex = parentOrInsertIndex as number
+  addNode(child: NodeData | CompTreeNode, options: { parent?: string; insertIndex?: number | null; sortFunc?: ChildrenSortFunc } = {}): CompTreeNode {
+    if (isInteger(options.insertIndex) && options.insertIndex! >= 0 && options.sortFunc) {
+      throw new Error('You cannot specify both "insertIndex" and "sortFunc".')
     }
 
-    if (parent) {
-      const parentNode = this.getNode(parent)
+    let node: CompTreeNode
+    const childType = child instanceof Vue ? 'Node' : 'Data'
+
+    if (isString(options.parent)) {
+      const parentNode = this.getNode(options.parent)
       if (!parentNode) {
-        throw new Error(`The parent node "${parent}" does not exist.`)
+        throw new Error(`The parent node "${options.parent}" does not exist.`)
       }
-      node = parentNode.addChild(child, insertIndex)
+      node = parentNode.addChild(child, options)
     } else {
       // 引数のノードがノードコンポーネントで指定された場合
       if (childType === 'Node') {
-        node = this.m_addNodeByNode(child as CompTreeNode, insertIndex)
+        node = this.m_addNodeByNode(child as CompTreeNode, options)
       }
       // 引数のノードがノードデータで指定された場合
       else if (childType === 'Data') {
-        node = this.m_addNodeByData(child as NodeData, insertIndex)
+        node = this.m_addNodeByData(child as NodeData, options)
       }
     }
 
@@ -210,7 +216,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
   //
   //----------------------------------------------------------------------
 
-  private m_addNodeByData(nodeData: NodeData, insertIndex?: number | null): CompTreeNode {
+  private m_addNodeByData(nodeData: NodeData, options: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc } = {}): CompTreeNode {
     if (this.getNode(nodeData.value)) {
       throw new Error(`The node "${nodeData.value}" already exists.`)
     }
@@ -219,9 +225,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
     const node = treeViewUtils.newNode(this, nodeData)
 
     // ノード挿入位置を決定
-    if (insertIndex === undefined || insertIndex === null) {
-      insertIndex = this.m_nodes.length
-    }
+    const insertIndex = this.m_getInsertIndex(node, options)
 
     // コンテナにノードを追加
     this.m_insertChildIntoContainer(node, insertIndex)
@@ -229,7 +233,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
     // 子ノードの設定
     const len = nodeData.children ? nodeData.children.length : 0
     for (let i = 0; i < len; i++) {
-      node.addChild(nodeData.children![i], i)
+      node.addChild(nodeData.children![i], { insertIndex: i })
     }
 
     // ノードが追加されたことを通知するイベントを発火
@@ -238,7 +242,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
     return node
   }
 
-  private m_addNodeByNode(node: CompTreeNode, insertIndex?: number | null): CompTreeNode {
+  private m_addNodeByNode(node: CompTreeNode, options: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc } = {}): CompTreeNode {
     // 一旦親からノードを削除
     if (node.parent) {
       node.parent.removeChild(node)
@@ -248,9 +252,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
     }
 
     // ノード挿入位置を決定
-    if (insertIndex === undefined || insertIndex === null) {
-      insertIndex = this.m_nodes.length
-    }
+    const insertIndex = this.m_getInsertIndex(node, options)
 
     // コンテナにノードを追加
     this.m_insertChildIntoContainer(node, insertIndex)
@@ -258,13 +260,26 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
     // 子ノードの設定
     for (let i = 0; i < node.children.length; i++) {
       const childNode = node.children[i]
-      node.addChild(childNode, i)
+      node.addChild(childNode, { insertIndex: i })
     }
 
     // ノードが追加されたことを通知するイベントを発火
     treeViewUtils.dispatchNodeAdded(node)
 
     return node
+  }
+
+  private m_getInsertIndex(newNode: CompTreeNode, options: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc } = {}): number {
+    if (isInteger(options.insertIndex)) {
+      return options.insertIndex!
+    } else if (isFunction(options.sortFunc)) {
+      const nodes = [...this.nodes, newNode]
+      nodes.sort(options.sortFunc!)
+      const index = nodes.indexOf(newNode)
+      return index === -1 ? this.nodes.length : index
+    } else {
+      return this.m_nodes.length
+    }
   }
 
   /**
@@ -328,20 +343,6 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
     })
   }
 
-  /**
-   * ノード選択の設定を行います。
-   * @param node 選択ノード
-   */
-  private m_setSelectedNode(node: CompTreeNode | undefined): void {
-    // 選択されたノード以外の選択を解除
-    if (this.selectedNode && this.selectedNode !== node) {
-      this.selectedNode.selected = false
-    }
-    this.m_selectedNode = node ? node : null
-
-    this.$emit('selected', this.m_selectedNode)
-  }
-
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -377,6 +378,38 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
     for (const eventName of node.extraEventNames) {
       this.m_addExtraNodeEventListener(eventName)
     }
+
+    if (node.selected) {
+      this.selectedNode = node
+    }
+  }
+
+  /**
+   * ツリービューからノードが削除される直前のリスナです。
+   * @param e
+   */
+  private m_nodeBeforeRemoved(e) {
+    e.stopImmediatePropagation()
+
+    const node = e.detail.node as CompTreeNode
+
+    if (this.selectedNode === node) {
+      this.selectedNode = undefined
+    }
+  }
+
+  /**
+   * ツリービューからノードが削除された際のリスナです。
+   * @param e
+   */
+  private m_nodeRemoved(e) {
+    e.stopImmediatePropagation()
+
+    const node = e.detail.node as CompTreeNode
+    for (const descendant of treeViewUtils.getDescendants(node)) {
+      delete this.m_allNodes[descendant.value]
+    }
+    delete this.m_allNodes[node.value]
   }
 
   /**
@@ -396,20 +429,6 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
   }
 
   /**
-   * ツリービューからノードが削除された際のリスナです。
-   * @param e
-   */
-  private m_nodeRemoved(e) {
-    e.stopImmediatePropagation()
-
-    const node = e.detail.node as CompTreeNode
-    for (const descendant of treeViewUtils.getDescendants(node)) {
-      delete this.m_allNodes[descendant.value]
-    }
-    delete this.m_allNodes[node.value]
-  }
-
-  /**
    * ノードでopened-changedイベントが発火した際のリスナです。
    * @param e
    */
@@ -421,14 +440,26 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = CompTreeNo
   }
 
   /**
-   * ノードでselectedイベントが発火した際のリスナです。
+   * ノードでselected-changedイベントが発火した際のリスナです。
    * @param e
    */
-  private m_allNodesOnSelected(e) {
+  private m_allNodesOnSelectedChanged(e) {
     e.stopImmediatePropagation()
 
     const node = e.target.__vue__ as CompTreeNode
-    this.m_setSelectedNode(node)
+
+    // ノードが選択された場合
+    if (node.selected) {
+      this.selectedNode = node
+      this.$emit('selected', node)
+    }
+    // ノードの選択が解除された場合
+    else {
+      if (this.selectedNode === node) {
+        this.selectedNode = undefined
+      }
+      this.$emit('unselected', node)
+    }
   }
 
   /**

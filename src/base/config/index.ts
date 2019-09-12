@@ -1,17 +1,12 @@
 import * as firebase from 'firebase/app'
+import URI from 'urijs'
 
 export interface Config {
   api: {
     protocol: string
     host: string
     port: number
-    baseURL: string
-  }
-
-  test: {
-    protocol: string
-    host: string
-    port: number
+    basePath: string
     baseURL: string
   }
 
@@ -30,18 +25,25 @@ class ConfigImpl implements Config {
     firebase.initializeApp(this.firebase)
   }
 
-  readonly api = {
-    protocol: String(process.env.VUE_APP_API_PROTOCOL),
-    host: String(process.env.VUE_APP_API_HOST),
-    port: Number(process.env.VUE_APP_API_PORT),
-    baseURL: String(process.env.VUE_APP_API_BASE_URL),
-  }
+  get api() {
+    const apiEnv = {
+      protocol: String(process.env.VUE_APP_API_PROTOCOL),
+      host: String(process.env.VUE_APP_API_HOST),
+      port: Number(process.env.VUE_APP_API_PORT),
+      basePath: String(process.env.VUE_APP_API_BASE_PATH),
+    }
 
-  readonly test = {
-    protocol: String(process.env.VUE_APP_TEST_PROTOCOL),
-    host: String(process.env.VUE_APP_TEST_HOST),
-    port: Number(process.env.VUE_APP_TEST_PORT),
-    baseURL: String(process.env.VUE_APP_TEST_BASE_URL),
+    const baseURL = new URI()
+    if (apiEnv.protocol) baseURL.protocol(apiEnv.protocol)
+    if (apiEnv.host) baseURL.hostname(apiEnv.host)
+    if (apiEnv.port) baseURL.port(apiEnv.port.toString(10))
+    if (apiEnv.basePath) baseURL.path(apiEnv.basePath)
+    baseURL.query('')
+
+    return {
+      ...apiEnv,
+      baseURL: baseURL.toString().replace(/\/$/, ''),
+    }
   }
 
   readonly firebase = {

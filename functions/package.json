@@ -15,14 +15,15 @@
   "main": "lib/index.js",
   "dependencies": {
     "@google-cloud/logging": "^5.2.2",
-    "apollo-server-express": "^2.8.2",
+    "apollo-server-express": "^2.9.0",
     "class-validator": "0.8.5",
     "convert-hrtime": "^3.0.0",
     "cookie-parser": "^1.4.4",
-    "firebase-admin": "^8.3.0",
+    "dayjs": "^1.8.15",
+    "firebase-admin": "^8.4.0",
     "firebase-functions": "^3.2.0",
     "firebase-tools": "^7.2.4",
-    "graphql": "^14.4.2",
+    "graphql": "^14.5.3",
     "graphql-type-json": "^0.3.0",
     "reflect-metadata": "^0.1.13",
     "routing-controllers": "^0.7.7",
@@ -31,7 +32,7 @@
     "vary": "^1.1.2"
   },
   "devDependencies": {
-    "@types/graphql-type-json": "^0.3.0",
+    "@types/graphql-type-json": "^0.3.1",
     "@types/vary": "^1.1.0",
     "typescript": "^3.5.3"
   },

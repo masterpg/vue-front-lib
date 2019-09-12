@@ -1,4 +1,4 @@
-import { GQLAddCartItemInput, GQLCartItem, GQLEditCartItemResponse, GQLFacade, GQLProduct, GQLUpdateCartItemInput } from '@/gql/types'
+import { GQLAddCartItemInput, GQLCartItem, GQLEditCartItemResponse, GQLFacade, GQLProduct, GQLStorageNode, GQLUpdateCartItemInput } from '@/gql/types'
 import { BaseGQLClient } from '@/gql/base'
 import gql from 'graphql-tag'
 
@@ -13,6 +13,60 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
       isAuth: true,
     })
     return response.data.customToken
+  }
+
+  async userStorageNodes(dirPath?: string): Promise<GQLStorageNode[]> {
+    const response = await this.query<{ userStorageNodes: GQLStorageNode[] }>({
+      query: gql`
+        query GetUserStorageNodes($dirPath: String) {
+          userStorageNodes(dirPath: $dirPath) {
+            nodeType
+            name
+            dir
+            path
+          }
+        }
+      `,
+      variables: { dirPath },
+      isAuth: true,
+    })
+    return response.data.userStorageNodes
+  }
+
+  async createStorageDir(dirPath: string): Promise<GQLStorageNode[]> {
+    const response = await this.mutate<{ createStorageDir: GQLStorageNode[] }>({
+      mutation: gql`
+        mutation CreateStorageDir($dirPath: String!) {
+          createStorageDir(dirPath: $dirPath) {
+            nodeType
+            name
+            dir
+            path
+          }
+        }
+      `,
+      variables: { dirPath },
+      isAuth: true,
+    })
+    return response.data.createStorageDir
+  }
+
+  async removeStorageNodes(nodePaths: string[]): Promise<GQLStorageNode[]> {
+    const response = await this.mutate<{ removeStorageNodes: GQLStorageNode[] }>({
+      mutation: gql`
+        mutation RemoveStorageNodes($nodePaths: [String!]!) {
+          removeStorageNodes(nodePaths: $nodePaths) {
+            nodeType
+            name
+            dir
+            path
+          }
+        }
+      `,
+      variables: { nodePaths },
+      isAuth: true,
+    })
+    return response.data.removeStorageNodes
   }
 
   async product(id: string): Promise<GQLProduct | undefined> {

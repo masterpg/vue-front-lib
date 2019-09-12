@@ -1,6 +1,6 @@
 import * as path from 'path'
 import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express'
-import { AppResolver, CartResolver, ProductResolver, RecipeResolver } from './modules'
+import { AppResolver, CartResolver, ProductResolver, RecipeResolver, StorageResolver } from './modules'
 import { Express, Request, Response, Router } from 'express'
 import { LoggingMiddleware, authChecker } from './base'
 import { Context } from './types'
@@ -43,7 +43,7 @@ abstract class GQLServer {
   }
 
   protected get resolvers(): Array<Function | string> {
-    return [AppResolver, CartResolver, ProductResolver, RecipeResolver]
+    return [AppResolver, CartResolver, ProductResolver, RecipeResolver, StorageResolver]
   }
 
   protected createConfig(): ApolloServerExpressConfig {

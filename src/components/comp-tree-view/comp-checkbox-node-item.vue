@@ -7,6 +7,7 @@
 
 .item {
   cursor: pointer
+  white-space: nowrap
 
   &:hover {
     text-decoration: underline

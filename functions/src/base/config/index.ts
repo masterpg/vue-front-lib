@@ -8,6 +8,12 @@ export const config = new (class {
     }
   })()
 
+  storage = new (class {
+    get bucket(): string {
+      return functions.config().storage.bucket || ''
+    }
+  })()
+
   cors = new (class {
     get whitelist(): string[] {
       if (functions.config().cors && functions.config().cors.whitelist) {

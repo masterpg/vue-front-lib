@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`標準ツリー CompTreeView.buildTree() ベーシックケース 1`] = `
+exports[`CompTreeView buildTree() ベーシックケース 1`] = `
 <div
   class="container"
   style="min-width: 0px;"
@@ -124,7 +124,7 @@ exports[`標準ツリー CompTreeView.buildTree() ベーシックケース 1`] =
                 />
               </div>
               <span
-                class="item"
+                class="item selected"
               >
                 Node1_1_1
               </span>

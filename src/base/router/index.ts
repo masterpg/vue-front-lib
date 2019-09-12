@@ -95,8 +95,22 @@ const demoRoute = new (class DemoRoute extends ViewRoute {
       return () => import(/* webpackChunkName: "demo/comp-tree-view" */ '@/views/demo/comp-tree-view-page/index.vue')
     }
 
-    move(id: string) {
-      vueRouter.push(this.replaceRouteParams(id))
+    move() {
+      vueRouter.push(this.path)
+    }
+  })(this)
+
+  storage = new (class extends ViewRoute<DemoRoute> {
+    get path() {
+      return `${this.parent!.path}/storage`
+    }
+
+    get component() {
+      return () => import(/* webpackChunkName: "demo/storage" */ '@/views/demo/storage/index.vue')
+    }
+
+    move() {
+      vueRouter.push(this.path)
     }
   })(this)
 })()
@@ -175,7 +189,14 @@ export const router = new (class {
 
 export const vueRouter = new VueRouter({
   mode: 'history',
-  routes: [router.views.abcPage, router.views.abcPage.foo, router.views.shopPage, router.views.error404Page, router.views.demo.compTreeViewPage],
+  routes: [
+    router.views.abcPage,
+    router.views.abcPage.foo,
+    router.views.shopPage,
+    router.views.error404Page,
+    router.views.demo.compTreeViewPage,
+    router.views.demo.storage,
+  ],
 })
 
 vueRouter.beforeEach((to, from, next) => {

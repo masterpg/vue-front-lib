@@ -238,6 +238,10 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
       title: 'comp-tree-view',
       path: router.views.demo.compTreeViewPage.path,
     },
+    {
+      title: 'Cloud Storage',
+      path: router.views.demo.storage.path,
+    },
   ]
 
   private m_leftDrawerOpen: boolean = false

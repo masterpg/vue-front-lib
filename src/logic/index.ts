@@ -1,9 +1,11 @@
-import { AuthLogic, HelloLogic, Logic, ShopLogic } from '@/logic/types'
+import { AuthLogic, HelloLogic, Logic, ShopLogic, StorageLogic } from '@/logic/types'
 import { AuthLogicImpl } from '@/logic/modules/auth'
 import { ShopLogicImpl } from '@/logic/modules/shop'
+import { StorageLogicImpl } from '@/logic/modules/storage'
 import Vue from 'vue'
 
 class LogicImpl implements Logic {
+  readonly storage: StorageLogic = new StorageLogicImpl()
   readonly shop: ShopLogic = new ShopLogicImpl()
   readonly auth: AuthLogic = new AuthLogicImpl()
 }

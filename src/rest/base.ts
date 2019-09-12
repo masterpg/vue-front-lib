@@ -1,8 +1,7 @@
 import * as firebase from 'firebase'
 import axios, { Method, ResponseType } from 'axios'
-import URI from 'urijs'
 import Vue from 'vue'
-import { config as appConfig } from '@/base/config'
+import { config } from '@/base/config'
 
 export interface APIRequestConfig {
   headers?: any
@@ -90,18 +89,7 @@ export abstract class BaseAPI extends Vue {
   }
 
   protected getRequestURL(): string {
-    const baseURL = new URI()
-    if (appConfig.api.protocol) baseURL.protocol(appConfig.api.protocol)
-    if (appConfig.api.host) baseURL.hostname(appConfig.api.host)
-    if (appConfig.api.baseURL) {
-      baseURL.path(URI.joinPaths(appConfig.api.baseURL, 'rest').path())
-    } else {
-      baseURL.path('rest')
-    }
-    baseURL.query('')
-    if (appConfig.api.port) baseURL.port(appConfig.api.port.toString(10))
-
-    return baseURL.toString()
+    return `${config.api.baseURL}/rest`
   }
 
   protected async getIdToken(): Promise<string> {

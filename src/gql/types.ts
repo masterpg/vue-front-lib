@@ -1,11 +1,17 @@
 //----------------------------------------------------------------------
 //
-//  GraphQL
+//  GQL API
 //
 //----------------------------------------------------------------------
 
 export interface GQLFacade {
   customToken(): Promise<string>
+
+  userStorageNodes(dirPath?: string): Promise<GQLStorageNode[]>
+
+  createStorageDir(dirPath: string): Promise<GQLStorageNode[]>
+
+  removeStorageNodes(nodePaths: string[]): Promise<GQLStorageNode[]>
 
   product(id: string): Promise<GQLProduct | undefined>
 
@@ -29,6 +35,18 @@ export interface GQLFacade {
 //  Value objects
 //
 //----------------------------------------------------------------------
+
+export interface GQLStorageNode {
+  nodeType: GQLStorageNodeType
+  name: string
+  dir: string
+  path: string
+}
+
+export enum GQLStorageNodeType {
+  File = 'File',
+  Dir = 'Dir',
+}
 
 export interface GQLProduct {
   id: string

@@ -1,0 +1,71 @@
+query GetUserStorageNodes {
+  userStorageNodes {
+    nodeType
+    name
+    dir
+    path
+  }
+}
+
+query GetUserStorageNodes {
+  userStorageNodes(dirPath: "images/") {
+    nodeType
+    name
+    dir
+    path
+  }
+}
+
+query GetUserStorageNodes($path: String) {
+  userStorageNodes(dirPath: $dirPath) {
+    nodeType
+    name
+    dir
+    path
+  }
+}
+{
+  "dirPath": "images/"
+}
+
+mutation CreateStorageDir {
+  createStorageDir(dirPath: "images/aaa/") {
+    nodeType
+    name
+    dir
+    path
+  }
+}
+
+mutation CreateStorageDir($dirPath: String!) {
+  createStorageDir(dirPath: $dirPath) {
+    nodeType
+    name
+    dir
+    path
+  }
+}
+{
+  "dirPath": "images/aaa/"
+}
+
+mutation RemoveStorageNodes {
+  removeStorageNodes(nodePaths: ["images/aaa/"]) {
+    nodeType
+    name
+    dir
+    path
+  }
+}
+
+mutation RemoveStorageNodes($nodePaths: [String!]!) {
+  removeStorageNodes(nodePaths: $nodePaths) {
+    nodeType
+    name
+    dir
+    path
+  }
+}
+{
+  "nodePaths": ["images/aaa/", "images/family.png"]
+}

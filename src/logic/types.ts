@@ -1,4 +1,5 @@
 import { CartItem, CheckoutStatus, Product, User } from '@/store'
+import { GQLStorageNodeType as StorageNodeType } from '@/gql'
 
 //----------------------------------------------------------------------
 //
@@ -7,8 +8,19 @@ import { CartItem, CheckoutStatus, Product, User } from '@/store'
 //----------------------------------------------------------------------
 
 export interface Logic {
+  readonly storage: StorageLogic
   readonly shop: ShopLogic
   readonly auth: AuthLogic
+}
+
+export interface StorageLogic {
+  toURL(path: string): string
+
+  getUserNodes(dir?: string): Promise<StorageNodeBag>
+
+  createStorageDir(dirPath: string): Promise<StorageNodeBag>
+
+  removeStorageNodes(nodePaths: string[]): Promise<StorageNodeBag>
 }
 
 export interface ShopLogic {
@@ -73,15 +85,35 @@ export interface HelloLogic {
 
 //----------------------------------------------------------------------
 //
+//  Value objects
+//
+//----------------------------------------------------------------------
+
+export interface StorageNodeBag {
+  list: StorageNode[]
+  map: { [path: string]: StorageNode }
+}
+
+export interface StorageNode {
+  nodeType: StorageNodeType
+  name: string
+  dir: string
+  path: string
+  parent?: StorageNode
+  children: StorageNode[]
+}
+
+//----------------------------------------------------------------------
+//
 //  Enumerations
 //
 //----------------------------------------------------------------------
 
-enum AuthProviderType {
+export enum AuthProviderType {
   Google = 'google.com',
   Facebook = 'facebook.com',
   Password = 'password',
   Anonymous = 'anonymous',
 }
 
-export { AuthProviderType, CartItem, CheckoutStatus, Product, User }
+export { StorageNodeType, CartItem, CheckoutStatus, Product, User }

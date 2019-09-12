@@ -26,6 +26,7 @@ export function getDescendants(node: CompTreeNode): CompTreeNode[] {
     const result: CompTreeNode[] = []
     for (const child of (node as any).children) {
       result.push(...getChildren(child))
+      result.push(child)
     }
     return result
   }
@@ -74,6 +75,22 @@ export function dispatchNodeAdded(node: CompTreeNode): void {
 }
 
 /**
+ * ノードが削除される直前を通知するイベントを発火します。
+ * @param parent
+ * @param child
+ */
+export function dispatchNodeBeforeRemoved(parent: CompTreeView | CompTreeNode, child: CompTreeNode): void {
+  parent.$el.dispatchEvent(
+    new CustomEvent('node-before-removed', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      detail: { node: child },
+    })
+  )
+}
+
+/**
  * ノードが削除された旨を通知するイベントを発火します。
  * @param parent
  * @param child
@@ -95,7 +112,7 @@ export function dispatchNodeRemoved(parent: CompTreeView | CompTreeNode, child: 
  */
 export function dispatchSelectedChanged(target: CompTreeNode | CompTreeNodeItem): void {
   target.$el.dispatchEvent(
-    new CustomEvent('selected', {
+    new CustomEvent('selected-changed', {
       bubbles: true,
       cancelable: true,
       composed: true,

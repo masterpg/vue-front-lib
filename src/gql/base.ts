@@ -4,8 +4,7 @@ import * as firebase from 'firebase/app'
 import { ApolloClient, ApolloQueryResult, MutationOptions, OperationVariables, QueryOptions } from 'apollo-client'
 import { ApolloLink, FetchResult } from 'apollo-link'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
-import URI from 'urijs'
-import { config as appConfig } from '@/base/config'
+import { config } from '@/base/config'
 import { createHttpLink } from 'apollo-link-http'
 import { setContext } from 'apollo-link-context'
 
@@ -58,18 +57,7 @@ export abstract class BaseGQLClient {
   }
 
   protected getRequestURL(): string {
-    const baseURL = new URI()
-    if (appConfig.api.protocol) baseURL.protocol(appConfig.api.protocol)
-    if (appConfig.api.host) baseURL.hostname(appConfig.api.host)
-    if (appConfig.api.baseURL) {
-      baseURL.path(URI.joinPaths(appConfig.api.baseURL, 'gql').path())
-    } else {
-      baseURL.pathname('gql')
-    }
-    baseURL.query('')
-    if (appConfig.api.port) baseURL.port(appConfig.api.port.toString(10))
-
-    return baseURL.toString()
+    return `${config.api.baseURL}/gql`
   }
 
   protected async getIdToken(): Promise<string> {

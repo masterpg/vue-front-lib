@@ -75,7 +75,7 @@ export function initServiceWorker(): void {
       dispatchToListeners(ChangeState.offline, String(i18n.t('sw.offline')))
     },
     error(error) {
-      dispatchToListeners(ChangeState.error, String(i18n.t('sw.offline', { error })))
+      dispatchToListeners(ChangeState.error, String(i18n.t('sw.error', { error })))
     },
   })
 }
