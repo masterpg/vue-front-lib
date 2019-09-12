@@ -14,14 +14,14 @@ const cloneDeep = require('lodash/cloneDeep')
 //========================================================================
 
 function verifyTreeView(treeView: CompTreeView | any) {
-  for (let i = 0; i < treeView.nodes.length; i++) {
-    const node = treeView.nodes[i]
+  for (let i = 0; i < treeView.children.length; i++) {
+    const node = treeView.children[i]
     // ノードにツリービューが設定されていることを検証
     expect(node.treeView).toBe(treeView)
     // ノードの親が空であることを検証
     expect(node.parent).toBeUndefined()
     // ツリービューのコンテナにノードが存在することを検証
-    const containerChildren = Array.from(treeView.m_container.children)
+    const containerChildren = Array.from(treeView.m_childContainer.children)
     expect(containerChildren[i]).toBe(node.$el)
     // ノードの親子(子孫)関係の検証
     verifyParentChildRelation(node)
@@ -53,7 +53,7 @@ function verifyParentChildRelation(node: CompTreeNode | any) {
 }
 
 function verifyIsEldest(treeView: CompTreeView | any) {
-  treeView.nodes.forEach((node, index) => {
+  treeView.children.forEach((node, index) => {
     const isEldest = index === 0
     expect(node.isEldest).toBe(isEldest)
   })
@@ -149,7 +149,7 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(nodeDataList)
 
-      const node1 = treeView.nodes[0]
+      const node1 = treeView.children[0]
       expect(node1.value).toBe('node1')
       expect(node1.label).toBe('Node1')
       expect(node1.isEldest).toBeTruthy()
@@ -179,7 +179,7 @@ describe('CompTreeView', () => {
       expect(node1_1_3.label).toBe('Node1_1_3')
       expect(node1_1_3.selected).toBeFalsy()
 
-      const node2 = treeView.nodes[1]
+      const node2 = treeView.children[1]
       expect(node2.value).toBe('node2')
       expect(node2.label).toBe('Node2')
       expect(node2.isEldest).not.toBeTruthy()
@@ -210,8 +210,8 @@ describe('CompTreeView', () => {
       const node3 = treeView.getNode('node3')
       const node4 = treeView.getNode('node4')
 
-      expect(treeView.nodes[0]).toBe(node3)
-      expect(treeView.nodes[1]).toBe(node4)
+      expect(treeView.children[0]).toBe(node3)
+      expect(treeView.children[1]).toBe(node4)
       verifyTreeView(treeView)
     })
 
@@ -237,8 +237,8 @@ describe('CompTreeView', () => {
       const node3 = treeView.getNode('node3')
       const node4 = treeView.getNode('node4')
 
-      expect(treeView.nodes[1]).toBe(node3)
-      expect(treeView.nodes[2]).toBe(node4)
+      expect(treeView.children[1]).toBe(node3)
+      expect(treeView.children[2]).toBe(node4)
       verifyTreeView(treeView)
     })
 
@@ -258,31 +258,31 @@ describe('CompTreeView', () => {
             value: 'node4',
           },
         ],
-        treeView.nodes.length
+        treeView.children.length
       )
 
       const node3 = treeView.getNode('node3')
       const node4 = treeView.getNode('node4')
 
-      expect(treeView.nodes[treeView.nodes.length - 2]).toBe(node3)
-      expect(treeView.nodes[treeView.nodes.length - 1]).toBe(node4)
+      expect(treeView.children[treeView.children.length - 2]).toBe(node3)
+      expect(treeView.children[treeView.children.length - 1]).toBe(node4)
       verifyTreeView(treeView)
     })
   })
 
-  describe('addNode()', () => {
+  describe('addChild()', () => {
     it('挿入位置の指定なし', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(nodeDataList)
 
-      const node3 = treeView.addNode({
+      const node3 = treeView.addChild({
         label: 'Node3',
         value: 'node3',
       })
 
       expect(treeView.getNode('node3')).toBe(node3)
-      expect(treeView.nodes[treeView.nodes.length - 1]).toBe(node3)
+      expect(treeView.children[treeView.children.length - 1]).toBe(node3)
       verifyTreeView(treeView)
     })
 
@@ -291,7 +291,7 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(nodeDataList)
 
-      const node3 = treeView.addNode(
+      const node3 = treeView.addChild(
         {
           label: 'Node3',
           value: 'node3',
@@ -300,7 +300,7 @@ describe('CompTreeView', () => {
       )
 
       expect(treeView.getNode('node3')).toBe(node3)
-      expect(treeView.nodes[0]).toBe(node3)
+      expect(treeView.children[0]).toBe(node3)
       verifyTreeView(treeView)
     })
 
@@ -309,7 +309,7 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(nodeDataList)
 
-      const node3 = treeView.addNode(
+      const node3 = treeView.addChild(
         {
           label: 'Node3',
           value: 'node3',
@@ -318,7 +318,7 @@ describe('CompTreeView', () => {
       )
 
       expect(treeView.getNode('node3')).toBe(node3)
-      expect(treeView.nodes[1]).toBe(node3)
+      expect(treeView.children[1]).toBe(node3)
       verifyTreeView(treeView)
     })
 
@@ -327,7 +327,7 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(nodeDataList)
 
-      const node1p5 = treeView.addNode(
+      const node1p5 = treeView.addChild(
         {
           label: 'Node1.5',
           value: 'node1.5',
@@ -336,7 +336,7 @@ describe('CompTreeView', () => {
       )
 
       expect(treeView.getNode('node1.5')).toBe(node1p5)
-      expect(treeView.nodes[1]).toBe(node1p5)
+      expect(treeView.children[1]).toBe(node1p5)
       verifyTreeView(treeView)
     })
 
@@ -345,16 +345,16 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(nodeDataList)
 
-      const node3 = treeView.addNode(
+      const node3 = treeView.addChild(
         {
           label: 'Node3',
           value: 'node3',
         },
-        { insertIndex: treeView.nodes.length }
+        { insertIndex: treeView.children.length }
       )
 
       expect(treeView.getNode('node3')).toBe(node3)
-      expect(treeView.nodes[treeView.nodes.length - 1]).toBe(node3)
+      expect(treeView.children[treeView.children.length - 1]).toBe(node3)
       verifyTreeView(treeView)
     })
 
@@ -363,7 +363,7 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(nodeDataList)
 
-      const node3 = treeView.addNode(
+      const node3 = treeView.addChild(
         {
           label: 'Node3',
           value: 'node3',
@@ -373,7 +373,7 @@ describe('CompTreeView', () => {
 
       expect(treeView.getNode('node3')).toBe(node3)
       // 最後尾に挿入される
-      expect(treeView.nodes[treeView.nodes.length - 1]).toBe(node3)
+      expect(treeView.children[treeView.children.length - 1]).toBe(node3)
       verifyTreeView(treeView)
     })
 
@@ -382,7 +382,7 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(nodeDataList)
 
-      const node3 = treeView.addNode(
+      const node3 = treeView.addChild(
         {
           label: 'Node3',
           value: 'node3',
@@ -391,7 +391,7 @@ describe('CompTreeView', () => {
       )
 
       expect(treeView.getNode('node3')).toBe(node3)
-      expect(treeView.nodes[1]).toBe(node3)
+      expect(treeView.children[1]).toBe(node3)
       verifyTreeView(treeView)
     })
 
@@ -402,7 +402,7 @@ describe('CompTreeView', () => {
 
       let actual!: Error
       try {
-        treeView.addNode({
+        treeView.addChild({
           label: 'Node2',
           value: 'node2',
         })
@@ -421,7 +421,7 @@ describe('CompTreeView', () => {
       treeView.buildTree(nodeDataList)
 
       const node1_1 = treeView.getNode('node1_1')
-      const node1_1_x = treeView.addNode(
+      const node1_1_x = treeView.addChild(
         {
           label: 'Node2_1',
           value: 'node2_1',
@@ -440,7 +440,7 @@ describe('CompTreeView', () => {
       treeView.buildTree(nodeDataList)
 
       const node1_1 = treeView.getNode('node1_1')
-      const node1_1_x = treeView.addNode(
+      const node1_1_x = treeView.addChild(
         {
           label: 'Node2_1',
           value: 'node2_1',
@@ -461,11 +461,11 @@ describe('CompTreeView', () => {
       const node1 = treeView.getNode('node1')
       const node2 = treeView.getNode('node2')
 
-      treeView.addNode(node1)
+      treeView.addChild(node1)
 
-      expect(treeView.nodes.length).toBe(2)
-      expect(treeView.nodes[0]).toBe(node2)
-      expect(treeView.nodes[1]).toBe(node1)
+      expect(treeView.children.length).toBe(2)
+      expect(treeView.children[0]).toBe(node2)
+      expect(treeView.children[1]).toBe(node1)
       verifyTreeView(treeView)
     })
 
@@ -474,14 +474,14 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(nodeDataList)
 
-      const treeViewNodesLength = treeView.nodes.length
+      const treeViewNodesLength = treeView.children.length
       const node1_1 = treeView.getNode('node1_1')
       const node1 = node1_1.parent
 
-      treeView.addNode(node1_1)
+      treeView.addChild(node1_1)
 
-      expect(treeView.nodes.length).toBe(treeViewNodesLength + 1)
-      expect(treeView.nodes[2]).toBe(node1_1)
+      expect(treeView.children.length).toBe(treeViewNodesLength + 1)
+      expect(treeView.children[2]).toBe(node1_1)
       expect(node1_1.parent).toBeUndefined()
       expect(node1.children.includes(node1_1)).not.toBeTruthy()
       verifyTreeView(treeView)
@@ -494,7 +494,7 @@ describe('CompTreeView', () => {
 
       let actual!: Error
       try {
-        treeView.addNode(
+        treeView.addChild(
           {
             label: 'Node2_1',
             value: 'node2_1',
@@ -517,7 +517,7 @@ describe('CompTreeView', () => {
 
       let actual!: Error
       try {
-        const node3 = treeView.addNode(
+        const node3 = treeView.addChild(
           {
             label: 'Node3',
             value: 'node3',
@@ -542,14 +542,14 @@ describe('CompTreeView', () => {
 
       const node1 = treeView.getNode('node1')!
       const node1Descendants = treeViewUtils.getDescendants(node1)
-      const treeViewNodesLength = treeView.nodes.length
+      const treeViewNodesLength = treeView.children.length
 
       const actual = treeView.removeNode(node1.value)
 
       expect(actual).toBe(node1)
       expect(treeView.getNode(node1.value)).toBeUndefined()
-      expect(treeView.nodes.length).toBe(treeViewNodesLength - 1)
-      expect(Array.from(treeView.m_container.children).includes(node1.$el)).not.toBeTruthy()
+      expect(treeView.children.length).toBe(treeViewNodesLength - 1)
+      expect(Array.from(treeView.m_childContainer.children).includes(node1.$el)).not.toBeTruthy()
 
       for (const descendant of node1Descendants) {
         expect(treeView.getNode((descendant as any).value)).toBeUndefined()
@@ -621,15 +621,15 @@ describe('CompTreeView', () => {
 
       const node1 = treeView.getNode('node1')!
       const descendants = treeViewUtils.getDescendants(node1)
-      const treeViewNodesLength = treeView.nodes.length
+      const treeViewNodesLength = treeView.children.length
 
       const actual = treeView.removeNode(node1.value)
-      treeView.addNode(actual, { insertIndex: 0 })
+      treeView.addChild(actual, { insertIndex: 0 })
 
       expect(actual).toBe(node1)
       expect(treeView.getNode(node1.value)).toBe(node1)
-      expect(treeView.nodes.length).toBe(treeViewNodesLength)
-      expect(treeView.nodes[0]).toBe(node1)
+      expect(treeView.children.length).toBe(treeViewNodesLength)
+      expect(treeView.children[0]).toBe(node1)
 
       for (const descendant of descendants) {
         expect(treeView.getNode((descendant as any).value)).toBeTruthy()
@@ -742,12 +742,12 @@ describe('CompTreeView', () => {
           value: '',
         },
       ],
-      treeView.nodes.length
+      treeView.children.length
     )
     const anonymous = treeView.getNode('')
 
     // 親に空文字("")のノードを指定
-    const anonymous_child1 = treeView.addNode(
+    const anonymous_child1 = treeView.addChild(
       {
         label: 'Anonymous_child1',
         value: 'anonymous_child1',
@@ -755,7 +755,7 @@ describe('CompTreeView', () => {
       { parent: '' }
     )
 
-    expect(treeView.nodes[treeView.nodes.length - 1]).toBe(anonymous)
+    expect(treeView.children[treeView.children.length - 1]).toBe(anonymous)
     expect(anonymous.children[0]).toBe(anonymous_child1)
     expect(anonymous_child1.parent).toBe(anonymous)
 
@@ -925,15 +925,15 @@ describe('CompTreeNode', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(nodeDataList)
 
-      const treeViewNodesLength = treeView.nodes.length
+      const treeViewNodesLength = treeView.children.length
       const node1 = treeView.getNode('node1')
       const node2 = treeView.getNode('node2')
       const node2ChildrenLength = node2.children.length
 
       node2.addChild(node1)
 
-      expect(treeView.nodes.length).toBe(treeViewNodesLength - 1)
-      expect(treeView.nodes[0]).toBe(node2)
+      expect(treeView.children.length).toBe(treeViewNodesLength - 1)
+      expect(treeView.children[0]).toBe(node2)
       expect(node2.children.length).toBe(node2ChildrenLength + 1)
       expect(node2.children[0]).toBe(node1)
       expect(node1.parent).toBe(node2)

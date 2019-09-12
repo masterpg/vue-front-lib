@@ -26,7 +26,7 @@
   }
 }
 
-.children-container {
+.child-container {
   padding-left: var(--comp-tree-indent, 16px)
   height: 0
   overflow: hidden
@@ -62,7 +62,7 @@
         </svg>
       </div>
     </div>
-    <div ref="childContainer" class="children-container" :class="{ opened: opened }"></div>
+    <div ref="childContainer" class="child-container" :class="{ opened: opened }"></div>
   </div>
 </template>
 
@@ -491,9 +491,9 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
     if (isInteger(options.insertIndex)) {
       return options.insertIndex!
     } else if (isFunction(options.sortFunc)) {
-      const nodes = [...this.children, newNode]
-      nodes.sort(options.sortFunc!)
-      const index = nodes.indexOf(newNode)
+      const children = [...this.children, newNode]
+      children.sort(options.sortFunc!)
+      const index = children.indexOf(newNode)
       return index === -1 ? this.children.length : index
     } else {
       return this.children.length

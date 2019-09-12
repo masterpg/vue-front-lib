@@ -2,7 +2,7 @@
 
 exports[`CompTreeView buildTree() ベーシックケース 1`] = `
 <div
-  class="container"
+  class="child-container"
   style="min-width: 0px;"
 >
   <div
@@ -49,7 +49,7 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
     </div>
      
     <div
-      class="children-container opened"
+      class="child-container opened"
       style="height: 0px;"
     >
       <div
@@ -96,7 +96,7 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
         </div>
          
         <div
-          class="children-container opened"
+          class="child-container opened"
           style="height: 0px;"
         >
           <div
@@ -131,7 +131,7 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
             </div>
              
             <div
-              class="children-container"
+              class="child-container"
             />
           </div>
           <div
@@ -176,7 +176,7 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
             </div>
              
             <div
-              class="children-container"
+              class="child-container"
             />
           </div>
           <div
@@ -221,7 +221,7 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
             </div>
              
             <div
-              class="children-container"
+              class="child-container"
             />
           </div>
         </div>
@@ -270,7 +270,7 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
     </div>
      
     <div
-      class="children-container"
+      class="child-container"
     />
   </div>
 </div>

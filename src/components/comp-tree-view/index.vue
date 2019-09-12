@@ -1,7 +1,7 @@
 <style lang="stylus" scoped>
 @import '../../styles/app.variables.styl'
 
-.container {
+.child-container {
   color: var(--comp-tree-view-color, $indigo-8)
   font-size: var(--comp-tree-view-font-size, 14px)
   font-weight: var(--comp-tree-font-weight, $text-weights.medium)
@@ -12,8 +12,8 @@
 
 <template>
   <div
-    ref="container"
-    class="container"
+    ref="childContainer"
+    class="child-container"
     :style="{ minWidth: m_minWidth + 'px' }"
     @opened-changed="m_allNodesOnOpenedChanged"
     @node-added="m_nodeAdded"
@@ -63,13 +63,13 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
   //
   //----------------------------------------------------------------------
 
-  private m_nodes: CompTreeNode[] = []
+  private m_children: CompTreeNode[] = []
 
   /**
    * ツリービューのトップレベルのノードです。
    */
-  get nodes(): CompTreeNode[] {
-    return this.m_nodes
+  get children(): CompTreeNode[] {
+    return this.m_children
   }
 
   private m_selectedNode: CompTreeNode | null = null
@@ -114,12 +114,21 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
    */
   private get m_minWidth(): number {
     let result = 0
-    for (const node of this.nodes) {
-      if (result < node.minWidth) {
-        result = node.minWidth
+    for (const child of this.children) {
+      if (result < child.minWidth) {
+        result = child.minWidth
       }
     }
-    return result + treeViewUtils.getElementFrameWidth(this.m_container)
+    return result + treeViewUtils.getElementFrameWidth(this.m_childContainer)
+  }
+
+  //--------------------------------------------------
+  //  Elements
+  //--------------------------------------------------
+
+  @NoCache
+  get m_childContainer(): HTMLElement {
+    return this.$refs.childContainer as HTMLElement
   }
 
   //----------------------------------------------------------------------
@@ -143,7 +152,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
   }
 
   /**
-   * ノードを追加します。
+   * 子ノードを追加します。
    * @param child ノード、またはノードを構築するためのデータ
    * @param options
    * <ul>
@@ -152,7 +161,10 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
    *   <li>sortFunc: ノードをソートする関数。insertIndexと同時に指定することはできない。</li>
    * </ul>
    */
-  addNode(child: NodeData | CompTreeNode, options: { parent?: string; insertIndex?: number | null; sortFunc?: ChildrenSortFunc } = {}): CompTreeNode {
+  addChild(
+    child: NodeData | CompTreeNode,
+    options: { parent?: string; insertIndex?: number | null; sortFunc?: ChildrenSortFunc } = {}
+  ): CompTreeNode {
     if (isInteger(options.insertIndex) && options.insertIndex! >= 0 && options.sortFunc) {
       throw new Error('You cannot specify both "insertIndex" and "sortFunc".')
     }
@@ -273,12 +285,12 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
     if (isInteger(options.insertIndex)) {
       return options.insertIndex!
     } else if (isFunction(options.sortFunc)) {
-      const nodes = [...this.nodes, newNode]
-      nodes.sort(options.sortFunc!)
-      const index = nodes.indexOf(newNode)
-      return index === -1 ? this.nodes.length : index
+      const children = [...this.children, newNode]
+      children.sort(options.sortFunc!)
+      const index = children.indexOf(newNode)
+      return index === -1 ? this.children.length : index
     } else {
-      return this.m_nodes.length
+      return this.m_children.length
     }
   }
 
@@ -287,8 +299,8 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
    * @param eventName
    */
   m_addExtraNodeEventListener(eventName: string): void {
-    this.m_container.removeEventListener(eventName, this.m_allNodesOnExtraNodeEvent)
-    this.m_container.addEventListener(eventName, this.m_allNodesOnExtraNodeEvent)
+    this.m_childContainer.removeEventListener(eventName, this.m_allNodesOnExtraNodeEvent)
+    this.m_childContainer.addEventListener(eventName, this.m_allNodesOnExtraNodeEvent)
   }
 
   /**
@@ -297,7 +309,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
    * @param insertIndex ノード挿入位置
    */
   private m_insertChildIntoContainer(node: CompTreeNode, insertIndex: number): void {
-    const childrenLength = this.m_container.children.length
+    const childrenLength = this.m_childContainer.children.length
 
     // 挿入位置が大きすぎないかを検証
     if (childrenLength < insertIndex) {
@@ -306,13 +318,13 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
 
     // コンテナにノードを追加
     if (childrenLength === insertIndex) {
-      this.m_container.appendChild(node.$el)
+      this.m_childContainer.appendChild(node.$el)
     } else {
-      const afterNode = this.m_container.children[insertIndex]
-      this.m_container.insertBefore(node.$el, afterNode)
+      const afterNode = this.m_childContainer.children[insertIndex]
+      this.m_childContainer.insertBefore(node.$el, afterNode)
     }
 
-    this.m_nodes.splice(insertIndex, 0, node)
+    this.m_children.splice(insertIndex, 0, node)
 
     // 最年長ノードフラグを再設定
     this.m_restIsEldest()
@@ -323,11 +335,11 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
    * @node 削除するノード
    */
   private m_removeChildFromContainer(node: CompTreeNode): void {
-    this.m_container.removeChild(node.$el)
+    this.m_childContainer.removeChild(node.$el)
 
-    const index = this.m_nodes.indexOf(node)
+    const index = this.m_children.indexOf(node)
     if (index >= 0) {
-      this.m_nodes.splice(index, 1)
+      this.m_children.splice(index, 1)
     }
 
     // 最年長ノードフラグを再設定
@@ -338,24 +350,9 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
    * 最年長ノードフラグを再設定します。
    */
   private m_restIsEldest(): void {
-    this.m_nodes.forEach((item, index) => {
+    this.m_children.forEach((item, index) => {
       item.isEldest = index === 0
     })
-  }
-
-  //----------------------------------------------------------------------
-  //
-  //  Variables
-  //
-  //----------------------------------------------------------------------
-
-  //--------------------------------------------------
-  //  Elements
-  //--------------------------------------------------
-
-  @NoCache
-  get m_container(): HTMLElement {
-    return this.$refs.container as HTMLElement
   }
 
   //----------------------------------------------------------------------

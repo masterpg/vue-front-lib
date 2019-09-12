@@ -170,7 +170,7 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
   }
 
   private m_addNode() {
-    this.m_treeView.addNode(
+    this.m_treeView.addChild(
       {
         value: this.m_addedInput.nodeValue,
         label: this.m_addedInput.nodeLabel ? this.m_addedInput.nodeLabel : this.m_addedInput.nodeValue,
@@ -190,7 +190,7 @@ export default class DemoCompTreeViewPage extends mixins(BaseComponent, Resizabl
       const parent = this.m_treeView.getNode(this.m_movedInput.parentValue)!
       parent.addChild(target, { insertIndex: this.m_movedInput.insertIndex })
     } else {
-      this.m_treeView.addNode(target, { insertIndex: this.m_movedInput.insertIndex })
+      this.m_treeView.addChild(target, { insertIndex: this.m_movedInput.insertIndex })
     }
   }
 

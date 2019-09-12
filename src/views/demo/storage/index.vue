@@ -82,7 +82,7 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
   //----------------------------------------------------------------------
 
   async mounted() {
-    this.m_storageNode = this.m_treeView.addNode({
+    this.m_storageNode = this.m_treeView.addChild({
       value: '',
       label: 'Storage',
       icon: 'storage',
@@ -172,12 +172,12 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
         delete nodeData.selected
         delete nodeData.opened
         node.setEditData(nodeData)
-        this.m_treeView.addNode(node, {
+        this.m_treeView.addChild(node, {
           parent: item.dir || this.m_storageNode.value,
           sortFunc,
         })
       } else {
-        this.m_treeView.addNode(nodeData, {
+        this.m_treeView.addChild(nodeData, {
           parent: item.dir || this.m_storageNode.value,
           sortFunc,
         })
