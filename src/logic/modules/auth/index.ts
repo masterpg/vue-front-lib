@@ -1,5 +1,3 @@
-import 'firebase/auth'
-import * as firebase from 'firebase/app'
 import { AuthLogic, AuthProviderType, User } from '@/logic/types'
 import { BaseLogic } from '@/logic/base'
 import { Component } from 'vue-property-decorator'

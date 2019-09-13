@@ -1,5 +1,3 @@
-import 'firebase/firestore'
-import * as firebase from 'firebase/app'
 import Vue from 'vue'
 
 let db: firebase.firestore.Firestore

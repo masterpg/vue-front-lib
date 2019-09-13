@@ -55,8 +55,6 @@
 </template>
 
 <script lang="ts">
-import 'firebase/storage'
-import * as firebase from 'firebase/app'
 import { BaseComponent, NoCache, ResizableMixin } from '@/components'
 import { StorageNode, StorageNodeBag, StorageNodeType } from '@/logic'
 import StorageTreeNodeItem, { StorageTreeNodeData } from '@/views/demo/storage/storage-tree-node-item.vue'

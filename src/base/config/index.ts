@@ -1,4 +1,3 @@
-import * as firebase from 'firebase/app'
 import URI from 'urijs'
 
 export interface Config {

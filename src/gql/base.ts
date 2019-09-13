@@ -1,6 +1,4 @@
-import 'firebase/auth'
 import 'unfetch/polyfill'
-import * as firebase from 'firebase/app'
 import { ApolloClient, ApolloQueryResult, MutationOptions, OperationVariables, QueryOptions } from 'apollo-client'
 import { ApolloLink, FetchResult } from 'apollo-link'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
