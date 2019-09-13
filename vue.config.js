@@ -28,6 +28,8 @@ if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
   })
 }
 
+// Vue CLI Configuration Reference
+// https://cli.vuejs.org/config/
 module.exports = {
   baseUrl,
 
@@ -44,6 +46,12 @@ module.exports = {
     },
   },
 
+  // Firebase Hostingでハッシュ付きのファイルを使用すると、
+  // Service Workerで不都合が生じるようで、新しいリソースがキャッシュできなかったり、
+  // 画面ロード時にリソースをうまく見つけられずエラーが発生したりする。
+  // このためファイル名にハッシュをつけないよう設定している。
+  filenameHashing: false,
+
   pwa: {
     name: 'vue-base-project',
     iconPaths: {
@@ -53,6 +61,8 @@ module.exports = {
       maskIcon: 'img/icons/manifest/safari-pinned-tab.svg',
       msTileImage: 'img/icons/manifest/msapplication-icon-144x144.png',
     },
+    // Workbox webpack Plugins
+    // https://developers.google.com/web/tools/workbox/modules/workbox-webpack-plugin
     workboxOptions: {
       // skipWaitingについては以下を参照
       // https://developers.google.com/web/fundamentals/primers/service-workers/lifecycle?hl=ja#updates
@@ -60,9 +70,15 @@ module.exports = {
 
       // ServiceWorkerインストール時にキャッシュされるファイルを設定
       include: [/\.html$/, /\.js$/, /\.css$/, /^favicon\.ico$/],
-      // index.htmlをServiceWorkderでキャッシュすると、
+      exclude: [/\.map$/],
+
+      // ※ 以下のような不具合があったが、`filenameHashing`の対応を行ったところ、
+      //    問題が解決したかもしれないので一旦コメント化。
+      //    今後状況をみて書きを削除するか検討すること。
+      //
+      // index.htmlをServiceWorkerでキャッシュすると、
       // FirebaseのGoogleやFacebook認証がうまく動作しなくなるので除外。
-      exclude: [/^index\.html$/, /\.map$/],
+      // exclude: [/^index\.html$/, /\.map$/],
 
       // `/`以下のパスで存在しないファイルまたはディレクトリが
       // 指定された場合にindex.htmlへフォールバックするよう設定
@@ -98,7 +114,10 @@ module.exports = {
         .end()
 
     // 必要なリソースファイルのコピー
-    let copyFiles = [{from: 'node_modules/@webcomponents/webcomponentsjs/**/*.js'}]
+    let copyFiles = [
+      {from: 'node_modules/@webcomponents/webcomponentsjs/**/*.js'},
+      {from: 'node_modules/firebase/firebase-*.js'},
+    ]
     if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
       copyFiles = [
         ...copyFiles,
