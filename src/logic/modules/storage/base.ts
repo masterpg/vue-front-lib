@@ -49,139 +49,19 @@ export function removeEndSlash(nodePath?: string): string {
 }
 
 /**
- * 最長のディレクトリパスを配列に追加します。
- * ```
- * const dirPaths = ['aaa/bbb/ccc1']
- *
- * this.pushMaxDirPathToArray(dirPaths, 'aaa/bbb') // ← 追加されない
- * this.pushMaxDirPathToArray(dirPaths, 'aaa/bbb/ccc1') // ← 追加されない
- * this.pushMaxDirPathToArray(dirPaths, 'aaa/bbb/ccc2') // ← 追加される
- * ```
- *
- * @param dirPaths
- * @param newDirPath
+ * アップロードファイルの情報です。
  */
-export function pushMaxDirPathToArray(dirPaths: string[], newDirPath: string): void {
-  for (let i = 0; i < dirPaths.length; i++) {
-    const dirPath = dirPaths[i]
-    if (dirPath.startsWith(newDirPath)) {
-      return
-    } else if (newDirPath.startsWith(dirPath)) {
-      dirPaths[i] = newDirPath
-      return
-    }
-  }
-  dirPaths.push(newDirPath)
-}
-
-/**
- * ファイルのアップロードを実際に行うクラスです。
- */
-export class StorageFileUploader {
-  //----------------------------------------------------------------------
-  //
-  //  Constructor
-  //
-  //----------------------------------------------------------------------
-
-  constructor(file: File, uploadDirPath: string) {
-    this.m_file = file
-    this.m_uploadDirPath = removeEndSlash(uploadDirPath)
-  }
-
-  //----------------------------------------------------------------------
-  //
-  //  Properties
-  //
-  //----------------------------------------------------------------------
-
-  get name(): string {
-    return this.m_file.name
-  }
-
-  get path(): string {
-    return `${this.m_uploadDirPath}/${this.name}`
-  }
-
-  get size(): number {
-    return this.m_file.size
-  }
-
-  private m_uploadedSize: number = 0
-
-  get uploadedSize(): number {
-    return this.m_uploadedSize
-  }
-
-  private m_progress: number = 0
-
-  get progress(): number {
-    return this.m_progress
-  }
-
-  get completed(): boolean {
-    return this.progress === 1
-  }
-
-  //----------------------------------------------------------------------
-  //
-  //  Variables
-  //
-  //----------------------------------------------------------------------
-
-  private m_uploadDirPath: string
-
-  private m_file: File
-
-  private m_uploadTask!: firebase.storage.UploadTask
-
-  private m_fileRef!: firebase.storage.Reference
-
-  //----------------------------------------------------------------------
-  //
-  //  Methods
-  //
-  //----------------------------------------------------------------------
-
-  execute(): void {
-    // アップロード先の参照を取得
-    this.m_fileRef = firebase.storage().ref(`users/YsRuj2LOtIUbWDtnRygHdPzw1Lu1/${this.m_uploadDirPath}/${this.name}`)
-    // アップロード実行
-    this.m_uploadTask = this.m_fileRef.put(this.m_file)
-
-    this.m_uploadTask.on(
-      firebase.storage.TaskEvent.STATE_CHANGED,
-      this.m_uploadTaskOnStateChange.bind(this),
-      this.m_uploadTaskOnError.bind(this),
-      this.m_uploadTaskOnComplete.bind(this)
-    )
-  }
-
-  //----------------------------------------------------------------------
-  //
-  //  Event listeners
-  //
-  //----------------------------------------------------------------------
-
-  private m_uploadTaskOnStateChange(snapshot: firebase.storage.UploadTaskSnapshot): void {
-    this.m_uploadedSize = snapshot.bytesTransferred
-    this.m_progress = snapshot.bytesTransferred / this.size
-  }
-
-  private m_uploadTaskOnComplete(): void {
-    this.m_uploadedSize = this.size
-    this.m_progress = 1
-  }
-
-  private m_uploadTaskOnError(err): void {
-    throw err
-  }
+export interface UploadFileParam {
+  data: Blob | Uint8Array | ArrayBuffer | File
+  name: string
+  dirPath: string
+  type?: string
 }
 
 /**
  * アップロードの管理を行うマネージャクラスです。
  */
-export class StorageUploadManager {
+export abstract class StorageUploadManager {
   //----------------------------------------------------------------------
   //
   //  Constructor
@@ -202,7 +82,7 @@ export class StorageUploadManager {
   //
   //----------------------------------------------------------------------
 
-  m_uploadingFiles: StorageFileUploader[] = []
+  private m_uploadingFiles: StorageFileUploader[] = []
 
   /**
    * アップロード中のファイルです。
@@ -223,7 +103,7 @@ export class StorageUploadManager {
    */
   get uploadedCount(): number {
     return this.uploadingFiles.reduce((result, file) => {
-      result += file.progress === 1 ? 1 : 0
+      result += file.completed ? 1 : 0
       return result
     }, 0)
   }
@@ -269,7 +149,12 @@ export class StorageUploadManager {
    * アップロードの完了を表すフラグです。
    */
   get completed(): boolean {
-    return this.progress === 1
+    for (const file of this.uploadingFiles) {
+      if (!file.completed) {
+        return false
+      }
+    }
+    return true
   }
 
   //----------------------------------------------------------------------
@@ -278,9 +163,9 @@ export class StorageUploadManager {
   //
   //----------------------------------------------------------------------
 
-  private m_uploadFileInput!: HTMLInputElement
+  protected uploadBasePath: string = ''
 
-  private m_uploadDirPath: string = ''
+  private m_uploadFileInput!: HTMLInputElement
 
   //----------------------------------------------------------------------
   //
@@ -294,24 +179,24 @@ export class StorageUploadManager {
   clear(): void {
     this.m_uploadFileInput.value = ''
     this.m_uploadingFiles.splice(0)
-    this.m_uploadDirPath = ''
+    this.uploadBasePath = ''
     this.m_uploading = false
   }
 
   /**
    * OSのファイル選択ダイアログを表示します。
-   * @param uploadDirPath
+   * @param uploadBasePath
    */
-  openFilesSelectDialog(uploadDirPath: string): void {
-    this.m_openFileSelectDialog(uploadDirPath, false)
+  openFilesSelectDialog(uploadBasePath: string): void {
+    this.m_openFileSelectDialog(uploadBasePath, false)
   }
 
   /**
    * OSのフォルダ選択ダイアログを表示します。
-   * @param uploadDirPath
+   * @param uploadBasePath
    */
-  openFolderSelectDialog(uploadDirPath: string): void {
-    this.m_openFileSelectDialog(uploadDirPath, true)
+  openFolderSelectDialog(uploadBasePath: string): void {
+    this.m_openFileSelectDialog(uploadBasePath, true)
   }
 
   //----------------------------------------------------------------------
@@ -320,9 +205,27 @@ export class StorageUploadManager {
   //
   //----------------------------------------------------------------------
 
-  private m_openFileSelectDialog(uploadDirPath: string, isFolder: boolean): void {
+  protected abstract createUploadingFiles(files: File[]): StorageFileUploader[]
+
+  protected abstract beforeUpload(): Promise<void>
+
+  /**
+   * 指定されたファイルのディレクトリ構造をもとにアップロード先のディレクトリを取得します。
+   * @param file
+   */
+  protected getUploadDirPath(file: File): string {
+    let result = this.uploadBasePath
+    if ((file as any).webkitRelativePath) {
+      const relativePathSegments = (file as any).webkitRelativePath.split('/')
+      const relativePath = relativePathSegments.slice(0, relativePathSegments.length - 1).join('/')
+      result = `${result}/${relativePath}`
+    }
+    return result
+  }
+
+  private m_openFileSelectDialog(uploadBasePath: string, isFolder: boolean): void {
     this.m_uploadFileInput.value = ''
-    this.m_uploadDirPath = removeEndSlash(uploadDirPath)
+    this.uploadBasePath = removeEndSlash(uploadBasePath)
 
     if (isFolder) {
       this.m_uploadFileInput.setAttribute('webkitdirectory', '')
@@ -348,19 +251,7 @@ export class StorageUploadManager {
     }
 
     // ファイルアップローダーを作成(まだアップロードは実行しない)
-    const dirPaths: string[] = []
-    this.m_uploadingFiles.push(
-      ...files.map(file => {
-        let dirPath = this.m_uploadDirPath
-        if ((file as any).webkitRelativePath) {
-          const relativePathSegments = (file as any).webkitRelativePath.split('/')
-          const relativePath = relativePathSegments.slice(0, relativePathSegments.length - 1).join('/')
-          dirPath = `${dirPath}/${relativePath}`
-        }
-        pushMaxDirPathToArray(dirPaths, dirPath)
-        return new StorageFileUploader(file, dirPath)
-      })
-    )
+    this.m_uploadingFiles.push(...this.createUploadingFiles(files))
 
     // ファイルアップローダー配列をソート
     this.m_uploadingFiles.sort((a, b) => {
@@ -382,18 +273,90 @@ export class StorageUploadManager {
     // 状態をアップロード中に設定
     this.m_uploading = files.length > 0
 
+    // アップロード前処理を実行
+    await this.beforeUpload()
+
     // アップロード先のディレクトリを作成
-    const promises: Promise<any>[] = []
-    for (const dirPath of dirPaths) {
-      promises.push(gql.createStorageDir(`${dirPath}/`))
+    const createdDirPaths = this.m_uploadingFiles.map(item => `${item.dirPath}/`)
+    if (createdDirPaths.length > 0) {
+      await gql.createUserStorageDirs(createdDirPaths)
     }
-    await Promise.all(promises)
 
     // 実際にアップロードを実行
     for (const uploadingFile of this.m_uploadingFiles) {
-      if (!uploadingFile.completed) {
-        uploadingFile.execute()
-      }
+      if (uploadingFile.completed) continue
+      uploadingFile.execute().catch(err => {
+        console.error(err)
+      })
     }
   }
+}
+
+/**
+ * ファイルアップローダーの基底クラスです。
+ */
+export abstract class StorageFileUploader {
+  //----------------------------------------------------------------------
+  //
+  //  Constructor
+  //
+  //----------------------------------------------------------------------
+
+  constructor(uploadParam: UploadFileParam) {
+    this.uploadParam = uploadParam
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //----------------------------------------------------------------------
+
+  abstract readonly uploadedSize: number
+
+  abstract readonly progress: number
+
+  abstract readonly completed: boolean
+
+  abstract readonly failed: boolean
+
+  get name(): string {
+    return this.uploadParam.name
+  }
+
+  get dirPath(): string {
+    return this.uploadParam.dirPath
+  }
+
+  get path(): string {
+    return `${removeEndSlash(this.uploadParam.dirPath)}/${this.name}`
+  }
+
+  get size(): number {
+    if (this.uploadParam.data instanceof File || this.uploadParam.data instanceof Blob) {
+      return this.uploadParam.data.size
+    } else {
+      return this.uploadParam.data.byteLength
+    }
+  }
+
+  get type(): string {
+    return this.uploadParam.type || ''
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Variables
+  //
+  //----------------------------------------------------------------------
+
+  protected uploadParam: UploadFileParam
+
+  //----------------------------------------------------------------------
+  //
+  //  Methods
+  //
+  //----------------------------------------------------------------------
+
+  abstract execute(): Promise<void>
 }

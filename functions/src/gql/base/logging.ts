@@ -1,5 +1,5 @@
 import { ArgumentValidationError, MiddlewareFn, ResolverData } from 'type-graphql'
-import { Logger, LoggingLatencyTimer } from '../../base'
+import { Logger, LoggingLatencyTimer } from '../../base/logging'
 import { container, inject, singleton } from 'tsyringe'
 import { Context } from '../types'
 import { DITypes } from '../../di.types'

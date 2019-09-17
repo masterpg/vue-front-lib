@@ -1,6 +1,6 @@
 import { Authorized, Body, CurrentUser, Get, JsonController, NotFoundError, Param, Put } from 'routing-controllers'
 import { CartItem, UpdateCartItemInput } from '../types'
-import { IdToken } from '../../../base'
+import { IdToken } from '../../../base/types'
 
 const CART_ITEMS: CartItem[] = [
   {

@@ -1,7 +1,8 @@
 import * as firebaseAdmin from 'firebase-admin'
 import { GraphQLResolveInfo } from 'graphql'
-import { IdToken } from '../'
+import { IdToken } from '../types'
 import { Request } from 'express'
+import { config } from '../config'
 import { singleton } from 'tsyringe'
 
 //************************************************************************
@@ -14,6 +15,10 @@ export interface AuthValidatorResult {
   result: boolean
   errorMessage: string
   idToken?: IdToken
+}
+
+export enum AuthRoleType {
+  Admin = 'ADMIN',
 }
 
 export abstract class AuthValidator {
@@ -45,6 +50,17 @@ export abstract class AuthValidator {
       return {
         result: false,
         errorMessage: 'Authorization failed because ID token decoding failed.',
+      }
+    }
+
+    for (const role of roles) {
+      if (role === AuthRoleType.Admin) {
+        if (!config.role.admins.includes(decodedIdToken.email)) {
+          return {
+            result: false,
+            errorMessage: 'Authorization failed because the role is invalid.',
+          }
+        }
       }
     }
 

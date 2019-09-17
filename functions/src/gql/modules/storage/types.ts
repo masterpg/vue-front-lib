@@ -1,7 +1,8 @@
-import { Field, ObjectType, registerEnumType } from 'type-graphql'
+import { Field, InputType, ObjectType, registerEnumType } from 'type-graphql'
+import { IStorageNode, StorageNodeType } from '../../../base/storage'
 
 @ObjectType()
-export class StorageNode {
+export class StorageNode implements IStorageNode {
   @Field(type => StorageNodeType)
   nodeType!: StorageNodeType
 
@@ -15,11 +16,17 @@ export class StorageNode {
   path!: string
 }
 
-export enum StorageNodeType {
-  File,
-  Dir,
+@InputType()
+export class SignedUploadUrlParam {
+  @Field(type => String)
+  filePath!: string
+
+  @Field(type => String, { nullable: true })
+  contentType!: string
 }
 
 registerEnumType(StorageNodeType, {
   name: 'StorageNodeType',
 })
+
+export { StorageNodeType }

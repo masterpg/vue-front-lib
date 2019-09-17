@@ -1,5 +1,5 @@
 import * as express from 'express'
-import { IdToken } from '../base'
+import { IdToken } from '../base/types'
 
 export interface Context {
   readonly req: express.Request

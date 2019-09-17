@@ -4,10 +4,11 @@
  */
 
 import { BadRequestError, ExpressErrorMiddlewareInterface, ExpressMiddlewareInterface, Middleware } from 'routing-controllers'
-import { IdToken, Logger, LoggingLatencyData, LoggingLatencyTimer } from '../../base'
+import { Logger, LoggingLatencyData, LoggingLatencyTimer } from '../../base/logging'
 import { NextFunction, Request, Response } from 'express'
 import { container, inject, singleton } from 'tsyringe'
 import { DITypes } from '../../di.types'
+import { IdToken } from '../../base/types'
 import { LogEntry } from '@google-cloud/logging/build/src/entry'
 const merge = require('lodash/merge')
 

@@ -1,8 +1,9 @@
-import { AuthValidator, LoggingLatencyTimer } from '../../base'
 import { AuthChecker } from 'type-graphql'
+import { AuthValidator } from '../../base/auth'
 import { Context } from '../types'
 import { DITypes } from '../../di.types'
 import { GQLLogger } from './logging'
+import { LoggingLatencyTimer } from '../../base/logging'
 import { container } from 'tsyringe'
 
 export const authChecker: AuthChecker<Context> = async (action, roles) => {

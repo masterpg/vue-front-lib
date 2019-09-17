@@ -19,11 +19,13 @@ export interface StorageLogic {
 
   getUserNodes(dir?: string): Promise<StorageNodeBag>
 
-  createStorageDir(dirPath: string): Promise<StorageNodeBag>
+  createUserStorageDirs(dirPaths: string[]): Promise<StorageNodeBag>
 
-  removeStorageNodes(nodePaths: string[]): Promise<StorageNodeBag>
+  removeUserStorageNodes(nodePaths: string[]): Promise<StorageNodeBag>
 
-  newUploadManager(owner: Element): StorageUploadManager
+  newUserUploadManager(owner: Element): StorageUploadManager
+
+  newAdminUploadManager(owner: Element): StorageUploadManager
 }
 
 export interface ShopLogic {

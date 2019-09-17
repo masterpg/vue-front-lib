@@ -4,7 +4,7 @@ import { Log, Logging } from '@google-cloud/logging'
 import { GraphQLResolveInfo } from 'graphql'
 import { LogEntry } from '@google-cloud/logging/build/src/entry'
 import { Request } from 'express'
-import { config } from '../'
+import { config } from '../config'
 import { singleton } from 'tsyringe'
 
 //************************************************************************

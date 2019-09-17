@@ -4,7 +4,7 @@ import { Arg, Authorized, Ctx, ID, Mutation, Query, Resolver } from 'type-graphq
 import { DocumentReference, Transaction } from '@google-cloud/firestore'
 import { GQLError, validateArray } from '../../base'
 import { Context } from '../../types'
-import { FirestoreWriteReadyObserver } from '../../../base'
+import { FirestoreWriteReadyObserver } from '../../../base/firestore'
 const assign = require('lodash/assign')
 
 @Resolver(of => CartItem)

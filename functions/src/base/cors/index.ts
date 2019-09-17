@@ -1,9 +1,10 @@
 import * as vary from 'vary'
-import { Logger, config } from '../index'
 import { NextFunction, Request, Response } from 'express'
 import { container, inject, singleton } from 'tsyringe'
 import { DITypes } from '../../di.types'
 import { LogEntry } from '@google-cloud/logging/build/src/entry'
+import { Logger } from '../logging'
+import { config } from '../config'
 const merge = require('lodash/merge')
 
 //************************************************************************

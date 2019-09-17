@@ -102,11 +102,6 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
 
   private m_filePath: string = ''
 
-  @NoCache
-  get m_img(): HTMLImageElement {
-    return this.$refs.img as HTMLImageElement
-  }
-
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
@@ -134,6 +129,11 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
   @NoCache
   private get m_uploadProgress(): StorageUploadProgress {
     return this.$refs.uploadProgress as StorageUploadProgress
+  }
+
+  @NoCache
+  get m_img(): HTMLImageElement {
+    return this.$refs.img as HTMLImageElement
   }
 
   //----------------------------------------------------------------------
@@ -203,7 +203,7 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
     this.$q.loading.show()
     let bag: StorageNodeBag
     try {
-      bag = await this.$logic.storage.createStorageDir(dirPath)
+      bag = await this.$logic.storage.createUserStorageDirs([dirPath])
     } catch (err) {
       this.$q.loading.hide()
       console.error(err)
@@ -227,7 +227,7 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
       const nodePaths = nodes.map(node => {
         return node.item.nodeType === StorageNodeType.Dir ? `${node.value}/` : node.value
       })
-      bag = await this.$logic.storage.removeStorageNodes(nodePaths)
+      bag = await this.$logic.storage.removeUserStorageNodes(nodePaths)
     } catch (err) {
       this.$q.loading.hide()
       console.error(err)

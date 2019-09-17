@@ -25,4 +25,16 @@ export const config = new (class {
       return []
     }
   })()
+
+  role = new (class {
+    get admins(): string[] {
+      if (functions.config().role && functions.config().role.admins) {
+        return functions
+          .config()
+          .role.admins.split(',')
+          .map((item: string) => item.trim())
+      }
+      return []
+    }
+  })()
 })()

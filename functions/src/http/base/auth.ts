@@ -1,4 +1,4 @@
-import { AuthValidator } from '../../base'
+import { AuthValidator } from '../../base/auth'
 import { AuthorizationChecker } from 'routing-controllers/AuthorizationChecker'
 import { CurrentUserChecker } from 'routing-controllers/CurrentUserChecker'
 import { DITypes } from '../../di.types'

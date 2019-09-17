@@ -7,11 +7,15 @@
 export interface GQLFacade {
   customToken(): Promise<string>
 
+  userStorageBasePath(): Promise<string>
+
   userStorageNodes(dirPath?: string): Promise<GQLStorageNode[]>
 
-  createStorageDir(dirPath: string): Promise<GQLStorageNode[]>
+  createUserStorageDirs(dirPaths: string[]): Promise<GQLStorageNode[]>
 
-  removeStorageNodes(nodePaths: string[]): Promise<GQLStorageNode[]>
+  removeUserStorageNodes(nodePaths: string[]): Promise<GQLStorageNode[]>
+
+  getSignedUploadUrls(params: { filePath: string; contentType?: string }[]): Promise<string[]>
 
   product(id: string): Promise<GQLProduct | undefined>
 

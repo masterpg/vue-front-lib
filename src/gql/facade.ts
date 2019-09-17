@@ -15,6 +15,18 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.customToken
   }
 
+  async userStorageBasePath(): Promise<string> {
+    const response = await this.query<{ userStorageBasePath: string }>({
+      query: gql`
+        query GetUserStorageBasePath {
+          userStorageBasePath
+        }
+      `,
+      isAuth: true,
+    })
+    return response.data.userStorageBasePath
+  }
+
   async userStorageNodes(dirPath?: string): Promise<GQLStorageNode[]> {
     const response = await this.query<{ userStorageNodes: GQLStorageNode[] }>({
       query: gql`
@@ -33,11 +45,11 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.userStorageNodes
   }
 
-  async createStorageDir(dirPath: string): Promise<GQLStorageNode[]> {
-    const response = await this.mutate<{ createStorageDir: GQLStorageNode[] }>({
+  async createUserStorageDirs(dirPaths: string[]): Promise<GQLStorageNode[]> {
+    const response = await this.mutate<{ createUserStorageDirs: GQLStorageNode[] }>({
       mutation: gql`
-        mutation CreateStorageDir($dirPath: String!) {
-          createStorageDir(dirPath: $dirPath) {
+        mutation CreateUserStorageDirs($dirPaths: [String!]!) {
+          createUserStorageDirs(dirPaths: $dirPaths) {
             nodeType
             name
             dir
@@ -45,17 +57,17 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
           }
         }
       `,
-      variables: { dirPath },
+      variables: { dirPaths },
       isAuth: true,
     })
-    return response.data.createStorageDir
+    return response.data.createUserStorageDirs
   }
 
-  async removeStorageNodes(nodePaths: string[]): Promise<GQLStorageNode[]> {
-    const response = await this.mutate<{ removeStorageNodes: GQLStorageNode[] }>({
+  async removeUserStorageNodes(nodePaths: string[]): Promise<GQLStorageNode[]> {
+    const response = await this.mutate<{ removeUserStorageNodes: GQLStorageNode[] }>({
       mutation: gql`
         mutation RemoveStorageNodes($nodePaths: [String!]!) {
-          removeStorageNodes(nodePaths: $nodePaths) {
+          removeUserStorageNodes(nodePaths: $nodePaths) {
             nodeType
             name
             dir
@@ -66,7 +78,20 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
       variables: { nodePaths },
       isAuth: true,
     })
-    return response.data.removeStorageNodes
+    return response.data.removeUserStorageNodes
+  }
+
+  async getSignedUploadUrls(params: { filePath: string; contentType?: string }[]): Promise<string[]> {
+    const response = await this.query<{ signedUploadUrls: string[] }>({
+      query: gql`
+        query GetSignedUploadUrls($params: [SignedUploadUrlParam!]!) {
+          signedUploadUrls(params: $params)
+        }
+      `,
+      variables: { params },
+      isAuth: true,
+    })
+    return response.data.signedUploadUrls
   }
 
   async product(id: string): Promise<GQLProduct | undefined> {

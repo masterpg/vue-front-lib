@@ -1,7 +1,9 @@
 import { StorageLogic, StorageNodeBag } from '@/logic'
 import { StorageUploadManager, toStorageNodeBag } from '@/logic/modules/storage/base'
+import { AdminStorageUploadManager } from '@/logic/modules/storage/admin-upload'
 import { BaseLogic } from '@/logic/base'
 import { Component } from 'vue-property-decorator'
+import { UserStorageUploadManager } from '@/logic/modules/storage/user-upload'
 import { config } from '@/base/config'
 import { gql } from '@/gql'
 
@@ -17,18 +19,22 @@ export class StorageLogicImpl extends BaseLogic implements StorageLogic {
     return toStorageNodeBag(gqlNodes)
   }
 
-  async createStorageDir(dirPath: string): Promise<StorageNodeBag> {
-    const gqlNodes = await gql.createStorageDir(dirPath)
+  async createUserStorageDirs(dirPaths: string[]): Promise<StorageNodeBag> {
+    const gqlNodes = await gql.createUserStorageDirs(dirPaths)
     return toStorageNodeBag(gqlNodes)
   }
 
-  async removeStorageNodes(nodePaths: string[]): Promise<StorageNodeBag> {
-    const gqlNodes = await gql.removeStorageNodes(nodePaths)
+  async removeUserStorageNodes(nodePaths: string[]): Promise<StorageNodeBag> {
+    const gqlNodes = await gql.removeUserStorageNodes(nodePaths)
     return toStorageNodeBag(gqlNodes)
   }
 
-  newUploadManager(owner: Element): StorageUploadManager {
-    return new StorageUploadManager(owner)
+  newUserUploadManager(owner: Element): StorageUploadManager {
+    return new UserStorageUploadManager(owner)
+  }
+
+  newAdminUploadManager(owner: Element): StorageUploadManager {
+    return new AdminStorageUploadManager(owner)
   }
 }
 

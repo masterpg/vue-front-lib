@@ -44,8 +44,9 @@
     white-space: nowrap;
   }
 
-  .progress {
-    height: 6px
+  .error {
+    color: $text-error-color
+    text-align: right
   }
 
   & > *:not(:first-child) {
@@ -66,7 +67,8 @@
     <div class="content" :class="{ minimize: m_minimize }">
       <div v-for="(item, index) in m_uploadManager.uploadingFiles" :key="index" class="layout horizontal center item">
         <div class="name flex-8">{{ item.name }}</div>
-        <q-linear-progress :value="item.progress" :stripe="!item.completed" class="progress flex-4" />
+        <q-linear-progress v-if="!item.failed" :value="item.progress" :stripe="!item.completed" size="md" class="flex-4" />
+        <div v-else class="error flex-4">{{ $t('storage.uploadFileFailed') }}</div>
       </div>
     </div>
   </div>
@@ -87,7 +89,8 @@ export default class StorageUploadProgress extends mixins(BaseComponent, Resizab
   //----------------------------------------------------------------------
 
   async mounted() {
-    this.m_uploadManager = this.$logic.storage.newUploadManager(this.$el)
+    this.m_uploadManager = this.$logic.storage.newUserUploadManager(this.$el)
+    // this.m_uploadManager = this.$logic.storage.newAdminUploadManager(this.$el)
   }
 
   //----------------------------------------------------------------------

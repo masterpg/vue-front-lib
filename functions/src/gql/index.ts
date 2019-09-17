@@ -4,7 +4,7 @@ import { AppResolver, CartResolver, ProductResolver, RecipeResolver, StorageReso
 import { Express, Request, Response, Router } from 'express'
 import { LoggingMiddleware, authChecker } from './base'
 import { Context } from './types'
-import { IdToken } from '../base'
+import { IdToken } from '../base/types'
 import { TestResolver } from '../test/gql'
 import { buildSchemaSync } from 'type-graphql'
 import { singleton } from 'tsyringe'

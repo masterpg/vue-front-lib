@@ -3,6 +3,7 @@ export default {
     create: '作成',
     cancel: 'キャンセル',
     delete: '削除',
+    failed: '失敗',
   },
   error: {
     unexpected: '予期しないエラーが発生しました。',
@@ -32,5 +33,6 @@ export default {
     deleteFilesAndFoldersQ: '{fileNum}個のファイルと{folderNum}個のフォルダを削除してよろしいですか？',
     uploading: 'アップロード中',
     uploadTotalRatio: 'アップロード {0} / {1}',
+    uploadFileFailed: 'アップロード失敗',
   },
 }

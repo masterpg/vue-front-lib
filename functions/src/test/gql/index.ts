@@ -1,4 +1,4 @@
-import * as firebaseAdmin from 'firebase-admin'
+import * as admin from 'firebase-admin'
 import { Arg, Mutation, Query, Resolver } from 'type-graphql'
 import { Field, InputType } from 'type-graphql'
 import { DocumentReference } from '@google-cloud/firestore'
@@ -59,7 +59,7 @@ export class TestResolver {
   }
 
   private async m_buildCollection(collectionKey: string, collectionRows: any[], parentDoc?: DocumentReference): Promise<void> {
-    const db = firebaseAdmin.firestore()
+    const db = admin.firestore()
 
     for (const collectionRow of collectionRows) {
       // ドキュメントリファレンスの作成

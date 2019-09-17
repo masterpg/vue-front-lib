@@ -1,3 +1,7 @@
+query GetUserStorageBasePath {
+  userStorageBasePath
+}
+
 query GetUserStorageNodes {
   userStorageNodes {
     nodeType
@@ -8,7 +12,7 @@ query GetUserStorageNodes {
 }
 
 query GetUserStorageNodes {
-  userStorageNodes(dirPath: "images/") {
+  userStorageNodes(dirPath: "dir1") {
     nodeType
     name
     dir
@@ -25,11 +29,11 @@ query GetUserStorageNodes($path: String) {
   }
 }
 {
-  "dirPath": "images/"
+  "dirPath": "dir1/"
 }
 
-mutation CreateStorageDir {
-  createStorageDir(dirPath: "images/aaa/") {
+mutation CreateUserStorageDirs {
+  createUserStorageDirs(dirPaths: ["dir1/dir1_1/"]) {
     nodeType
     name
     dir
@@ -37,8 +41,8 @@ mutation CreateStorageDir {
   }
 }
 
-mutation CreateStorageDir($dirPath: String!) {
-  createStorageDir(dirPath: $dirPath) {
+mutation CreateUserStorageDirs($dirPaths: [String!]!) {
+  createUserStorageDirs(dirPaths: $dirPaths) {
     nodeType
     name
     dir
@@ -46,11 +50,16 @@ mutation CreateStorageDir($dirPath: String!) {
   }
 }
 {
-  "dirPath": "images/aaa/"
+  "dirPaths": [
+    "dir1/dir1_1/",
+    "dir1/dir1_1/dir1_1_1/",
+    "dir1/dir1_1/dir1_1_2/",
+    "dir2/dir2_1/"
+  ]
 }
 
-mutation RemoveStorageNodes {
-  removeStorageNodes(nodePaths: ["images/aaa/"]) {
+mutation RemoveUserStorageNodes {
+  removeUserStorageNodes(nodePaths: ["images/aaa/"]) {
     nodeType
     name
     dir
@@ -58,8 +67,8 @@ mutation RemoveStorageNodes {
   }
 }
 
-mutation RemoveStorageNodes($nodePaths: [String!]!) {
-  removeStorageNodes(nodePaths: $nodePaths) {
+mutation RemoveUserStorageNodes($nodePaths: [String!]!) {
+  removeUserStorageNodes(nodePaths: $nodePaths) {
     nodeType
     name
     dir
@@ -68,4 +77,22 @@ mutation RemoveStorageNodes($nodePaths: [String!]!) {
 }
 {
   "nodePaths": ["images/aaa/", "images/family.png"]
+}
+
+query GetSignedUploadUrls {
+  signedUploadUrls(params: [
+    { filePath: "aaa/bbb/family.png", contentType: "image/png" }
+  ])
+}
+
+query GetSignedUploadUrls($params: [SignedUploadUrlParam!]!) {
+  signedUploadUrls(params: $params)
+}
+{
+  "params": [
+    {
+      "filePath": "aaa/bbb/family.png",
+      "contentType": "image/png"
+    }
+  ]
 }

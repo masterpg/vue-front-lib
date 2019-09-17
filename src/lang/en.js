@@ -3,6 +3,7 @@ export default {
     create: 'Create',
     cancel: 'Cancel',
     delete: 'Delete',
+    failed: 'Failed',
   },
   error: {
     unexpected: 'An unexpected error has occurred.',
@@ -32,5 +33,6 @@ export default {
     deleteFilesAndFoldersQ: 'Delete {fileNum} and {folderNum} folders?',
     uploading: 'Uploading',
     uploadTotalRatio: 'Upload {0} / {1}',
+    uploadFileFailed: 'Upload failed.',
   },
 }
