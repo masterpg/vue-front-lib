@@ -9,8 +9,8 @@ query GetCartItems {
   }
 }
 
-mutation AddCartItems($items: [AddCartItemInput!]!) {
-  addCartItems(items: $items) {
+mutation AddCartItems($inputs: [AddCartItemInput!]!) {
+  addCartItems(inputs: $inputs) {
     id
     uid
     productId
@@ -24,7 +24,7 @@ mutation AddCartItems($items: [AddCartItemInput!]!) {
   }
 }
 {
-  "items": [
+  "inputs": [
     {
       "productId": "product1",
       "title": "iPad 4 Mini",
@@ -41,7 +41,7 @@ mutation AddCartItems($items: [AddCartItemInput!]!) {
 }
 
 mutation AddCartItems {
-  addCartItems(items: [
+  addCartItems(inputs: [
     {
       productId: "product1"
       title: "iPad 4 Mini"
@@ -69,7 +69,7 @@ mutation AddCartItems {
 }
 
 mutation UpdateCartItems {
-  updateCartItems(items: [
+  updateCartItems(inputs: [
     {
       id: "cartItem1"
       quantity: 1
@@ -92,8 +92,8 @@ mutation UpdateCartItems {
   }
 }
 
-mutation UpdateCartItems($items: [UpdateCartItemInput!]!) {
-  updateCartItems(items: $items) {
+mutation UpdateCartItems($inputs: [UpdateCartItemInput!]!) {
+  updateCartItems(inputs: $inputs) {
     id
     uid
     productId
@@ -107,7 +107,7 @@ mutation UpdateCartItems($items: [UpdateCartItemInput!]!) {
   }
 }
 {
-  "items": [
+  "inputs": [
     {
       "id": "cartItem1",
       "quantity": 1
@@ -149,22 +149,4 @@ mutation RemoveCartItems($ids: [ID!]!) {
 
 mutation CheckoutCart {
   checkoutCart
-}
-
-mutation Example1 {
-  example1(item:
-    {
-      id: "cartItem1"
-      quantity: -1
-    }
-  )
-}
-
-mutation Example2 {
-  example2(items: [
-    {
-      id: "cartItem1"
-      quantity: -1
-    }
-  ])
 }

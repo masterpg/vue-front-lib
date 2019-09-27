@@ -55,14 +55,14 @@ import { router } from '@/base/router'
 @Component({ name: 'error404-page' })
 export default class Error404Page extends mixins(BaseComponent) {
   private get m_getProductsPath(): string {
-    const path = '/api/rest/products'
+    const path = '/api/products'
     return this.m_productId ? `${path}/${this.m_productId}` : path
   }
 
   private m_productId = ''
 
   get m_getCartItemsPath(): string {
-    const path = '/api/rest/cartItems'
+    const path = '/api/cartItems'
     return this.m_cartItemId ? `${path}/${this.m_cartItemId}` : path
   }
 

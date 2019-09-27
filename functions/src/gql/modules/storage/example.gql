@@ -80,16 +80,16 @@ mutation RemoveUserStorageNodes($nodePaths: [String!]!) {
 }
 
 query GetSignedUploadUrls {
-  signedUploadUrls(params: [
+  signedUploadUrls(inputs: [
     { filePath: "aaa/bbb/family.png", contentType: "image/png" }
   ])
 }
 
-query GetSignedUploadUrls($params: [SignedUploadUrlParam!]!) {
-  signedUploadUrls(params: $params)
+query GetSignedUploadUrls($inputs: [SignedUploadUrlInput!]!) {
+  signedUploadUrls(inputs: $inputs)
 }
 {
-  "params": [
+  "inputs": [
     {
       "filePath": "aaa/bbb/family.png",
       "contentType": "image/png"

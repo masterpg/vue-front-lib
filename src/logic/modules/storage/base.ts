@@ -277,7 +277,12 @@ export abstract class StorageUploadManager {
     await this.beforeUpload()
 
     // アップロード先のディレクトリを作成
-    const createdDirPaths = this.m_uploadingFiles.map(item => `${item.dirPath}/`)
+    const createdDirPaths = this.m_uploadingFiles.reduce<string[]>((result, item) => {
+      if (item.dirPath) {
+        result.push(`${item.dirPath}/`)
+      }
+      return result
+    }, [])
     if (createdDirPaths.length > 0) {
       await gql.createUserStorageDirs(createdDirPaths)
     }

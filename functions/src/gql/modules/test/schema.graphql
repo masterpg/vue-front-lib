@@ -1,0 +1,11 @@
+scalar JSON
+scalar JSONObject
+
+input PutTestDataInput {
+  collectionName: String!
+  collectionRecords: [JSONObject!]!
+}
+
+type Mutation {
+  putTestData(inputs: [PutTestDataInput!]!): Boolean!
+}

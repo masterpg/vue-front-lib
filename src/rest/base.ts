@@ -88,7 +88,7 @@ export abstract class BaseAPI extends Vue {
   }
 
   protected getRequestURL(): string {
-    return `${config.api.baseURL}/rest`
+    return `${config.api.baseURL}`
   }
 
   protected async getIdToken(): Promise<string> {

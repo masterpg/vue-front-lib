@@ -19,14 +19,14 @@ export class AdminStorageUploadManager extends StorageUploadManager {
   }
 
   protected async beforeUpload(): Promise<void> {
-    const params: Array<{ filePath: string; contentType: string }> = []
+    const inputs: Array<{ filePath: string; contentType: string }> = []
     for (const uploadingFile of this.uploadingFiles) {
-      params.push({
+      inputs.push({
         filePath: uploadingFile.path,
         contentType: uploadingFile.type,
       })
     }
-    const signedUploadUrls = await gql.getSignedUploadUrls(params)
+    const signedUploadUrls = await gql.getSignedUploadUrls(inputs)
 
     for (let i = 0; i < this.uploadingFiles.length; i++) {
       const uploadingFile = this.uploadingFiles[i] as AdminStorageFileUploader

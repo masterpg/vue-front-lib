@@ -12,23 +12,17 @@ export interface AuthUser extends Partial<firebaseAdmin.auth.DecodedIdToken> {
   uid: string
 }
 
-interface GQLTestFacade extends GQLFacade {
-  putTestData(testData: CollectionData[]): Promise<void>
-  setAuthUser(user: AuthUser): void
-  clearAuthUser(): void
-}
-
-export class GQLTestFacadeImpl extends GQLFacadeImpl implements GQLTestFacade {
+export class GQLTestFacade extends GQLFacadeImpl {
   private m_user?: AuthUser
 
-  async putTestData(testData: CollectionData[]): Promise<void> {
+  async putTestData(inputs: CollectionData[]): Promise<void> {
     await this.mutate<{ data: boolean }>({
       mutation: gql`
-        mutation PutTestData($testData: [PutTestDataInput!]!) {
-          putTestData(testData: $testData)
+        mutation PutTestData($inputs: [PutTestDataInput!]!) {
+          putTestData(inputs: $inputs)
         }
       `,
-      variables: { testData },
+      variables: { inputs },
     })
   }
 
@@ -47,10 +41,10 @@ export class GQLTestFacadeImpl extends GQLFacadeImpl implements GQLTestFacade {
     return ''
   }
 }
-export const testGQL: GQLFacade = new GQLTestFacadeImpl()
+export const testGQL: GQLFacade = new GQLTestFacade()
 
-export async function putTestData(testData: CollectionData[]): Promise<void> {
-  await (testGQL as GQLTestFacade).putTestData(testData)
+export async function putTestData(inputs: CollectionData[]): Promise<void> {
+  await (testGQL as GQLTestFacade).putTestData(inputs)
 }
 
 export function setAuthUser(user: AuthUser): void {

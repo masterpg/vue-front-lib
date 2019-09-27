@@ -1,22 +1,8 @@
-import * as firebaseAdmin from 'firebase-admin'
-import { Authorized, Ctx, Query, Resolver } from 'type-graphql'
-import { Context } from '../../types'
+import { AppResolver } from './resolver'
+import { AppService } from '../../../services/business'
+import { Module } from '@nestjs/common'
 
-@Resolver()
-export class AppResolver {
-  //----------------------------------------------------------------------
-  //
-  //  Methods
-  //
-  //----------------------------------------------------------------------
-
-  @Query(returns => String)
-  @Authorized()
-  async customToken(@Ctx() ctx: Context): Promise<string> {
-    // 本来はDBからユーザー情報を取得し、必要なプロパティをトークンに設定することになる
-    const token = await firebaseAdmin.auth().createCustomToken(ctx.user!.uid, {
-      appAdmin: true,
-    })
-    return token
-  }
-}
+@Module({
+  providers: [AppService, AppResolver],
+})
+export class GQLAppModule {}

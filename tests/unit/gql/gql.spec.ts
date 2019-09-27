@@ -1,4 +1,4 @@
-import { GQLAddCartItemInput, GQLCartItem, GQLEditCartItemResponse, GQLProduct, GQLUpdateCartItemInput, gql, initGQL } from '@/gql'
+import { GQLAddCartItemInput, GQLCartItem, GQLEditCartItemResponse, GQLProduct, gql, initGQL } from '@/gql'
 import { clearAuthUser, putTestData, setAuthUser, testGQL } from '../../helper/comm'
 const cloneDeep = require('lodash/cloneDeep')
 
@@ -31,6 +31,10 @@ const CART_ITEMS: GQLCartItem[] = [
     quantity: 2,
   },
 ]
+
+function getGQLErrorResponse(error: any): { statusCode: number; error: string; message: string } {
+  return error.graphQLErrors[0].extensions.exception.response
+}
 
 beforeEach(async () => {
   clearAuthUser()
@@ -181,8 +185,7 @@ describe('cartItems', () => {
       actual = err
     }
 
-    expect(actual).toBeInstanceOf(Error)
-    expect(actual.message).toMatch(/Access denied/)
+    expect(getGQLErrorResponse(actual).statusCode).toBe(403)
   })
 })
 
@@ -245,8 +248,7 @@ describe('addCartItems', () => {
       actual = err
     }
 
-    expect(actual).toBeInstanceOf(Error)
-    expect(actual.message).toMatch(/product was not found/i)
+    expect(getGQLErrorResponse(actual).message).toBe('The specified product was not found.')
   })
 
   it('既に存在するカートアイテムを追加しようとした場合', async () => {
@@ -261,8 +263,7 @@ describe('addCartItems', () => {
       actual = err
     }
 
-    expect(actual).toBeInstanceOf(Error)
-    expect(actual.message).toMatch(/cart item already exists/i)
+    expect(getGQLErrorResponse(actual).message).toBe('The specified cart item already exists.')
   })
 
   it('在庫数を上回る数をカートアイテムに設定した場合', async () => {
@@ -278,8 +279,7 @@ describe('addCartItems', () => {
       actual = err
     }
 
-    expect(actual).toBeInstanceOf(Error)
-    expect(actual.message).toMatch(/stock .* insufficient/i)
+    expect(getGQLErrorResponse(actual).message).toBe('The stock of the product was insufficient.')
   })
 
   it('カートアイテムの数量にマイナス値を設定した場合', async () => {
@@ -295,8 +295,7 @@ describe('addCartItems', () => {
       actual = err
     }
 
-    expect(actual).toBeInstanceOf(Error)
-    expect(actual.message).toMatch('GraphQL error: Argument Validation Error')
+    expect(getGQLErrorResponse(actual).message).toBe('Validation failed.')
   })
 
   it('サインインしていない場合', async () => {
@@ -310,8 +309,7 @@ describe('addCartItems', () => {
       actual = err
     }
 
-    expect(actual).toBeInstanceOf(Error)
-    expect(actual.message).toMatch(/Access denied/)
+    expect(getGQLErrorResponse(actual).statusCode).toBe(403)
   })
 
   it('トランザクションが効いているか検証', async () => {
@@ -402,8 +400,7 @@ describe('updateCartItems', () => {
       actual = err
     }
 
-    expect(actual).toBeInstanceOf(Error)
-    expect(actual.message).toMatch(/You can not access .* cart item/i)
+    expect(getGQLErrorResponse(actual).message).toBe('You can not access the specified cart item.')
   })
 
   it('在庫数を上回る数をカートアイテムに設定した場合', async () => {
@@ -420,8 +417,7 @@ describe('updateCartItems', () => {
       actual = err
     }
 
-    expect(actual).toBeInstanceOf(Error)
-    expect(actual.message).toMatch(/stock .* insufficient/i)
+    expect(getGQLErrorResponse(actual).message).toBe('The stock of the product was insufficient.')
   })
 
   it('カートアイテムの数量にマイナス値を設定した場合', async () => {
@@ -438,8 +434,7 @@ describe('updateCartItems', () => {
       actual = err
     }
 
-    expect(actual).toBeInstanceOf(Error)
-    expect(actual.message).toMatch('GraphQL error: Argument Validation Error')
+    expect(getGQLErrorResponse(actual).message).toBe('Validation failed.')
   })
 
   it('サインインしていない場合', async () => {
@@ -453,8 +448,7 @@ describe('updateCartItems', () => {
       actual = err
     }
 
-    expect(actual).toBeInstanceOf(Error)
-    expect(actual.message).toMatch(/Access denied/)
+    expect(getGQLErrorResponse(actual).statusCode).toBe(403)
   })
 
   it('トランザクションが効いているか検証', async () => {
@@ -550,8 +544,7 @@ describe('removeCartItems', () => {
       actual = err
     }
 
-    expect(actual).toBeInstanceOf(Error)
-    expect(actual.message).toMatch(/You can not access .* cart item/i)
+    expect(getGQLErrorResponse(actual).message).toBe('You can not access the specified cart item.')
   })
 
   it('サインインしていない場合', async () => {
@@ -565,8 +558,7 @@ describe('removeCartItems', () => {
       actual = err
     }
 
-    expect(actual).toBeInstanceOf(Error)
-    expect(actual.message).toMatch(/Access denied/)
+    expect(getGQLErrorResponse(actual).statusCode).toBe(403)
   })
 
   it('トランザクションが効いているか検証', async () => {
@@ -625,7 +617,6 @@ describe('checkout', () => {
       actual = err
     }
 
-    expect(actual).toBeInstanceOf(Error)
-    expect(actual.message).toMatch(/Access denied/)
+    expect(getGQLErrorResponse(actual).statusCode).toBe(403)
   })
 })

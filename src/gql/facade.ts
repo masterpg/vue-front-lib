@@ -81,14 +81,14 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.removeUserStorageNodes
   }
 
-  async getSignedUploadUrls(params: { filePath: string; contentType?: string }[]): Promise<string[]> {
+  async getSignedUploadUrls(inputs: { filePath: string; contentType?: string }[]): Promise<string[]> {
     const response = await this.query<{ signedUploadUrls: string[] }>({
       query: gql`
-        query GetSignedUploadUrls($params: [SignedUploadUrlParam!]!) {
-          signedUploadUrls(params: $params)
+        query GetSignedUploadUrls($inputs: [SignedUploadUrlInput!]!) {
+          signedUploadUrls(inputs: $inputs)
         }
       `,
-      variables: { params },
+      variables: { inputs },
       isAuth: true,
     })
     return response.data.signedUploadUrls
@@ -141,11 +141,11 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.cartItems
   }
 
-  async addCartItems(items: GQLAddCartItemInput[]): Promise<GQLEditCartItemResponse[]> {
+  async addCartItems(inputs: GQLAddCartItemInput[]): Promise<GQLEditCartItemResponse[]> {
     const response = await this.mutate<{ addCartItems: GQLEditCartItemResponse[] }>({
       mutation: gql`
-        mutation AddCartItems($items: [AddCartItemInput!]!) {
-          addCartItems(items: $items) {
+        mutation AddCartItems($inputs: [AddCartItemInput!]!) {
+          addCartItems(inputs: $inputs) {
             id
             uid
             productId
@@ -160,7 +160,7 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
         }
       `,
       variables: {
-        items: items.map(item => {
+        inputs: inputs.map(item => {
           return {
             productId: item.productId,
             title: item.title,
@@ -174,11 +174,11 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.addCartItems
   }
 
-  async updateCartItems(items: GQLUpdateCartItemInput[]): Promise<GQLEditCartItemResponse[]> {
+  async updateCartItems(inputs: GQLUpdateCartItemInput[]): Promise<GQLEditCartItemResponse[]> {
     const response = await this.mutate<{ updateCartItems: GQLEditCartItemResponse[] }>({
       mutation: gql`
-        mutation UpdateCartItems($items: [UpdateCartItemInput!]!) {
-          updateCartItems(items: $items) {
+        mutation UpdateCartItems($inputs: [UpdateCartItemInput!]!) {
+          updateCartItems(inputs: $inputs) {
             id
             uid
             productId
@@ -193,7 +193,7 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
         }
       `,
       variables: {
-        items: items.map(item => {
+        inputs: inputs.map(item => {
           return {
             id: item.id,
             quantity: item.quantity,

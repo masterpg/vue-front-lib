@@ -1,90 +1,43 @@
-import * as path from 'path'
-import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express'
-import { AppResolver, CartResolver, ProductResolver, RecipeResolver, StorageResolver } from './modules'
-import { Express, Request, Response, Router } from 'express'
-import { LoggingMiddleware, authChecker } from './base'
-import { Context } from './types'
-import { IdToken } from '../base/types'
-import { TestResolver } from '../test/gql'
-import { buildSchemaSync } from 'type-graphql'
-import { singleton } from 'tsyringe'
-const cookieParser = require('cookie-parser')()
+import { GqlModuleOptions, GraphQLModule } from '@nestjs/graphql'
+import { loadSchemaFiles, mergeTypeDefs } from 'graphql-toolkit'
+import { GQLAppModule } from './modules/app'
+import { GQLCartModule } from './modules/cart'
+import { GQLContext } from './types'
+import { GQLProductModule } from './modules/product'
+import { GQLStorageModule } from './modules/storage'
+import { GQLTestModule } from './modules/test'
+import GraphQLJSON from 'graphql-type-json'
+import { Module } from '@nestjs/common'
+import { print } from 'graphql/language/printer'
+const merge = require('lodash/merge')
 
-//************************************************************************
-//
-//  Basis
-//
-//************************************************************************
+// import 'graphql-import-node'
+// const typeDefs: string[] = []
+// typeDefs.push(print(require('./modules/product/product.graphql')))
 
-class ContextImpl implements Context {
-  constructor(public readonly req: Request, public readonly res: Response) {}
+const imports: any[] = [GQLAppModule, GQLProductModule, GQLCartModule, GQLStorageModule]
 
-  private m_user: IdToken | undefined
+const typeDefs = print(mergeTypeDefs(loadSchemaFiles(__dirname)))
 
-  get user(): IdToken | undefined {
-    return this.m_user
-  }
-
-  setUser(user: IdToken): void {
-    this.m_user = user
-  }
+const gqlOptions: GqlModuleOptions = {
+  context: async ({ req, res }) => {
+    return { req, res } as GQLContext
+  },
+  typeDefs,
+  path: '/gql',
+  resolvers: { JSON: GraphQLJSON },
 }
 
-abstract class GQLServer {
-  constructor(app: Express) {
-    const router = this.getRouter()
-    app.use('/gql', router)
-    const apolloServer = new ApolloServer(this.createConfig())
-    apolloServer.applyMiddleware({ app: router, path: '/' })
-  }
-
-  protected getRouter(): Router {
-    return Router().use(cookieParser)
-  }
-
-  protected get resolvers(): Array<Function | string> {
-    return [AppResolver, CartResolver, ProductResolver, RecipeResolver, StorageResolver]
-  }
-
-  protected createConfig(): ApolloServerExpressConfig {
-    const schema = buildSchemaSync({
-      resolvers: this.resolvers,
-      // emitSchemaFile: path.resolve(__dirname, 'schema.gql'),
-      authChecker: authChecker,
-      globalMiddlewares: [LoggingMiddleware],
-    })
-
-    return {
-      schema,
-      context: async ({ req, res }) => {
-        return new ContextImpl(req, res)
-      },
-    } as ApolloServerExpressConfig
-  }
+if (process.env.NODE_ENV !== 'production') {
+  merge(gqlOptions, {
+    debug: true,
+    playground: true,
+    introspection: true,
+  })
+  imports.push(GQLTestModule)
 }
 
-//************************************************************************
-//
-//  Concrete
-//
-//************************************************************************
-
-@singleton()
-export class ProdGQLServer extends GQLServer {}
-
-@singleton()
-export class DevGQLServer extends GQLServer {
-  protected createConfig(): ApolloServerExpressConfig {
-    return {
-      ...super.createConfig(),
-      debug: true,
-      // graphiql gui を有効にする
-      playground: true,
-      introspection: true,
-    }
-  }
-
-  protected get resolvers(): Array<Function | string> {
-    return [...super.resolvers, TestResolver]
-  }
-}
+@Module({
+  imports: [GraphQLModule.forRoot(gqlOptions), ...imports],
+})
+export class GQLContainerModule {}
