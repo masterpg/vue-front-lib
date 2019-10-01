@@ -1,3 +1,4 @@
+import * as path from 'path'
 import { GqlModuleOptions, GraphQLModule } from '@nestjs/graphql'
 import { loadSchemaFiles, mergeTypeDefs } from 'graphql-toolkit'
 import { GQLAppModule } from './modules/app'
@@ -17,7 +18,8 @@ const merge = require('lodash/merge')
 
 const imports: any[] = [GQLAppModule, GQLProductModule, GQLCartModule, GQLStorageModule]
 
-const typeDefs = print(mergeTypeDefs(loadSchemaFiles(__dirname)))
+const targetPath = path.join(process.cwd(), 'lib/gql/modules')
+const typeDefs = print(mergeTypeDefs(loadSchemaFiles(targetPath)))
 
 const gqlOptions: GqlModuleOptions = {
   context: async ({ req, res }) => {

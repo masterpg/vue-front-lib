@@ -4,7 +4,7 @@ import { Product } from './types'
 
 @Injectable()
 export class ProductService {
-  async find(ids?: string[]): Promise<Product[]> {
+  async getProducts(ids?: string[]): Promise<Product[]> {
     const db = admin.firestore()
     if (ids && ids.length) {
       const promises: Promise<Product | undefined>[] = []
@@ -22,15 +22,21 @@ export class ProductService {
           })()
         )
       }
-      return (await Promise.all(promises)).reduce(
+
+      const productMap = (await Promise.all(promises)).reduce(
         (result, product) => {
-          if (product) {
-            result.push(product)
-          }
+          if (product) result[product.id] = product
           return result
         },
-        [] as Product[]
+        {} as { [id: string]: Product }
       )
+
+      const result: Product[] = []
+      for (const id of ids) {
+        const product = productMap[id]
+        if (product) result.push(productMap[id])
+      }
+      return result
     } else {
       const products: Product[] = []
       const snapshot = await db.collection('products').get()

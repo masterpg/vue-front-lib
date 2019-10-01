@@ -11,7 +11,7 @@
     "test:e2e": "testcafe chrome:headless tests/e2e/**/*.test.ts -S -s screenshots --hostname localhost",
     "docs": "postcss --config build/postcss.config.js docs/book.pcss -o docs/book.css && cd docs && ../node_modules/.bin/gitbook install && ../node_modules/.bin/gitbook serve",
     "lint": "./scripts/lint.sh",
-    "deploy": "firebase deploy --only hosting,firestore,storage && cd functions && npm run deploy"
+    "deploy": "firebase deploy --only hosting,firestore,storage"
   },
   "dependencies": {
     "@quasar/extras": "^1.3.1",

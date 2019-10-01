@@ -9,6 +9,9 @@ import { Bucket, File } from '@google-cloud/storage'
 import { StorageNode, StorageNodeType, SignedUploadUrlInput as _SignedUploadUrlInput, StorageNode as _StorageNode } from './types'
 import { IdToken } from '../base'
 import { Injectable } from '@nestjs/common'
+import { InputValidationError } from '../../base/validator'
+import { config } from '../../base/config'
+const isString = require('lodash/isString')
 
 export class SignedUploadUrlInput implements _SignedUploadUrlInput {
   filePath!: string
@@ -22,6 +25,111 @@ export interface GCSStorageNode extends _StorageNode {
 
 @Injectable()
 export class StorageService {
+  async getUserStorageNodes(user: IdToken, dirPath?: string): Promise<StorageNode[]> {
+    if (dirPath && !dirPath.endsWith('/')) {
+      throw new InputValidationError(`The argument 'dirPath' must end with '/'.`)
+    }
+
+    // Cloud Storageから指定されたディレクトリのノードを取得
+    const userDirPath = this.getUserStorageDirPath(user)
+    let nodeMap = await this.getStorageNodeMap(dirPath, userDirPath)
+
+    // 親ディレクトリの穴埋め
+    this.padVirtualDirNode(nodeMap)
+
+    // ルートディレクトリ、または指定されたディレクトリのノードを除去する
+    delete nodeMap[removeEndSlash(dirPath)]
+
+    // ディレクトリ階層を表現できるようノード配列をソートする
+    const result = Object.values(nodeMap)
+    this.sortStorageNodes(result)
+
+    return result
+  }
+
+  async createUserStorageDirs(user: IdToken, dirPaths: string[]): Promise<StorageNode[]> {
+    for (const dirPath of dirPaths) {
+      if (dirPath && !dirPath.endsWith('/')) {
+        throw new InputValidationError(`The argument path of 'dirPaths' must end with '/'.`)
+      }
+    }
+
+    const bucket = admin.storage().bucket()
+    const userDirPath = this.getUserStorageDirPath(user)
+    const result: StorageNode[] = []
+
+    const promises: Promise<void>[] = []
+    for (const dirPath of this.splitHierarchicalDirPaths(...dirPaths)) {
+      promises.push(
+        this.createStorageDir(bucket, dirPath, userDirPath).then(storageNode => {
+          if (storageNode) {
+            result.push(storageNode)
+          }
+        })
+      )
+    }
+    await Promise.all(promises)
+
+    return result
+  }
+
+  async removeUserStorageNodes(user: IdToken, nodePaths: string[]): Promise<StorageNode[]> {
+    const result: StorageNode[] = []
+
+    const bucket = admin.storage().bucket()
+    const userDirPath = this.getUserStorageDirPath(user)
+    const promises: Array<Promise<void>> = []
+    for (const nodePath of nodePaths) {
+      const nodeType = this.getStorageNodeType(nodePath)
+      // ノードがディレクトリの場合
+      if (nodeType === StorageNodeType.Dir) {
+        promises.push(
+          this.removeStorageDirNode(bucket, nodePath, userDirPath).then(nodes => {
+            result.push(...nodes)
+          })
+        )
+      }
+      // ノードがファイルの場合
+      else if (nodeType === StorageNodeType.File) {
+        promises.push(
+          this.removeStorageFileNode(bucket, nodePath, userDirPath).then(node => {
+            node && result.push(node)
+          })
+        )
+      }
+    }
+    await Promise.all(promises)
+
+    return result
+  }
+
+  async getSignedUploadUrls(requestOrigin: string, inputs: SignedUploadUrlInput[]): Promise<string[]> {
+    if (!isString(requestOrigin)) {
+      throw new InputValidationError('Request origin is not set.')
+    }
+    if (!config.cors.whitelist.includes(requestOrigin)) {
+      throw new InputValidationError('Request origin is invalid.', { requestOrigin })
+    }
+
+    const result: string[] = []
+
+    for (const input of inputs) {
+      const { filePath, contentType } = input
+      const { fileName, dirPath } = splitFilePath(filePath)
+      const bucket = admin.storage().bucket()
+      const gcsFilePath = path.join(dirPath, fileName)
+      const gcsFileNode = bucket.file(gcsFilePath)
+
+      const url = (await gcsFileNode.createResumableUpload({
+        origin: requestOrigin,
+        metadata: { contentType },
+      }))[0]
+      result.push(url)
+    }
+
+    return result
+  }
+
   /**
    * Cloud Storageからノードを取得します。
    * `dirPath`を指定すると、このディレクトリパス配下のノードを取得します。
@@ -121,9 +229,9 @@ export class StorageService {
    * @param basePath 基準パスを指定
    */
   toStorageNode(gcsNode: File, basePath: string = ''): StorageNode {
-    let nodePath = this.removeEndSlash(gcsNode.name)
+    let nodePath = removeEndSlash(gcsNode.name)
     if (basePath) {
-      nodePath = this.removeEndSlash(gcsNode.name.replace(basePath, ''))
+      nodePath = removeEndSlash(gcsNode.name.replace(basePath, ''))
     }
     const relativePathSegments = nodePath.split('/')
     const name = relativePathSegments[relativePathSegments.length - 1]
@@ -132,8 +240,8 @@ export class StorageService {
     return {
       nodeType: this.getStorageNodeType(gcsNode.name),
       name,
-      dir: this.removeStartSlash(dir),
-      path: this.removeStartSlash(nodePath),
+      dir: removeStartSlash(dir),
+      path: removeStartSlash(nodePath),
     }
   }
 
@@ -200,38 +308,6 @@ export class StorageService {
   }
 
   /**
-   * パス先頭のスラッシュを除去します。
-   * @param nodePath
-   */
-  removeStartSlash(nodePath?: string): string {
-    if (!nodePath) return ''
-    return nodePath.replace(/^\//, '')
-  }
-
-  /**
-   * パス末尾のスラッシュを除去します。
-   * @param nodePath
-   */
-  removeEndSlash(nodePath?: string): string {
-    if (!nodePath) return ''
-    return nodePath.replace(/\/$/, '')
-  }
-
-  /**
-   * ファイルパスをファイル名とディレクトリパスに分割します。
-   * @param filePath
-   */
-  splitFilePath(filePath: string): { fileName: string; dirPath: string } {
-    const segments = filePath.split('/')
-    const fileName = segments[segments.length - 1]
-    let dirPath = ''
-    if (segments.length >= 2) {
-      dirPath = segments.slice(0, segments.length - 1).join('/')
-    }
-    return { fileName, dirPath }
-  }
-
-  /**
    * 親ディレクトリがない場合、仮想的にディレクトリを作成して穴埋めします。
    * このようなことを行う理由として、Cloud Storageは親ディレクトリが存在しないことがあるためです。
    * 例えば、"aaa/bbb/family.png"の場合、"aaa/bbb/"というディレクトリがない場合があります。
@@ -248,7 +324,7 @@ export class StorageService {
    * @param basePath
    */
   padVirtualDirNode(nodeMap: { [path: string]: StorageNode }, basePath?: string): void {
-    basePath = this.removeEndSlash(basePath)
+    basePath = removeEndSlash(basePath)
     // 指定された全ノードの階層的なディレクトリパスを取得
     const dirPaths = Object.values(nodeMap).map(node => node.dir)
     const hierarchicalDirPaths = this.splitHierarchicalDirPaths(...dirPaths)
@@ -318,4 +394,36 @@ export class StorageService {
     }
     return result
   }
+}
+
+/**
+ * パス先頭のスラッシュを除去します。
+ * @param nodePath
+ */
+export function removeStartSlash(nodePath?: string): string {
+  if (!nodePath) return ''
+  return nodePath.replace(/^\//, '')
+}
+
+/**
+ * パス末尾のスラッシュを除去します。
+ * @param nodePath
+ */
+export function removeEndSlash(nodePath?: string): string {
+  if (!nodePath) return ''
+  return nodePath.replace(/\/$/, '')
+}
+
+/**
+ * ファイルパスをファイル名とディレクトリパスに分割します。
+ * @param filePath
+ */
+export function splitFilePath(filePath: string): { fileName: string; dirPath: string } {
+  const segments = filePath.split('/')
+  const fileName = segments[segments.length - 1]
+  let dirPath = ''
+  if (segments.length >= 2) {
+    dirPath = segments.slice(0, segments.length - 1).join('/')
+  }
+  return { fileName, dirPath }
 }

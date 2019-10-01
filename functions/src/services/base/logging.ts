@@ -1,6 +1,6 @@
 import * as convertHrtime from 'convert-hrtime'
 import * as path from 'path'
-import { HttpException, Inject, Injectable } from '@nestjs/common'
+import { HttpException, Injectable } from '@nestjs/common'
 import { InputValidationError, ValidationErrors } from '../../base/validator'
 import { Log, Logging } from '@google-cloud/logging'
 import { Request, Response } from 'express'
@@ -292,7 +292,28 @@ class DevLogger extends Logger {
   }
 }
 
+@Injectable()
+class TestLogger extends Logger {
+  log(loggingSource: LoggingSource): void {}
+
+  protected getFunctionNameByRequest(req: Request): string {
+    return ''
+  }
+
+  protected getRequestUrl(req: Request): string {
+    return ''
+  }
+}
+
 export const loggerProvider = {
   provide: Logger,
-  useClass: process.env.NODE_ENV === 'production' ? ProdLogger : DevLogger,
+  useClass: (() => {
+    if (process.env.NODE_ENV === 'production') {
+      return ProdLogger
+    } else if (process.env.NODE_ENV === 'test') {
+      return TestLogger
+    } else {
+      return DevLogger
+    }
+  })(),
 }

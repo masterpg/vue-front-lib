@@ -10,6 +10,6 @@ export class ProductResolver {
 
   @Query('products')
   async products(@Args('ids') ids?: string[]): Promise<Product[]> {
-    return this.productService.find(ids)
+    return this.productService.getProducts(ids)
   }
 }

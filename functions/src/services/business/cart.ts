@@ -1,9 +1,8 @@
-import * as firebaseAdmin from 'firebase-admin'
+import * as admin from 'firebase-admin'
 import { CartItem, EditCartItemResponse, Product, AddCartItemInput as _AddCartItemInput, UpdateCartItemInput as _UpdateCartItemInput } from './types'
 import { DocumentReference, Transaction } from '@google-cloud/firestore'
+import { ForbiddenException, Injectable } from '@nestjs/common'
 import { InputValidationError, validate } from '../../base/validator'
-import { IdToken } from '../base'
-import { Injectable } from '@nestjs/common'
 import { IsPositive } from 'class-validator'
 import { WriteReadyObserver } from '../../base/firestore'
 const assign = require('lodash/assign')
@@ -35,8 +34,8 @@ export class CartService {
   //
   //----------------------------------------------------------------------
 
-  async cartItems(user: IdToken, ids?: string[]): Promise<CartItem[]> {
-    const db = firebaseAdmin.firestore()
+  async getCartItems(user: { uid: string }, ids?: string[]): Promise<CartItem[]> {
+    const db = admin.firestore()
 
     if (ids && ids.length) {
       const promises: Promise<CartItem | undefined>[] = []
@@ -54,15 +53,23 @@ export class CartService {
           })()
         )
       }
-      return (await Promise.all(promises)).reduce(
+
+      const itemMap = (await Promise.all(promises)).reduce(
         (result, item) => {
           if (item && item.uid === user.uid) {
-            result.push(item)
+            result[item.id] = item
           }
           return result
         },
-        [] as CartItem[]
+        {} as { [id: string]: CartItem }
       )
+
+      const result: CartItem[] = []
+      for (const id of ids) {
+        const item = itemMap[id]
+        if (item) result.push(itemMap[id])
+      }
+      return result
     } else {
       const items: CartItem[] = []
       const snapshot = await db
@@ -76,10 +83,10 @@ export class CartService {
     }
   }
 
-  async addCartItems(user: IdToken, inputs: AddCartItemInput[]): Promise<EditCartItemResponse[]> {
+  async addCartItems(user: { uid: string }, inputs: AddCartItemInput[]): Promise<EditCartItemResponse[]> {
     await validate(AddCartItemInput, inputs)
 
-    const db = firebaseAdmin.firestore()
+    const db = admin.firestore()
     return await db.runTransaction(async transaction => {
       const writeReady = new WriteReadyObserver(inputs.length)
       const promises: Promise<EditCartItemResponse>[] = []
@@ -90,10 +97,10 @@ export class CartService {
     })
   }
 
-  async updateCartItems(user: IdToken, inputs: UpdateCartItemInput[]): Promise<EditCartItemResponse[]> {
+  async updateCartItems(user: { uid: string }, inputs: UpdateCartItemInput[]): Promise<EditCartItemResponse[]> {
     await validate(UpdateCartItemInput, inputs)
 
-    const db = firebaseAdmin.firestore()
+    const db = admin.firestore()
     return await db.runTransaction(async transaction => {
       const writeReady = new WriteReadyObserver(inputs.length)
       const promises: Promise<EditCartItemResponse>[] = []
@@ -104,8 +111,10 @@ export class CartService {
     })
   }
 
-  async removeCartItems(user: IdToken, ids: string[]): Promise<EditCartItemResponse[]> {
-    const db = firebaseAdmin.firestore()
+  async removeCartItems(user: { uid: string }, ids: string[]): Promise<EditCartItemResponse[]> {
+    if (!user) throw new ForbiddenException()
+
+    const db = admin.firestore()
     return await db.runTransaction(async transaction => {
       const writeReady = new WriteReadyObserver(ids.length)
       const promises: Promise<EditCartItemResponse>[] = []
@@ -116,8 +125,8 @@ export class CartService {
     })
   }
 
-  async checkoutCart(user: IdToken): Promise<boolean> {
-    const db = firebaseAdmin.firestore()
+  async checkoutCart(user: { uid: string }): Promise<boolean> {
+    const db = admin.firestore()
 
     const snapshot = await db
       .collection('cart')
@@ -152,7 +161,7 @@ export class CartService {
     uid: string,
     writeReady: WriteReadyObserver
   ): Promise<EditCartItemResponse> {
-    const db = firebaseAdmin.firestore()
+    const db = admin.firestore()
 
     // 商品の取得
     const product = await this.m_getProductById(transaction, itemInput.productId)
@@ -184,7 +193,7 @@ export class CartService {
       quantity: itemInput.quantity,
     }
 
-    // 商品の在庫数を設定
+    // 商品の在庫数を再計算
     const newStock = product.data.stock - itemInput.quantity
     if (newStock < 0) {
       throw new InputValidationError('The stock of the product was insufficient.', {
@@ -194,6 +203,9 @@ export class CartService {
         addedQuantity: itemInput.quantity,
       })
     }
+
+    // 書き込み準備ができるまで待機
+    await writeReady.wait()
 
     // 新規カートアイテム追加を実行
     transaction.create(cartItemRef, newCartItem)
@@ -305,7 +317,7 @@ export class CartService {
   }
 
   private async m_getProductById(transaction: Transaction, id: string): Promise<{ ref: DocumentReference; data: Product }> {
-    const db = firebaseAdmin.firestore()
+    const db = admin.firestore()
     const ref = db.collection('products').doc(id)
     const doc = await transaction.get(ref)
     if (!doc.exists) {
@@ -320,7 +332,7 @@ export class CartService {
   }
 
   private async m_getCartItemById(transaction: Transaction, id: string): Promise<{ ref: DocumentReference; data: CartItem }> {
-    const db = firebaseAdmin.firestore()
+    const db = admin.firestore()
     const ref = db.collection('cart').doc(id)
     const doc = await transaction.get(ref)
     if (!doc.exists) {

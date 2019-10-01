@@ -12,7 +12,7 @@ export class ValidationErrors extends BadRequestException {
 
 export class InputValidationError extends BadRequestException {
   constructor(message: string, values?: { [field: string]: any }) {
-    super(message)
+    super('Validation failed.')
     this.m_detail = { message, values }
   }
 

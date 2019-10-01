@@ -14,7 +14,7 @@ export class CartResolver {
   @Query()
   @UseGuards(GQLUserGuard)
   async cartItems(@GQLUser() user: IdToken, @Args('ids') ids?: string[]): Promise<CartItem[]> {
-    return this.cartService.cartItems(user, ids)
+    return this.cartService.getCartItems(user, ids)
   }
 
   @Mutation()

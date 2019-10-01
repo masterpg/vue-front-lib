@@ -1,4 +1,4 @@
-import * as firebaseAdmin from 'firebase-admin'
+import * as admin from 'firebase-admin'
 import { Injectable } from '@nestjs/common'
 import { Request } from 'express'
 
@@ -8,7 +8,7 @@ import { Request } from 'express'
 //
 //========================================================================
 
-export interface IdToken extends firebaseAdmin.auth.DecodedIdToken {
+export interface IdToken extends admin.auth.DecodedIdToken {
   isAppAdmin?: string
 }
 
@@ -128,7 +128,7 @@ export abstract class AuthService {
 @Injectable()
 class ProdAuthService extends AuthService {
   protected async decodeToken(idToken: string): Promise<IdToken> {
-    let decodedIdToken = await firebaseAdmin.auth().verifyIdToken(idToken)
+    let decodedIdToken = await admin.auth().verifyIdToken(idToken)
     return decodedIdToken
   }
 }
@@ -138,7 +138,7 @@ class DevAuthService extends AuthService {
   protected async decodeToken(idToken: string): Promise<IdToken> {
     let decodedIdToken: IdToken
     try {
-      decodedIdToken = await firebaseAdmin.auth().verifyIdToken(idToken)
+      decodedIdToken = await admin.auth().verifyIdToken(idToken)
     } catch (err) {
       // 開発環境用コード(主に単体テスト用)
       // 単体テストでは認証状態をつくり出すのが難しく暗号化されたIDトークンを生成できないため、

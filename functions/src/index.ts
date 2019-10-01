@@ -1,5 +1,4 @@
 import 'reflect-metadata'
-import * as admin from 'firebase-admin'
 import * as express from 'express'
 import * as functions from 'firebase-functions'
 import { AppModule } from './app.module'
@@ -7,12 +6,9 @@ import { ExpressAdapter } from '@nestjs/platform-express'
 import { NestFactory } from '@nestjs/core'
 import { ValidationPipe } from '@nestjs/common'
 import { config } from './base/config'
+import { initFirebaseApp } from './base/firebase'
 
-const serviceAccount = require('./serviceAccountKey.json')
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  storageBucket: config.storage.bucket,
-})
+initFirebaseApp()
 
 const server = express()
 
