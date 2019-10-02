@@ -1,12 +1,10 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql'
-import { PutTestDataInput, TestService } from '../../../services/business'
-import { GQLLoggingInterceptor } from '../../interceptors/logging'
-import { UseInterceptors } from '@nestjs/common'
+import { PutTestDataInput, TestServiceDI } from '../../../services/business'
+import { Inject } from '@nestjs/common'
 
 @Resolver()
-@UseInterceptors(GQLLoggingInterceptor)
 export class TestResolver {
-  constructor(private readonly testService: TestService) {}
+  constructor(@Inject(TestServiceDI.symbol) protected readonly testService: TestServiceDI.type) {}
 
   @Mutation()
   async putTestData(@Args('inputs') inputs: PutTestDataInput[]): Promise<boolean> {

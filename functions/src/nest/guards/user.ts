@@ -1,4 +1,4 @@
-import { AuthService, Logger, LoggingLatencyTimer } from '../../services/base'
+import { AuthServiceDI, LoggingLatencyTimer, LoggingServiceDI } from '../../services/base'
 import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { getAllExecutionContext } from '../utils'
@@ -7,8 +7,8 @@ import { getAllExecutionContext } from '../utils'
 export class UserGuard implements CanActivate {
   constructor(
     protected readonly reflector: Reflector,
-    @Inject(AuthService) protected readonly authService: AuthService,
-    @Inject(Logger) protected readonly logger: Logger
+    @Inject(AuthServiceDI.symbol) protected readonly authService: AuthServiceDI.type,
+    @Inject(LoggingServiceDI.symbol) protected readonly loggingService: LoggingServiceDI.type
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -22,7 +22,7 @@ export class UserGuard implements CanActivate {
       return true
     } else {
       res.on('finish', () => {
-        this.logger.log({ req, res, info, latencyTimer, error: new Error(validated.errorMessage) })
+        this.loggingService.log({ req, res, info, latencyTimer, error: new Error(validated.errorMessage) })
       })
       return false
     }

@@ -92,7 +92,7 @@ export interface LoggingData {
 
 const DEFAULT_LOG_NAME = 'api'
 
-export abstract class Logger {
+abstract class LoggingService {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -249,7 +249,7 @@ export abstract class Logger {
 //========================================================================
 
 @Injectable()
-class ProdLogger extends Logger {
+class ProdLoggingService extends LoggingService {
   getFunctionNameByRequest(req: Request): string {
     // 例: function_name = "api/rest/hello"
     // ・req.baseUrl: "/rest"
@@ -263,7 +263,7 @@ class ProdLogger extends Logger {
 }
 
 @Injectable()
-class DevLogger extends Logger {
+class DevLoggingService extends LoggingService {
   log(loggingSource: LoggingSource): void {
     super.log(loggingSource)
 
@@ -299,7 +299,7 @@ class DevLogger extends Logger {
 }
 
 @Injectable()
-class TestLogger extends Logger {
+class TestLoggingService extends LoggingService {
   log(loggingSource: LoggingSource): void {}
 
   protected getFunctionNameByRequest(req: Request): string {
@@ -311,15 +311,19 @@ class TestLogger extends Logger {
   }
 }
 
-export const loggerProvider = {
-  provide: Logger,
-  useClass: (() => {
-    if (process.env.NODE_ENV === 'production') {
-      return ProdLogger
-    } else if (process.env.NODE_ENV === 'test') {
-      return TestLogger
-    } else {
-      return DevLogger
-    }
-  })(),
+export namespace LoggingServiceDI {
+  export const symbol = Symbol(LoggingService.name)
+  export const provider = {
+    provide: symbol,
+    useClass: (() => {
+      if (process.env.NODE_ENV === 'production') {
+        return ProdLoggingService
+      } else if (process.env.NODE_ENV === 'test') {
+        return TestLoggingService
+      } else {
+        return DevLoggingService
+      }
+    })(),
+  }
+  export type type = LoggingService
 }

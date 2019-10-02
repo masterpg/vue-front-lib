@@ -8,7 +8,8 @@ import { Injectable } from '@nestjs/common'
 //
 //========================================================================
 
-export abstract class FirestoreService {
+@Injectable()
+class FirestoreService {
   /**
    * 指定されたコレクションを再帰的に削除します。
    * @param collectionPath
@@ -72,10 +73,11 @@ export abstract class FirestoreService {
 //
 //========================================================================
 
-@Injectable()
-class ProdFirestoreService extends FirestoreService {}
-
-export const firestoreServiceProvider = {
-  provide: FirestoreService,
-  useClass: ProdFirestoreService,
+export namespace FirestoreServiceDI {
+  export const symbol = Symbol(FirestoreService.name)
+  export const provider = {
+    provide: symbol,
+    useClass: FirestoreService,
+  }
+  export type type = FirestoreService
 }

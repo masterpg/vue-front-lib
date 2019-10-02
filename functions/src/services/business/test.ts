@@ -1,13 +1,13 @@
 import * as admin from 'firebase-admin'
 import { Inject, Injectable } from '@nestjs/common'
 import { DocumentReference } from '@google-cloud/firestore'
-import { FirestoreService } from '../base'
+import { FirestoreServiceDI } from '../base'
 import { PutTestDataInput } from './types'
 const firebase_tools = require('firebase-tools')
 
 @Injectable()
-export class TestService {
-  constructor(@Inject(FirestoreService) protected readonly firestoreService: FirestoreService) {}
+class TestService {
+  constructor(@Inject(FirestoreServiceDI.symbol) protected readonly firestoreService: FirestoreServiceDI.type) {}
 
   //----------------------------------------------------------------------
   //
@@ -110,4 +110,13 @@ export class TestService {
   private m_isObject(value: any): boolean {
     return value instanceof Object && !(value instanceof Array)
   }
+}
+
+export namespace TestServiceDI {
+  export const symbol = Symbol(TestService.name)
+  export const provider = {
+    provide: symbol,
+    useClass: TestService,
+  }
+  export type type = TestService
 }

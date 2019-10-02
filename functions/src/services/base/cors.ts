@@ -1,6 +1,6 @@
 import * as vary from 'vary'
 import { Inject, Injectable } from '@nestjs/common'
-import { Logger, LoggingData, LoggingLatencyTimer } from './logging'
+import { LoggingData, LoggingLatencyTimer, LoggingServiceDI } from './logging'
 import { NextFunction, Request, Response } from 'express'
 import { GraphQLResolveInfo } from 'graphql'
 import { config } from '../../base/config'
@@ -23,14 +23,14 @@ interface CORSOptions {
   isLogging?: boolean
 }
 
-export abstract class CORSService {
+abstract class CORSService {
   //----------------------------------------------------------------------
   //
   //  Constructor
   //
   //----------------------------------------------------------------------
 
-  constructor(@Inject(Logger) protected readonly logger: Logger) {}
+  constructor(@Inject(LoggingServiceDI.symbol) protected readonly loggingService: LoggingServiceDI.type) {}
 
   //----------------------------------------------------------------------
   //
@@ -245,7 +245,7 @@ export abstract class CORSService {
     const { req, res, info } = context
     const latencyTimer = new LoggingLatencyTimer().start()
     res.on('finish', () => {
-      this.logger.log({
+      this.loggingService.log({
         req,
         res,
         info,
@@ -293,14 +293,18 @@ class DevCORSService extends CORSService {
   protected logNotAllowed(context: { req: Request; res: Response; info?: GraphQLResolveInfo }, options: CORSOptions) {
     const { req, res, info } = context
     const data = {
-      functionName: this.logger.getFunctionName({ req, info }),
+      functionName: this.loggingService.getFunctionName({ req, info }),
       ...this.getErrorData(req, options),
     }
     console.error('[ERROR]:', JSON.stringify(data, null, 2))
   }
 }
 
-export const corsServiceProvider = {
-  provide: CORSService,
-  useClass: process.env.NODE_ENV === 'production' ? ProdCORSService : DevCORSService,
+export namespace CORSServiceDI {
+  export const symbol = Symbol(CORSService.name)
+  export const provider = {
+    provide: symbol,
+    useClass: process.env.NODE_ENV === 'production' ? ProdCORSService : DevCORSService,
+  }
+  export type type = CORSService
 }

@@ -1,11 +1,9 @@
 import * as admin from 'firebase-admin'
 import { Controller, Get, HttpStatus, NotFoundException, Param, Req, Res, UseInterceptors } from '@nestjs/common'
 import { Request, Response } from 'express'
-import { RESTLoggingInterceptor } from '../../interceptors/logging'
 const dayjs = require('dayjs')
 
 @Controller('storage')
-@UseInterceptors(RESTLoggingInterceptor)
 export class StorageController {
   @Get('*')
   async getFile(@Req() req: Request, @Res() res: Response, @Param() params: string[]): Promise<Response> {

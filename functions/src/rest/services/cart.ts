@@ -34,7 +34,7 @@ export class UpdateCartItem {
 }
 
 @Injectable()
-export class CartService {
+class CartService {
   async findAll(user: IdToken): Promise<CartItem[]> {
     return CART_ITEMS.map(item => {
       item.uid = user.uid
@@ -61,4 +61,13 @@ export class CartService {
     cartItem.quantity = input.quantity
     return cartItem
   }
+}
+
+export namespace CartServiceDI {
+  export const symbol = Symbol(CartService.name)
+  export const provider = {
+    provide: symbol,
+    useClass: CartService,
+  }
+  export type type = CartService
 }

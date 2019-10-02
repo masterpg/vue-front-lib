@@ -22,7 +22,7 @@ export interface AuthValidateResult {
   idToken?: IdToken
 }
 
-export abstract class AuthService {
+abstract class AuthService {
   //----------------------------------------------------------------------
   //
   //  Methods
@@ -141,7 +141,7 @@ class DevAuthService extends AuthService {
       decodedIdToken = await admin.auth().verifyIdToken(idToken)
     } catch (err) {
       // 開発環境用コード(主に単体テスト用)
-      // 単体テストでは認証状態をつくり出すのが難しく暗号化されたIDトークンを生成できないため、
+      // 単体テストでは認証状態をつくり出すのが難しく、暗号化されたIDトークンを生成できないため、
       // JSON形式のIDトークンが送られることを許容している。
       // ここでは送られてきたJSON文字列のIDトークンをパースしている。
       decodedIdToken = JSON.parse(idToken)
@@ -150,7 +150,11 @@ class DevAuthService extends AuthService {
   }
 }
 
-export const authServiceProvider = {
-  provide: AuthService,
-  useClass: process.env.NODE_ENV === 'production' ? ProdAuthService : DevAuthService,
+export namespace AuthServiceDI {
+  export const symbol = Symbol(AuthService.name)
+  export const provider = {
+    provide: symbol,
+    useClass: process.env.NODE_ENV === 'production' ? ProdAuthService : DevAuthService,
+  }
+  export type type = AuthService
 }

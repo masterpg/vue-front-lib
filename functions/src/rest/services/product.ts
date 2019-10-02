@@ -8,7 +8,7 @@ const PRODUCTS: Product[] = [
 ]
 
 @Injectable()
-export class ProductService {
+class ProductService {
   async create(product: Product): Promise<void> {
     PRODUCTS.push(product)
   }
@@ -20,4 +20,13 @@ export class ProductService {
   async findOne(id: string): Promise<Product | undefined> {
     return PRODUCTS.find(item => item.id === id)
   }
+}
+
+export namespace ProductServiceDI {
+  export const symbol = Symbol(ProductService.name)
+  export const provider = {
+    provide: symbol,
+    useClass: ProductService,
+  }
+  export type type = ProductService
 }

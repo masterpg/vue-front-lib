@@ -2,15 +2,13 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql'
 import { AuthRoleType, IdToken } from '../../../services/base'
 import { GQLContext, Roles, User } from '../../../nest'
 import { Inject, UseGuards, UseInterceptors } from '@nestjs/common'
-import { SignedUploadUrlInput, StorageNode, StorageService } from '../../../services/business'
+import { SignedUploadUrlInput, StorageNode, StorageServiceDI } from '../../../services/business'
 import { GQLCtx } from '../../decorators/context'
-import { GQLLoggingInterceptor } from '../../interceptors/logging'
 import { UserGuard } from '../../../nest/guards/user'
 
 @Resolver('StorageNode')
-@UseInterceptors(GQLLoggingInterceptor)
 export class StorageResolver {
-  constructor(@Inject(StorageService) private readonly storageService: StorageService) {}
+  constructor(@Inject(StorageServiceDI.symbol) protected readonly storageService: StorageServiceDI.type) {}
 
   @Query()
   @UseGuards(UserGuard)

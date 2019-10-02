@@ -1,16 +1,15 @@
 import { AuthRoleType, IdToken } from '../../../services/base'
-import { Body, Controller, Get, Param, Put, UseGuards, UseInterceptors } from '@nestjs/common'
-import { CartService, UpdateCartItem } from '../../services/cart'
+import { Body, Controller, Get, Inject, Param, Put, UseGuards, UseInterceptors } from '@nestjs/common'
+import { CartServiceDI, UpdateCartItem } from '../../services/cart'
 import { Roles, TransformInterceptor, User } from '../../../nest'
 import { CartItem } from '../../services/types'
-import { RESTLoggingInterceptor } from '../../interceptors/logging'
 import { UserGuard } from '../../../nest/guards/user'
 
 @Controller('cartItems')
-@UseInterceptors(RESTLoggingInterceptor, TransformInterceptor)
+@UseInterceptors(TransformInterceptor)
 @UseGuards(UserGuard)
 export class CartController {
-  constructor(private readonly cartService: CartService) {}
+  constructor(@Inject(CartServiceDI.symbol) protected readonly cartService: CartServiceDI.type) {}
 
   @Get()
   async findAll(@User() user: IdToken): Promise<CartItem[]> {

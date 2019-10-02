@@ -1,8 +1,8 @@
 import { CartResolver } from './resolver'
-import { CartService } from '../../../services/business'
+import { CartServiceDI } from '../../../services/business'
 import { Module } from '@nestjs/common'
 
 @Module({
-  providers: [CartService, CartResolver],
+  providers: [CartServiceDI.provider, CartResolver],
 })
 export class GQLCartModule {}

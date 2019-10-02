@@ -25,7 +25,7 @@ export interface GCSStorageNode extends _StorageNode {
 }
 
 @Injectable()
-export class StorageService {
+class StorageService {
   async getUserStorageNodes(user: IdToken, dirPath?: string): Promise<StorageNode[]> {
     if (dirPath && !dirPath.endsWith('/')) {
       throw new InputValidationError(`The argument 'dirPath' must end with '/'.`)
@@ -395,4 +395,13 @@ export class StorageService {
     }
     return result
   }
+}
+
+export namespace StorageServiceDI {
+  export const symbol = Symbol(StorageService.name)
+  export const provider = {
+    provide: symbol,
+    useClass: StorageService,
+  }
+  export type type = StorageService
 }

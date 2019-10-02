@@ -1,8 +1,8 @@
 import { AppResolver } from './resolver'
-import { AppService } from '../../../services/business'
+import { AppServiceDI } from '../../../services/business'
 import { Module } from '@nestjs/common'
 
 @Module({
-  providers: [AppService, AppResolver],
+  providers: [AppServiceDI.provider, AppResolver],
 })
 export class GQLAppModule {}

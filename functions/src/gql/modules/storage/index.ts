@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common'
 import { StorageResolver } from './resolver'
-import { StorageService } from '../../../services/business'
+import { StorageServiceDI } from '../../../services/business'
 
 @Module({
-  providers: [StorageService, StorageResolver],
+  providers: [StorageServiceDI.provider, StorageResolver],
 })
 export class GQLStorageModule {}

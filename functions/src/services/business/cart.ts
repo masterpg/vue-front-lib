@@ -27,7 +27,7 @@ export class AddCartItemInput implements _AddCartItemInput {
 }
 
 @Injectable()
-export class CartService {
+class CartService {
   //----------------------------------------------------------------------
   //
   //  Methods
@@ -353,4 +353,13 @@ export class CartService {
       }, ms)
     }) as Promise<string>
   }
+}
+
+export namespace CartServiceDI {
+  export const symbol = Symbol(CartService.name)
+  export const provider = {
+    provide: symbol,
+    useClass: CartService,
+  }
+  export type type = CartService
 }

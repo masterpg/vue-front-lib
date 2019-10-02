@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common'
 import { TestResolver } from './resolver'
-import { TestService } from '../../../services/business'
+import { TestServiceDI } from '../../../services/business'
 
 @Module({
-  providers: [TestService, TestResolver],
+  providers: [TestServiceDI.provider, TestResolver],
 })
 export class GQLTestModule {}

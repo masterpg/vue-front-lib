@@ -1,12 +1,10 @@
 import { Args, Query, Resolver } from '@nestjs/graphql'
-import { Product, ProductService } from '../../../services/business'
-import { GQLLoggingInterceptor } from '../../interceptors/logging'
-import { UseInterceptors } from '@nestjs/common'
+import { Product, ProductServiceDI } from '../../../services/business'
+import { Inject } from '@nestjs/common'
 
 @Resolver('Product')
-@UseInterceptors(GQLLoggingInterceptor)
 export class ProductResolver {
-  constructor(private readonly productService: ProductService) {}
+  constructor(@Inject(ProductServiceDI.symbol) protected readonly productService: ProductServiceDI.type) {}
 
   @Query('products')
   async products(@Args('ids') ids?: string[]): Promise<Product[]> {

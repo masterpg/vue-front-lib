@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 import { Product } from './types'
 
 @Injectable()
-export class ProductService {
+class ProductService {
   async getProducts(ids?: string[]): Promise<Product[]> {
     const db = admin.firestore()
     if (ids && ids.length) {
@@ -47,4 +47,13 @@ export class ProductService {
       return products
     }
   }
+}
+
+export namespace ProductServiceDI {
+  export const symbol = Symbol(ProductService.name)
+  export const provider = {
+    provide: symbol,
+    useClass: ProductService,
+  }
+  export type type = ProductService
 }

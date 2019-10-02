@@ -1,15 +1,13 @@
-import { AddCartItemInput, CartItem, CartService, EditCartItemResponse, UpdateCartItemInput } from '../../../services/business'
+import { AddCartItemInput, CartItem, CartServiceDI, EditCartItemResponse, UpdateCartItemInput } from '../../../services/business'
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql'
-import { UseGuards, UseInterceptors } from '@nestjs/common'
-import { GQLLoggingInterceptor } from '../../interceptors/logging'
+import { Inject, UseGuards } from '@nestjs/common'
 import { IdToken } from '../../../services/base'
 import { User } from '../../../nest'
 import { UserGuard } from '../../../nest/guards/user'
 
 @Resolver('CartItem')
-@UseInterceptors(GQLLoggingInterceptor)
 export class CartResolver {
-  constructor(private readonly cartService: CartService) {}
+  constructor(@Inject(CartServiceDI.symbol) protected readonly cartService: CartServiceDI.type) {}
 
   @Query()
   @UseGuards(UserGuard)

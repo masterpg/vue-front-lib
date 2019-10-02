@@ -1,13 +1,12 @@
-import { Controller, Get, Param, UseInterceptors } from '@nestjs/common'
+import { Controller, Get, Inject, Param, UseInterceptors } from '@nestjs/common'
 import { Product } from './types'
-import { ProductService } from '../../services/product'
-import { RESTLoggingInterceptor } from '../../interceptors/logging'
+import { ProductServiceDI } from '../../services/product'
 import { TransformInterceptor } from '../../../nest'
 
 @Controller('products')
-@UseInterceptors(RESTLoggingInterceptor, TransformInterceptor)
+@UseInterceptors(TransformInterceptor)
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(@Inject(ProductServiceDI.symbol) protected readonly productService: ProductServiceDI.type) {}
 
   @Get()
   async findAll(): Promise<Product[]> {

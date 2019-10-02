@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common'
 import { ProductResolver } from './resolver'
-import { ProductService } from '../../../services/business'
+import { ProductServiceDI } from '../../../services/business'
 
 @Module({
-  providers: [ProductService, ProductResolver],
+  providers: [ProductServiceDI.provider, ProductResolver],
 })
 export class GQLProductModule {}

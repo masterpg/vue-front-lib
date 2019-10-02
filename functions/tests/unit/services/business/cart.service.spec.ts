@@ -1,15 +1,15 @@
 import {
   AddCartItemInput,
   CartItem,
-  CartService,
+  CartServiceDI,
   EditCartItemResponse,
   Product,
-  ProductService,
-  TestService,
+  ProductServiceDI,
+  TestServiceDI,
 } from '../../../../src/services/business'
 import { InputValidationError, ValidationErrors } from '../../../../src/base/validator'
+import { FirestoreServiceDI } from '../../../../src/services/base'
 import { Test } from '@nestjs/testing'
-import { firestoreServiceProvider } from '../../../../src/services/base'
 import { initFirebaseApp } from '../../../../src/base/firebase'
 const cloneDeep = require('lodash/cloneDeep')
 
@@ -44,18 +44,18 @@ const CART_ITEMS: CartItem[] = [
 ]
 
 describe('CartService', () => {
-  let testService: TestService
-  let cartService: CartService
-  let productService: ProductService
+  let testService: TestServiceDI.type
+  let cartService: CartServiceDI.type
+  let productService: ProductServiceDI.type
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      providers: [firestoreServiceProvider, TestService, CartService, ProductService],
+      providers: [FirestoreServiceDI.provider, TestServiceDI.provider, CartServiceDI.provider, ProductServiceDI.provider],
     }).compile()
 
-    testService = module.get<TestService>(TestService)
-    cartService = module.get<CartService>(CartService)
-    productService = module.get<ProductService>(ProductService)
+    testService = module.get<TestServiceDI.type>(TestServiceDI.symbol)
+    cartService = module.get<CartServiceDI.type>(CartServiceDI.symbol)
+    productService = module.get<ProductServiceDI.type>(ProductServiceDI.symbol)
   })
 
   describe('getCartItems', () => {

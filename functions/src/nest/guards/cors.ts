@@ -1,11 +1,10 @@
 import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common'
 import { APP_GUARD } from '@nestjs/core'
-import { CORSService } from '../../services/base'
+import { CORSServiceDI } from '../../services/base'
 import { getAllExecutionContext } from '../utils'
 
-@Injectable()
-export class CORSGuard implements CanActivate {
-  constructor(@Inject(CORSService) protected readonly corsService: CORSService) {}
+class CORSGuard implements CanActivate {
+  constructor(@Inject(CORSServiceDI.symbol) protected readonly corsService: CORSServiceDI.type) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const allContext = getAllExecutionContext(context)
@@ -13,7 +12,9 @@ export class CORSGuard implements CanActivate {
   }
 }
 
-export const corsGuardProvider = {
-  provide: APP_GUARD,
-  useClass: CORSGuard,
+export namespace CORSGuardDI {
+  export const provider = {
+    provide: APP_GUARD,
+    useClass: CORSGuard,
+  }
 }
