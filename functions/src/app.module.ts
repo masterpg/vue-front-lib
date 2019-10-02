@@ -1,12 +1,12 @@
+import { CORSGuard, CORSMiddleware, corsGuardProvider } from './nest'
 import { Global, MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common'
 import { authServiceProvider, corsServiceProvider, firestoreServiceProvider, loggerProvider } from './services/base'
-import { CORSMiddleware } from './nest/middleware/cors'
 import { GQLContainerModule } from './gql'
 import { RESTContainerModule } from './rest'
 
 @Global()
 @Module({
-  providers: [corsServiceProvider, authServiceProvider, loggerProvider, firestoreServiceProvider],
+  providers: [corsServiceProvider, authServiceProvider, loggerProvider, corsGuardProvider, firestoreServiceProvider],
   exports: [corsServiceProvider, authServiceProvider, loggerProvider, firestoreServiceProvider],
 })
 class AppBaseModule {}

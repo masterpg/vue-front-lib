@@ -2,7 +2,7 @@ import { Controller, Get, Param, UseInterceptors } from '@nestjs/common'
 import { Product } from './types'
 import { ProductService } from '../../services/product'
 import { RESTLoggingInterceptor } from '../../interceptors/logging'
-import { TransformInterceptor } from '../../../nest/interceptors/transform'
+import { TransformInterceptor } from '../../../nest'
 
 @Controller('products')
 @UseInterceptors(RESTLoggingInterceptor, TransformInterceptor)

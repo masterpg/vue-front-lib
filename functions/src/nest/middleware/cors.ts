@@ -7,6 +7,6 @@ export class CORSMiddleware implements NestMiddleware {
   constructor(@Inject(CORSService) protected readonly corsService: CORSService) {}
 
   use(req: Request, res: Response, next: NextFunction) {
-    this.corsService.validate(req, res, next)
+    this.corsService.validate({ req, res }, next, { isLogging: true })
   }
 }

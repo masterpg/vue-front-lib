@@ -1,6 +1,6 @@
 import { CallHandler, ExecutionContext, Inject, NestInterceptor } from '@nestjs/common'
 import { Logger, LoggingLatencyTimer } from '../../services/base'
-import { GQLContext } from '../types'
+import { GQLContext } from '../../nest'
 import { GqlExecutionContext } from '@nestjs/graphql'
 import { GraphQLResolveInfo } from 'graphql'
 import { Observable } from 'rxjs'

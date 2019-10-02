@@ -7,6 +7,7 @@ import * as admin from 'firebase-admin'
 import * as path from 'path'
 import { Bucket, File } from '@google-cloud/storage'
 import { StorageNode, StorageNodeType, SignedUploadUrlInput as _SignedUploadUrlInput, StorageNode as _StorageNode } from './types'
+import { removeEndSlash, removeStartSlash, splitFilePath } from '../../base/utils'
 import { IdToken } from '../base'
 import { Injectable } from '@nestjs/common'
 import { InputValidationError } from '../../base/validator'
@@ -394,36 +395,4 @@ export class StorageService {
     }
     return result
   }
-}
-
-/**
- * パス先頭のスラッシュを除去します。
- * @param nodePath
- */
-export function removeStartSlash(nodePath?: string): string {
-  if (!nodePath) return ''
-  return nodePath.replace(/^\//, '')
-}
-
-/**
- * パス末尾のスラッシュを除去します。
- * @param nodePath
- */
-export function removeEndSlash(nodePath?: string): string {
-  if (!nodePath) return ''
-  return nodePath.replace(/\/$/, '')
-}
-
-/**
- * ファイルパスをファイル名とディレクトリパスに分割します。
- * @param filePath
- */
-export function splitFilePath(filePath: string): { fileName: string; dirPath: string } {
-  const segments = filePath.split('/')
-  const fileName = segments[segments.length - 1]
-  let dirPath = ''
-  if (segments.length >= 2) {
-    dirPath = segments.slice(0, segments.length - 1).join('/')
-  }
-  return { fileName, dirPath }
 }

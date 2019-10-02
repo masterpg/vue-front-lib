@@ -1,7 +1,8 @@
 import * as vary from 'vary'
 import { Inject, Injectable } from '@nestjs/common'
-import { Logger, LoggingData } from './logging'
+import { Logger, LoggingData, LoggingLatencyTimer } from './logging'
 import { NextFunction, Request, Response } from 'express'
+import { GraphQLResolveInfo } from 'graphql'
 import { config } from '../../base/config'
 
 //========================================================================
@@ -19,6 +20,7 @@ interface CORSOptions {
   maxAge?: number
   optionsSuccessStatus?: number
   allowedBlankOrigin?: boolean
+  isLogging?: boolean
 }
 
 export abstract class CORSService {
@@ -43,6 +45,7 @@ export abstract class CORSService {
       credentials: false,
       optionsSuccessStatus: 204,
       allowedBlankOrigin: false,
+      isLogging: false,
     }
   }
 
@@ -52,14 +55,16 @@ export abstract class CORSService {
   //
   //----------------------------------------------------------------------
 
-  validate(req: Request, res: Response, next: NextFunction, options?: CORSOptions): void {
+  validate(context: { req: Request; res: Response; info?: GraphQLResolveInfo }, next?: NextFunction, options?: CORSOptions): boolean {
+    const { req, res } = context
     options = {
       ...this.defaultOptions,
       ...(options || {}),
     }
 
-    if (!this.isAllowed(options, req)) {
-      this.logNotAllowed(req, res, options)
+    const isAllowed = this.isAllowed(options, req)
+    if (!isAllowed && options.isLogging) {
+      !isAllowed && this.logNotAllowed(context, options)
     }
 
     const headers = []
@@ -84,8 +89,10 @@ export abstract class CORSService {
     // 通常リクエスト
     else {
       this.applyHeaders(headers, res)
-      next()
+      next && next()
     }
+
+    return isAllowed
   }
 
   //----------------------------------------------------------------------
@@ -102,15 +109,15 @@ export abstract class CORSService {
     if (options.allowedBlankOrigin && !requestOrigin) {
       return true
     }
+
     // ホワイトリストが指定されていない場合
-    else if (whitelist.length === 0) {
+    if (whitelist.length === 0) {
       return false
     }
-    // ホワイトリストが指定されている場合
-    else {
-      // リクエストオリジンがホワイトリストに含まれていることを検証
-      return whitelist.indexOf(requestOrigin) >= 0
-    }
+
+    // ホワイトリストが指定されている場合、
+    // リクエストオリジンがホワイトリストに含まれていることを検証
+    return whitelist.indexOf(requestOrigin) >= 0
   }
 
   protected configureOrigin(options: CORSOptions, req: Request) {
@@ -131,7 +138,7 @@ export abstract class CORSService {
     }
     // リクエストオリジンがホワイトリストに含まれていない場合
     else {
-      headers.push({ key: 'Access-Control-Allow-Origin', value: false })
+      headers.push({ key: 'Access-Control-Allow-Origin', value: '' })
     }
     return headers
   }
@@ -234,14 +241,20 @@ export abstract class CORSService {
     }
   }
 
-  protected logNotAllowed(req: Request, res: Response, options: CORSOptions) {
-    this.logger.log({
-      req,
-      res,
-      metadata: {
-        severity: 500, // ERROR
-      },
-      data: this.getErrorData(req, options),
+  protected logNotAllowed(context: { req: Request; res: Response; info?: GraphQLResolveInfo }, options: CORSOptions) {
+    const { req, res, info } = context
+    const latencyTimer = new LoggingLatencyTimer().start()
+    res.on('finish', () => {
+      this.logger.log({
+        req,
+        res,
+        info,
+        latencyTimer,
+        metadata: {
+          severity: 500, // ERROR
+        },
+        data: this.getErrorData(req, options),
+      })
     })
   }
 
@@ -277,10 +290,13 @@ class DevCORSService extends CORSService {
     }
   }
 
-  protected logNotAllowed(req: Request, res: Response, options: CORSOptions) {
-    super.logNotAllowed(req, res, options)
-    const data = this.getErrorData(req, options)
-    console.error('[ERROR]:', JSON.stringify(data.error, null, 2))
+  protected logNotAllowed(context: { req: Request; res: Response; info?: GraphQLResolveInfo }, options: CORSOptions) {
+    const { req, res, info } = context
+    const data = {
+      functionName: this.logger.getFunctionName({ req, info }),
+      ...this.getErrorData(req, options),
+    }
+    console.error('[ERROR]:', JSON.stringify(data, null, 2))
   }
 }
 

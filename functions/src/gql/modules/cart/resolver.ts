@@ -2,9 +2,9 @@ import { AddCartItemInput, CartItem, CartService, EditCartItemResponse, UpdateCa
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql'
 import { UseGuards, UseInterceptors } from '@nestjs/common'
 import { GQLLoggingInterceptor } from '../../interceptors/logging'
-import { GQLUser } from '../../decorators/user'
-import { GQLUserGuard } from '../../guards/user'
 import { IdToken } from '../../../services/base'
+import { User } from '../../../nest'
+import { UserGuard } from '../../../nest/guards/user'
 
 @Resolver('CartItem')
 @UseInterceptors(GQLLoggingInterceptor)
@@ -12,32 +12,32 @@ export class CartResolver {
   constructor(private readonly cartService: CartService) {}
 
   @Query()
-  @UseGuards(GQLUserGuard)
-  async cartItems(@GQLUser() user: IdToken, @Args('ids') ids?: string[]): Promise<CartItem[]> {
+  @UseGuards(UserGuard)
+  async cartItems(@User() user: IdToken, @Args('ids') ids?: string[]): Promise<CartItem[]> {
     return this.cartService.getCartItems(user, ids)
   }
 
   @Mutation()
-  @UseGuards(GQLUserGuard)
-  async updateCartItems(@GQLUser() user: IdToken, @Args('inputs') inputs: UpdateCartItemInput[]): Promise<EditCartItemResponse[]> {
+  @UseGuards(UserGuard)
+  async updateCartItems(@User() user: IdToken, @Args('inputs') inputs: UpdateCartItemInput[]): Promise<EditCartItemResponse[]> {
     return this.cartService.updateCartItems(user, inputs)
   }
 
   @Mutation()
-  @UseGuards(GQLUserGuard)
-  async addCartItems(@GQLUser() user: IdToken, @Args('inputs') inputs: AddCartItemInput[]): Promise<EditCartItemResponse[]> {
+  @UseGuards(UserGuard)
+  async addCartItems(@User() user: IdToken, @Args('inputs') inputs: AddCartItemInput[]): Promise<EditCartItemResponse[]> {
     return this.cartService.addCartItems(user, inputs)
   }
 
   @Mutation()
-  @UseGuards(GQLUserGuard)
-  async removeCartItems(@GQLUser() user: IdToken, @Args('ids') ids: string[]): Promise<EditCartItemResponse[]> {
+  @UseGuards(UserGuard)
+  async removeCartItems(@User() user: IdToken, @Args('ids') ids: string[]): Promise<EditCartItemResponse[]> {
     return this.cartService.removeCartItems(user, ids)
   }
 
   @Mutation()
-  @UseGuards(GQLUserGuard)
-  async checkoutCart(@GQLUser() user: IdToken): Promise<boolean> {
+  @UseGuards(UserGuard)
+  async checkoutCart(@User() user: IdToken): Promise<boolean> {
     return this.cartService.checkoutCart(user)
   }
 }

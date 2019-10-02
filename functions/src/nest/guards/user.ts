@@ -1,12 +1,10 @@
 import { AuthService, Logger, LoggingLatencyTimer } from '../../services/base'
 import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common'
-import { GQLContext } from '../types'
-import { GqlExecutionContext } from '@nestjs/graphql'
-import { GraphQLResolveInfo } from 'graphql'
 import { Reflector } from '@nestjs/core'
+import { getAllExecutionContext } from '../utils'
 
 @Injectable()
-export class GQLUserGuard implements CanActivate {
+export class UserGuard implements CanActivate {
   constructor(
     protected readonly reflector: Reflector,
     @Inject(AuthService) protected readonly authService: AuthService,
@@ -15,11 +13,7 @@ export class GQLUserGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const roles = this.reflector.get<string[]>('roles', context.getHandler())
-    const gqlExecContext = GqlExecutionContext.create(context)
-    const gqlContext = gqlExecContext.getContext<GQLContext>()
-    const req = gqlContext.req
-    const res = gqlContext.res
-    const info = gqlExecContext.getInfo<GraphQLResolveInfo>()
+    const { req, res, info } = getAllExecutionContext(context)
     const latencyTimer = new LoggingLatencyTimer().start()
 
     const validated = await this.authService.validate(req, roles)

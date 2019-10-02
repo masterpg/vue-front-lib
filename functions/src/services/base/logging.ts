@@ -11,6 +11,7 @@ import { config } from '../../base/config'
 import { google } from '@google-cloud/logging/build/proto/logging'
 import IHttpRequest = google.logging.type.IHttpRequest
 import IMonitoredResource = google.api.IMonitoredResource
+import { removeBothEndsSlash } from '../../base/utils'
 const merge = require('lodash/merge')
 
 //========================================================================
@@ -135,6 +136,15 @@ export abstract class Logger {
     this.m_writeLog(logName ? logName : DEFAULT_LOG_NAME, realMetadata, realData)
   }
 
+  getFunctionName(loggingSource: { req: Request; info?: GraphQLResolveInfo }): string {
+    const { req, info } = loggingSource
+    if (info) {
+      return `api/gql/${info.path.key}`
+    } else {
+      return this.getFunctionNameByRequest(req)
+    }
+  }
+
   //----------------------------------------------------------------------
   //
   //  Internal methods
@@ -210,7 +220,7 @@ export abstract class Logger {
     return {
       type: 'cloud_function',
       labels: {
-        function_name: info ? this.m_getFunctionNameByInfo(info) : this.getFunctionNameByRequest(req),
+        function_name: this.getFunctionName(loggingSource),
         region: config.functions.region,
       },
     }
@@ -230,10 +240,6 @@ export abstract class Logger {
       latency: latencyTimer ? latencyTimer.stop().data : { seconds: 0, nanos: 0 },
     }
   }
-
-  private m_getFunctionNameByInfo(info: GraphQLResolveInfo): string {
-    return `api/gql/${info.path.key}`
-  }
 }
 
 //========================================================================
@@ -248,7 +254,7 @@ class ProdLogger extends Logger {
     // 例: function_name = "api/rest/hello"
     // ・req.baseUrl: "/rest"
     // ・req.path: "/hello"
-    return path.join('api', req.baseUrl, req.path).replace(/\/$/, '')
+    return removeBothEndsSlash(path.join('api', req.baseUrl, req.path))
   }
 
   protected getRequestUrl(req: Request): string {
@@ -282,7 +288,7 @@ class DevLogger extends Logger {
     // ・req.path: "/hello"
     const matched = `${req.baseUrl}${req.path}`.match(/\/api\/.*[^/]/)
     if (matched) {
-      return matched[0]
+      return removeBothEndsSlash(matched[0])
     }
     return ''
   }
