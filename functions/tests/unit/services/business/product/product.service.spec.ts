@@ -1,7 +1,7 @@
-import { Product, ProductServiceDI, TestServiceDI } from '../../../../src/services/business'
-import { FirestoreServiceDI } from '../../../../src/services/base'
+import { Product, ProductServiceDI, TestServiceDI } from '../../../../../src/services/business'
+import { FirestoreServiceDI } from '../../../../../src/services/base'
 import { Test } from '@nestjs/testing'
-import { initFirebaseApp } from '../../../../src/base/firebase'
+import { initFirebaseApp } from '../../../../../src/base/firebase'
 
 jest.setTimeout(25000)
 initFirebaseApp()

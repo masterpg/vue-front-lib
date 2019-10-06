@@ -27,11 +27,11 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.userStorageBasePath
   }
 
-  async userStorageNodes(dirPath?: string): Promise<GQLStorageNode[]> {
-    const response = await this.query<{ userStorageNodes: GQLStorageNode[] }>({
+  async userStorageDirNodes(dirPath?: string): Promise<GQLStorageNode[]> {
+    const response = await this.query<{ userStorageDirNodes: GQLStorageNode[] }>({
       query: gql`
         query GetUserStorageNodes($dirPath: String) {
-          userStorageNodes(dirPath: $dirPath) {
+          userStorageDirNodes(dirPath: $dirPath) {
             nodeType
             name
             dir
@@ -42,7 +42,7 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
       variables: { dirPath },
       isAuth: true,
     })
-    return response.data.userStorageNodes
+    return response.data.userStorageDirNodes
   }
 
   async createUserStorageDirs(dirPaths: string[]): Promise<GQLStorageNode[]> {
@@ -63,11 +63,11 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.createUserStorageDirs
   }
 
-  async removeUserStorageNodes(nodePaths: string[]): Promise<GQLStorageNode[]> {
-    const response = await this.mutate<{ removeUserStorageNodes: GQLStorageNode[] }>({
+  async removeUserStorageFileNodes(filePaths: string[]): Promise<GQLStorageNode[]> {
+    const response = await this.mutate<{ removeUserStorageFileNodes: GQLStorageNode[] }>({
       mutation: gql`
-        mutation RemoveStorageNodes($nodePaths: [String!]!) {
-          removeUserStorageNodes(nodePaths: $nodePaths) {
+        mutation RemoveUserStorageFileNodes($filePaths: [String!]!) {
+          removeUserStorageFileNodes(filePaths: $filePaths) {
             nodeType
             name
             dir
@@ -75,10 +75,28 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
           }
         }
       `,
-      variables: { nodePaths },
+      variables: { filePaths },
       isAuth: true,
     })
-    return response.data.removeUserStorageNodes
+    return response.data.removeUserStorageFileNodes
+  }
+
+  async removeUserStorageDirNodes(dirPath: string): Promise<GQLStorageNode[]> {
+    const response = await this.mutate<{ removeUserStorageDirNodes: GQLStorageNode[] }>({
+      mutation: gql`
+        mutation RemoveUserStorageDirNodes($dirPath: String!) {
+          removeUserStorageDirNodes(dirPath: $dirPath) {
+            nodeType
+            name
+            dir
+            path
+          }
+        }
+      `,
+      variables: { dirPath },
+      isAuth: true,
+    })
+    return response.data.removeUserStorageDirNodes
   }
 
   async getSignedUploadUrls(inputs: { filePath: string; contentType?: string }[]): Promise<string[]> {

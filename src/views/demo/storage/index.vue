@@ -220,14 +220,15 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
     this.$q.loading.hide()
   }
 
-  private async m_removeNodes(nodes: CompTreeNode<StorageTreeNodeItem>[]): Promise<void> {
+  private async m_removeNode(node: CompTreeNode<StorageTreeNodeItem>): Promise<void> {
     this.$q.loading.show()
     let bag: StorageNodeBag
     try {
-      const nodePaths = nodes.map(node => {
-        return node.item.nodeType === StorageNodeType.Dir ? `${node.value}/` : node.value
-      })
-      bag = await this.$logic.storage.removeUserStorageNodes(nodePaths)
+      if (node.item.nodeType === StorageNodeType.File) {
+        bag = await this.$logic.storage.removeUserStorageFileNodes([node.value])
+      } else if (node.item.nodeType === StorageNodeType.Dir) {
+        bag = await this.$logic.storage.removeUserStorageDirNodes(node.value)
+      }
     } catch (err) {
       this.$q.loading.hide()
       console.error(err)
@@ -298,7 +299,7 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
   private async m_treeViewOnDeleteSelected(node: CompTreeNode<StorageTreeNodeItem>) {
     const confirmed = await this.m_nodesRemoveDialog.open([node])
     if (confirmed) {
-      await this.m_removeNodes([node])
+      await this.m_removeNode(node)
     }
   }
 }

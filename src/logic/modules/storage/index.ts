@@ -15,7 +15,7 @@ export class StorageLogicImpl extends BaseLogic implements StorageLogic {
   }
 
   async getUserNodes(dirPath?: string): Promise<StorageNodeBag> {
-    const gqlNodes = await gql.userStorageNodes(dirPath)
+    const gqlNodes = await gql.userStorageDirNodes(dirPath)
     return toStorageNodeBag(gqlNodes)
   }
 
@@ -24,8 +24,13 @@ export class StorageLogicImpl extends BaseLogic implements StorageLogic {
     return toStorageNodeBag(gqlNodes)
   }
 
-  async removeUserStorageNodes(nodePaths: string[]): Promise<StorageNodeBag> {
-    const gqlNodes = await gql.removeUserStorageNodes(nodePaths)
+  async removeUserStorageFileNodes(filePaths: string[]): Promise<StorageNodeBag> {
+    const gqlNodes = await gql.removeUserStorageFileNodes(filePaths)
+    return toStorageNodeBag(gqlNodes)
+  }
+
+  async removeUserStorageDirNodes(dirPath: string): Promise<StorageNodeBag> {
+    const gqlNodes = await gql.removeUserStorageDirNodes(dirPath)
     return toStorageNodeBag(gqlNodes)
   }
 

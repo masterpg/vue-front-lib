@@ -7,7 +7,7 @@ import { config } from '../../base/config'
 class AppService {
   async customToken(user: IdToken): Promise<string> {
     const token = await admin.auth().createCustomToken(user.uid, {
-      isAppAdmin: config.role.admins.includes(user.email),
+      isAppAdmin: config.role.app.admins.includes(user.email),
     })
     return token
   }

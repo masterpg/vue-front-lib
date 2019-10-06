@@ -57,7 +57,8 @@ export interface IMutation {
     removeCartItems(ids: string[]): EditCartItemResponse[] | Promise<EditCartItemResponse[]>;
     checkoutCart(): boolean | Promise<boolean>;
     createUserStorageDirs(dirPaths: string[]): StorageNode[] | Promise<StorageNode[]>;
-    removeUserStorageNodes(nodePaths: string[]): StorageNode[] | Promise<StorageNode[]>;
+    removeUserStorageFileNodes(filePaths: string[]): StorageNode[] | Promise<StorageNode[]>;
+    removeUserStorageDirNodes(dirPath: string): StorageNode[] | Promise<StorageNode[]>;
     putTestData(inputs: PutTestDataInput[]): boolean | Promise<boolean>;
 }
 
@@ -73,7 +74,7 @@ export interface IQuery {
     cartItems(ids?: string[]): CartItem[] | Promise<CartItem[]>;
     products(ids?: string[]): Product[] | Promise<Product[]>;
     userStorageBasePath(): string | Promise<string>;
-    userStorageNodes(dirPath?: string): StorageNode[] | Promise<StorageNode[]>;
+    userStorageDirNodes(dirPath?: string): StorageNode[] | Promise<StorageNode[]>;
     signedUploadUrls(inputs: SignedUploadUrlInput[]): string[] | Promise<string[]>;
 }
 

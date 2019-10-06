@@ -16,25 +16,23 @@ export const config = new (class {
 
   readonly cors = new (class {
     get whitelist(): string[] {
-      if (functions.config().cors && functions.config().cors.whitelist) {
-        return functions
-          .config()
-          .cors.whitelist.split(',')
-          .map((item: string) => item.trim())
+      if (functions.config().cors) {
+        const whitelist = functions.config().cors.whitelist || ''
+        return whitelist.split(',').map((item: string) => item.trim())
       }
       return []
     }
   })()
 
   readonly role = new (class {
-    get admins(): string[] {
-      if (functions.config().role && functions.config().role.admins) {
-        return functions
-          .config()
-          .role.admins.split(',')
-          .map((item: string) => item.trim())
+    readonly app = new (class {
+      get admins(): string[] {
+        if (functions.config().role && functions.config().role.app) {
+          const admins = functions.config().role.app.admins || ''
+          return admins.split(',').map((item: string) => item.trim())
+        }
+        return []
       }
-      return []
-    }
+    })()
   })()
 })()

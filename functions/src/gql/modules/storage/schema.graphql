@@ -17,11 +17,12 @@ input SignedUploadUrlInput {
 
 type Mutation {
   createUserStorageDirs(dirPaths: [String!]!): [StorageNode!]!
-  removeUserStorageNodes(nodePaths: [String!]!): [StorageNode!]!
+  removeUserStorageFileNodes(filePaths: [String!]!): [StorageNode!]!
+  removeUserStorageDirNodes(dirPath: String!): [StorageNode!]!
 }
 
 type Query {
   userStorageBasePath: String!
-  userStorageNodes(dirPath: String): [StorageNode!]!
+  userStorageDirNodes(dirPath: String): [StorageNode!]!
   signedUploadUrls(inputs: [SignedUploadUrlInput!]!): [String!]!
 }

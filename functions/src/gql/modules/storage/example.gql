@@ -2,8 +2,8 @@ query GetUserStorageBasePath {
   userStorageBasePath
 }
 
-query GetUserStorageNodes {
-  userStorageNodes {
+query GetUserStorageDirNodes {
+  userStorageDirNodes {
     nodeType
     name
     dir
@@ -11,8 +11,8 @@ query GetUserStorageNodes {
   }
 }
 
-query GetUserStorageNodes {
-  userStorageNodes(dirPath: "dir1") {
+query GetUserStorageDirNodes {
+  userStorageDirNodes(dirPath: "dir1") {
     nodeType
     name
     dir
@@ -20,8 +20,8 @@ query GetUserStorageNodes {
   }
 }
 
-query GetUserStorageNodes($path: String) {
-  userStorageNodes(dirPath: $dirPath) {
+query GetUserStorageDirNodes($dirPath: String) {
+  userStorageDirNodes(dirPath: $dirPath) {
     nodeType
     name
     dir
@@ -29,11 +29,11 @@ query GetUserStorageNodes($path: String) {
   }
 }
 {
-  "dirPath": "dir1/"
+  "dirPath": "dir1"
 }
 
 mutation CreateUserStorageDirs {
-  createUserStorageDirs(dirPaths: ["dir1/dir1_1/"]) {
+  createUserStorageDirs(dirPaths: ["dir1/dir1_1"]) {
     nodeType
     name
     dir
@@ -51,15 +51,15 @@ mutation CreateUserStorageDirs($dirPaths: [String!]!) {
 }
 {
   "dirPaths": [
-    "dir1/dir1_1/",
-    "dir1/dir1_1/dir1_1_1/",
-    "dir1/dir1_1/dir1_1_2/",
-    "dir2/dir2_1/"
+    "dir1/dir1_1",
+    "dir1/dir1_1/dir1_1_1",
+    "dir1/dir1_1/dir1_1_2",
+    "dir2/dir2_1"
   ]
 }
 
-mutation RemoveUserStorageNodes {
-  removeUserStorageNodes(nodePaths: ["images/aaa/"]) {
+mutation RemoveUserStorageFileNodes {
+  removeUserStorageFileNodes(filePaths: ["docs/fileA.png"]) {
     nodeType
     name
     dir
@@ -67,8 +67,8 @@ mutation RemoveUserStorageNodes {
   }
 }
 
-mutation RemoveUserStorageNodes($nodePaths: [String!]!) {
-  removeUserStorageNodes(nodePaths: $nodePaths) {
+mutation RemoveUserStorageFileNodes($filePaths: [String!]!) {
+  removeUserStorageFileNodes(filePaths: $filePaths) {
     nodeType
     name
     dir
@@ -76,7 +76,28 @@ mutation RemoveUserStorageNodes($nodePaths: [String!]!) {
   }
 }
 {
-  "nodePaths": ["images/aaa/", "images/family.png"]
+  "filePaths": ["docs/fileA.png"]
+}
+
+mutation RemoveUserStorageDirNodes {
+  removeUserStorageDirNodes(dirPath: "dir1/dir1_1") {
+    nodeType
+    name
+    dir
+    path
+  }
+}
+
+mutation RemoveUserStorageDirNodes($dirPath: String!) {
+  removeUserStorageDirNodes(dirPath: $dirPath) {
+    nodeType
+    name
+    dir
+    path
+  }
+}
+{
+  "dirPath": "dir1/dir1_1"
 }
 
 query GetSignedUploadUrls {

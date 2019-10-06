@@ -1,7 +1,7 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql'
 import { AuthRoleType, IdToken } from '../../../services/base'
 import { GQLContext, Roles, User } from '../../../nest'
-import { Inject, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Inject, UseGuards } from '@nestjs/common'
 import { SignedUploadUrlInput, StorageNode, StorageServiceDI } from '../../../services/business'
 import { GQLCtx } from '../../decorators/context'
 import { UserGuard } from '../../../nest/guards/user'
@@ -18,8 +18,8 @@ export class StorageResolver {
 
   @Query()
   @UseGuards(UserGuard)
-  async userStorageNodes(@User() user: IdToken, @Args('dirPath') dirPath?: string): Promise<StorageNode[]> {
-    return this.storageService.getUserStorageNodes(user, dirPath)
+  async userStorageDirNodes(@User() user: IdToken, @Args('dirPath') dirPath?: string): Promise<StorageNode[]> {
+    return this.storageService.getUserStorageDirNodes(user, dirPath)
   }
 
   @Mutation()
@@ -30,8 +30,14 @@ export class StorageResolver {
 
   @Mutation()
   @UseGuards(UserGuard)
-  async removeUserStorageNodes(@User() user: IdToken, @Args('nodePaths') nodePaths: string[]): Promise<StorageNode[]> {
-    return this.storageService.removeUserStorageNodes(user, nodePaths)
+  async removeUserStorageFileNodes(@User() user: IdToken, @Args('filePaths') filePaths: string[]): Promise<StorageNode[]> {
+    return this.storageService.removeUserStorageFileNodes(user, filePaths)
+  }
+
+  @Mutation()
+  @UseGuards(UserGuard)
+  async removeUserStorageDirNodes(@User() user: IdToken, @Args('dirPath') dirPath: string): Promise<StorageNode[]> {
+    return this.storageService.removeUserStorageDirNodes(user, dirPath)
   }
 
   @Query()

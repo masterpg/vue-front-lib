@@ -1,6 +1,7 @@
 import { GQLAddCartItemInput, GQLCartItem, GQLEditCartItemResponse, GQLProduct, gql, initGQL } from '@/gql'
 import { clearAuthUser, putTestData, setAuthUser, testGQL } from '../../helper/comm'
 const cloneDeep = require('lodash/cloneDeep')
+const isEmpty = require('lodash/isEmpty')
 
 jest.setTimeout(25000)
 initGQL(testGQL)
@@ -38,6 +39,48 @@ function getGQLErrorResponse(error: any): { statusCode: number; error: string; m
 
 beforeEach(async () => {
   clearAuthUser()
+})
+
+describe('customToken', () => {
+  it('疎通確認', async () => {
+    setAuthUser(GENERAL_USER)
+
+    const actual = await gql.customToken()
+
+    expect(isEmpty(actual)).toBeFalsy()
+  })
+
+  it('サインインしていない場合', async () => {
+    let actual!: Error
+    try {
+      await gql.customToken()
+    } catch (err) {
+      actual = err
+    }
+
+    expect(getGQLErrorResponse(actual).statusCode).toBe(403)
+  })
+})
+
+describe('userStorageBasePath', () => {
+  it('疎通確認', async () => {
+    setAuthUser(GENERAL_USER)
+
+    const actual = await gql.userStorageBasePath()
+
+    expect(isEmpty(actual)).toBeFalsy()
+  })
+
+  it('サインインしていない場合', async () => {
+    let actual!: Error
+    try {
+      await gql.userStorageBasePath()
+    } catch (err) {
+      actual = err
+    }
+
+    expect(getGQLErrorResponse(actual).statusCode).toBe(403)
+  })
 })
 
 describe('product', () => {

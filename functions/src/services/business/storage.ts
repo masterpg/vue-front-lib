@@ -7,8 +7,7 @@ import * as admin from 'firebase-admin'
 import * as path from 'path'
 import { Bucket, File } from '@google-cloud/storage'
 import { StorageNode, StorageNodeType, SignedUploadUrlInput as _SignedUploadUrlInput, StorageNode as _StorageNode } from './types'
-import { removeEndSlash, removeStartSlash, splitFilePath } from '../../base/utils'
-import { IdToken } from '../base'
+import { removeBothEndsSlash, removeEndSlash, removeStartSlash, splitFilePath } from '../../base/utils'
 import { Injectable } from '@nestjs/common'
 import { InputValidationError } from '../../base/validator'
 import { config } from '../../base/config'
@@ -16,7 +15,6 @@ const isString = require('lodash/isString')
 
 export class SignedUploadUrlInput implements _SignedUploadUrlInput {
   filePath!: string
-
   contentType?: string
 }
 
@@ -26,88 +24,229 @@ export interface GCSStorageNode extends _StorageNode {
 
 @Injectable()
 class StorageService {
-  async getUserStorageNodes(user: IdToken, dirPath?: string): Promise<StorageNode[]> {
-    if (dirPath && !dirPath.endsWith('/')) {
-      throw new InputValidationError(`The argument 'dirPath' must end with '/'.`)
-    }
+  //----------------------------------------------------------------------
+  //
+  //  Methods
+  //
+  //----------------------------------------------------------------------
 
+  /**
+   * ローカルファイルをCloud Storageへアップロードします。
+   * @param uploadList
+   */
+  async uploadLocalFiles(uploadList: { localFilePath: string; toFilePath: string }[]): Promise<StorageNode[]> {
+    const bucket = admin.storage().bucket()
+    const promises: Promise<StorageNode>[] = []
+    for (const uploadItem of uploadList) {
+      promises.push(
+        bucket.upload(uploadItem.localFilePath, { destination: uploadItem.toFilePath }).then(response => {
+          const file = response[0]
+          const metadata = response[1]
+          return this.toStorageNode(file)
+        })
+      )
+    }
+    return Promise.all(promises)
+  }
+
+  /**
+   * Cloud Storageから指定されたディレクトリのノード一覧を取得します。
+   *
+   * 引数が次のように指定された場合、
+   *   + dirPath: "photos"
+   *   + basePath: "home"
+   * 次のようなノードが取得されます。
+   *   + "home/photos/family.png"
+   *   + "home/photos/children.png"
+   * 戻り値は基準パスのノードが除去され、次のようなノードが返されます。
+   *   + "photos/family.png"
+   *   + "photos/children.png"
+   *
+   * @param dirPath
+   * @param basePath
+   */
+  async getStorageDirNodes(dirPath?: string, basePath?: string): Promise<StorageNode[]> {
     // Cloud Storageから指定されたディレクトリのノードを取得
-    const userDirPath = this.getUserStorageDirPath(user)
-    let nodeMap = await this.getStorageNodeMap(dirPath, userDirPath)
+    const nodeMap = await this.getStorageNodeMap(dirPath, basePath)
 
     // 親ディレクトリの穴埋め
     this.padVirtualDirNode(nodeMap)
 
-    // ルートディレクトリ、または指定されたディレクトリのノードを除去する
-    delete nodeMap[removeEndSlash(dirPath)]
-
-    // ディレクトリ階層を表現できるようノード配列をソートする
+    // ディレクトリ階層を表現できるようノード配列をソート
     const result = Object.values(nodeMap)
     this.sortStorageNodes(result)
 
     return result
   }
 
-  async createUserStorageDirs(user: IdToken, dirPaths: string[]): Promise<StorageNode[]> {
-    for (const dirPath of dirPaths) {
-      if (dirPath && !dirPath.endsWith('/')) {
-        throw new InputValidationError(`The argument path of 'dirPaths' must end with '/'.`)
-      }
-    }
-
-    const bucket = admin.storage().bucket()
+  /**
+   * Cloud Storageのユーザーディレクトリから指定されたディレクトリのノード一覧を取得します。
+   * @param user
+   * @param dirPath
+   */
+  async getUserStorageDirNodes(user: { uid: string }, dirPath?: string): Promise<StorageNode[]> {
     const userDirPath = this.getUserStorageDirPath(user)
+    return this.getStorageDirNodes(dirPath, userDirPath)
+  }
+
+  /**
+   * Cloud Storageのディレクトリを作成します。
+   *
+   * 引数が次のように指定された場合、
+   *   + dirPaths[0]: "photos"
+   *   + dirPaths[1]: "docs"
+   *   + basePath: "home"
+   * 次のディレクトリが作成されます。
+   *   + "home/photos"
+   *   + "home/docs"
+   * 戻り値は基準パスのノードが除去され、次のようなノードが返されます。
+   *   + "photos"
+   *   + "docs"
+   *
+   * @param dirPaths
+   * @param basePath
+   */
+  async createStorageDirs(dirPaths: string[], basePath: string = ''): Promise<StorageNode[]> {
+    const bucket = admin.storage().bucket()
     const result: StorageNode[] = []
 
     const promises: Promise<void>[] = []
     for (const dirPath of this.splitHierarchicalDirPaths(...dirPaths)) {
       promises.push(
-        this.createStorageDir(bucket, dirPath, userDirPath).then(storageNode => {
-          if (storageNode) {
-            result.push(storageNode)
-          }
-        })
+        (async () => {
+          const gcsDirPath = path.join(basePath, dirPath, '/')
+          const gcsDirNode = bucket.file(gcsDirPath)
+          const exists = (await gcsDirNode.exists())[0]
+          if (exists) return
+          await gcsDirNode.save('')
+          result.push(this.toStorageNode(gcsDirNode, basePath))
+        })()
       )
     }
     await Promise.all(promises)
 
+    this.sortStorageNodes(result)
     return result
   }
 
-  async removeUserStorageNodes(user: IdToken, nodePaths: string[]): Promise<StorageNode[]> {
-    const result: StorageNode[] = []
-
-    const bucket = admin.storage().bucket()
+  /**
+   * Cloud Storageのユーザーディレクトリ配下にディレクトリを作成します。
+   * @param user
+   * @param dirPaths
+   */
+  async createUserStorageDirs(user: { uid: string }, dirPaths: string[]): Promise<StorageNode[]> {
     const userDirPath = this.getUserStorageDirPath(user)
-    const promises: Array<Promise<void>> = []
-    for (const nodePath of nodePaths) {
-      const nodeType = this.getStorageNodeType(nodePath)
-      // ノードがディレクトリの場合
-      if (nodeType === StorageNodeType.Dir) {
-        promises.push(
-          this.removeStorageDirNode(bucket, nodePath, userDirPath).then(nodes => {
-            result.push(...nodes)
-          })
-        )
-      }
-      // ノードがファイルの場合
-      else if (nodeType === StorageNodeType.File) {
-        promises.push(
-          this.removeStorageFileNode(bucket, nodePath, userDirPath).then(node => {
-            node && result.push(node)
-          })
-        )
-      }
+    return this.createStorageDirs(dirPaths, userDirPath)
+  }
+
+  /**
+   * Cloud Storageからファイルノードを削除します。
+   *
+   * 引数が次のように指定された場合、
+   *   + filePaths[0]: "photos/family.png"
+   *   + filePaths[1]: "photos/children.png"
+   *   + basePath: "home"
+   * 次のファイルが削除されます。
+   *   + "home/photos/family.png"
+   *   + "home/photos/children.png"
+   * 戻り値は基準パスのノードが除去され、次のようなノードが返されます。
+   *   + "photos/family.png"
+   *   + "photos/children.png"
+   *
+   * @param filePaths
+   * @param basePath
+   */
+  async removeStorageFileNodes(filePaths: string[], basePath: string = ''): Promise<StorageNode[]> {
+    const bucket = admin.storage().bucket()
+    const nodeMap: { [path: string]: StorageNode } = {}
+
+    const promises: Promise<void>[] = []
+    for (const filePath of filePaths) {
+      promises.push(
+        (async () => {
+          const gcsFilePath = removeBothEndsSlash(path.join(basePath, filePath))
+          const gcsFileNode = bucket.file(gcsFilePath)
+          const exists = (await gcsFileNode.exists())[0]
+          if (exists) {
+            await gcsFileNode.delete()
+            const node = this.toStorageNode(gcsFileNode, basePath)
+            nodeMap[node.path] = node
+          }
+        })()
+      )
     }
     await Promise.all(promises)
 
-    return result
+    return filePaths.reduce<StorageNode[]>((result, filePath) => {
+      const fileNode = nodeMap[removeBothEndsSlash(filePath)]
+      fileNode && result.push(fileNode)
+      return result
+    }, [])
   }
 
-  async getSignedUploadUrls(requestOrigin: string, inputs: SignedUploadUrlInput[]): Promise<string[]> {
-    if (!isString(requestOrigin)) {
-      throw new InputValidationError('Request origin is not set.')
+  /**
+   * Cloud Storageのユーザーディレクトリ配下にあるファイルを削除します。。
+   * @param user
+   * @param filePaths
+   */
+  async removeUserStorageFileNodes(user: { uid: string }, filePaths: string[]): Promise<StorageNode[]> {
+    const userDirPath = this.getUserStorageDirPath(user)
+    return this.removeStorageFileNodes(filePaths, userDirPath)
+  }
+
+  /**
+   * Cloud Storageから指定されたディレクトリを含め配下のノードを削除します。
+   *
+   * 引数が次のように指定された場合、
+   *   + dirPath: "photos"
+   *   + basePath: "home"
+   * 次のようなディレクトリ、ファイルが削除されます。
+   *   + "home/photos"
+   *   + "home/photos/family.png"
+   *   + "home/photos/children.png"
+   * 戻り値は基準パスのノードが除去され、次のようなノードが返されます。
+   *   + "photos"
+   *   + "photos/family.png"
+   *   + "photos/children.png"
+   *
+   * @param dirPath
+   * @param basePath
+   */
+  async removeStorageDirNodes(dirPath: string, basePath: string = ''): Promise<StorageNode[]> {
+    // Cloud Storageから指定されたディレクトリのノードを取得
+    let nodeMap = await this.getStorageNodeMap(dirPath, basePath)
+    // 親ディレクトリの穴埋め
+    this.padVirtualDirNode(nodeMap, dirPath)
+
+    // Cloud Storageから取得したノードを削除
+    const promises: Promise<StorageNode>[] = []
+    for (const node of Object.values(nodeMap)) {
+      if (node.gcsNode) {
+        promises.push(node.gcsNode.delete().then(() => node))
+      }
     }
+    const nodes = await Promise.all(promises)
+
+    this.sortStorageNodes(nodes)
+    return nodes
+  }
+
+  /**
+   * Cloud Storageのユーザーディレクトリ配下にあるファイルを削除します。。
+   * @param user
+   * @param dirPath
+   */
+  async removeUserStorageDirNodes(user: { uid: string }, dirPath: string): Promise<StorageNode[]> {
+    const userDirPath = this.getUserStorageDirPath(user)
+    return this.removeStorageDirNodes(dirPath, userDirPath)
+  }
+
+  /**
+   * 署名付きのアップロードURLを取得します。
+   * @param requestOrigin
+   * @param inputs
+   */
+  async getSignedUploadUrls(requestOrigin: string, inputs: SignedUploadUrlInput[]): Promise<string[]> {
     if (!config.cors.whitelist.includes(requestOrigin)) {
       throw new InputValidationError('Request origin is invalid.', { requestOrigin })
     }
@@ -141,6 +280,8 @@ class StorageService {
     // 引数のディレクトリパスをCloud Storageのパスへ変換
     let gcsDirPath = ''
     if (dirPath || basePath) {
+      basePath = removeBothEndsSlash(basePath)
+      dirPath = removeBothEndsSlash(dirPath)
       gcsDirPath = path.join(basePath, dirPath, '/')
     }
 
@@ -150,70 +291,17 @@ class StorageService {
 
     const result: { [path: string]: GCSStorageNode } = {}
 
-    // 引数のディレクトリパス配下のノードをCloud Storageから取得
     for (const gcsNode of gcsNodes) {
+      // basePathが指定されかつ、basePathと取得ノードが一致した場合、無視する
+      if (basePath && `${basePath}/` === gcsNode.name) {
+        continue
+      }
       const node = this.toStorageNode(gcsNode, basePath) as GCSStorageNode
       node.gcsNode = gcsNode
       result[node.path] = node
     }
 
     return result
-  }
-
-  /**
-   * Cloud Storageのディレクトリを作成します。
-   * @param bucket
-   * @param dirPath
-   * @param basePath
-   */
-  async createStorageDir(bucket: Bucket, dirPath: string, basePath: string = ''): Promise<StorageNode | undefined> {
-    const gcsDirPath = path.join(basePath, dirPath, '/')
-    const gcsDirNode = bucket.file(gcsDirPath)
-    const exists = (await gcsDirNode.exists())[0]
-    if (exists) return undefined
-    await gcsDirNode.save('')
-    return this.toStorageNode(gcsDirNode, basePath)
-  }
-
-  /**
-   * Cloud Storageからファイルノードを削除します。
-   * @param bucket
-   * @param filePath
-   * @param basePath
-   */
-  async removeStorageFileNode(bucket: Bucket, filePath: string, basePath: string = ''): Promise<StorageNode | undefined> {
-    const gcsFilePath = path.join(basePath, filePath)
-    const gcsFileNode = bucket.file(gcsFilePath)
-    const exists = (await gcsFileNode.exists())[0]
-    if (exists) {
-      return gcsFileNode.delete().then(() => {
-        return this.toStorageNode(gcsFileNode, basePath)
-      })
-    }
-    return undefined
-  }
-
-  /**
-   * Cloud Storageから指定されたディレクトリ含め配下のノードを削除します。
-   * @param bucket
-   * @param dirPath
-   * @param basePath
-   */
-  async removeStorageDirNode(bucket: Bucket, dirPath: string, basePath: string = ''): Promise<StorageNode[]> {
-    // Cloud Storageから指定されたディレクトリのノードを取得
-    let nodeMap = await this.getStorageNodeMap(dirPath, basePath)
-    // 親ディレクトリの穴埋め
-    this.padVirtualDirNode(nodeMap, dirPath)
-
-    const promises: Promise<StorageNode>[] = []
-    for (const node of Object.values(nodeMap)) {
-      if (node.gcsNode) {
-        promises.push(node.gcsNode.delete().then(() => node))
-      } else {
-        promises.push(new Promise<StorageNode>(resolve => resolve(node)))
-      }
-    }
-    return Promise.all(promises)
   }
 
   /**
@@ -230,16 +318,21 @@ class StorageService {
    * @param basePath 基準パスを指定
    */
   toStorageNode(gcsNode: File, basePath: string = ''): StorageNode {
-    let nodePath = removeEndSlash(gcsNode.name)
+    let nodePath = removeBothEndsSlash(gcsNode.name)
     if (basePath) {
-      nodePath = removeEndSlash(gcsNode.name.replace(basePath, ''))
+      basePath = removeBothEndsSlash(basePath)
+      const basePathReg = new RegExp(`^${basePath}`)
+      nodePath = removeBothEndsSlash(nodePath.replace(basePathReg, ''))
     }
     const relativePathSegments = nodePath.split('/')
     const name = relativePathSegments[relativePathSegments.length - 1]
     const dir = relativePathSegments.slice(0, relativePathSegments.length - 1).join('/')
 
+    // ノード名の末尾が'/'の場合はディレクトリ、それ以外はファイルと判定
+    const nodeType = gcsNode.name.match(/\/$/) ? StorageNodeType.Dir : StorageNodeType.File
+
     return {
-      nodeType: this.getStorageNodeType(gcsNode.name),
+      nodeType,
       name,
       dir: removeStartSlash(dir),
       path: removeStartSlash(nodePath),
@@ -272,13 +365,21 @@ class StorageService {
       //   配置されることになる。
 
       let strA = a.path
-      if (a.nodeType === StorageNodeType.File) {
-        strA = `${a.dir}${String.fromCodePoint(0xffff)}${a.name}`
-      }
-
       let strB = b.path
-      if (b.nodeType === StorageNodeType.File) {
-        strB = `${b.dir}${String.fromCodePoint(0xffff)}${b.name}`
+      if (!desc) {
+        if (a.nodeType === StorageNodeType.File) {
+          strA = `${a.dir}${String.fromCodePoint(0xffff)}${a.name}`
+        }
+        if (b.nodeType === StorageNodeType.File) {
+          strB = `${b.dir}${String.fromCodePoint(0xffff)}${b.name}`
+        }
+      } else {
+        if (a.nodeType === StorageNodeType.Dir) {
+          strA = `${a.dir}${a.name}${String.fromCodePoint(0xffff)}`
+        }
+        if (b.nodeType === StorageNodeType.Dir) {
+          strB = `${b.dir}${b.name}${String.fromCodePoint(0xffff)}`
+        }
       }
 
       if (strA < strB) {
@@ -292,19 +393,10 @@ class StorageService {
   }
 
   /**
-   * ノード名からノードタイプを判別し、取得します。
-   * @param nameOrPath
-   */
-  getStorageNodeType(nameOrPath: string): StorageNodeType {
-    // ノード名の末尾が'/'の場合はディレクトリ、それ以外はファイルと判定
-    return nameOrPath.match(/\/$/) ? StorageNodeType.Dir : StorageNodeType.File
-  }
-
-  /**
    * ユーザーディレクトリのパスを取得します。
    * @param user
    */
-  getUserStorageDirPath(user: IdToken): string {
+  getUserStorageDirPath(user: { uid: string }): string {
     return `users/${user.uid}`
   }
 
@@ -312,12 +404,12 @@ class StorageService {
    * 親ディレクトリがない場合、仮想的にディレクトリを作成して穴埋めします。
    * このようなことを行う理由として、Cloud Storageは親ディレクトリが存在しないことがあるためです。
    * 例えば、"aaa/bbb/family.png"の場合、"aaa/bbb/"というディレクトリがない場合があります。
-   * このように親ディレクトリがない場合、想的にディレクトリを作成して穴埋めします。
+   * このように親ディレクトリがない場合、仮想的にディレクトリを作成して穴埋めします。
    *
    * `basePath`は基準パスで、このパスより上位のディレクトリは作成しません。
    * 例えば、"aaa/bbb/ccc/family.png"というノードがあり、ディレクトリが存在しないとします。
-   * この条件で`basePath`に"aaa/bbb"を指定すると、以下のようにディレクトリノードが作成されます。
-   * + "aaa" ← 作成されない
+   * この条件で`basePath`に"aaa/bbb"を指定すると次のようにディレクトリノードが作成されます。
+   * + "aaa" ← 基準パスより上なので作成されない
    * + "aaa/bbb" ← 作成される
    * + "aaa/bbb/ccc" ← 作成される
    *
