@@ -13,9 +13,9 @@ export interface GQLFacade {
 
   createUserStorageDirs(dirPaths: string[]): Promise<GQLStorageNode[]>
 
-  removeUserStorageFileNodes(filePaths: string[]): Promise<GQLStorageNode[]>
+  removeUserStorageFiles(filePaths: string[]): Promise<GQLStorageNode[]>
 
-  removeUserStorageDirNodes(dirPath: string): Promise<GQLStorageNode[]>
+  removeUserStorageDir(dirPath: string): Promise<GQLStorageNode[]>
 
   getSignedUploadUrls(params: { filePath: string; contentType?: string }[]): Promise<string[]>
 

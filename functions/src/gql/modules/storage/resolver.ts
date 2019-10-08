@@ -30,19 +30,19 @@ export class StorageResolver {
 
   @Mutation()
   @UseGuards(UserGuard)
-  async removeUserStorageFileNodes(@User() user: IdToken, @Args('filePaths') filePaths: string[]): Promise<StorageNode[]> {
-    return this.storageService.removeUserStorageFileNodes(user, filePaths)
+  async removeUserStorageFiles(@User() user: IdToken, @Args('filePaths') filePaths: string[]): Promise<StorageNode[]> {
+    return this.storageService.removeUserStorageFiles(user, filePaths)
   }
 
   @Mutation()
   @UseGuards(UserGuard)
-  async removeUserStorageDirNodes(@User() user: IdToken, @Args('dirPath') dirPath: string): Promise<StorageNode[]> {
-    return this.storageService.removeUserStorageDirNodes(user, dirPath)
+  async removeUserStorageDir(@User() user: IdToken, @Args('dirPath') dirPath: string): Promise<StorageNode[]> {
+    return this.storageService.removeUserStorageDir(user, dirPath)
   }
 
   @Query()
   @UseGuards(UserGuard)
-  @Roles(AuthRoleType.Admin)
+  @Roles(AuthRoleType.AppAdmin)
   async signedUploadUrls(@GQLCtx() context: GQLContext, @Args('inputs') inputs: SignedUploadUrlInput[]): Promise<string[]> {
     const requestOrigin = (context.req.headers.origin as string) || ''
     return this.storageService.getSignedUploadUrls(requestOrigin, inputs)

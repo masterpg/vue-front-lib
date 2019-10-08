@@ -1,8 +1,11 @@
 import * as admin from 'firebase-admin'
+import * as path from 'path'
 import { Inject, Injectable } from '@nestjs/common'
+import { PutTestDataInput, StorageNode, TestSignedUploadUrlInput } from './types'
 import { DocumentReference } from '@google-cloud/firestore'
 import { FirestoreServiceDI } from '../base'
-import { PutTestDataInput } from './types'
+import {removeBothEndsSlash, splitFilePath} from '../../base/utils'
+import {File} from '@google-cloud/storage'
 const firebase_tools = require('firebase-tools')
 
 @Injectable()
@@ -31,6 +34,58 @@ class TestService {
       }
       await Promise.all(processes)
     }
+  }
+
+  async getTestSignedUploadUrls(inputs: TestSignedUploadUrlInput[]): Promise<string[]> {
+    const bucket = admin.storage().bucket()
+    const urlMap: { [path: string]: string } = {}
+
+    for (const input of inputs) {
+      const { filePath, contentType } = input
+      const { fileName, dirPath } = splitFilePath(filePath)
+      const gcsFilePath = path.join(dirPath, fileName)
+      const gcsFileNode = bucket.file(gcsFilePath)
+
+      urlMap[filePath] = (await gcsFileNode.createResumableUpload({
+        origin: '*',
+        metadata: { contentType },
+      }))[0]
+    }
+
+    return inputs.map(input => urlMap[input.filePath])
+  }
+
+  async removeTestStorageFiles(filePaths: string[]): Promise<void> {
+    const bucket = admin.storage().bucket()
+
+    const promises: Promise<void>[] = []
+    for (const filePath of filePaths) {
+      promises.push(
+        (async () => {
+          const gcsFilePath = removeBothEndsSlash(filePath)
+          const gcsFileNode = bucket.file(gcsFilePath)
+          const exists = (await gcsFileNode.exists())[0]
+          if (exists) {
+            await gcsFileNode.delete()
+          }
+        })()
+      )
+    }
+    await Promise.all(promises)
+  }
+
+  async removeTestStorageDir(dirPath: string): Promise<void> {
+    dirPath = path.join(removeBothEndsSlash(dirPath), '/')
+
+    const bucket = admin.storage().bucket()
+    const response = await bucket.getFiles({ directory: dirPath })
+    const gcsNodes = response[0] as File[]
+
+    const promises: Promise<void>[] = []
+    for (const gcsNode of gcsNodes) {
+      promises.push(gcsNode.delete().then())
+    }
+    await Promise.all(promises)
   }
 
   //----------------------------------------------------------------------

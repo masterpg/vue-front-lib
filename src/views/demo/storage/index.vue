@@ -225,9 +225,9 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
     let bag: StorageNodeBag
     try {
       if (node.item.nodeType === StorageNodeType.File) {
-        bag = await this.$logic.storage.removeUserStorageFileNodes([node.value])
+        bag = await this.$logic.storage.removeUserStorageFiles([node.value])
       } else if (node.item.nodeType === StorageNodeType.Dir) {
-        bag = await this.$logic.storage.removeUserStorageDirNodes(node.value)
+        bag = await this.$logic.storage.removeUserStorageDir(node.value)
       }
     } catch (err) {
       this.$q.loading.hide()

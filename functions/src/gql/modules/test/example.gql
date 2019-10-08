@@ -57,3 +57,43 @@ mutation PutTestData($inputs: [PutTestDataInput!]!) {
     }
   ]
 }
+
+query GetTestSignedUploadUrls {
+  testSignedUploadUrls(inputs: [
+    { filePath: "images/family.png", contentType: "image/png" }
+  ])
+}
+
+query GetTestSignedUploadUrls($inputs: [TestSignedUploadUrlInput!]!) {
+  testSignedUploadUrls(inputs: $inputs)
+}
+{
+  "inputs": [
+    {
+      "filePath": "images/family.png",
+      "contentType": "image/png"
+    }
+  ]
+}
+
+mutation RemoveTestStorageFiles {
+  removeTestStorageFiles(filePaths: ["docs/fileA.png"])
+}
+
+mutation RemoveTestStorageFiles($filePaths: [String!]!) {
+  removeTestStorageFiles(filePaths: $filePaths)
+}
+{
+  "filePaths": ["docs/fileA.png"]
+}
+
+mutation RemoveTestStorageDir {
+  removeTestStorageDir(dirPath: "dir1/dir1_1")
+}
+
+mutation RemoveTestStorageDir($dirPath: String!) {
+  removeTestStorageDir(dirPath: $dirPath)
+}
+{
+  "dirPath": "dir1/dir1_1"
+}

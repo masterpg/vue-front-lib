@@ -59,7 +59,7 @@ mutation CreateUserStorageDirs($dirPaths: [String!]!) {
 }
 
 mutation RemoveUserStorageFileNodes {
-  removeUserStorageFileNodes(filePaths: ["docs/fileA.png"]) {
+  removeUserStorageFiles(filePaths: ["docs/fileA.txt"]) {
     nodeType
     name
     dir
@@ -68,7 +68,7 @@ mutation RemoveUserStorageFileNodes {
 }
 
 mutation RemoveUserStorageFileNodes($filePaths: [String!]!) {
-  removeUserStorageFileNodes(filePaths: $filePaths) {
+  removeUserStorageFiles(filePaths: $filePaths) {
     nodeType
     name
     dir
@@ -76,11 +76,11 @@ mutation RemoveUserStorageFileNodes($filePaths: [String!]!) {
   }
 }
 {
-  "filePaths": ["docs/fileA.png"]
+  "filePaths": ["docs/fileA.txt"]
 }
 
 mutation RemoveUserStorageDirNodes {
-  removeUserStorageDirNodes(dirPath: "dir1/dir1_1") {
+  removeUserStorageDir(dirPath: "dir1/dir1_1") {
     nodeType
     name
     dir
@@ -89,7 +89,7 @@ mutation RemoveUserStorageDirNodes {
 }
 
 mutation RemoveUserStorageDirNodes($dirPath: String!) {
-  removeUserStorageDirNodes(dirPath: $dirPath) {
+  removeUserStorageDir(dirPath: $dirPath) {
     nodeType
     name
     dir
@@ -102,7 +102,7 @@ mutation RemoveUserStorageDirNodes($dirPath: String!) {
 
 query GetSignedUploadUrls {
   signedUploadUrls(inputs: [
-    { filePath: "aaa/bbb/family.png", contentType: "image/png" }
+    { filePath: "images/family.png", contentType: "image/png" }
   ])
 }
 
@@ -112,7 +112,7 @@ query GetSignedUploadUrls($inputs: [SignedUploadUrlInput!]!) {
 {
   "inputs": [
     {
-      "filePath": "aaa/bbb/family.png",
+      "filePath": "images/family.png",
       "contentType": "image/png"
     }
   ]

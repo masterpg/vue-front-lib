@@ -9,9 +9,6 @@ import { Bucket, File } from '@google-cloud/storage'
 import { StorageNode, StorageNodeType, SignedUploadUrlInput as _SignedUploadUrlInput, StorageNode as _StorageNode } from './types'
 import { removeBothEndsSlash, removeEndSlash, removeStartSlash, splitFilePath } from '../../base/utils'
 import { Injectable } from '@nestjs/common'
-import { InputValidationError } from '../../base/validator'
-import { config } from '../../base/config'
-const isString = require('lodash/isString')
 
 export class SignedUploadUrlInput implements _SignedUploadUrlInput {
   filePath!: string
@@ -156,7 +153,7 @@ class StorageService {
    * @param filePaths
    * @param basePath
    */
-  async removeStorageFileNodes(filePaths: string[], basePath: string = ''): Promise<StorageNode[]> {
+  async removeStorageFiles(filePaths: string[], basePath: string = ''): Promise<StorageNode[]> {
     const bucket = admin.storage().bucket()
     const nodeMap: { [path: string]: StorageNode } = {}
 
@@ -189,9 +186,9 @@ class StorageService {
    * @param user
    * @param filePaths
    */
-  async removeUserStorageFileNodes(user: { uid: string }, filePaths: string[]): Promise<StorageNode[]> {
+  async removeUserStorageFiles(user: { uid: string }, filePaths: string[]): Promise<StorageNode[]> {
     const userDirPath = this.getUserStorageDirPath(user)
-    return this.removeStorageFileNodes(filePaths, userDirPath)
+    return this.removeStorageFiles(filePaths, userDirPath)
   }
 
   /**
@@ -212,7 +209,7 @@ class StorageService {
    * @param dirPath
    * @param basePath
    */
-  async removeStorageDirNodes(dirPath: string, basePath: string = ''): Promise<StorageNode[]> {
+  async removeStorageDir(dirPath: string, basePath: string = ''): Promise<StorageNode[]> {
     // Cloud Storageから指定されたディレクトリのノードを取得
     let nodeMap = await this.getStorageNodeMap(dirPath, basePath)
     // 親ディレクトリの穴埋め
@@ -236,9 +233,9 @@ class StorageService {
    * @param user
    * @param dirPath
    */
-  async removeUserStorageDirNodes(user: { uid: string }, dirPath: string): Promise<StorageNode[]> {
+  async removeUserStorageDir(user: { uid: string }, dirPath: string): Promise<StorageNode[]> {
     const userDirPath = this.getUserStorageDirPath(user)
-    return this.removeStorageDirNodes(dirPath, userDirPath)
+    return this.removeStorageDir(dirPath, userDirPath)
   }
 
   /**
@@ -247,27 +244,22 @@ class StorageService {
    * @param inputs
    */
   async getSignedUploadUrls(requestOrigin: string, inputs: SignedUploadUrlInput[]): Promise<string[]> {
-    if (!config.cors.whitelist.includes(requestOrigin)) {
-      throw new InputValidationError('Request origin is invalid.', { requestOrigin })
-    }
-
-    const result: string[] = []
+    const bucket = admin.storage().bucket()
+    const urlMap: { [path: string]: string } = {}
 
     for (const input of inputs) {
       const { filePath, contentType } = input
       const { fileName, dirPath } = splitFilePath(filePath)
-      const bucket = admin.storage().bucket()
       const gcsFilePath = path.join(dirPath, fileName)
       const gcsFileNode = bucket.file(gcsFilePath)
 
-      const url = (await gcsFileNode.createResumableUpload({
+      urlMap[filePath] = (await gcsFileNode.createResumableUpload({
         origin: requestOrigin,
         metadata: { contentType },
       }))[0]
-      result.push(url)
     }
 
-    return result
+    return inputs.map(input => urlMap[input.filePath])
   }
 
   /**
@@ -287,7 +279,8 @@ class StorageService {
 
     // Cloud Storageから指定されたディレクトリのノードを取得
     const bucket = admin.storage().bucket()
-    const gcsNodes = (await bucket.getFiles({ prefix: gcsDirPath }))[0] as File[]
+    const response = await bucket.getFiles({ prefix: gcsDirPath })
+    const gcsNodes = response[0] as File[]
 
     const result: { [path: string]: GCSStorageNode } = {}
 
@@ -354,9 +347,8 @@ class StorageService {
   /**
    * ノード配列をディレクトリ階層に従ってソートします。
    * @param nodes
-   * @param desc 降順にしたい場合はtrueを指定
    */
-  sortStorageNodes(nodes: StorageNode[], desc: boolean = false): void {
+  sortStorageNodes(nodes: StorageNode[]): void {
     nodes.sort((a, b) => {
       // ソート用文字列(strA, strB)の説明:
       //   ノードがファイルの場合、同じ階層にあるディレクトリより順位を下げるために
@@ -366,26 +358,17 @@ class StorageService {
 
       let strA = a.path
       let strB = b.path
-      if (!desc) {
-        if (a.nodeType === StorageNodeType.File) {
-          strA = `${a.dir}${String.fromCodePoint(0xffff)}${a.name}`
-        }
-        if (b.nodeType === StorageNodeType.File) {
-          strB = `${b.dir}${String.fromCodePoint(0xffff)}${b.name}`
-        }
-      } else {
-        if (a.nodeType === StorageNodeType.Dir) {
-          strA = `${a.dir}${a.name}${String.fromCodePoint(0xffff)}`
-        }
-        if (b.nodeType === StorageNodeType.Dir) {
-          strB = `${b.dir}${b.name}${String.fromCodePoint(0xffff)}`
-        }
+      if (a.nodeType === StorageNodeType.File) {
+        strA = `${a.dir}${String.fromCodePoint(0xffff)}${a.name}`
+      }
+      if (b.nodeType === StorageNodeType.File) {
+        strB = `${b.dir}${String.fromCodePoint(0xffff)}${b.name}`
       }
 
       if (strA < strB) {
-        return desc ? 1 : -1
+        return -1
       } else if (strA > strB) {
-        return desc ? -1 : 1
+        return 1
       } else {
         return 0
       }

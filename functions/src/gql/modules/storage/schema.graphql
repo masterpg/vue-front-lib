@@ -17,8 +17,8 @@ input SignedUploadUrlInput {
 
 type Mutation {
   createUserStorageDirs(dirPaths: [String!]!): [StorageNode!]!
-  removeUserStorageFileNodes(filePaths: [String!]!): [StorageNode!]!
-  removeUserStorageDirNodes(dirPath: String!): [StorageNode!]!
+  removeUserStorageFiles(filePaths: [String!]!): [StorageNode!]!
+  removeUserStorageDir(dirPath: String!): [StorageNode!]!
 }
 
 type Query {

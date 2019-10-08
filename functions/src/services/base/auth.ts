@@ -13,7 +13,7 @@ export interface IdToken extends admin.auth.DecodedIdToken {
 }
 
 export enum AuthRoleType {
-  Admin = 'ADMIN',
+  AppAdmin = 'AppAdmin',
 }
 
 export interface AuthValidateResult {
@@ -54,7 +54,7 @@ abstract class AuthService {
     }
 
     for (const role of roles || []) {
-      if (role === AuthRoleType.Admin) {
+      if (role === AuthRoleType.AppAdmin) {
         if (!idToken.isAppAdmin) {
           return {
             result: false,

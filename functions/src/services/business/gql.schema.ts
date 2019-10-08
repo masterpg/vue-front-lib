@@ -27,6 +27,11 @@ export interface SignedUploadUrlInput {
     contentType?: string;
 }
 
+export interface TestSignedUploadUrlInput {
+    filePath: string;
+    contentType?: string;
+}
+
 export interface UpdateCartItemInput {
     id: string;
     quantity: number;
@@ -57,9 +62,11 @@ export interface IMutation {
     removeCartItems(ids: string[]): EditCartItemResponse[] | Promise<EditCartItemResponse[]>;
     checkoutCart(): boolean | Promise<boolean>;
     createUserStorageDirs(dirPaths: string[]): StorageNode[] | Promise<StorageNode[]>;
-    removeUserStorageFileNodes(filePaths: string[]): StorageNode[] | Promise<StorageNode[]>;
-    removeUserStorageDirNodes(dirPath: string): StorageNode[] | Promise<StorageNode[]>;
+    removeUserStorageFiles(filePaths: string[]): StorageNode[] | Promise<StorageNode[]>;
+    removeUserStorageDir(dirPath: string): StorageNode[] | Promise<StorageNode[]>;
     putTestData(inputs: PutTestDataInput[]): boolean | Promise<boolean>;
+    removeTestStorageDir(dirPath: string): boolean | Promise<boolean>;
+    removeTestStorageFiles(filePaths: string[]): boolean | Promise<boolean>;
 }
 
 export interface Product {
@@ -76,6 +83,7 @@ export interface IQuery {
     userStorageBasePath(): string | Promise<string>;
     userStorageDirNodes(dirPath?: string): StorageNode[] | Promise<StorageNode[]>;
     signedUploadUrls(inputs: SignedUploadUrlInput[]): string[] | Promise<string[]>;
+    testSignedUploadUrls(inputs: TestSignedUploadUrlInput[]): string[] | Promise<string[]>;
 }
 
 export interface StorageNode {

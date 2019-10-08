@@ -22,7 +22,7 @@ export class CartController {
   }
 
   @Put(':id')
-  @Roles(AuthRoleType.Admin)
+  @Roles(AuthRoleType.AppAdmin)
   async update(@User() user: IdToken, @Param('id') id: string, @Body() input: UpdateCartItem) {
     return await this.cartService.update(user, id, input)
   }

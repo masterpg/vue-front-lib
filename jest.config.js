@@ -17,6 +17,7 @@ module.exports = {
       babelConfig: false,
     },
   },
+  testEnvironment: '<rootDir>/tests//environment.js',
   // collectCoverage: true,
   // collectCoverageFrom: ['**/*.{ts,vue}', '!**/node_modules/**'],
   setupTestFrameworkScriptFile: '<rootDir>/tests/setup.js',
