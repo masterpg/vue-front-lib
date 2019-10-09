@@ -35,25 +35,25 @@
         <!-- ストレージ用メニュー -->
         <q-list v-show="m_isStorage" dense style="min-width: 100px">
           <q-item v-close-popup clickable>
-            <q-item-section @click="m_dispatchCreateFolderSelected()">{{ $t('storage.createFolder') }}</q-item-section>
+            <q-item-section @click="m_dispatchCreateDirSelected()">{{ $t('storage.createFolder') }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
             <q-item-section @click="m_dispatchFilesUploadSelected()">{{ $t('storage.uploadFiles') }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
-            <q-item-section @click="m_dispatchFolderUploadSelected()">{{ $t('storage.uploadFolder') }}</q-item-section>
+            <q-item-section @click="m_dispatchDirUploadSelected()">{{ $t('storage.uploadFolder') }}</q-item-section>
           </q-item>
         </q-list>
         <!-- フォルダ用メニュー -->
         <q-list v-show="m_isDir" dense style="min-width: 100px">
           <q-item v-close-popup clickable>
-            <q-item-section @click="m_dispatchCreateFolderSelected()">{{ $t('storage.createFolder') }}</q-item-section>
+            <q-item-section @click="m_dispatchCreateDirSelected()">{{ $t('storage.createFolder') }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
             <q-item-section @click="m_dispatchFilesUploadSelected()">{{ $t('storage.uploadFiles') }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
-            <q-item-section @click="m_dispatchFolderUploadSelected()">{{ $t('storage.uploadFolder') }}</q-item-section>
+            <q-item-section @click="m_dispatchDirUploadSelected()">{{ $t('storage.uploadFolder') }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
             <q-item-section @click="m_dispatchDeleteSelected()">{{ $t('common.delete') }}</q-item-section>
@@ -93,7 +93,7 @@ export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNod
   }
 
   get extraEventNames(): string[] {
-    return ['create-dir-selected', 'files-upload-selected', 'folder-upload-selected', 'delete-selected']
+    return ['create-dir-selected', 'files-upload-selected', 'dir-upload-selected', 'delete-selected']
   }
 
   //----------------------------------------------------------------------
@@ -142,7 +142,7 @@ export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNod
     )
   }
 
-  private m_dispatchCreateFolderSelected(): void {
+  private m_dispatchCreateDirSelected(): void {
     this.m_dispatchEvent('create-dir-selected')
   }
 
@@ -150,8 +150,8 @@ export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNod
     this.m_dispatchEvent('files-upload-selected')
   }
 
-  private m_dispatchFolderUploadSelected(): void {
-    this.m_dispatchEvent('folder-upload-selected')
+  private m_dispatchDirUploadSelected(): void {
+    this.m_dispatchEvent('dir-upload-selected')
   }
 
   private m_dispatchDeleteSelected(): void {

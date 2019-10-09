@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { AppModule } from '../../../../../src/app.module'
+import { Response } from 'supertest'
 import { initFirebaseApp } from '../../../../../src/base/firebase'
 import { verifyGQLNotSignInCase } from '../../../../helper/gql'
 const request = require('supertest')
-import { Response } from 'supertest'
 
 jest.setTimeout(25000)
 initFirebaseApp()

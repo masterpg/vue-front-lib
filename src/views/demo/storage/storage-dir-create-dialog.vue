@@ -60,10 +60,10 @@ import { mixins } from 'vue-class-component'
 const isEmpty = require('lodash/isEmpty')
 
 @Component({
-  name: 'storage-folder-create-dialog',
+  name: 'storage-dir-create-dialog',
   components: {},
 })
-export default class StorageFolderCreateDialog extends mixins(BaseComponent, ResizableMixin) {
+export default class StorageDirCreateDialog extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables

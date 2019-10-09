@@ -1,11 +1,11 @@
 import * as admin from 'firebase-admin'
 import * as path from 'path'
 import { Inject, Injectable } from '@nestjs/common'
-import { PutTestDataInput, StorageNode, TestSignedUploadUrlInput } from './types'
+import { PutTestDataInput, TestSignedUploadUrlInput } from './types'
+import { removeBothEndsSlash, splitFilePath } from '../../base/utils'
 import { DocumentReference } from '@google-cloud/firestore'
+import { File } from '@google-cloud/storage'
 import { FirestoreServiceDI } from '../base'
-import {removeBothEndsSlash, splitFilePath} from '../../base/utils'
-import {File} from '@google-cloud/storage'
 const firebase_tools = require('firebase-tools')
 
 @Injectable()

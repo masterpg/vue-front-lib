@@ -30,9 +30,9 @@
           <comp-tree-view
             ref="treeView"
             class="tree-view"
-            @create-dir-selected="m_treeViewOnCreateFolderSelected($event)"
+            @create-dir-selected="m_treeViewOnCreateDirSelected($event)"
             @files-upload-selected="m_treeViewOnFilesUploadSelected($event)"
-            @folder-upload-selected="m_treeViewOnFolderUploadSelected($event)"
+            @dir-upload-selected="m_treeViewOnDirUploadSelected($event)"
             @delete-selected="m_treeViewOnDeleteSelected($event)"
           />
         </div>
@@ -48,7 +48,7 @@
         </div>
       </template>
     </q-splitter>
-    <storage-folder-create-dialog ref="folderCreateDialog" />
+    <storage-dir-create-dialog ref="dirCreateDialog" />
     <storage-nodes-remove-dialog ref="nodesRemoveDialog" />
     <storage-upload-progress ref="uploadProgress" class="fixed-bottom-right" />
   </div>
@@ -62,7 +62,7 @@ import CompTreeNode from '@/components/comp-tree-view/comp-tree-node.vue'
 import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
 import CompTreeView from '@/components/comp-tree-view/index.vue'
 import { Component } from 'vue-property-decorator'
-import StorageFolderCreateDialog from '@/views/demo/storage/storage-folder-create-dialog.vue'
+import StorageDirCreateDialog from '@/views/demo/storage/storage-dir-create-dialog.vue'
 import StorageNodesRemoveDialog from '@/views/demo/storage/storage-nodes-remove-dialog.vue'
 import StorageUploadProgress from '@/views/demo/storage/storage-upload-progress.vue'
 import axios from 'axios'
@@ -70,7 +70,7 @@ import { mixins } from 'vue-class-component'
 
 @Component({
   name: 'demo-storage-page',
-  components: { CompTreeView, CompTreeNode, CompTreeNodeItem, StorageFolderCreateDialog, StorageNodesRemoveDialog, StorageUploadProgress },
+  components: { CompTreeView, CompTreeNode, CompTreeNodeItem, StorageDirCreateDialog, StorageNodesRemoveDialog, StorageUploadProgress },
 })
 export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
@@ -117,8 +117,8 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
   }
 
   @NoCache
-  private get m_folderCreateDialog(): StorageFolderCreateDialog {
-    return this.$refs.folderCreateDialog as StorageFolderCreateDialog
+  private get m_dirCreateDialog(): StorageDirCreateDialog {
+    return this.$refs.dirCreateDialog as StorageDirCreateDialog
   }
 
   @NoCache
@@ -285,12 +285,12 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
     this.m_uploadProgress.openFilesSelectDialog(dirNode.value)
   }
 
-  private async m_treeViewOnFolderUploadSelected(dirNode: CompTreeNode<StorageTreeNodeItem>) {
-    this.m_uploadProgress.openFolderSelectDialog(dirNode.value)
+  private async m_treeViewOnDirUploadSelected(dirNode: CompTreeNode<StorageTreeNodeItem>) {
+    this.m_uploadProgress.openDirSelectDialog(dirNode.value)
   }
 
-  private async m_treeViewOnCreateFolderSelected(node: CompTreeNode<StorageTreeNodeItem>) {
-    const dirPath = await this.m_folderCreateDialog.open(node)
+  private async m_treeViewOnCreateDirSelected(node: CompTreeNode<StorageTreeNodeItem>) {
+    const dirPath = await this.m_dirCreateDialog.open(node)
     if (dirPath) {
       await this.m_createDir(dirPath)
     }

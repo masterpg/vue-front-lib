@@ -129,8 +129,8 @@ export default class StorageUploadProgress extends mixins(BaseComponent, Resizab
    * OSのフォルダ選択ダイアログを表示します。
    * @param uploadDirPath
    */
-  openFolderSelectDialog(uploadDirPath: string): void {
-    this.m_uploadManager.openFolderSelectDialog(uploadDirPath)
+  openDirSelectDialog(uploadDirPath: string): void {
+    this.m_uploadManager.openDirSelectDialog(uploadDirPath)
   }
 
   //----------------------------------------------------------------------

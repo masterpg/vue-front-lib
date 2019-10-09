@@ -195,7 +195,7 @@ export abstract class StorageUploadManager {
    * OSのフォルダ選択ダイアログを表示します。
    * @param uploadBasePath
    */
-  openFolderSelectDialog(uploadBasePath: string): void {
+  openDirSelectDialog(uploadBasePath: string): void {
     this.m_openFileSelectDialog(uploadBasePath, true)
   }
 
@@ -223,11 +223,11 @@ export abstract class StorageUploadManager {
     return result
   }
 
-  private m_openFileSelectDialog(uploadBasePath: string, isFolder: boolean): void {
+  private m_openFileSelectDialog(uploadBasePath: string, isDir: boolean): void {
     this.m_uploadFileInput.value = ''
     this.uploadBasePath = removeEndSlash(uploadBasePath)
 
-    if (isFolder) {
+    if (isDir) {
       this.m_uploadFileInput.setAttribute('webkitdirectory', '')
     } else {
       this.m_uploadFileInput.removeAttribute('webkitdirectory')
