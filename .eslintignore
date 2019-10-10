@@ -3,6 +3,6 @@ dist/
 docs/
 functions/lib/
 functions/node_modules/
-functions/src/services/business/gql.schema.ts
+functions/src/gql.schema.ts
 node_module/
 patches/

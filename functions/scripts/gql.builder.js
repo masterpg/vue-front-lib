@@ -35,7 +35,7 @@ for (const srcFilePath of graphqlFiles) {
 const definitionsFactory = new GraphQLDefinitionsFactory()
 definitionsFactory.generate({
   typePaths: ['./src/**/*.graphql'],
-  path: path.join(process.cwd(), 'src/services/business/gql.schema.ts'),
+  path: path.join(process.cwd(), 'src/gql.schema.ts'),
   outputAs: 'interface',
   watch,
 })

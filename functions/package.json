@@ -2,8 +2,8 @@
   "name": "functions",
   "scripts": {
     "lint": "cd .. && ./scripts/lint.sh functions",
-    "build": "rm -rf lib && node ./scripts/build-gql.js && tsc && cp ./src/serviceAccountKey.json ./lib",
-    "serve": "npm run build && ./functions.config.dev.sh && firebase functions:config:get > .runtimeconfig.json && (tsc --watch & node ./scripts/build-gql.js --watch & firebase serve --only functions --port=5010)",
+    "build": "rm -rf lib && node scripts/gql.builder.js && tsc && cp ./src/serviceAccountKey.json ./lib",
+    "serve": "npm run build && ./functions.config.dev.sh && firebase functions:config:get > .runtimeconfig.json && (tsc --watch & node scripts/gql.builder.js --watch & firebase serve --only functions --port=5010)",
     "test": "npm run build && ./functions.config.dev.sh && jest --runInBand",
     "deploy": "./functions.config.prod.sh && firebase deploy --only functions",
     "shell": "npm run build && ./functions.config.dev.sh && firebase functions:config:get > .runtimeconfig.json && firebase functions:shell",

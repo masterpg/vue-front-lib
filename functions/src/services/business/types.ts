@@ -1,1 +1,1 @@
-export * from './gql.schema'
+export * from '../../gql.schema'
