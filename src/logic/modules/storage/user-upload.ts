@@ -1,5 +1,6 @@
-import { StorageFileUploader, StorageUploadManager, UploadFileParam, removeEndSlash } from '@/logic/modules/storage/base'
+import { StorageFileUploader, StorageUploadManager, UploadFileParam } from '@/logic/modules/storage/base'
 import { gql } from '@/gql'
+import { removeEndSlash } from 'web-base-lib'
 
 export class UserStorageUploadManager extends StorageUploadManager {
   protected createUploadingFiles(files: File[]): StorageFileUploader[] {

@@ -5,7 +5,7 @@
 export class WriteReadyObserver {
   constructor(private m_num: number) {}
 
-  private m_resolves: Array<() => void> = []
+  private m_resolves: (() => void)[] = []
 
   wait(): Promise<void> {
     const result = new Promise<void>(resolve => {

@@ -19,7 +19,7 @@ export class AdminStorageUploadManager extends StorageUploadManager {
   }
 
   protected async beforeUpload(): Promise<void> {
-    const inputs: Array<{ filePath: string; contentType: string }> = []
+    const inputs: { filePath: string; contentType: string }[] = []
     for (const uploadingFile of this.uploadingFiles) {
       inputs.push({
         filePath: uploadingFile.path,

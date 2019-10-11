@@ -11,7 +11,7 @@ import { config } from '../../base/config'
 import { google } from '@google-cloud/logging/build/proto/logging'
 import IHttpRequest = google.logging.type.IHttpRequest
 import IMonitoredResource = google.api.IMonitoredResource
-import { removeBothEndsSlash } from '../../base/utils'
+import { removeBothEndsSlash } from 'web-base-lib'
 const merge = require('lodash/merge')
 
 //========================================================================

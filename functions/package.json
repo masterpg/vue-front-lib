@@ -37,7 +37,8 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.0",
     "rxjs": "^6.5.3",
-    "vary": "^1.1.2"
+    "vary": "^1.1.2",
+    "web-base-lib": "https://github.com/masterpg/web-base-lib.git"
   },
   "devDependencies": {
     "@nestjs/testing": "^6.7.2",

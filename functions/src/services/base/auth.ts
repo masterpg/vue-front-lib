@@ -128,7 +128,7 @@ abstract class AuthService {
 @Injectable()
 class ProdAuthService extends AuthService {
   protected async decodeToken(idToken: string): Promise<IdToken> {
-    let decodedIdToken = await admin.auth().verifyIdToken(idToken)
+    const decodedIdToken = await admin.auth().verifyIdToken(idToken)
     return decodedIdToken
   }
 }

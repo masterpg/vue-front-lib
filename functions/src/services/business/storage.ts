@@ -7,7 +7,7 @@ import * as admin from 'firebase-admin'
 import * as path from 'path'
 import { Bucket, File } from '@google-cloud/storage'
 import { StorageNode, StorageNodeType, SignedUploadUrlInput as _SignedUploadUrlInput, StorageNode as _StorageNode } from './types'
-import { removeBothEndsSlash, removeEndSlash, removeStartSlash, splitFilePath } from '../../base/utils'
+import { removeBothEndsSlash, removeEndSlash, removeStartSlash, splitFilePath } from 'web-base-lib'
 import { Injectable } from '@nestjs/common'
 
 export class SignedUploadUrlInput implements _SignedUploadUrlInput {
@@ -211,7 +211,7 @@ class StorageService {
    */
   async removeStorageDir(dirPath: string, basePath: string = ''): Promise<StorageNode[]> {
     // Cloud Storageから指定されたディレクトリのノードを取得
-    let nodeMap = await this.getStorageNodeMap(dirPath, basePath)
+    const nodeMap = await this.getStorageNodeMap(dirPath, basePath)
     // 親ディレクトリの穴埋め
     this.padVirtualDirNode(nodeMap, dirPath)
 
@@ -422,7 +422,7 @@ class StorageService {
    * @param dirPaths
    */
   splitHierarchicalDirPaths(...dirPaths: string[]): string[] {
-    let set: Set<string> = new Set<string>()
+    const set: Set<string> = new Set<string>()
 
     for (const dirPath of dirPaths) {
       const dirPathSegments = dirPath.split('/').filter(item => !!item)

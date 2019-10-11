@@ -6,7 +6,7 @@ import { InputValidationError } from '../../../../../src/base/validator'
 import { Test } from '@nestjs/testing'
 import { config } from '../../../../../src/base/config'
 import { initFirebaseApp } from '../../../../../src/base/firebase'
-import { removeBothEndsSlash } from '../../../../../src/base/utils'
+import { removeBothEndsSlash } from 'web-base-lib'
 
 jest.setTimeout(25000)
 initFirebaseApp()
@@ -19,7 +19,7 @@ async function existsNodes(nodes: StorageNode[], basePath: string = ''): Promise
   for (const node of nodes) {
     let nodePath = basePath ? `${removeBothEndsSlash(basePath)}/${node.path}` : node.path
     nodePath += node.nodeType === StorageNodeType.Dir ? '/' : ''
-    let gcsNode = bucket.file(nodePath)
+    const gcsNode = bucket.file(nodePath)
     const exists = (await gcsNode.exists())[0]
     expect(exists).toBeTruthy()
   }
@@ -30,7 +30,7 @@ async function notExistsNodes(nodes: StorageNode[], basePath: string = ''): Prom
   for (const node of nodes) {
     let nodePath = basePath ? `${removeBothEndsSlash(basePath)}/${node.path}` : node.path
     nodePath += node.nodeType === StorageNodeType.Dir ? '/' : ''
-    let gcsNode = bucket.file(nodePath)
+    const gcsNode = bucket.file(nodePath)
     const exists = (await gcsNode.exists())[0]
     expect(exists).toBeFalsy()
   }

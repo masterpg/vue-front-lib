@@ -5,13 +5,13 @@ export function verifyGQLNotSignInCase(
   app: any,
   gql: {
     query?: string
-    variables?: Object
+    variables?: Record<string, any>
   },
   options: {
     headers?: { [field: string]: any }
   } = {}
 ): Promise<void> {
-  let headers: { [field: string]: any } = {}
+  const headers: { [field: string]: any } = {}
   if (options.headers) {
     Object.assign(headers, options.headers)
   }

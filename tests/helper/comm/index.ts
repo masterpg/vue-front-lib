@@ -164,7 +164,7 @@ export function removeGQLMetadata<T>(data: T): T {
     return value instanceof Object && !(value instanceof Array)
   }
 
-  function _remove(obj: Object) {
+  function _remove(obj: Record<string, any>) {
     delete obj['__typename']
   }
 

@@ -54,9 +54,8 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
   //----------------------------------------------------------------------
 
   async checkSingedIn(): Promise<void> {
-    let redirected: firebase.auth.UserCredential
     // リダイレクト式によるサインインの認証情報を取得
-    redirected = await firebase.auth().getRedirectResult()
+    const redirected = await firebase.auth().getRedirectResult()
 
     if (redirected.credential) {
       // Googleのアクセストークンを取得

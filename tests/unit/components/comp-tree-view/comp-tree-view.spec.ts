@@ -70,7 +70,7 @@ const sortFunc = (a: CompTreeNode | any, b: CompTreeNode | any) => {
 }
 
 function getNodeData(nodeDataList: CompTreeNodeData[], value: string): CompTreeNodeData | undefined {
-  for (let nodeData of nodeDataList) {
+  for (const nodeData of nodeDataList) {
     if (nodeData.value === value) {
       return nodeData
     }
@@ -82,10 +82,7 @@ function getNodeData(nodeDataList: CompTreeNodeData[], value: string): CompTreeN
   return undefined
 }
 
-function editNodeDataList(
-  srcNodeDataList: CompTreeNodeData[],
-  editDataList: Array<Partial<CompTreeNodeData> & { value: string }>
-): CompTreeNodeData[] {
+function editNodeDataList(srcNodeDataList: CompTreeNodeData[], editDataList: (Partial<CompTreeNodeData> & { value: string })[]): CompTreeNodeData[] {
   const newNodeDataList = cloneDeep(srcNodeDataList)
   for (const editData of editDataList) {
     const nodeData = getNodeData(newNodeDataList, editData.value)

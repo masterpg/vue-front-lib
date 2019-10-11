@@ -1,5 +1,6 @@
 import { GQLStorageNode, gql } from '@/gql'
 import { StorageNode, StorageNodeBag } from '@/logic/types'
+import { removeEndSlash } from 'web-base-lib'
 
 /**
  * `GQLStorageNode`を`StorageNode`へ変換します。
@@ -37,15 +38,6 @@ export function toStorageNodeBag(gqlNodes: GQLStorageNode[]): StorageNodeBag {
   }
 
   return bag
-}
-
-/**
- * パス末尾のスラッシュを除去します。
- * @param nodePath
- */
-export function removeEndSlash(nodePath?: string): string {
-  if (!nodePath) return ''
-  return nodePath.replace(/\/$/, '')
 }
 
 /**

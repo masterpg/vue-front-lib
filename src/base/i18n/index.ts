@@ -186,9 +186,11 @@ class LocaleUtil {
 Vue.prototype.$t = function(key) {
   const values: any[] = []
   let len = arguments.length - 1
+  // eslint-disable-next-line prefer-rest-params
   while (len-- > 0) values[len] = arguments[len + 1]
 
   const currentI18n = this.$i18n || i18n
+  // eslint-disable-next-line prefer-spread
   return currentI18n._t.apply(currentI18n, [key, currentI18n.locale, currentI18n._getMessages(), this].concat(values))
 }
 
