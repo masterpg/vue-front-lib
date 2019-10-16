@@ -1,6 +1,6 @@
 import * as firebaseAdmin from 'firebase-admin'
-import { GQLFacade } from '@/gql'
-import { GQLFacadeImpl } from '@/gql/facade'
+import { AppAPI } from '@/api'
+import { GQLAppAPIImpl } from '@/api/gql'
 import axios from 'axios'
 import gql from 'graphql-tag'
 
@@ -19,7 +19,7 @@ export interface UploadFileItem {
   contentType: string
 }
 
-export class GQLTestFacade extends GQLFacadeImpl {
+export class GQLTestAPIImpl extends GQLAppAPIImpl {
   private m_user?: AuthUser
 
   setAuthUser(user: AuthUser): void {
@@ -133,30 +133,30 @@ export class GQLTestFacade extends GQLFacadeImpl {
     return response.data.removeTestStorageDir
   }
 }
-export const testGQL: GQLFacade = new GQLTestFacade()
+export const testAPI: AppAPI = new GQLTestAPIImpl()
 
 export async function putTestData(inputs: CollectionData[]): Promise<void> {
-  await (testGQL as GQLTestFacade).putTestData(inputs)
+  await (testAPI as GQLTestAPIImpl).putTestData(inputs)
 }
 
 export async function uploadTestFiles(uploadList: UploadFileItem[]): Promise<void> {
-  await (testGQL as GQLTestFacade).uploadTestFiles(uploadList)
+  await (testAPI as GQLTestAPIImpl).uploadTestFiles(uploadList)
 }
 
 export async function removeTestStorageFiles(filePaths: string[]): Promise<void> {
-  await (testGQL as GQLTestFacade).removeTestStorageFiles(filePaths)
+  await (testAPI as GQLTestAPIImpl).removeTestStorageFiles(filePaths)
 }
 
 export async function removeTestStorageDir(dirPath: string): Promise<void> {
-  await (testGQL as GQLTestFacade).removeTestStorageDir(dirPath)
+  await (testAPI as GQLTestAPIImpl).removeTestStorageDir(dirPath)
 }
 
 export function setAuthUser(user: AuthUser): void {
-  ;(testGQL as GQLTestFacade).setAuthUser(user)
+  ;(testAPI as GQLTestAPIImpl).setAuthUser(user)
 }
 
 export function clearAuthUser(): void {
-  ;(testGQL as GQLTestFacade).clearAuthUser()
+  ;(testAPI as GQLTestAPIImpl).clearAuthUser()
 }
 
 export function removeGQLMetadata<T>(data: T): T {

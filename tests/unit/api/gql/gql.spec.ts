@@ -1,21 +1,21 @@
-import { GQLAddCartItemInput, GQLCartItem, GQLEditCartItemResponse, GQLProduct, gql, initGQL } from '@/gql'
-import { clearAuthUser, putTestData, removeTestStorageDir, setAuthUser, testGQL, uploadTestFiles } from '../../helper/comm'
+import { APIAddCartItemInput, APICartItem, APIEditCartItemResponse, APIProduct, api, initAPI } from '@/api'
+import { clearAuthUser, putTestData, removeTestStorageDir, setAuthUser, testAPI, uploadTestFiles } from '../../../tools/comm'
 const cloneDeep = require('lodash/cloneDeep')
 const isEmpty = require('lodash/isEmpty')
 
 jest.setTimeout(25000)
-initGQL(testGQL)
+initAPI(testAPI)
 
 const GENERAL_USER = { uid: 'taro.yamada' }
 const TEST_FILES_DIR = 'test-files'
 
-const PRODUCTS: GQLProduct[] = [
+const PRODUCTS: APIProduct[] = [
   { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 3 },
   { id: 'product2', title: 'Fire HD 8 Tablet', price: 80.99, stock: 5 },
   { id: 'product3', title: 'MediaPad T5 10', price: 150.8, stock: 10 },
 ]
 
-const CART_ITEMS: GQLCartItem[] = [
+const CART_ITEMS: APICartItem[] = [
   {
     id: 'cartItem1',
     uid: GENERAL_USER.uid,
@@ -34,7 +34,7 @@ const CART_ITEMS: GQLCartItem[] = [
   },
 ]
 
-function getGQLErrorResponse(error: any): { statusCode: number; error: string; message: string } {
+function getAPIErrorResponse(error: any): { statusCode: number; error: string; message: string } {
   return error.graphQLErrors[0].extensions.exception.response
 }
 
@@ -47,7 +47,7 @@ describe('App API', () => {
     it('疎通確認', async () => {
       setAuthUser(GENERAL_USER)
 
-      const actual = await gql.customToken()
+      const actual = await api.customToken()
 
       expect(isEmpty(actual)).toBeFalsy()
     })
@@ -55,12 +55,12 @@ describe('App API', () => {
     it('サインインしていない場合', async () => {
       let actual!: Error
       try {
-        await gql.customToken()
+        await api.customToken()
       } catch (err) {
         actual = err
       }
 
-      expect(getGQLErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
     })
   })
 })
@@ -71,7 +71,7 @@ describe('Storage API', () => {
   beforeEach(async () => {
     if (!userStorageBasePath) {
       setAuthUser(GENERAL_USER)
-      userStorageBasePath = await gql.userStorageBasePath()
+      userStorageBasePath = await api.userStorageBasePath()
       clearAuthUser()
     }
     await Promise.all([removeTestStorageDir(TEST_FILES_DIR), removeTestStorageDir(userStorageBasePath)])
@@ -81,7 +81,7 @@ describe('Storage API', () => {
     it('疎通確認', async () => {
       setAuthUser(GENERAL_USER)
 
-      const actual = await gql.userStorageBasePath()
+      const actual = await api.userStorageBasePath()
 
       expect(isEmpty(actual)).toBeFalsy()
     })
@@ -89,12 +89,12 @@ describe('Storage API', () => {
     it('サインインしていない場合', async () => {
       let actual!: Error
       try {
-        await gql.userStorageBasePath()
+        await api.userStorageBasePath()
       } catch (err) {
         actual = err
       }
 
-      expect(getGQLErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
     })
   })
 
@@ -103,7 +103,7 @@ describe('Storage API', () => {
       setAuthUser(GENERAL_USER)
       await uploadTestFiles([{ filePath: `${userStorageBasePath}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await gql.userStorageDirNodes()
+      const actual = await api.userStorageDirNodes()
 
       expect(actual.length).toBe(2)
     })
@@ -111,12 +111,12 @@ describe('Storage API', () => {
     it('サインインしていない場合', async () => {
       let actual!: Error
       try {
-        await gql.userStorageDirNodes()
+        await api.userStorageDirNodes()
       } catch (err) {
         actual = err
       }
 
-      expect(getGQLErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
     })
   })
 
@@ -124,13 +124,13 @@ describe('Storage API', () => {
     it('疎通確認', async () => {
       setAuthUser(GENERAL_USER)
 
-      const actual = await gql.createUserStorageDirs(['dir1/dir1_1'])
+      const actual = await api.createUserStorageDirs(['dir1/dir1_1'])
 
       expect(actual.length).toBe(2)
       expect(actual[0].path).toBe('dir1')
       expect(actual[1].path).toBe('dir1/dir1_1')
 
-      const nodes = await gql.userStorageDirNodes()
+      const nodes = await api.userStorageDirNodes()
 
       expect(nodes.length).toBe(2)
       expect(nodes[0].path).toBe('dir1')
@@ -140,12 +140,12 @@ describe('Storage API', () => {
     it('サインインしていない場合', async () => {
       let actual!: Error
       try {
-        await await gql.createUserStorageDirs(['dir1/dir1_1'])
+        await await api.createUserStorageDirs(['dir1/dir1_1'])
       } catch (err) {
         actual = err
       }
 
-      expect(getGQLErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
     })
   })
 
@@ -157,12 +157,12 @@ describe('Storage API', () => {
         { filePath: `${userStorageBasePath}/docs/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
       ])
 
-      const actual = await gql.removeUserStorageFiles([`docs/fileA.txt`])
+      const actual = await api.removeUserStorageFiles([`docs/fileA.txt`])
 
       expect(actual.length).toBe(1)
       expect(actual[0].path).toBe(`docs/fileA.txt`)
 
-      const nodes = await gql.userStorageDirNodes()
+      const nodes = await api.userStorageDirNodes()
 
       expect(nodes.length).toBe(2)
       expect(nodes[0].path).toBe('docs')
@@ -172,12 +172,12 @@ describe('Storage API', () => {
     it('サインインしていない場合', async () => {
       let actual!: Error
       try {
-        await await gql.removeUserStorageFiles([`docs/fileA.txt`])
+        await await api.removeUserStorageFiles([`docs/fileA.txt`])
       } catch (err) {
         actual = err
       }
 
-      expect(getGQLErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
     })
   })
 
@@ -189,13 +189,13 @@ describe('Storage API', () => {
         { filePath: `${userStorageBasePath}/docs/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
       ])
 
-      const actual = await gql.removeUserStorageDir(`docs`)
+      const actual = await api.removeUserStorageDir(`docs`)
 
       expect(actual.length).toBe(2)
       expect(actual[0].path).toBe(`docs/fileA.txt`)
       expect(actual[1].path).toBe(`docs/fileB.txt`)
 
-      const nodes = await gql.userStorageDirNodes()
+      const nodes = await api.userStorageDirNodes()
 
       expect(nodes.length).toBe(0)
     })
@@ -203,12 +203,12 @@ describe('Storage API', () => {
     it('サインインしていない場合', async () => {
       let actual!: Error
       try {
-        await await gql.removeUserStorageDir(`docs/fileA.txt`)
+        await await api.removeUserStorageDir(`docs/fileA.txt`)
       } catch (err) {
         actual = err
       }
 
-      expect(getGQLErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
     })
   })
 })
@@ -219,14 +219,14 @@ describe('Product API', () => {
       await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }])
       const product = PRODUCTS[0]
 
-      const actual = await gql.product(product.id)
+      const actual = await api.product(product.id)
 
       expect(actual).toMatchObject(product)
     })
 
     it('存在しない商品IDを指定した場合', async () => {
       await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }])
-      const actual = await gql.product('productXXX')
+      const actual = await api.product('productXXX')
 
       expect(actual).toBeUndefined()
     })
@@ -237,7 +237,7 @@ describe('Product API', () => {
       await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }])
       const ids = [PRODUCTS[0].id, PRODUCTS[1].id]
 
-      const actual = await gql.products(ids)
+      const actual = await api.products(ids)
 
       expect(actual).toMatchObject([PRODUCTS[0], PRODUCTS[1]])
     })
@@ -246,7 +246,7 @@ describe('Product API', () => {
       await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }])
       const ids = ['productXXX', 'productYYY']
 
-      const actual = await gql.products(ids)
+      const actual = await api.products(ids)
 
       expect(actual.length).toBe(0)
     })
@@ -260,7 +260,7 @@ describe('Cart API', () => {
       await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
       const cartItem = CART_ITEMS[0]
 
-      const actual = await gql.cartItem(cartItem.id)
+      const actual = await api.cartItem(cartItem.id)
 
       expect(actual).toMatchObject(cartItem)
     })
@@ -268,7 +268,7 @@ describe('Cart API', () => {
     it('存在しないカートアイテムIDを指定した場合', async () => {
       setAuthUser(GENERAL_USER)
       await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
-      const actual = await gql.cartItem('cartItemXXX')
+      const actual = await api.cartItem('cartItemXXX')
 
       expect(actual).toBeUndefined()
     })
@@ -278,12 +278,12 @@ describe('Cart API', () => {
 
       let actual!: Error
       try {
-        await gql.cartItem(cartItem.id)
+        await api.cartItem(cartItem.id)
       } catch (err) {
         actual = err
       }
 
-      expect(getGQLErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
     })
   })
 
@@ -293,7 +293,7 @@ describe('Cart API', () => {
       await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
       const ids = [CART_ITEMS[0].id, CART_ITEMS[1].id]
 
-      const actual = await gql.cartItems(ids)
+      const actual = await api.cartItems(ids)
 
       expect(actual).toMatchObject([CART_ITEMS[0], CART_ITEMS[1]])
     })
@@ -303,7 +303,7 @@ describe('Cart API', () => {
       await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
       const ids = ['cartItemXXX', 'cartItemYYY']
 
-      const actual = await gql.cartItems(ids)
+      const actual = await api.cartItems(ids)
 
       expect(actual.length).toBe(0)
     })
@@ -313,12 +313,12 @@ describe('Cart API', () => {
 
       let actual!: Error
       try {
-        await gql.cartItems(ids)
+        await api.cartItems(ids)
       } catch (err) {
         actual = err
       }
 
-      expect(getGQLErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
     })
   })
 
@@ -327,12 +327,12 @@ describe('Cart API', () => {
       delete item.id
       delete item.uid
       return item
-    }) as GQLAddCartItemInput[]
+    }) as APIAddCartItemInput[]
 
     it('疎通確認', async () => {
       setAuthUser(GENERAL_USER)
       await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: [] }])
-      const addItems = cloneDeep(ADD_CART_ITEMS) as GQLAddCartItemInput[]
+      const addItems = cloneDeep(ADD_CART_ITEMS) as APIAddCartItemInput[]
       const expectedItems = addItems.map(addItem => {
         const product = PRODUCTS.find(product => product.id === addItem.productId)!
         return {
@@ -342,9 +342,9 @@ describe('Cart API', () => {
             stock: product.stock - addItem.quantity,
           },
         }
-      }) as GQLEditCartItemResponse[]
+      }) as APIEditCartItemResponse[]
 
-      const actual = await gql.addCartItems(addItems)
+      const actual = await api.addCartItems(addItems)
 
       expect(actual.length).toBe(addItems.length)
       for (let i = 0; i < actual.length; i++) {
@@ -356,16 +356,16 @@ describe('Cart API', () => {
     })
 
     it('サインインしていない場合', async () => {
-      const addItems = cloneDeep(ADD_CART_ITEMS) as GQLAddCartItemInput[]
+      const addItems = cloneDeep(ADD_CART_ITEMS) as APIAddCartItemInput[]
 
       let actual!: Error
       try {
-        await gql.addCartItems(addItems)
+        await api.addCartItems(addItems)
       } catch (err) {
         actual = err
       }
 
-      expect(getGQLErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
     })
   })
 
@@ -381,7 +381,7 @@ describe('Cart API', () => {
         return { ...item, product: { id: product.id, stock: product.stock - 1 } }
       })
 
-      const actual = await gql.updateCartItems(updateItems)
+      const actual = await api.updateCartItems(updateItems)
 
       expect(actual.length).toBe(updateItems.length)
       for (let i = 0; i < actual.length; i++) {
@@ -390,16 +390,16 @@ describe('Cart API', () => {
     })
 
     it('サインインしていない場合', async () => {
-      const updateItems = cloneDeep(CART_ITEMS) as GQLCartItem[]
+      const updateItems = cloneDeep(CART_ITEMS) as APICartItem[]
 
       let actual!: Error
       try {
-        await gql.updateCartItems(updateItems)
+        await api.updateCartItems(updateItems)
       } catch (err) {
         actual = err
       }
 
-      expect(getGQLErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
     })
   })
 
@@ -421,7 +421,7 @@ describe('Cart API', () => {
         }
       })
 
-      const actual = await gql.removeCartItems(removeIds)
+      const actual = await api.removeCartItems(removeIds)
 
       expect(actual.length).toBe(removeIds.length)
       for (let i = 0; i < actual.length; i++) {
@@ -434,12 +434,12 @@ describe('Cart API', () => {
 
       let actual!: Error
       try {
-        await gql.removeCartItems(removeIds)
+        await api.removeCartItems(removeIds)
       } catch (err) {
         actual = err
       }
 
-      expect(getGQLErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
     })
   })
 
@@ -448,11 +448,11 @@ describe('Cart API', () => {
       setAuthUser(GENERAL_USER)
       await putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
 
-      const actual = await gql.checkoutCart()
+      const actual = await api.checkoutCart()
 
       expect(actual).toBeTruthy()
       // カートアイテムが削除されてることを検証
-      const cartItems = await gql.cartItems()
+      const cartItems = await api.cartItems()
       expect(cartItems.length).toBe(0)
     })
 
@@ -461,12 +461,12 @@ describe('Cart API', () => {
 
       let actual!: Error
       try {
-        await gql.removeCartItems(removeIds)
+        await api.removeCartItems(removeIds)
       } catch (err) {
         actual = err
       }
 
-      expect(getGQLErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
     })
   })
 })

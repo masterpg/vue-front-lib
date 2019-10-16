@@ -1,5 +1,5 @@
 import { StorageFileUploader, StorageUploadManager, UploadFileParam } from '@/logic/modules/storage/base'
-import { gql } from '@/gql'
+import { api } from '@/api'
 import { removeEndSlash } from 'web-base-lib'
 
 export class UserStorageUploadManager extends StorageUploadManager {
@@ -19,7 +19,7 @@ export class UserStorageUploadManager extends StorageUploadManager {
   }
 
   protected async beforeUpload(): Promise<void> {
-    const userBasePath = await gql.userStorageBasePath()
+    const userBasePath = await api.userStorageBasePath()
     for (const uploadingFile of this.uploadingFiles) {
       ;(uploadingFile as UserStorageFileUploader).userBasePath = userBasePath
     }

@@ -43,7 +43,7 @@ export abstract class BaseAPI extends Vue {
     })
   }
 
-  delete(path: string, config?: APIRequestConfig): APIPromise {
+  delete<T = any>(path: string, config?: APIRequestConfig): APIPromise<T> {
     return this.request({
       ...(config || {}),
       url: path,
@@ -88,7 +88,7 @@ export abstract class BaseAPI extends Vue {
   }
 
   protected getRequestURL(): string {
-    return `${config.api.baseURL}`
+    return `${config.api.baseURL}/rest`
   }
 
   protected async getIdToken(): Promise<string> {

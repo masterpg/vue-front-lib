@@ -1,6 +1,10 @@
 <style lang="stylus" scoped>
 @import '../../styles/app.variables.styl'
 
+.toggle {
+  border: 1px solid $primary
+}
+
 .title-text {
   @extend $text-h6
 }
@@ -27,6 +31,19 @@
 
 <template>
   <div class="layout vertical" :class="{ 'app-ma-48': screenSize.pc, 'app-ma-24': screenSize.tab, 'app-ma-12': screenSize.sp }">
+    <div class="layout horizontal end-justified">
+      <q-btn-toggle
+        v-model="m_apiType"
+        class="toggle"
+        no-caps
+        rounded
+        unelevated
+        toggle-color="primary"
+        color="white"
+        text-color="primary"
+        :options="[{ label: 'GQL', value: 'gql' }, { label: 'REST', value: 'rest' }]"
+      />
+    </div>
     <div>
       <div class="layout horizontal center">
         <div class="title-text">{{ $t('products') }}</div>
@@ -90,6 +107,14 @@ export default class ShopPage extends mixins(BaseComponent, ResizableMixin) {
   //  Variables
   //
   //----------------------------------------------------------------------
+
+  private get m_apiType(): 'gql' | 'rest' {
+    return this.$logic.apiType
+  }
+
+  private set m_apiType(value: 'gql' | 'rest') {
+    this.$logic.apiType = value
+  }
 
   private get m_cartIsEmpty(): boolean {
     return this.$logic.shop.cartItems.length === 0

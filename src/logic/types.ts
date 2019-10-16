@@ -1,5 +1,5 @@
 import { CartItem, CheckoutStatus, Product, User } from '@/store'
-import { GQLStorageNodeType as StorageNodeType } from '@/gql'
+import { APIStorageNodeType as StorageNodeType } from '@/api'
 import { StorageUploadManager } from '@/logic/modules/storage'
 
 //----------------------------------------------------------------------
@@ -9,6 +9,7 @@ import { StorageUploadManager } from '@/logic/modules/storage'
 //----------------------------------------------------------------------
 
 export interface Logic {
+  apiType: 'gql' | 'rest'
   readonly storage: StorageLogic
   readonly shop: ShopLogic
   readonly auth: AuthLogic

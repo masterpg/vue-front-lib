@@ -16,6 +16,7 @@ import {
   QAvatar,
   QBar,
   QBtn,
+  QBtnToggle,
   QCard,
   QCardActions,
   QCardSection,
@@ -52,10 +53,9 @@ import AppPage from '@/index.vue'
 import Component from 'vue-class-component'
 import Vue from 'vue'
 import { currency } from '@/currency'
+import { initAPI } from '@/api'
 import { initConfig } from '@/base/config'
-import { initGQL } from '@/gql'
 import { initLogic } from '@/logic'
-import { initREST } from '@/rest'
 import { initServiceWorker } from '@/base/service-worker'
 import { initStore } from '@/store'
 import { initUtils } from '@/base/utils'
@@ -68,6 +68,7 @@ Vue.use(Quasar, {
     QAvatar,
     QBar,
     QBtn,
+    QBtnToggle,
     QCard,
     QCardActions,
     QCardSection,
@@ -116,8 +117,7 @@ async function init() {
   initUtils()
   initConfig()
   initServiceWorker()
-  initREST()
-  initGQL()
+  initAPI()
   initStore()
   initLogic()
   await initI18n()

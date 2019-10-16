@@ -1,5 +1,5 @@
+import { APICartItem, APIEditCartItemResponse, APIProduct, api } from '@/api'
 import { CartItem, CheckoutStatus, Product, ShopLogic } from '@/logic/types'
-import { GQLCartItem, GQLEditCartItemResponse, GQLProduct, gql } from '@/gql'
 import { BaseLogic } from '@/logic/base'
 import { Component } from 'vue-property-decorator'
 import { store } from '@/store'
@@ -62,9 +62,9 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
   //----------------------------------------------------------------------
 
   async pullProducts(): Promise<void> {
-    let products: GQLProduct[]
+    let products: APIProduct[]
     try {
-      products = await gql.products()
+      products = await api.products()
     } catch (err) {
       console.error(err)
       return
@@ -75,9 +75,9 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
   async pullCartItems(): Promise<void> {
     this.m_checkSignedIn()
 
-    let items: GQLCartItem[]
+    let items: APICartItem[]
     try {
-      items = await gql.cartItems()
+      items = await api.cartItems()
     } catch (err) {
       console.error(err)
       return
@@ -90,7 +90,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
 
     const cartItem = store.cart.getByProductId(productId)
 
-    let response: GQLEditCartItemResponse
+    let response: APIEditCartItemResponse
     try {
       if (!cartItem) {
         response = await this.m_addCartItem(productId)
@@ -111,7 +111,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
 
     const cartItem = this.m_getCartItemByProductId(productId)
 
-    let response: GQLEditCartItemResponse
+    let response: APIEditCartItemResponse
     try {
       if (cartItem.quantity > 1) {
         response = await this.m_updateCartItem(productId, -1)
@@ -131,7 +131,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
     this.m_checkSignedIn()
 
     try {
-      await gql.checkoutCart()
+      await api.checkoutCart()
     } catch (err) {
       console.log(err)
       store.cart.setCheckoutStatus(CheckoutStatus.Failed)
@@ -148,7 +148,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
   //
   //----------------------------------------------------------------------
 
-  private async m_addCartItem(productId: string): Promise<GQLEditCartItemResponse> {
+  private async m_addCartItem(productId: string): Promise<APIEditCartItemResponse> {
     const product = store.product.getById(productId)!
     const newCartItem = {
       productId,
@@ -156,25 +156,25 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
       price: product.price,
       quantity: 1,
     }
-    const response = (await gql.addCartItems([newCartItem]))[0]
+    const response = (await api.addCartItems([newCartItem]))[0]
     store.cart.add(response)
     return response
   }
 
-  private async m_updateCartItem(productId: string, quantity: number): Promise<GQLEditCartItemResponse> {
+  private async m_updateCartItem(productId: string, quantity: number): Promise<APIEditCartItemResponse> {
     const cartItem = this.m_getCartItemByProductId(productId)
     const newCartItem = {
       id: cartItem.id,
       quantity: cartItem.quantity + quantity,
     }
-    const response = (await gql.updateCartItems([newCartItem]))[0]
+    const response = (await api.updateCartItems([newCartItem]))[0]
     store.cart.set(response)
     return response
   }
 
-  private async m_removeCartItem(productId: string): Promise<GQLEditCartItemResponse> {
+  private async m_removeCartItem(productId: string): Promise<APIEditCartItemResponse> {
     const cartItem = this.m_getCartItemByProductId(productId)
-    const response = (await gql.removeCartItems([cartItem.id]))[0]
+    const response = (await api.removeCartItems([cartItem.id]))[0]
     store.cart.remove(response.id)
     return response
   }

@@ -1,5 +1,5 @@
 import { CartModule, CartState, CheckoutStatus, initStore, store } from '@/store'
-import { TestStoreModule } from '../../../../helper/unit'
+import { TestStoreModule } from '../../../../tools/unit'
 const cloneDeep = require('lodash/cloneDeep')
 
 initStore()

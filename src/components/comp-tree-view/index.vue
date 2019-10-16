@@ -36,7 +36,6 @@ import { NodePropertyChangeDetail } from '@/components/comp-tree-view/comp-tree-
 import Vue from 'vue'
 const isInteger = require('lodash/isInteger')
 const isFunction = require('lodash/isFunction')
-const isString = require('lodash/isString')
 
 export { CompTreeNodeData, CompTreeNode, CompTreeNodeItem, CompCheckboxNodeItem, CompCheckboxTreeNodeData }
 
@@ -172,7 +171,8 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
     let node: CompTreeNode
     const childType = child instanceof Vue ? 'Node' : 'Data'
 
-    if (isString(options.parent)) {
+    // 親を特定する値が空文字の場合があるのでtypeofを使用している
+    if (typeof options.parent === 'string') {
       const parentNode = this.getNode(options.parent)
       if (!parentNode) {
         throw new Error(`The parent node "${options.parent}" does not exist.`)

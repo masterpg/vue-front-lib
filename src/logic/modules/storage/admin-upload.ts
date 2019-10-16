@@ -1,6 +1,6 @@
 import { StorageFileUploader, StorageUploadManager, UploadFileParam } from '@/logic/modules/storage/base'
+import { api } from '@/api'
 import axios from 'axios'
-import { gql } from '@/gql'
 
 export class AdminStorageUploadManager extends StorageUploadManager {
   protected createUploadingFiles(files: File[]): StorageFileUploader[] {
@@ -26,7 +26,7 @@ export class AdminStorageUploadManager extends StorageUploadManager {
         contentType: uploadingFile.type,
       })
     }
-    const signedUploadUrls = await gql.getSignedUploadUrls(inputs)
+    const signedUploadUrls = await api.getSignedUploadUrls(inputs)
 
     for (let i = 0; i < this.uploadingFiles.length; i++) {
       const uploadingFile = this.uploadingFiles[i] as AdminStorageFileUploader

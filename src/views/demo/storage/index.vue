@@ -222,7 +222,7 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
 
   private async m_removeNode(node: CompTreeNode<StorageTreeNodeItem>): Promise<void> {
     this.$q.loading.show()
-    let bag: StorageNodeBag
+    let bag!: StorageNodeBag
     try {
       if (node.item.nodeType === StorageNodeType.File) {
         bag = await this.$logic.storage.removeUserStorageFiles([node.value])

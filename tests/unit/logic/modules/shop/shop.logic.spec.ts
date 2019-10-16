@@ -1,12 +1,12 @@
 import * as td from 'testdouble'
+import { APIEditCartItemResponse, APIProduct, AppAPI, api, initAPI } from '@/api'
 import { CartItem, CartModule, CartState, CheckoutStatus, ProductModule, ProductState, User, UserModule, UserState, initStore, store } from '@/store'
-import { GQLEditCartItemResponse, GQLFacade, GQLProduct, gql, initGQL } from '@/gql'
-import { TestLogic, TestStoreModule } from '../../../../helper/unit'
+import { TestLogic, TestStoreModule } from '../../../../tools/unit'
 import { initLogic, logic } from '@/logic'
 import { ShopLogicImpl } from '@/logic/modules/shop'
 const cloneDeep = require('lodash/cloneDeep')
 
-initGQL(td.object<GQLFacade>())
+initAPI(td.object<AppAPI>())
 initStore()
 initLogic()
 
@@ -15,7 +15,7 @@ const cartModule = store.cart as TestStoreModule<CartState, CartModule>
 const productModule = store.product as TestStoreModule<ProductState, ProductModule>
 const userModule = store.user as TestStoreModule<UserState, UserModule>
 
-const PRODUCTS: GQLProduct[] = [
+const PRODUCTS: APIProduct[] = [
   { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 1 },
   { id: 'product2', title: 'Fire HD 8 Tablet', price: 80.99, stock: 5 },
   { id: 'product3', title: 'MediaPad 10', price: 150.8, stock: 10 },
@@ -101,7 +101,7 @@ describe('checkoutStatus', () => {
 
 describe('pullProducts()', () => {
   it('ベーシックケース', async () => {
-    td.when(gql.products()).thenResolve(PRODUCTS)
+    td.when(api.products()).thenResolve(PRODUCTS)
 
     await shopLogic.pullProducts()
     const actual = shopLogic.products
@@ -109,8 +109,8 @@ describe('pullProducts()', () => {
     expect(actual).toEqual(PRODUCTS)
   })
 
-  it('GQLでエラーが発生した場合', async () => {
-    td.when(gql.products()).thenThrow(new Error())
+  it('APIでエラーが発生した場合', async () => {
+    td.when(api.products()).thenThrow(new Error())
     productModule.state.all = []
 
     await shopLogic.pullProducts()
@@ -125,7 +125,7 @@ describe('pullCartItems()', () => {
     // ユーザーがサインインしている状態へ変更
     userModule.set({ isSignedIn: true })
 
-    td.when(gql.cartItems()).thenResolve(CART_ITEMS)
+    td.when(api.cartItems()).thenResolve(CART_ITEMS)
 
     await shopLogic.pullCartItems()
     const actual = shopLogic.cartItems
@@ -133,11 +133,11 @@ describe('pullCartItems()', () => {
     expect(actual).toEqual(CART_ITEMS)
   })
 
-  it('GQLでエラーが発生した場合', async () => {
+  it('APIでエラーが発生した場合', async () => {
     // ユーザーがサインインしている状態へ変更
     userModule.set({ isSignedIn: true })
 
-    td.when(gql.cartItems()).thenThrow(new Error())
+    td.when(api.cartItems()).thenThrow(new Error())
     cartModule.state.all = []
 
     await shopLogic.pullCartItems()
@@ -166,7 +166,7 @@ describe('addItemToCart()', () => {
   it('追加しようとする商品がカートに存在しない場合', async () => {
     // ユーザーがサインインしている状態へ変更
     userModule.set({ isSignedIn: true })
-    // GQL実行後のレスポンスの設定
+    // API実行後のレスポンスの設定
     const product3 = PRODUCTS[2]
     const response = {
       id: 'cartItemXXX',
@@ -179,9 +179,9 @@ describe('addItemToCart()', () => {
         id: product3.id,
         stock: 10 - 1,
       },
-    } as GQLEditCartItemResponse
+    } as APIEditCartItemResponse
     // モック設定
-    td.when(gql.addCartItems(td.matchers.anything())).thenResolve([response])
+    td.when(api.addCartItems(td.matchers.anything())).thenResolve([response])
     // 現在の商品の在庫数を設定
     productModule.set({
       id: response.productId,
@@ -190,9 +190,9 @@ describe('addItemToCart()', () => {
 
     await shopLogic.addItemToCart(response.productId)
 
-    // GQLが適切な引数でコールされたか検証
+    // APIが適切な引数でコールされたか検証
     td.verify(
-      gql.addCartItems([
+      api.addCartItems([
         {
           productId: response.productId,
           title: response.title,
@@ -214,7 +214,7 @@ describe('addItemToCart()', () => {
   it('追加しようとする商品がカートに存在する場合', async () => {
     // ユーザーがサインインしている状態へ変更
     userModule.set({ isSignedIn: true })
-    // GQL実行後のレスポンスの設定
+    // API実行後のレスポンスの設定
     const response = {
       ...cartModule.all[0],
       quantity: cartModule.all[0].quantity + 1,
@@ -222,9 +222,9 @@ describe('addItemToCart()', () => {
         id: cartModule.all[0].productId,
         stock: 10 - 1,
       },
-    } as GQLEditCartItemResponse
+    } as APIEditCartItemResponse
     // モック設定
-    td.when(gql.updateCartItems(td.matchers.anything())).thenResolve([response])
+    td.when(api.updateCartItems(td.matchers.anything())).thenResolve([response])
     // 現在の商品の在庫数を設定
     productModule.set({
       id: response.productId,
@@ -233,9 +233,9 @@ describe('addItemToCart()', () => {
 
     await shopLogic.addItemToCart(response.productId)
 
-    // GQLが適切な引数でコールされたか検証
+    // APIが適切な引数でコールされたか検証
     td.verify(
-      gql.updateCartItems([
+      api.updateCartItems([
         {
           id: response.id,
           quantity: response.quantity,
@@ -269,11 +269,11 @@ describe('addItemToCart()', () => {
     expect(actual.message).toBe('Not signed in.')
   })
 
-  it('GQLでエラーが発生した場合', async () => {
+  it('APIでエラーが発生した場合', async () => {
     userModule.set({ isSignedIn: true })
     const prevCartItem = cartModule.all[0]
     const prevProduct = productModule.getById(prevCartItem.productId)!
-    td.when(gql.updateCartItems(td.matchers.anything())).thenThrow(new Error())
+    td.when(api.updateCartItems(td.matchers.anything())).thenThrow(new Error())
     cartModule.setCheckoutStatus(CheckoutStatus.Successful)
 
     await shopLogic.addItemToCart(prevCartItem.productId)
@@ -293,7 +293,7 @@ describe('removeItemFromCart()', () => {
   it('カートアイテムの数が2個以上の場合', async () => {
     // ユーザーがサインインしている状態へ変更
     userModule.set({ isSignedIn: true })
-    // GQL実行後のレスポンスの設定
+    // API実行後のレスポンスの設定
     const response = {
       ...cartModule.all[0],
       quantity: 1,
@@ -301,14 +301,14 @@ describe('removeItemFromCart()', () => {
         id: cartModule.all[0].productId,
         stock: 9 + 1,
       },
-    } as GQLEditCartItemResponse
+    } as APIEditCartItemResponse
     // モック設定
-    td.when(gql.updateCartItems(td.matchers.anything())).thenResolve([response])
+    td.when(api.updateCartItems(td.matchers.anything())).thenResolve([response])
     // 現在のカートアイテムの個数を設定
     cartModule.set({
       id: response.id,
       // 現在のカートアイテムの個数を2に設定
-      // この場合はGQLの`updateCartItems`がコールされる
+      // この場合はAPIの`updateCartItems`がコールされる
       quantity: 2,
     })
     // 現在の商品の在庫数を設定
@@ -319,9 +319,9 @@ describe('removeItemFromCart()', () => {
 
     await shopLogic.removeItemFromCart(response.productId)
 
-    // GQLが適切な引数でコールされたか検証
+    // APIが適切な引数でコールされたか検証
     td.verify(
-      gql.updateCartItems([
+      api.updateCartItems([
         {
           id: response.id,
           quantity: response.quantity,
@@ -341,7 +341,7 @@ describe('removeItemFromCart()', () => {
   it('カートアイテムの数が1個の場合', async () => {
     // ユーザーがサインインしている状態へ変更
     userModule.set({ isSignedIn: true })
-    // GQL実行後のレスポンスの設定
+    // API実行後のレスポンスの設定
     const response = {
       ...cartModule.all[0],
       quantity: 0,
@@ -349,9 +349,9 @@ describe('removeItemFromCart()', () => {
         id: cartModule.all[0].productId,
         stock: 9 + 1,
       },
-    } as GQLEditCartItemResponse
+    } as APIEditCartItemResponse
     // モック設定
-    td.when(gql.removeCartItems(td.matchers.anything())).thenResolve([response])
+    td.when(api.removeCartItems(td.matchers.anything())).thenResolve([response])
     // 現在のカートアイテムの個数を設定
     cartModule.set({
       id: response.id,
@@ -365,8 +365,8 @@ describe('removeItemFromCart()', () => {
 
     await shopLogic.removeItemFromCart(response.productId)
 
-    // GQLが適切な引数でコールされたか検証
-    td.verify(gql.removeCartItems([response.id]))
+    // APIが適切な引数でコールされたか検証
+    td.verify(api.removeCartItems([response.id]))
     // カートアイテムが削除されたか検証
     expect(cartModule.getById(response.id)).toBeUndefined()
     // 商品の在庫数が適切にプラスされたか検証
@@ -393,11 +393,11 @@ describe('removeItemFromCart()', () => {
     expect(actual.message).toBe('Not signed in.')
   })
 
-  it('GQLでエラーが発生した場合', async () => {
+  it('APIでエラーが発生した場合', async () => {
     userModule.set({ isSignedIn: true })
     const prevCartItem = cartModule.all[0]
     const prevProduct = productModule.getById(prevCartItem.productId)!
-    td.when(gql.updateCartItems(td.matchers.anything())).thenThrow(new Error())
+    td.when(api.updateCartItems(td.matchers.anything())).thenThrow(new Error())
     cartModule.setCheckoutStatus(CheckoutStatus.Successful)
 
     await shopLogic.addItemToCart(prevCartItem.productId)
@@ -419,13 +419,13 @@ describe('checkout()', () => {
 
     await shopLogic.checkout()
 
-    td.verify(gql.checkoutCart())
+    td.verify(api.checkoutCart())
     expect(shopLogic.cartItems).toEqual([])
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.Successful)
   })
 
-  it('GQLでエラーが発生した場合', async () => {
-    td.when(gql.checkoutCart()).thenThrow(new Error())
+  it('APIでエラーが発生した場合', async () => {
+    td.when(api.checkoutCart()).thenThrow(new Error())
 
     await shopLogic.checkout()
 

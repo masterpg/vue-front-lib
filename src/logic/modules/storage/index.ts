@@ -4,8 +4,8 @@ import { AdminStorageUploadManager } from '@/logic/modules/storage/admin-upload'
 import { BaseLogic } from '@/logic/base'
 import { Component } from 'vue-property-decorator'
 import { UserStorageUploadManager } from '@/logic/modules/storage/user-upload'
+import { api } from '@/api'
 import { config } from '@/base/config'
-import { gql } from '@/gql'
 
 @Component
 export class StorageLogicImpl extends BaseLogic implements StorageLogic {
@@ -15,22 +15,22 @@ export class StorageLogicImpl extends BaseLogic implements StorageLogic {
   }
 
   async getUserNodes(dirPath?: string): Promise<StorageNodeBag> {
-    const gqlNodes = await gql.userStorageDirNodes(dirPath)
+    const gqlNodes = await api.userStorageDirNodes(dirPath)
     return toStorageNodeBag(gqlNodes)
   }
 
   async createUserStorageDirs(dirPaths: string[]): Promise<StorageNodeBag> {
-    const gqlNodes = await gql.createUserStorageDirs(dirPaths)
+    const gqlNodes = await api.createUserStorageDirs(dirPaths)
     return toStorageNodeBag(gqlNodes)
   }
 
   async removeUserStorageFiles(filePaths: string[]): Promise<StorageNodeBag> {
-    const gqlNodes = await gql.removeUserStorageFiles(filePaths)
+    const gqlNodes = await api.removeUserStorageFiles(filePaths)
     return toStorageNodeBag(gqlNodes)
   }
 
   async removeUserStorageDir(dirPath: string): Promise<StorageNodeBag> {
-    const gqlNodes = await gql.removeUserStorageDir(dirPath)
+    const gqlNodes = await api.removeUserStorageDir(dirPath)
     return toStorageNodeBag(gqlNodes)
   }
 

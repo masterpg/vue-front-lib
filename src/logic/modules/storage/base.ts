@@ -1,12 +1,12 @@
-import { GQLStorageNode, gql } from '@/gql'
+import { APIStorageNode, api } from '@/api'
 import { StorageNode, StorageNodeBag } from '@/logic/types'
 import { removeEndSlash } from 'web-base-lib'
 
 /**
- * `GQLStorageNode`を`StorageNode`へ変換します。
+ * `APIStorageNode`を`StorageNode`へ変換します。
  * @param gqlNode
  */
-export function toStorageNode(gqlNode: GQLStorageNode): StorageNode {
+export function toStorageNode(gqlNode: APIStorageNode): StorageNode {
   return {
     nodeType: gqlNode.nodeType,
     name: gqlNode.name,
@@ -17,10 +17,10 @@ export function toStorageNode(gqlNode: GQLStorageNode): StorageNode {
 }
 
 /**
- * `GQLStorageNode`の配列を`StorageNodeBag`へ変換します。
+ * `APIStorageNode`の配列を`StorageNodeBag`へ変換します。
  * @param gqlNodes
  */
-export function toStorageNodeBag(gqlNodes: GQLStorageNode[]): StorageNodeBag {
+export function toStorageNodeBag(gqlNodes: APIStorageNode[]): StorageNodeBag {
   const bag = { list: [], map: {} } as StorageNodeBag
 
   for (const gqlNode of gqlNodes) {
@@ -276,7 +276,7 @@ export abstract class StorageUploadManager {
       return result
     }, [])
     if (createdDirPaths.length > 0) {
-      await gql.createUserStorageDirs(createdDirPaths)
+      await api.createUserStorageDirs(createdDirPaths)
     }
 
     // 実際にアップロードを実行

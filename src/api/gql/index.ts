@@ -1,8 +1,8 @@
-import { GQLAddCartItemInput, GQLCartItem, GQLEditCartItemResponse, GQLFacade, GQLProduct, GQLStorageNode, GQLUpdateCartItemInput } from '@/gql/types'
-import { BaseGQLClient } from '@/gql/base'
+import { APIAddCartItemInput, APICartItem, APIEditCartItemResponse, APIProduct, APIStorageNode, APIUpdateCartItemInput, AppAPI } from '@/api'
+import { BaseGQLClient } from '@/api/gql/base'
 import gql from 'graphql-tag'
 
-export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
+export class GQLAppAPIImpl extends BaseGQLClient implements AppAPI {
   async customToken(): Promise<string> {
     const response = await this.query<{ customToken: string }>({
       query: gql`
@@ -27,8 +27,8 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.userStorageBasePath
   }
 
-  async userStorageDirNodes(dirPath?: string): Promise<GQLStorageNode[]> {
-    const response = await this.query<{ userStorageDirNodes: GQLStorageNode[] }>({
+  async userStorageDirNodes(dirPath?: string): Promise<APIStorageNode[]> {
+    const response = await this.query<{ userStorageDirNodes: APIStorageNode[] }>({
       query: gql`
         query GetUserStorageNodes($dirPath: String) {
           userStorageDirNodes(dirPath: $dirPath) {
@@ -45,8 +45,8 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.userStorageDirNodes
   }
 
-  async createUserStorageDirs(dirPaths: string[]): Promise<GQLStorageNode[]> {
-    const response = await this.mutate<{ createUserStorageDirs: GQLStorageNode[] }>({
+  async createUserStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+    const response = await this.mutate<{ createUserStorageDirs: APIStorageNode[] }>({
       mutation: gql`
         mutation CreateUserStorageDirs($dirPaths: [String!]!) {
           createUserStorageDirs(dirPaths: $dirPaths) {
@@ -63,8 +63,8 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.createUserStorageDirs
   }
 
-  async removeUserStorageFiles(filePaths: string[]): Promise<GQLStorageNode[]> {
-    const response = await this.mutate<{ removeUserStorageFiles: GQLStorageNode[] }>({
+  async removeUserStorageFiles(filePaths: string[]): Promise<APIStorageNode[]> {
+    const response = await this.mutate<{ removeUserStorageFiles: APIStorageNode[] }>({
       mutation: gql`
         mutation RemoveUserStorageFileNodes($filePaths: [String!]!) {
           removeUserStorageFiles(filePaths: $filePaths) {
@@ -81,8 +81,8 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.removeUserStorageFiles
   }
 
-  async removeUserStorageDir(dirPath: string): Promise<GQLStorageNode[]> {
-    const response = await this.mutate<{ removeUserStorageDir: GQLStorageNode[] }>({
+  async removeUserStorageDir(dirPath: string): Promise<APIStorageNode[]> {
+    const response = await this.mutate<{ removeUserStorageDir: APIStorageNode[] }>({
       mutation: gql`
         mutation RemoveUserStorageDirNodes($dirPath: String!) {
           removeUserStorageDir(dirPath: $dirPath) {
@@ -112,13 +112,13 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.signedUploadUrls
   }
 
-  async product(id: string): Promise<GQLProduct | undefined> {
+  async product(id: string): Promise<APIProduct | undefined> {
     const products = await this.products([id])
     return products.length === 1 ? products[0] : undefined
   }
 
-  async products(ids?: string[]): Promise<GQLProduct[]> {
-    const response = await this.query<{ products: GQLProduct[] }>({
+  async products(ids?: string[]): Promise<APIProduct[]> {
+    const response = await this.query<{ products: APIProduct[] }>({
       query: gql`
         query GetProducts($ids: [ID!]) {
           products(ids: $ids) {
@@ -134,13 +134,13 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.products
   }
 
-  async cartItem(id: string): Promise<GQLCartItem | undefined> {
+  async cartItem(id: string): Promise<APICartItem | undefined> {
     const items = await this.cartItems([id])
     return items.length === 1 ? items[0] : undefined
   }
 
-  async cartItems(ids?: string[]): Promise<GQLCartItem[]> {
-    const response = await this.query<{ cartItems: GQLCartItem[] }>({
+  async cartItems(ids?: string[]): Promise<APICartItem[]> {
+    const response = await this.query<{ cartItems: APICartItem[] }>({
       query: gql`
         query GetCartItems($ids: [ID!]) {
           cartItems(ids: $ids) {
@@ -159,8 +159,8 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.cartItems
   }
 
-  async addCartItems(inputs: GQLAddCartItemInput[]): Promise<GQLEditCartItemResponse[]> {
-    const response = await this.mutate<{ addCartItems: GQLEditCartItemResponse[] }>({
+  async addCartItems(inputs: APIAddCartItemInput[]): Promise<APIEditCartItemResponse[]> {
+    const response = await this.mutate<{ addCartItems: APIEditCartItemResponse[] }>({
       mutation: gql`
         mutation AddCartItems($inputs: [AddCartItemInput!]!) {
           addCartItems(inputs: $inputs) {
@@ -184,7 +184,7 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
             title: item.title,
             price: item.price,
             quantity: item.quantity,
-          } as GQLAddCartItemInput
+          } as APIAddCartItemInput
         }),
       },
       isAuth: true,
@@ -192,8 +192,8 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.addCartItems
   }
 
-  async updateCartItems(inputs: GQLUpdateCartItemInput[]): Promise<GQLEditCartItemResponse[]> {
-    const response = await this.mutate<{ updateCartItems: GQLEditCartItemResponse[] }>({
+  async updateCartItems(inputs: APIUpdateCartItemInput[]): Promise<APIEditCartItemResponse[]> {
+    const response = await this.mutate<{ updateCartItems: APIEditCartItemResponse[] }>({
       mutation: gql`
         mutation UpdateCartItems($inputs: [UpdateCartItemInput!]!) {
           updateCartItems(inputs: $inputs) {
@@ -215,7 +215,7 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
           return {
             id: item.id,
             quantity: item.quantity,
-          } as GQLUpdateCartItemInput
+          } as APIUpdateCartItemInput
         }),
       },
       isAuth: true,
@@ -223,8 +223,8 @@ export class GQLFacadeImpl extends BaseGQLClient implements GQLFacade {
     return response.data.updateCartItems
   }
 
-  async removeCartItems(ids: string[]): Promise<GQLEditCartItemResponse[]> {
-    const response = await this.mutate<{ removeCartItems: GQLEditCartItemResponse[] }>({
+  async removeCartItems(ids: string[]): Promise<APIEditCartItemResponse[]> {
+    const response = await this.mutate<{ removeCartItems: APIEditCartItemResponse[] }>({
       mutation: gql`
         mutation RemoveCartItems($ids: [ID!]!) {
           removeCartItems(ids: $ids) {

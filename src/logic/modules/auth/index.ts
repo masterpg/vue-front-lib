@@ -3,7 +3,7 @@ import { BaseLogic } from '@/logic/base'
 import { Component } from 'vue-property-decorator'
 import { Dialog } from 'quasar'
 import { NoCache } from '@/base/decorators'
-import { gql } from '@/gql'
+import { api } from '@/api'
 import { i18n } from '@/base/i18n'
 import { store } from '@/store'
 const cloneDeep = require('lodash/cloneDeep')
@@ -204,7 +204,7 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
       // サインインした場合
       if (isSignedIn) {
         try {
-          const customToken = await gql.customToken()
+          const customToken = await api.customToken()
           await firebase.auth().signInWithCustomToken(customToken)
         } catch (err) {
           Dialog.create({ title: 'Error', message: String(i18n.t('error.unexpected')) })
