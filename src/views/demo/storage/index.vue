@@ -44,7 +44,7 @@
             <q-btn label="Load" color="primary" class="app-ml-10" @click="m_loadFileButtonOnClick()" />
             <q-btn label="Refresh" color="primary" icon="storage" class="app-ml-10" @click="m_refreshStorageButtonOnClick()" />
           </div>
-          <img ref="img" class="app-mt-20" />
+          <img ref="img" class="app-mt-20" crossorigin="anonymous" />
         </div>
       </template>
     </q-splitter>
