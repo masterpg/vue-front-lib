@@ -120,20 +120,21 @@
 
     <q-drawer v-model="m_leftDrawerOpen" :width="300" :breakpoint="500" show-if-above bordered content-class="bg-grey-2">
       <q-scroll-area class="drawer-scroll-area">
-        <q-list padding>
-          <template v-for="(item, index) in m_items">
-            <q-item :key="index" v-ripple :to="item.path" clickable>
-              <q-item-section avatar>
-                <q-icon :name="item.icon" />
-              </q-item-section>
-              <q-item-section>{{ item.title }}</q-item-section>
-            </q-item>
-          </template>
-        </q-list>
-        <q-expansion-item icon="code" label="Demo">
+        <!-- Demo -->
+        <q-expansion-item v-model="m_demoExpanded" icon="star" label="Demo" expand-separator>
           <q-list padding>
             <template v-for="(item, index) in m_demoItems">
-              <q-item :key="index" v-ripple :to="item.path" clickable class="app-ml-20">
+              <q-item :key="index" v-ripple :to="item.path" class="app-ml-20" clickable>
+                <q-item-section>{{ item.title }}</q-item-section>
+              </q-item>
+            </template>
+          </q-list>
+        </q-expansion-item>
+        <!-- Components -->
+        <q-expansion-item v-model="m_componentsExpanded" icon="fas fa-cubes" label="Components" expand-separator>
+          <q-list padding>
+            <template v-for="(item, index) in m_componentsItems">
+              <q-item :key="index" v-ripple :to="item.path" class="app-ml-20" clickable>
                 <q-item-section>{{ item.title }}</q-item-section>
               </q-item>
             </template>
@@ -220,27 +221,29 @@ export default class AppPage extends mixins(BaseComponent, ResizableMixin) {
   //
   //----------------------------------------------------------------------
 
-  private m_items: Array<{ title: string; path: string; icon: string }> = [
+  private m_demoExpanded: boolean = true
+
+  private m_demoItems: Array<{ title: string; path: string; icon?: string }> = [
     {
       title: 'ABC',
-      path: router.views.abcPage.path,
-      icon: 'inbox',
+      path: router.views.demo.abc.path,
     },
     {
-      title: 'Shopping',
-      path: router.views.shopPage.path,
-      icon: 'star',
-    },
-  ]
-
-  private m_demoItems: Array<{ title: string; path: string }> = [
-    {
-      title: 'comp-tree-view',
-      path: router.views.demo.compTreeViewPage.path,
+      title: 'Shop',
+      path: router.views.demo.shop.path,
     },
     {
       title: 'Cloud Storage',
       path: router.views.demo.storage.path,
+    },
+  ]
+
+  private m_componentsExpanded: boolean = true
+
+  private m_componentsItems: Array<{ title: string; path: string }> = [
+    {
+      title: 'Tree View',
+      path: router.views.components.treeView.path,
     },
   ]
 

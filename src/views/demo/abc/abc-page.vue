@@ -1,5 +1,5 @@
 <style lang="stylus" scoped>
-@import '../../styles/app.variables.styl'
+@import '../../../styles/app.variables.styl'
 
 .greet-message {
   --greet-message-color: $indigo-12
@@ -69,9 +69,9 @@
 <script lang="ts">
 import { BaseComponent, ResizableMixin } from '@/components'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import CustomCheckbox from '@/views/abc-page/custom-checkbox.vue'
-import CustomInput from '@/views/abc-page/custom-input.vue'
-import GreetMessage from '@/views/abc-page/greet-message.vue'
+import CustomCheckbox from '@/views/demo/abc/custom-checkbox.vue'
+import CustomInput from '@/views/demo/abc/custom-input.vue'
+import GreetMessage from '@/views/demo/abc/greet-message.vue'
 import { mixins } from 'vue-class-component'
 
 interface Post {

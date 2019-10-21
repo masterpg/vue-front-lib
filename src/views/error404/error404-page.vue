@@ -34,7 +34,7 @@ import { router } from '@/base/router'
 @Component({ name: 'error404-page' })
 export default class Error404Page extends mixins(BaseComponent) {
   private m_backButtonOnClick() {
-    router.views.abcPage.move()
+    router.views.demo.abc.move()
   }
 }
 </script>

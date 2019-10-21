@@ -1,5 +1,5 @@
 <style lang="stylus" scoped>
-@import '../../styles/app.variables.styl'
+@import '../../../styles/app.variables.styl'
 
 .toggle {
   border: 1px solid $primary

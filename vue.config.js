@@ -47,7 +47,7 @@ module.exports = {
   },
 
   // Firebase Hostingでハッシュ付きのファイルを使用すると、
-  // Service Workerで不都合が生じるようで、新しいリソースがキャッシュできなかったり、
+  // Service Workerで不具合が生じ、新しいリソースがキャッシュできなかったり、
   // 画面ロード時にリソースをうまく見つけられずエラーが発生したりする。
   // このためファイル名にハッシュをつけないよう設定している。
   filenameHashing: false,
@@ -74,7 +74,7 @@ module.exports = {
 
       // ※ 以下のような不具合があったが、`filenameHashing`の対応を行ったところ、
       //    問題が解決したかもしれないので一旦コメント化。
-      //    今後状況をみて書きを削除するか検討すること。
+      //    今後状況をみて削除するか検討すること。
       //
       // index.htmlをServiceWorkerでキャッシュすると、
       // FirebaseのGoogleやFacebook認証がうまく動作しなくなるので除外。

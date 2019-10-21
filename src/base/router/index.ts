@@ -25,55 +25,13 @@ abstract class ViewRoute<T extends ViewRoute = any> {
   }
 }
 
-const abcPageRoute = new (class ABCPageRoute extends ViewRoute {
-  get path() {
-    return '/views/abc-page'
-  }
-
-  get component() {
-    return () => import(/* webpackChunkName: "abc" */ '@/views/abc-page/index.vue')
-  }
-
-  move() {
-    vueRouter.push(this.path)
-  }
-
-  readonly foo = new (class extends ViewRoute<ABCPageRoute> {
-    get path() {
-      return `${this.parent!.path}/foo/:id`
-    }
-
-    get component() {
-      return this.parent!.component
-    }
-
-    move(id: string) {
-      vueRouter.push(this.replaceRouteParams(id))
-    }
-  })(this)
-})()
-
-const shopPageRoute = new (class ShopPageRoute extends ViewRoute {
-  get path() {
-    return '/views/shop-page'
-  }
-
-  get component() {
-    return () => import(/* webpackChunkName: "shop" */ '@/views/shop-page/index.vue')
-  }
-
-  move() {
-    vueRouter.push(this.path)
-  }
-})()
-
-const error404PageRoute = new (class Error404PageRoute extends ViewRoute {
+const error404Route = new (class Error404Route extends ViewRoute {
   get path() {
     return '*'
   }
 
   get component() {
-    return () => import(/* webpackChunkName: "error404" */ '@/views/error404-page/index.vue')
+    return () => import(/* webpackChunkName: "views/error404" */ '@/views/error404/error404-page.vue')
   }
 })()
 
@@ -86,13 +44,27 @@ const demoRoute = new (class DemoRoute extends ViewRoute {
     return undefined
   }
 
-  compTreeViewPage = new (class extends ViewRoute<DemoRoute> {
+  abc = new (class extends ViewRoute<DemoRoute> {
     get path() {
-      return `${this.parent!.path}/comp-tree-view-page`
+      return `${this.parent!.path}/abc`
     }
 
     get component() {
-      return () => import(/* webpackChunkName: "demo/comp-tree-view" */ '@/views/demo/comp-tree-view-page/index.vue')
+      return () => import(/* webpackChunkName: "views/demo/abc" */ '@/views/demo/abc/abc-page.vue')
+    }
+
+    move() {
+      vueRouter.push(this.path)
+    }
+  })(this)
+
+  shop = new (class extends ViewRoute<DemoRoute> {
+    get path() {
+      return `${this.parent!.path}/shop`
+    }
+
+    get component() {
+      return () => import(/* webpackChunkName: "views/demo/shop" */ '@/views/demo/shop/shop-page.vue')
     }
 
     move() {
@@ -106,7 +78,31 @@ const demoRoute = new (class DemoRoute extends ViewRoute {
     }
 
     get component() {
-      return () => import(/* webpackChunkName: "demo/storage" */ '@/views/demo/storage/index.vue')
+      return () => import(/* webpackChunkName: "views/demo/storage" */ '@/views/demo/storage/storage-page.vue')
+    }
+
+    move() {
+      vueRouter.push(this.path)
+    }
+  })(this)
+})()
+
+const componentsRoute = new (class ComponentsRoute extends ViewRoute {
+  get path() {
+    return '/views/components'
+  }
+
+  get component() {
+    return undefined
+  }
+
+  treeView = new (class extends ViewRoute<ComponentsRoute> {
+    get path() {
+      return `${this.parent!.path}/tree-view`
+    }
+
+    get component() {
+      return () => import(/* webpackChunkName: "views/components/tree-view" */ '@/views/components/tree-view/tree-view-page.vue')
     }
 
     move() {
@@ -117,13 +113,11 @@ const demoRoute = new (class DemoRoute extends ViewRoute {
 
 export const router = new (class {
   views = {
-    abcPage: abcPageRoute,
-
-    shopPage: shopPageRoute,
-
-    error404Page: error404PageRoute,
+    error404: error404Route,
 
     demo: demoRoute,
+
+    components: componentsRoute,
   }
 
   /**
@@ -190,12 +184,11 @@ export const router = new (class {
 export const vueRouter = new VueRouter({
   mode: 'history',
   routes: [
-    router.views.abcPage,
-    router.views.abcPage.foo,
-    router.views.shopPage,
-    router.views.error404Page,
-    router.views.demo.compTreeViewPage,
+    router.views.error404,
+    router.views.demo.abc,
+    router.views.demo.shop,
     router.views.demo.storage,
+    router.views.components.treeView,
   ],
 })
 
