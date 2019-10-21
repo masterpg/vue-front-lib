@@ -1,5 +1,5 @@
 <style lang="stylus" scoped>
-@import '../../styles/app.variables.styl'
+@import '../../../styles/app.variables.styl'
 
 .container {
   &.pc, &.tab {
@@ -85,7 +85,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, ResizableMixin } from '@/components'
+import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '@/base/decorators'
 import { QInput } from 'quasar'

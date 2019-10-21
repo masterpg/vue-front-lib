@@ -8,7 +8,7 @@
 
 <script lang="ts">
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import { BaseComponent } from '@/components'
+import { BaseComponent } from '@/components/base'
 import { mixins } from 'vue-class-component'
 
 @Component({ name: 'custom-input' })

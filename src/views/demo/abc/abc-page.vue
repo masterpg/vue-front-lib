@@ -67,7 +67,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, ResizableMixin } from '@/components'
+import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component, Prop, Watch } from 'vue-property-decorator'
 import CustomCheckbox from '@/views/demo/abc/custom-checkbox.vue'
 import CustomInput from '@/views/demo/abc/custom-input.vue'

@@ -1,5 +1,5 @@
 <style lang="stylus" scoped>
-@import '../../styles/app.variables.styl'
+@import '../../../styles/app.variables.styl'
 
 .item {
   cursor: pointer
@@ -28,9 +28,9 @@
 </template>
 
 <script lang="ts">
-import * as treeViewUtils from '@/components/comp-tree-view/comp-tree-view-utils'
-import { CompTreeNodeData, CompTreeNodeEditData } from '@/components/comp-tree-view/types'
-import { BaseComponent } from '@/components'
+import * as treeViewUtils from '@/components/solo/tree-view/comp-tree-view-utils'
+import { CompTreeNodeData, CompTreeNodeEditData } from '@/components/solo/tree-view/types'
+import { BaseComponent } from '@/components/base'
 import { Component } from 'vue-property-decorator'
 const isBoolean = require('lodash/isBoolean')
 const isString = require('lodash/isString')

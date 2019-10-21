@@ -1,6 +1,6 @@
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '@/base/decorators'
-import { ResizableMixin } from '@/components/resizable-mixin'
+import { ResizableMixin } from '@/components/base/resizable-mixin'
 import Vue from 'vue'
 
 /**

@@ -1,5 +1,5 @@
 <style lang="stylus" scoped>
-@import '../../styles/app.variables.styl'
+@import '../../../styles/app.variables.styl'
 
 .child-container {
   color: var(--comp-tree-view-color, $indigo-8)
@@ -25,19 +25,15 @@
 </template>
 
 <script lang="ts">
-import * as treeViewUtils from '@/components/comp-tree-view/comp-tree-view-utils'
-import { BaseComponent, NoCache } from '@/components'
-import { ChildrenSortFunc, CompTreeNodeData } from '@/components/comp-tree-view/types'
-import CompCheckboxNodeItem, { CompCheckboxTreeNodeData } from '@/components/comp-tree-view/comp-checkbox-node-item.vue'
-import CompTreeNode from '@/components/comp-tree-view/comp-tree-node.vue'
-import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
+import * as treeViewUtils from '@/components/solo/tree-view/comp-tree-view-utils'
+import { BaseComponent, NoCache } from '@/components/base'
+import { ChildrenSortFunc, CompTreeNodeData } from '@/components/solo/tree-view/types'
+import CompTreeNode from '@/components/solo/tree-view/comp-tree-node.vue'
 import { Component } from 'vue-property-decorator'
-import { NodePropertyChangeDetail } from '@/components/comp-tree-view/comp-tree-view-utils'
+import { NodePropertyChangeDetail } from '@/components/solo/tree-view/comp-tree-view-utils'
 import Vue from 'vue'
 const isInteger = require('lodash/isInteger')
 const isFunction = require('lodash/isFunction')
-
-export { CompTreeNodeData, CompTreeNode, CompTreeNodeItem, CompCheckboxNodeItem, CompCheckboxTreeNodeData }
 
 /**
  * ツリーコンポーネントです。

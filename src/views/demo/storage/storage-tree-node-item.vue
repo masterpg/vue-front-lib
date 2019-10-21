@@ -71,8 +71,7 @@
 </template>
 
 <script lang="ts">
-import { CompTreeNodeData } from '@/components/comp-tree-view/types'
-import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
+import { CompTreeNodeData, CompTreeNodeItem } from '@/components/solo/tree-view'
 import { Component } from 'vue-property-decorator'
 import { StorageNodeType } from '@/logic'
 

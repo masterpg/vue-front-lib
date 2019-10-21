@@ -1,5 +1,5 @@
 <style lang="stylus" scoped>
-@import '../../styles/app.variables.styl'
+@import '../../../styles/app.variables.styl'
 
 .main {
 }
@@ -67,13 +67,13 @@
 </template>
 
 <script lang="ts">
-import * as treeViewUtils from '@/components/comp-tree-view/comp-tree-view-utils'
-import { BaseComponent, NoCache } from '@/components'
-import { ChildrenSortFunc, CompTreeNodeData, CompTreeNodeEditData } from '@/components/comp-tree-view/types'
-import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
-import CompTreeView from '@/components/comp-tree-view/index.vue'
+import * as treeViewUtils from '@/components/solo/tree-view/comp-tree-view-utils'
+import { BaseComponent, NoCache } from '@/components/base'
+import { ChildrenSortFunc, CompTreeNodeData, CompTreeNodeEditData } from '@/components/solo/tree-view/types'
+import CompTreeNodeItem from '@/components/solo/tree-view/comp-tree-node-item.vue'
+import CompTreeView from '@/components/solo/tree-view/comp-tree-view.vue'
 import { Component } from 'vue-property-decorator'
-import { NodePropertyChangeDetail } from '@/components/comp-tree-view/comp-tree-view-utils'
+import { NodePropertyChangeDetail } from '@/components/solo/tree-view/comp-tree-view-utils'
 import Vue from 'vue'
 const isInteger = require('lodash/isInteger')
 const isFunction = require('lodash/isFunction')

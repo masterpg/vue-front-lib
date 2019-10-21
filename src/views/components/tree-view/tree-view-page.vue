@@ -55,8 +55,8 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, NoCache, ResizableMixin } from '@/components'
-import CompTreeView, { CompCheckboxNodeItem, CompCheckboxTreeNodeData, CompTreeNode, CompTreeNodeItem } from '@/components/comp-tree-view/index.vue'
+import { BaseComponent, NoCache, ResizableMixin } from '@/components/base'
+import { CompCheckboxNodeItem, CompCheckboxTreeNodeData, CompTreeNode, CompTreeNodeItem, CompTreeView } from '@/components/solo/tree-view'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 

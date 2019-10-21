@@ -51,9 +51,9 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, NoCache, ResizableMixin } from '@/components'
-import { Component, Prop, Watch } from 'vue-property-decorator'
-import CompTreeNode from '@/components/comp-tree-view/comp-tree-node.vue'
+import { BaseComponent, NoCache, ResizableMixin } from '@/components/base'
+import { Component, Watch } from 'vue-property-decorator'
+import { CompTreeNode } from '@/components/solo/tree-view'
 import { QInput } from 'quasar'
 import StorageTreeNodeItem from '@/views/demo/storage/storage-tree-node-item.vue'
 import { mixins } from 'vue-class-component'

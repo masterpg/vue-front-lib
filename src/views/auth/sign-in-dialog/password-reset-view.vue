@@ -1,5 +1,5 @@
 <style lang="stylus" scoped>
-@import '../../../../styles/app.variables.styl'
+@import '../../../styles/app.variables.styl'
 
 .container {
   &.pc, &.tab {
@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, ResizableMixin } from '@/components'
+import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component, Prop } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import { router } from '@/base/router'

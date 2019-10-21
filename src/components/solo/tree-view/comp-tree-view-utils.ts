@@ -1,7 +1,7 @@
-import CompTreeNode from '@/components/comp-tree-view/comp-tree-node.vue'
-import { CompTreeNodeData } from '@/components/comp-tree-view/types'
-import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
-import CompTreeView from '@/components/comp-tree-view/index.vue'
+import CompTreeNode from '@/components/solo/tree-view/comp-tree-node.vue'
+import { CompTreeNodeData } from '@/components/solo/tree-view/types'
+import CompTreeNodeItem from '@/components/solo/tree-view/comp-tree-node-item.vue'
+import CompTreeView from '@/components/solo/tree-view/comp-tree-view.vue'
 import Vue from 'vue'
 
 /**

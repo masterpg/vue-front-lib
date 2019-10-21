@@ -1,5 +1,5 @@
 <style lang="stylus" scoped>
-@import '../../../styles/app.variables.styl'
+@import '../../styles/app.variables.styl'
 
 .container {
   &.pc, &.tab {
@@ -93,9 +93,9 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, ResizableMixin } from '@/components'
+import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component, Watch } from 'vue-property-decorator'
-import EmailSignInView from '@/views/auth/email-sign-in-view.vue'
+import { EmailSignInView } from '@/views/auth/base'
 import { NoCache } from '@/base/decorators'
 import { QInput } from 'quasar'
 import { mixins } from 'vue-class-component'

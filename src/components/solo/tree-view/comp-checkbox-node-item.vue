@@ -1,5 +1,5 @@
 <style lang="stylus" scoped>
-@import '../../styles/app.variables.styl'
+@import '../../../styles/app.variables.styl'
 
 .container {
   height: var(--comp-tree-line-height, 26px)
@@ -35,13 +35,9 @@
 </template>
 
 <script lang="ts">
-import { CompTreeNodeData } from '@/components/comp-tree-view/types'
-import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
+import CompTreeNodeItem from '@/components/solo/tree-view/comp-tree-node-item.vue'
+import { CompCheckboxTreeNodeData } from '@/components/solo/tree-view/types'
 import { Component } from 'vue-property-decorator'
-
-export interface CompCheckboxTreeNodeData extends CompTreeNodeData {
-  checked?: boolean
-}
 
 @Component
 export default class CompCheckboxNodeItem extends CompTreeNodeItem<CompCheckboxTreeNodeData> {

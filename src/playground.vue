@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, ResizableMixin } from '@/components'
+import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 

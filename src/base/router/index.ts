@@ -31,7 +31,7 @@ const error404Route = new (class Error404Route extends ViewRoute {
   }
 
   get component() {
-    return () => import(/* webpackChunkName: "views/error404" */ '@/views/error404/error404-page.vue')
+    return () => import(/* webpackChunkName: "views/error404" */ '@/views/error404')
   }
 })()
 
@@ -50,7 +50,7 @@ const demoRoute = new (class DemoRoute extends ViewRoute {
     }
 
     get component() {
-      return () => import(/* webpackChunkName: "views/demo/abc" */ '@/views/demo/abc/abc-page.vue')
+      return () => import(/* webpackChunkName: "views/demo/abc" */ '@/views/demo/abc')
     }
 
     move() {
@@ -64,7 +64,7 @@ const demoRoute = new (class DemoRoute extends ViewRoute {
     }
 
     get component() {
-      return () => import(/* webpackChunkName: "views/demo/shop" */ '@/views/demo/shop/shop-page.vue')
+      return () => import(/* webpackChunkName: "views/demo/shop" */ '@/views/demo/shop')
     }
 
     move() {
@@ -78,7 +78,7 @@ const demoRoute = new (class DemoRoute extends ViewRoute {
     }
 
     get component() {
-      return () => import(/* webpackChunkName: "views/demo/storage" */ '@/views/demo/storage/storage-page.vue')
+      return () => import(/* webpackChunkName: "views/demo/storage" */ '@/views/demo/storage')
     }
 
     move() {
@@ -183,13 +183,7 @@ export const router = new (class {
 
 export const vueRouter = new VueRouter({
   mode: 'history',
-  routes: [
-    router.views.error404,
-    router.views.demo.abc,
-    router.views.demo.shop,
-    router.views.demo.storage,
-    router.views.components.treeView,
-  ],
+  routes: [router.views.error404, router.views.demo.abc, router.views.demo.shop, router.views.demo.storage, router.views.components.treeView],
 })
 
 vueRouter.beforeEach((to, from, next) => {

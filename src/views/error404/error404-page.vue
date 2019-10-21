@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent } from '@/components'
+import { BaseComponent } from '@/components/base'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import { router } from '@/base/router'

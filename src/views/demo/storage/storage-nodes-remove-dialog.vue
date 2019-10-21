@@ -40,9 +40,9 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, ResizableMixin } from '@/components'
+import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component, Watch } from 'vue-property-decorator'
-import CompTreeNode from '@/components/comp-tree-view/comp-tree-node.vue'
+import { CompTreeNode } from '@/components/solo/tree-view'
 import { StorageNodeType } from '@/logic'
 import StorageTreeNodeItem from '@/views/demo/storage/storage-tree-node-item.vue'
 import { mixins } from 'vue-class-component'

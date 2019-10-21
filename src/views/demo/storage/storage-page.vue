@@ -50,29 +50,26 @@
     </q-splitter>
     <storage-dir-create-dialog ref="dirCreateDialog" />
     <storage-nodes-remove-dialog ref="nodesRemoveDialog" />
-    <storage-upload-progress ref="uploadProgress" class="fixed-bottom-right" />
+    <comp-storage-upload-progress-float ref="uploadProgressFloat" class="fixed-bottom-right" />
   </div>
 </template>
 
 <script lang="ts">
-import { BaseComponent, NoCache, ResizableMixin } from '@/components'
+import { BaseComponent, NoCache, ResizableMixin } from '@/components/base'
+import { CompTreeNode, CompTreeNodeItem, CompTreeView } from '@/components/solo/tree-view'
 import { StorageNode, StorageNodeBag, StorageNodeType } from '@/logic'
 import StorageTreeNodeItem, { StorageTreeNodeData } from '@/views/demo/storage/storage-tree-node-item.vue'
-import CompTreeNode from '@/components/comp-tree-view/comp-tree-node.vue'
-import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
-import CompTreeView from '@/components/comp-tree-view/index.vue'
 import { Component } from 'vue-property-decorator'
 import StorageDirCreateDialog from '@/views/demo/storage/storage-dir-create-dialog.vue'
 import StorageNodesRemoveDialog from '@/views/demo/storage/storage-nodes-remove-dialog.vue'
-import StorageUploadProgress from '@/views/demo/storage/storage-upload-progress.vue'
-import axios from 'axios'
+import { CompStorageUploadProgressFloat } from '@/components/app/storage'
 import { mixins } from 'vue-class-component'
 
 @Component({
-  name: 'demo-storage-page',
-  components: { CompTreeView, CompTreeNode, CompTreeNodeItem, StorageDirCreateDialog, StorageNodesRemoveDialog, StorageUploadProgress },
+  name: 'storage-page',
+  components: { CompTreeView, CompTreeNode, CompTreeNodeItem, StorageDirCreateDialog, StorageNodesRemoveDialog, CompStorageUploadProgressFloat },
 })
-export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixin) {
+export default class StoragePage extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -127,8 +124,8 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
   }
 
   @NoCache
-  private get m_uploadProgress(): StorageUploadProgress {
-    return this.$refs.uploadProgress as StorageUploadProgress
+  private get m_uploadProgressFloat(): CompStorageUploadProgressFloat {
+    return this.$refs.uploadProgressFloat as CompStorageUploadProgressFloat
   }
 
   @NoCache
@@ -282,11 +279,11 @@ export default class DemoStoragePage extends mixins(BaseComponent, ResizableMixi
   }
 
   private async m_treeViewOnFilesUploadSelected(dirNode: CompTreeNode<StorageTreeNodeItem>) {
-    this.m_uploadProgress.openFilesSelectDialog(dirNode.value)
+    this.m_uploadProgressFloat.openFilesSelectDialog(dirNode.value)
   }
 
   private async m_treeViewOnDirUploadSelected(dirNode: CompTreeNode<StorageTreeNodeItem>) {
-    this.m_uploadProgress.openDirSelectDialog(dirNode.value)
+    this.m_uploadProgressFloat.openDirSelectDialog(dirNode.value)
   }
 
   private async m_treeViewOnCreateDirSelected(node: CompTreeNode<StorageTreeNodeItem>) {

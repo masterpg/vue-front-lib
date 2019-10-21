@@ -1,5 +1,5 @@
-import CompTreeNode from '@/components/comp-tree-view/comp-tree-node.vue'
-import CompTreeNodeItem from '@/components/comp-tree-view/comp-tree-node-item.vue'
+import CompTreeNode from '@/components/solo/tree-view/comp-tree-node.vue'
+import CompTreeNodeItem from '@/components/solo/tree-view/comp-tree-node-item.vue'
 import { Constructor } from '@/base/types'
 
 export interface CompTreeNodeData {
@@ -48,3 +48,7 @@ export interface CompTreeNodeData {
 export interface CompTreeNodeEditData extends Partial<Omit<CompTreeNodeData, 'itemClass' | 'children'>> {}
 
 export type ChildrenSortFunc = (a: CompTreeNode, b: CompTreeNode) => number
+
+export interface CompCheckboxTreeNodeData extends CompTreeNodeData {
+  checked?: boolean
+}

@@ -1,6 +1,6 @@
 import {AuthProviderType} from '../../logic'
 <style lang="stylus" scoped>
-@import '../../styles/app.variables.styl'
+@import '../../../styles/app.variables.styl'
 
 .container {}
 
@@ -119,7 +119,7 @@ import {AuthProviderType} from '../../logic'
 </template>
 
 <script lang="ts">
-import { BaseComponent, ResizableMixin } from '@/components'
+import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component, Prop } from 'vue-property-decorator'
 import { AuthProviderType } from '@/logic'
 import { mixins } from 'vue-class-component'

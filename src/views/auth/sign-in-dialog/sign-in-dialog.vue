@@ -17,10 +17,10 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, ResizableMixin } from '@/components'
+import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component, Watch } from 'vue-property-decorator'
-import EmailAuthView from '@/views/auth/sign-in-dialog/email-auth-view/index.vue'
-import ProviderListView from '@/views/auth/provider-list-view.vue'
+import EmailAuthView from '@/views/auth/sign-in-dialog/email-auth-view.vue'
+import ProviderListView from '@/views/auth/base/provider-list-view.vue'
 import { mixins } from 'vue-class-component'
 import { router } from '@/base/router'
 

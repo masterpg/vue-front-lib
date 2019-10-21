@@ -75,13 +75,13 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, ResizableMixin } from '@/components'
+import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component, Watch } from 'vue-property-decorator'
 import { StorageUploadManager } from '@/logic'
 import { mixins } from 'vue-class-component'
 
-@Component({ name: 'storage-upload-progress' })
-export default class StorageUploadProgress extends mixins(BaseComponent, ResizableMixin) {
+@Component({ name: 'comp-storage-upload-progress-float' })
+export default class CompStorageUploadProgressFloat extends mixins(BaseComponent, ResizableMixin) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks

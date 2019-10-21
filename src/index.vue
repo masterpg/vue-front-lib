@@ -157,13 +157,11 @@
 
 <script lang="ts">
 import * as sw from '@/base/service-worker'
-import { BaseComponent, ResizableMixin } from '@/components'
+import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component, Watch } from 'vue-property-decorator'
-import AccountDeleteDialog from '@/views/auth/account-delete-dialog/index.vue'
-import EmailChangeDialog from '@/views/auth/email-change-dialog/index.vue'
+import { AccountDeleteDialog, EmailChangeDialog, SignInDialog } from '@/views/auth'
 import { NoCache } from '@/base/decorators'
 import { Route } from 'vue-router/types/router'
-import SignInDialog from '@/views/auth/sign-in-dialog/index.vue'
 import { User } from '@/logic'
 import { mixins } from 'vue-class-component'
 import { router } from '@/base/router'
