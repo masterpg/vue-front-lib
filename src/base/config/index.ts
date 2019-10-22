@@ -16,6 +16,7 @@ export interface Config {
     projectId?: string
     storageBucket?: string
     messagingSenderId?: string
+    appId: string
   }
 }
 
@@ -52,6 +53,7 @@ class ConfigImpl implements Config {
     projectId: '<PROJECT_ID>',
     storageBucket: '<BUCKET>.appspot.com',
     messagingSenderId: '<SENDER_ID>',
+    appId: '<APP_ID>',
   }
 }
 
