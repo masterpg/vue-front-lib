@@ -72,8 +72,8 @@
 <script lang="ts">
 import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component, Watch } from 'vue-property-decorator'
-import { AuthProviderType } from '@/logic'
 import { EmailSignInView, ProviderListView } from '@/views/auth/base'
+import { AuthProviderType } from '@/logic'
 import { mixins } from 'vue-class-component'
 
 @Component({

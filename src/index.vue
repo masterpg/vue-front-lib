@@ -157,9 +157,9 @@
 
 <script lang="ts">
 import * as sw from '@/base/service-worker'
+import { AccountDeleteDialog, EmailChangeDialog, SignInDialog } from '@/views/auth'
 import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component, Watch } from 'vue-property-decorator'
-import { AccountDeleteDialog, EmailChangeDialog, SignInDialog } from '@/views/auth'
 import { NoCache } from '@/base/decorators'
 import { Route } from 'vue-router/types/router'
 import { User } from '@/logic'

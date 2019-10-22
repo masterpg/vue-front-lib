@@ -59,10 +59,10 @@ import { BaseComponent, NoCache, ResizableMixin } from '@/components/base'
 import { CompTreeNode, CompTreeNodeItem, CompTreeView } from '@/components/solo/tree-view'
 import { StorageNode, StorageNodeBag, StorageNodeType } from '@/logic'
 import StorageTreeNodeItem, { StorageTreeNodeData } from '@/views/demo/storage/storage-tree-node-item.vue'
+import { CompStorageUploadProgressFloat } from '@/components/app/storage'
 import { Component } from 'vue-property-decorator'
 import StorageDirCreateDialog from '@/views/demo/storage/storage-dir-create-dialog.vue'
 import StorageNodesRemoveDialog from '@/views/demo/storage/storage-nodes-remove-dialog.vue'
-import { CompStorageUploadProgressFloat } from '@/components/app/storage'
 import { mixins } from 'vue-class-component'
 
 @Component({

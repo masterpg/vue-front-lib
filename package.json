@@ -10,7 +10,7 @@
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "testcafe chrome:headless tests/e2e/**/*.test.ts -S -s screenshots --hostname localhost",
     "docs": "postcss --config build/postcss.config.js docs/book.pcss -o docs/book.css && cd docs && ../node_modules/.bin/gitbook install && ../node_modules/.bin/gitbook serve",
-    "lint": "./node_modules/web-base-lib/scripts/lint.sh",
+    "lint": "./node_modules/web-base-lib/tools/lint.sh",
     "deploy": "firebase deploy --only hosting,firestore,storage"
   },
   "dependencies": {

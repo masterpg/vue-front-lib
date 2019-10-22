@@ -35,8 +35,8 @@
 </template>
 
 <script lang="ts">
-import CompTreeNodeItem from '@/components/solo/tree-view/comp-tree-node-item.vue'
 import { CompCheckboxTreeNodeData } from '@/components/solo/tree-view/types'
+import CompTreeNodeItem from '@/components/solo/tree-view/comp-tree-node-item.vue'
 import { Component } from 'vue-property-decorator'
 
 @Component
