@@ -1,5 +1,5 @@
 import { Selector } from 'testcafe'
-import { VueSelector } from '../../../tools/e2e'
+import { VueSelector } from '../../../helpers/e2e'
 
 fixture`ABC Page`.page`http://localhost:5000/views/abc-page`
 

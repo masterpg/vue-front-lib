@@ -1,7 +1,7 @@
 import * as td from 'testdouble'
 import { APIEditCartItemResponse, APIProduct, AppAPI, api, initAPI } from '@/api'
 import { CartItem, CartModule, CartState, CheckoutStatus, ProductModule, ProductState, User, UserModule, UserState, initStore, store } from '@/store'
-import { TestLogic, TestStoreModule } from '../../../../tools/unit'
+import { TestLogic, TestStoreModule } from '../../../../helpers/unit'
 import { initLogic, logic } from '@/logic'
 import { ShopLogicImpl } from '@/logic/modules/shop'
 const cloneDeep = require('lodash/cloneDeep')

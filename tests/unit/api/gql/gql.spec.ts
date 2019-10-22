@@ -1,5 +1,5 @@
 import { APIAddCartItemInput, APICartItem, APIEditCartItemResponse, APIProduct, api, initAPI } from '@/api'
-import { clearAuthUser, putTestData, removeTestStorageDir, setAuthUser, testAPI, uploadTestFiles } from '../../../tools/comm'
+import { clearAuthUser, putTestData, removeTestStorageDir, setAuthUser, testAPI, uploadTestFiles } from '../../../helpers/comm'
 const cloneDeep = require('lodash/cloneDeep')
 const isEmpty = require('lodash/isEmpty')
 
