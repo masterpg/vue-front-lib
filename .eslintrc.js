@@ -11,6 +11,7 @@ const eslintConfig = merge(
     ],
     'rules': {
       'prettier/prettier': ['error', prettierConfig],
+      'no-console': 'off',
       'vue/html-self-closing': 'off',
       'vue/max-attributes-per-line': 'off',
       'vue/singleline-html-element-content-newline': 'off',

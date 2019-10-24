@@ -1,4 +1,3 @@
-import * as firebaseAdmin from 'firebase-admin'
 import { AppAPI } from '@/api'
 import { GQLAppAPIImpl } from '@/api/gql'
 import axios from 'axios'
@@ -9,8 +8,10 @@ export interface CollectionData {
   collectionRecords: any[]
 }
 
-export interface AuthUser extends Partial<firebaseAdmin.auth.DecodedIdToken> {
+export interface AuthUser {
   uid: string
+  email?: string
+  isAppAdmin?: boolean
 }
 
 export interface UploadFileItem {
@@ -118,7 +119,7 @@ export class GQLTestAPIImpl extends GQLAppAPIImpl {
       `,
       variables: { filePaths },
     })
-    return response.data.removeTestStorageFiles
+    return response.data!.removeTestStorageFiles
   }
 
   async removeTestStorageDir(dirPath: string): Promise<boolean> {
@@ -130,7 +131,7 @@ export class GQLTestAPIImpl extends GQLAppAPIImpl {
       `,
       variables: { dirPath },
     })
-    return response.data.removeTestStorageDir
+    return response.data!.removeTestStorageDir
   }
 }
 export const testAPI: AppAPI = new GQLTestAPIImpl()

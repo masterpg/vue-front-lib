@@ -16,7 +16,7 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
   //
   //----------------------------------------------------------------------
 
-  async created() {
+  created() {
     this.m_googleProvider = new firebase.auth.GoogleAuthProvider()
     this.m_googleProvider.addScope('https://www.googleapis.com/auth/contacts.readonly')
 

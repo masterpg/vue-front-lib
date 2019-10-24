@@ -2,7 +2,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const path = require('path')
 
 // ベースURLの設定
-const baseUrl = process.env.VUE_APP_BASE_URL
+const publicPath = process.env.VUE_APP_BASE_URL
 
 // 各エントリーポイントの設定
 const pages = {
@@ -31,7 +31,7 @@ if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
 // Vue CLI Configuration Reference
 // https://cli.vuejs.org/config/
 module.exports = {
-  baseUrl,
+  publicPath,
 
   pages,
 

@@ -14,12 +14,13 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
       <div
         class="icon-container"
       >
-        <q-icon
-          class="toggle-icon rotate-90"
-          color="grey-6"
-          name="arrow_right"
-          size="26px"
-        />
+        <i
+          aria-hidden="true"
+          class="material-icons q-icon text-grey-6 toggle-icon rotate-90"
+          style="font-size: 26px;"
+        >
+          arrow_right
+        </i>
       </div>
        
       <div
@@ -61,12 +62,13 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
           <div
             class="icon-container"
           >
-            <q-icon
-              class="toggle-icon rotate-90"
-              color="grey-6"
-              name="arrow_right"
-              size="26px"
-            />
+            <i
+              aria-hidden="true"
+              class="material-icons q-icon text-grey-6 toggle-icon rotate-90"
+              style="font-size: 26px;"
+            >
+              arrow_right
+            </i>
           </div>
            
           <div
@@ -108,20 +110,22 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
               <div
                 class="icon-container"
               >
-                <q-icon
-                  name=""
-                  size="26px"
+                <i
+                  aria-hidden="true"
+                  style="font-size: 26px;"
                 />
               </div>
                
               <div
                 class="icon-container"
               >
-                <q-icon
-                  color=""
-                  name="inbox"
-                  size="24px"
-                />
+                <i
+                  aria-hidden="true"
+                  class="material-icons q-icon text-"
+                  style="font-size: 24px;"
+                >
+                  inbox
+                </i>
               </div>
               <span
                 class="item selected"
@@ -143,9 +147,9 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
               <div
                 class="icon-container"
               >
-                <q-icon
-                  name=""
-                  size="26px"
+                <i
+                  aria-hidden="true"
+                  style="font-size: 26px;"
                 />
               </div>
                
@@ -188,9 +192,9 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
               <div
                 class="icon-container"
               >
-                <q-icon
-                  name=""
-                  size="26px"
+                <i
+                  aria-hidden="true"
+                  style="font-size: 26px;"
                 />
               </div>
                
@@ -237,9 +241,9 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
       <div
         class="icon-container"
       >
-        <q-icon
-          name=""
-          size="26px"
+        <i
+          aria-hidden="true"
+          style="font-size: 26px;"
         />
       </div>
        

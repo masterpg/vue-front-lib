@@ -60,7 +60,7 @@ export class GQLAppAPIImpl extends BaseGQLClient implements AppAPI {
       variables: { dirPaths },
       isAuth: true,
     })
-    return response.data.createUserStorageDirs
+    return response.data!.createUserStorageDirs
   }
 
   async removeUserStorageFiles(filePaths: string[]): Promise<APIStorageNode[]> {
@@ -78,7 +78,7 @@ export class GQLAppAPIImpl extends BaseGQLClient implements AppAPI {
       variables: { filePaths },
       isAuth: true,
     })
-    return response.data.removeUserStorageFiles
+    return response.data!.removeUserStorageFiles
   }
 
   async removeUserStorageDir(dirPath: string): Promise<APIStorageNode[]> {
@@ -96,7 +96,7 @@ export class GQLAppAPIImpl extends BaseGQLClient implements AppAPI {
       variables: { dirPath },
       isAuth: true,
     })
-    return response.data.removeUserStorageDir
+    return response.data!.removeUserStorageDir
   }
 
   async getSignedUploadUrls(inputs: { filePath: string; contentType?: string }[]): Promise<string[]> {
@@ -189,7 +189,7 @@ export class GQLAppAPIImpl extends BaseGQLClient implements AppAPI {
       },
       isAuth: true,
     })
-    return response.data.addCartItems
+    return response.data!.addCartItems
   }
 
   async updateCartItems(inputs: APIUpdateCartItemInput[]): Promise<APIEditCartItemResponse[]> {
@@ -220,7 +220,7 @@ export class GQLAppAPIImpl extends BaseGQLClient implements AppAPI {
       },
       isAuth: true,
     })
-    return response.data.updateCartItems
+    return response.data!.updateCartItems
   }
 
   async removeCartItems(ids: string[]): Promise<APIEditCartItemResponse[]> {
@@ -244,7 +244,7 @@ export class GQLAppAPIImpl extends BaseGQLClient implements AppAPI {
       variables: { ids },
       isAuth: true,
     })
-    return response.data.removeCartItems
+    return response.data!.removeCartItems
   }
 
   async checkoutCart(): Promise<boolean> {
@@ -256,6 +256,6 @@ export class GQLAppAPIImpl extends BaseGQLClient implements AppAPI {
       `,
       isAuth: true,
     })
-    return response.data.checkoutCart
+    return response.data!.checkoutCart
   }
 }

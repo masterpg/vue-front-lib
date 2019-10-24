@@ -1,25 +1,13 @@
 module.exports = {
-  moduleFileExtensions: ['js', 'jsx', 'json', 'vue', 'ts', 'tsx'],
-  transform: {
-    '^.+\\.vue$': 'vue-jest',
-    '.+\\.(css|styl|less|sass|scss|svg|png|jpg|ttf|woff|woff2)$': 'jest-transform-stub',
-    '^.+\\.tsx?$': 'ts-jest',
-  },
-  transformIgnorePatterns: ['/node_modules/'],
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-  },
-  snapshotSerializers: ['jest-serializer-vue'],
+  preset: '@vue/cli-plugin-unit-jest/presets/typescript-and-babel',
   testMatch: ['<rootDir>/tests/unit/**/*.spec.(js|jsx|ts|tsx)|<rootDir>/__tests__/*.(js|jsx|ts|tsx)'],
-  testURL: 'http://localhost/',
-  globals: {
-    'ts-jest': {
-      babelConfig: false,
-    },
-  },
   testEnvironment: '<rootDir>/tests//environment.js',
-  // collectCoverage: true,
-  // collectCoverageFrom: ['**/*.{ts,vue}', '!**/node_modules/**'],
-  setupTestFrameworkScriptFile: '<rootDir>/tests/setup.js',
-  // setupFilesAfterEnv: ['<rootDir>/tests/tests/setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+
+  // 次の設定はJestがQuasarをパースするよう指定している。(react-*の部分はサンプル)
+  // setup.jsではrequire('@/quasar')のようにQuasarコンポーネントをインポートしている。
+  // Jestはデフォルトでnode_modulesをパースしないためQuasarもパースされず、JestはQuasarを解析できない。
+  // このためTypeScriptでインポートしたQuasarをJestが解析できるようにパースする必要がある。
+  // 参考: https://jestjs.io/docs/en/tutorial-react-native#transformignorepatterns-customization
+  transformIgnorePatterns: ['node_modules/(?!(quasar|react-native|react-native-button)/)'],
 }

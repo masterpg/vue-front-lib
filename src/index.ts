@@ -11,46 +11,7 @@ import '@/index.styl'
 // import '@/views/shop-page/index.vue'
 // import '@/views/demo/comp-tree-view-page/index.vue'
 
-import {
-  ClosePopup,
-  Dialog,
-  Loading,
-  Notify,
-  QAvatar,
-  QBar,
-  QBtn,
-  QBtnToggle,
-  QCard,
-  QCardActions,
-  QCardSection,
-  QCheckbox,
-  QDialog,
-  QDrawer,
-  QExpansionItem,
-  QForm,
-  QHeader,
-  QIcon,
-  QImg,
-  QInput,
-  QItem,
-  QItemLabel,
-  QItemSection,
-  QLayout,
-  QLinearProgress,
-  QList,
-  QMenu,
-  QPage,
-  QPageContainer,
-  QScrollArea,
-  QSeparator,
-  QSpace,
-  QSplitter,
-  QToolbar,
-  QToolbarTitle,
-  QTooltip,
-  Quasar,
-  Ripple,
-} from 'quasar'
+import './quasar'
 import { i18n, initI18n } from '@/base/i18n'
 import AppPage from '@/index.vue'
 import Component from 'vue-class-component'
@@ -65,56 +26,6 @@ import { initUtils } from '@/base/utils'
 import { vueRouter } from '@/base/router'
 
 Component.registerHooks(['beforeRouteEnter', 'beforeRouteLeave', 'beforeRouteUpdate'])
-
-Vue.use(Quasar, {
-  components: {
-    QAvatar,
-    QBar,
-    QBtn,
-    QBtnToggle,
-    QCard,
-    QCardActions,
-    QCardSection,
-    QCheckbox,
-    QDialog,
-    QDrawer,
-    QExpansionItem,
-    QForm,
-    QHeader,
-    QIcon,
-    QImg,
-    QInput,
-    QItem,
-    QItemLabel,
-    QItemSection,
-    QLayout,
-    QLinearProgress,
-    QList,
-    QMenu,
-    QPage,
-    QPageContainer,
-    QScrollArea,
-    QSeparator,
-    QSpace,
-    QSplitter,
-    QToolbar,
-    QToolbarTitle,
-    QTooltip,
-  },
-  config: {
-    notify: {},
-    loading: {},
-  },
-  directives: {
-    ClosePopup,
-    Ripple,
-  },
-  plugins: {
-    Dialog,
-    Loading,
-    Notify,
-  },
-})
 
 async function init() {
   initUtils()
