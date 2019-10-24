@@ -1,25 +1,21 @@
-<style lang="stylus" scoped>
-@import '../../../styles/app.variables.styl'
+<style lang="sass" scoped>
+@import '../../../styles/app.variables'
 
-.container {
+.container
   height: 100%
-}
 
-.splitter {
+.splitter
   height: 100%
-}
 
-.tree-view-container {
+.tree-view-container
   width: 100%
   height: 100%
-}
 
-.tree-view {
+.tree-view
   height: 100%
   /*--comp-tree-view-font-size: 26px*/
   /*--comp-tree-node-indent: 20px*/
   --comp-tree-node-distance: 10px
-}
 </style>
 
 <template>

@@ -1,58 +1,47 @@
-<style lang="stylus" scoped>
-@import '../../../styles/app.variables.styl'
+<style lang="sass" scoped>
+@import '../../../styles/app.variables'
 
-.main {
+.main
   margin: 10px
   border-radius: 2px
   box-shadow: $shadow-2
 
-  &.pc, &.tab {
+  &.pc, &.tab
     width: 340px
-  }
-  &.sp {
+  &.sp
     width: 270px
-  }
 
-  .title {
-    @extend $text-caption
-  }
-}
+  .title
+    @extend %text-caption
 
-.bar {
+.bar
   background-color: $primary
   color: white
   border-radius: 2px 2px 0 0
-}
 
-.content {
+.content
   overflow-y: auto
   max-height: 120px
   transition: max-height 0.5s
 
-  &.minimize {
+  &.minimize
     max-height: 0
-  }
-}
 
-.item {
-  @extend $text-caption
+.item
+  @extend %text-caption
   margin: 4px
 
-  .name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+  .name
+    overflow: hidden
+    text-overflow: ellipsis
+    white-space: nowrap
 
-  .error {
+  .error
     color: $text-error-color
     text-align: right
-  }
 
-  & > *:not(:first-child) {
+  & > *:not(:first-child)
     margin-left: 4px
-  }
-}
 </style>
 
 <template>

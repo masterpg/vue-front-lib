@@ -1,10 +1,10 @@
 import {AuthProviderType} from '../../logic'
-<style lang="stylus" scoped>
-@import '../../../styles/app.variables.styl'
+<style lang="sass" scoped>
+@import '../../../styles/app.variables'
 
-.container {}
+.container
 
-.sign-in-button {
+.sign-in-button
   width: 220px
   height: 40px
   border: none
@@ -12,53 +12,42 @@ import {AuthProviderType} from '../../logic'
   cursor: pointer
   box-shadow: $shadow-2
 
-  &:not(:first-child) {
+  &:not(:first-child)
     margin-top: 20px
-  }
 
-  &.google {
+  &.google
     background-color: white
     color: $text-secondary-color
-  }
 
-  &.facebook {
+  &.facebook
     background-color: #3b5998
     color: white
-  }
 
-  &.email {
+  &.email
     background-color: #db4437
     color: white
-  }
 
-  &.anonymous {
+  &.anonymous
     background-color: #f4b400
     color: white
-  }
 
-  .icon {
+  .icon
     width: 18px
     height: 18px
-  }
 
-  .label {
-    @extend $text-body2
-    font-weight: $text-weights.medium
+  .label
+    @extend %text-body2
+    font-weight: map_get($text-weights, "medium")
     margin-left: 16px
-  }
 
-  * {
+  *
     pointer-events: none
-  }
-}
 
-.sign-in-button:not(:first-child) {
+.sign-in-button:not(:first-child)
   margin-top: 20px
-}
 
-.title {
-  @extend $text-h6
-}
+.title
+  @extend %text-h6
 </style>
 
 <template>

@@ -1,0 +1,17 @@
+@import './quasar.variables'
+@import './placeholder/common'
+@import './placeholder/flex-layout'
+
+$text-primary-color: $grey-9
+$text-secondary-color: $grey-6
+$text-disabled-color: $grey-4
+$text-accent-color: $pink-12
+$text-error-color: $red-14
+
+%text-
+  @each $heading, $value in $headings
+    &#{$heading}
+      font-size: map-get($value, "size")
+      font-weight: map-get($value, "weight")
+      line-height: map-get($value, "line-height")
+      letter-spacing: map-get($value, "letter-spacing")

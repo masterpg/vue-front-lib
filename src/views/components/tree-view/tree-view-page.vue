@@ -1,19 +1,16 @@
-<style lang="stylus" scoped>
-@import '../../../styles/app.variables.styl'
+<style lang="sass" scoped>
+@import '../../../styles/app.variables'
 
-.tree-view {
+.tree-view
   --comp-tree-padding: 0
   --comp-tree-node-distance: 10px
   /*--comp-tree-node-indent: 20px*/
   /*--comp-tree-view-font-size: 18px*/
-}
 
-.operation-row {
-  > *:not(:last-child) {
+.operation-row
+  > *:not(:last-child)
     margin-left: 10px
     margin-bottom: 20px
-  }
-}
 </style>
 
 <template>

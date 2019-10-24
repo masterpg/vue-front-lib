@@ -1,30 +1,24 @@
-<style lang="stylus" scoped>
-@import '../../../styles/app.variables.styl'
+<style lang="sass" scoped>
+@import '../../../styles/app.variables'
 
-.container {
-}
+.container
 
-.item {
+.item
   cursor: pointer
   white-space: nowrap
   user-select: none
 
-  &:hover {
+  &:hover
     text-decoration: underline
-  }
 
-  &.selected {
+  &.selected
     color: var(--comp-tree-selected-color, $pink-5)
-  }
 
-  &.unselectable {
+  &.unselectable
     color: var(--comp-tree-unselectable-color, $grey-9)
     cursor: default
-    &:hover {
+    &:hover
       text-decoration: none
-    }
-  }
-}
 </style>
 
 <template>

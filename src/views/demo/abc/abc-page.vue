@@ -1,18 +1,15 @@
-<style lang="stylus" scoped>
-@import '../../../styles/app.variables.styl'
+<style lang="sass" scoped>
+@import '../../../styles/app.variables'
 
-.greet-message {
+.greet-message
   --greet-message-color: $indigo-12
-}
 
-.title {
-  @extend $text-subtitle1
-  font-weight: $text-weights.medium
-}
+.title
+  @extend %text-subtitle1
+  font-weight: map_get($text-weights, "medium")
 
-.value {
-  @extend $text-subtitle1
-}
+.value
+  @extend %text-subtitle1
 </style>
 
 <template>

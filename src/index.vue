@@ -1,86 +1,68 @@
-<style lang="stylus" scoped>
-@import './styles/app.variables.styl'
+<style lang="sass" scoped>
+@import './styles/app.variables'
 
-.header {
+.header
   background-color: $indigo-5
 
-  .photo {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-  }
-}
+  .photo
+    width: 32px
+    height: 32px
+    border-radius: 50%
 
-.menu-list {
+.menu-list
   min-width: 150px
-}
 
-.container {
+.container
   height: 100vh
-}
 
-.drawer-scroll-area {
+.drawer-scroll-area
   height: 100%
-}
 
-/* -----> */
+// ----->
 /**
  * Animate.cssにある既存のアニメーションをコピーして変更している。
  * コピー元: node_modules/animate.css/animate.css
  */
-@keyframes tada {
-  from {
+@keyframes tada
+  from
     transform: scale3d(1, 1, 1)
-  }
-  10%,
-  20% {
+
+  10%, 20%
     transform: scale3d(0.9, 0.9, 0.9) rotate3d(0, 0, 1, -3deg)
-  }
-  30%,
-  70% {
+
+  30%, 70%
     transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg)
-  }
-  50%,
-  80% {
+
+  50%, 80%
     transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg)
-  }
-  to {
+
+  to
     transform: scale3d(1, 1, 1)
-  }
-}
 
-.tada {
+.tada
   animation-name: tada
-}
-/* <----- */
+// <-----
 
-/* -----> */
+// ----->
 /**
  * tada と bounceOutRight のアニメーションスピードを調整
  */
-.animated.tada.faster {
+.animated.tada.faster
   animation-duration: 700ms
-}
 
-.animated.bounceOutRight.faster {
+.animated.bounceOutRight.faster
   animation-duration: 700ms
-}
-/* <----- */
+// <-----
 
 /**
  * フェードイン/アウトのサンプル。このアニメーションを有効にするには、下記のコメントを外し、
  * transitionタグの enter-active-class と leave-active-class を削除るとこのアニメーションが有効になる。
  */
-/*
-.view-enter-active,
-.view-leave-active {
-  transition: opacity 0.2s ease
-}
-.view-enter,
-.view-leave-to {
-  opacity: 0
-}
-*/
+//.view-enter-active, .view-leave-active
+//  transition: opacity 0.2s ease
+//
+//.view-enter, .view-leave-to
+//  opacity: 0
 </style>
 
 <template>

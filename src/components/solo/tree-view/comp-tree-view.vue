@@ -1,13 +1,12 @@
-<style lang="stylus" scoped>
-@import '../../../styles/app.variables.styl'
+<style lang="sass" scoped>
+@import '../../../styles/app.variables'
 
-.child-container {
+.child-container
   color: var(--comp-tree-view-color, $indigo-8)
   font-size: var(--comp-tree-view-font-size, 14px)
-  font-weight: var(--comp-tree-font-weight, $text-weights.medium)
+  font-weight: var(--comp-tree-font-weight, map-get($text-weights, "medium"))
   line-height: var(--comp-tree-line-height, 26px)
   padding: var(--comp-tree-padding, 10px)
-}
 </style>
 
 <template>

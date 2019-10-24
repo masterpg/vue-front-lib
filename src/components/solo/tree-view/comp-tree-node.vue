@@ -1,36 +1,30 @@
-<style lang="stylus" scoped>
-@import '../../../styles/app.variables.styl'
+<style lang="sass" scoped>
+@import '../../../styles/app.variables'
 
-.main {
-}
+.main
 
-.item-container {
+.item-container
   padding-top: var(--comp-tree-distance, 6px)
 
-  &.eldest {
+  &.eldest
     padding-top: 0
-  }
 
-  .icon-container {
-    @extend $layout-horizontal
-    @extend $layout-center-center
+  .icon-container
+    @extend %layout-horizontal
+    @extend %layout-center-center
     min-width: 1.5em
     max-width: 1.5em
     height: 1.5em
     margin-right: 6px
-  }
 
-  .toggle-icon {
+  .toggle-icon
     transition: transform .5s
     cursor: pointer
-  }
-}
 
-.child-container {
+.child-container
   padding-left: var(--comp-tree-indent, 16px)
   height: 0
   overflow: hidden
-}
 </style>
 
 <template>

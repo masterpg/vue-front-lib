@@ -1,27 +1,21 @@
-<style lang="stylus" scoped>
-@import '../../../styles/app.variables.styl'
+<style lang="sass" scoped>
+@import '../../../styles/app.variables'
 
-.container {
-  &.pc, &.tab {
+.container
+  &.pc, &.tab
     width: 340px
-  }
-  &.sp {
+  &.sp
     min-width: 280px
-  }
-}
 
-.title {
-  @extend $text-h6
-}
+.title
+  @extend %text-h6
 
-.emphasis {
-  font-weight: $text-weights.medium
-}
+.emphasis
+  font-weight: map_get($text-weights, "medium")
 
-.error-message {
-  @extend $text-caption
+.error-message
+  @extend %text-caption
   color: $text-error-color
-}
 </style>
 
 <template>

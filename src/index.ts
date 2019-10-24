@@ -1,15 +1,5 @@
-import '@quasar/extras/roboto-font/roboto-font.css'
-import '@quasar/extras/material-icons/material-icons.css'
-import '@quasar/extras/fontawesome-v5/fontawesome-v5.css'
 import 'animate.css/animate.css'
-
-import '@/index.styl'
-
-// TODO JetBrainsIDE使用時の開発補助コード
-// import '@/views/abc-page/index.vue'
-// import '@/views/error404-page/index.vue'
-// import '@/views/shop-page/index.vue'
-// import '@/views/demo/comp-tree-view-page/index.vue'
+import '@/index.sass'
 
 import './quasar'
 import { i18n, initI18n } from '@/base/i18n'

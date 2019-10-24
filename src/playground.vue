@@ -1,9 +1,8 @@
-<style lang="stylus" scoped>
-@import './styles/app.variables.styl'
+<style lang="sass" scoped>
+@import './styles/app.variables'
 
-.hello-world-color {
+.hello-world-color
   color: $indigo-12
-}
 </style>
 
 <template>

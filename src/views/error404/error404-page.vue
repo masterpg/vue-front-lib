@@ -1,20 +1,16 @@
-<style lang="stylus" scoped>
-.main {
+<style lang="sass" scoped>
+.main
   height: 100%
-}
 
-.sad-img {
+.sad-img
   width: 30vw
   max-width: 150px
-}
 
-.back-button {
+.back-button
   width: 200px
-}
 
-.rest-box {
+.rest-box
   width: 300px
-}
 </style>
 
 <template>

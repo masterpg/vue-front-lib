@@ -1,32 +1,26 @@
-<style lang="stylus" scoped>
-@import '../../../styles/app.variables.styl'
+<style lang="sass" scoped>
+@import '../../../styles/app.variables'
 
-.toggle {
+.toggle
   border: 1px solid $primary
-}
 
-.title-text {
-  @extend $text-h6
-}
+.title-text
+  @extend %text-h6
 
 .product-item,
-.cart-item {
+.cart-item
   padding: 12px
 
-  .title {
-    @extend $text-subtitle1
-  }
+  .title
+    @extend %text-subtitle1
 
-  .detail {
-    @extend $text-body2
+  .detail
+    @extend %text-body2
     color: $text-secondary-color
-  }
-}
 
-.error-text {
-  @extend $text-body2
+.error-text
+  @extend %text-body2
   color: $text-error-color
-}
 </style>
 
 <template>
