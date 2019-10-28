@@ -13,7 +13,7 @@ import { initLogic } from '@/logic'
 import { initServiceWorker } from '@/base/service-worker'
 import { initStore } from '@/store'
 import { initUtils } from '@/base/utils'
-import { vueRouter } from '@/base/router'
+import { router } from '@/base/router'
 
 Component.registerHooks(['beforeRouteEnter', 'beforeRouteLeave', 'beforeRouteUpdate'])
 
@@ -30,7 +30,7 @@ async function init() {
 
   new Vue({
     el: '#app',
-    router: vueRouter,
+    router,
     render: h => h(AppPage),
     i18n,
   })
