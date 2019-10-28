@@ -9,7 +9,6 @@
     "serve": "firebase serve --only hosting --port=5000",
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "testcafe chrome:headless tests/e2e/**/*.test.ts -S -s screenshots --hostname localhost",
-    "docs": "postcss --config build/postcss.config.js docs/book.pcss -o docs/book.css && cd docs && ../node_modules/.bin/gitbook install && ../node_modules/.bin/gitbook serve",
     "lint": "./node_modules/web-base-lib/tools/lint.sh",
     "deploy": "firebase deploy --only hosting"
   },
@@ -56,7 +55,6 @@
     "@vue/eslint-config-typescript": "^4.0.0",
     "@vue/test-utils": "1.0.0-beta.29",
     "babel-plugin-transform-imports": "1.5.0",
-    "browser-sync": "^2.26.7",
     "copy-webpack-plugin": "^5.0.4",
     "eslint": "^5.16.0",
     "eslint-plugin-prettier": "^3.1.1",
