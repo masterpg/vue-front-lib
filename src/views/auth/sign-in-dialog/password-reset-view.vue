@@ -54,7 +54,7 @@
 import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component, Prop } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
-import { router } from '@/base/router'
+import { router } from '@/base'
 
 @Component({
   name: 'password-reset-view',

@@ -5,7 +5,7 @@ import '@quasar/extras/fontawesome-v5/fontawesome-v5.css'
 import '@/index.sass'
 
 import { QBtn, QCard, QCardActions, QCardSection, Quasar } from 'quasar'
-import { i18n, initI18n } from '@/base/i18n'
+import { i18n, initI18n } from '@/base'
 import PlaygroundPage from '@/playground.vue'
 import Vue from 'vue'
 

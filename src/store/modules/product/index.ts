@@ -1,7 +1,7 @@
 import { Product, ProductModule, ProductState, ProductsErrorType, StatePartial, StoreError } from '@/store/types'
 import { BaseModule } from '@/store/base'
 import { Component } from 'vue-property-decorator'
-import { NoCache } from '@/base/decorators'
+import { NoCache } from '@/base'
 const assign = require('lodash/assign')
 
 @Component

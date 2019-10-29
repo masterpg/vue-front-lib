@@ -107,14 +107,13 @@
 
 <script lang="ts">
 import { BaseComponent, ResizableMixin } from '@/components/base'
+import { NoCache, router } from '@/base'
 import { AuthProviderType } from '@/logic'
 import { Component } from 'vue-property-decorator'
-import { NoCache } from '@/base/decorators'
 import PasswordResetView from '@/views/auth/sign-in-dialog/password-reset-view.vue'
 import { QInput } from 'quasar'
 import { mixins } from 'vue-class-component'
 const isEmail = require('validator/lib/isEmail')
-import { router } from '@/base/router'
 
 @Component({
   name: 'email-auth-view',

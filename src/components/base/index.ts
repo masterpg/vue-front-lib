@@ -1,5 +1,5 @@
 import { Component } from 'vue-property-decorator'
-import { NoCache } from '@/base/decorators'
+import { NoCache } from '@/base'
 import { ResizableMixin } from '@/components/base/resizable-mixin'
 import Vue from 'vue'
 

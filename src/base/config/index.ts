@@ -20,7 +20,7 @@ export interface Config {
   }
 }
 
-class ConfigImpl implements Config {
+abstract class BaseConfig implements Config {
   constructor() {
     firebase.initializeApp(this.firebase)
   }
@@ -56,6 +56,8 @@ class ConfigImpl implements Config {
     appId: '<APP_ID>',
   }
 }
+
+class ConfigImpl extends BaseConfig {}
 
 export let config: Config
 

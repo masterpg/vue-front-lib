@@ -90,7 +90,7 @@
 import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component, Watch } from 'vue-property-decorator'
 import { EmailSignInView } from '@/views/auth/base'
-import { NoCache } from '@/base/decorators'
+import { NoCache } from '@/base'
 import { QInput } from 'quasar'
 import { mixins } from 'vue-class-component'
 const isEmail = require('validator/lib/isEmail')

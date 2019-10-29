@@ -7,7 +7,7 @@ const debounce = require('lodash/debounce')
 
 Vue.use(VueRouter)
 
-abstract class ViewRoute<T extends ViewRoute = any> {
+export abstract class ViewRoute<T extends ViewRoute = any> {
   constructor(public readonly parent?: T) {}
 
   abstract readonly path: string

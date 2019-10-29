@@ -138,15 +138,13 @@
 </template>
 
 <script lang="ts">
-import * as sw from '@/base/service-worker'
 import { AccountDeleteDialog, EmailChangeDialog, SignInDialog } from '@/views/auth'
 import { BaseComponent, ResizableMixin } from '@/components/base'
 import { Component, Watch } from 'vue-property-decorator'
-import { NoCache } from '@/base/decorators'
+import { NoCache, router, sw } from '@/base'
 import { Route } from 'vue-router/types/router'
 import { User } from '@/logic'
 import { mixins } from 'vue-class-component'
-import { router } from '@/base/router'
 
 enum DialogType {
   SignIn = 'signIn',

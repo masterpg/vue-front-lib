@@ -2,7 +2,7 @@ import 'unfetch/polyfill'
 import { ApolloClient, ApolloQueryResult, MutationOptions, OperationVariables, QueryOptions } from 'apollo-client'
 import { ApolloLink, FetchResult } from 'apollo-link'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { config } from '@/base/config'
+import { config } from '@/base'
 import { createHttpLink } from 'apollo-link-http'
 import { setContext } from 'apollo-link-context'
 
