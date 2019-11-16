@@ -1,7 +1,7 @@
 module.exports = {
   preset: '@vue/cli-plugin-unit-jest/presets/typescript-and-babel',
   testMatch: ['<rootDir>/tests/unit/**/*.spec.(js|jsx|ts|tsx)|<rootDir>/__tests__/*.(js|jsx|ts|tsx)'],
-  testEnvironment: '<rootDir>/tests//environment.js',
+  testEnvironment: '<rootDir>/tests/environment.js',
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
 
   // 次の設定はJestがQuasarをパースするよう指定している。(react-*の部分はサンプル)

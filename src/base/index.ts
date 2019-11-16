@@ -1,7 +1,0 @@
-export * from './types'
-export * from './config'
-export * from './decorators'
-export * from './i18n'
-export * from './router'
-export * from './service-worker'
-export * from './utils'

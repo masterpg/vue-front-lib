@@ -1,11 +1,13 @@
 **/*.log
 **/~$*
+
 .cache/
 .firebase/
 .idea/
 dist/
 node_modules/
 screenshots/
+firebase.config.js
 
 src/**/*.js.map
 

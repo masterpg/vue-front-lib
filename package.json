@@ -1,12 +1,11 @@
 {
   "name": "vue-front-lib",
   "scripts": {
-    "dev": "vue-cli-service serve --mode development",
-    "stg": "vue-cli-service build --mode staging & npm run serve & npm --prefix functions run serve",
-    "build": "vue-cli-service build --mode production",
     "build:dev": "vue-cli-service build --mode development",
     "build:stg": "vue-cli-service build --mode staging",
-    "serve": "firebase serve --only hosting --port=5000",
+    "build": "vue-cli-service build --mode production",
+    "serve": "vue-cli-service serve --mode development",
+    "serve:stg": "vue-cli-service serve --mode staging",
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "testcafe chrome:headless tests/e2e/**/*.test.ts -S -s screenshots --hostname localhost",
     "lint": "./node_modules/web-base-lib/tools/lint.sh",
