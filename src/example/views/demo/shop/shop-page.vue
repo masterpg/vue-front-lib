@@ -47,7 +47,7 @@
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
           <div class="detail">
-            <span>{{ $t('price') }}</span> &mdash; {{ product.price | currency }},&nbsp; <span>{{ $t('stock') }}</span> &mdash;
+            <span>{{ $t('price') }}</span> &mdash; ${{ product.price }},&nbsp; <span>{{ $t('stock') }}</span> &mdash;
             {{ product.stock }}
           </div>
         </div>
@@ -66,7 +66,7 @@
         <div class="layout vertical center-justified">
           <div class="title">{{ cartItem.title }}</div>
           <div class="detail">
-            <span>{{ $t('price') }}</span> &mdash; {{ cartItem.price | currency }} x {{ cartItem.quantity }}
+            <span>{{ $t('price') }}</span> &mdash; ${{ cartItem.price }} x {{ cartItem.quantity }}
           </div>
         </div>
         <div class="flex"></div>
