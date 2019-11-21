@@ -4,7 +4,7 @@ const isEmpty = require('lodash/isEmpty')
 jest.setTimeout(25000)
 initAPI()
 
-const GENERAL_USER = { uid: 'yamada.one' }
+const GENERAL_USER = { uid: 'yamada.one', storageDir: 'yamada.one' }
 const TEST_FILES_DIR = 'test-files'
 
 function getAPIErrorResponse(error: any): { statusCode: number; error: string; message: string } {

@@ -136,8 +136,8 @@
 </template>
 
 <script lang="ts">
+import { AccountDeleteDialog, EmailChangeDialog, HistoryDialogManager, SignInDialog } from '@/example/components'
 import { BaseComponent, NoCache, Resizable, SWChangeState, SWStateChangeInfo, User } from '@/lib'
-import { EmailChangeDialog, HistoryDialogManager, SignInDialog } from '@/example/components'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import { router } from '@/example/router'
@@ -284,7 +284,9 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
     this.m_historyDialogManager.open(EmailChangeDialog.name)
   }
 
-  private async m_deleteAccountMenuItemOnClick() {}
+  private async m_deleteAccountMenuItemOnClick() {
+    this.m_historyDialogManager.open(AccountDeleteDialog.name)
+  }
 }
 </script>
 
