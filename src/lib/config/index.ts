@@ -6,7 +6,7 @@ import URI from 'urijs'
 //
 //========================================================================
 
-export let config: Config
+export let config: BaseConfig
 
 export function setConfig(value: BaseConfig): void {
   config = value
@@ -30,12 +30,7 @@ export interface APIConfig {
   baseURL: string
 }
 
-export interface Config {
-  firebase: FirebaseConfig
-  api: APIConfig
-}
-
-export abstract class BaseConfig implements Config {
+export abstract class BaseConfig {
   constructor(firebaseConfig: FirebaseConfig, apiConfig: Omit<APIConfig, 'baseURL'>) {
     this.firebase = firebaseConfig
     this.api = this.getAPIConfig(apiConfig)

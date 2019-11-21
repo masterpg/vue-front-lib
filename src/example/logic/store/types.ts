@@ -1,10 +1,16 @@
-import { StatePartial } from '@/lib'
+import { LibStoreContainer, StatePartial } from '@/lib'
 
 //========================================================================
 //
 //  Modules
 //
 //========================================================================
+
+export interface StoreContainer extends LibStoreContainer {
+  readonly product: ProductModule
+
+  readonly cart: CartModule
+}
 
 export interface ProductModule {
   readonly all: Product[]

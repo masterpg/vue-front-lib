@@ -1,7 +1,7 @@
-import { APIStorageNode, BaseAPIContainer } from '../types'
+import { APIStorageNode, LibAPIContainer } from '../types'
 import { BaseRESTClient } from './base'
 
-export abstract class BaseRESTAPIContainer extends BaseRESTClient implements BaseAPIContainer {
+export abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPIContainer {
   async customToken(): Promise<string> {
     throw new Error('This method "customToken" is not implemented.')
   }

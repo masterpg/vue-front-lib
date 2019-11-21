@@ -1,4 +1,4 @@
-import { BaseAPIContainer, BaseGQLAPIContainer } from '@/lib'
+import { BaseGQLAPIContainer, LibAPIContainer } from '@/lib'
 import { Constructor } from 'web-base-lib'
 import axios from 'axios'
 import gql from 'graphql-tag'
@@ -20,7 +20,7 @@ export interface UploadFileItem {
   contentType: string
 }
 
-export interface TestAPIContainer extends BaseAPIContainer {
+export interface TestAPIContainer extends LibAPIContainer {
   setTestAuthUser(user: AuthUser): void
   clearTestAuthUser(): void
   putTestData(inputs: CollectionData[]): Promise<void>

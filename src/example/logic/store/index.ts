@@ -1,5 +1,5 @@
-import { BaseStoreContainer, setStore } from '@/lib'
-import { CartModule, ProductModule } from '@/example/logic/store/types'
+import { BaseLibStoreContainer, setStore } from '@/lib'
+import { CartModule, ProductModule, StoreContainer } from '@/example/logic/store/types'
 import { CartModuleImpl } from '@/example/logic/store/modules/cart'
 import { Component } from 'vue-property-decorator'
 import { ProductModuleImpl } from '@/example/logic/store/modules/product'
@@ -11,7 +11,7 @@ import { ProductModuleImpl } from '@/example/logic/store/modules/product'
 //========================================================================
 
 @Component
-class StoreContainer extends BaseStoreContainer {
+class StoreContainerImpl extends BaseLibStoreContainer implements StoreContainer {
   readonly product: ProductModule = new ProductModuleImpl()
   readonly cart: CartModule = new CartModuleImpl()
 }
@@ -25,7 +25,7 @@ class StoreContainer extends BaseStoreContainer {
 export let store: StoreContainer
 
 export function initStore(): void {
-  store = new StoreContainer()
+  store = new StoreContainerImpl()
   setStore(store)
 }
 

@@ -1,7 +1,7 @@
-import { BaseLogicContainer, setLogic } from '@/lib'
+import { BaseLibLogicContainer, setLogic } from '@/lib'
+import { LogicContainer, ShopLogic } from '@/example/logic/types'
 import { getAPIType, setAPIType } from '@/example/logic/api'
 import { Component } from 'vue-property-decorator'
-import { ShopLogic } from '@/example/logic/types'
 import { ShopLogicImpl } from '@/example/logic/modules/shop'
 import Vue from 'vue'
 
@@ -12,7 +12,7 @@ import Vue from 'vue'
 //========================================================================
 
 @Component
-class LogicContainer extends BaseLogicContainer {
+class LogicContainerImpl extends BaseLibLogicContainer implements LogicContainer {
   private m_apiType = getAPIType()
 
   get apiType(): 'gql' | 'rest' {
@@ -36,7 +36,7 @@ class LogicContainer extends BaseLogicContainer {
 export let logic: LogicContainer
 
 export function initLogic(): void {
-  logic = new LogicContainer()
+  logic = new LogicContainerImpl()
   setLogic(logic)
 
   Object.defineProperty(Vue.prototype, '$logic', {

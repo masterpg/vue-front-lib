@@ -1,8 +1,8 @@
 import 'vue'
-import { Logic } from '@/logic'
+import { LogicContainer } from '@/example/logic'
 
 declare module 'vue/types/vue' {
   interface Vue {
-    $logic: Logic
+    $logic: LogicContainer
   }
 }

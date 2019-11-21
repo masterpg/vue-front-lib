@@ -9,15 +9,21 @@ import Vue from 'vue'
 //
 //========================================================================
 
-export abstract class BaseLogicContainer extends Vue {
+export interface LibLogicContainer {
+  readonly storage: StorageLogic
+
+  readonly auth: AuthLogic
+}
+
+export abstract class BaseLibLogicContainer extends Vue implements LibLogicContainer {
   readonly storage: StorageLogic = new StorageLogicImpl()
 
   readonly auth: AuthLogic = new AuthLogicImpl()
 }
 
-export let logic: BaseLogicContainer
+export let logic: LibLogicContainer
 
-export function setLogic(value: BaseLogicContainer): void {
+export function setLogic(value: LibLogicContainer): void {
   logic = value
 }
 

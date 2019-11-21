@@ -1,8 +1,8 @@
-import { APIStorageNode, BaseAPIContainer } from '../types'
+import { APIStorageNode, LibAPIContainer } from '../types'
 import { BaseGQLClient } from './base'
 import gql from 'graphql-tag'
 
-export abstract class BaseGQLAPIContainer extends BaseGQLClient implements BaseAPIContainer {
+export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContainer {
   async customToken(): Promise<string> {
     const response = await this.query<{ customToken: string }>({
       query: gql`

@@ -4,7 +4,7 @@
 //
 //========================================================================
 
-export interface BaseAPIContainer {
+export interface LibAPIContainer {
   customToken(): Promise<string>
 
   userStorageBasePath(): Promise<string>

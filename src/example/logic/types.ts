@@ -1,10 +1,17 @@
 import { CartItem, CheckoutStatus, Product } from '@/example/logic/store'
+import { LibLogicContainer } from '@/lib'
 
 //----------------------------------------------------------------------
 //
 //  Logic
 //
 //----------------------------------------------------------------------
+
+export interface LogicContainer extends LibLogicContainer {
+  apiType: 'gql' | 'rest'
+
+  readonly shop: ShopLogic
+}
 
 export interface ShopLogic {
   products: Product[]

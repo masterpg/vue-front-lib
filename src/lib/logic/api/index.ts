@@ -1,4 +1,4 @@
-import { BaseAPIContainer } from './types'
+import { LibAPIContainer } from './types'
 
 //========================================================================
 //
@@ -6,13 +6,13 @@ import { BaseAPIContainer } from './types'
 //
 //========================================================================
 
-export let api: BaseAPIContainer
+export let api: LibAPIContainer
 
-export function setAPI(value: BaseAPIContainer): void {
+export function setAPI(value: LibAPIContainer): void {
   api = value
 }
 
-export { APIStorageNode, APIStorageNodeType, BaseAPIContainer } from './types'
+export { APIStorageNode, APIStorageNodeType, LibAPIContainer } from './types'
 
 export { BaseGQLAPIContainer } from './gql'
 

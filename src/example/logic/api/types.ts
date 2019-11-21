@@ -1,4 +1,4 @@
-import { BaseAPIContainer } from '@/lib'
+import { LibAPIContainer } from '@/lib'
 
 //========================================================================
 //
@@ -6,7 +6,7 @@ import { BaseAPIContainer } from '@/lib'
 //
 //========================================================================
 
-export interface AppAPIContainer extends BaseAPIContainer {
+export interface AppAPIContainer extends LibAPIContainer {
   getSignedUploadUrls(params: { filePath: string; contentType?: string }[]): Promise<string[]>
 
   product(id: string): Promise<APIProduct | undefined>
