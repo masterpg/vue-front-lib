@@ -38,59 +38,51 @@ export default class CompTreeNodeItem<NodeData extends CompTreeNodeData = any> e
   //
   //----------------------------------------------------------------------
 
-  private m_label: string = ''
-
   /**
    * ラベルです。
    */
   get label(): string {
-    return this.m_label
+    return this.nodeData.label
   }
 
   set label(value: string) {
-    const oldValue = this.m_label
-    this.m_label = value
+    const oldValue = this.nodeData.label
+    this.nodeData.label = value
     CompTreeViewUtils.dispatchNodePropertyChanged(this, { property: 'label', newValue: value, oldValue })
   }
-
-  private m_value: string = ''
 
   /**
    * ノードを特定するための値です。
    */
   get value(): string {
-    return this.m_value
+    return this.nodeData.value
   }
 
   set value(value: string) {
-    const oldValue = this.m_value
-    this.m_value = value
+    const oldValue = this.nodeData.value
+    this.nodeData.value = value
     CompTreeViewUtils.dispatchNodePropertyChanged(this, { property: 'value', newValue: value, oldValue })
   }
-
-  private m_unselectable: boolean = false
 
   /**
    * 選択不可フラグです。
    */
   get unselectable(): boolean {
-    return this.m_unselectable
+    return this.nodeData.unselectable!
   }
 
   set unselectable(value: boolean) {
-    this.m_unselectable = value
+    this.nodeData.unselectable = value
     if (value) {
       this.selected = false
     }
   }
 
-  private m_selected: boolean = false
-
   /**
    * 選択されているか否かです。
    */
   get selected(): boolean {
-    return this.m_selected
+    return this.nodeData.selected!
   }
 
   set selected(value: boolean) {
@@ -108,15 +100,25 @@ export default class CompTreeNodeItem<NodeData extends CompTreeNodeData = any> e
 
   //----------------------------------------------------------------------
   //
+  //  Variable
+  //
+  //----------------------------------------------------------------------
+
+  protected nodeData: NodeData = {} as any
+
+  //----------------------------------------------------------------------
+  //
   //  Methods
   //
   //----------------------------------------------------------------------
 
   init(nodeData: NodeData): void {
-    this.m_label = nodeData.label
-    this.m_value = nodeData.value
-    this.m_unselectable = Boolean(nodeData.unselectable)
-    this.m_setSelected(Boolean(nodeData.selected), true)
+    // 任意項目は値が設定されていないとリアクティブにならないのでここで初期化
+    this.$set(nodeData, 'unselectable', Boolean(nodeData.unselectable))
+    this.$set(nodeData, 'selected', Boolean(nodeData.selected))
+    this.nodeData = nodeData
+
+    this.m_setSelected(this.nodeData.selected!, true)
 
     this.initPlaceholder(nodeData)
   }
@@ -125,16 +127,19 @@ export default class CompTreeNodeItem<NodeData extends CompTreeNodeData = any> e
    * ノードを編集するためのデータを設定します。
    * @param editData
    */
-  setEditData(editData: CompTreeNodeEditData): void {
+  setNodeData(editData: CompTreeNodeEditData): void {
     if (isString(editData.label)) {
       this.label = editData.label!
     }
+
     if (isString(editData.value)) {
       this.value = editData.value!
     }
+
     if (isBoolean(editData.unselectable)) {
       this.unselectable = editData.unselectable!
     }
+
     if (isBoolean(editData.selected)) {
       this.selected = editData.selected!
     }
@@ -159,18 +164,18 @@ export default class CompTreeNodeItem<NodeData extends CompTreeNodeData = any> e
    * @param initializing 初期化中か否かを指定
    */
   private m_setSelected(value: boolean, initializing: boolean): void {
-    const changed = this.m_selected !== value
+    const changed = this.nodeData.selected !== value
     // 選択不可の場合
     if (this.unselectable) {
       if (changed) {
-        this.m_selected = false
+        this.nodeData.selected = false
         !initializing && CompTreeViewUtils.dispatchSelectedChanged(this)
       }
     }
     // 選択可能な場合
     else {
       if (changed) {
-        this.m_selected = value
+        this.nodeData.selected = value
         !initializing && CompTreeViewUtils.dispatchSelectedChanged(this)
       }
     }

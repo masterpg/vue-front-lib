@@ -35,22 +35,21 @@ import { Component } from 'vue-property-decorator'
 
 @Component
 export default class CompTreeCheckboxNodeItem extends CompTreeNodeItem<CompTreeCheckboxNodeData> {
-  private m_checked: boolean = false
-
   get checked(): boolean {
-    return this.m_checked
+    return this.nodeData.checked!
   }
 
   set checked(value: boolean) {
-    const changed = this.m_checked !== value
-    this.m_checked = value
+    const changed = this.nodeData.checked !== value
+    this.nodeData.checked = value
     if (changed) {
       this.m_dispatchCheckedChanged()
     }
   }
 
   protected initPlaceholder(nodeData: CompTreeCheckboxNodeData): void {
-    this.m_checked = Boolean(nodeData.checked)
+    // 任意項目は値が設定されていないとリアクティブにならないのでここで初期化
+    this.$set(nodeData, 'checked', Boolean(nodeData.checked))
   }
 
   get extraEventNames(): string[] {

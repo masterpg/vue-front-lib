@@ -123,21 +123,31 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
    * アイコン名です。
    * https://material.io/tools/icons/?style=baseline
    */
-  icon: string = ''
+  get icon(): string {
+    return this.m_nodeData.icon || ''
+  }
+
+  set icon(value: string) {
+    this.m_nodeData.icon = value
+  }
 
   /**
    * アイコンの色を指定します。
    * 例: primary, indigo-8
    */
-  iconColor: string = ''
+  get iconColor(): string {
+    return this.m_nodeData.iconColor || ''
+  }
 
-  private m_opened: boolean = false
+  set iconColor(value: string) {
+    this.m_nodeData.iconColor = value
+  }
 
   /**
    * アイテムの開閉です。
    */
   get opened(): boolean {
-    return this.m_opened
+    return this.m_nodeData.opened!
   }
 
   /**
@@ -168,6 +178,10 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
    */
   get unselectable(): boolean {
     return this.item.unselectable
+  }
+
+  set unselectable(value: boolean) {
+    this.item.unselectable = value
   }
 
   /**
@@ -245,11 +259,13 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
   //
   //----------------------------------------------------------------------
 
-  private m_childContainerObserver!: MutationObserver
+  private m_nodeData: CompTreeNodeData = {} as any
 
   get m_hasChildren() {
     return this.children.length > 0
   }
+
+  private m_childContainerObserver!: MutationObserver
 
   //--------------------------------------------------
   //  Elements
@@ -279,14 +295,17 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
   init(treeView: CompTreeView, nodeData: CompTreeNodeData): void {
     this.m_treeView = treeView
 
+    // 任意項目は値が設定されていないとリアクティブにならないのでここで初期化
+    this.$set(nodeData, 'icon', nodeData.icon || '')
+    this.$set(nodeData, 'iconColor', nodeData.iconColor || '')
+    this.$set(nodeData, 'opened', Boolean(nodeData.opened))
+    this.m_nodeData = nodeData
+
     const NodeItemClass = Vue.extend(nodeData.itemClass || CompTreeNodeItem)
     const item = new NodeItemClass() as NodeItem
     item.init(nodeData)
 
     this.m_item = item
-    this.m_opened = Boolean(nodeData.opened)
-    this.icon = nodeData.icon || ''
-    this.iconColor = nodeData.iconColor || ''
   }
 
   /**
@@ -333,7 +352,7 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
    * @param animated
    */
   toggle(animated: boolean = true): void {
-    this.m_toggle(!this.m_opened, animated)
+    this.m_toggle(!this.m_nodeData.opened, animated)
   }
 
   /**
@@ -366,14 +385,17 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
    * ノードを編集するためのデータを設定します。
    * @param editData
    */
-  setEditData(editData: CompTreeNodeEditData): void {
-    this.item.setEditData(editData)
+  setNodeData(editData: CompTreeNodeEditData): void {
+    this.item.setNodeData(editData)
+
     if (isString(editData.icon)) {
       this.icon = editData.icon!
     }
+
     if (isString(editData.iconColor)) {
       this.iconColor = editData.iconColor!
     }
+
     if (isBoolean(editData.opened)) {
       if (editData.opened!) {
         this.open(false)
@@ -500,7 +522,7 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
   }
 
   private m_toggle(opened: boolean, animated: boolean = true): void {
-    this.m_opened = opened
+    this.m_nodeData.opened = opened
     this.m_refreshChildrenContainerHeight(animated)
 
     this.$el.dispatchEvent(
