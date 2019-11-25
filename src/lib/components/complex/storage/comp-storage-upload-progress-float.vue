@@ -38,7 +38,7 @@
 
   .error
     color: $text-error-color
-    text-align: right
+    text-align: center
 
   & > *:not(:first-child)
     margin-left: 4px
@@ -49,9 +49,9 @@
     <q-bar class="bar">
       <div class="title">{{ $t('storage.uploadTotalRatio', [m_uploadManager.uploadedCount, m_uploadManager.totalUploadCount]) }}</div>
       <q-space />
+      <q-btn :invisible="!m_uploadManager.ended" dense flat icon="close" @click="m_closeButtonOnClick()"></q-btn>
       <q-btn v-if="m_minimize" dense flat icon="maximize" size="xs" @click="m_maximizeButtonOnClick()"> </q-btn>
       <q-btn v-else dense flat icon="minimize" size="xs" @click="m_minimizeButtonOnClick()"> </q-btn>
-      <q-btn v-show="m_uploadManager.completed" dense flat icon="close" @click="m_closeButtonOnClick()"></q-btn>
     </q-bar>
     <div class="content" :class="{ minimize: m_minimize }">
       <div v-for="(item, index) in m_uploadManager.uploadingFiles" :key="index" class="layout horizontal center item">
@@ -71,6 +71,14 @@ import { mixins } from 'vue-class-component'
 
 @Component
 export default class CompStorageUploadProgressFloat extends mixins(BaseComponent, Resizable) {
+  //----------------------------------------------------------------------
+  //
+  //  Constants
+  //
+  //----------------------------------------------------------------------
+
+  static UPLOAD_ENDED = 'upload-ended'
+
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -112,6 +120,7 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
    */
   openFilesSelectDialog(uploadDirPath: string): void {
     this.m_uploadManager.openFilesSelectDialog(uploadDirPath)
+    this.m_minimize = false
   }
 
   /**
@@ -120,6 +129,7 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
    */
   openDirSelectDialog(uploadDirPath: string): void {
     this.m_uploadManager.openDirSelectDialog(uploadDirPath)
+    this.m_minimize = false
   }
 
   //----------------------------------------------------------------------
@@ -143,6 +153,12 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
     setTimeout(() => {
       this.m_uploadManager.clear()
     }, 500)
+  }
+
+  @Watch('m_uploadManager.ended')
+  private m_uploadManagerOnEnded(newValue: boolean, oldValue: boolean) {
+    if (!newValue) return
+    this.$emit(CompStorageUploadProgressFloat.UPLOAD_ENDED)
   }
 }
 </script>

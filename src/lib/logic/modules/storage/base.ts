@@ -98,16 +98,13 @@ export abstract class StorageUploadManager {
     return this.m_uploading
   }
 
+  private m_ended = false
+
   /**
-   * アップロードの完了を表すフラグです。
+   * アップロードの終了を表すフラグです。
    */
-  get completed(): boolean {
-    for (const file of this.uploadingFiles) {
-      if (!file.completed) {
-        return false
-      }
-    }
-    return true
+  get ended(): boolean {
+    return this.m_ended
   }
 
   //----------------------------------------------------------------------
@@ -134,6 +131,7 @@ export abstract class StorageUploadManager {
     this.m_uploadingFiles.splice(0)
     this.uploadBasePath = ''
     this.m_uploading = false
+    this.m_ended = false
   }
 
   /**
@@ -197,11 +195,19 @@ export abstract class StorageUploadManager {
   //
   //----------------------------------------------------------------------
 
+  /**
+   * OSのファイルまたはフォルダ選択ダイアログで変更があった際のリスなです。
+   * @param e
+   */
   private async m_uploadFileInputOnChange(e) {
     const files: File[] = Array.from(e.target!.files)
     if (files.length === 0) {
       return
     }
+
+    // 変数の初期化
+    this.m_uploading = false
+    this.m_ended = false
 
     // ファイルアップローダーを作成(まだアップロードは実行しない)
     this.m_uploadingFiles.push(...this.createUploadingFiles(files))
@@ -241,12 +247,17 @@ export abstract class StorageUploadManager {
     }
 
     // 実際にアップロードを実行
+    const uploadPromises: Promise<void>[] = []
     for (const uploadingFile of this.m_uploadingFiles) {
       if (uploadingFile.completed) continue
-      uploadingFile.execute().catch(err => {
+      const uploadPromise = uploadingFile.execute().catch(err => {
         console.error(err)
       })
+      uploadPromises.push(uploadPromise)
     }
+    Promise.all(uploadPromises).then(() => {
+      this.m_ended = true
+    })
   }
 }
 

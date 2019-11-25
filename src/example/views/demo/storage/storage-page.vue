@@ -47,7 +47,7 @@
     </q-splitter>
     <storage-dir-create-dialog ref="dirCreateDialog" />
     <storage-nodes-remove-dialog ref="nodesRemoveDialog" />
-    <comp-storage-upload-progress-float ref="uploadProgressFloat" class="fixed-bottom-right" />
+    <comp-storage-upload-progress-float ref="uploadProgressFloat" class="fixed-bottom-right" @upload-ended="m_uploadProgressFloatOnUploadEnded()" />
   </div>
 </template>
 
@@ -328,6 +328,10 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     if (confirmed) {
       await this.m_removeNode(node)
     }
+  }
+
+  private async m_uploadProgressFloatOnUploadEnded() {
+    await this.m_pullStorageNodes()
   }
 }
 </script>
