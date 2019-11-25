@@ -247,17 +247,15 @@ export abstract class StorageUploadManager {
     }
 
     // 実際にアップロードを実行
-    const uploadPromises: Promise<void>[] = []
     for (const uploadingFile of this.m_uploadingFiles) {
       if (uploadingFile.completed) continue
-      const uploadPromise = uploadingFile.execute().catch(err => {
+      try {
+        await uploadingFile.execute()
+      } catch (err) {
         console.error(err)
-      })
-      uploadPromises.push(uploadPromise)
+      }
     }
-    Promise.all(uploadPromises).then(() => {
-      this.m_ended = true
-    })
+    this.m_ended = true
   }
 }
 
