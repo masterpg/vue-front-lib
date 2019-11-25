@@ -1,7 +1,7 @@
 import { AuthLogic, AuthProviderType } from '../../types'
+import { Component, Watch } from 'vue-property-decorator'
 import { User, store } from '../../store'
 import { BaseLogic } from '../../base'
-import { Component } from 'vue-property-decorator'
 import { Dialog } from 'quasar'
 import { NoCache } from '../../../base/decorators'
 import { api } from '../../api'
@@ -46,6 +46,8 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
   private m_googleProvider!: firebase.auth.GoogleAuthProvider
 
   private m_facebookProvider!: firebase.auth.FacebookAuthProvider
+
+  private m_signedInListeners: ((user: User) => any)[] = []
 
   //----------------------------------------------------------------------
   //
@@ -180,6 +182,18 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
     return (await firebase.auth().fetchSignInMethodsForEmail(email)) as AuthProviderType[]
   }
 
+  addSignedInListener(listener: (user: User) => any): void {
+    if (this.m_signedInListeners.includes(listener)) return
+    this.m_signedInListeners.push(listener)
+  }
+
+  removeSignedInListener(listener: (user: User) => any): void {
+    const index = this.m_signedInListeners.indexOf(listener)
+    if (index >= 0) {
+      this.m_signedInListeners.splice(index, 1)
+    }
+  }
+
   //----------------------------------------------------------------------
   //
   //  Internal methods
@@ -189,9 +203,10 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
   private async m_refreshUser(): Promise<void> {
     const user = firebase.auth().currentUser
     if (user) {
+      // サインインしたかどうかを判定
       let isSignedIn = true
-      // アカウントがメールアドレスを持っている場合
       if (user.email) {
+        // アカウントがメールアドレスを持っている場合、
         // アカウントが持つ認証プロバイダの中にパスワード認証があるか調べる
         const providers = await this.fetchSignInMethodsForEmail(user.email)
         const passwordProviderExists = providers.some(provider => provider === AuthProviderType.Password)
@@ -199,16 +214,6 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
         // メールアドレス確認が行われていない場合
         if (passwordProviderExists && providers.length === 1 && !user.emailVerified) {
           isSignedIn = false
-        }
-      }
-      // サインインした場合
-      if (isSignedIn) {
-        try {
-          const customToken = await api.customToken()
-          await firebase.auth().signInWithCustomToken(customToken)
-        } catch (err) {
-          Dialog.create({ title: 'Error', message: String(i18n.t('error.unexpected')) })
-          console.error(err)
         }
       }
       // ストアのユーザー設定
@@ -225,6 +230,27 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
     }
   }
 
+  /**
+   * サインインした際に必要な処理を行います。
+   */
+  private async m_signedInProcess(): Promise<void> {
+    // カスタムトークンの取得
+    try {
+      const customToken = await api.customToken()
+      await firebase.auth().signInWithCustomToken(customToken)
+    } catch (err) {
+      Dialog.create({ title: 'Error', message: String(i18n.t('error.unexpected')) })
+      console.error(err)
+    }
+    // 登録されているサインインリスナの実行
+    this.m_signedInListeners.forEach(listener => listener(this.user))
+  }
+
+  /**
+   * サインアウトした際に必要な処理を行います。
+   */
+  private async m_signedOutProcess(): Promise<void> {}
+
   //----------------------------------------------------------------------
   //
   //  Event listeners
@@ -237,5 +263,19 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
    */
   private async m_firebaseOnAuthStateChanged(user: firebase.User | null) {
     await this.m_refreshUser()
+  }
+
+  /**
+   * サインイン/アウトが変化した際のリスなです。
+   * @param newValue
+   * @param oldValue
+   */
+  @Watch('user.isSignedIn')
+  private async m_userIsSignedInOnChanged(newValue: boolean, oldValue: boolean) {
+    if (newValue) {
+      await this.m_signedInProcess()
+    } else {
+      await this.m_signedOutProcess()
+    }
   }
 }

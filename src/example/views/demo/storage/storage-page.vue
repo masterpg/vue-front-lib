@@ -26,6 +26,7 @@
           <comp-tree-view
             ref="treeView"
             class="tree-view"
+            @reload-selected="m_treeViewOnReloadSelected()"
             @create-dir-selected="m_treeViewOnCreateDirSelected($event)"
             @files-upload-selected="m_treeViewOnFilesUploadSelected($event)"
             @dir-upload-selected="m_treeViewOnDirUploadSelected($event)"
@@ -61,14 +62,16 @@ import {
   NoCache,
   Resizable,
   StorageNode,
-  StorageNodeBag,
   StorageNodeType,
+  User,
 } from '@/lib'
-import StorageTreeNodeItem, { StorageTreeNodeData } from '@/example/views/demo/storage/storage-tree-node-item.vue'
 import { Component } from 'vue-property-decorator'
 import StorageDirCreateDialog from '@/example/views/demo/storage/storage-dir-create-dialog.vue'
 import StorageNodesRemoveDialog from '@/example/views/demo/storage/storage-nodes-remove-dialog.vue'
+import StorageTreeNodeItem from '@/example/views/demo/storage/storage-tree-node-item.vue'
 import { mixins } from 'vue-class-component'
+import { router } from '@/example/router'
+import { storageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
 
 @Component({
   components: { CompTreeView, CompTreeNode, CompTreeNodeItem, StorageDirCreateDialog, StorageNodesRemoveDialog, CompStorageUploadProgressFloat },
@@ -80,15 +83,27 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
+  async created() {
+    this.$logic.auth.addSignedInListener(this.m_userOnSignedIn)
+  }
+
+  destroyed() {
+    this.$logic.auth.removeSignedInListener(this.m_userOnSignedIn)
+  }
+
   async mounted() {
-    this.m_storageNode = this.m_treeView.addChild({
-      value: '',
-      label: 'Storage',
-      icon: 'storage',
-      opened: true,
-      nodeType: 'Storage',
-      itemClass: StorageTreeNodeItem,
-    } as StorageTreeNodeData)
+    this.m_treeView.addChild(storageTreeStore.rootNode)
+
+    if (this.$logic.auth.user.isSignedIn) {
+      // 一旦ツリービューが構築されている場合
+      if (storageTreeStore.initialized) {
+        this.m_buildStorageTree()
+      }
+      // まだツリービューが構築されていない場合
+      else {
+        await this.m_pullStorageNodes()
+      }
+    }
   }
 
   //----------------------------------------------------------------------
@@ -98,8 +113,6 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
 
   private m_splitterModel = 30
-
-  private m_storageNode: CompTreeNode = {} as any
 
   private m_filePath: string = ''
 
@@ -143,12 +156,28 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
-  private async m_getStorageNodes(): Promise<void> {
-    const bag = await this.$logic.storage.getUserNodes()
-    this.m_buildStorageTree(bag)
+  private async m_pullStorageNodes(): Promise<void> {
+    // サーバーからノード一覧を取得
+    await this.$logic.storage.pullUserNodes()
+    const nodeMap = this.$logic.storage.getNodeMap()
+
+    // ツリーにはあるがサーバーから取得したノード一覧には存在しないノードをツリーから削除
+    for (const treeNode of storageTreeStore.nodes) {
+      // ツリーのルートノードはサーバーには存在しないので無視
+      if (treeNode === storageTreeStore.rootNode) continue
+
+      if (!nodeMap[treeNode.value]) {
+        storageTreeStore.removeNode(treeNode.value)
+        this.m_treeView.removeNode(treeNode.value)
+      }
+    }
+
+    // ツリーを構築
+    storageTreeStore.setNodes(this.$logic.storage.nodes)
+    this.m_buildStorageTree()
   }
 
-  private async m_buildStorageTree(bag: StorageNodeBag): Promise<void> {
+  private async m_buildStorageTree(): Promise<void> {
     const sortFunc: ChildrenSortFunc = (a: CompTreeNode<StorageTreeNodeItem>, b: CompTreeNode<StorageTreeNodeItem>) => {
       if (a.item.nodeType === StorageNodeType.Dir && b.item.nodeType === StorageNodeType.File) {
         return -1
@@ -164,47 +193,25 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       }
     }
 
-    for (const item of bag.list) {
-      const nodeData = this.m_toStorageNodeData(item)
+    for (const nodeData of storageTreeStore.nodes) {
       const node = this.m_treeView.getNode(nodeData.value)
       if (node) {
-        delete nodeData.selected
-        delete nodeData.opened
-        node.setEditData(nodeData)
-        this.m_treeView.addChild(node, {
-          parent: item.dir || this.m_storageNode.value,
-          sortFunc,
-        })
+        node.setNodeData(nodeData)
       } else {
         this.m_treeView.addChild(nodeData, {
-          parent: item.dir || this.m_storageNode.value,
+          parent: nodeData.parent || storageTreeStore.rootNode.value,
           sortFunc,
         })
       }
     }
   }
 
-  private m_toStorageNodeData(data: StorageNode): StorageTreeNodeData {
-    return {
-      label: data.name,
-      value: data.path,
-      icon: data.nodeType === StorageNodeType.Dir ? 'folder' : 'description',
-      opened: false,
-      nodeType: data.nodeType,
-      itemClass: StorageTreeNodeItem,
-    }
-  }
-
-  private async m_getDirectoryList(dirPath: string) {
-    const dirRef = firebase.storage().ref(dirPath)
-    const listRef = dirRef.child('files/uid')
-  }
-
   private async m_createDir(dirPath: string): Promise<void> {
     this.$q.loading.show()
-    let bag: StorageNodeBag
+
+    let nodes: StorageNode[]
     try {
-      bag = await this.$logic.storage.createUserStorageDirs([dirPath])
+      nodes = await this.$logic.storage.createUserStorageDirs([dirPath])
     } catch (err) {
       this.$q.loading.hide()
       console.error(err)
@@ -217,18 +224,22 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       })
       return
     }
-    this.m_buildStorageTree(bag)
+
+    storageTreeStore.setNodes(nodes)
+    this.m_buildStorageTree()
+
     this.$q.loading.hide()
   }
 
   private async m_removeNode(node: CompTreeNode<StorageTreeNodeItem>): Promise<void> {
     this.$q.loading.show()
-    let bag!: StorageNodeBag
+
+    let nodes!: StorageNode[]
     try {
       if (node.item.nodeType === StorageNodeType.File) {
-        bag = await this.$logic.storage.removeUserStorageFiles([node.value])
+        nodes = await this.$logic.storage.removeUserStorageFiles([node.value])
       } else if (node.item.nodeType === StorageNodeType.Dir) {
-        bag = await this.$logic.storage.removeUserStorageDir(node.value)
+        nodes = await this.$logic.storage.removeUserStorageDir(node.value)
       }
     } catch (err) {
       this.$q.loading.hide()
@@ -242,9 +253,12 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       })
       return
     }
-    for (const node of bag.list) {
+
+    storageTreeStore.removeNodes(nodes.map(node => node.path))
+    for (const node of nodes) {
       this.m_treeView.removeNode(node.path)
     }
+
     this.$q.loading.hide()
   }
 
@@ -254,8 +268,16 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
+  private async m_userOnSignedIn(user: User) {
+    console.log('m_userOnSignedIn')
+    // ルーターのパスが本ページのパスと一致する場合
+    if (router.currentRoute.path === router.views.demo.storage.path) {
+      await this.m_pullStorageNodes()
+    }
+  }
+
   private async m_refreshStorageButtonOnClick() {
-    await this.m_getStorageNodes()
+    await this.m_pullStorageNodes()
   }
 
   private async m_loadFileButtonOnClick(e) {
@@ -280,6 +302,10 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     })
     console.log(response)
     */
+  }
+
+  private async m_treeViewOnReloadSelected() {
+    await this.m_pullStorageNodes()
   }
 
   private async m_treeViewOnFilesUploadSelected(dirNode: CompTreeNode<StorageTreeNodeItem>) {

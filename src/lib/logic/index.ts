@@ -27,7 +27,7 @@ export function setLogic(value: LibLogicContainer): void {
   logic = value
 }
 
-export { AuthLogic, AuthProviderType, StorageLogic, StorageNode, StorageNodeBag, StorageNodeType } from './types'
+export { AuthLogic, AuthProviderType, StorageLogic } from './types'
 
 export { BaseLogic } from './base'
 

@@ -6,6 +6,7 @@ export default merge(require('@/lib/lang/ja').default, {
     cancel: 'キャンセル',
     delete: '削除',
     failed: '失敗',
+    reload: 'リロード',
   },
   error: {
     unexpected: '予期しないエラーが発生しました。',

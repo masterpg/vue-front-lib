@@ -27,6 +27,9 @@
         <!-- ストレージ用メニュー -->
         <q-list v-show="m_isStorage" dense style="min-width: 100px">
           <q-item v-close-popup clickable>
+            <q-item-section @click="m_dispatchReloadSelected()">{{ $t('common.reload') }}</q-item-section>
+          </q-item>
+          <q-item v-close-popup clickable>
             <q-item-section @click="m_dispatchCreateDirSelected()">{{ $t('storage.createFolder') }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
@@ -63,12 +66,9 @@
 </template>
 
 <script lang="ts">
-import { CompTreeNodeData, CompTreeNodeItem, StorageNodeType } from '@/lib'
+import { CompTreeNodeItem, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
-
-export interface StorageTreeNodeData extends CompTreeNodeData {
-  nodeType: StorageNodeType | 'Storage'
-}
+import { StorageTreeNodeData } from '@/example/views/demo/storage/storage-tree-store'
 
 @Component
 export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNodeData> {
@@ -83,7 +83,7 @@ export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNod
   }
 
   get extraEventNames(): string[] {
-    return ['create-dir-selected', 'files-upload-selected', 'dir-upload-selected', 'delete-selected']
+    return ['reload-selected', 'create-dir-selected', 'files-upload-selected', 'dir-upload-selected', 'delete-selected']
   }
 
   //----------------------------------------------------------------------
@@ -130,6 +130,10 @@ export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNod
         composed: true,
       })
     )
+  }
+
+  private m_dispatchReloadSelected(): void {
+    this.m_dispatchEvent('reload-selected')
   }
 
   private m_dispatchCreateDirSelected(): void {

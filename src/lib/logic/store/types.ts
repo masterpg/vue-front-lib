@@ -1,3 +1,5 @@
+import { APIStorageNode, APIStorageNodeType as StorageNodeType } from '../api'
+
 //========================================================================
 //
 //  Modules
@@ -10,6 +12,35 @@ export interface UserModule {
   set(user: Partial<User>): User
 
   clear(): void
+}
+
+export interface StorageModule {
+  readonly all: StorageNode[]
+
+  getMap(): { [path: string]: StorageNode }
+
+  add(value: StorageNode): StorageNode
+
+  addList(nodes: StorageNode[]): StorageNode[]
+
+  setAll(values: StorageNode[]): void
+
+  clone(value: StorageNode): StorageNode
+
+  remove(path: string): StorageNode[]
+
+  /**
+   * ノード配列をディレクトリ階層に従ってソートします。
+   * @param values
+   */
+  sort(values: StorageNode[]): void
+
+  /**
+   * ノード配列をディレクトリ階層に従ってソートするための関数です。
+   * @param a
+   * @param b
+   */
+  sortFunc(a: StorageNode, b: StorageNode): number
 }
 
 //========================================================================
@@ -28,6 +59,16 @@ export interface User {
   email: string
   emailVerified: boolean
 }
+
+export interface StorageNode extends APIStorageNode {}
+
+//========================================================================
+//
+//  Constants
+//
+//========================================================================
+
+export { StorageNodeType }
 
 //========================================================================
 //
@@ -51,3 +92,7 @@ export class StoreError<T> extends Error {
 //========================================================================
 
 export type UserState = User
+
+export interface StorageState {
+  all: StorageNode[]
+}

@@ -1,44 +1,5 @@
-import { APIStorageNode, api } from '../../api'
-import { StorageNode, StorageNodeBag } from '../../types'
+import { api } from '../../api'
 import { removeEndSlash } from 'web-base-lib'
-
-/**
- * `APIStorageNode`を`StorageNode`へ変換します。
- * @param gqlNode
- */
-export function toStorageNode(gqlNode: APIStorageNode): StorageNode {
-  return {
-    nodeType: gqlNode.nodeType,
-    name: gqlNode.name,
-    dir: gqlNode.dir,
-    path: gqlNode.path,
-    children: [],
-  }
-}
-
-/**
- * `APIStorageNode`の配列を`StorageNodeBag`へ変換します。
- * @param gqlNodes
- */
-export function toStorageNodeBag(gqlNodes: APIStorageNode[]): StorageNodeBag {
-  const bag = { list: [], map: {} } as StorageNodeBag
-
-  for (const gqlNode of gqlNodes) {
-    const node = toStorageNode(gqlNode)
-    bag.list.push(node)
-    bag.map[node.path] = node
-  }
-
-  for (const node of bag.list) {
-    const parent = bag.map[node.dir]
-    if (parent) {
-      parent.children.push(node)
-      node.parent = parent
-    }
-  }
-
-  return bag
-}
 
 /**
  * アップロードファイルの情報です。

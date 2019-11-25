@@ -1,6 +1,5 @@
-import { APIStorageNodeType as StorageNodeType } from './api'
+import { StorageNode, User } from './store'
 import { StorageUploadManager } from './modules/storage'
-import { User } from './store'
 
 //========================================================================
 //
@@ -9,15 +8,17 @@ import { User } from './store'
 //========================================================================
 
 export interface StorageLogic {
-  toURL(path: string): string
+  readonly nodes: StorageNode[]
 
-  getUserNodes(dir?: string): Promise<StorageNodeBag>
+  getNodeMap(): { [path: string]: StorageNode }
 
-  createUserStorageDirs(dirPaths: string[]): Promise<StorageNodeBag>
+  pullUserNodes(dir?: string): Promise<void>
 
-  removeUserStorageFiles(filePaths: string[]): Promise<StorageNodeBag>
+  createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 
-  removeUserStorageDir(dirNode: string): Promise<StorageNodeBag>
+  removeUserStorageFiles(filePaths: string[]): Promise<StorageNode[]>
+
+  removeUserStorageDir(dirNode: string): Promise<StorageNode[]>
 
   newUserUploadManager(owner: Element): StorageUploadManager
 
@@ -54,6 +55,10 @@ export interface AuthLogic {
   updateEmail(newEmail: string): Promise<{ result: boolean; code: string; errorMessage: string }>
 
   fetchSignInMethodsForEmail(email: string): Promise<AuthProviderType[]>
+
+  addSignedInListener(listener: (user: User) => any): void
+
+  removeSignedInListener(listener: (user: User) => any): void
 }
 
 //========================================================================
@@ -61,20 +66,6 @@ export interface AuthLogic {
 //  Value objects
 //
 //========================================================================
-
-export interface StorageNodeBag {
-  list: StorageNode[]
-  map: { [path: string]: StorageNode }
-}
-
-export interface StorageNode {
-  nodeType: StorageNodeType
-  name: string
-  dir: string
-  path: string
-  parent?: StorageNode
-  children: StorageNode[]
-}
 
 //========================================================================
 //
@@ -88,5 +79,3 @@ export enum AuthProviderType {
   Password = 'password',
   Anonymous = 'anonymous',
 }
-
-export { StorageNodeType }
