@@ -157,23 +157,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
 
   private async m_pullStorageNodes(): Promise<void> {
-    // サーバーからノード一覧を取得
     await this.$logic.storage.pullUserNodes()
-    const nodeMap = this.$logic.storage.getNodeMap()
-
-    // ツリーにはあるがサーバーから取得したノード一覧には存在しないノードをツリーから削除
-    for (const treeNode of storageTreeStore.nodes) {
-      // ツリーのルートノードはサーバーには存在しないので無視
-      if (treeNode === storageTreeStore.rootNode) continue
-
-      if (!nodeMap[treeNode.value]) {
-        storageTreeStore.removeNode(treeNode.value)
-        this.m_treeView.removeNode(treeNode.value)
-      }
-    }
-
-    // ツリーを構築
-    storageTreeStore.setNodes(this.$logic.storage.nodes)
     this.m_buildStorageTree()
   }
 
@@ -193,6 +177,22 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       }
     }
 
+    // ツリーにはあるがロジックには存在しないノードをツリーから削除
+    const nodeMap = this.$logic.storage.getNodeMap()
+    for (const treeNode of storageTreeStore.nodes) {
+      // ツリーのルートノードはロジックには存在しないので無視
+      if (treeNode === storageTreeStore.rootNode) continue
+
+      if (!nodeMap[treeNode.value]) {
+        storageTreeStore.removeNode(treeNode.value)
+        this.m_treeView.removeNode(treeNode.value)
+      }
+    }
+
+    // ロジックのノードをツリー用のノードデータへ反映
+    storageTreeStore.setNodes(this.$logic.storage.nodes)
+
+    // ツリーを構築
     for (const nodeData of storageTreeStore.nodes) {
       const node = this.m_treeView.getNode(nodeData.value)
       if (node) {
