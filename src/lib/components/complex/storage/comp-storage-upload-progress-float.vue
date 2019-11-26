@@ -40,6 +40,9 @@
     color: $text-error-color
     text-align: center
 
+  .cancel
+    font-size: 8px
+
   & > *:not(:first-child)
     margin-left: 4px
 </style>
@@ -56,8 +59,10 @@
     <div class="content" :class="{ minimize: m_minimize }">
       <div v-for="(item, index) in m_uploadManager.uploadingFiles" :key="index" class="layout horizontal center item">
         <div class="name flex-8">{{ item.name }}</div>
-        <q-linear-progress v-if="!item.failed" :value="item.progress" :stripe="!item.completed" size="md" class="flex-4" />
-        <div v-else class="error flex-4">{{ $t('storage.uploadFileFailed') }}</div>
+        <div v-if="item.failed" class="error flex-4">{{ $t('storage.uploadFileFailed') }}</div>
+        <div v-else-if="item.canceled" class="error flex-4">{{ $t('storage.uploadFileCanceled') }}</div>
+        <q-linear-progress v-else :value="item.progress" :stripe="!item.completed" size="md" class="flex-4" />
+        <q-btn :disable="item.ended" class="cancel" dense flat round icon="clear" @click="m_uploadingFileOnCancel(item)"></q-btn>
       </div>
     </div>
   </div>
@@ -67,6 +72,7 @@
 import { BaseComponent, Resizable } from '../../../base/component'
 import { Component, Watch } from 'vue-property-decorator'
 import { StorageUploadManager, logic } from '../../../logic'
+import { StorageFileUploader } from '@/lib/logic/modules/storage/base'
 import { mixins } from 'vue-class-component'
 
 @Component
@@ -153,6 +159,10 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
     setTimeout(() => {
       this.m_uploadManager.clear()
     }, 500)
+  }
+
+  private m_uploadingFileOnCancel(uploadFile: StorageFileUploader) {
+    uploadFile.cancel()
   }
 
   @Watch('m_uploadManager.ended')

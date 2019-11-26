@@ -68,6 +68,16 @@ class UserStorageFileUploader extends StorageFileUploader {
     return this.m_failed
   }
 
+  private m_canceled: boolean = false
+
+  get canceled(): boolean {
+    return this.m_canceled
+  }
+
+  get ended(): boolean {
+    return this.completed || this.failed || this.canceled
+  }
+
   userBasePath: string = ''
 
   //----------------------------------------------------------------------
@@ -87,6 +97,9 @@ class UserStorageFileUploader extends StorageFileUploader {
   //----------------------------------------------------------------------
 
   execute(): Promise<void> {
+    if (this.canceled) {
+      return Promise.resolve()
+    }
     if (!this.userBasePath) {
       return Promise.reject(`"userBasePath" is not set.`)
     }
@@ -101,11 +114,15 @@ class UserStorageFileUploader extends StorageFileUploader {
         firebase.storage.TaskEvent.STATE_CHANGED,
         (snapshot: firebase.storage.UploadTaskSnapshot) => {
           this.m_uploadedSize = snapshot.bytesTransferred
-          this.m_progress = snapshot.bytesTransferred / this.m_uploadedSize
+          this.m_progress = snapshot.bytesTransferred / snapshot.totalBytes
         },
         err => {
-          this.m_failed = true
-          reject(err)
+          if (this.canceled) {
+            resolve()
+          } else {
+            this.m_failed = true
+            reject(err)
+          }
         },
         () => {
           this.m_completed = true
@@ -113,5 +130,10 @@ class UserStorageFileUploader extends StorageFileUploader {
         }
       )
     })
+  }
+
+  cancel(): void {
+    this.m_uploadTask && this.m_uploadTask.cancel()
+    this.m_canceled = true
   }
 }

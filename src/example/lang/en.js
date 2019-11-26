@@ -1,16 +1,8 @@
 const merge = require('lodash/merge')
 
 export default merge(require('@/lib/lang/en').default, {
-  common: {
-    create: 'Create',
-    cancel: 'Cancel',
-    delete: 'Delete',
-    failed: 'Failed',
-    reload: 'Reload',
-  },
-  error: {
-    unexpected: 'An unexpected error has occurred.',
-  },
+  common: {},
+  error: {},
   sw: {
     ready: 'App is being served from cache by a service worker. For more details, visit https://goo.gl/AFskqB',
     registered: 'Service worker has been registered.',

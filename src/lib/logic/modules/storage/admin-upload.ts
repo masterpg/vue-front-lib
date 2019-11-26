@@ -1,6 +1,6 @@
 import { StorageFileUploader, StorageUploadManager, UploadFileParam } from './base'
+import axios, { Canceler } from 'axios'
 import { api } from '../../api'
-import axios from 'axios'
 
 export class AdminStorageUploadManager extends StorageUploadManager {
   protected createUploadingFiles(files: File[]): StorageFileUploader[] {
@@ -77,7 +77,25 @@ class AdminStorageFileUploader extends StorageFileUploader {
     return this.m_failed
   }
 
+  private m_canceled: boolean = false
+
+  get canceled(): boolean {
+    return this.m_canceled
+  }
+
+  get ended(): boolean {
+    return this.completed || this.failed || this.canceled
+  }
+
   signedUploadUrl: string = ''
+
+  //----------------------------------------------------------------------
+  //
+  //  Variables
+  //
+  //----------------------------------------------------------------------
+
+  cancelRequest: Canceler = () => {}
 
   //----------------------------------------------------------------------
   //
@@ -86,6 +104,9 @@ class AdminStorageFileUploader extends StorageFileUploader {
   //----------------------------------------------------------------------
 
   execute(): Promise<void> {
+    if (this.canceled) {
+      return Promise.resolve()
+    }
     if (!this.signedUploadUrl) {
       return Promise.reject(`"signedUploadUrl" is not set.`)
     }
@@ -117,14 +138,24 @@ class AdminStorageFileUploader extends StorageFileUploader {
             this.m_uploadedSize = loaded
             this.m_progress = loaded / total
           },
+          cancelToken: new axios.CancelToken(c => {
+            this.cancelRequest = c
+          }),
         })
       })
       .then(() => {
         this.m_completed = true
       })
       .catch(err => {
-        this.m_failed = true
-        throw err
+        if (!this.canceled) {
+          this.m_failed = true
+          throw err
+        }
       })
+  }
+
+  cancel(): void {
+    this.cancelRequest()
+    this.m_canceled = true
   }
 }

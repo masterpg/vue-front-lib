@@ -180,7 +180,9 @@ export abstract class StorageUploadManager {
 
     if (isDir) {
       this.m_uploadFileInput.setAttribute('webkitdirectory', '')
+      this.m_uploadFileInput.removeAttribute('multiple')
     } else {
+      this.m_uploadFileInput.setAttribute('multiple', '')
       this.m_uploadFileInput.removeAttribute('webkitdirectory')
     }
 
@@ -214,9 +216,9 @@ export abstract class StorageUploadManager {
 
     // ファイルアップローダー配列をソート
     this.m_uploadingFiles.sort((a, b) => {
-      if (a.completed && !b.completed) {
+      if (a.ended && !b.ended) {
         return 1
-      } else if (!a.completed && b.completed) {
+      } else if (!a.ended && b.ended) {
         return -1
       }
 
@@ -236,14 +238,14 @@ export abstract class StorageUploadManager {
     await this.beforeUpload()
 
     // アップロード先のディレクトリを作成
-    const createdDirPaths = this.m_uploadingFiles.reduce<string[]>((result, item) => {
+    const dirPaths = this.m_uploadingFiles.reduce<string[]>((result, item) => {
       if (item.dirPath) {
         result.push(`${item.dirPath}/`)
       }
       return result
     }, [])
-    if (createdDirPaths.length > 0) {
-      await api.createUserStorageDirs(createdDirPaths)
+    if (dirPaths.length > 0) {
+      await api.createUserStorageDirs(dirPaths)
     }
 
     // 実際にアップロードを実行
@@ -287,6 +289,10 @@ export abstract class StorageFileUploader {
 
   abstract readonly failed: boolean
 
+  abstract readonly canceled: boolean
+
+  abstract readonly ended: boolean
+
   get name(): string {
     return this.uploadParam.name
   }
@@ -326,4 +332,6 @@ export abstract class StorageFileUploader {
   //----------------------------------------------------------------------
 
   abstract execute(): Promise<void>
+
+  abstract cancel(): void
 }

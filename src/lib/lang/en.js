@@ -4,6 +4,7 @@ export default {
     cancel: 'Cancel',
     delete: 'Delete',
     failed: 'Failed',
+    reload: 'Reload',
   },
   error: {
     unexpected: 'An unexpected error has occurred.',
@@ -20,5 +21,6 @@ export default {
   storage: {
     uploadTotalRatio: 'Upload {0} / {1}',
     uploadFileFailed: 'Upload failed.',
+    uploadFileCanceled: 'Upload canceled.',
   },
 }

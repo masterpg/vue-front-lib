@@ -1,16 +1,8 @@
 const merge = require('lodash/merge')
 
 export default merge(require('@/lib/lang/ja').default, {
-  common: {
-    create: '作成',
-    cancel: 'キャンセル',
-    delete: '削除',
-    failed: '失敗',
-    reload: 'リロード',
-  },
-  error: {
-    unexpected: '予期しないエラーが発生しました。',
-  },
+  common: {},
+  error: {},
   sw: {
     ready: 'アプリケーションは Service Worker によってキャッシュからサーブされています。詳細は https://goo.gl/AFskqB を参照ください。',
     registered: 'Service Worker は既に登録されています。',

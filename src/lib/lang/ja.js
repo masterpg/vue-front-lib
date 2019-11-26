@@ -4,6 +4,7 @@ export default {
     cancel: 'キャンセル',
     delete: '削除',
     failed: '失敗',
+    reload: 'リロード',
   },
   error: {
     unexpected: '予期しないエラーが発生しました。',
@@ -20,5 +21,6 @@ export default {
   storage: {
     uploadTotalRatio: 'アップロード {0} / {1}',
     uploadFileFailed: 'アップロード失敗',
+    uploadFileCanceled: 'キャンセル',
   },
 }
