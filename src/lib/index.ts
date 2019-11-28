@@ -1,21 +1,54 @@
-export * from './quasar'
+export { quasar } from './quasar'
 
-export * from './base/component'
+export { BaseComponent, BaseDialog, Dialog, Resizable } from './base/component'
 
-export * from './base/decorators'
+export { NoCache } from './base/decorators'
 
-export * from './config'
+export { APIConfig, BaseConfig, FirebaseConfig, StorageConfig, setConfig } from './config'
 
-export * from './i18n'
+export { BaseI18n, LocaleData, setI18n } from './i18n'
 
-export * from './router'
+export { setRouter, BaseRouter, ViewRoute } from './router'
 
-export * from './sw'
+export { BaseSWManager, SWChangeState, SWStateChangeInfo, StateChangeLister, setSW } from './sw'
 
-export * from './logic/api'
+export { APIStorageNode, APIStorageNodeType, BaseGQLAPIContainer, BaseRESTAPIContainer, LibAPIContainer, setAPI } from './logic/api'
 
-export * from './logic/store'
+export {
+  BaseLibStoreContainer,
+  BaseModule,
+  LibStoreContainer,
+  StatePartial,
+  StorageNode,
+  StorageNodeType,
+  StorageState,
+  StoreError,
+  User,
+  UserModule,
+  setStore,
+} from './logic/store'
 
-export * from './logic'
+export {
+  AuthLogic,
+  AuthProviderType,
+  BaseLibLogicContainer,
+  BaseLogic,
+  LibLogicContainer,
+  StorageLogic,
+  StorageUploadManager,
+  setLogic,
+} from './logic'
 
-export * from './components'
+export {
+  BaseHistoryDialogManager,
+  ChildrenSortFunc,
+  CompStorageUploadProgressFloat,
+  CompTreeCheckboxNodeData,
+  CompTreeCheckboxNodeItem,
+  CompTreeNode,
+  CompTreeNodeData,
+  CompTreeNodeEditData,
+  CompTreeNodeItem,
+  CompTreeView,
+  CompTreeViewUtils,
+} from './components'

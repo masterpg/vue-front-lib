@@ -2,7 +2,7 @@ import * as path from 'path'
 import { StorageFileUploader, StorageUploadManager } from './base'
 import { Dialog } from 'quasar'
 import { config } from '../../../config'
-import { i18n } from '../../../'
+import { i18n } from '../../../i18n'
 import { store } from '../../store'
 
 export class UserStorageUploadManager extends StorageUploadManager {
