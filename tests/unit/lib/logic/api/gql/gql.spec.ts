@@ -1,4 +1,6 @@
+import * as path from 'path'
 import { api, initAPI } from '../../../../../mocks/logic/api'
+import { config } from '@/lib/config'
 const isEmpty = require('lodash/isEmpty')
 
 jest.setTimeout(25000)
@@ -39,36 +41,10 @@ describe('App API', () => {
 })
 
 describe('Storage API', () => {
-  let userStorageBasePath!: string
+  const userStorageBasePath = path.join(config.storage.usersDir, GENERAL_USER.storageDir)
 
   beforeEach(async () => {
-    if (!userStorageBasePath) {
-      api.setTestAuthUser(GENERAL_USER)
-      userStorageBasePath = await api.userStorageBasePath()
-      api.clearTestAuthUser()
-    }
     await Promise.all([api.removeTestStorageDir(TEST_FILES_DIR), api.removeTestStorageDir(userStorageBasePath)])
-  })
-
-  describe('userStorageBasePath', () => {
-    it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
-
-      const actual = await api.userStorageBasePath()
-
-      expect(isEmpty(actual)).toBeFalsy()
-    })
-
-    it('サインインしていない場合', async () => {
-      let actual!: Error
-      try {
-        await api.userStorageBasePath()
-      } catch (err) {
-        actual = err
-      }
-
-      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
-    })
   })
 
   describe('userStorageDirNodes', () => {

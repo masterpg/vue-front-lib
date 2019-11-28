@@ -5,6 +5,7 @@ import { Component } from 'vue-property-decorator'
 import { StorageLogic } from '../../types'
 import { StorageUploadManager } from './base'
 import { UserStorageUploadManager } from './user-upload'
+import { UserStorageUrlUploadManager } from './user-upload-by-url'
 import { api } from '../../api'
 
 @Component
@@ -65,6 +66,10 @@ export class StorageLogicImpl extends BaseLogic implements StorageLogic {
 
   newUserUploadManager(owner: Element): StorageUploadManager {
     return new UserStorageUploadManager(owner)
+  }
+
+  newUserUrlUploadManager(owner: Element): StorageUploadManager {
+    return new UserStorageUrlUploadManager(owner)
   }
 
   newAdminUploadManager(owner: Element): StorageUploadManager {

@@ -7,8 +7,6 @@ import { LibAPIContainer } from '@/lib'
 //========================================================================
 
 export interface AppAPIContainer extends LibAPIContainer {
-  getSignedUploadUrls(params: { filePath: string; contentType?: string }[]): Promise<string[]>
-
   product(id: string): Promise<APIProduct | undefined>
 
   products(ids?: string[]): Promise<APIProduct[]>

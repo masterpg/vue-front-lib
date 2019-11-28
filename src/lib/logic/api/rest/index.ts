@@ -1,13 +1,13 @@
-import { APIStorageNode, LibAPIContainer } from '../types'
+import { APIStorageNode, AppConfigResponse, LibAPIContainer } from '../types'
 import { BaseRESTClient } from './base'
 
 export abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPIContainer {
-  async customToken(): Promise<string> {
-    throw new Error('This method "customToken" is not implemented.')
+  async appConfig(): Promise<AppConfigResponse> {
+    throw new Error('This method "appConfig" is not implemented.')
   }
 
-  async userStorageBasePath(): Promise<string> {
-    throw new Error('This method "userStorageBasePath" is not implemented.')
+  async customToken(): Promise<string> {
+    throw new Error('This method "customToken" is not implemented.')
   }
 
   async userStorageDirNodes(dirPath?: string): Promise<APIStorageNode[]> {

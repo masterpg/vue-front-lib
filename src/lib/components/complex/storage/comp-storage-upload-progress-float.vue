@@ -93,6 +93,7 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
 
   async mounted() {
     this.m_uploadManager = logic.storage.newUserUploadManager(this.$el)
+    // this.m_uploadManager = logic.storage.newUserUrlUploadManager(this.$el)
     // this.m_uploadManager = logic.storage.newAdminUploadManager(this.$el)
   }
 

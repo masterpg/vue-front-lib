@@ -1,8 +1,21 @@
-import { APIStorageNode, LibAPIContainer } from '../types'
+import { APIStorageNode, AppConfigResponse, LibAPIContainer } from '../types'
 import { BaseGQLClient } from './base'
 import gql from 'graphql-tag'
 
 export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContainer {
+  async appConfig(): Promise<AppConfigResponse> {
+    const response = await this.query<{ appConfig: AppConfigResponse }>({
+      query: gql`
+        query GetAppConfig {
+          appConfig {
+            usersDir
+          }
+        }
+      `,
+    })
+    return response.data.appConfig
+  }
+
   async customToken(): Promise<string> {
     const response = await this.query<{ customToken: string }>({
       query: gql`
@@ -13,18 +26,6 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       isAuth: true,
     })
     return response.data.customToken
-  }
-
-  async userStorageBasePath(): Promise<string> {
-    const response = await this.query<{ userStorageBasePath: string }>({
-      query: gql`
-        query GetUserStorageBasePath {
-          userStorageBasePath
-        }
-      `,
-      isAuth: true,
-    })
-    return response.data.userStorageBasePath
   }
 
   async userStorageDirNodes(dirPath?: string): Promise<APIStorageNode[]> {

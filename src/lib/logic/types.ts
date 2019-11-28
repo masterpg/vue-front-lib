@@ -22,6 +22,8 @@ export interface StorageLogic {
 
   newUserUploadManager(owner: Element): StorageUploadManager
 
+  newUserUrlUploadManager(owner: Element): StorageUploadManager
+
   newAdminUploadManager(owner: Element): StorageUploadManager
 }
 

@@ -5,6 +5,8 @@ export default {
     delete: '削除',
     failed: '失敗',
     reload: 'リロード',
+    error: 'エラー',
+    systemError: 'システムエラー',
   },
   error: {
     unexpected: '予期しないエラーが発生しました。',

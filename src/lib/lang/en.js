@@ -5,6 +5,8 @@ export default {
     delete: 'Delete',
     failed: 'Failed',
     reload: 'Reload',
+    error: 'Error',
+    systemError: 'System error',
   },
   error: {
     unexpected: 'An unexpected error has occurred.',

@@ -34,7 +34,7 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
 
   @NoCache
   get user(): User {
-    return cloneDeep(store.user.value)
+    return store.user.clone()
   }
 
   //----------------------------------------------------------------------
@@ -234,14 +234,19 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
    * サインインした際に必要な処理を行います。
    */
   private async m_signedInProcess(): Promise<void> {
-    // カスタムトークンの取得
+    // カスタムトークンをサーバーから取得
     try {
       const customToken = await api.customToken()
       await firebase.auth().signInWithCustomToken(customToken)
     } catch (err) {
-      Dialog.create({ title: 'Error', message: String(i18n.t('error.unexpected')) })
+      Dialog.create({
+        title: String(i18n.t('common.systemError')),
+        message: String(i18n.t('error.unexpected')),
+      })
       console.error(err)
     }
+    // 取得したカスタムトークンをストアへ反映
+    await store.user.reflectCustomToken()
     // 登録されているサインインリスナの実行
     this.m_signedInListeners.forEach(listener => listener(this.user))
   }

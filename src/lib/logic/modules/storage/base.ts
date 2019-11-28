@@ -1,3 +1,4 @@
+import * as path from 'path'
 import { api } from '../../api'
 import { removeEndSlash } from 'web-base-lib'
 
@@ -9,6 +10,7 @@ export interface UploadFileParam {
   name: string
   dirPath: string
   type?: string
+  basePath?: string
 }
 
 /**
@@ -156,9 +158,9 @@ export abstract class StorageUploadManager {
   //
   //----------------------------------------------------------------------
 
-  protected abstract createUploadingFiles(files: File[]): StorageFileUploader[]
+  protected abstract async verifyExecutable(): Promise<void>
 
-  protected abstract beforeUpload(): Promise<void>
+  protected abstract createUploadingFiles(files: File[]): StorageFileUploader[]
 
   /**
    * 指定されたファイルのディレクトリ構造をもとにアップロード先のディレクトリを取得します。
@@ -202,6 +204,12 @@ export abstract class StorageUploadManager {
    * @param e
    */
   private async m_uploadFileInputOnChange(e) {
+    // このアップロードマネージャーでアップロード可能か検証
+    // 検証内容の一例:
+    //   + 管理者アップロードの場合、ユーザーに実行権限があるか
+    //   + ユーザーアップロードの場合、ユーザーディレクトリがきちんと取得できるか
+    await this.verifyExecutable()
+
     const files: File[] = Array.from(e.target!.files)
     if (files.length === 0) {
       return
@@ -234,9 +242,6 @@ export abstract class StorageUploadManager {
     // 状態をアップロード中に設定
     this.m_uploading = files.length > 0
 
-    // アップロード前処理を実行
-    await this.beforeUpload()
-
     // アップロード先のディレクトリを作成
     const dirPaths = this.m_uploadingFiles.reduce<string[]>((result, item) => {
       if (item.dirPath) {
@@ -264,7 +269,7 @@ export abstract class StorageUploadManager {
 /**
  * ファイルアップローダーの基底クラスです。
  */
-export abstract class StorageFileUploader {
+export class StorageFileUploader {
   //----------------------------------------------------------------------
   //
   //  Constructor
@@ -281,17 +286,59 @@ export abstract class StorageFileUploader {
   //
   //----------------------------------------------------------------------
 
-  abstract readonly uploadedSize: number
+  private m_uploadedSize: number = 0
 
-  abstract readonly progress: number
+  get uploadedSize(): number {
+    return this.m_uploadedSize
+  }
 
-  abstract readonly completed: boolean
+  protected setUploadedSize(value: number): void {
+    this.m_uploadedSize = value
+  }
 
-  abstract readonly failed: boolean
+  private m_progress: number = 0
 
-  abstract readonly canceled: boolean
+  get progress(): number {
+    return this.m_progress
+  }
 
-  abstract readonly ended: boolean
+  protected setProgress(value: number): void {
+    this.m_progress = value
+  }
+
+  private m_completed: boolean = false
+
+  get completed(): boolean {
+    return this.m_completed
+  }
+
+  protected setCompleted(value: boolean): void {
+    this.m_completed = value
+  }
+
+  private m_failed: boolean = false
+
+  get failed(): boolean {
+    return this.m_failed
+  }
+
+  protected setFailed(value: boolean): void {
+    this.m_failed = value
+  }
+
+  private m_canceled: boolean = false
+
+  get canceled(): boolean {
+    return this.m_canceled
+  }
+
+  protected setCanceled(value: boolean): void {
+    this.m_canceled = value
+  }
+
+  get ended(): boolean {
+    return this.completed || this.failed || this.canceled
+  }
 
   get name(): string {
     return this.uploadParam.name
@@ -325,13 +372,52 @@ export abstract class StorageFileUploader {
 
   protected uploadParam: UploadFileParam
 
+  private m_uploadTask!: firebase.storage.UploadTask
+
+  private m_fileRef!: firebase.storage.Reference
+
   //----------------------------------------------------------------------
   //
   //  Methods
   //
   //----------------------------------------------------------------------
 
-  abstract execute(): Promise<void>
+  execute(): Promise<void> {
+    if (this.canceled) {
+      return Promise.resolve()
+    }
 
-  abstract cancel(): void
+    // アップロード先の参照を取得
+    const uploadPath = path.join(this.uploadParam.basePath || '', this.uploadParam.dirPath, this.name)
+    this.m_fileRef = firebase.storage().ref(uploadPath)
+    // アップロード実行
+    this.m_uploadTask = this.m_fileRef.put(this.uploadParam.data)
+
+    return new Promise<void>((resolve, reject) => {
+      this.m_uploadTask.on(
+        firebase.storage.TaskEvent.STATE_CHANGED,
+        (snapshot: firebase.storage.UploadTaskSnapshot) => {
+          this.setUploadedSize(snapshot.bytesTransferred)
+          this.setProgress(snapshot.bytesTransferred / snapshot.totalBytes)
+        },
+        err => {
+          if (this.canceled) {
+            resolve()
+          } else {
+            this.setFailed(true)
+            reject(err)
+          }
+        },
+        () => {
+          this.setCompleted(true)
+          resolve()
+        }
+      )
+    })
+  }
+
+  cancel(): void {
+    this.m_uploadTask && this.m_uploadTask.cancel()
+    this.setCanceled(true)
+  }
 }

@@ -6,12 +6,14 @@ import { APIStorageNode, APIStorageNodeType as StorageNodeType } from '../api'
 //
 //========================================================================
 
-export interface UserModule {
-  readonly value: User
-
-  set(user: Partial<User>): User
+export interface UserModule extends User {
+  set(user: Partial<User>): void
 
   clear(): void
+
+  clone(): User
+
+  reflectCustomToken(): Promise<void>
 }
 
 export interface StorageModule {
@@ -58,6 +60,16 @@ export interface User {
   photoURL: string
   email: string
   emailVerified: boolean
+  isAppAdmin: boolean
+  storageDir: string
+  /**
+   * セキュリティ安全なアプリケーション管理者フラグを取得します。
+   * `isAppAdmin`でも同様の値を取得できますが、このプロパティは
+   * ブラウザの開発ツールなどで設定値を変更できてしまいます。
+   * このメソッドでは暗号化されたトークンから値を取得しなおすため、
+   * 改ざんの心配がない安全な値を取得できます。
+   */
+  getIsAppAdmin(): Promise<boolean>
 }
 
 export interface StorageNode extends APIStorageNode {}
@@ -90,8 +102,6 @@ export class StoreError<T> extends Error {
 //  States
 //
 //========================================================================
-
-export type UserState = User
 
 export interface StorageState {
   all: StorageNode[]

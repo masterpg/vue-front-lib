@@ -2,7 +2,7 @@ import * as td from 'testdouble'
 import { APIEditCartItemResponse, APIProduct, AppAPIContainer, api, initAPI } from '@/example/logic/api'
 import { CartItem, CartModule, CartState, CheckoutStatus, ProductModule, ProductState, initStore, store } from '@/example/logic/store'
 import { TestLogic, TestStoreModule } from '../../../../../helpers/store'
-import { User, UserModule, UserState } from '@/lib'
+import { User, UserModule } from '@/lib'
 import { initLogic, logic } from '@/example/logic'
 import { ShopLogicImpl } from '@/example/logic/modules/shop'
 const cloneDeep = require('lodash/cloneDeep')
@@ -14,7 +14,7 @@ initLogic()
 const shopLogic = logic.shop as TestLogic<ShopLogicImpl>
 const cartModule = store.cart as TestStoreModule<CartState, CartModule>
 const productModule = store.product as TestStoreModule<ProductState, ProductModule>
-const userModule = store.user as TestStoreModule<UserState, UserModule>
+const userModule = store.user as TestStoreModule<void, UserModule>
 
 const PRODUCTS: APIProduct[] = [
   { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 1 },
@@ -26,7 +26,7 @@ const PRODUCTS: APIProduct[] = [
 const CART_ITEMS: CartItem[] = [
   {
     id: 'cartItem1',
-    uid: 'user1',
+    uid: 'yamada.one',
     productId: 'product1',
     title: 'iPad 4 Mini',
     price: 500.01,
@@ -34,7 +34,7 @@ const CART_ITEMS: CartItem[] = [
   },
   {
     id: 'cartItem2',
-    uid: 'user1',
+    uid: 'yamada.one',
     productId: 'product2',
     title: 'Fire HD 8 Tablet',
     price: 80.99,
@@ -43,12 +43,17 @@ const CART_ITEMS: CartItem[] = [
 ]
 
 const USER: User = {
-  id: 'user1',
-  displayName: 'taro',
-  email: 'taro@example.com',
+  id: 'yamada.one',
+  displayName: 'Taro Yamada',
+  email: 'yamada.one@example.com',
   emailVerified: true,
   isSignedIn: true,
   photoURL: '',
+  isAppAdmin: false,
+  storageDir: 'yamada.one',
+  getIsAppAdmin(): Promise<boolean> {
+    return Promise.resolve(false)
+  },
 }
 
 beforeEach(async () => {
@@ -171,7 +176,7 @@ describe('addItemToCart()', () => {
     const product3 = PRODUCTS[2]
     const response = {
       id: 'cartItemXXX',
-      uid: 'user1',
+      uid: 'yamada.one',
       productId: product3.id,
       title: product3.title,
       price: product3.price,

@@ -3,9 +3,9 @@ require('testdouble-jest')(td, jest)
 
 global.firebase = require('firebase')
 require('./mocks/quasar')
-const config = require('./mocks/config')
+const { initConfig } = require('./mocks/config')
 
-config.initConfig()
+initConfig()
 
 beforeEach(async () => {})
 

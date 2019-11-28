@@ -5,9 +5,9 @@
 //========================================================================
 
 export interface LibAPIContainer {
-  customToken(): Promise<string>
+  appConfig(): Promise<AppConfigResponse>
 
-  userStorageBasePath(): Promise<string>
+  customToken(): Promise<string>
 
   userStorageDirNodes(dirPath?: string): Promise<APIStorageNode[]>
 
@@ -25,6 +25,10 @@ export interface LibAPIContainer {
 //  Value objects
 //
 //========================================================================
+
+export interface AppConfigResponse {
+  usersDir: string
+}
 
 export interface APIStorageNode {
   nodeType: APIStorageNodeType

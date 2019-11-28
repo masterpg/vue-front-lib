@@ -196,7 +196,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
   }
 
   private m_checkSignedIn(): void {
-    if (!store.user.value.isSignedIn) {
+    if (!store.user.isSignedIn) {
       throw new Error('Not signed in.')
     }
   }
