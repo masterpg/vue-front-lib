@@ -54,8 +54,8 @@ export class StorageLogicImpl extends BaseLogic implements StorageLogic {
     return result
   }
 
-  async removeUserStorageDir(dirPath: string): Promise<StorageNode[]> {
-    const gqlNodes = await api.removeUserStorageDir(dirPath)
+  async removeUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
+    const gqlNodes = await api.removeUserStorageDirs(dirPaths)
     const result: StorageNode[] = []
     for (const gqlNode of gqlNodes) {
       const removedNodes = store.storage.remove(gqlNode.path)

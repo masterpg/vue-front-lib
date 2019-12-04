@@ -26,17 +26,6 @@ describe('App API', () => {
 
       expect(isEmpty(actual)).toBeFalsy()
     })
-
-    it('サインインしていない場合', async () => {
-      let actual!: Error
-      try {
-        await api.customToken()
-      } catch (err) {
-        actual = err
-      }
-
-      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
-    })
   })
 })
 
@@ -56,17 +45,6 @@ describe('Storage API', () => {
 
       expect(actual.length).toBe(2)
     })
-
-    it('サインインしていない場合', async () => {
-      let actual!: Error
-      try {
-        await api.userStorageDirNodes()
-      } catch (err) {
-        actual = err
-      }
-
-      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
-    })
   })
 
   describe('createUserStorageDirs', () => {
@@ -78,23 +56,6 @@ describe('Storage API', () => {
       expect(actual.length).toBe(2)
       expect(actual[0].path).toBe('dir1')
       expect(actual[1].path).toBe('dir1/dir1_1')
-
-      const nodes = await api.userStorageDirNodes()
-
-      expect(nodes.length).toBe(2)
-      expect(nodes[0].path).toBe('dir1')
-      expect(nodes[1].path).toBe('dir1/dir1_1')
-    })
-
-    it('サインインしていない場合', async () => {
-      let actual!: Error
-      try {
-        await await api.createUserStorageDirs(['dir1/dir1_1'])
-      } catch (err) {
-        actual = err
-      }
-
-      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
     })
   })
 
@@ -110,27 +71,10 @@ describe('Storage API', () => {
 
       expect(actual.length).toBe(1)
       expect(actual[0].path).toBe(`docs/fileA.txt`)
-
-      const nodes = await api.userStorageDirNodes()
-
-      expect(nodes.length).toBe(2)
-      expect(nodes[0].path).toBe('docs')
-      expect(nodes[1].path).toBe(`docs/fileB.txt`)
-    })
-
-    it('サインインしていない場合', async () => {
-      let actual!: Error
-      try {
-        await await api.removeUserStorageFiles([`docs/fileA.txt`])
-      } catch (err) {
-        actual = err
-      }
-
-      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
     })
   })
 
-  describe('removeUserStorageDir', () => {
+  describe('removeUserStorageDirs', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.uploadTestFiles([
@@ -138,26 +82,35 @@ describe('Storage API', () => {
         { filePath: `${userStorageBasePath}/docs/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
       ])
 
-      const actual = await api.removeUserStorageDir(`docs`)
+      const actual = await api.removeUserStorageDirs([`docs`])
 
       expect(actual.length).toBe(2)
       expect(actual[0].path).toBe(`docs/fileA.txt`)
       expect(actual[1].path).toBe(`docs/fileB.txt`)
-
-      const nodes = await api.userStorageDirNodes()
-
-      expect(nodes.length).toBe(0)
     })
+  })
 
-    it('サインインしていない場合', async () => {
-      let actual!: Error
-      try {
-        await await api.removeUserStorageDir(`docs/fileA.txt`)
-      } catch (err) {
-        actual = err
-      }
+  describe('moveUserStorageDir', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(GENERAL_USER)
+      await api.createUserStorageDirs(['dir1'])
 
-      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
+      const actual = await api.moveUserStorageDir('dir1', 'dir2')
+
+      expect(actual.length).toBe(1)
+      expect(actual[0].path).toBe('dir2')
+    })
+  })
+
+  describe('moveUserStorageFile', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(GENERAL_USER)
+      await api.createUserStorageDirs(['dir1', 'dir2'])
+      await api.uploadTestFiles([{ filePath: `${userStorageBasePath}/dir1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+
+      const actual = await api.moveUserStorageFile('dir1/fileA.txt', 'dir2/fileA.txt')
+
+      expect(actual.path).toBe('dir2/fileA.txt')
     })
   })
 })

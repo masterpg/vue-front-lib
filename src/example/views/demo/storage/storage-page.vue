@@ -239,7 +239,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       if (node.item.nodeType === StorageNodeType.File) {
         nodes = await this.$logic.storage.removeUserStorageFiles([node.value])
       } else if (node.item.nodeType === StorageNodeType.Dir) {
-        nodes = await this.$logic.storage.removeUserStorageDir(node.value)
+        nodes = await this.$logic.storage.removeUserStorageDirs([node.value])
       }
     } catch (err) {
       this.$q.loading.hide()

@@ -64,6 +64,24 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return response.data!.createUserStorageDirs
   }
 
+  async removeUserStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+    const response = await this.mutate<{ removeUserStorageDirs: APIStorageNode[] }>({
+      mutation: gql`
+        mutation RemoveUserStorageDirs($dirPaths: [String!]!) {
+          removeUserStorageDirs(dirPaths: $dirPaths) {
+            nodeType
+            name
+            dir
+            path
+          }
+        }
+      `,
+      variables: { dirPaths },
+      isAuth: true,
+    })
+    return response.data!.removeUserStorageDirs
+  }
+
   async removeUserStorageFiles(filePaths: string[]): Promise<APIStorageNode[]> {
     const response = await this.mutate<{ removeUserStorageFiles: APIStorageNode[] }>({
       mutation: gql`
@@ -82,11 +100,11 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return response.data!.removeUserStorageFiles
   }
 
-  async removeUserStorageDir(dirPath: string): Promise<APIStorageNode[]> {
-    const response = await this.mutate<{ removeUserStorageDir: APIStorageNode[] }>({
+  async moveUserStorageDir(fromDirPath: string, toDirPath: string): Promise<APIStorageNode[]> {
+    const response = await this.mutate<{ moveUserStorageDir: APIStorageNode[] }>({
       mutation: gql`
-        mutation RemoveUserStorageDirNodes($dirPath: String!) {
-          removeUserStorageDir(dirPath: $dirPath) {
+        mutation MoveUserStorageDir($fromDirPath: String!, $toDirPath: String!) {
+          moveUserStorageDir(fromDirPath: $fromDirPath, toDirPath: $toDirPath) {
             nodeType
             name
             dir
@@ -94,10 +112,28 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
           }
         }
       `,
-      variables: { dirPath },
+      variables: { fromDirPath, toDirPath },
       isAuth: true,
     })
-    return response.data!.removeUserStorageDir
+    return response.data!.moveUserStorageDir
+  }
+
+  async moveUserStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode> {
+    const response = await this.mutate<{ moveUserStorageFile: APIStorageNode }>({
+      mutation: gql`
+        mutation MoveUserStorageFile($fromFilePath: String!, $toFilePath: String!) {
+          moveUserStorageFile(fromFilePath: $fromFilePath, toFilePath: $toFilePath) {
+            nodeType
+            name
+            dir
+            path
+          }
+        }
+      `,
+      variables: { fromFilePath, toFilePath },
+      isAuth: true,
+    })
+    return response.data!.moveUserStorageFile
   }
 
   async getSignedUploadUrls(inputs: { filePath: string; contentType?: string }[]): Promise<string[]> {
