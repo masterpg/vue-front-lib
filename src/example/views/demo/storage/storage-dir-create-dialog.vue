@@ -26,7 +26,8 @@
           v-model="m_inputDirName"
           class="app-pb-20"
           :label="m_parentPath"
-          :rules="m_dirNameRules"
+          :error="m_isError"
+          :error-message="m_errorMessage"
           @input="m_dirNameInputOnInput()"
         >
           <template v-slot:prepend>
@@ -63,11 +64,7 @@ export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNo
   //
   //----------------------------------------------------------------------
 
-  private m_inputDirName: string = ''
-
-  private m_dirNameRules = [val => !val.includes('/') || this.$t('storage.slashIsUnusable')]
-
-  private m_dirNameIsRequired = val => !!val || this.$t('storage.folderNameIsRequired')
+  private m_inputDirName: string | null = null
 
   private m_parentNode: AddingDirParentNode = {} as any
 
@@ -81,6 +78,27 @@ export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNo
       return `${storageNode.label}/${this.m_parentNode.value}/`
     }
   }
+
+  private get m_isError(): boolean {
+    if (this.m_inputDirName !== null && this.m_inputDirName === '') {
+      const target = String(this.$t('storage.folderName'))
+      this.m_errorMessage = String(this.$t('error.required', { target }))
+      return true
+    }
+
+    if (this.m_inputDirName) {
+      const matched = this.m_inputDirName.match(/\r?\n|\t|\//g)
+      if (matched) {
+        this.m_errorMessage = String(this.$t('error.unusable', { target: matched[0] }))
+        return true
+      }
+    }
+
+    this.m_errorMessage = ''
+    return false
+  }
+
+  private m_errorMessage: string = ''
 
   //--------------------------------------------------
   //  Elements
@@ -114,8 +132,7 @@ export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNo
   //----------------------------------------------------------------------
 
   private async m_create(): Promise<void> {
-    this.m_addRequiredToDirName()
-    if (this.m_dirNameInput.hasError) return
+    if (this.m_isError) return
 
     let dirPath = ''
     const storageNode = this.m_parentNode.getRootNode()
@@ -128,23 +145,8 @@ export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNo
   }
 
   private m_clear(): void {
-    this.m_inputDirName = ''
-    this.m_removeRequiredFromDirName()
+    this.m_inputDirName = null
     this.m_dirNameInput.resetValidation()
-  }
-
-  private m_addRequiredToDirName(): void {
-    if (!this.m_dirNameRules.includes(this.m_dirNameIsRequired)) {
-      this.m_dirNameRules.push(this.m_dirNameIsRequired)
-    }
-    this.m_dirNameInput.validate()
-  }
-
-  private m_removeRequiredFromDirName(): void {
-    const index = this.m_dirNameRules.indexOf(this.m_dirNameIsRequired)
-    if (index >= 0) {
-      this.m_dirNameRules.splice(index, 1)
-    }
   }
 
   //----------------------------------------------------------------------
@@ -153,9 +155,7 @@ export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNo
   //
   //----------------------------------------------------------------------
 
-  private m_dirNameInputOnInput() {
-    this.m_addRequiredToDirName()
-  }
+  private m_dirNameInputOnInput() {}
 
   private m_dialogOnShow() {
     this.m_clear()

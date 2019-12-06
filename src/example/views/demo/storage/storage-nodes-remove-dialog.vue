@@ -54,7 +54,7 @@ export default class StorageNodesRemoveDialog extends BaseDialog<RemovingNodes, 
 
   private get m_message(): string {
     if (this.m_nodes.length === 1) {
-      return String(this.$t('storage.deleteItemQ', { name: this.m_nodes[0].label }))
+      return String(this.$t('storage.deleteItemQ', { target: this.m_nodes[0].label }))
     }
 
     let fileNum = 0

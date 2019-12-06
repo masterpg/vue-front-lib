@@ -22,7 +22,7 @@ export default merge(require('@/lib/lang/ja').default, {
     creationFolderFailed: 'フォルダの作成に失敗しました。',
     deletionItemsFailed: 'アイテムの削除に失敗しました。',
     deleteItems: 'アイテム削除',
-    deleteItemQ: '"{name}"を削除してよろしいですか？',
+    deleteItemQ: '「{target}」を削除してよろしいですか？',
     deleteFilesQ: '{fileNum}個のファイルを削除してよろしいですか？',
     deleteFoldersQ: '{folderNum}個のフォルダを削除してよろしいですか？',
     deleteFilesAndFoldersQ: '{fileNum}個のファイルと{folderNum}個のフォルダを削除してよろしいですか？',

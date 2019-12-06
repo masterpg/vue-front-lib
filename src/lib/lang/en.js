@@ -9,6 +9,8 @@ export default {
     systemError: 'System error',
   },
   error: {
+    required: '"{target}" is a required.',
+    unusable: '"{target}" cannot be used.',
     unexpected: 'An unexpected error has occurred.',
   },
   sw: {

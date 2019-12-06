@@ -9,6 +9,8 @@ export default {
     systemError: 'システムエラー',
   },
   error: {
+    required: '「{target}」は必須です。',
+    unusable: '「{target}」は使用できません。',
     unexpected: '予期しないエラーが発生しました。',
   },
   sw: {
