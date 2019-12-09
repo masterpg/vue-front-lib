@@ -258,7 +258,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
       node.parent.removeChild(node)
     } else {
       // 親がない場合、ツリービューが親
-      node.treeView.removeNode(node.value)
+      this.removeNode(node.value)
     }
 
     // ノード挿入位置を決定
