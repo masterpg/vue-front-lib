@@ -27,6 +27,7 @@
 import { ChildrenSortFunc, CompTreeNodeData } from './types'
 import { BaseComponent } from '../../../base/component'
 import CompTreeNode from './comp-tree-node.vue'
+import CompTreeNodeItem from './comp-tree-node-item.vue'
 import { CompTreeViewUtils } from './comp-tree-view-utils'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '../../../base/decorators'
@@ -101,7 +102,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
    * ツリービューが管理する全ノードのマップです。
    * key: ノードを特定するための値, value: ノード
    */
-  private m_allNodes: { [key: string]: CompTreeNode } = {}
+  private m_allNodeMap: { [key: string]: CompTreeNode } = {}
 
   /**
    * ツリービューの最小幅です。
@@ -212,8 +213,20 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
    * ノードを特定するためのvalueと一致するノードを取得します。
    * @param value ノードを特定するための値
    */
-  getNode(value: string): CompTreeNode | undefined {
-    return this.m_allNodes[value]
+  getNode<NodeItem extends CompTreeNodeItem = CompTreeNodeItem>(value: string): CompTreeNode<NodeItem> | undefined {
+    return this.m_allNodeMap[value]
+  }
+
+  /**
+   * ツリービューの全ノードをツリー構造から平坦化した配列形式で取得します。
+   */
+  getAllNodes<NodeItem extends CompTreeNodeItem = CompTreeNodeItem>(): CompTreeNode<NodeItem>[] {
+    const result: CompTreeNode[] = []
+    for (const child of this.m_children) {
+      result.push(child)
+      result.push(...CompTreeViewUtils.getDescendants(child))
+    }
+    return result
   }
 
   //----------------------------------------------------------------------
@@ -369,7 +382,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
     e.stopImmediatePropagation()
 
     const node = e.target.__vue__ as CompTreeNode
-    this.m_allNodes[node.value] = node
+    this.m_allNodeMap[node.value] = node
 
     // ノードが発火する独自イベントの設定
     for (const eventName of node.extraEventNames) {
@@ -404,9 +417,9 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
 
     const node = e.detail.node as CompTreeNode
     for (const descendant of CompTreeViewUtils.getDescendants(node)) {
-      delete this.m_allNodes[descendant.value]
+      delete this.m_allNodeMap[descendant.value]
     }
-    delete this.m_allNodes[node.value]
+    delete this.m_allNodeMap[node.value]
   }
 
   /**
@@ -420,8 +433,8 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
     const detail = e.detail as CompTreeViewUtils.NodePropertyChangeDetail
 
     if (detail.property === 'value') {
-      delete this.m_allNodes[detail.oldValue]
-      this.m_allNodes[detail.newValue] = node
+      delete this.m_allNodeMap[detail.oldValue]
+      this.m_allNodeMap[detail.newValue] = node
     }
   }
 

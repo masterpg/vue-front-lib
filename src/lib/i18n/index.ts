@@ -5,26 +5,36 @@ import { dateTimeFormats } from './date-time-formats'
 
 Vue.use(VueI18n)
 
-/**
- * 以下のソースコードをコピーして一部改変:
- * node_modules/vue-i18n/dist/vue-i18n.esm.js
- *
- * 改変理由:
- * comp-tree-viewはコンポーネントのインスタンス化をテンプレートに記述するのではなく
- * プログラムでnewしている。プログラムでnewした場合、$i18nのようにインジェクション
- * されないライブラリが存在する。この対応として$i18nがインジェクションされていない場合、
- * 以下のようにアプリケーションがインスタンス化したi18nを使用するよう改変している。
- */
+//
+// 以下のソースコードをコピーして一部改変:
+// node_modules/vue-i18n/dist/vue-i18n.esm.js
+//
+// 改変理由:
+// comp-tree-viewはコンポーネントのインスタンス化をテンプレートに記述するのではなく
+// プログラムでnewしている。プログラムでnewした場合、$i18nのようにインジェクション
+// されないライブラリが存在する。この対応として$i18nがインジェクションされていない場合、
+// 以下のようにアプリケーションがインスタンス化したi18nを使用するよう改変している。
+//
+
+/* eslint-disable */
 Vue.prototype.$t = function(key) {
-  const values: any[] = []
-  let len = arguments.length - 1
-  // eslint-disable-next-line prefer-rest-params
+  var values: any[] = [],
+    len = arguments.length - 1
   while (len-- > 0) values[len] = arguments[len + 1]
 
-  const currentI18n = this.$i18n || i18n
-  // eslint-disable-next-line prefer-spread
+  var currentI18n = this.$i18n || i18n
   return currentI18n._t.apply(currentI18n, [key, currentI18n.locale, currentI18n._getMessages(), this].concat(values))
 }
+
+Vue.prototype.$tc = function(key, choice) {
+  var values: any[] = [],
+    len = arguments.length - 2
+  while (len-- > 0) values[len] = arguments[len + 2]
+
+  var currentI18n = this.$i18n || i18n
+  return currentI18n._tc.apply(currentI18n, [key, currentI18n.locale, currentI18n._getMessages(), this, choice].concat(values))
+}
+/* eslint-disable */
 
 //========================================================================
 //

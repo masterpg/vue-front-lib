@@ -21,7 +21,7 @@
 
       <!-- コンテンツエリア -->
       <q-card-section>
-        <q-input ref="dirNameInput" v-model="m_dirName" class="app-pb-20" :label="m_parentPath" :error="m_isError" :error-message="m_errorMessage">
+        <q-input ref="newNameInput" v-model="m_newName" class="app-pb-20" :label="m_parentPath" :error="m_isError" :error-message="m_errorMessage">
           <template v-slot:prepend>
             <q-icon name="folder" />
           </template>
@@ -33,7 +33,7 @@
         <!-- CANCELボタン -->
         <q-btn flat rounded color="primary" :label="$t('common.cancel')" @click="close()" />
         <!-- CREATEボタン -->
-        <q-btn flat rounded color="primary" :label="$t('common.create')" @click="m_create()" />
+        <q-btn flat rounded color="primary" :label="$t('common.ok')" @click="m_rename()" />
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -41,15 +41,13 @@
 
 <script lang="ts">
 import * as path from 'path'
-import { BaseDialog, CompTreeNode, NoCache } from '@/lib'
+import { BaseDialog, CompTreeNode, NoCache, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QInput } from 'quasar'
 import StorageTreeNodeItem from '@/example/views/demo/storage/storage-tree-node-item.vue'
 
-type AddingDirParentNode = CompTreeNode<StorageTreeNodeItem>
-
 @Component
-export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNode, string> {
+export default class StorageNodeRenameDialog extends BaseDialog<CompTreeNode<StorageTreeNodeItem>, string> {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -57,34 +55,30 @@ export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNo
   //----------------------------------------------------------------------
 
   private get m_title(): string {
-    const nodeTypeName = this.$t('common.folder')
-    return String(this.$t('common.createSomehow', { somehow: nodeTypeName }))
+    if (!this.params) return ''
+    return String(this.$t('common.renameSomehow', { somehow: this.params.item.nodeTypeName }))
   }
 
-  private m_dirName: string | null = null
+  private m_newName: string | null = null
 
   private get m_parentPath(): string {
     if (!this.params) return ''
 
     const storageNode = this.params.getRootNode()
-    if (storageNode === this.params) {
-      return path.join(this.params.label, '/')
-    } else {
-      return path.join(storageNode.label, this.params.value, '/')
-    }
+    return path.join(storageNode.label, this.params.parent!.value, '/')
   }
 
   private get m_isError(): boolean {
     if (!this.params) return false
 
-    if (this.m_dirName !== null && this.m_dirName === '') {
+    if (this.m_newName !== null && this.m_newName === '') {
       const target = String(this.$t('common.somehowName', { somehow: this.params.item.nodeTypeName }))
       this.m_errorMessage = String(this.$t('error.required', { target }))
       return true
     }
 
-    if (this.m_dirName) {
-      const matched = this.m_dirName.match(/\r?\n|\t|\//g)
+    if (this.m_newName) {
+      const matched = this.m_newName.match(/\r?\n|\t|\//g)
       if (matched) {
         this.m_errorMessage = String(this.$t('error.unusable', { target: matched[0] }))
         return true
@@ -102,8 +96,8 @@ export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNo
   //--------------------------------------------------
 
   @NoCache
-  private get m_dirNameInput(): QInput {
-    return this.$refs.dirNameInput as any
+  private get m_newNameInput(): QInput {
+    return this.$refs.newNameInput as any
   }
 
   //----------------------------------------------------------------------
@@ -112,13 +106,14 @@ export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNo
   //
   //----------------------------------------------------------------------
 
-  open(parentNode: AddingDirParentNode): Promise<string> {
-    return this.openProcess(parentNode)
+  open(targetNode: CompTreeNode<StorageTreeNodeItem>): Promise<string> {
+    this.m_newName = targetNode.label
+    return this.openProcess(targetNode)
   }
 
-  close(dirPath?: string): void {
+  close(newName?: string): void {
     this.m_clear()
-    this.closeProcess(dirPath || '')
+    this.closeProcess(newName || '')
   }
 
   //----------------------------------------------------------------------
@@ -127,22 +122,22 @@ export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNo
   //
   //----------------------------------------------------------------------
 
-  private async m_create(): Promise<void> {
+  private async m_rename(): Promise<void> {
     if (this.m_isError) return
 
-    let dirPath = ''
-    const storageNode = this.params!.getRootNode()
-    if (storageNode === this.params) {
-      dirPath = path.join(this.m_dirName!, '/')
-    } else {
-      dirPath = path.join(this.params!.value, this.m_dirName!, '/')
+    // 入力値が元のままの場合、キャンセルとして閉じる
+    if (this.params!.label === this.m_newName) {
+      this.close('')
     }
-    this.close(dirPath)
+    // 上記以外は入力値を結果にして閉じる
+    else {
+      this.close(this.m_newName!)
+    }
   }
 
   private m_clear(): void {
-    this.m_dirName = null
-    this.m_dirNameInput.resetValidation()
+    this.m_newName = null
+    this.m_newNameInput.resetValidation()
   }
 
   //----------------------------------------------------------------------
@@ -152,7 +147,8 @@ export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNo
   //----------------------------------------------------------------------
 
   private m_dialogOnShow() {
-    this.m_dirNameInput.focus()
+    this.m_newNameInput.focus()
+    this.m_newNameInput.select()
   }
 }
 </script>

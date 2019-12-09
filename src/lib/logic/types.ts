@@ -16,9 +16,13 @@ export interface StorageLogic {
 
   createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 
+  removeUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
+
   removeUserStorageFiles(filePaths: string[]): Promise<StorageNode[]>
 
-  removeUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
+  renameUserStorageDir(dirPath: string, newName: string): Promise<StorageNode[]>
+
+  renameUserStorageFile(filePath: string, newName: string): Promise<StorageNode>
 
   newUserUploadManager(owner: Element): StorageUploadManager
 

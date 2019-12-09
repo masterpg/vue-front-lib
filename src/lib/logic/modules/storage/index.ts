@@ -44,6 +44,16 @@ export class StorageLogicImpl extends BaseLogic implements StorageLogic {
     return store.storage.addList(gqlNodes)
   }
 
+  async removeUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
+    const gqlNodes = await api.removeUserStorageDirs(dirPaths)
+    const result: StorageNode[] = []
+    for (const gqlNode of gqlNodes) {
+      const removedNodes = store.storage.remove(gqlNode.path)
+      removedNodes && result.push(...removedNodes)
+    }
+    return result
+  }
+
   async removeUserStorageFiles(filePaths: string[]): Promise<StorageNode[]> {
     const gqlNodes = await api.removeUserStorageFiles(filePaths)
     const result: StorageNode[] = []
@@ -54,14 +64,14 @@ export class StorageLogicImpl extends BaseLogic implements StorageLogic {
     return result
   }
 
-  async removeUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
-    const gqlNodes = await api.removeUserStorageDirs(dirPaths)
-    const result: StorageNode[] = []
-    for (const gqlNode of gqlNodes) {
-      const removedNodes = store.storage.remove(gqlNode.path)
-      removedNodes && result.push(...removedNodes)
-    }
-    return result
+  async renameUserStorageDir(dirPath: string, newName: string): Promise<StorageNode[]> {
+    await api.renameUserStorageDir(dirPath, newName)
+    return store.storage.rename(dirPath, newName)
+  }
+
+  async renameUserStorageFile(filePath: string, newName: string): Promise<StorageNode> {
+    await api.renameUserStorageFile(filePath, newName)
+    return store.storage.rename(filePath, newName)[0]
   }
 
   newUserUploadManager(owner: Element): StorageUploadManager {

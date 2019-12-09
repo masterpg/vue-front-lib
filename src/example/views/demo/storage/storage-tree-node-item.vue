@@ -30,25 +30,36 @@
             <q-item-section @click="m_dispatchReloadSelected()">{{ $t('common.reload') }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
-            <q-item-section @click="m_dispatchCreateDirSelected()">{{ $t('storage.createFolder') }}</q-item-section>
+            <q-item-section @click="m_dispatchCreateDirSelected()">{{ $t('common.createSomehow', { somehow: $t('common.folder') }) }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
-            <q-item-section @click="m_dispatchFilesUploadSelected()">{{ $t('storage.uploadFiles') }}</q-item-section>
+            <q-item-section @click="m_dispatchFilesUploadSelected()">{{
+              $t('storage.uploadNode', { nodeType: $tc('common.file', 2) })
+            }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
-            <q-item-section @click="m_dispatchDirUploadSelected()">{{ $t('storage.uploadFolder') }}</q-item-section>
+            <q-item-section @click="m_dispatchDirUploadSelected()">{{
+              $t('storage.uploadNode', { nodeType: $tc('common.folder', 1) })
+            }}</q-item-section>
           </q-item>
         </q-list>
         <!-- フォルダ用メニュー -->
         <q-list v-show="m_isDir" dense style="min-width: 100px">
           <q-item v-close-popup clickable>
-            <q-item-section @click="m_dispatchCreateDirSelected()">{{ $t('storage.createFolder') }}</q-item-section>
+            <q-item-section @click="m_dispatchCreateDirSelected()">{{ $t('common.createSomehow', { somehow: $t('common.folder') }) }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
-            <q-item-section @click="m_dispatchFilesUploadSelected()">{{ $t('storage.uploadFiles') }}</q-item-section>
+            <q-item-section @click="m_dispatchFilesUploadSelected()">{{
+              $t('storage.uploadNode', { nodeType: $tc('common.file', 2) })
+            }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
-            <q-item-section @click="m_dispatchDirUploadSelected()">{{ $t('storage.uploadFolder') }}</q-item-section>
+            <q-item-section @click="m_dispatchDirUploadSelected()">{{
+              $t('storage.uploadNode', { nodeType: $tc('common.folder', 1) })
+            }}</q-item-section>
+          </q-item>
+          <q-item v-close-popup clickable>
+            <q-item-section @click="m_dispatchRenameSelected()">{{ $t('common.rename') }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
             <q-item-section @click="m_dispatchDeleteSelected()">{{ $t('common.delete') }}</q-item-section>
@@ -56,6 +67,9 @@
         </q-list>
         <!-- ファイル用メニュー -->
         <q-list v-show="m_isFile" dense style="min-width: 100px">
+          <q-item v-close-popup clickable>
+            <q-item-section @click="m_dispatchRenameSelected()">{{ $t('common.rename') }}</q-item-section>
+          </q-item>
           <q-item v-close-popup clickable>
             <q-item-section @click="m_dispatchDeleteSelected()">{{ $t('common.delete') }}</q-item-section>
           </q-item>
@@ -83,7 +97,7 @@ export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNod
   }
 
   get extraEventNames(): string[] {
-    return ['reload-selected', 'create-dir-selected', 'files-upload-selected', 'dir-upload-selected', 'delete-selected']
+    return ['reload-selected', 'create-dir-selected', 'files-upload-selected', 'dir-upload-selected', 'rename-selected', 'delete-selected']
   }
 
   //----------------------------------------------------------------------
@@ -96,6 +110,16 @@ export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNod
 
   get nodeType(): StorageNodeType | 'Storage' {
     return this.m_nodeType
+  }
+
+  get nodeTypeName(): string {
+    if (this.nodeType === 'Storage') {
+      return 'Storage'
+    } else if (this.nodeType === StorageNodeType.Dir) {
+      return String(this.$t('common.folder'))
+    } else {
+      return String(this.$t('common.file'))
+    }
   }
 
   //----------------------------------------------------------------------
@@ -146,6 +170,10 @@ export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNod
 
   private m_dispatchDirUploadSelected(): void {
     this.m_dispatchEvent('dir-upload-selected')
+  }
+
+  private m_dispatchRenameSelected(): void {
+    this.m_dispatchEvent('rename-selected')
   }
 
   private m_dispatchDeleteSelected(): void {

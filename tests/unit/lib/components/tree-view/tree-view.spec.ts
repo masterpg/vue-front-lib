@@ -725,6 +725,50 @@ describe('CompTreeView', () => {
     })
   })
 
+  describe('getAllNodes()', () => {
+    it('ベーシックケース', () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      treeView.buildTree(cloneDeep(baseNodeDataList))
+
+      const actual = treeView.getAllNodes()
+
+      expect(actual.length).toBe(6)
+      expect(actual[0].value).toBe('node1')
+      expect(actual[1].value).toBe('node1_1')
+      expect(actual[2].value).toBe('node1_1_1')
+      expect(actual[3].value).toBe('node1_1_2')
+      expect(actual[4].value).toBe('node1_1_3')
+      expect(actual[5].value).toBe('node2')
+    })
+
+    it('ノードの位置を変更した場合', () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      treeView.buildTree(cloneDeep(baseNodeDataList))
+
+      // node1とnode2の位置を入れ替え
+      const node1 = treeView.getNode('node1')
+      treeView.addChild(node1, { insertIndex: 1 })
+
+      // node1_1_1とnode1_1_2の位置を入れ替え
+      const node1_1 = treeView.getNode('node1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')
+      node1_1.addChild(node1_1_1, { insertIndex: 1 })
+
+      const actual = treeView.getAllNodes()
+
+      // 入れ替えた位置関係が反映されていることを検証
+      expect(actual.length).toBe(6)
+      expect(actual[0].value).toBe('node2')
+      expect(actual[1].value).toBe('node1')
+      expect(actual[2].value).toBe('node1_1')
+      expect(actual[3].value).toBe('node1_1_2')
+      expect(actual[4].value).toBe('node1_1_1')
+      expect(actual[5].value).toBe('node1_1_3')
+    })
+  })
+
   it('ノードのvalueが空文字("")の場合', () => {
     const wrapper = mount(CompTreeView)
     const treeView = wrapper.vm as CompTreeView | any
@@ -1093,6 +1137,24 @@ describe('CompTreeNode', () => {
       }
 
       verifyTreeView(treeView)
+    })
+  })
+
+  describe('getDescendants()', () => {
+    it('ベーシックケース', () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      treeView.buildTree(cloneDeep(baseNodeDataList))
+
+      const node1_1 = treeView.getNode('node1')!
+
+      const actual = node1_1.getDescendants()
+
+      expect(actual.length).toBe(4)
+      expect(actual[0].value).toBe('node1_1')
+      expect(actual[1].value).toBe('node1_1_1')
+      expect(actual[2].value).toBe('node1_1_2')
+      expect(actual[3].value).toBe('node1_1_3')
     })
   })
 

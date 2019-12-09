@@ -136,6 +136,42 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return response.data!.moveUserStorageFile
   }
 
+  async renameUserStorageDir(dirPath: string, newName: string): Promise<APIStorageNode[]> {
+    const response = await this.mutate<{ renameUserStorageDir: APIStorageNode[] }>({
+      mutation: gql`
+        mutation RenameUserStorageDir($dirPath: String!, $newName: String!) {
+          renameUserStorageDir(dirPath: $dirPath, newName: $newName) {
+            nodeType
+            name
+            dir
+            path
+          }
+        }
+      `,
+      variables: { dirPath, newName },
+      isAuth: true,
+    })
+    return response.data!.renameUserStorageDir
+  }
+
+  async renameUserStorageFile(filePath: string, newName: string): Promise<APIStorageNode> {
+    const response = await this.mutate<{ renameUserStorageFile: APIStorageNode }>({
+      mutation: gql`
+        mutation RenameUserStorageFile($filePath: String!, $newName: String!) {
+          renameUserStorageFile(filePath: $filePath, newName: $newName) {
+            nodeType
+            name
+            dir
+            path
+          }
+        }
+      `,
+      variables: { filePath, newName },
+      isAuth: true,
+    })
+    return response.data!.renameUserStorageFile
+  }
+
   async getSignedUploadUrls(inputs: { filePath: string; contentType?: string }[]): Promise<string[]> {
     const response = await this.query<{ signedUploadUrls: string[] }>({
       query: gql`

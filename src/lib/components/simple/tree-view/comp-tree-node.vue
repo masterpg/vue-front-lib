@@ -385,7 +385,7 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
    * ノードを編集するためのデータを設定します。
    * @param editData
    */
-  setNodeData(editData: CompTreeNodeEditData): void {
+  setNodeData<NodeData extends CompTreeNodeEditData = CompTreeNodeEditData>(editData: NodeData): void {
     this.item.setNodeData(editData)
 
     if (isString(editData.icon)) {
@@ -403,6 +403,13 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
         this.close(false)
       }
     }
+  }
+
+  /**
+   * 子孫ノードを取得します。
+   */
+  getDescendants(): CompTreeNode[] {
+    return CompTreeViewUtils.getDescendants(this)
   }
 
   //----------------------------------------------------------------------

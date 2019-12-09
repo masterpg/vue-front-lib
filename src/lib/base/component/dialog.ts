@@ -6,8 +6,8 @@ import { mixins } from 'vue-class-component'
 /**
  * ダイアログのインタフェースです。
  */
-export interface Dialog<PARAM = void, RESULT = void> extends Vue {
-  open(param: PARAM): Promise<RESULT>
+export interface Dialog<PARAMS = void, RESULT = void> extends Vue {
+  open(params: PARAMS): Promise<RESULT>
 
   close(result: RESULT): void
 }
@@ -15,7 +15,7 @@ export interface Dialog<PARAM = void, RESULT = void> extends Vue {
 /**
  * ダイアログの基底クラスです。
  */
-export abstract class BaseDialog<PARAM = void, RESULT = void> extends mixins(BaseComponent, Resizable) implements Dialog<PARAM, RESULT> {
+export abstract class BaseDialog<PARAMS = void, RESULT = void> extends mixins(BaseComponent, Resizable) implements Dialog<PARAMS, RESULT> {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -23,6 +23,8 @@ export abstract class BaseDialog<PARAM = void, RESULT = void> extends mixins(Bas
   //----------------------------------------------------------------------
 
   protected opened: boolean = false
+
+  protected params: PARAMS | null = null
 
   private m_dialogResolver: ((value: RESULT) => void) | null = null
 
@@ -32,7 +34,7 @@ export abstract class BaseDialog<PARAM = void, RESULT = void> extends mixins(Bas
   //
   //----------------------------------------------------------------------
 
-  abstract open(param: PARAM): Promise<RESULT>
+  abstract open(params: PARAMS): Promise<RESULT>
 
   abstract close(result: RESULT): void
 
@@ -42,7 +44,8 @@ export abstract class BaseDialog<PARAM = void, RESULT = void> extends mixins(Bas
   //
   //----------------------------------------------------------------------
 
-  protected openProcess(param: PARAM): Promise<RESULT> {
+  protected openProcess(params: PARAMS): Promise<RESULT> {
+    this.params = params
     return new Promise(resolve => {
       this.m_dialogResolver = resolve
       this.opened = true
@@ -51,6 +54,7 @@ export abstract class BaseDialog<PARAM = void, RESULT = void> extends mixins(Bas
 
   protected closeProcess(value: RESULT): void {
     this.m_dialogResolver && this.m_dialogResolver!(value)
+    this.params = null
     this.m_dialogResolver = null
     this.opened = false
   }

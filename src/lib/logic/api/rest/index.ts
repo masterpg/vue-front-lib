@@ -18,12 +18,20 @@ export abstract class BaseRESTAPIContainer extends BaseRESTClient implements Lib
     throw new Error(`This method 'createUserStorageDirs' is not implemented.`)
   }
 
+  async removeUserStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+    throw new Error(`This method 'removeUserStorageDir' is not implemented.`)
+  }
+
   async removeUserStorageFiles(filePaths: string[]): Promise<APIStorageNode[]> {
     throw new Error(`This method 'removeUserStorageFiles' is not implemented.`)
   }
 
-  async removeUserStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
-    throw new Error(`This method 'removeUserStorageDir' is not implemented.`)
+  async renameUserStorageDir(dirPath: string, newName: string): Promise<APIStorageNode[]> {
+    throw new Error(`This method 'renameUserStorageDir' is not implemented.`)
+  }
+
+  async renameUserStorageFile(filePath: string, newName: string): Promise<APIStorageNode> {
+    throw new Error(`This method 'renameUserStorageFile' is not implemented.`)
   }
 
   async getSignedUploadUrls(inputs: { filePath: string; contentType?: string }[]): Promise<string[]> {

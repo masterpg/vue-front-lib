@@ -1,7 +1,10 @@
+import * as _path from 'path'
 import { StorageModule, StorageNode, StorageNodeType, StorageState } from '../../types'
 import { BaseModule } from '../../base'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '../../../../base/decorators'
+import { removeBothEndsSlash } from 'web-base-lib'
+const isString = require('lodash/isString')
 
 @Component
 export class StorageModuleImpl extends BaseModule<StorageState> implements StorageModule {
@@ -35,6 +38,26 @@ export class StorageModuleImpl extends BaseModule<StorageState> implements Stora
   //
   //----------------------------------------------------------------------
 
+  get(path: string): StorageNode | undefined {
+    for (const node of this.state.all) {
+      if (node.path === path) {
+        return node
+      }
+    }
+    return undefined
+  }
+
+  getDescendants(path: string): StorageNode[] {
+    path = removeBothEndsSlash(path)
+    const result: StorageNode[] = []
+    for (const node of this.state.all) {
+      if (node.dir.startsWith(path)) {
+        result.push(node)
+      }
+    }
+    return result
+  }
+
   getMap(): { [path: string]: StorageNode } {
     const result: { [path: string]: StorageNode } = {}
     for (const node of this.state.all) {
@@ -62,15 +85,6 @@ export class StorageModuleImpl extends BaseModule<StorageState> implements Stora
     })
   }
 
-  clone(value: StorageNode): StorageNode {
-    return {
-      nodeType: value.nodeType,
-      name: value.name,
-      dir: value.dir,
-      path: value.path,
-    }
-  }
-
   remove(path: string): StorageNode[] {
     const result: StorageNode[] = []
     for (let i = 0; i < this.state.all.length; i++) {
@@ -81,6 +95,57 @@ export class StorageModuleImpl extends BaseModule<StorageState> implements Stora
       }
     }
     return result
+  }
+
+  rename(path: string, newName: string): StorageNode[] {
+    path = removeBothEndsSlash(path)
+    const target = this.get(path)
+    if (!target) {
+      throw new Error(`The specified node was not found: '${path}'`)
+    }
+
+    const result: StorageNode[] = []
+
+    target.name = newName
+    target.path = _path.join(target.dir, newName)
+    result.push(this.clone(target))
+
+    if (target.nodeType === StorageNodeType.File) {
+      return result
+    }
+
+    const descendants = this.getDescendants(path)
+    for (const descendant of descendants) {
+      const reg = new RegExp(`^${path}`)
+      descendant.dir = descendant.dir.replace(reg, target.path)
+      descendant.path = _path.join(descendant.dir, descendant.name)
+      result.push(this.clone(descendant))
+    }
+
+    return result
+  }
+
+  set(node: Partial<Omit<StorageNode, 'path'>> & { path: string }, newPath?: string): StorageNode {
+    const target = this.get(node.path)
+    if (!target) {
+      throw new Error(`The specified node was not found: '${node.path}'`)
+    }
+
+    if (node.nodeType) target.nodeType = node.nodeType
+    if (isString(node.name)) target.name = node.name!
+    if (isString(node.dir)) target.dir = node.dir!
+    if (isString(newPath)) target.path = newPath!
+
+    return this.clone(target)
+  }
+
+  clone(value: StorageNode): StorageNode {
+    return {
+      nodeType: value.nodeType,
+      name: value.name,
+      dir: value.dir,
+      path: value.path,
+    }
   }
 
   sort(values: StorageNode[]): void {

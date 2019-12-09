@@ -113,4 +113,28 @@ describe('Storage API', () => {
       expect(actual.path).toBe('dir2/fileA.txt')
     })
   })
+
+  describe('renameUserStorageDir', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(GENERAL_USER)
+      await api.createUserStorageDirs(['dir1'])
+
+      const actual = await api.renameUserStorageDir('dir1', 'dir2')
+
+      expect(actual.length).toBe(1)
+      expect(actual[0].path).toBe('dir2')
+    })
+  })
+
+  describe('renameUserStorageFile', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(GENERAL_USER)
+      await api.createUserStorageDirs(['dir1'])
+      await api.uploadTestFiles([{ filePath: `${userStorageBasePath}/dir1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+
+      const actual = await api.moveUserStorageFile('dir1/fileA.txt', 'dir1/fileB.txt')
+
+      expect(actual.path).toBe('dir1/fileB.txt')
+    })
+  })
 })

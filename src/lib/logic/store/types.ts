@@ -19,6 +19,10 @@ export interface UserModule extends User {
 export interface StorageModule {
   readonly all: StorageNode[]
 
+  get(path: string): StorageNode | undefined
+
+  getDescendants(path: string): StorageNode[]
+
   getMap(): { [path: string]: StorageNode }
 
   add(value: StorageNode): StorageNode
@@ -27,9 +31,13 @@ export interface StorageModule {
 
   setAll(values: StorageNode[]): void
 
-  clone(value: StorageNode): StorageNode
-
   remove(path: string): StorageNode[]
+
+  rename(path: string, newName: string): StorageNode[]
+
+  set(node: Partial<Omit<StorageNode, 'path'>> & { path: string }, newPath?: string): StorageNode
+
+  clone(value: StorageNode): StorageNode
 
   /**
    * ノード配列をディレクトリ階層に従ってソートします。

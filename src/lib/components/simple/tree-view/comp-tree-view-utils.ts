@@ -34,8 +34,8 @@ export namespace CompTreeViewUtils {
 
     const result: CompTreeNode[] = []
     for (const child of (node as any).children) {
-      result.push(...getChildren(child))
       result.push(child)
+      result.push(...getChildren(child))
     }
     return result
   }

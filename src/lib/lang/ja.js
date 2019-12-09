@@ -1,12 +1,21 @@
 export default {
   common: {
-    create: '作成',
+    ok: 'OK',
     cancel: 'キャンセル',
+    create: '作成',
+    update: '更新',
     delete: '削除',
     failed: '失敗',
+    rename: '名前変更',
     reload: 'リロード',
     error: 'エラー',
+    folder: 'フォルダ',
+    file: 'ファイル',
     systemError: 'システムエラー',
+    somehowName: '{somehow}名',
+    createSomehow: '{somehow}の作成',
+    deleteSomehow: '{somehow}の削除',
+    renameSomehow: '{somehow}の名前変更',
   },
   error: {
     required: '「{target}」は必須です。',

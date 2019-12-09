@@ -16,7 +16,7 @@
     <q-card class="container" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
       <!-- タイトル -->
       <q-card-section>
-        <div class="title">{{ $t('storage.deleteItems') }}</div>
+        <div class="title">{{ m_title }}</div>
       </q-card-section>
 
       <!-- コンテンツエリア -->
@@ -50,16 +50,21 @@ export default class StorageNodesRemoveDialog extends BaseDialog<RemovingNodes, 
   //
   //----------------------------------------------------------------------
 
-  private m_nodes: RemovingNodes = []
+  private get m_title(): string {
+    if (!this.params) return ''
+    return this.$tc('storage.deleteItem', this.params.length)
+  }
 
   private get m_message(): string {
-    if (this.m_nodes.length === 1) {
-      return String(this.$t('storage.deleteItemQ', { target: this.m_nodes[0].label }))
+    if (!this.params) return ''
+
+    if (this.params.length === 1) {
+      return String(this.$t('storage.deleteItemQ', { target: this.params[0].label }))
     }
 
     let fileNum = 0
     let folderNum = 0
-    for (const node of this.m_nodes) {
+    for (const node of this.params) {
       if (node.item.nodeType === StorageNodeType.Dir) {
         folderNum++
       } else if (node.item.nodeType === StorageNodeType.File) {
@@ -83,7 +88,6 @@ export default class StorageNodesRemoveDialog extends BaseDialog<RemovingNodes, 
   //----------------------------------------------------------------------
 
   open(nodes: RemovingNodes): Promise<boolean> {
-    this.m_nodes = nodes
     return this.openProcess(nodes)
   }
 

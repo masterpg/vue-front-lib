@@ -13,13 +13,17 @@ export interface LibAPIContainer {
 
   createUserStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]>
 
-  removeUserStorageFiles(filePaths: string[]): Promise<APIStorageNode[]>
-
   removeUserStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]>
+
+  removeUserStorageFiles(filePaths: string[]): Promise<APIStorageNode[]>
 
   moveUserStorageDir(fromDirPath: string, toDirPath: string): Promise<APIStorageNode[]>
 
   moveUserStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode>
+
+  renameUserStorageDir(dirPath: string, newName: string): Promise<APIStorageNode[]>
+
+  renameUserStorageFile(filePath: string, newName: string): Promise<APIStorageNode>
 
   getSignedUploadUrls(params: { filePath: string; contentType?: string }[]): Promise<string[]>
 }
