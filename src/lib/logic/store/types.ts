@@ -6,7 +6,7 @@ import { APIStorageNode, APIStorageNodeType as StorageNodeType } from '../api'
 //
 //========================================================================
 
-export interface UserModule extends User {
+export interface UserStore extends User {
   set(user: Partial<User>): void
 
   clear(): void
@@ -16,7 +16,7 @@ export interface UserModule extends User {
   reflectCustomToken(): Promise<void>
 }
 
-export interface StorageModule {
+export interface StorageStore {
   readonly all: StorageNode[]
 
   get(path: string): StorageNode | undefined

@@ -153,7 +153,7 @@ export class StorageTreeStore {
     // ノードの名前が変わった事により、兄弟ノードの並び順も変える必要性がある。
     // ここでは名前変更があったノードを再度addChildしてソートし直している。
     this.m_treeView.addChild(target, {
-      parent: target.parent.value,
+      parent: target.parent!.value,
       sortFunc: this.m_childrenSortFunc,
     })
 

@@ -1,12 +1,12 @@
 import { StorageNode, StorageNodeType, StorageState, store } from '@/lib/logic/store'
-import { StorageModule } from '@/lib/logic/store/types'
-import { TestStoreModule } from '../../../../../../helpers/common/store'
+import { StorageStore } from '@/lib/logic/store/types'
+import { TestStore } from '../../../../../../helpers/common/store'
 import { initLibStore } from '../../../../../../mocks/lib/logic/store'
 const cloneDeep = require('lodash/cloneDeep')
 const isArray = require('lodash/isArray')
 
 initLibStore()
-const storageModule = store.storage as TestStoreModule<StorageState, StorageModule>
+const storageStore = store.storage as TestStore<StorageState, StorageStore>
 
 //========================================================================
 //
@@ -79,7 +79,7 @@ const STORAGE_NODES: StorageNode[] = [d1, d11, fileA, d12, d2, d21, fileB, fileC
 //========================================================================
 
 function getStateNode(path: string): StorageNode | undefined {
-  for (const node of storageModule.state.all) {
+  for (const node of storageStore.state.all) {
     if (node.path === path) {
       return node
     }
@@ -122,16 +122,16 @@ function notExistsNodes(value: StorageNode | StorageNode[]) {
 //========================================================================
 
 beforeEach(async () => {
-  storageModule.initState({
-    all: storageModule.sort(cloneDeep(STORAGE_NODES)),
+  storageStore.initState({
+    all: storageStore.sort(cloneDeep(STORAGE_NODES)),
   })
 })
 
 describe('all', () => {
   it('ベーシックケース', () => {
-    const actual = storageModule.all
+    const actual = storageStore.all
 
-    expect(actual).toEqual(storageModule.state.all)
+    expect(actual).toEqual(storageStore.state.all)
     toBeCopy(actual)
   })
 })
@@ -139,7 +139,7 @@ describe('all', () => {
 describe('get', () => {
   it('ベーシックケース', () => {
     const d11 = getStateNode('d1/d11')!
-    const actual = storageModule.get(d11.path)!
+    const actual = storageStore.get(d11.path)!
 
     expect(actual).toEqual(d11)
     toBeCopy(actual)
@@ -148,7 +148,7 @@ describe('get', () => {
 
 describe('getDescendants', () => {
   it('ベーシックケース', () => {
-    const actual = storageModule.getDescendants('d1')
+    const actual = storageStore.getDescendants('d1')
 
     expect(actual.length).toBe(3)
     expect(actual[0].path).toEqual('d1/d11')
@@ -160,7 +160,7 @@ describe('getDescendants', () => {
 
 describe('getMap', () => {
   it('ベーシックケース', () => {
-    const actual = storageModule.getMap()
+    const actual = storageStore.getMap()
 
     expect(Object.keys(actual).length).toBe(8)
     expect(actual['d1']).toBeDefined()
@@ -191,20 +191,20 @@ describe('setAll', () => {
   }
 
   it('ベーシックケース', () => {
-    storageModule.setAll([fileD, x1])
+    storageStore.setAll([fileD, x1])
 
-    expect(storageModule.all.length).toBe(2)
-    expect(storageModule.get(x1.path)).toEqual(x1)
-    expect(storageModule.get(fileD.path)).toEqual(fileD)
+    expect(storageStore.all.length).toBe(2)
+    expect(storageStore.get(x1.path)).toEqual(x1)
+    expect(storageStore.get(fileD.path)).toEqual(fileD)
     // 追加されたノードがソートされているか検証
-    const sortedAll = storageModule.sort([fileD, x1])
-    expect(storageModule.all).toEqual(sortedAll)
+    const sortedAll = storageStore.sort([fileD, x1])
+    expect(storageStore.all).toEqual(sortedAll)
   })
 })
 
 describe('setList', () => {
   it('pathを変更', () => {
-    const actual = storageModule.setList([
+    const actual = storageStore.setList([
       { path: 'd1', newPath: 'x1' },
       { path: 'd1/d11', newPath: 'x1/x11' },
       { path: 'd1/d11/fileA.txt', newPath: 'x1/x11/fileA.txt' },
@@ -223,14 +223,14 @@ describe('setList', () => {
     existsNodes(actual)
     toBeCopy(actual)
     // 変更されたノードがソートされているか検証
-    const sortedAll = storageModule.sort(storageModule.all)
-    expect(storageModule.all).toEqual(sortedAll)
+    const sortedAll = storageStore.sort(storageStore.all)
+    expect(storageStore.all).toEqual(sortedAll)
   })
 
   it('存在しないpathを指定した場合', () => {
     let actual: Error
     try {
-      storageModule.setList([{ path: 'dXXX', newPath: 'dYYY' }])
+      storageStore.setList([{ path: 'dXXX', newPath: 'dYYY' }])
     } catch (err) {
       actual = err
     }
@@ -255,15 +255,15 @@ describe('addList', () => {
   }
 
   it('ベーシックケース', () => {
-    const actual = storageModule.addList([d22, fileD])
+    const actual = storageStore.addList([d22, fileD])
 
     expect(actual[0]).toEqual(d22)
     expect(actual[1]).toEqual(fileD)
     existsNodes(actual)
     toBeCopy(actual)
     // 追加されたノードがソートされているか検証
-    const sortedAll = storageModule.sort([...STORAGE_NODES, d22, fileD])
-    expect(storageModule.all).toEqual(sortedAll)
+    const sortedAll = storageStore.sort([...STORAGE_NODES, d22, fileD])
+    expect(storageStore.all).toEqual(sortedAll)
   })
 })
 
@@ -276,20 +276,20 @@ describe('add', () => {
   }
 
   it('ベーシックケース', () => {
-    const actual = storageModule.add(fileD)
+    const actual = storageStore.add(fileD)
 
     expect(actual).toEqual(fileD)
     existsNodes(actual)
     toBeCopy(actual)
     // 追加されたノードがソートされているか検証
-    const sortedAll = storageModule.sort([...STORAGE_NODES, fileD])
-    expect(storageModule.all).toEqual(sortedAll)
+    const sortedAll = storageStore.sort([...STORAGE_NODES, fileD])
+    expect(storageStore.all).toEqual(sortedAll)
   })
 })
 
 describe('removeList', () => {
   it('ベーシックケース', () => {
-    const actual = storageModule.removeList(['d1/d11', 'd1/d12'])
+    const actual = storageStore.removeList(['d1/d11', 'd1/d12'])
 
     expect(actual.length).toBe(3)
     expect(actual[0].path).toBe('d1/d11')
@@ -299,9 +299,9 @@ describe('removeList', () => {
   })
 
   it(`'d1/d11'と親である'd1'を同時に指定した場合`, () => {
-    const actual = storageModule.removeList(['d1/d11', 'd1'])
+    const actual = storageStore.removeList(['d1/d11', 'd1'])
 
-    storageModule.sort(actual)
+    storageStore.sort(actual)
     expect(actual.length).toBe(4)
     expect(actual[0].path).toBe('d1')
     expect(actual[1].path).toBe('d1/d11')
@@ -311,7 +311,7 @@ describe('removeList', () => {
   })
 
   it('存在しないパスを指定した場合', () => {
-    const actual = storageModule.removeList(['dXXX'])
+    const actual = storageStore.removeList(['dXXX'])
 
     expect(actual.length).toBe(0)
   })
@@ -319,7 +319,7 @@ describe('removeList', () => {
 
 describe('remove', () => {
   it('ベーシックケース', () => {
-    const actual = storageModule.remove('d1/d11')
+    const actual = storageStore.remove('d1/d11')
 
     expect(actual.length).toBe(2)
     expect(actual[0].path).toBe('d1/d11')
@@ -330,7 +330,7 @@ describe('remove', () => {
 
 describe('rename', () => {
   it('ベーシックケース', () => {
-    const actual = storageModule.rename('d1', 'x1')
+    const actual = storageStore.rename('d1', 'x1')
 
     expect(actual.length).toBe(4)
     expect(actual[0].path).toBe('x1')
@@ -343,7 +343,7 @@ describe('rename', () => {
   it('存在しないパスを指定した場合', () => {
     let actual: Error
     try {
-      storageModule.rename('dXXX', 'x1')
+      storageStore.rename('dXXX', 'x1')
     } catch (err) {
       actual = err
     }
@@ -354,7 +354,7 @@ describe('rename', () => {
 
 describe('sort', () => {
   it('ベーシックケース', () => {
-    const actual = storageModule.sort([fileA, fileB, fileC, d1, d2, d11, d12, d21])
+    const actual = storageStore.sort([fileA, fileB, fileC, d1, d2, d11, d12, d21])
 
     expect(actual[0]).toEqual(d1)
     expect(actual[1]).toEqual(d11)

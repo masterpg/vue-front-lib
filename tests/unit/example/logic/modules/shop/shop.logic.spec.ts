@@ -1,8 +1,8 @@
 import * as td from 'testdouble'
 import { APIEditCartItemResponse, APIProduct, AppAPIContainer, api, initAPI } from '@/example/logic/api'
-import { CartItem, CartModule, CartState, CheckoutStatus, ProductModule, ProductState, initStore, store } from '@/example/logic/store'
-import { TestLogic, TestStoreModule } from '../../../../../helpers/common/store'
-import { User, UserModule } from '@/lib'
+import { CartItem, CartState, CartStore, CheckoutStatus, ProductState, ProductStore, initStore, store } from '@/example/logic/store'
+import { TestLogic, TestStore } from '../../../../../helpers/common/store'
+import { User, UserStore } from '@/lib'
 import { initLogic, logic } from '@/example/logic'
 import { ShopLogicImpl } from '@/example/logic/modules/shop'
 const cloneDeep = require('lodash/cloneDeep')
@@ -12,9 +12,9 @@ initStore()
 initLogic()
 
 const shopLogic = logic.shop as TestLogic<ShopLogicImpl>
-const cartModule = store.cart as TestStoreModule<CartState, CartModule>
-const productModule = store.product as TestStoreModule<ProductState, ProductModule>
-const userModule = store.user as TestStoreModule<void, UserModule>
+const cartStore = store.cart as TestStore<CartState, CartStore>
+const productStore = store.product as TestStore<ProductState, ProductStore>
+const userStore = store.user as TestStore<void, UserStore>
 
 const PRODUCTS: APIProduct[] = [
   { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 1 },
@@ -57,14 +57,14 @@ const USER: User = {
 }
 
 beforeEach(async () => {
-  cartModule.initState({
+  cartStore.initState({
     all: cloneDeep(CART_ITEMS),
     checkoutStatus: CheckoutStatus.None,
   })
-  productModule.initState({
+  productStore.initState({
     all: cloneDeep(PRODUCTS),
   })
-  userModule.initState(cloneDeep(USER))
+  userStore.initState(cloneDeep(USER))
 })
 
 afterEach(() => {})
@@ -85,12 +85,12 @@ describe('cartItems', () => {
 
 describe('cartTotalPrice', () => {
   it('ベーシックケース', () => {
-    const cartItems = cartModule.all
+    const cartItems = cartStore.all
     cartItems[0].price = 100
     cartItems[0].quantity = 1
     cartItems[1].price = 200
     cartItems[1].quantity = 2
-    cartModule.state.all = cartItems
+    cartStore.state.all = cartItems
 
     const actual = shopLogic.cartTotalPrice
 
@@ -100,7 +100,7 @@ describe('cartTotalPrice', () => {
 
 describe('checkoutStatus', () => {
   it('ベーシックケース', () => {
-    const actual = cartModule.checkoutStatus
+    const actual = cartStore.checkoutStatus
     expect(actual).toBe(CheckoutStatus.None)
   })
 })
@@ -117,7 +117,7 @@ describe('pullProducts()', () => {
 
   it('APIでエラーが発生した場合', async () => {
     td.when(api.products()).thenThrow(new Error())
-    productModule.state.all = []
+    productStore.state.all = []
 
     await shopLogic.pullProducts()
     const actual = shopLogic.products
@@ -129,7 +129,7 @@ describe('pullProducts()', () => {
 describe('pullCartItems()', () => {
   it('ベーシックケース', async () => {
     // ユーザーがサインインしている状態へ変更
-    userModule.set({ isSignedIn: true })
+    userStore.set({ isSignedIn: true })
 
     td.when(api.cartItems()).thenResolve(CART_ITEMS)
 
@@ -141,10 +141,10 @@ describe('pullCartItems()', () => {
 
   it('APIでエラーが発生した場合', async () => {
     // ユーザーがサインインしている状態へ変更
-    userModule.set({ isSignedIn: true })
+    userStore.set({ isSignedIn: true })
 
     td.when(api.cartItems()).thenThrow(new Error())
-    cartModule.state.all = []
+    cartStore.state.all = []
 
     await shopLogic.pullCartItems()
     const actual = shopLogic.cartItems
@@ -154,7 +154,7 @@ describe('pullCartItems()', () => {
 
   it('ユーザーがサインインしていない場合', async () => {
     // ユーザーがサインインしていない状態へ変更
-    userModule.set({ isSignedIn: false })
+    userStore.set({ isSignedIn: false })
 
     let actual!: Error
     try {
@@ -171,7 +171,7 @@ describe('pullCartItems()', () => {
 describe('addItemToCart()', () => {
   it('追加しようとする商品がカートに存在しない場合', async () => {
     // ユーザーがサインインしている状態へ変更
-    userModule.set({ isSignedIn: true })
+    userStore.set({ isSignedIn: true })
     // API実行後のレスポンスの設定
     const product3 = PRODUCTS[2]
     const response = {
@@ -189,7 +189,7 @@ describe('addItemToCart()', () => {
     // モック設定
     td.when(api.addCartItems(td.matchers.anything())).thenResolve([response])
     // 現在の商品の在庫数を設定
-    productModule.set({
+    productStore.set({
       id: response.productId,
       stock: 10,
     })
@@ -208,10 +208,10 @@ describe('addItemToCart()', () => {
       ])
     )
     // カートにアイテムが追加されたか検証
-    const cartItem = cartModule.getById(response.id)!
+    const cartItem = cartStore.getById(response.id)!
     expect(cartItem.quantity).toBe(response.quantity)
     // 商品の在庫数が適切にマイナスされたか検証
-    const product = productModule.getById(response.productId)!
+    const product = productStore.getById(response.productId)!
     expect(product.stock).toBe(response.product.stock)
     // チェックアウトステータスの検証
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.None)
@@ -219,20 +219,20 @@ describe('addItemToCart()', () => {
 
   it('追加しようとする商品がカートに存在する場合', async () => {
     // ユーザーがサインインしている状態へ変更
-    userModule.set({ isSignedIn: true })
+    userStore.set({ isSignedIn: true })
     // API実行後のレスポンスの設定
     const response = {
-      ...cartModule.all[0],
-      quantity: cartModule.all[0].quantity + 1,
+      ...cartStore.all[0],
+      quantity: cartStore.all[0].quantity + 1,
       product: {
-        id: cartModule.all[0].productId,
+        id: cartStore.all[0].productId,
         stock: 10 - 1,
       },
     } as APIEditCartItemResponse
     // モック設定
     td.when(api.updateCartItems(td.matchers.anything())).thenResolve([response])
     // 現在の商品の在庫数を設定
-    productModule.set({
+    productStore.set({
       id: response.productId,
       stock: 10,
     })
@@ -249,10 +249,10 @@ describe('addItemToCart()', () => {
       ])
     )
     // カートアイテムの個数が適切にプラスされたか検証
-    const cartItem = cartModule.getById(response.id)!
+    const cartItem = cartStore.getById(response.id)!
     expect(cartItem.quantity).toBe(response.quantity)
     // 商品の在庫数が適切にマイナスされたか検証
-    const product = productModule.getById(response.productId)!
+    const product = productStore.getById(response.productId)!
     expect(product.stock).toBe(response.product.stock)
     // チェックアウトステータスの検証
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.None)
@@ -260,9 +260,9 @@ describe('addItemToCart()', () => {
 
   it('ユーザーがサインインしていない場合', async () => {
     // ユーザーがサインインしていない状態へ変更
-    userModule.set({ isSignedIn: false })
+    userStore.set({ isSignedIn: false })
     // チェックアウトステータスに成功を設定
-    cartModule.setCheckoutStatus(CheckoutStatus.Successful)
+    cartStore.setCheckoutStatus(CheckoutStatus.Successful)
 
     let actual!: Error
     try {
@@ -276,19 +276,19 @@ describe('addItemToCart()', () => {
   })
 
   it('APIでエラーが発生した場合', async () => {
-    userModule.set({ isSignedIn: true })
-    const prevCartItem = cartModule.all[0]
-    const prevProduct = productModule.getById(prevCartItem.productId)!
+    userStore.set({ isSignedIn: true })
+    const prevCartItem = cartStore.all[0]
+    const prevProduct = productStore.getById(prevCartItem.productId)!
     td.when(api.updateCartItems(td.matchers.anything())).thenThrow(new Error())
-    cartModule.setCheckoutStatus(CheckoutStatus.Successful)
+    cartStore.setCheckoutStatus(CheckoutStatus.Successful)
 
     await shopLogic.addItemToCart(prevCartItem.productId)
 
     // カートアイテムの個数に変化がないことを検証
-    const cartItem = cartModule.getById(prevCartItem.id)!
+    const cartItem = cartStore.getById(prevCartItem.id)!
     expect(cartItem.quantity).toBe(prevCartItem.quantity)
     // 商品の在庫数がに変化がないことを検証
-    const product = productModule.getById(prevProduct.id)!
+    const product = productStore.getById(prevProduct.id)!
     expect(product.stock).toBe(prevProduct.stock)
     // チェックアウトステータスに変化がないことを検証
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.Successful)
@@ -298,27 +298,27 @@ describe('addItemToCart()', () => {
 describe('removeItemFromCart()', () => {
   it('カートアイテムの数が2個以上の場合', async () => {
     // ユーザーがサインインしている状態へ変更
-    userModule.set({ isSignedIn: true })
+    userStore.set({ isSignedIn: true })
     // API実行後のレスポンスの設定
     const response = {
-      ...cartModule.all[0],
+      ...cartStore.all[0],
       quantity: 1,
       product: {
-        id: cartModule.all[0].productId,
+        id: cartStore.all[0].productId,
         stock: 9 + 1,
       },
     } as APIEditCartItemResponse
     // モック設定
     td.when(api.updateCartItems(td.matchers.anything())).thenResolve([response])
     // 現在のカートアイテムの個数を設定
-    cartModule.set({
+    cartStore.set({
       id: response.id,
       // 現在のカートアイテムの個数を2に設定
       // この場合はAPIの`updateCartItems`がコールされる
       quantity: 2,
     })
     // 現在の商品の在庫数を設定
-    productModule.set({
+    productStore.set({
       id: response.productId,
       stock: 9,
     })
@@ -335,10 +335,10 @@ describe('removeItemFromCart()', () => {
       ])
     )
     // カートアイテムの個数が適切にマイナスされたか検証
-    const cartItem = cartModule.getById(response.id)!
+    const cartItem = cartStore.getById(response.id)!
     expect(cartItem.quantity).toBe(response.quantity)
     // 商品の在庫数が適切にプラスされたか検証
-    const product = productModule.getById(response.productId)!
+    const product = productStore.getById(response.productId)!
     expect(product.stock).toBe(response.product.stock)
     // チェックアウトステータスの検証
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.None)
@@ -346,25 +346,25 @@ describe('removeItemFromCart()', () => {
 
   it('カートアイテムの数が1個の場合', async () => {
     // ユーザーがサインインしている状態へ変更
-    userModule.set({ isSignedIn: true })
+    userStore.set({ isSignedIn: true })
     // API実行後のレスポンスの設定
     const response = {
-      ...cartModule.all[0],
+      ...cartStore.all[0],
       quantity: 0,
       product: {
-        id: cartModule.all[0].productId,
+        id: cartStore.all[0].productId,
         stock: 9 + 1,
       },
     } as APIEditCartItemResponse
     // モック設定
     td.when(api.removeCartItems(td.matchers.anything())).thenResolve([response])
     // 現在のカートアイテムの個数を設定
-    cartModule.set({
+    cartStore.set({
       id: response.id,
       quantity: 1,
     })
     // 現在の商品の在庫数を設定
-    productModule.set({
+    productStore.set({
       id: response.productId,
       stock: 9,
     })
@@ -374,9 +374,9 @@ describe('removeItemFromCart()', () => {
     // APIが適切な引数でコールされたか検証
     td.verify(api.removeCartItems([response.id]))
     // カートアイテムが削除されたか検証
-    expect(cartModule.getById(response.id)).toBeUndefined()
+    expect(cartStore.getById(response.id)).toBeUndefined()
     // 商品の在庫数が適切にプラスされたか検証
-    const product = productModule.getById(response.productId)!
+    const product = productStore.getById(response.productId)!
     expect(product.stock).toBe(response.product.stock)
     // チェックアウトステータスの検証
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.None)
@@ -384,9 +384,9 @@ describe('removeItemFromCart()', () => {
 
   it('ユーザーがサインインしていない場合', async () => {
     // ユーザーがサインインしていない状態へ変更
-    userModule.set({ isSignedIn: false })
+    userStore.set({ isSignedIn: false })
     // チェックアウトステータスに成功を設定
-    cartModule.setCheckoutStatus(CheckoutStatus.Successful)
+    cartStore.setCheckoutStatus(CheckoutStatus.Successful)
 
     let actual!: Error
     try {
@@ -400,19 +400,19 @@ describe('removeItemFromCart()', () => {
   })
 
   it('APIでエラーが発生した場合', async () => {
-    userModule.set({ isSignedIn: true })
-    const prevCartItem = cartModule.all[0]
-    const prevProduct = productModule.getById(prevCartItem.productId)!
+    userStore.set({ isSignedIn: true })
+    const prevCartItem = cartStore.all[0]
+    const prevProduct = productStore.getById(prevCartItem.productId)!
     td.when(api.updateCartItems(td.matchers.anything())).thenThrow(new Error())
-    cartModule.setCheckoutStatus(CheckoutStatus.Successful)
+    cartStore.setCheckoutStatus(CheckoutStatus.Successful)
 
     await shopLogic.addItemToCart(prevCartItem.productId)
 
     // カートアイテムの個数に変化がないことを検証
-    const cartItem = cartModule.getById(prevCartItem.id)!
+    const cartItem = cartStore.getById(prevCartItem.id)!
     expect(cartItem.quantity).toBe(prevCartItem.quantity)
     // 商品の在庫数がに変化がないことを検証
-    const product = productModule.getById(prevProduct.id)!
+    const product = productStore.getById(prevProduct.id)!
     expect(product.stock).toBe(prevProduct.stock)
     // チェックアウトステータスに変化がないことを検証
     expect(shopLogic.checkoutStatus).toBe(CheckoutStatus.Successful)
@@ -421,7 +421,7 @@ describe('removeItemFromCart()', () => {
 
 describe('checkout()', () => {
   it('ベーシックケース', async () => {
-    userModule.set({ isSignedIn: true })
+    userStore.set({ isSignedIn: true })
 
     await shopLogic.checkout()
 

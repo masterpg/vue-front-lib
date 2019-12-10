@@ -7,12 +7,12 @@ import { LibStoreContainer, StatePartial } from '@/lib'
 //========================================================================
 
 export interface StoreContainer extends LibStoreContainer {
-  readonly product: ProductModule
+  readonly product: ProductStore
 
-  readonly cart: CartModule
+  readonly cart: CartStore
 }
 
-export interface ProductModule {
+export interface ProductStore {
   readonly all: Product[]
 
   getById(productId: string): Product | undefined
@@ -28,7 +28,7 @@ export interface ProductModule {
   incrementStock(productId: string): void
 }
 
-export interface CartModule {
+export interface CartStore {
   readonly all: CartItem[]
 
   readonly totalPrice: number

@@ -1,4 +1,4 @@
-import { BaseLibLogicContainer, setLogic } from '@/lib'
+import { BaseLogicContainer, setLogic } from '@/lib'
 import { LogicContainer, ShopLogic } from '@/example/logic/types'
 import { getAPIType, setAPIType } from '@/example/logic/api'
 import { Component } from 'vue-property-decorator'
@@ -12,7 +12,7 @@ import Vue from 'vue'
 //========================================================================
 
 @Component
-class LogicContainerImpl extends BaseLibLogicContainer implements LogicContainer {
+class LogicContainerImpl extends BaseLogicContainer implements LogicContainer {
   private m_apiType = getAPIType()
 
   get apiType(): 'gql' | 'rest' {

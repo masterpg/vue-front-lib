@@ -1,10 +1,10 @@
-import { BaseModule, NoCache, StatePartial, StoreError } from '@/lib'
-import { Product, ProductModule, ProductState, ProductsErrorType } from '@/example/logic/store/types'
+import { BaseStore, NoCache, StatePartial, StoreError } from '@/lib'
+import { Product, ProductState, ProductStore, ProductsErrorType } from '@/example/logic/store/types'
 import { Component } from 'vue-property-decorator'
 const assign = require('lodash/assign')
 
 @Component
-export class ProductModuleImpl extends BaseModule<ProductState> implements ProductModule {
+export class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   //----------------------------------------------------------------------
   //
   //  Constructors

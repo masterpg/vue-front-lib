@@ -1,13 +1,13 @@
 import * as _path from 'path'
-import { StorageModule, StorageNode, StorageNodeForSet, StorageNodeType, StorageState } from '../../types'
-import { BaseModule } from '../../base'
+import { StorageNode, StorageNodeForSet, StorageNodeType, StorageState, StorageStore } from '../../types'
+import { BaseStore } from '../../base'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '../../../../base/decorators'
 import { removeBothEndsSlash } from 'web-base-lib'
 const isString = require('lodash/isString')
 
 @Component
-export class StorageModuleImpl extends BaseModule<StorageState> implements StorageModule {
+export class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks

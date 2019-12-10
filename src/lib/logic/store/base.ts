@@ -1,6 +1,6 @@
 import Vue from 'vue'
 
-export abstract class BaseModule<S> extends Vue {
+export abstract class BaseStore<S> extends Vue {
   //----------------------------------------------------------------------
   //
   //  Variables

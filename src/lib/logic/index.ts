@@ -11,13 +11,11 @@ import Vue from 'vue'
 
 export interface LibLogicContainer {
   readonly storage: StorageLogic
-
   readonly auth: AuthLogic
 }
 
-export abstract class BaseLibLogicContainer extends Vue implements LibLogicContainer {
+export abstract class BaseLogicContainer extends Vue implements LibLogicContainer {
   readonly storage: StorageLogic = new StorageLogicImpl()
-
   readonly auth: AuthLogic = new AuthLogicImpl()
 }
 
@@ -31,4 +29,4 @@ export { AuthLogic, AuthProviderType, StorageLogic } from './types'
 
 export { BaseLogic } from './base'
 
-export { StorageUploadManager }
+export { StorageUploadManager, StorageLogicImpl, AuthLogicImpl }

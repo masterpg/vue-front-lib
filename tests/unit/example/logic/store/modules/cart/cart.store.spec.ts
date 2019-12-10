@@ -1,9 +1,9 @@
-import { CartItem, CartModule, CartState, CheckoutStatus, initStore, store } from '@/example/logic/store'
-import { TestStoreModule } from '../../../../../../helpers/common/store'
+import { CartItem, CartState, CartStore, CheckoutStatus, initStore, store } from '@/example/logic/store'
+import { TestStore } from '../../../../../../helpers/common/store'
 const cloneDeep = require('lodash/cloneDeep')
 
 initStore()
-const cartModule = store.cart as TestStoreModule<CartState, CartModule>
+const cartStore = store.cart as TestStore<CartState, CartStore>
 
 const CART_ITEMS: CartItem[] = [
   {
@@ -25,7 +25,7 @@ const CART_ITEMS: CartItem[] = [
 ]
 
 beforeEach(async () => {
-  cartModule.initState({
+  cartStore.initState({
     all: cloneDeep(CART_ITEMS),
     checkoutStatus: CheckoutStatus.None,
   })
@@ -33,84 +33,84 @@ beforeEach(async () => {
 
 describe('all', () => {
   it('ベーシックケース', () => {
-    expect(cartModule.all).toEqual(CART_ITEMS)
+    expect(cartStore.all).toEqual(CART_ITEMS)
   })
 })
 
 describe('totalPrice', () => {
   it('ベーシックケース', () => {
-    expect(cartModule.totalPrice).toBe(661.99)
+    expect(cartStore.totalPrice).toBe(661.99)
   })
 })
 
 describe('checkoutStatus', () => {
   it('ベーシックケース', () => {
-    expect(cartModule.checkoutStatus).toBe(CheckoutStatus.None)
+    expect(cartStore.checkoutStatus).toBe(CheckoutStatus.None)
   })
 })
 
 describe('getById()', () => {
   it('ベーシックケース', () => {
-    const stateCartItem = cartModule.state.all[0]
+    const stateCartItem = cartStore.state.all[0]
 
-    const actual = cartModule.getById(stateCartItem.id)
+    const actual = cartStore.getById(stateCartItem.id)
 
     expect(actual).toEqual(stateCartItem)
     expect(actual).not.toBe(stateCartItem)
   })
 
   it('カートに存在しないカートアイテムIDを指定した場合', () => {
-    const actual = cartModule.getById('9999')
+    const actual = cartStore.getById('9999')
     expect(actual).toBeUndefined()
   })
 })
 
 describe('getByProductId()', () => {
   it('ベーシックケース', () => {
-    const stateCartItem = cartModule.state.all[0]
+    const stateCartItem = cartStore.state.all[0]
 
-    const actual = cartModule.getByProductId(stateCartItem.productId)
+    const actual = cartStore.getByProductId(stateCartItem.productId)
 
     expect(actual).toEqual(stateCartItem)
     expect(actual).not.toBe(stateCartItem)
   })
 
   it('カートに存在しない商品IDを指定した場合', () => {
-    const actual = cartModule.getByProductId('9999')
+    const actual = cartStore.getByProductId('9999')
     expect(actual).toBeUndefined()
   })
 })
 
 describe('set()', () => {
   it('ベーシックケース', () => {
-    const cartItem = cartModule.all[0]
+    const cartItem = cartStore.all[0]
     cartItem.title = 'aaa'
 
     // 一部のプロパティだけを変更
-    const actual = cartModule.set({
+    const actual = cartStore.set({
       id: cartItem.id,
       title: cartItem.title,
     })!
 
-    const stateProduct = cartModule.state.all[0]
+    const stateProduct = cartStore.state.all[0]
     expect(actual).toEqual(cartItem)
     expect(actual).not.toBe(stateProduct)
   })
 
   it('余分なプロパティを含んだ場合', () => {
-    const cartItem = cartModule.all[0]
+    const cartItem = cartStore.all[0]
     ;(cartItem as any).zzz = 'zzz'
 
-    const actual = cartModule.set(cartItem)!
+    const actual = cartStore.set(cartItem)!
 
     expect(actual).not.toHaveProperty('zzz')
   })
 
   it('存在しないカートアイテムIDを指定した場合', () => {
-    const cartItem = cartModule.all[0]
+    const cartItem = cartStore.all[0]
     cartItem.id = '9999'
 
-    const actual = cartModule.set(cartItem)
+    const actual = cartStore.set(cartItem)
 
     expect(actual).toBeUndefined()
   })
@@ -118,22 +118,22 @@ describe('set()', () => {
 
 describe('setAll()', () => {
   it('ベーシックケース', () => {
-    cartModule.setAll(CART_ITEMS)
-    expect(cartModule.state.all).toEqual(CART_ITEMS)
-    expect(cartModule.state.all).not.toBe(CART_ITEMS)
+    cartStore.setAll(CART_ITEMS)
+    expect(cartStore.state.all).toEqual(CART_ITEMS)
+    expect(cartStore.state.all).not.toBe(CART_ITEMS)
   })
 })
 
 describe('setCheckoutStatus()', () => {
   it('ベーシックケース', () => {
-    cartModule.setCheckoutStatus(CheckoutStatus.Successful)
-    expect(cartModule.checkoutStatus).toBe(CheckoutStatus.Successful)
+    cartStore.setCheckoutStatus(CheckoutStatus.Successful)
+    expect(cartStore.checkoutStatus).toBe(CheckoutStatus.Successful)
   })
 })
 
 describe('add()', () => {
   it('ベーシックケース', () => {
-    const cartItem = cartModule.all[0]
+    const cartItem = cartStore.all[0]
     cartItem.id = 'cartItemXXX'
     cartItem.uid = 'user1'
     cartItem.productId = 'product3'
@@ -141,9 +141,9 @@ describe('add()', () => {
     cartItem.price = 999
     cartItem.quantity = 999
 
-    const actual = cartModule.add(cartItem)
+    const actual = cartStore.add(cartItem)
 
-    const stateCartItem = cartModule.state.all[cartModule.state.all.length - 1]
+    const stateCartItem = cartStore.state.all[cartStore.state.all.length - 1]
     expect(actual).toEqual(stateCartItem)
     expect(actual).not.toBe(stateCartItem)
   })
@@ -151,9 +151,9 @@ describe('add()', () => {
 
 describe('remove()', () => {
   it('ベーシックケース', () => {
-    const cartItem = cartModule.state.all[1]
-    const actual = cartModule.remove(cartItem.id)
+    const cartItem = cartStore.state.all[1]
+    const actual = cartStore.remove(cartItem.id)
     expect(actual).toEqual(cartItem)
-    expect(cartModule.getById(cartItem.id)).toBeUndefined()
+    expect(cartStore.getById(cartItem.id)).toBeUndefined()
   })
 })

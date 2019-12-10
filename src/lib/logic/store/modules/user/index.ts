@@ -1,11 +1,11 @@
-import { User, UserModule } from '../../types'
-import { BaseModule } from '../../base'
+import { User, UserStore } from '../../types'
+import { BaseStore } from '../../base'
 import { Component } from 'vue-property-decorator'
 const isBoolean = require('lodash/isBoolean')
 const isString = require('lodash/isString')
 
 @Component
-export class UserModuleImpl extends BaseModule<void> implements UserModule {
+export class UserStoreImpl extends BaseStore<void> implements UserStore {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks

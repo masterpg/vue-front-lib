@@ -1,6 +1,6 @@
-import { StorageModule, UserModule } from './types'
-import { StorageModuleImpl } from './modules/storage'
-import { UserModuleImpl } from './modules/user'
+import { StorageStore, UserStore } from './types'
+import { StorageStoreImpl } from './modules/storage'
+import { UserStoreImpl } from './modules/user'
 import Vue from 'vue'
 
 //========================================================================
@@ -10,13 +10,13 @@ import Vue from 'vue'
 //========================================================================
 
 export interface LibStoreContainer {
-  readonly user: UserModule
-  readonly storage: StorageModule
+  readonly user: UserStore
+  readonly storage: StorageStore
 }
 
-export abstract class BaseLibStoreContainer extends Vue implements LibStoreContainer {
-  readonly user: UserModule = new UserModuleImpl()
-  readonly storage: StorageModule = new StorageModuleImpl()
+export abstract class BaseStoreContainer extends Vue implements LibStoreContainer {
+  readonly user: UserStore = new UserStoreImpl()
+  readonly storage: StorageStore = new StorageStoreImpl()
 }
 
 export let store: LibStoreContainer
@@ -25,6 +25,8 @@ export function setStore(value: LibStoreContainer): void {
   store = value
 }
 
-export { StatePartial, StorageNode, StorageNodeType, StorageState, StoreError, User, UserModule } from './types'
+export { StatePartial, StorageNode, StorageNodeType, StorageState, StorageStore, StoreError, User, UserStore } from './types'
 
-export { BaseModule } from './base'
+export { BaseStore } from './base'
+
+export { StorageStoreImpl, UserStoreImpl }
