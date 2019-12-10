@@ -1,5 +1,5 @@
 import * as _path from 'path'
-import { StorageModule, StorageNode, StorageNodeType, StorageState } from '../../types'
+import { StorageModule, StorageNode, StorageNodeForSet, StorageNodeType, StorageState } from '../../types'
 import { BaseModule } from '../../base'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '../../../../base/decorators'
@@ -39,23 +39,16 @@ export class StorageModuleImpl extends BaseModule<StorageState> implements Stora
   //----------------------------------------------------------------------
 
   get(path: string): StorageNode | undefined {
-    for (const node of this.state.all) {
-      if (node.path === path) {
-        return node
-      }
+    const stateNode = this.getStateNode(path)
+    if (stateNode) {
+      return this.clone(stateNode)
     }
     return undefined
   }
 
   getDescendants(path: string): StorageNode[] {
-    path = removeBothEndsSlash(path)
-    const result: StorageNode[] = []
-    for (const node of this.state.all) {
-      if (node.dir.startsWith(path)) {
-        result.push(node)
-      }
-    }
-    return result
+    const descendants = this.getStateDescendants(path)
+    return descendants.map(descendant => this.clone(descendant))
   }
 
   getMap(): { [path: string]: StorageNode } {
@@ -66,23 +59,73 @@ export class StorageModuleImpl extends BaseModule<StorageState> implements Stora
     return result
   }
 
-  add(value: StorageNode): StorageNode {
-    return this.addList([value])[0]
-  }
-
-  addList(nodes: StorageNode[]): StorageNode[] {
-    const addingNodes = nodes.map(node => {
-      return this.clone(node)
-    })
-    this.state.all.push(...addingNodes)
-    this.sort(this.state.all)
-    return addingNodes
-  }
-
   setAll(nodes: StorageNode[]): void {
     this.state.all = nodes.map(node => {
       return this.clone(node)
     })
+    this.sort(this.state.all)
+  }
+
+  setList(nodes: StorageNodeForSet[]): StorageNode[] {
+    const result: StorageNode[] = []
+
+    const stateNodeMap: { [path: string]: StorageNode } = {}
+    nodes.forEach(node => {
+      const stateNode = this.getStateNode(node.path)
+      if (!stateNode) {
+        throw new Error(`The specified node was not found: '${node.path}'`)
+      }
+      stateNodeMap[node.path] = stateNode
+    })
+
+    for (const node of nodes) {
+      const stateNode = stateNodeMap[node.path]
+
+      if (node.nodeType) stateNode.nodeType = node.nodeType
+      if (isString(node.newPath)) {
+        stateNode.name = _path.basename(node.newPath!)
+        // ｢./｣で始まっている場合は除去
+        stateNode.dir = _path.dirname(node.newPath!).replace(/^\.*\/*/, '')
+        stateNode.path = node.newPath!
+      }
+
+      result.push(this.clone(stateNode))
+    }
+
+    this.sort(this.state.all)
+
+    return result
+  }
+
+  set(node: StorageNodeForSet, newPath?: string): StorageNode {
+    return this.setList([node])[0]
+  }
+
+  addList(nodes: StorageNode[]): StorageNode[] {
+    const addingNodes = nodes.map(node => {
+      this.state.all.push(this.clone(node))
+      return this.clone(node)
+    })
+    this.sort(this.state.all)
+    return addingNodes
+  }
+
+  add(value: StorageNode): StorageNode {
+    return this.addList([value])[0]
+  }
+
+  removeList(paths: string[]): StorageNode[] {
+    const result: StorageNode[] = []
+    for (const path of paths) {
+      for (let i = 0; i < this.state.all.length; i++) {
+        const node = this.state.all[i]
+        if (node.path === path || node.dir.startsWith(path)) {
+          this.state.all.splice(i--, 1)
+          result.push(node)
+        }
+      }
+    }
+    return result
   }
 
   remove(path: string): StorageNode[] {
@@ -99,44 +142,32 @@ export class StorageModuleImpl extends BaseModule<StorageState> implements Stora
 
   rename(path: string, newName: string): StorageNode[] {
     path = removeBothEndsSlash(path)
-    const target = this.get(path)
-    if (!target) {
+    const stateNode = this.getStateNode(path)
+    if (!stateNode) {
       throw new Error(`The specified node was not found: '${path}'`)
     }
 
     const result: StorageNode[] = []
 
-    target.name = newName
-    target.path = _path.join(target.dir, newName)
-    result.push(this.clone(target))
+    stateNode.name = newName
+    stateNode.path = _path.join(stateNode.dir, newName)
+    result.push(this.clone(stateNode))
 
-    if (target.nodeType === StorageNodeType.File) {
+    if (stateNode.nodeType === StorageNodeType.File) {
       return result
     }
 
-    const descendants = this.getDescendants(path)
-    for (const descendant of descendants) {
+    const stateDescendants = this.getStateDescendants(path)
+    for (const stateDescendant of stateDescendants) {
       const reg = new RegExp(`^${path}`)
-      descendant.dir = descendant.dir.replace(reg, target.path)
-      descendant.path = _path.join(descendant.dir, descendant.name)
-      result.push(this.clone(descendant))
+      stateDescendant.dir = stateDescendant.dir.replace(reg, stateNode.path)
+      stateDescendant.path = _path.join(stateDescendant.dir, stateDescendant.name)
+      result.push(this.clone(stateDescendant))
     }
+
+    this.sort(this.state.all)
 
     return result
-  }
-
-  set(node: Partial<Omit<StorageNode, 'path'>> & { path: string }, newPath?: string): StorageNode {
-    const target = this.get(node.path)
-    if (!target) {
-      throw new Error(`The specified node was not found: '${node.path}'`)
-    }
-
-    if (node.nodeType) target.nodeType = node.nodeType
-    if (isString(node.name)) target.name = node.name!
-    if (isString(node.dir)) target.dir = node.dir!
-    if (isString(newPath)) target.path = newPath!
-
-    return this.clone(target)
   }
 
   clone(value: StorageNode): StorageNode {
@@ -148,8 +179,9 @@ export class StorageModuleImpl extends BaseModule<StorageState> implements Stora
     }
   }
 
-  sort(values: StorageNode[]): void {
+  sort(values: StorageNode[]): StorageNode[] {
     values.sort(this.sortFunc)
+    return values
   }
 
   sortFunc(a: StorageNode, b: StorageNode): number {
@@ -169,5 +201,31 @@ export class StorageModuleImpl extends BaseModule<StorageState> implements Stora
     } else {
       return 0
     }
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
+
+  protected getStateNode(path: string): StorageNode | undefined {
+    for (const node of this.state.all) {
+      if (node.path === path) {
+        return node
+      }
+    }
+    return undefined
+  }
+
+  protected getStateDescendants(path: string): StorageNode[] {
+    path = removeBothEndsSlash(path)
+    const result: StorageNode[] = []
+    for (const node of this.state.all) {
+      if (node.dir.startsWith(path)) {
+        result.push(node)
+      }
+    }
+    return result
   }
 }

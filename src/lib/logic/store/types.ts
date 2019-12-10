@@ -31,11 +31,15 @@ export interface StorageModule {
 
   setAll(values: StorageNode[]): void
 
+  setList(nodes: StorageNodeForSet[]): StorageNode[]
+
+  set(node: StorageNodeForSet, newPath?: string): StorageNode
+
+  removeList(paths: string[]): StorageNode[]
+
   remove(path: string): StorageNode[]
 
   rename(path: string, newName: string): StorageNode[]
-
-  set(node: Partial<Omit<StorageNode, 'path'>> & { path: string }, newPath?: string): StorageNode
 
   clone(value: StorageNode): StorageNode
 
@@ -43,7 +47,7 @@ export interface StorageModule {
    * ノード配列をディレクトリ階層に従ってソートします。
    * @param values
    */
-  sort(values: StorageNode[]): void
+  sort(values: StorageNode[]): StorageNode[]
 
   /**
    * ノード配列をディレクトリ階層に従ってソートするための関数です。
@@ -81,6 +85,11 @@ export interface User {
 }
 
 export interface StorageNode extends APIStorageNode {}
+
+export type StorageNodeForSet = Partial<Omit<StorageNode, 'name' | 'dir' | 'path'>> & {
+  path: string
+  newPath?: string
+}
 
 //========================================================================
 //
