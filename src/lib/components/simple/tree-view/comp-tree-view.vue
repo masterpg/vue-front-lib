@@ -151,9 +151,9 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
    * @param child ノード、またはノードを構築するためのデータ
    * @param options
    * <ul>
-   *   <li>parent: 親ノードを特定するための値。</li>
-   *   <li>insertIndex: ノード挿入位置。sortFuncと同時に指定することはできない。</li>
-   *   <li>sortFunc: ノードをソートする関数。insertIndexと同時に指定することはできない。</li>
+   *   <li>parent: 親ノードを特定するための値。指定されない場合、ツリービューの子として追加されます。</li>
+   *   <li>insertIndex: ノード挿入位置。sortFuncと同時に指定することはできません。</li>
+   *   <li>sortFunc: ノードをソートする関数。insertIndexと同時に指定することはできません。</li>
    * </ul>
    */
   addChild(child: NodeData | CompTreeNode, options?: { parent?: string; insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
@@ -166,14 +166,17 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
     let node: CompTreeNode
     const childType = child instanceof Vue ? 'Node' : 'Data'
 
-    // 親を特定する値が空文字の場合があるのでtypeofを使用している
+    // 親が指定されている場合
+    // (親を特定する値が空文字の場合があるのでtypeofを使用している)
     if (typeof options.parent === 'string') {
       const parentNode = this.getNode(options.parent)
       if (!parentNode) {
         throw new Error(`The parent node "${options.parent}" does not exist.`)
       }
       node = parentNode.addChild(child, options)
-    } else {
+    }
+    // 親が指定されていない場合
+    else {
       // 引数のノードがノードコンポーネントで指定された場合
       if (childType === 'Node') {
         node = this.m_addNodeByNode(child as CompTreeNode, options)

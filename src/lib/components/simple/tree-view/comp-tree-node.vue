@@ -313,8 +313,8 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
    * @param child ノード、またはノードを構築するためのデータ
    * @param options
    * <ul>
-   *   <li>insertIndex: ノード挿入位置。sortFuncと同時に指定することはできない。</li>
-   *   <li>sortFunc: ノードをソートする関数。insertIndexと同時に指定することはできない。</li>
+   *   <li>insertIndex: ノード挿入位置。sortFuncと同時に指定することはできません。</li>
+   *   <li>sortFunc: ノードをソートする関数。insertIndexと同時に指定することはできません。</li>
    * </ul>
    */
   addChild(child: CompTreeNodeData | CompTreeNode, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
