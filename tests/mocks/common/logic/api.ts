@@ -1,7 +1,15 @@
 import { BaseGQLAPIContainer, LibAPIContainer } from '@/lib'
-import { Constructor } from 'web-base-lib'
+import { Constructor, mix } from 'web-base-lib'
+import { AppGQLAPIContainer } from '@/example/logic/api/gql'
+import { initAPI as _initAPI } from '@/example/logic/api'
 import axios from 'axios'
 import gql from 'graphql-tag'
+
+//========================================================================
+//
+//  TestGQLAPIContainerMixin
+//
+//========================================================================
 
 export interface AuthUser {
   uid: string
@@ -144,4 +152,19 @@ export function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIConta
       return response.data!.removeTestStorageDir
     }
   }
+}
+
+//========================================================================
+//
+//  MockAPIContainer
+//
+//========================================================================
+
+class MockAPIContainer extends mix(AppGQLAPIContainer).with(TestGQLAPIContainerMixin) {}
+
+export let api: MockAPIContainer
+
+export function initAPI(): void {
+  api = new MockAPIContainer()
+  _initAPI({ apiType: 'gql', api })
 }

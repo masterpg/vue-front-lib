@@ -1,5 +1,5 @@
 import { APIAddCartItemInput, APICartItem, APIEditCartItemResponse, APIProduct } from '@/example/logic/api'
-import { api, initAPI } from '../../../../../mocks/logic/api'
+import { api, initAPI } from '../../../../../mocks/common/logic/api'
 const cloneDeep = require('lodash/cloneDeep')
 
 jest.setTimeout(25000)

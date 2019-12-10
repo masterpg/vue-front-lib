@@ -1,7 +1,7 @@
 import * as td from 'testdouble'
 import { APIEditCartItemResponse, APIProduct, AppAPIContainer, api, initAPI } from '@/example/logic/api'
 import { CartItem, CartModule, CartState, CheckoutStatus, ProductModule, ProductState, initStore, store } from '@/example/logic/store'
-import { TestLogic, TestStoreModule } from '../../../../../helpers/store'
+import { TestLogic, TestStoreModule } from '../../../../../helpers/common/store'
 import { User, UserModule } from '@/lib'
 import { initLogic, logic } from '@/example/logic'
 import { ShopLogicImpl } from '@/example/logic/modules/shop'

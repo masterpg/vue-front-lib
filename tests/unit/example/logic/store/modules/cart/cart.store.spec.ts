@@ -1,11 +1,11 @@
-import { CartModule, CartState, CheckoutStatus, initStore, store } from '@/example/logic/store'
-import { TestStoreModule } from '../../../../../../helpers/store'
+import { CartItem, CartModule, CartState, CheckoutStatus, initStore, store } from '@/example/logic/store'
+import { TestStoreModule } from '../../../../../../helpers/common/store'
 const cloneDeep = require('lodash/cloneDeep')
 
 initStore()
 const cartModule = store.cart as TestStoreModule<CartState, CartModule>
 
-const CART_ITEMS = [
+const CART_ITEMS: CartItem[] = [
   {
     id: 'cartItem1',
     uid: 'user1',

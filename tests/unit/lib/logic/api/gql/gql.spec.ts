@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { api, initAPI } from '../../../../../mocks/logic/api'
+import { api, initAPI } from '../../../../../mocks/common/logic/api'
 import { config } from '@/lib/config'
 const isEmpty = require('lodash/isEmpty')
 

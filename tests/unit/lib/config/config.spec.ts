@@ -1,4 +1,4 @@
-import { api, initAPI } from '../../../mocks/logic/api'
+import { api, initAPI } from '../../../mocks/common/logic/api'
 import { config } from '@/lib/config'
 
 jest.setTimeout(25000)

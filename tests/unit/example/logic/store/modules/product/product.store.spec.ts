@@ -1,6 +1,6 @@
 import { Product, ProductModule, ProductState, ProductsErrorType, initStore, store } from '@/example/logic/store'
 import { StoreError } from '@/lib'
-import { TestStoreModule } from '../../../../../../helpers/store'
+import { TestStoreModule } from '../../../../../../helpers/common/store'
 const cloneDeep = require('lodash/cloneDeep')
 
 initStore()
