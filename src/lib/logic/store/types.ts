@@ -57,6 +57,10 @@ export interface StorageStore {
   sortFunc(a: StorageNode, b: StorageNode): number
 }
 
+export interface UserStorageStore extends StorageStore {}
+
+export interface AppStorageStore extends StorageStore {}
+
 //========================================================================
 //
 //  Value objects

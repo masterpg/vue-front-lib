@@ -1,4 +1,5 @@
-import { StorageNode, StorageNodeType, StorageState, store } from '@/lib/logic/store'
+import { StorageNode, StorageNodeType, StorageState } from '@/lib/logic/store'
+import { BaseStorageStore } from '@/lib/logic/store/modules/storage/base'
 import { StorageStore } from '@/lib/logic/store/types'
 import { TestStore } from '../../../../../../helpers/common/store'
 import { initLibStore } from '../../../../../../mocks/lib/logic/store'
@@ -6,7 +7,9 @@ const cloneDeep = require('lodash/cloneDeep')
 const isArray = require('lodash/isArray')
 
 initLibStore()
-const storageStore = store.storage as TestStore<StorageState, StorageStore>
+
+class MockStorageStore extends BaseStorageStore {}
+const storageStore = (new MockStorageStore() as any) as TestStore<StorageState, StorageStore>
 
 //========================================================================
 //

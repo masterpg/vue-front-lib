@@ -15,6 +15,8 @@ export { BaseSWManager, SWChangeState, SWStateChangeInfo, StateChangeLister, set
 export { APIStorageNode, APIStorageNodeType, BaseGQLAPIContainer, BaseRESTAPIContainer, LibAPIContainer, setAPI } from './logic/api'
 
 export {
+  AppStorageStore,
+  AppStorageStoreImpl,
   BaseStore,
   BaseStoreContainer,
   LibStoreContainer,
@@ -22,16 +24,18 @@ export {
   StorageNode,
   StorageNodeType,
   StorageState,
-  StorageStore,
-  StorageStoreImpl,
   StoreError,
   User,
+  UserStorageStore,
+  UserStorageStoreImpl,
   UserStore,
   UserStoreImpl,
   setStore,
 } from './logic/store'
 
 export {
+  AppStorageLogic,
+  AppStorageLogicImpl,
   AuthLogic,
   AuthLogicImpl,
   AuthProviderType,
@@ -39,8 +43,9 @@ export {
   BaseLogicContainer,
   LibLogicContainer,
   StorageLogic,
-  StorageLogicImpl,
   StorageUploadManager,
+  UserStorageLogic,
+  UserStorageLogicImpl,
   setLogic,
 } from './logic'
 

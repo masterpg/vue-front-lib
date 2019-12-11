@@ -1,5 +1,5 @@
-import { AuthLogic, StorageLogic } from './types'
-import { StorageLogicImpl, StorageUploadManager } from './modules/storage'
+import { AppStorageLogic, AuthLogic, StorageLogic, UserStorageLogic } from './types'
+import { AppStorageLogicImpl, StorageUploadManager, UserStorageLogicImpl } from './modules/storage'
 import { AuthLogicImpl } from './modules/auth'
 import Vue from 'vue'
 
@@ -10,12 +10,14 @@ import Vue from 'vue'
 //========================================================================
 
 export interface LibLogicContainer {
-  readonly storage: StorageLogic
+  readonly userStorage: UserStorageLogic
+  readonly appStorage: AppStorageLogic
   readonly auth: AuthLogic
 }
 
 export abstract class BaseLogicContainer extends Vue implements LibLogicContainer {
-  readonly storage: StorageLogic = new StorageLogicImpl()
+  readonly userStorage: UserStorageLogic = new UserStorageLogicImpl()
+  readonly appStorage: AppStorageLogic = new AppStorageLogicImpl()
   readonly auth: AuthLogic = new AuthLogicImpl()
 }
 
@@ -25,8 +27,8 @@ export function setLogic(value: LibLogicContainer): void {
   logic = value
 }
 
-export { AuthLogic, AuthProviderType, StorageLogic } from './types'
+export { AppStorageLogic, AuthLogic, AuthProviderType, StorageLogic, UserStorageLogic } from './types'
 
 export { BaseLogic } from './base'
 
-export { StorageUploadManager, StorageLogicImpl, AuthLogicImpl }
+export { StorageUploadManager, UserStorageLogicImpl, AppStorageLogicImpl, AuthLogicImpl }

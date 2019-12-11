@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { StorageFileUploader, StorageUploadManager } from './base'
+import { StorageFileUploader, StorageUploadManager } from './base-upload'
 import { Dialog } from 'quasar'
 import { config } from '../../../config'
 import { i18n } from '../../../i18n'

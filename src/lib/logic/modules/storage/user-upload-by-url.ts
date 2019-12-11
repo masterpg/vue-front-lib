@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { StorageFileUploader, StorageUploadManager, UploadFileParam } from './base'
+import { StorageFileUploader, StorageUploadManager, UploadFileParam } from './base-upload'
 import axios, { Canceler } from 'axios'
 import { Dialog } from 'quasar'
 import { api } from '../../api'

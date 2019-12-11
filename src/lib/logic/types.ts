@@ -12,24 +12,26 @@ export interface StorageLogic {
 
   getNodeMap(): { [path: string]: StorageNode }
 
-  pullUserNodes(dir?: string): Promise<void>
+  pullNodes(dir?: string): Promise<void>
 
-  createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
+  createDirs(dirPaths: string[]): Promise<StorageNode[]>
 
-  removeUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
+  removeDirs(dirPaths: string[]): Promise<StorageNode[]>
 
-  removeUserStorageFiles(filePaths: string[]): Promise<StorageNode[]>
+  removeFiles(filePaths: string[]): Promise<StorageNode[]>
 
-  renameUserStorageDir(dirPath: string, newName: string): Promise<StorageNode[]>
+  renameDir(dirPath: string, newName: string): Promise<StorageNode[]>
 
-  renameUserStorageFile(filePath: string, newName: string): Promise<StorageNode>
+  renameFile(filePath: string, newName: string): Promise<StorageNode>
 
-  newUserUploadManager(owner: Element): StorageUploadManager
-
-  newUserUrlUploadManager(owner: Element): StorageUploadManager
-
-  newAdminUploadManager(owner: Element): StorageUploadManager
+  newUploadManager(owner: Element): StorageUploadManager
 }
+
+export interface UserStorageLogic extends StorageLogic {
+  newUrlUploadManager(owner: Element): StorageUploadManager
+}
+
+export interface AppStorageLogic extends StorageLogic {}
 
 export interface AuthLogic {
   readonly user: User

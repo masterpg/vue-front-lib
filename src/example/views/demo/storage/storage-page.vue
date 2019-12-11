@@ -49,7 +49,12 @@
     <storage-dir-create-dialog ref="dirCreateDialog" />
     <storage-node-rename-dialog ref="nodeRenameDialog" />
     <storage-nodes-remove-dialog ref="nodesRemoveDialog" />
-    <comp-storage-upload-progress-float ref="uploadProgressFloat" class="fixed-bottom-right" @upload-ended="m_uploadProgressFloatOnUploadEnded()" />
+    <comp-storage-upload-progress-float
+      ref="uploadProgressFloat"
+      class="fixed-bottom-right"
+      storage-type="user"
+      @upload-ended="m_uploadProgressFloatOnUploadEnded()"
+    />
   </div>
 </template>
 
@@ -172,13 +177,13 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
 
   private async m_pullStorageNodes(): Promise<void> {
-    await this.$logic.storage.pullUserNodes()
+    await this.$logic.userStorage.pullNodes()
     this.m_buildStorageTree()
   }
 
   private async m_buildStorageTree(): Promise<void> {
     // ロジックにないのにツリーにはあるノードを削除
-    const nodeMap = this.$logic.storage.getNodeMap()
+    const nodeMap = this.$logic.userStorage.getNodeMap()
     for (const treeNode of storageTreeStore.getAllNodes()) {
       // ツリーのルートノードはロジックには存在しないので無視
       if (treeNode === storageTreeStore.rootNode) continue
@@ -189,14 +194,14 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     }
 
     // ロジックのノードをツリービューに反映
-    storageTreeStore.setNodes(this.$logic.storage.nodes)
+    storageTreeStore.setNodes(this.$logic.userStorage.nodes)
   }
 
   private async m_createDir(dirPath: string): Promise<void> {
     this.$q.loading.show()
 
     try {
-      await this.$logic.storage.createUserStorageDirs([dirPath])
+      await this.$logic.userStorage.createDirs([dirPath])
     } catch (err) {
       this.$q.loading.hide()
       console.error(err)
@@ -220,9 +225,9 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
 
     try {
       if (treeNode.item.nodeType === StorageNodeType.Dir) {
-        await this.$logic.storage.removeUserStorageDirs([treeNode.value])
+        await this.$logic.userStorage.removeDirs([treeNode.value])
       } else if (treeNode.item.nodeType === StorageNodeType.File) {
-        await this.$logic.storage.removeUserStorageFiles([treeNode.value])
+        await this.$logic.userStorage.removeFiles([treeNode.value])
       }
     } catch (err) {
       this.$q.loading.hide()
@@ -247,9 +252,9 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
 
     try {
       if (treeNode.item.nodeType === StorageNodeType.Dir) {
-        await this.$logic.storage.renameUserStorageDir(treeNode.value, newName)
+        await this.$logic.userStorage.renameDir(treeNode.value, newName)
       } else if (treeNode.item.nodeType === StorageNodeType.File) {
-        await this.$logic.storage.renameUserStorageFile(treeNode.value, newName)
+        await this.$logic.userStorage.renameFile(treeNode.value, newName)
       }
     } catch (err) {
       this.$q.loading.hide()

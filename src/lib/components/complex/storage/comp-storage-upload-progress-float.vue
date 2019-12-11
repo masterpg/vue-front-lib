@@ -70,9 +70,9 @@
 
 <script lang="ts">
 import { BaseComponent, Resizable } from '../../../base/component'
-import { Component, Watch } from 'vue-property-decorator'
-import { StorageUploadManager, logic } from '../../../logic'
-import { StorageFileUploader } from '@/lib/logic/modules/storage/base'
+import { Component, Prop, Watch } from 'vue-property-decorator'
+import { StorageFileUploader } from '@/lib/logic/modules/storage/base-upload'
+import { StorageUploadManager } from '../../../logic'
 import { mixins } from 'vue-class-component'
 
 @Component
@@ -92,10 +92,24 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
   //----------------------------------------------------------------------
 
   async mounted() {
-    this.m_uploadManager = logic.storage.newUserUploadManager(this.$el)
-    // this.m_uploadManager = logic.storage.newUserUrlUploadManager(this.$el)
-    // this.m_uploadManager = logic.storage.newAdminUploadManager(this.$el)
+    if (this.storageType === 'user') {
+      this.m_uploadManager = this.$logic.userStorage.newUploadManager(this.$el)
+      // this.m_uploadManager = this.$logic.userStorage.newUserUrlUploadManager(this.$el)
+    } else if (this.storageType === 'app') {
+      this.m_uploadManager = this.$logic.appStorage.newUploadManager(this.$el)
+    } else {
+      throw new Error(`No value is set for 'storageType'.`)
+    }
   }
+
+  //----------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //----------------------------------------------------------------------
+
+  @Prop({ required: true })
+  storageType!: 'user' | 'app'
 
   //----------------------------------------------------------------------
   //
