@@ -1,9 +1,13 @@
 import { APIAddCartItemInput, APICartItem, APIEditCartItemResponse, APIProduct } from '@/example/logic/api'
-import { api, initAPI } from '../../../../../mocks/common/logic/api'
+import { api } from '../../../../../mocks/common/logic/api'
+import { initExampleTest } from '../../../../../helpers/example/init'
 const cloneDeep = require('lodash/cloneDeep')
 
-jest.setTimeout(25000)
-initAPI()
+//========================================================================
+//
+//  Test data
+//
+//========================================================================
 
 const GENERAL_USER = { uid: 'yamada.one', storageDir: 'yamada.one' }
 
@@ -32,9 +36,25 @@ const CART_ITEMS: APICartItem[] = [
   },
 ]
 
+//========================================================================
+//
+//  Test helpers
+//
+//========================================================================
+
 function getAPIErrorResponse(error: any): { statusCode: number; error: string; message: string } {
   return error.graphQLErrors[0].extensions.exception.response
 }
+
+//========================================================================
+//
+//  Tests
+//
+//========================================================================
+
+beforeAll(async () => {
+  await initExampleTest()
+})
 
 beforeEach(async () => {
   api.clearTestAuthUser()

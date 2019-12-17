@@ -1,15 +1,13 @@
+import * as path from 'path'
 import { StorageNode, StorageNodeType, StorageState } from '@/lib/logic/store'
 import { BaseStorageStore } from '@/lib/logic/store/modules/storage/base'
 import { StorageStore } from '@/lib/logic/store/types'
 import { TestStore } from '../../../../../../helpers/common/store'
-import { initLibStore } from '../../../../../../mocks/lib/logic/store'
+import { initLibTest } from '../../../../../../helpers/lib/init'
+import { removeStartDirChars } from 'web-base-lib'
+const clone = require('lodash/clone')
 const cloneDeep = require('lodash/cloneDeep')
 const isArray = require('lodash/isArray')
-
-initLibStore()
-
-class MockStorageStore extends BaseStorageStore {}
-const storageStore = (new MockStorageStore() as any) as TestStore<StorageState, StorageStore>
 
 //========================================================================
 //
@@ -17,56 +15,56 @@ const storageStore = (new MockStorageStore() as any) as TestStore<StorageState, 
 //
 //========================================================================
 
-const d1 = {
+const d1: StorageNode = {
   nodeType: StorageNodeType.Dir,
   name: 'd1',
   dir: '',
   path: 'd1',
 }
 
-const d11 = {
+const d11: StorageNode = {
   nodeType: StorageNodeType.Dir,
   name: 'd11',
   dir: 'd1',
   path: 'd1/d11',
 }
 
-const fileA = {
+const fileA: StorageNode = {
   nodeType: StorageNodeType.File,
   name: 'fileA.txt',
   dir: 'd1/d11',
   path: 'd1/d11/fileA.txt',
 }
 
-const d12 = {
+const d12: StorageNode = {
   nodeType: StorageNodeType.Dir,
   name: 'd12',
   dir: 'd1',
   path: 'd1/d12',
 }
 
-const d2 = {
+const d2: StorageNode = {
   nodeType: StorageNodeType.Dir,
   name: 'd2',
   dir: '',
   path: 'd2',
 }
 
-const d21 = {
+const d21: StorageNode = {
   nodeType: StorageNodeType.Dir,
   name: 'd21',
   dir: 'd2',
   path: 'd2/d21',
 }
 
-const fileB = {
+const fileB: StorageNode = {
   nodeType: StorageNodeType.File,
   name: 'fileB.txt',
   dir: 'd2/d21',
   path: 'd2/d21/fileB.txt',
 }
 
-const fileC = {
+const fileC: StorageNode = {
   nodeType: StorageNodeType.File,
   name: 'fileC.txt',
   dir: '',
@@ -81,6 +79,9 @@ const STORAGE_NODES: StorageNode[] = [d1, d11, fileA, d12, d2, d21, fileB, fileC
 //
 //========================================================================
 
+class MockStorageStore extends BaseStorageStore {}
+const storageStore = (new MockStorageStore() as any) as TestStore<StorageState, StorageStore>
+
 function getStateNode(path: string): StorageNode | undefined {
   for (const node of storageStore.state.all) {
     if (node.path === path) {
@@ -90,15 +91,7 @@ function getStateNode(path: string): StorageNode | undefined {
   return undefined
 }
 
-function toBeCopy(value: StorageNode | StorageNode[]): void {
-  const nodes = isArray(value) ? (value as StorageNode[]) : [value as StorageNode]
-  for (const node of nodes) {
-    const stateNode = getStateNode(node.path)
-    expect(node).not.toBe(stateNode)
-  }
-}
-
-function existsNodes(value: StorageNode | StorageNode[]) {
+function existsStateNodes(value: StorageNode | StorageNode[]) {
   const nodes = isArray(value) ? (value as StorageNode[]) : [value as StorageNode]
   for (const node of nodes) {
     const exists = getStateNode(node.path)
@@ -108,7 +101,7 @@ function existsNodes(value: StorageNode | StorageNode[]) {
   }
 }
 
-function notExistsNodes(value: StorageNode | StorageNode[]) {
+function notExistsStateNodes(value: StorageNode | StorageNode[]) {
   const nodes = isArray(value) ? (value as StorageNode[]) : [value as StorageNode]
   for (const node of nodes) {
     const exists = getStateNode(node.path)
@@ -118,11 +111,48 @@ function notExistsNodes(value: StorageNode | StorageNode[]) {
   }
 }
 
+function verifyStateNodes() {
+  for (const node of storageStore.state.all) {
+    const expectName = path.basename(node.path)
+    const expectDir = removeStartDirChars(path.dirname(node.path))
+    const expectPath = path.join(expectDir, expectName)
+    expect(node.name).toBe(expectName)
+    expect(node.dir).toBe(expectDir)
+    expect(node.path).toBe(expectPath)
+  }
+  toBeSorted()
+}
+
+/**
+ * 指定されたノードがステートのコピーであり実態でないことを検証します。
+ * @param node
+ */
+function toBeCopy(node: StorageNode | StorageNode[]): void {
+  const nodes = isArray(node) ? (node as StorageNode[]) : [node as StorageNode]
+  for (const node of nodes) {
+    const stateNode = getStateNode(node.path)
+    expect(node).not.toBe(stateNode)
+  }
+}
+
+/**
+ * ステートのノードがソートされているか検証します。
+ */
+function toBeSorted(): void {
+  const beforeAll = clone(storageStore.state.all)
+  const sortedAll = storageStore.sort(beforeAll)
+  expect(storageStore.state.all).toEqual(sortedAll)
+}
+
 //========================================================================
 //
 //  Tests
 //
 //========================================================================
+
+beforeAll(async () => {
+  await initLibTest()
+})
 
 beforeEach(async () => {
   storageStore.initState({
@@ -199,9 +229,8 @@ describe('setAll', () => {
     expect(storageStore.all.length).toBe(2)
     expect(storageStore.get(x1.path)).toEqual(x1)
     expect(storageStore.get(fileD.path)).toEqual(fileD)
-    // 追加されたノードがソートされているか検証
-    const sortedAll = storageStore.sort([fileD, x1])
-    expect(storageStore.all).toEqual(sortedAll)
+
+    verifyStateNodes()
   })
 })
 
@@ -223,11 +252,10 @@ describe('setList', () => {
     expect(actual[2].name).toEqual('fileA.txt')
     expect(actual[2].dir).toEqual('x1/x11')
     expect(actual[2].path).toEqual('x1/x11/fileA.txt')
-    existsNodes(actual)
+
+    verifyStateNodes()
+    existsStateNodes(actual)
     toBeCopy(actual)
-    // 変更されたノードがソートされているか検証
-    const sortedAll = storageStore.sort(storageStore.all)
-    expect(storageStore.all).toEqual(sortedAll)
   })
 
   it('存在しないpathを指定した場合', () => {
@@ -247,14 +275,14 @@ describe('addList', () => {
     nodeType: StorageNodeType.Dir,
     name: 'd22',
     dir: 'd2',
-    path: 'd2/22',
+    path: 'd2/d22',
   }
 
   const fileD: StorageNode = {
     nodeType: StorageNodeType.File,
     name: 'fileD.txt',
-    dir: 'd2/22',
-    path: 'd2/22/fileD.txt',
+    dir: 'd2/d22',
+    path: 'd2/d22/fileD.txt',
   }
 
   it('ベーシックケース', () => {
@@ -262,11 +290,10 @@ describe('addList', () => {
 
     expect(actual[0]).toEqual(d22)
     expect(actual[1]).toEqual(fileD)
-    existsNodes(actual)
+
+    verifyStateNodes()
+    existsStateNodes(actual)
     toBeCopy(actual)
-    // 追加されたノードがソートされているか検証
-    const sortedAll = storageStore.sort([...STORAGE_NODES, d22, fileD])
-    expect(storageStore.all).toEqual(sortedAll)
   })
 })
 
@@ -282,11 +309,10 @@ describe('add', () => {
     const actual = storageStore.add(fileD)
 
     expect(actual).toEqual(fileD)
-    existsNodes(actual)
+
+    verifyStateNodes()
+    existsStateNodes(actual)
     toBeCopy(actual)
-    // 追加されたノードがソートされているか検証
-    const sortedAll = storageStore.sort([...STORAGE_NODES, fileD])
-    expect(storageStore.all).toEqual(sortedAll)
   })
 })
 
@@ -298,7 +324,7 @@ describe('removeList', () => {
     expect(actual[0].path).toBe('d1/d11')
     expect(actual[1].path).toBe('d1/d11/fileA.txt')
     expect(actual[2].path).toBe('d1/d12')
-    notExistsNodes(actual)
+    notExistsStateNodes(actual)
   })
 
   it(`'d1/d11'と親である'd1'を同時に指定した場合`, () => {
@@ -310,7 +336,7 @@ describe('removeList', () => {
     expect(actual[1].path).toBe('d1/d11')
     expect(actual[2].path).toBe('d1/d11/fileA.txt')
     expect(actual[3].path).toBe('d1/d12')
-    notExistsNodes(actual)
+    notExistsStateNodes(actual)
   })
 
   it('存在しないパスを指定した場合', () => {
@@ -327,12 +353,79 @@ describe('remove', () => {
     expect(actual.length).toBe(2)
     expect(actual[0].path).toBe('d1/d11')
     expect(actual[1].path).toBe('d1/d11/fileA.txt')
-    notExistsNodes(actual)
+    notExistsStateNodes(actual)
+  })
+})
+
+describe('move', () => {
+  it('ディレクトリの移動 - ディレクトリへ移動', () => {
+    const actual = storageStore.move('d1', 'd2/d1')
+
+    expect(actual.length).toBe(4)
+    expect(actual[0].path).toBe('d2/d1')
+    expect(actual[1].path).toBe('d2/d1/d11')
+    expect(actual[2].path).toBe('d2/d1/d11/fileA.txt')
+    expect(actual[3].path).toBe('d2/d1/d12')
+
+    verifyStateNodes()
+    existsStateNodes(actual)
+  })
+
+  it('ディレクトリの移動 - ルートディレクトリへ移動', () => {
+    const actual = storageStore.move('d1/d12', 'd12')
+
+    expect(actual.length).toBe(1)
+    expect(actual[0].path).toBe('d12')
+
+    verifyStateNodes()
+    existsStateNodes(actual)
+  })
+
+  it('ファイルの移動 - ディレクトリへ移動', () => {
+    const actual = storageStore.move('d1/d11/fileA.txt', 'd1/d12/fileA.txt')
+
+    expect(actual.length).toBe(1)
+    expect(actual[0].path).toBe('d1/d12/fileA.txt')
+
+    verifyStateNodes()
+    existsStateNodes(actual)
+  })
+
+  it('ファイルの移動 - ルートディレクトリへ移動', () => {
+    const actual = storageStore.move('d1/d11/fileA.txt', 'fileA.txt')
+
+    expect(actual.length).toBe(1)
+    expect(actual[0].path).toBe('fileA.txt')
+
+    verifyStateNodes()
+    existsStateNodes(actual)
+  })
+
+  it('存在しないパスを指定した場合', () => {
+    let actual: Error
+    try {
+      storageStore.move('dXXX', 'd2/dXXX')
+    } catch (err) {
+      actual = err
+    }
+
+    expect(actual!.message).toBe(`The specified node was not found: 'dXXX'`)
+  })
+
+  it('移動先ディレクトリが移動元のサブディレクトリの場合', () => {
+    let actual: Error
+    try {
+      storageStore.move('d1', 'd1/d11/d1')
+    } catch (err) {
+      actual = err
+    }
+
+    expect(actual!.message).toBe(`The destination directory is its own subdirectory: 'd1' -> 'd1/d11/d1'`)
   })
 })
 
 describe('rename', () => {
-  it('ベーシックケース', () => {
+  it('ディレクトリの名前変更', () => {
     const actual = storageStore.rename('d1', 'x1')
 
     expect(actual.length).toBe(4)
@@ -340,7 +433,19 @@ describe('rename', () => {
     expect(actual[1].path).toBe('x1/d11')
     expect(actual[2].path).toBe('x1/d11/fileA.txt')
     expect(actual[3].path).toBe('x1/d12')
-    existsNodes(actual)
+
+    verifyStateNodes()
+    existsStateNodes(actual)
+  })
+
+  it('ファイルの名前変更', () => {
+    const actual = storageStore.rename('d1/d11/fileA.txt', 'fileX.txt')
+
+    expect(actual.length).toBe(1)
+    expect(actual[0].path).toBe('d1/d11/fileX.txt')
+
+    verifyStateNodes()
+    existsStateNodes(actual)
   })
 
   it('存在しないパスを指定した場合', () => {

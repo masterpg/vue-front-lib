@@ -6,6 +6,7 @@ export default {
     update: 'Update',
     delete: 'Delete',
     failed: 'Failed',
+    move: 'Move',
     rename: 'Rename',
     reload: 'Reload',
     error: 'Error | Errors',
@@ -15,7 +16,9 @@ export default {
     somehowName: '{somehow} Name',
     createSomehow: 'Create {somehow}',
     deleteSomehow: 'Delete {somehow}',
+    moveSomehow: 'Move {somehow}',
     renameSomehow: 'Rename {somehow}',
+    uploadSomehow: 'Upload {somehow}',
   },
   error: {
     required: '"{target}" is a required.',

@@ -39,6 +39,8 @@ export interface StorageStore {
 
   remove(path: string): StorageNode[]
 
+  move(fromPath, toPath: string): StorageNode[]
+
   rename(path: string, newName: string): StorageNode[]
 
   clone(value: StorageNode): StorageNode
@@ -88,7 +90,9 @@ export interface User {
   getIsAppAdmin(): Promise<boolean>
 }
 
-export interface StorageNode extends APIStorageNode {}
+export interface StorageNode extends APIStorageNode {
+  nodeType: StorageNodeType
+}
 
 export type StorageNodeForSet = Partial<Omit<StorageNode, 'name' | 'dir' | 'path'>> & {
   path: string

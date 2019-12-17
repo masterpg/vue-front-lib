@@ -12,7 +12,7 @@
 </style>
 
 <template>
-  <q-dialog v-model="opened" @show="m_dialogOnShow()" @before-hide="close()">
+  <q-dialog ref="dialog" v-model="opened" @show="m_dialogOnShow()" @before-hide="close()">
     <q-card class="container" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
       <!-- タイトル -->
       <q-card-section>
@@ -23,7 +23,7 @@
       <q-card-section>
         <q-input ref="newNameInput" v-model="m_newName" class="app-pb-20" :label="m_parentPath" :error="m_isError" :error-message="m_errorMessage">
           <template v-slot:prepend>
-            <q-icon name="folder" />
+            <q-icon :name="m_nodeIcon" />
           </template>
         </q-input>
       </q-card-section>
@@ -42,8 +42,8 @@
 <script lang="ts">
 import * as path from 'path'
 import { BaseDialog, CompTreeNode, NoCache, StorageNodeType } from '@/lib'
+import { QDialog, QInput } from 'quasar'
 import { Component } from 'vue-property-decorator'
-import { QInput } from 'quasar'
 import StorageTreeNodeItem from '@/example/views/demo/storage/storage-tree-node-item.vue'
 
 @Component
@@ -54,9 +54,19 @@ export default class StorageNodeRenameDialog extends BaseDialog<CompTreeNode<Sto
   //
   //----------------------------------------------------------------------
 
+  @NoCache
+  protected get dialog(): QDialog {
+    return this.$refs.dialog as QDialog
+  }
+
   private get m_title(): string {
     if (!this.params) return ''
     return String(this.$t('common.renameSomehow', { somehow: this.params.item.nodeTypeName }))
+  }
+
+  private get m_nodeIcon(): string {
+    if (!this.params) return ''
+    return this.params.icon
   }
 
   private m_newName: string | null = null

@@ -1,13 +1,13 @@
 import * as _path from 'path'
-import { ChildrenSortFunc, CompTreeNode, CompTreeNodeData, CompTreeView, StorageNode, StorageNodeType } from '@/lib'
+import { CompTreeNode, CompTreeView, StorageNode, StorageNodeType } from '@/lib'
+import {
+  StorageTreeNodeData,
+  getStorageTreeRootNodeData,
+  storageTreeChildrenSortFunc,
+  toStorageTreeNodeData,
+} from '@/example/views/demo/storage/base'
+import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import StorageTreeNodeItem from '@/example/views/demo/storage/storage-tree-node-item.vue'
-import { removeBothEndsSlash } from 'web-base-lib'
-
-export interface StorageTreeNodeData extends CompTreeNodeData {
-  icon: 'storage' | 'folder' | 'description'
-  parent?: string
-  nodeType: StorageNodeType | 'Storage'
-}
 
 export type StorageTreeView = CompTreeView<StorageTreeNodeData>
 
@@ -55,14 +55,7 @@ export class StorageTreeStore {
     this.m_treeView = treeView
 
     if (!this.rootNode) {
-      this.m_rootNode = this.m_treeView.addChild({
-        value: '',
-        label: 'Storage',
-        icon: 'storage',
-        opened: true,
-        nodeType: 'Storage',
-        itemClass: StorageTreeNodeItem,
-      })
+      this.m_rootNode = this.m_treeView.addChild(getStorageTreeRootNodeData())
     } else {
       this.m_rootNode = this.m_treeView.addChild(this.rootNode)
     }
@@ -84,6 +77,36 @@ export class StorageTreeStore {
   }
 
   /**
+   * 指定されたノードをツリーノードに設定します。
+   * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
+   * @param nodes
+   */
+  setNodes(nodes: StorageNode[]): void {
+    const sortedNodes = (Object.assign([], nodes) as StorageNode[]).sort((a, b) => {
+      if (a.path < b.path) {
+        return -1
+      } else if (a.path > b.path) {
+        return 1
+      } else {
+        return 0
+      }
+    })
+
+    for (const node of sortedNodes) {
+      const treeNode = this.m_treeView.getNode(node.path)
+      const treeNodeData = toStorageTreeNodeData(node)
+      if (treeNode) {
+        treeNode.setNodeData(treeNodeData)
+      } else {
+        this.m_treeView.addChild(treeNodeData, {
+          parent: treeNodeData.parent || this.rootNode.value,
+          sortFunc: storageTreeChildrenSortFunc,
+        })
+      }
+    }
+  }
+
+  /**
    * 指定されたノードを一致するツリーノードに設定します。
    * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
    * @param node
@@ -93,22 +116,12 @@ export class StorageTreeStore {
   }
 
   /**
-   * 指定されたノードをツリーノードに設定します。
-   * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
-   * @param nodes
+   * 指定されたパスと一致するツリーノードを削除します。
+   * @param paths
    */
-  setNodes(nodes: StorageNode[]): void {
-    for (const node of nodes) {
-      const treeNode = this.m_treeView.getNode(node.path)
-      const treeNodeData = this.m_toTreeNodeData(node)
-      if (treeNode) {
-        treeNode.setNodeData(treeNodeData)
-      } else {
-        this.m_treeView.addChild(treeNodeData, {
-          parent: treeNodeData.parent || this.rootNode.value,
-          sortFunc: this.m_childrenSortFunc,
-        })
-      }
+  removeNodes(paths: string[]): void {
+    for (const path of paths) {
+      this.m_treeView.removeNode(path)
     }
   }
 
@@ -121,13 +134,61 @@ export class StorageTreeStore {
   }
 
   /**
-   * 指定されたパスと一致するツリーノードを削除します。
-   * @param paths
+   * ツリーノードの移動を行います。
+   * また対象のツリーノードとその子孫のパスも変更されます。
+   *
+   * ディレクトリの移動例:
+   *   + fromDirPath: 'photos'
+   *   + toDirPath: 'archives/photos'
+   *
+   * ファイルの移動例:
+   *   + fromPath: 'photos/family.png'
+   *   + toPath: 'archives/family.png'
+   *
+   * @param fromPath
+   * @param toPath
    */
-  removeNodes(paths: string[]): void {
-    for (const path of paths) {
-      this.m_treeView.removeNode(path)
+  moveNode(fromPath, toPath: string): void {
+    fromPath = removeBothEndsSlash(fromPath)
+    toPath = removeBothEndsSlash(toPath)
+
+    if (fromPath === this.rootNode.value) {
+      throw new Error(`The root node cannot be renamed.`)
     }
+
+    const target = this.getNode(fromPath)
+    if (!target) {
+      throw new Error(`The specified node was not found: '${fromPath}'`)
+    }
+
+    if (target.item.nodeType === StorageNodeType.Dir) {
+      // 移動先ディレクトリが移動元のサブディレクトリでないことを確認
+      // from: aaa/bbb → to: aaa/bbb/ccc/bbb [NG]
+      //               → to: aaa/zzz/ccc/bbb [OK]
+      if (toPath.startsWith(fromPath)) {
+        throw new Error(`The destination directory is its own subdirectory: '${fromPath}' -> '${toPath}'`)
+      }
+    }
+
+    target.label = _path.basename(toPath)
+    target.value = toPath
+
+    // ノードの名前が変わった事により、兄弟ノードの並び順も変える必要性がある。
+    // ここでは名前変更があったノードを再度addChildしてソートし直している。
+    this.m_treeView.addChild(target, {
+      parent: removeStartDirChars(_path.dirname(target.value)),
+      sortFunc: storageTreeChildrenSortFunc,
+    })
+
+    if (target.item.nodeType === StorageNodeType.Dir) {
+      const descendants = target.getDescendants() as StorageTreeNode[]
+      for (const descendant of descendants) {
+        const reg = new RegExp(`^${fromPath}`)
+        descendant.value = descendant.value.replace(reg, target.value)
+      }
+    }
+
+    target.parent!.open(false)
   }
 
   /**
@@ -143,27 +204,10 @@ export class StorageTreeStore {
       throw new Error(`The root node cannot be renamed.`)
     }
 
-    const target = this.getNode(path)
-    if (!target) {
-      throw new Error(`The specified node was not found: '${path}'`)
-    }
+    const dirPath = removeStartDirChars(_path.dirname(path))
+    const toPath = _path.join(dirPath, newName)
 
-    target.label = newName
-    target.value = _path.join(target.parent!.value, newName)
-    // ノードの名前が変わった事により、兄弟ノードの並び順も変える必要性がある。
-    // ここでは名前変更があったノードを再度addChildしてソートし直している。
-    this.m_treeView.addChild(target, {
-      parent: target.parent!.value,
-      sortFunc: this.m_childrenSortFunc,
-    })
-
-    if (target.item.nodeType === StorageNodeType.File) return
-
-    const descendants = target.getDescendants() as StorageTreeNode[]
-    for (const descendant of descendants) {
-      const reg = new RegExp(`^${path}`)
-      descendant.value = descendant.value.replace(reg, target.value)
-    }
+    this.moveNode(path, toPath)
   }
 
   //----------------------------------------------------------------------
@@ -171,36 +215,6 @@ export class StorageTreeStore {
   //  Internal methods
   //
   //----------------------------------------------------------------------
-
-  /**
-   * `StorageNode`をツリービューで扱える形式の`StorageTreeNodeData`へ変換します。
-   * @param source
-   */
-  private m_toTreeNodeData(source: StorageNode): StorageTreeNodeData {
-    return {
-      label: source.name,
-      value: source.path,
-      parent: source.dir,
-      icon: source.nodeType === StorageNodeType.Dir ? 'folder' : 'description',
-      nodeType: source.nodeType,
-      itemClass: StorageTreeNodeItem,
-    }
-  }
-
-  private m_childrenSortFunc: ChildrenSortFunc<StorageTreeNode> = (a, b) => {
-    if (a.item.nodeType === StorageNodeType.Dir && b.item.nodeType === StorageNodeType.File) {
-      return -1
-    } else if (a.item.nodeType === StorageNodeType.File && b.item.nodeType === StorageNodeType.Dir) {
-      return 1
-    }
-    if (a.label < b.label) {
-      return -1
-    } else if (a.label > b.label) {
-      return 1
-    } else {
-      return 0
-    }
-  }
 }
 
 export const storageTreeStore = new StorageTreeStore()

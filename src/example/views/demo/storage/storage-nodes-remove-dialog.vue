@@ -12,7 +12,7 @@
 </style>
 
 <template>
-  <q-dialog v-model="opened" @hide="close()">
+  <q-dialog ref="dialog" v-model="opened" @hide="close()">
     <q-card class="container" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
       <!-- タイトル -->
       <q-card-section>
@@ -36,8 +36,9 @@
 </template>
 
 <script lang="ts">
-import { BaseDialog, CompTreeNode, StorageNodeType } from '@/lib'
+import { BaseDialog, CompTreeNode, NoCache, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
+import { QDialog } from 'quasar'
 import StorageTreeNodeItem from '@/example/views/demo/storage/storage-tree-node-item.vue'
 
 export type RemovingNodes = CompTreeNode<StorageTreeNodeItem>[]
@@ -49,6 +50,11 @@ export default class StorageNodesRemoveDialog extends BaseDialog<RemovingNodes, 
   //  Variables
   //
   //----------------------------------------------------------------------
+
+  @NoCache
+  protected get dialog(): QDialog {
+    return this.$refs.dialog as QDialog
+  }
 
   private get m_title(): string {
     if (!this.params) return ''

@@ -18,7 +18,7 @@ class MockStoreContainer extends BaseStoreContainer {}
 
 export let store: MockStoreContainer
 
-export function initLibStore(): void {
+export function initLibTestStore(): void {
   store = new MockStoreContainer()
   setStore(store)
 }

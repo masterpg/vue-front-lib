@@ -3,18 +3,16 @@ import { APIEditCartItemResponse, APIProduct, AppAPIContainer, api, initAPI } fr
 import { CartItem, CartState, CartStore, CheckoutStatus, ProductState, ProductStore, initStore, store } from '@/example/logic/store'
 import { TestLogic, TestStore } from '../../../../../helpers/common/store'
 import { User, UserStore } from '@/lib'
-import { initLogic, logic } from '@/example/logic'
 import { ShopLogicImpl } from '@/example/logic/modules/shop'
+import { initExampleTest } from '../../../../../helpers/example/init'
+import { logic } from '@/example/logic'
 const cloneDeep = require('lodash/cloneDeep')
 
-initAPI({ apiType: 'gql', api: td.object<AppAPIContainer>() })
-initStore()
-initLogic()
-
-const shopLogic = logic.shop as TestLogic<ShopLogicImpl>
-const cartStore = store.cart as TestStore<CartState, CartStore>
-const productStore = store.product as TestStore<ProductState, ProductStore>
-const userStore = store.user as TestStore<void, UserStore>
+//========================================================================
+//
+//  Test data
+//
+//========================================================================
 
 const PRODUCTS: APIProduct[] = [
   { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 1 },
@@ -55,6 +53,34 @@ const USER: User = {
     return Promise.resolve(false)
   },
 }
+
+//========================================================================
+//
+//  Test helpers
+//
+//========================================================================
+
+let shopLogic!: TestLogic<ShopLogicImpl>
+let cartStore!: TestStore<CartState, CartStore>
+let productStore!: TestStore<ProductState, ProductStore>
+let userStore!: TestStore<void, UserStore>
+
+//========================================================================
+//
+//  Tests
+//
+//========================================================================
+
+beforeAll(async () => {
+  await initExampleTest()
+
+  initAPI({ apiType: 'gql', api: td.object<AppAPIContainer>() })
+
+  shopLogic = logic.shop as TestLogic<ShopLogicImpl>
+  cartStore = store.cart as TestStore<CartState, CartStore>
+  productStore = store.product as TestStore<ProductState, ProductStore>
+  userStore = store.user as TestStore<void, UserStore>
+})
 
 beforeEach(async () => {
   cartStore.initState({

@@ -10,4 +10,13 @@ module.exports = {
   // このためTypeScriptでインポートしたQuasarをJestが解析できるようにパースする必要がある。
   // 参考: https://jestjs.io/docs/en/tutorial-react-native#transformignorepatterns-customization
   transformIgnorePatterns: ['node_modules/(?!(quasar|react-native|react-native-button)/)'],
+
+  globals: {
+    'ts-jest': {
+      diagnostics: {
+        // error TS2315: Type 'Vue' is not generic.
+        ignoreCodes: [2315],
+      },
+    },
+  },
 }

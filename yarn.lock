@@ -12513,8 +12513,8 @@ wcwidth@^1.0.1:
     defaults "^1.0.3"
 
 "web-base-lib@https://github.com/masterpg/web-base-lib.git":
-  version "0.0.1"
-  resolved "https://github.com/masterpg/web-base-lib.git#20ad4ed266fd994e305ca476440fb102896a461b"
+  version "0.0.2"
+  resolved "https://github.com/masterpg/web-base-lib.git#be5a85d1b007e9505e0f17a2fd773ac2e1d1062d"
 
 webauth@^1.1.0:
   version "1.1.0"

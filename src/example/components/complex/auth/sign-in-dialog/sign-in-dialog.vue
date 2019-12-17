@@ -1,7 +1,7 @@
 <style lang="sass" scoped></style>
 
 <template>
-  <q-dialog v-model="opened" persistent>
+  <q-dialog ref="dialog" v-model="opened" persistent>
     <provider-list-view
       v-if="m_state === 'list'"
       @select-google="m_selectGoogle()"
@@ -19,6 +19,7 @@ import { BaseDialog } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import EmailAuthView from '@/example/components/complex/auth/sign-in-dialog/email-auth-view.vue'
 import ProviderListView from '@/example/components/complex/auth/base/provider-list-view.vue'
+import { QDialog } from 'quasar'
 import { router } from '@/example/router'
 
 @Component({
@@ -56,6 +57,10 @@ export default class SignInDialog extends BaseDialog<void, void> {
   //  Internal methods
   //
   //----------------------------------------------------------------------
+
+  protected get dialog(): QDialog {
+    return this.$refs.dialog as QDialog
+  }
 
   private async m_selectGoogle(): Promise<void> {
     router.removeDialogInfoFromURL()

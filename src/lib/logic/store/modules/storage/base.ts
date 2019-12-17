@@ -1,8 +1,8 @@
 import * as _path from 'path'
 import { StorageNode, StorageNodeForSet, StorageNodeType, StorageState, StorageStore } from '../../types'
+import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { BaseStore } from '../../base'
 import { NoCache } from '../../../../base/decorators'
-import { removeBothEndsSlash } from 'web-base-lib'
 const isString = require('lodash/isString')
 
 export abstract class BaseStorageStore extends BaseStore<StorageState> implements StorageStore {
@@ -82,8 +82,7 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
       if (node.nodeType) stateNode.nodeType = node.nodeType
       if (isString(node.newPath)) {
         stateNode.name = _path.basename(node.newPath!)
-        // ｢./｣で始まっている場合は除去
-        stateNode.dir = _path.dirname(node.newPath!).replace(/^\.*\/*/, '')
+        stateNode.dir = removeStartDirChars(_path.dirname(node.newPath!))
         stateNode.path = node.newPath!
       }
 
@@ -104,7 +103,9 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
       this.state.all.push(this.clone(node))
       return this.clone(node)
     })
+
     this.sort(this.state.all)
+
     return addingNodes
   }
 
@@ -138,26 +139,38 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
     return result
   }
 
-  rename(path: string, newName: string): StorageNode[] {
-    path = removeBothEndsSlash(path)
-    const stateNode = this.getStateNode(path)
+  move(fromPath, toPath: string): StorageNode[] {
+    fromPath = removeBothEndsSlash(fromPath)
+    toPath = removeBothEndsSlash(toPath)
+    const stateNode = this.getStateNode(fromPath)
     if (!stateNode) {
-      throw new Error(`The specified node was not found: '${path}'`)
+      throw new Error(`The specified node was not found: '${fromPath}'`)
+    }
+
+    if (stateNode.nodeType === StorageNodeType.Dir) {
+      // 移動先ディレクトリが移動元のサブディレクトリでないことを確認
+      // from: aaa/bbb → to: aaa/bbb/ccc/bbb [NG]
+      //               → to: aaa/zzz/ccc/bbb [OK]
+      if (toPath.startsWith(fromPath)) {
+        throw new Error(`The destination directory is its own subdirectory: '${fromPath}' -> '${toPath}'`)
+      }
     }
 
     const result: StorageNode[] = []
 
-    stateNode.name = newName
-    stateNode.path = _path.join(stateNode.dir, newName)
+    stateNode.name = _path.basename(toPath)
+    stateNode.dir = removeStartDirChars(_path.dirname(toPath))
+    stateNode.path = toPath
     result.push(this.clone(stateNode))
 
     if (stateNode.nodeType === StorageNodeType.File) {
+      this.sort(this.state.all)
       return result
     }
 
-    const stateDescendants = this.getStateDescendants(path)
+    const stateDescendants = this.getStateDescendants(fromPath)
     for (const stateDescendant of stateDescendants) {
-      const reg = new RegExp(`^${path}`)
+      const reg = new RegExp(`^${fromPath}`)
       stateDescendant.dir = stateDescendant.dir.replace(reg, stateNode.path)
       stateDescendant.path = _path.join(stateDescendant.dir, stateDescendant.name)
       result.push(this.clone(stateDescendant))
@@ -166,6 +179,13 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
     this.sort(this.state.all)
 
     return result
+  }
+
+  rename(path: string, newName: string): StorageNode[] {
+    path = removeBothEndsSlash(path)
+    const reg = new RegExp(`${_path.basename(path)}$`)
+    const toPath = path.replace(reg, newName)
+    return this.move(path, toPath)
   }
 
   clone(value: StorageNode): StorageNode {

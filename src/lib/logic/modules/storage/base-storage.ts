@@ -69,6 +69,16 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
     return result
   }
 
+  async moveDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
+    const gqlNodes = await api.moveUserStorageDir(fromDirPath, toDirPath)
+    return this.storageStore.move(fromDirPath, toDirPath)
+  }
+
+  async moveFile(fromFilePath: string, toFilePath: string): Promise<StorageNode> {
+    const gqlNode = await api.moveUserStorageFile(fromFilePath, toFilePath)
+    return this.storageStore.move(fromFilePath, toFilePath)[0]
+  }
+
   async renameDir(dirPath: string, newName: string): Promise<StorageNode[]> {
     await api.renameUserStorageDir(dirPath, newName)
     return this.storageStore.rename(dirPath, newName)

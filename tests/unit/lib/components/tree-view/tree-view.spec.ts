@@ -1,7 +1,50 @@
 import { CompTreeCheckboxNodeItem, CompTreeNode, CompTreeNodeData, CompTreeView, CompTreeViewUtils } from '@/lib'
+import { initLibTest } from '../../../../helpers/lib/init'
 import { mount } from '@vue/test-utils'
 const merge = require('lodash/merge')
 const cloneDeep = require('lodash/cloneDeep')
+
+//========================================================================
+//
+//  Test data
+//
+//========================================================================
+
+const baseNodeDataList = [
+  {
+    label: 'Node1',
+    value: 'node1',
+    opened: true,
+    children: [
+      {
+        label: 'Node1_1',
+        value: 'node1_1',
+        opened: true,
+        children: [
+          {
+            label: 'Node1_1_1',
+            value: 'node1_1_1',
+            icon: 'inbox',
+            selected: true,
+          },
+          {
+            label: 'Node1_1_2',
+            value: 'node1_1_2',
+            unselectable: true,
+          },
+          {
+            label: 'Node1_1_3',
+            value: 'node1_1_3',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    label: 'Node2',
+    value: 'node2',
+  },
+]
 
 //========================================================================
 //
@@ -92,51 +135,13 @@ function editNodeDataList(
 
 //========================================================================
 //
-//  Test data
-//
-//========================================================================
-
-const baseNodeDataList = [
-  {
-    label: 'Node1',
-    value: 'node1',
-    opened: true,
-    children: [
-      {
-        label: 'Node1_1',
-        value: 'node1_1',
-        opened: true,
-        children: [
-          {
-            label: 'Node1_1_1',
-            value: 'node1_1_1',
-            icon: 'inbox',
-            selected: true,
-          },
-          {
-            label: 'Node1_1_2',
-            value: 'node1_1_2',
-            unselectable: true,
-          },
-          {
-            label: 'Node1_1_3',
-            value: 'node1_1_3',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    label: 'Node2',
-    value: 'node2',
-  },
-]
-
-//========================================================================
-//
 //  Tests
 //
 //========================================================================
+
+beforeAll(async () => {
+  await initLibTest()
+})
 
 describe('CompTreeView', () => {
   describe('buildTree()', () => {

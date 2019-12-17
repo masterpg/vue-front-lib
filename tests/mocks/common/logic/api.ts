@@ -164,7 +164,7 @@ class MockAPIContainer extends mix(AppGQLAPIContainer).with(TestGQLAPIContainerM
 
 export let api: MockAPIContainer
 
-export function initAPI(): void {
+export function initTestAPI(): void {
   api = new MockAPIContainer()
   _initAPI({ apiType: 'gql', api })
 }

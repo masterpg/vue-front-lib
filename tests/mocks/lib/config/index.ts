@@ -1,4 +1,4 @@
-import { AppConfig, initConfig as _initConfig } from '@/example/config'
+import { AppConfig, initConfig } from '@/example/config'
 
 class MockAppConfig extends AppConfig {
   constructor() {
@@ -14,7 +14,7 @@ class MockAppConfig extends AppConfig {
 
 export let config: MockAppConfig
 
-export function initConfig(): void {
+export function initLibTestConfig(): void {
   config = new MockAppConfig()
-  _initConfig(config)
+  initConfig(config)
 }

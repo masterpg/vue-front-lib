@@ -16,7 +16,7 @@
 </style>
 
 <template>
-  <q-dialog v-model="opened" persistent>
+  <q-dialog ref="dialog" v-model="opened" persistent>
     <!-- アカウント削除ビュー -->
     <q-card v-if="m_viewType.accountDelete.visible" class="container" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
       <!-- タイトル -->
@@ -65,9 +65,10 @@
 </template>
 
 <script lang="ts">
-import { AuthProviderType, BaseDialog } from '@/lib'
+import { AuthProviderType, BaseDialog, NoCache } from '@/lib'
 import { EmailSignInView, ProviderListView } from '@/example/components/complex/auth/base'
 import { Component } from 'vue-property-decorator'
+import { QDialog } from 'quasar'
 
 @Component({
   components: {
@@ -81,6 +82,11 @@ export default class AccountDeleteDialog extends BaseDialog<void, void> {
   //  Variables
   //
   //----------------------------------------------------------------------
+
+  @NoCache
+  protected get dialog(): QDialog {
+    return this.$refs.dialog as QDialog
+  }
 
   private m_viewType = new ViewType()
 

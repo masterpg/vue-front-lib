@@ -34,12 +34,12 @@
           </q-item>
           <q-item v-close-popup clickable>
             <q-item-section @click="m_dispatchFilesUploadSelected()">{{
-              $t('storage.uploadNode', { nodeType: $tc('common.file', 2) })
+              $t('common.uploadSomehow', { somehow: $tc('common.file', 2) })
             }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
             <q-item-section @click="m_dispatchDirUploadSelected()">{{
-              $t('storage.uploadNode', { nodeType: $tc('common.folder', 1) })
+              $t('common.uploadSomehow', { somehow: $tc('common.folder', 1) })
             }}</q-item-section>
           </q-item>
         </q-list>
@@ -50,13 +50,16 @@
           </q-item>
           <q-item v-close-popup clickable>
             <q-item-section @click="m_dispatchFilesUploadSelected()">{{
-              $t('storage.uploadNode', { nodeType: $tc('common.file', 2) })
+              $t('common.uploadSomehow', { somehow: $tc('common.file', 2) })
             }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
             <q-item-section @click="m_dispatchDirUploadSelected()">{{
-              $t('storage.uploadNode', { nodeType: $tc('common.folder', 1) })
+              $t('common.uploadSomehow', { somehow: $tc('common.folder', 1) })
             }}</q-item-section>
+          </q-item>
+          <q-item v-close-popup clickable>
+            <q-item-section @click="m_dispatchMoveSelected()">{{ $t('common.move') }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
             <q-item-section @click="m_dispatchRenameSelected()">{{ $t('common.rename') }}</q-item-section>
@@ -67,6 +70,9 @@
         </q-list>
         <!-- ファイル用メニュー -->
         <q-list v-show="m_isFile" dense style="min-width: 100px">
+          <q-item v-close-popup clickable>
+            <q-item-section @click="m_dispatchMoveSelected()">{{ $t('common.move') }}</q-item-section>
+          </q-item>
           <q-item v-close-popup clickable>
             <q-item-section @click="m_dispatchRenameSelected()">{{ $t('common.rename') }}</q-item-section>
           </q-item>
@@ -82,7 +88,7 @@
 <script lang="ts">
 import { CompTreeNodeItem, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
-import { StorageTreeNodeData } from '@/example/views/demo/storage/storage-tree-store'
+import { StorageTreeNodeData } from '@/example/views/demo/storage/base'
 
 @Component
 export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNodeData> {
@@ -97,7 +103,15 @@ export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNod
   }
 
   get extraEventNames(): string[] {
-    return ['reload-selected', 'create-dir-selected', 'files-upload-selected', 'dir-upload-selected', 'rename-selected', 'delete-selected']
+    return [
+      'reload-selected',
+      'create-dir-selected',
+      'files-upload-selected',
+      'dir-upload-selected',
+      'move-selected',
+      'rename-selected',
+      'delete-selected',
+    ]
   }
 
   //----------------------------------------------------------------------
@@ -105,6 +119,8 @@ export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNod
   //  Properties
   //
   //----------------------------------------------------------------------
+
+  public nodeData!: StorageTreeNodeData
 
   private m_nodeType: StorageNodeType | 'Storage' = StorageNodeType.Dir
 
@@ -172,6 +188,10 @@ export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNod
     this.m_dispatchEvent('dir-upload-selected')
   }
 
+  private m_dispatchMoveSelected(): void {
+    this.m_dispatchEvent('move-selected')
+  }
+
   private m_dispatchRenameSelected(): void {
     this.m_dispatchEvent('rename-selected')
   }
@@ -186,8 +206,6 @@ export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNod
   //
   //----------------------------------------------------------------------
 
-  private m_itemOnRightClick(e) {
-    console.log('m_itemOnRightClick')
-  }
+  private m_itemOnRightClick(e) {}
 }
 </script>

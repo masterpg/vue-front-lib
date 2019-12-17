@@ -6,6 +6,7 @@ export default {
     update: '更新',
     delete: '削除',
     failed: '失敗',
+    move: '移動',
     rename: '名前変更',
     reload: 'リロード',
     error: 'エラー',
@@ -15,7 +16,9 @@ export default {
     somehowName: '{somehow}名',
     createSomehow: '{somehow}の作成',
     deleteSomehow: '{somehow}の削除',
+    moveSomehow: '{somehow}の移動',
     renameSomehow: '{somehow}の名前変更',
+    uploadSomehow: '{somehow}のアップロード',
   },
   error: {
     required: '「{target}」は必須です。',

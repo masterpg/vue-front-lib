@@ -1,4 +1,5 @@
 import { BaseComponent } from './base-component'
+import { QDialog } from 'quasar'
 import { Resizable } from './resizable'
 import Vue from 'vue'
 import { mixins } from 'vue-class-component'
@@ -22,11 +23,15 @@ export abstract class BaseDialog<PARAMS = void, RESULT = void> extends mixins(Ba
   //
   //----------------------------------------------------------------------
 
+  protected abstract readonly dialog: QDialog
+
   protected opened: boolean = false
 
   protected params: PARAMS | null = null
 
   private m_dialogResolver: ((value: RESULT) => void) | null = null
+
+  private m_openedCallback: () => void = () => {}
 
   //----------------------------------------------------------------------
   //
@@ -44,8 +49,14 @@ export abstract class BaseDialog<PARAMS = void, RESULT = void> extends mixins(Ba
   //
   //----------------------------------------------------------------------
 
-  protected openProcess(params: PARAMS): Promise<RESULT> {
+  protected openProcess(params: PARAMS, options: { opened?: () => void } = {}): Promise<RESULT> {
     this.params = params
+    this.m_openedCallback = options.opened ? options.opened : this.m_openedCallback
+
+    this.dialog.$once('show', () => {
+      this.m_openedCallback()
+    })
+
     return new Promise(resolve => {
       this.m_dialogResolver = resolve
       this.opened = true

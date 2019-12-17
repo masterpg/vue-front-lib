@@ -1,16 +1,39 @@
-import { Product, ProductState, ProductStore, ProductsErrorType, initStore, store } from '@/example/logic/store'
+import { Product, ProductState, ProductStore, ProductsErrorType, store } from '@/example/logic/store'
 import { StoreError } from '@/lib'
 import { TestStore } from '../../../../../../helpers/common/store'
+import { initExampleTest } from '../../../../../../helpers/example/init'
 const cloneDeep = require('lodash/cloneDeep')
 
-initStore()
-const productStore = store.product as TestStore<ProductState, ProductStore>
+//========================================================================
+//
+//  Test data
+//
+//========================================================================
 
 const PRODUCTS: Product[] = [
   { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 1 },
   { id: 'product2', title: 'Fire HD 8 Tablet', price: 80.99, stock: 5 },
   { id: 'product3', title: 'MediaPad T5 10', price: 150.8, stock: 10 },
 ]
+
+//========================================================================
+//
+//  Test helpers
+//
+//========================================================================
+
+let productStore!: TestStore<ProductState, ProductStore>
+
+//========================================================================
+//
+//  Tests
+//
+//========================================================================
+
+beforeAll(async () => {
+  await initExampleTest()
+  productStore = store.product as TestStore<ProductState, ProductStore>
+})
 
 beforeEach(async () => {
   productStore.initState({

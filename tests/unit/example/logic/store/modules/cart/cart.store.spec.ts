@@ -1,9 +1,13 @@
-import { CartItem, CartState, CartStore, CheckoutStatus, initStore, store } from '@/example/logic/store'
+import { CartItem, CartState, CartStore, CheckoutStatus, store } from '@/example/logic/store'
 import { TestStore } from '../../../../../../helpers/common/store'
+import { initExampleTest } from '../../../../../../helpers/example/init'
 const cloneDeep = require('lodash/cloneDeep')
 
-initStore()
-const cartStore = store.cart as TestStore<CartState, CartStore>
+//========================================================================
+//
+//  Test data
+//
+//========================================================================
 
 const CART_ITEMS: CartItem[] = [
   {
@@ -23,6 +27,25 @@ const CART_ITEMS: CartItem[] = [
     quantity: 2,
   },
 ]
+
+//========================================================================
+//
+//  Test helpers
+//
+//========================================================================
+
+let cartStore!: TestStore<CartState, CartStore>
+
+//========================================================================
+//
+//  Tests
+//
+//========================================================================
+
+beforeAll(async () => {
+  await initExampleTest()
+  cartStore = store.cart as TestStore<CartState, CartStore>
+})
 
 beforeEach(async () => {
   cartStore.initState({

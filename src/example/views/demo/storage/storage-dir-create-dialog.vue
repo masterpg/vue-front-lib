@@ -12,7 +12,7 @@
 </style>
 
 <template>
-  <q-dialog v-model="opened" @show="m_dialogOnShow()" @before-hide="close()">
+  <q-dialog ref="dialog" v-model="opened" @show="m_dialogOnShow()" @before-hide="close()">
     <q-card class="container" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
       <!-- タイトル -->
       <q-card-section>
@@ -42,8 +42,8 @@
 <script lang="ts">
 import * as path from 'path'
 import { BaseDialog, CompTreeNode, NoCache } from '@/lib'
+import { QDialog, QInput } from 'quasar'
 import { Component } from 'vue-property-decorator'
-import { QInput } from 'quasar'
 import StorageTreeNodeItem from '@/example/views/demo/storage/storage-tree-node-item.vue'
 
 type AddingDirParentNode = CompTreeNode<StorageTreeNodeItem>
@@ -55,6 +55,11 @@ export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNo
   //  Variables
   //
   //----------------------------------------------------------------------
+
+  @NoCache
+  protected get dialog(): QDialog {
+    return this.$refs.dialog as QDialog
+  }
 
   private get m_title(): string {
     const nodeTypeName = this.$t('common.folder')

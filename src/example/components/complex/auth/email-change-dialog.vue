@@ -19,7 +19,7 @@
 </style>
 
 <template>
-  <q-dialog v-model="opened" persistent>
+  <q-dialog ref="dialog" v-model="opened" persistent>
     <!-- サインインビュー -->
     <email-sign-in-view v-if="m_viewType === 'signIn'" @signed-in="m_signInViewOnSignedIn()" @closed="close()" />
 
@@ -88,9 +88,9 @@
 
 <script lang="ts">
 import { BaseDialog, NoCache } from '@/lib'
+import { QDialog, QInput } from 'quasar'
 import { Component } from 'vue-property-decorator'
 import { EmailSignInView } from '@/example/components/complex/auth/base'
-import { QInput } from 'quasar'
 const isEmail = require('validator/lib/isEmail')
 
 @Component({
@@ -104,6 +104,11 @@ export default class EmailChangeDialog extends BaseDialog<void, void> {
   //  Variables
   //
   //----------------------------------------------------------------------
+
+  @NoCache
+  protected get dialog(): QDialog {
+    return this.$refs.dialog as QDialog
+  }
 
   private m_viewType: 'signIn' | 'emailChange' | 'inVerification' = 'signIn'
 

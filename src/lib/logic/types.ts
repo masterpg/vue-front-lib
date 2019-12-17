@@ -20,6 +20,10 @@ export interface StorageLogic {
 
   removeFiles(filePaths: string[]): Promise<StorageNode[]>
 
+  moveDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]>
+
+  moveFile(fromFilePath: string, toFilePath: string): Promise<StorageNode>
+
   renameDir(dirPath: string, newName: string): Promise<StorageNode[]>
 
   renameFile(filePath: string, newName: string): Promise<StorageNode>

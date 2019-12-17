@@ -1,17 +1,38 @@
 import * as path from 'path'
-import { api, initAPI } from '../../../../../mocks/common/logic/api'
+import { api } from '../../../../../mocks/common/logic/api'
 import { config } from '@/lib/config'
+import { initLibTest } from '../../../../../helpers/lib/init'
 const isEmpty = require('lodash/isEmpty')
 
-jest.setTimeout(25000)
-initAPI()
+//========================================================================
+//
+//  Test data
+//
+//========================================================================
 
 const GENERAL_USER = { uid: 'yamada.one', storageDir: 'yamada.one' }
+
 const TEST_FILES_DIR = 'test-files'
+
+//========================================================================
+//
+//  Test helpers
+//
+//========================================================================
 
 function getAPIErrorResponse(error: any): { statusCode: number; error: string; message: string } {
   return error.graphQLErrors[0].extensions.exception.response
 }
+
+//========================================================================
+//
+//  Tests
+//
+//========================================================================
+
+beforeAll(async () => {
+  await initLibTest()
+})
 
 beforeEach(async () => {
   api.clearTestAuthUser()
@@ -30,9 +51,10 @@ describe('App API', () => {
 })
 
 describe('Storage API', () => {
-  const userStorageBasePath = path.join(config.storage.usersDir, GENERAL_USER.storageDir)
+  let userStorageBasePath!: string
 
   beforeEach(async () => {
+    userStorageBasePath = path.join(config.storage.usersDir, GENERAL_USER.storageDir)
     await Promise.all([api.removeTestStorageDir(TEST_FILES_DIR), api.removeTestStorageDir(userStorageBasePath)])
   })
 
