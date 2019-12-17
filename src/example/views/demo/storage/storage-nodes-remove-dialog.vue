@@ -58,33 +58,48 @@ export default class StorageNodesRemoveDialog extends BaseDialog<RemovingNodes, 
 
   private get m_title(): string {
     if (!this.params) return ''
-    return this.$tc('storage.deleteItem', this.params.length)
+    const somehow = String(this.$tc('common.item', this.params.length))
+    return String(this.$t('common.deleteSomehow', { somehow }))
   }
 
   private get m_message(): string {
     if (!this.params) return ''
 
+    // ダイアログ引数で渡されたノードが1つの場合
     if (this.params.length === 1) {
-      return String(this.$t('storage.deleteItemQ', { target: this.params[0].label }))
+      return String(this.$t('storage.deleteTargetQ', { target: this.params[0].label }))
     }
+    // ダイアログ引数で渡されたノードが複数の場合
+    else {
+      let fileNum = 0
+      let folderNum = 0
+      for (const node of this.params) {
+        if (node.item.nodeType === StorageNodeType.Dir) {
+          folderNum++
+        } else if (node.item.nodeType === StorageNodeType.File) {
+          fileNum++
+        }
+      }
 
-    let fileNum = 0
-    let folderNum = 0
-    for (const node of this.params) {
-      if (node.item.nodeType === StorageNodeType.Dir) {
-        folderNum++
-      } else if (node.item.nodeType === StorageNodeType.File) {
-        fileNum++
+      // ファイルとフォルダが指定された場合
+      if (fileNum > 0 && folderNum > 0) {
+        const fileType = String(this.$tc('common.file', fileNum))
+        const folderType = String(this.$tc('common.folder', folderNum))
+        return String(this.$t('storage.deleteFileAndFolderQ', { fileNum, fileType, folderNum, folderType }))
+      }
+      // ファイルが複数指定された場合
+      else if (fileNum > 0) {
+        const nodeType = String(this.$tc('common.file', fileNum))
+        return String(this.$t('storage.deleteNodeQ', { nodeNum: fileNum, nodeType }))
+      }
+      // フォルダが複数指定された場合
+      else if (folderNum > 0) {
+        const nodeType = String(this.$tc('common.folder', folderNum))
+        return String(this.$t('storage.deleteNodeQ', { nodeNum: folderNum, nodeType }))
       }
     }
 
-    if (fileNum > 0) {
-      return String(this.$t('storage.deleteFilesQ', { fileNum }))
-    } else if (folderNum > 0) {
-      return String(this.$t('storage.deleteFoldersQ', { folderNum }))
-    } else {
-      return String(this.$t('storage.deleteFilesAndFoldersQ', { fileNum, folderNum }))
-    }
+    throw new Error('An unreachable line was reached.')
   }
 
   //----------------------------------------------------------------------

@@ -30,7 +30,9 @@
             <q-item-section @click="m_dispatchReloadSelected()">{{ $t('common.reload') }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
-            <q-item-section @click="m_dispatchCreateDirSelected()">{{ $t('common.createSomehow', { somehow: $t('common.folder') }) }}</q-item-section>
+            <q-item-section @click="m_dispatchCreateDirSelected()">{{
+              $t('common.createSomehow', { somehow: $tc('common.folder', 1) })
+            }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
             <q-item-section @click="m_dispatchFilesUploadSelected()">{{
@@ -46,7 +48,9 @@
         <!-- フォルダ用メニュー -->
         <q-list v-show="m_isDir" dense style="min-width: 100px">
           <q-item v-close-popup clickable>
-            <q-item-section @click="m_dispatchCreateDirSelected()">{{ $t('common.createSomehow', { somehow: $t('common.folder') }) }}</q-item-section>
+            <q-item-section @click="m_dispatchCreateDirSelected()">{{
+              $t('common.createSomehow', { somehow: $tc('common.folder', 1) })
+            }}</q-item-section>
           </q-item>
           <q-item v-close-popup clickable>
             <q-item-section @click="m_dispatchFilesUploadSelected()">{{
@@ -132,9 +136,9 @@ export default class StorageTreeNodeItem extends CompTreeNodeItem<StorageTreeNod
     if (this.nodeType === 'Storage') {
       return 'Storage'
     } else if (this.nodeType === StorageNodeType.Dir) {
-      return String(this.$t('common.folder'))
+      return String(this.$tc('common.folder', 1))
     } else {
-      return String(this.$t('common.file'))
+      return String(this.$tc('common.file', 1))
     }
   }
 

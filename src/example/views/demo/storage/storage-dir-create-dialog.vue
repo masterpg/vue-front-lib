@@ -62,7 +62,7 @@ export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNo
   }
 
   private get m_title(): string {
-    const nodeTypeName = this.$t('common.folder')
+    const nodeTypeName = this.$tc('common.folder', 1)
     return String(this.$t('common.createSomehow', { somehow: nodeTypeName }))
   }
 

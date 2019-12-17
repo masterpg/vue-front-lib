@@ -12,6 +12,7 @@ export default {
     error: 'エラー',
     folder: 'フォルダ',
     file: 'ファイル',
+    item: 'アイテム',
     systemError: 'システムエラー',
     somehowName: '{somehow}名',
     createSomehow: '{somehow}の作成',

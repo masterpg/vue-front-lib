@@ -12,6 +12,7 @@ export default {
     error: 'Error | Errors',
     folder: 'Folder | Folders',
     file: 'File | Files',
+    item: 'Item | Items',
     systemError: 'System Error',
     somehowName: '{somehow} Name',
     createSomehow: 'Create {somehow}',
