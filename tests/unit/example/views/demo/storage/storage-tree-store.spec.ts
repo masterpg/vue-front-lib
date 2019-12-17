@@ -1,5 +1,6 @@
 import { CompTreeNode, CompTreeView, StorageNode, StorageNodeType } from '@/lib'
 import { StorageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
+import dayjs from 'dayjs'
 import { getStorageTreeRootNodeData } from '@/example/views/demo/storage/base'
 import { initExampleTest } from '../../../../../helpers/example/init'
 import { mount } from '@vue/test-utils'
@@ -15,6 +16,8 @@ const d1: StorageNode = {
   name: 'd1',
   dir: '',
   path: 'd1',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const d11: StorageNode = {
@@ -22,6 +25,8 @@ const d11: StorageNode = {
   name: 'd11',
   dir: 'd1',
   path: 'd1/d11',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const fileA: StorageNode = {
@@ -29,6 +34,8 @@ const fileA: StorageNode = {
   name: 'fileA.txt',
   dir: 'd1/d11',
   path: 'd1/d11/fileA.txt',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const d12: StorageNode = {
@@ -36,6 +43,8 @@ const d12: StorageNode = {
   name: 'd12',
   dir: 'd1',
   path: 'd1/d12',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const d2: StorageNode = {
@@ -43,6 +52,8 @@ const d2: StorageNode = {
   name: 'd2',
   dir: '',
   path: 'd2',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const d21: StorageNode = {
@@ -50,6 +61,8 @@ const d21: StorageNode = {
   name: 'd21',
   dir: 'd2',
   path: 'd2/d21',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const fileB: StorageNode = {
@@ -57,6 +70,8 @@ const fileB: StorageNode = {
   name: 'fileB.txt',
   dir: 'd2/d21',
   path: 'd2/d21/fileB.txt',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const fileC: StorageNode = {
@@ -64,6 +79,8 @@ const fileC: StorageNode = {
   name: 'fileC.txt',
   dir: '',
   path: 'fileC.txt',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const STORAGE_NODES: StorageNode[] = [d1, d11, fileA, d12, d2, d21, fileB, fileC]

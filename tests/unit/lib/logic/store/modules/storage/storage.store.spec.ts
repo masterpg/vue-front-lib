@@ -3,6 +3,7 @@ import { StorageNode, StorageNodeType, StorageState } from '@/lib/logic/store'
 import { BaseStorageStore } from '@/lib/logic/store/modules/storage/base'
 import { StorageStore } from '@/lib/logic/store/types'
 import { TestStore } from '../../../../../../helpers/common/store'
+import dayjs from 'dayjs'
 import { initLibTest } from '../../../../../../helpers/lib/init'
 import { removeStartDirChars } from 'web-base-lib'
 const clone = require('lodash/clone')
@@ -20,6 +21,8 @@ const d1: StorageNode = {
   name: 'd1',
   dir: '',
   path: 'd1',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const d11: StorageNode = {
@@ -27,6 +30,8 @@ const d11: StorageNode = {
   name: 'd11',
   dir: 'd1',
   path: 'd1/d11',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const fileA: StorageNode = {
@@ -34,6 +39,8 @@ const fileA: StorageNode = {
   name: 'fileA.txt',
   dir: 'd1/d11',
   path: 'd1/d11/fileA.txt',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const d12: StorageNode = {
@@ -41,6 +48,8 @@ const d12: StorageNode = {
   name: 'd12',
   dir: 'd1',
   path: 'd1/d12',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const d2: StorageNode = {
@@ -48,6 +57,8 @@ const d2: StorageNode = {
   name: 'd2',
   dir: '',
   path: 'd2',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const d21: StorageNode = {
@@ -55,6 +66,8 @@ const d21: StorageNode = {
   name: 'd21',
   dir: 'd2',
   path: 'd2/d21',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const fileB: StorageNode = {
@@ -62,6 +75,8 @@ const fileB: StorageNode = {
   name: 'fileB.txt',
   dir: 'd2/d21',
   path: 'd2/d21/fileB.txt',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const fileC: StorageNode = {
@@ -69,6 +84,8 @@ const fileC: StorageNode = {
   name: 'fileC.txt',
   dir: '',
   path: 'fileC.txt',
+  created: dayjs(),
+  updated: dayjs(),
 }
 
 const STORAGE_NODES: StorageNode[] = [d1, d11, fileA, d12, d2, d21, fileB, fileC]
@@ -119,6 +136,8 @@ function verifyStateNodes() {
     expect(node.name).toBe(expectName)
     expect(node.dir).toBe(expectDir)
     expect(node.path).toBe(expectPath)
+    expect(node.created).toBeDefined()
+    expect(node.updated).toBeDefined()
   }
   toBeSorted()
 }
@@ -214,6 +233,8 @@ describe('setAll', () => {
     name: 'x1',
     dir: '',
     path: 'x1',
+    created: dayjs(),
+    updated: dayjs(),
   }
 
   const fileD: StorageNode = {
@@ -221,6 +242,8 @@ describe('setAll', () => {
     name: 'fileD.txt',
     dir: 'x1',
     path: 'x1/fileD.txt',
+    created: dayjs(),
+    updated: dayjs(),
   }
 
   it('ベーシックケース', () => {
@@ -276,6 +299,8 @@ describe('addList', () => {
     name: 'd22',
     dir: 'd2',
     path: 'd2/d22',
+    created: dayjs(),
+    updated: dayjs(),
   }
 
   const fileD: StorageNode = {
@@ -283,6 +308,8 @@ describe('addList', () => {
     name: 'fileD.txt',
     dir: 'd2/d22',
     path: 'd2/d22/fileD.txt',
+    created: dayjs(),
+    updated: dayjs(),
   }
 
   it('ベーシックケース', () => {
@@ -303,6 +330,8 @@ describe('add', () => {
     name: 'fileD.txt',
     dir: 'd1/21',
     path: 'd1/21/fileD.txt',
+    created: dayjs(),
+    updated: dayjs(),
   }
 
   it('ベーシックケース', () => {

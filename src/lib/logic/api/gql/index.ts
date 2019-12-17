@@ -1,8 +1,15 @@
-import { APIStorageNode, AppConfigResponse, LibAPIContainer } from '../types'
+import { APIResponseStorageNode, APIStorageNode, AppConfigResponse, LibAPIContainer } from '../types'
 import { BaseGQLClient } from './base'
+import dayjs from 'dayjs'
 import gql from 'graphql-tag'
 
 export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContainer {
+  //----------------------------------------------------------------------
+  //
+  //  Methods
+  //
+  //----------------------------------------------------------------------
+
   async appConfig(): Promise<AppConfigResponse> {
     const response = await this.query<{ appConfig: AppConfigResponse }>({
       query: gql`
@@ -29,7 +36,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
   }
 
   async userStorageDirNodes(dirPath?: string): Promise<APIStorageNode[]> {
-    const response = await this.query<{ userStorageDirNodes: APIStorageNode[] }>({
+    const response = await this.query<{ userStorageDirNodes: APIResponseStorageNode[] }>({
       query: gql`
         query GetUserStorageNodes($dirPath: String) {
           userStorageDirNodes(dirPath: $dirPath) {
@@ -37,17 +44,19 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            created
+            updated
           }
         }
       `,
       variables: { dirPath },
       isAuth: true,
     })
-    return response.data.userStorageDirNodes
+    return this.toAPIStorageNodes(response.data.userStorageDirNodes)
   }
 
   async createUserStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
-    const response = await this.mutate<{ createUserStorageDirs: APIStorageNode[] }>({
+    const response = await this.mutate<{ createUserStorageDirs: APIResponseStorageNode[] }>({
       mutation: gql`
         mutation CreateUserStorageDirs($dirPaths: [String!]!) {
           createUserStorageDirs(dirPaths: $dirPaths) {
@@ -55,17 +64,19 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            created
+            updated
           }
         }
       `,
       variables: { dirPaths },
       isAuth: true,
     })
-    return response.data!.createUserStorageDirs
+    return this.toAPIStorageNodes(response.data!.createUserStorageDirs)
   }
 
   async removeUserStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
-    const response = await this.mutate<{ removeUserStorageDirs: APIStorageNode[] }>({
+    const response = await this.mutate<{ removeUserStorageDirs: APIResponseStorageNode[] }>({
       mutation: gql`
         mutation RemoveUserStorageDirs($dirPaths: [String!]!) {
           removeUserStorageDirs(dirPaths: $dirPaths) {
@@ -73,17 +84,19 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            created
+            updated
           }
         }
       `,
       variables: { dirPaths },
       isAuth: true,
     })
-    return response.data!.removeUserStorageDirs
+    return this.toAPIStorageNodes(response.data!.removeUserStorageDirs)
   }
 
   async removeUserStorageFiles(filePaths: string[]): Promise<APIStorageNode[]> {
-    const response = await this.mutate<{ removeUserStorageFiles: APIStorageNode[] }>({
+    const response = await this.mutate<{ removeUserStorageFiles: APIResponseStorageNode[] }>({
       mutation: gql`
         mutation RemoveUserStorageFileNodes($filePaths: [String!]!) {
           removeUserStorageFiles(filePaths: $filePaths) {
@@ -91,17 +104,19 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            created
+            updated
           }
         }
       `,
       variables: { filePaths },
       isAuth: true,
     })
-    return response.data!.removeUserStorageFiles
+    return this.toAPIStorageNodes(response.data!.removeUserStorageFiles)
   }
 
   async moveUserStorageDir(fromDirPath: string, toDirPath: string): Promise<APIStorageNode[]> {
-    const response = await this.mutate<{ moveUserStorageDir: APIStorageNode[] }>({
+    const response = await this.mutate<{ moveUserStorageDir: APIResponseStorageNode[] }>({
       mutation: gql`
         mutation MoveUserStorageDir($fromDirPath: String!, $toDirPath: String!) {
           moveUserStorageDir(fromDirPath: $fromDirPath, toDirPath: $toDirPath) {
@@ -109,17 +124,19 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            created
+            updated
           }
         }
       `,
       variables: { fromDirPath, toDirPath },
       isAuth: true,
     })
-    return response.data!.moveUserStorageDir
+    return this.toAPIStorageNodes(response.data!.moveUserStorageDir)
   }
 
   async moveUserStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode> {
-    const response = await this.mutate<{ moveUserStorageFile: APIStorageNode }>({
+    const response = await this.mutate<{ moveUserStorageFile: APIResponseStorageNode }>({
       mutation: gql`
         mutation MoveUserStorageFile($fromFilePath: String!, $toFilePath: String!) {
           moveUserStorageFile(fromFilePath: $fromFilePath, toFilePath: $toFilePath) {
@@ -127,17 +144,19 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            created
+            updated
           }
         }
       `,
       variables: { fromFilePath, toFilePath },
       isAuth: true,
     })
-    return response.data!.moveUserStorageFile
+    return this.toAPIStorageNode(response.data!.moveUserStorageFile)
   }
 
   async renameUserStorageDir(dirPath: string, newName: string): Promise<APIStorageNode[]> {
-    const response = await this.mutate<{ renameUserStorageDir: APIStorageNode[] }>({
+    const response = await this.mutate<{ renameUserStorageDir: APIResponseStorageNode[] }>({
       mutation: gql`
         mutation RenameUserStorageDir($dirPath: String!, $newName: String!) {
           renameUserStorageDir(dirPath: $dirPath, newName: $newName) {
@@ -145,17 +164,19 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            created
+            updated
           }
         }
       `,
       variables: { dirPath, newName },
       isAuth: true,
     })
-    return response.data!.renameUserStorageDir
+    return this.toAPIStorageNodes(response.data!.renameUserStorageDir)
   }
 
   async renameUserStorageFile(filePath: string, newName: string): Promise<APIStorageNode> {
-    const response = await this.mutate<{ renameUserStorageFile: APIStorageNode }>({
+    const response = await this.mutate<{ renameUserStorageFile: APIResponseStorageNode }>({
       mutation: gql`
         mutation RenameUserStorageFile($filePath: String!, $newName: String!) {
           renameUserStorageFile(filePath: $filePath, newName: $newName) {
@@ -163,13 +184,15 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            created
+            updated
           }
         }
       `,
       variables: { filePath, newName },
       isAuth: true,
     })
-    return response.data!.renameUserStorageFile
+    return this.toAPIStorageNode(response.data!.renameUserStorageFile)
   }
 
   async getSignedUploadUrls(inputs: { filePath: string; contentType?: string }[]): Promise<string[]> {
@@ -183,5 +206,22 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       isAuth: true,
     })
     return response.data.signedUploadUrls
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
+
+  protected toAPIStorageNode(responseNode: APIResponseStorageNode): APIStorageNode {
+    return Object.assign(responseNode, {
+      created: dayjs(responseNode.created),
+      updated: dayjs(responseNode.updated),
+    })
+  }
+
+  protected toAPIStorageNodes(responseNodes: APIResponseStorageNode[]): APIStorageNode[] {
+    return responseNodes.map(node => this.toAPIStorageNode(node))
   }
 }

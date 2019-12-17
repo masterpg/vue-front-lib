@@ -12,7 +12,7 @@ export function setAPI(value: LibAPIContainer): void {
   api = value
 }
 
-export { APIStorageNode, APIStorageNodeType, LibAPIContainer } from './types'
+export { APIResponseStorageNode, APIStorageNode, APIStorageNodeType, LibAPIContainer } from './types'
 
 export { BaseGQLAPIContainer } from './gql'
 

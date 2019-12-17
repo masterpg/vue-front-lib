@@ -1,6 +1,6 @@
 import * as td from 'testdouble'
 import { APIEditCartItemResponse, APIProduct, AppAPIContainer, api, initAPI } from '@/example/logic/api'
-import { CartItem, CartState, CartStore, CheckoutStatus, ProductState, ProductStore, initStore, store } from '@/example/logic/store'
+import { CartItem, CartState, CartStore, CheckoutStatus, ProductState, ProductStore, store } from '@/example/logic/store'
 import { TestLogic, TestStore } from '../../../../../helpers/common/store'
 import { User, UserStore } from '@/lib'
 import { ShopLogicImpl } from '@/example/logic/modules/shop'

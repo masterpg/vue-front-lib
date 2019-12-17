@@ -1,3 +1,5 @@
+import { Dayjs } from 'dayjs'
+
 //========================================================================
 //
 //  API
@@ -38,11 +40,22 @@ export interface AppConfigResponse {
   usersDir: string
 }
 
+export interface APIResponseStorageNode {
+  nodeType: APIStorageNodeType
+  name: string
+  dir: string
+  path: string
+  created: string
+  updated: string
+}
+
 export interface APIStorageNode {
   nodeType: APIStorageNodeType
   name: string
   dir: string
   path: string
+  created: Dayjs
+  updated: Dayjs
 }
 
 export enum APIStorageNodeType {

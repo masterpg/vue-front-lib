@@ -12,7 +12,15 @@ export { setRouter, BaseRouter, ViewRoute } from './router'
 
 export { BaseSWManager, SWChangeState, SWStateChangeInfo, StateChangeLister, setSW } from './sw'
 
-export { APIStorageNode, APIStorageNodeType, BaseGQLAPIContainer, BaseRESTAPIContainer, LibAPIContainer, setAPI } from './logic/api'
+export {
+  APIResponseStorageNode,
+  APIStorageNode,
+  APIStorageNodeType,
+  BaseGQLAPIContainer,
+  BaseRESTAPIContainer,
+  LibAPIContainer,
+  setAPI,
+} from './logic/api'
 
 export {
   AppStorageStore,
