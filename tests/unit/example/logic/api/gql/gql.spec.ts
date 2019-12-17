@@ -9,7 +9,7 @@ const cloneDeep = require('lodash/cloneDeep')
 //
 //========================================================================
 
-const GENERAL_USER = { uid: 'yamada.one', storageDir: 'yamada.one' }
+const GENERAL_USER = { uid: 'general.user', storageDir: 'general.user' }
 
 const PRODUCTS: APIProduct[] = [
   { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 3 },

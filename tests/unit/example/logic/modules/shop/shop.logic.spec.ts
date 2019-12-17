@@ -24,7 +24,7 @@ const PRODUCTS: APIProduct[] = [
 const CART_ITEMS: CartItem[] = [
   {
     id: 'cartItem1',
-    uid: 'yamada.one',
+    uid: 'general.user',
     productId: 'product1',
     title: 'iPad 4 Mini',
     price: 500.01,
@@ -32,7 +32,7 @@ const CART_ITEMS: CartItem[] = [
   },
   {
     id: 'cartItem2',
-    uid: 'yamada.one',
+    uid: 'general.user',
     productId: 'product2',
     title: 'Fire HD 8 Tablet',
     price: 80.99,
@@ -40,15 +40,15 @@ const CART_ITEMS: CartItem[] = [
   },
 ]
 
-const USER: User = {
-  id: 'yamada.one',
-  displayName: 'Taro Yamada',
-  email: 'yamada.one@example.com',
+const GENERAL_USER: User = {
+  id: 'general.user',
+  displayName: '一般ユーザー',
+  email: 'general.user@example.com',
   emailVerified: true,
   isSignedIn: true,
   photoURL: '',
   isAppAdmin: false,
-  storageDir: 'yamada.one',
+  storageDir: 'general.user',
   getIsAppAdmin(): Promise<boolean> {
     return Promise.resolve(false)
   },
@@ -90,7 +90,7 @@ beforeEach(async () => {
   productStore.initState({
     all: cloneDeep(PRODUCTS),
   })
-  userStore.initState(cloneDeep(USER))
+  userStore.initState(cloneDeep(GENERAL_USER))
 })
 
 afterEach(() => {})
@@ -202,7 +202,7 @@ describe('addItemToCart()', () => {
     const product3 = PRODUCTS[2]
     const response = {
       id: 'cartItemXXX',
-      uid: 'yamada.one',
+      uid: 'general.user',
       productId: product3.id,
       title: product3.title,
       price: product3.price,

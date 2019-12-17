@@ -10,7 +10,7 @@ const isEmpty = require('lodash/isEmpty')
 //
 //========================================================================
 
-const GENERAL_USER = { uid: 'yamada.one', storageDir: 'yamada.one' }
+const GENERAL_USER = { uid: 'general.user', storageDir: 'general.user' }
 
 const TEST_FILES_DIR = 'test-files'
 
