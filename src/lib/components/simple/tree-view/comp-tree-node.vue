@@ -1,25 +1,39 @@
 <style lang="sass" scoped>
 @import '../../../styles/lib.variables'
 
-.main
-
-.item-container
+.node-container
   padding-top: var(--comp-tree-distance, 6px)
-
   &.eldest
     padding-top: 0
 
-  .icon-container
-    @extend %layout-horizontal
-    @extend %layout-center-center
-    min-width: 1.5em
-    max-width: 1.5em
-    height: 1.5em
-    margin-right: 6px
-
+.icon-container
+  @extend %layout-horizontal
+  @extend %layout-center-center
+  min-width: 1.5em
+  max-width: 1.5em
+  height: 1.5em
+  margin-right: 6px
   .toggle-icon
     transition: transform .5s
     cursor: pointer
+
+.item-container
+  height: var(--comp-tree-line-height, 26px)
+  cursor: pointer
+  white-space: nowrap
+  &:hover
+    .item
+      text-decoration: underline
+  &.selected
+    .item
+      color: var(--comp-tree-selected-color, $pink-5)
+  &.unselectable
+    cursor: default
+    .item
+      color: var(--comp-tree-unselectable-color, $grey-9)
+    &:hover
+      .item
+        text-decoration: none
 
 .child-container
   padding-left: var(--comp-tree-indent, 16px)
@@ -28,34 +42,38 @@
 </style>
 
 <template>
-  <div class="main">
-    <div
-      ref="itemContainer"
-      class="item-container layout horizontal center"
-      :class="{ eldest: isEldest }"
-      @selected-changed="m_itemOnSelectedChanged"
-      @node-property-changed="m_itemOnNodePropertyChanged"
-    >
+  <div>
+    <!-- 自ノード -->
+    <div ref="nodeContainer" class="node-container layout horizontal center" :class="{ eldest: isEldest }">
       <!-- トグルアイコン有り -->
-      <div v-if="m_hasChildren" class="icon-container">
-        <q-icon name="arrow_right" size="26px" color="grey-6" class="toggle-icon" :class="[opened ? 'rotate-90' : '']" @click="m_toggleIconOnClick" />
+      <div v-if="hasChildren" class="icon-container">
+        <q-icon name="arrow_right" size="26px" color="grey-6" class="toggle-icon" :class="[opened ? 'rotate-90' : '']" @click="toggleIconOnClick" />
       </div>
       <!-- トグルアイコン無し -->
       <div v-else class="icon-container">
         <q-icon name="" size="26px" />
       </div>
 
-      <!-- 指定アイコン -->
-      <div v-if="!!icon" class="icon-container">
-        <q-icon :name="icon" :color="iconColor" size="24px" />
-      </div>
-      <!-- ドットアイコン -->
-      <div v-else class="icon-container">
-        <svg class="dot" width="6px" height="6px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-          <circle cx="3" cy="3" r="3" fill="#9b9b9b" stroke-width="0" />
-        </svg>
+      <!-- アイテムコンテナ -->
+      <div class="layout horizontal center item-container" :class="{ selected, unselectable }" @click="itemContainerOnClick">
+        <!-- 指定アイコン -->
+        <div v-if="!!icon" class="icon-container">
+          <q-icon :name="icon" :color="iconColor" size="24px" />
+        </div>
+        <!-- ドットアイコン -->
+        <div v-else class="icon-container">
+          <svg class="dot" width="6px" height="6px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <circle cx="3" cy="3" r="3" fill="#9b9b9b" stroke-width="0" />
+          </svg>
+        </div>
+        <!-- アイテム -->
+        <div class="item">
+          <span>{{ label }}</span>
+        </div>
       </div>
     </div>
+
+    <!-- 子ノード -->
     <div ref="childContainer" class="child-container" :class="{ opened: opened }"></div>
   </div>
 </template>
@@ -63,7 +81,6 @@
 <script lang="ts">
 import { ChildrenSortFunc, CompTreeNodeData, CompTreeNodeEditData } from './types'
 import { BaseComponent } from '../../../base/component'
-import CompTreeNodeItem from './comp-tree-node-item.vue'
 import CompTreeView from './comp-tree-view.vue'
 import { CompTreeViewUtils } from './comp-tree-view-utils'
 import { Component } from 'vue-property-decorator'
@@ -75,7 +92,7 @@ const isBoolean = require('lodash/isBoolean')
 const isString = require('lodash/isString')
 
 @Component
-export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> extends BaseComponent {
+export default class CompTreeNode<NodeData extends CompTreeNodeData = any> extends BaseComponent {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -83,17 +100,10 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
   //----------------------------------------------------------------------
 
   mounted() {
-    this.item.$mount()
-    this.m_itemContainer.appendChild(this.item.$el)
-
-    for (const eventName of this.item.extraEventNames) {
-      this.m_itemContainer.addEventListener(eventName, this.m_itemOnExtraEvent)
-    }
-
-    // this.m_childContainerObserver = new MutationObserver(records => {
+    // this.childContainerObserver = new MutationObserver(records => {
     //   console.log(records)
     // })
-    // this.m_childContainerObserver.observe(this.m_childContainer, { childList: true })
+    // this.childContainerObserver.observe(this.childContainer, { childList: true })
   }
 
   //----------------------------------------------------------------------
@@ -108,12 +118,6 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
     return this.m_treeView!
   }
 
-  private m_item: NodeItem | null = null
-
-  get item(): NodeItem {
-    return this.m_item!
-  }
-
   /**
    * 自身が最年長のノードかを示すフラグです。
    */
@@ -124,11 +128,11 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
    * https://material.io/tools/icons/?style=baseline
    */
   get icon(): string {
-    return this.m_nodeData.icon || ''
+    return this.nodeData.icon || ''
   }
 
   set icon(value: string) {
-    this.m_nodeData.icon = value
+    this.nodeData.icon = value
   }
 
   /**
@@ -136,40 +140,48 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
    * 例: primary, indigo-8
    */
   get iconColor(): string {
-    return this.m_nodeData.iconColor || ''
+    return this.nodeData.iconColor || ''
   }
 
   set iconColor(value: string) {
-    this.m_nodeData.iconColor = value
+    this.nodeData.iconColor = value
   }
 
   /**
    * アイテムの開閉です。
    */
   get opened(): boolean {
-    return this.m_nodeData.opened!
+    return this.nodeData.opened!
   }
 
   /**
    * ラベルです。
    */
   get label(): string {
-    return this.item.label
+    return this.nodeData.label
   }
 
   set label(value: string) {
-    this.item.label = value
+    const oldValue = this.nodeData.label
+    this.nodeData.label = value
+    CompTreeViewUtils.dispatchNodePropertyChanged(this, { property: 'label', newValue: value, oldValue })
+
+    this.$nextTick(() => {
+      this.m_setMinWidth()
+    })
   }
 
   /**
    * ノードを特定するための値です。
    */
   get value(): string {
-    return this.item.value
+    return this.nodeData.value
   }
 
   set value(value: string) {
-    this.item.value = value
+    const oldValue = this.nodeData.value
+    this.nodeData.value = value
+    CompTreeViewUtils.dispatchNodePropertyChanged(this, { property: 'value', newValue: value, oldValue })
   }
 
   /**
@@ -177,22 +189,25 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
    * true: 選択不可, false: 選択可
    */
   get unselectable(): boolean {
-    return this.item.unselectable
+    return this.nodeData.unselectable!
   }
 
   set unselectable(value: boolean) {
-    this.item.unselectable = value
+    this.nodeData.unselectable = value
+    if (value) {
+      this.selected = false
+    }
   }
 
   /**
    * 選択されているか否かです。
    */
   get selected(): boolean {
-    return this.item.selected
+    return this.nodeData.selected!
   }
 
   set selected(value: boolean) {
-    this.item.selected = value
+    this.m_setSelected(value, false)
   }
 
   private m_parent?: CompTreeNode | null = null
@@ -213,13 +228,6 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
     return this.m_children
   }
 
-  /**
-   * 標準で発火するイベントとは別に、追加で発火するイベント名のリストです。
-   */
-  get extraEventNames(): string[] {
-    return this.item.extraEventNames
-  }
-
   private m_minWidth: number = 0
 
   /**
@@ -231,12 +239,12 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
   }
 
   private m_setMinWidth(): void {
-    // ノードアイテム部分の幅を取得
-    let itemContainerWidth = 0
-    for (const el of Array.from(this.m_itemContainer.children)) {
-      itemContainerWidth += CompTreeViewUtils.getElementWidth(el)
+    // ノードコンテナの幅を取得
+    let nodeContainerWidth = 0
+    for (const el of Array.from(this.m_nodeContainer.children)) {
+      nodeContainerWidth += CompTreeViewUtils.getElementWidth(el)
     }
-    itemContainerWidth += CompTreeViewUtils.getElementFrameWidth(this.m_itemContainer)
+    nodeContainerWidth += CompTreeViewUtils.getElementFrameWidth(this.m_nodeContainer)
 
     // 子ノードの中で最大幅のものを取得
     let childContainerWidth = 0
@@ -249,8 +257,17 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
       }
     }
 
-    // 上記で取得したノードアイテム幅と子ノード幅を比較し、大きい方を採用する
-    this.m_minWidth = itemContainerWidth >= childContainerWidth ? itemContainerWidth : childContainerWidth
+    // 上記で取得したノードコンテナ幅と子ノードコンテナ幅を比較し、大きい方を採用する
+    this.m_minWidth = nodeContainerWidth >= childContainerWidth ? nodeContainerWidth : childContainerWidth
+  }
+
+  /**
+   * ノードが発火する標準のイベントとは別に、独自で発火するイベント名のリストです。
+   * CompTreeNodeItemを拡張し、そのノードで独自イベントを発火するよう実装した場合、
+   * このプロパティをオーバーライドし、イベント名の配列を返すよう実装してください。
+   */
+  get extraEventNames(): string[] {
+    return []
   }
 
   //----------------------------------------------------------------------
@@ -259,21 +276,25 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
   //
   //----------------------------------------------------------------------
 
-  private m_nodeData: CompTreeNodeData = {} as any
+  private m_nodeData: NodeData = {} as any
 
-  get m_hasChildren() {
+  protected get nodeData(): NodeData {
+    return this.m_nodeData
+  }
+
+  protected get hasChildren() {
     return this.children.length > 0
   }
 
-  private m_childContainerObserver!: MutationObserver
+  private childContainerObserver!: MutationObserver
 
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
 
   @NoCache
-  get m_itemContainer(): HTMLElement {
-    return this.$refs.itemContainer as HTMLElement
+  get m_nodeContainer(): HTMLElement {
+    return this.$refs.nodeContainer as HTMLElement
   }
 
   @NoCache
@@ -292,20 +313,20 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
    * @param treeView
    * @param nodeData
    */
-  init(treeView: CompTreeView, nodeData: CompTreeNodeData): void {
+  init(treeView: CompTreeView, nodeData: NodeData): void {
     this.m_treeView = treeView
 
     // 任意項目は値が設定されていないとリアクティブにならないのでここで初期化
     this.$set(nodeData, 'icon', nodeData.icon || '')
     this.$set(nodeData, 'iconColor', nodeData.iconColor || '')
     this.$set(nodeData, 'opened', Boolean(nodeData.opened))
+    this.$set(nodeData, 'unselectable', Boolean(nodeData.unselectable))
+    this.$set(nodeData, 'selected', Boolean(nodeData.selected))
     this.m_nodeData = nodeData
 
-    const NodeItemClass = Vue.extend(nodeData.itemClass || CompTreeNodeItem)
-    const item = new NodeItemClass() as NodeItem
-    item.init(nodeData)
+    this.m_setSelected(this.nodeData.selected!, true)
 
-    this.m_item = item
+    this.initPlaceholder(nodeData)
   }
 
   /**
@@ -352,7 +373,7 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
    * @param animated
    */
   toggle(animated: boolean = true): void {
-    this.m_toggle(!this.m_nodeData.opened, animated)
+    this.m_toggle(!this.nodeData.opened, animated)
   }
 
   /**
@@ -386,8 +407,21 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
    * @param editData
    */
   setNodeData<NodeData extends CompTreeNodeEditData = CompTreeNodeEditData>(editData: NodeData): void {
-    this.item.setNodeData(editData)
+    if (isString(editData.label)) {
+      this.label = editData.label!
+    }
 
+    if (isString(editData.value)) {
+      this.value = editData.value!
+    }
+
+    if (isBoolean(editData.unselectable)) {
+      this.unselectable = editData.unselectable!
+    }
+
+    if (isBoolean(editData.selected)) {
+      this.selected = editData.selected!
+    }
     if (isString(editData.icon)) {
       this.icon = editData.icon!
     }
@@ -408,8 +442,8 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
   /**
    * 子孫ノードを取得します。
    */
-  getDescendants(): CompTreeNode[] {
-    return CompTreeViewUtils.getDescendants(this)
+  getDescendants<Node extends CompTreeNode = CompTreeNode>(): Node[] {
+    return CompTreeViewUtils.getDescendants(this) as Node[]
   }
 
   //----------------------------------------------------------------------
@@ -417,6 +451,29 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
   //  Internal methods
   //
   //----------------------------------------------------------------------
+
+  /**
+   * CompTreeNodeItemを拡張する際、初期化時に独自処理が必要な場合のプレースホルダーです。
+   * 独自処理が必要な場合はこのメソッドをオーバーライドしてください。
+   * @param nodeData
+   */
+  protected initPlaceholder(nodeData: NodeData): void {}
+
+  /**
+   * ノードが発火する標準のイベントとは別な独自イベントを発火します。
+   * @param extraEventName
+   * @param detail
+   */
+  protected dispatchExtraEvent<T>(extraEventName: string, detail?: T): void {
+    this.$el.dispatchEvent(
+      new CustomEvent(extraEventName, {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        detail,
+      })
+    )
+  }
 
   private m_addChildByData(childNodeData: CompTreeNodeData, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
     options = options || {}
@@ -529,7 +586,7 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
   }
 
   private m_toggle(opened: boolean, animated: boolean = true): void {
-    this.m_nodeData.opened = opened
+    this.nodeData.opened = opened
     this.m_refreshChildrenContainerHeight(animated)
 
     this.$el.dispatchEvent(
@@ -579,7 +636,7 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
 
     // 基準ノードの高さは排除したいためのif文
     if (this !== base) {
-      result += this.m_itemContainer.getBoundingClientRect().height
+      result += this.m_nodeContainer.getBoundingClientRect().height
     }
 
     return result
@@ -635,6 +692,29 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
     this.m_childContainer.removeChild(node.$el)
   }
 
+  /**
+   * selectedの設定を行います。
+   * @param value selectedの設定値を指定
+   * @param initializing 初期化中か否かを指定
+   */
+  private m_setSelected(value: boolean, initializing: boolean): void {
+    const changed = this.nodeData.selected !== value
+    // 選択不可の場合
+    if (this.unselectable) {
+      if (changed) {
+        this.nodeData.selected = false
+        !initializing && CompTreeViewUtils.dispatchSelectedChanged(this)
+      }
+    }
+    // 選択可能な場合
+    else {
+      if (changed) {
+        this.nodeData.selected = value
+        !initializing && CompTreeViewUtils.dispatchSelectedChanged(this)
+      }
+    }
+  }
+
   //----------------------------------------------------------------------
   //
   //  Event listeners
@@ -644,51 +724,15 @@ export default class CompTreeNode<NodeItem extends CompTreeNodeItem = any> exten
   /**
    * トグルアイコンのクリック時のリスナです。
    */
-  private m_toggleIconOnClick() {
+  protected toggleIconOnClick() {
     this.toggle()
   }
 
   /**
-   * ノードアイテムが選択された際のリスナです。
-   * @param e
+   * アイテム部分のクリック時のリスナです。
    */
-  private m_itemOnSelectedChanged(e) {
-    e.stopImmediatePropagation()
-
-    CompTreeViewUtils.dispatchSelectedChanged(this)
-  }
-
-  /**
-   * ノードのプロパティが変更された際のリスナです。
-   * @param e
-   */
-  private m_itemOnNodePropertyChanged(e) {
-    e.stopImmediatePropagation()
-
-    const detail = e.detail as CompTreeViewUtils.NodePropertyChangeDetail
-    CompTreeViewUtils.dispatchNodePropertyChanged(this, detail)
-
-    if (detail.property === 'label') {
-      this.$nextTick(() => {
-        this.m_setMinWidth()
-      })
-    }
-  }
-
-  /**
-   * ノードアイテムが発火する標準のイベントとは別に、独自イベントが発火した際のリスナです。
-   * @param e
-   */
-  private m_itemOnExtraEvent(e) {
-    e.stopImmediatePropagation()
-
-    this.$el.dispatchEvent(
-      new CustomEvent(e.type, {
-        bubbles: true,
-        cancelable: true,
-        composed: true,
-      })
-    )
+  protected itemContainerOnClick(e) {
+    this.selected = true
   }
 }
 </script>

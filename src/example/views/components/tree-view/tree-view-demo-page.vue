@@ -52,13 +52,13 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, NoCache, Resizable } from '@/lib'
-import { CompTreeCheckboxNodeData, CompTreeCheckboxNodeItem, CompTreeNode, CompTreeNodeItem, CompTreeView } from '@/lib'
+import { BaseComponent, CompTreeCheckboxNodeData, NoCache, Resizable } from '@/lib'
+import { CompTreeCheckboxNode, CompTreeNode, CompTreeView } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 
 @Component({
-  components: { CompTreeView, CompTreeNode, CompTreeNodeItem, CheckboxNodeItem: CompTreeCheckboxNodeItem },
+  components: { CompTreeView },
 })
 export default class TreeViewDemoPage extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
@@ -82,8 +82,8 @@ export default class TreeViewDemoPage extends mixins(BaseComponent, Resizable) {
             opened: true,
             icon: 'folder',
             children: [
-              { label: 'node1-1-1', value: 'node1-1-1', checked: true, itemClass: CompTreeCheckboxNodeItem },
-              { label: 'node1-1-2', value: 'node1-1-2', itemClass: CompTreeCheckboxNodeItem },
+              { label: 'node1-1-1', value: 'node1-1-1', checked: true, nodeClass: CompTreeCheckboxNode },
+              { label: 'node1-1-2', value: 'node1-1-2', nodeClass: CompTreeCheckboxNode },
             ],
           },
           {
@@ -190,13 +190,13 @@ export default class TreeViewDemoPage extends mixins(BaseComponent, Resizable) {
     }
   }
 
-  private m_treeViewOnSelected(node: CompTreeNode<CompTreeCheckboxNodeItem>) {
+  private m_treeViewOnSelected(node: CompTreeNode) {
     this.m_editedInput.nodeValue = node.value
     this.m_editedInput.nodeLabel = node.label
   }
 
-  private m_treeViewOnCheckedChanged(node: CompTreeNode<CompTreeCheckboxNodeItem>) {
-    node.selected = true
+  private m_treeViewOnCheckedChanged(node: CompTreeNode) {
+    console.log(`The checkbox has changed: '${node.value}'`)
   }
 }
 </script>

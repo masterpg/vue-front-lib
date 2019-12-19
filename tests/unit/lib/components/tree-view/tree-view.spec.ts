@@ -1,4 +1,4 @@
-import { CompTreeCheckboxNodeItem, CompTreeNode, CompTreeNodeData, CompTreeView, CompTreeViewUtils } from '@/lib'
+import { CompTreeCheckboxNode, CompTreeNode, CompTreeNodeData, CompTreeView, CompTreeViewUtils } from '@/lib'
 import { initLibTest } from '../../../../helpers/lib/init'
 import { mount } from '@vue/test-utils'
 const merge = require('lodash/merge')
@@ -74,7 +74,6 @@ function verifyTreeView(treeView: CompTreeView | any) {
   // 選択ノードの検証
   if (treeView.selectedNode) {
     expect(treeView.selectedNode.selected).toBeTruthy()
-    expect(treeView.selectedNode.item.selected).toBeTruthy()
   }
 }
 
@@ -421,7 +420,7 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node1_1 = treeView.getNode('node1_1')
+      const node1_1 = treeView.getNode('node1_1')!
       const node1_1_x = treeView.addChild(
         {
           label: 'Node2_1',
@@ -440,7 +439,7 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node1_1 = treeView.getNode('node1_1')
+      const node1_1 = treeView.getNode('node1_1')!
       const node1_1_x = treeView.addChild(
         {
           label: 'Node2_1',
@@ -459,8 +458,8 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node1 = treeView.getNode('node1')
-      const node2 = treeView.getNode('node2')
+      const node1 = treeView.getNode('node1')!
+      const node2 = treeView.getNode('node2')!
 
       treeView.addChild(node1)
 
@@ -476,8 +475,8 @@ describe('CompTreeView', () => {
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
       const treeViewNodesLength = treeView.children.length
-      const node1_1 = treeView.getNode('node1_1')
-      const node1 = node1_1.parent
+      const node1_1 = treeView.getNode('node1_1')!
+      const node1 = node1_1.parent!
 
       treeView.addChild(node1_1)
 
@@ -566,7 +565,7 @@ describe('CompTreeView', () => {
 
       const node1_1 = treeView.getNode('node1_1')!
       const node1_1Descendants = CompTreeViewUtils.getDescendants(node1_1)
-      const node1 = node1_1.parent
+      const node1 = node1_1.parent!
       const node1ChildrenLength = node1.children.length
 
       const actual = treeView.removeNode(node1_1.value)
@@ -670,7 +669,7 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBeTruthy()
 
       treeView.selectedNode = node1_1_1
@@ -689,9 +688,9 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBeTruthy()
-      const node1_1_3 = treeView.getNode('node1_1_3')
+      const node1_1_3 = treeView.getNode('node1_1_3')!
       expect(node1_1_3.selected).toBeFalsy()
 
       treeView.selectedNode = node1_1_3
@@ -714,7 +713,7 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBeTruthy()
 
       treeView.selectedNode = undefined
@@ -757,8 +756,8 @@ describe('CompTreeView', () => {
       treeView.addChild(node1, { insertIndex: 1 })
 
       // node1_1_1とnode1_1_2の位置を入れ替え
-      const node1_1 = treeView.getNode('node1_1')
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1 = treeView.getNode('node1_1')!
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       node1_1.addChild(node1_1_1, { insertIndex: 1 })
 
       const actual = treeView.getAllNodes()
@@ -789,7 +788,7 @@ describe('CompTreeView', () => {
       ],
       treeView.children.length
     )
-    const anonymous = treeView.getNode('')
+    const anonymous = treeView.getNode('')!
 
     // 親に空文字("")のノードを指定
     const anonymous_child1 = treeView.addChild(
@@ -953,9 +952,9 @@ describe('CompTreeNode', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node1_1 = treeView.getNode('node1_1')
-      const node1_1_1 = treeView.getNode('node1_1_1')
-      const node1_1_2 = treeView.getNode('node1_1_2')
+      const node1_1 = treeView.getNode('node1_1')!
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      const node1_1_2 = treeView.getNode('node1_1_2')!
 
       node1_1.addChild(node1_1_1)
 
@@ -971,8 +970,8 @@ describe('CompTreeNode', () => {
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
       const treeViewNodesLength = treeView.children.length
-      const node1 = treeView.getNode('node1')
-      const node2 = treeView.getNode('node2')
+      const node1 = treeView.getNode('node1')!
+      const node2 = treeView.getNode('node2')!
       const node2ChildrenLength = node2.children.length
 
       node2.addChild(node1)
@@ -990,7 +989,7 @@ describe('CompTreeNode', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node1 = treeView.getNode('node1')
+      const node1 = treeView.getNode('node1')!
 
       let actual!: Error
       try {
@@ -1012,8 +1011,8 @@ describe('CompTreeNode', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node1 = treeView.getNode('node1')
-      const node1_1 = treeView.getNode('node1_1')
+      const node1 = treeView.getNode('node1')!
+      const node1_1 = treeView.getNode('node1_1')!
 
       let actual!: Error
       try {
@@ -1061,7 +1060,7 @@ describe('CompTreeNode', () => {
 
       const node1_1 = treeView.getNode('node1_1')!
       const node1_1Descendants = CompTreeViewUtils.getDescendants(node1_1)
-      const node1 = node1_1.parent
+      const node1 = node1_1.parent!
       const node1ChildrenLength = node1.children.length
 
       node1.removeChild(node1_1)
@@ -1085,7 +1084,7 @@ describe('CompTreeNode', () => {
 
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBeTruthy()
-      const node1_1 = node1_1_1.parent
+      const node1_1 = node1_1_1.parent!
 
       node1_1.removeChild(node1_1_1)
 
@@ -1104,8 +1103,8 @@ describe('CompTreeNode', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node1_1 = treeView.getNode('node1_1')
-      const node1 = node1_1.parent
+      const node1_1 = treeView.getNode('node1_1')!
+      const node1 = node1_1.parent!
 
       // node1_1を削除
       treeView.removeNode(node1_1.value)
@@ -1126,7 +1125,7 @@ describe('CompTreeNode', () => {
 
       const node1_1 = treeView.getNode('node1_1')!
       const node1_1Descendants = CompTreeViewUtils.getDescendants(node1_1)
-      const node1 = node1_1.parent
+      const node1 = node1_1.parent!
       const node1ChildrenLength = node1.children.length
 
       node1.removeChild(node1_1)
@@ -1189,7 +1188,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       const newLabel = `${node1_1_1.label}_xxx`
 
       node1_1_1.label = newLabel
@@ -1205,7 +1204,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       const newLabel = `${node1_1_1.label}_xxx`
 
       node1_1_1.setNodeData({ label: newLabel })
@@ -1221,7 +1220,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       const newValue = `${node1_1_1.label}_xxx`
       const oldValue = node1_1_1.value
 
@@ -1243,7 +1242,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       const newValue = `${node1_1_1.label}_xxx`
       const oldValue = node1_1_1.value
 
@@ -1265,7 +1264,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       const newIcon = 'description'
 
       node1_1_1.icon = newIcon
@@ -1281,7 +1280,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       const newIcon = 'description'
 
       node1_1_1.setNodeData({ icon: newIcon })
@@ -1297,7 +1296,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       const newIconColor = 'indigo-5'
 
       node1_1_1.iconColor = newIconColor
@@ -1313,7 +1312,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       const newIconColor = 'indigo-5'
 
       node1_1_1.setNodeData({ iconColor: newIconColor })
@@ -1329,7 +1328,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1_1', opened: false }])
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.opened).toBe(false)
 
       node1_1_1.toggle()
@@ -1345,7 +1344,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1_1', opened: false }])
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.opened).toBe(false)
 
       node1_1_1.setNodeData({ opened: true })
@@ -1361,7 +1360,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1_1', opened: true }])
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.opened).toBe(true)
 
       node1_1_1.toggle()
@@ -1377,7 +1376,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1_1', opened: true }])
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.opened).toBe(true)
 
       node1_1_1.setNodeData({ opened: false })
@@ -1393,7 +1392,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1_1', selected: false }])
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeFalsy()
 
@@ -1416,7 +1415,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1_1', selected: false }])
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeFalsy()
 
@@ -1439,7 +1438,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1_1', unselectable: true, selected: false }])
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeTruthy()
       expect(node1_1_1.selected).toBeFalsy()
 
@@ -1463,7 +1462,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1_1', unselectable: true, selected: false }])
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeTruthy()
       expect(node1_1_1.selected).toBeFalsy()
 
@@ -1487,7 +1486,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeTruthy()
 
@@ -1511,7 +1510,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeTruthy()
 
@@ -1535,7 +1534,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1_1', selected: false }])
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeFalsy()
 
@@ -1557,7 +1556,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1_1', selected: false }])
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeFalsy()
 
@@ -1579,7 +1578,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeTruthy()
 
@@ -1600,7 +1599,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeTruthy()
 
@@ -1621,7 +1620,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeTruthy()
 
@@ -1643,7 +1642,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeTruthy()
 
@@ -1665,9 +1664,9 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBeTruthy()
-      const node1_1_3 = treeView.getNode('node1_1_3')
+      const node1_1_3 = treeView.getNode('node1_1_3')!
       expect(node1_1_3.selected).toBeFalsy()
 
       node1_1_3.selected = true
@@ -1692,9 +1691,9 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList)
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBeTruthy()
-      const node1_1_3 = treeView.getNode('node1_1_3')
+      const node1_1_3 = treeView.getNode('node1_1_3')!
       expect(node1_1_3.selected).toBeFalsy()
 
       node1_1_3.setNodeData({ selected: true })
@@ -1719,7 +1718,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1_1', unselectable: true, selected: false }])
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeTruthy()
       expect(node1_1_1.selected).toBeFalsy()
 
@@ -1740,7 +1739,7 @@ describe('CompTreeNode', () => {
       const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1_1', unselectable: true, selected: false }])
       treeView.buildTree(nodeDataList)
 
-      const node1_1_1 = treeView.getNode('node1_1_1')
+      const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeTruthy()
       expect(node1_1_1.selected).toBeFalsy()
 
@@ -1771,7 +1770,7 @@ describe('カスタムツリー', () => {
               label: 'Node1_1_1',
               value: 'node1_1_1',
               checked: true,
-              itemClass: CompTreeCheckboxNodeItem,
+              nodeClass: CompTreeCheckboxNode,
             },
           ],
         },
@@ -1785,14 +1784,14 @@ describe('カスタムツリー', () => {
     treeView.buildTree(cloneDeep(baseNodeDataList))
 
     const node1_1_1 = treeView.getNode('node1_1_1')!
-    expect(node1_1_1.item.checked).toBe(true)
+    expect(node1_1_1.checked).toBe(true)
 
-    node1_1_1.item.checked = false
+    node1_1_1.checked = false
 
     // イベント発火を検証
     expect(wrapper.emitted('checked-changed').length).toBe(1)
     expect(wrapper.emitted('checked-changed')[0][0]).toBe(node1_1_1)
     // ノードのチェック状態を検証
-    expect(node1_1_1.item.checked).not.toBeTruthy()
+    expect(node1_1_1.checked).toBeFalsy()
   })
 })

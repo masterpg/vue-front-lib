@@ -41,13 +41,13 @@
 
 <script lang="ts">
 import * as path from 'path'
-import { BaseDialog, CompTreeNode, NoCache, StorageNodeType } from '@/lib'
+import { BaseDialog, NoCache } from '@/lib'
 import { QDialog, QInput } from 'quasar'
 import { Component } from 'vue-property-decorator'
-import StorageTreeNodeItem from '@/example/views/demo/storage/storage-tree-node-item.vue'
+import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 
 @Component
-export default class StorageNodeRenameDialog extends BaseDialog<CompTreeNode<StorageTreeNodeItem>, string> {
+export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode, string> {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -61,7 +61,7 @@ export default class StorageNodeRenameDialog extends BaseDialog<CompTreeNode<Sto
 
   private get m_title(): string {
     if (!this.params) return ''
-    return String(this.$t('common.renameSomehow', { somehow: this.params.item.nodeTypeName }))
+    return String(this.$t('common.renameSomehow', { somehow: this.params.nodeTypeName }))
   }
 
   private get m_nodeIcon(): string {
@@ -82,7 +82,7 @@ export default class StorageNodeRenameDialog extends BaseDialog<CompTreeNode<Sto
     if (!this.params) return false
 
     if (this.m_newName !== null && this.m_newName === '') {
-      const target = String(this.$t('common.somehowName', { somehow: this.params.item.nodeTypeName }))
+      const target = String(this.$t('common.somehowName', { somehow: this.params.nodeTypeName }))
       this.m_errorMessage = String(this.$t('error.required', { target }))
       return true
     }
@@ -116,7 +116,7 @@ export default class StorageNodeRenameDialog extends BaseDialog<CompTreeNode<Sto
   //
   //----------------------------------------------------------------------
 
-  open(targetNode: CompTreeNode<StorageTreeNodeItem>): Promise<string> {
+  open(targetNode: StorageTreeNode): Promise<string> {
     this.m_newName = targetNode.label
     return this.openProcess(targetNode)
   }

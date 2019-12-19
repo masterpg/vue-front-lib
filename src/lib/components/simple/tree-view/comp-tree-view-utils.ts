@@ -1,6 +1,5 @@
 import CompTreeNode from './comp-tree-node.vue'
 import { CompTreeNodeData } from './types'
-import CompTreeNodeItem from './comp-tree-node-item.vue'
 import CompTreeView from './comp-tree-view.vue'
 import Vue from 'vue'
 
@@ -11,7 +10,7 @@ export namespace CompTreeViewUtils {
    * @param nodeData
    */
   export function newNode(treeView: CompTreeView, nodeData: CompTreeNodeData): CompTreeNode {
-    const NodeClass = Vue.extend(CompTreeNode)
+    const NodeClass = Vue.extend(nodeData.nodeClass || CompTreeNode)
     const node = new NodeClass() as any
     node.init(treeView, nodeData)
     node.$mount()
@@ -111,7 +110,7 @@ export namespace CompTreeViewUtils {
    * ノードの選択が変更された旨を通知するイベントを発火します。
    * @param target
    */
-  export function dispatchSelectedChanged(target: CompTreeNode | CompTreeNodeItem): void {
+  export function dispatchSelectedChanged(target: CompTreeNode): void {
     target.$el.dispatchEvent(
       new CustomEvent('selected-changed', {
         bubbles: true,
@@ -132,7 +131,7 @@ export namespace CompTreeViewUtils {
    * @param target
    * @param detail
    */
-  export function dispatchNodePropertyChanged(target: CompTreeNode | CompTreeNodeItem, detail: NodePropertyChangeDetail): void {
+  export function dispatchNodePropertyChanged(target: CompTreeNode, detail: NodePropertyChangeDetail): void {
     target.$el.dispatchEvent(
       new CustomEvent('node-property-changed', {
         bubbles: true,

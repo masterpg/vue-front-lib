@@ -1,6 +1,5 @@
 import { ChildrenSortFunc, CompTreeNodeData, StorageNode, StorageNodeType } from '@/lib'
-import { StorageTreeNode } from '@/example/views/demo/storage/storage-tree-store'
-import StorageTreeNodeItem from '@/example/views/demo/storage/storage-tree-node-item.vue'
+import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import { removeBothEndsSlash } from 'web-base-lib'
 
 export interface StorageTreeNodeData extends CompTreeNodeData {
@@ -19,7 +18,7 @@ export function getStorageTreeRootNodeData(): StorageTreeNodeData {
     icon: 'storage',
     opened: true,
     nodeType: 'Storage',
-    itemClass: StorageTreeNodeItem,
+    nodeClass: StorageTreeNode,
   }
 }
 
@@ -34,19 +33,21 @@ export function toStorageTreeNodeData(source: StorageNode): StorageTreeNodeData 
     parent: removeBothEndsSlash(source.dir),
     icon: source.nodeType === StorageNodeType.Dir ? 'folder' : 'description',
     nodeType: source.nodeType,
-    itemClass: StorageTreeNodeItem,
+    nodeClass: StorageTreeNode,
   }
 }
 
-export const storageTreeChildrenSortFunc: ChildrenSortFunc<StorageTreeNode> = (a, b) => {
-  if (a.item.nodeType === StorageNodeType.Dir && b.item.nodeType === StorageNodeType.File) {
+export const storageTreeChildrenSortFunc: ChildrenSortFunc = (a, b) => {
+  const _a = a as StorageTreeNode
+  const _b = b as StorageTreeNode
+  if (_a.nodeType === StorageNodeType.Dir && _b.nodeType === StorageNodeType.File) {
     return -1
-  } else if (a.item.nodeType === StorageNodeType.File && b.item.nodeType === StorageNodeType.Dir) {
+  } else if (_a.nodeType === StorageNodeType.File && _b.nodeType === StorageNodeType.Dir) {
     return 1
   }
-  if (a.label < b.label) {
+  if (_a.label < _b.label) {
     return -1
-  } else if (a.label > b.label) {
+  } else if (_a.label > _b.label) {
     return 1
   } else {
     return 0

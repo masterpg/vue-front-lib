@@ -1,5 +1,4 @@
 import CompTreeNode from './comp-tree-node.vue'
-import CompTreeNodeItem from './comp-tree-node-item.vue'
 import { Constructor } from 'web-base-lib'
 
 export interface CompTreeNodeData {
@@ -36,18 +35,18 @@ export interface CompTreeNodeData {
    */
   iconColor?: string
   /**
-   * CompTreeNodeItemを拡張した場合、拡張したノードアイテムのクラスを指定します。
+   * CompTreeNodeを拡張した場合、拡張したノードのクラスを指定します。
    */
-  itemClass?: Constructor<CompTreeNodeItem>
+  nodeClass?: Constructor<CompTreeNode>
   /**
    * 子ノードを指定します。
    */
   children?: this[]
 }
 
-export interface CompTreeNodeEditData extends Partial<Omit<CompTreeNodeData, 'itemClass' | 'children'>> {}
+export interface CompTreeNodeEditData extends Partial<Omit<CompTreeNodeData, 'nodeClass' | 'children'>> {}
 
-export type ChildrenSortFunc<Node extends CompTreeNode = CompTreeNode> = (a: Node, b: Node) => number
+export type ChildrenSortFunc = (a: CompTreeNode, b: CompTreeNode) => number
 
 export interface CompTreeCheckboxNodeData extends CompTreeNodeData {
   checked?: boolean

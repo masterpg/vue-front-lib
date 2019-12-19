@@ -5,7 +5,6 @@
   color: var(--comp-tree-view-color, $indigo-8)
   font-size: var(--comp-tree-view-font-size, 14px)
   font-weight: var(--comp-tree-font-weight, map-get($text-weights, "medium"))
-  line-height: var(--comp-tree-line-height, 26px)
   padding: var(--comp-tree-padding, 10px)
 </style>
 
@@ -27,7 +26,6 @@
 import { ChildrenSortFunc, CompTreeNodeData } from './types'
 import { BaseComponent } from '../../../base/component'
 import CompTreeNode from './comp-tree-node.vue'
-import CompTreeNodeItem from './comp-tree-node-item.vue'
 import { CompTreeViewUtils } from './comp-tree-view-utils'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '../../../base/decorators'
@@ -42,9 +40,9 @@ const isFunction = require('lodash/isFunction')
  * ----------------|-------------|----------
  * `--comp-tree-distance` | ノードとノードの縦の間隔です | `6px`
  * `--comp-tree-indent` | ノードの左インデントです | `16px`
- * `--comp-tree-view-font-size` | ノードアイテムのフォントサイズです | `14px`
- * `--comp-tree-font-weight` | ノードアイテムのフォントの太さです | `500`
- * `--comp-tree-line-height` | ノードアイテムの行の高さです | `26px`
+ * `--comp-tree-view-font-size` | ノードのフォントサイズです | `14px`
+ * `--comp-tree-font-weight` | ノードのフォントの太さです | `500`
+ * `--comp-tree-line-height` | ノードの行の高さです | `26px`
  * `--comp-tree-view-color` | ノードの文字色です | `indigo-8`
  * `--comp-tree-selected-color` | ノード選択時の文字色です | `pink-5`
  * `--comp-tree-unselectable-color` | 非選択ノードの文字色です | `grey-9`
@@ -194,8 +192,8 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
    * ノードを削除します。
    * @param value ノードを特定するための値
    */
-  removeNode(value: string): CompTreeNode | undefined {
-    const node = this.getNode(value)
+  removeNode<Node extends CompTreeNode = CompTreeNode>(value: string): Node | undefined {
+    const node = this.getNode<Node>(value)
     if (!node) return
 
     // 親がツリービューの場合
@@ -216,20 +214,20 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
    * ノードを特定するためのvalueと一致するノードを取得します。
    * @param value ノードを特定するための値
    */
-  getNode<NodeItem extends CompTreeNodeItem = CompTreeNodeItem>(value: string): CompTreeNode<NodeItem> | undefined {
-    return this.m_allNodeMap[value]
+  getNode<Node extends CompTreeNode = CompTreeNode>(value: string): Node | undefined {
+    return this.m_allNodeMap[value] as Node | undefined
   }
 
   /**
    * ツリービューの全ノードをツリー構造から平坦化した配列形式で取得します。
    */
-  getAllNodes<NodeItem extends CompTreeNodeItem = CompTreeNodeItem>(): CompTreeNode<NodeItem>[] {
+  getAllNodes<Node extends CompTreeNode = CompTreeNode>(): Node[] {
     const result: CompTreeNode[] = []
     for (const child of this.m_children) {
       result.push(child)
       result.push(...CompTreeViewUtils.getDescendants(child))
     }
-    return result
+    return result as Node[]
   }
 
   //----------------------------------------------------------------------
@@ -366,8 +364,8 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
    * 最年長ノードフラグを再設定します。
    */
   private m_restIsEldest(): void {
-    this.m_children.forEach((item, index) => {
-      item.isEldest = index === 0
+    this.m_children.forEach((node, index) => {
+      node.isEldest = index === 0
     })
   }
 

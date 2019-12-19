@@ -15,7 +15,9 @@ module.exports = {
     'ts-jest': {
       diagnostics: {
         // error TS2315: Type 'Vue' is not generic.
-        ignoreCodes: [2315],
+        // TS2339: Property 'xxx' does not exist on type 'Vue'.
+        // error TS2551: Property 'xxx' does not exist on type 'Vue'. Did you mean '$xxx'?
+        ignoreCodes: [2315, 2339, 2551],
       },
     },
   },

@@ -41,15 +41,13 @@
 
 <script lang="ts">
 import * as path from 'path'
-import { BaseDialog, CompTreeNode, NoCache } from '@/lib'
+import { BaseDialog, NoCache } from '@/lib'
 import { QDialog, QInput } from 'quasar'
 import { Component } from 'vue-property-decorator'
-import StorageTreeNodeItem from '@/example/views/demo/storage/storage-tree-node-item.vue'
-
-type AddingDirParentNode = CompTreeNode<StorageTreeNodeItem>
+import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 
 @Component
-export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNode, string> {
+export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, string> {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -83,7 +81,7 @@ export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNo
     if (!this.params) return false
 
     if (this.m_dirName !== null && this.m_dirName === '') {
-      const target = String(this.$t('common.somehowName', { somehow: this.params.item.nodeTypeName }))
+      const target = String(this.$t('common.somehowName', { somehow: this.params.nodeTypeName }))
       this.m_errorMessage = String(this.$t('error.required', { target }))
       return true
     }
@@ -117,7 +115,7 @@ export default class StorageDirCreateDialog extends BaseDialog<AddingDirParentNo
   //
   //----------------------------------------------------------------------
 
-  open(parentNode: AddingDirParentNode): Promise<string> {
+  open(parentNode: StorageTreeNode): Promise<string> {
     return this.openProcess(parentNode)
   }
 

@@ -66,10 +66,10 @@ import { BaseDialog, CompTreeNode, CompTreeView, NoCache, StorageNodeType } from
 import { getStorageTreeRootNodeData, storageTreeChildrenSortFunc, toStorageTreeNodeData } from '@/example/views/demo/storage/base'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import StorageTreeNodeItem from '@/example/views/demo/storage/storage-tree-node-item.vue'
+import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 
 @Component({ components: { CompTreeView } })
-export default class StorageNodeMoveDialog extends BaseDialog<CompTreeNode<StorageTreeNodeItem>, string | undefined> {
+export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode, string | undefined> {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -83,12 +83,12 @@ export default class StorageNodeMoveDialog extends BaseDialog<CompTreeNode<Stora
 
   private get m_title(): string {
     if (!this.params) return ''
-    return String(this.$t('common.moveSomehow', { somehow: this.params.item.nodeTypeName }))
+    return String(this.$t('common.moveSomehow', { somehow: this.params.nodeTypeName }))
   }
 
   private get m_nodeLabel(): string {
     if (!this.params) return ''
-    return String(this.$t('storage.movingNode', { nodeType: this.params.item.nodeTypeName }))
+    return String(this.$t('storage.movingNode', { nodeType: this.params.nodeTypeName }))
   }
 
   private get m_nodeName(): string {
@@ -120,7 +120,7 @@ export default class StorageNodeMoveDialog extends BaseDialog<CompTreeNode<Stora
   //
   //----------------------------------------------------------------------
 
-  open(targetNode: CompTreeNode<StorageTreeNodeItem>): Promise<string | undefined> {
+  open(targetNode: StorageTreeNode): Promise<string | undefined> {
     return this.openProcess(targetNode, {
       opened: () => {
         this.m_buildTreeView()
@@ -154,7 +154,7 @@ export default class StorageNodeMoveDialog extends BaseDialog<CompTreeNode<Stora
   }
 
   private m_buildTreeView(): void {
-    const rootNode = this.m_treeView.addChild(getStorageTreeRootNodeData())
+    const rootNode = this.m_treeView.addChild(getStorageTreeRootNodeData()) as StorageTreeNode
 
     for (const node of this.$logic.userStorage.nodes) {
       // ファイルは追加しない
@@ -163,6 +163,7 @@ export default class StorageNodeMoveDialog extends BaseDialog<CompTreeNode<Stora
       // ツリービューにディレクトリノードを追加
       const treeNode = this.m_treeView.getNode(node.path)
       const treeNodeData = toStorageTreeNodeData(node)
+      delete treeNodeData.nodeClass
       if (treeNode) {
         treeNode.setNodeData(treeNodeData)
       } else {

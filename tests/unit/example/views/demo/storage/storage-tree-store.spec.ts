@@ -157,7 +157,7 @@ describe('init', () => {
     expect(storageTreeStore.rootNode.label).toBe(rootNodeData.label)
     expect(storageTreeStore.rootNode.icon).toBe(rootNodeData.icon)
     expect(storageTreeStore.rootNode.opened).toBe(rootNodeData.opened)
-    expect(storageTreeStore.rootNode.item.nodeType).toBe(rootNodeData.nodeType)
+    expect(storageTreeStore.rootNode.nodeType).toBe(rootNodeData.nodeType)
   })
 
   it('既にルートノードが作成されている場合', () => {

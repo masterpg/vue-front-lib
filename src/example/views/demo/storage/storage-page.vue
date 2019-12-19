@@ -62,31 +62,20 @@ import * as _path from "path"
 
 <script lang="ts">
 import * as path from 'path'
-import {
-  BaseComponent,
-  CompStorageUploadProgressFloat,
-  CompTreeNode,
-  CompTreeNodeItem,
-  CompTreeView,
-  NoCache,
-  Resizable,
-  StorageNodeType,
-  User,
-} from '@/lib'
-import { StorageTreeNode, storageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
+import { BaseComponent, CompStorageUploadProgressFloat, CompTreeNode, CompTreeView, NoCache, Resizable, StorageNodeType, User } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import StorageDirCreateDialog from '@/example/views/demo/storage/storage-dir-create-dialog.vue'
 import StorageNodeMoveDialog from '@/example/views/demo/storage/storage-node-move-dialog.vue'
 import StorageNodeRenameDialog from '@/example/views/demo/storage/storage-node-rename-dialog.vue'
 import StorageNodesRemoveDialog from '@/example/views/demo/storage/storage-nodes-remove-dialog.vue'
+import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import { mixins } from 'vue-class-component'
 import { router } from '@/example/router'
+import { storageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
 
 @Component({
   components: {
     CompTreeView,
-    CompTreeNode,
-    CompTreeNodeItem,
     StorageDirCreateDialog,
     StorageNodeMoveDialog,
     StorageNodeRenameDialog,
@@ -242,9 +231,9 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     this.$q.loading.show()
 
     try {
-      if (treeNode.item.nodeType === StorageNodeType.Dir) {
+      if (treeNode.nodeType === StorageNodeType.Dir) {
         await this.$logic.userStorage.removeDirs([treeNode.value])
-      } else if (treeNode.item.nodeType === StorageNodeType.File) {
+      } else if (treeNode.nodeType === StorageNodeType.File) {
         await this.$logic.userStorage.removeFiles([treeNode.value])
       }
     } catch (err) {
@@ -253,7 +242,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       this.$q.notify({
         icon: 'report',
         position: 'bottom-left',
-        message: String(this.$t('storage.deletionNodeFailed', { nodeType: treeNode.item.nodeTypeName })),
+        message: String(this.$t('storage.deletionNodeFailed', { nodeType: treeNode.nodeTypeName })),
         timeout: 0,
         actions: [{ icon: 'close', color: 'white' }],
       })
@@ -279,9 +268,9 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     const toPath = path.join(toDir, treeNode.label)
 
     try {
-      if (treeNode.item.nodeType === StorageNodeType.Dir) {
+      if (treeNode.nodeType === StorageNodeType.Dir) {
         await this.$logic.userStorage.moveDir(treeNode.value, toPath)
-      } else if (treeNode.item.nodeType === StorageNodeType.File) {
+      } else if (treeNode.nodeType === StorageNodeType.File) {
         await this.$logic.userStorage.moveFile(treeNode.value, toPath)
       }
     } catch (err) {
@@ -290,7 +279,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       this.$q.notify({
         icon: 'report',
         position: 'bottom-left',
-        message: String(this.$t('storage.moveNodeFailed', { nodeType: treeNode.item.nodeTypeName })),
+        message: String(this.$t('storage.moveNodeFailed', { nodeType: treeNode.nodeTypeName })),
         timeout: 0,
         actions: [{ icon: 'close', color: 'white' }],
       })
@@ -312,9 +301,9 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     this.$q.loading.show()
 
     try {
-      if (treeNode.item.nodeType === StorageNodeType.Dir) {
+      if (treeNode.nodeType === StorageNodeType.Dir) {
         await this.$logic.userStorage.renameDir(treeNode.value, newName)
-      } else if (treeNode.item.nodeType === StorageNodeType.File) {
+      } else if (treeNode.nodeType === StorageNodeType.File) {
         await this.$logic.userStorage.renameFile(treeNode.value, newName)
       }
     } catch (err) {
@@ -323,7 +312,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       this.$q.notify({
         icon: 'report',
         position: 'bottom-left',
-        message: String(this.$t('storage.renameNodeFailed', { nodeType: treeNode.item.nodeTypeName })),
+        message: String(this.$t('storage.renameNodeFailed', { nodeType: treeNode.nodeTypeName })),
         timeout: 0,
         actions: [{ icon: 'close', color: 'white' }],
       })

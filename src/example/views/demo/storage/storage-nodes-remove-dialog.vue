@@ -36,15 +36,13 @@
 </template>
 
 <script lang="ts">
-import { BaseDialog, CompTreeNode, NoCache, StorageNodeType } from '@/lib'
+import { BaseDialog, NoCache, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import StorageTreeNodeItem from '@/example/views/demo/storage/storage-tree-node-item.vue'
-
-export type RemovingNodes = CompTreeNode<StorageTreeNodeItem>[]
+import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 
 @Component
-export default class StorageNodesRemoveDialog extends BaseDialog<RemovingNodes, boolean> {
+export default class StorageNodesRemoveDialog extends BaseDialog<StorageTreeNode[], boolean> {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -74,9 +72,9 @@ export default class StorageNodesRemoveDialog extends BaseDialog<RemovingNodes, 
       let fileNum = 0
       let folderNum = 0
       for (const node of this.params) {
-        if (node.item.nodeType === StorageNodeType.Dir) {
+        if (node.nodeType === StorageNodeType.Dir) {
           folderNum++
-        } else if (node.item.nodeType === StorageNodeType.File) {
+        } else if (node.nodeType === StorageNodeType.File) {
           fileNum++
         }
       }
@@ -108,7 +106,7 @@ export default class StorageNodesRemoveDialog extends BaseDialog<RemovingNodes, 
   //
   //----------------------------------------------------------------------
 
-  open(nodes: RemovingNodes): Promise<boolean> {
+  open(nodes: StorageTreeNode[]): Promise<boolean> {
     return this.openProcess(nodes)
   }
 

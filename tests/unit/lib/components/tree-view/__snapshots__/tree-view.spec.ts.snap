@@ -5,11 +5,9 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
   class="child-container"
   style="min-width: 0px;"
 >
-  <div
-    class="main"
-  >
+  <div>
     <div
-      class="item-container layout horizontal center eldest"
+      class="node-container layout horizontal center eldest"
     >
       <div
         class="icon-container"
@@ -24,40 +22,45 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
       </div>
        
       <div
-        class="icon-container"
+        class="layout horizontal center item-container"
       >
-        <svg
-          class="dot"
-          height="6px"
-          width="6px"
-          xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
+        <div
+          class="icon-container"
         >
-          <circle
-            cx="3"
-            cy="3"
-            fill="#9b9b9b"
-            r="3"
-            stroke-width="0"
-          />
-        </svg>
+          <svg
+            class="dot"
+            height="6px"
+            width="6px"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+          >
+            <circle
+              cx="3"
+              cy="3"
+              fill="#9b9b9b"
+              r="3"
+              stroke-width="0"
+            />
+          </svg>
+        </div>
+         
+        <div
+          class="item"
+        >
+          <span>
+            Node1
+          </span>
+        </div>
       </div>
-      <span
-        class="item"
-      >
-        Node1
-      </span>
     </div>
      
     <div
       class="child-container opened"
       style="height: 0px;"
     >
-      <div
-        class="main"
-      >
+      <div>
         <div
-          class="item-container layout horizontal center"
+          class="node-container layout horizontal center"
         >
           <div
             class="icon-container"
@@ -72,40 +75,45 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
           </div>
            
           <div
-            class="icon-container"
+            class="layout horizontal center item-container"
           >
-            <svg
-              class="dot"
-              height="6px"
-              width="6px"
-              xmlns="http://www.w3.org/2000/svg"
-              xmlns:xlink="http://www.w3.org/1999/xlink"
+            <div
+              class="icon-container"
             >
-              <circle
-                cx="3"
-                cy="3"
-                fill="#9b9b9b"
-                r="3"
-                stroke-width="0"
-              />
-            </svg>
+              <svg
+                class="dot"
+                height="6px"
+                width="6px"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+              >
+                <circle
+                  cx="3"
+                  cy="3"
+                  fill="#9b9b9b"
+                  r="3"
+                  stroke-width="0"
+                />
+              </svg>
+            </div>
+             
+            <div
+              class="item"
+            >
+              <span>
+                Node1_1
+              </span>
+            </div>
           </div>
-          <span
-            class="item"
-          >
-            Node1_1
-          </span>
         </div>
          
         <div
           class="child-container opened"
           style="height: 0px;"
         >
-          <div
-            class="main"
-          >
+          <div>
             <div
-              class="item-container layout horizontal center"
+              class="node-container layout horizontal center"
             >
               <div
                 class="icon-container"
@@ -117,32 +125,37 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
               </div>
                
               <div
-                class="icon-container"
+                class="layout horizontal center item-container selected"
               >
-                <i
-                  aria-hidden="true"
-                  class="material-icons q-icon text-"
-                  style="font-size: 24px;"
+                <div
+                  class="icon-container"
                 >
-                  inbox
-                </i>
+                  <i
+                    aria-hidden="true"
+                    class="material-icons q-icon text-"
+                    style="font-size: 24px;"
+                  >
+                    inbox
+                  </i>
+                </div>
+                 
+                <div
+                  class="item"
+                >
+                  <span>
+                    Node1_1_1
+                  </span>
+                </div>
               </div>
-              <span
-                class="item selected"
-              >
-                Node1_1_1
-              </span>
             </div>
              
             <div
               class="child-container"
             />
           </div>
-          <div
-            class="main"
-          >
+          <div>
             <div
-              class="item-container layout horizontal center"
+              class="node-container layout horizontal center"
             >
               <div
                 class="icon-container"
@@ -154,40 +167,45 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
               </div>
                
               <div
-                class="icon-container"
+                class="layout horizontal center item-container unselectable"
               >
-                <svg
-                  class="dot"
-                  height="6px"
-                  width="6px"
-                  xmlns="http://www.w3.org/2000/svg"
-                  xmlns:xlink="http://www.w3.org/1999/xlink"
+                <div
+                  class="icon-container"
                 >
-                  <circle
-                    cx="3"
-                    cy="3"
-                    fill="#9b9b9b"
-                    r="3"
-                    stroke-width="0"
-                  />
-                </svg>
+                  <svg
+                    class="dot"
+                    height="6px"
+                    width="6px"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                  >
+                    <circle
+                      cx="3"
+                      cy="3"
+                      fill="#9b9b9b"
+                      r="3"
+                      stroke-width="0"
+                    />
+                  </svg>
+                </div>
+                 
+                <div
+                  class="item"
+                >
+                  <span>
+                    Node1_1_2
+                  </span>
+                </div>
               </div>
-              <span
-                class="item unselectable"
-              >
-                Node1_1_2
-              </span>
             </div>
              
             <div
               class="child-container"
             />
           </div>
-          <div
-            class="main"
-          >
+          <div>
             <div
-              class="item-container layout horizontal center"
+              class="node-container layout horizontal center"
             >
               <div
                 class="icon-container"
@@ -199,29 +217,36 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
               </div>
                
               <div
-                class="icon-container"
+                class="layout horizontal center item-container"
               >
-                <svg
-                  class="dot"
-                  height="6px"
-                  width="6px"
-                  xmlns="http://www.w3.org/2000/svg"
-                  xmlns:xlink="http://www.w3.org/1999/xlink"
+                <div
+                  class="icon-container"
                 >
-                  <circle
-                    cx="3"
-                    cy="3"
-                    fill="#9b9b9b"
-                    r="3"
-                    stroke-width="0"
-                  />
-                </svg>
+                  <svg
+                    class="dot"
+                    height="6px"
+                    width="6px"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                  >
+                    <circle
+                      cx="3"
+                      cy="3"
+                      fill="#9b9b9b"
+                      r="3"
+                      stroke-width="0"
+                    />
+                  </svg>
+                </div>
+                 
+                <div
+                  class="item"
+                >
+                  <span>
+                    Node1_1_3
+                  </span>
+                </div>
               </div>
-              <span
-                class="item"
-              >
-                Node1_1_3
-              </span>
             </div>
              
             <div
@@ -232,11 +257,9 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
       </div>
     </div>
   </div>
-  <div
-    class="main"
-  >
+  <div>
     <div
-      class="item-container layout horizontal center"
+      class="node-container layout horizontal center"
     >
       <div
         class="icon-container"
@@ -248,29 +271,36 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
       </div>
        
       <div
-        class="icon-container"
+        class="layout horizontal center item-container"
       >
-        <svg
-          class="dot"
-          height="6px"
-          width="6px"
-          xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
+        <div
+          class="icon-container"
         >
-          <circle
-            cx="3"
-            cy="3"
-            fill="#9b9b9b"
-            r="3"
-            stroke-width="0"
-          />
-        </svg>
+          <svg
+            class="dot"
+            height="6px"
+            width="6px"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+          >
+            <circle
+              cx="3"
+              cy="3"
+              fill="#9b9b9b"
+              r="3"
+              stroke-width="0"
+            />
+          </svg>
+        </div>
+         
+        <div
+          class="item"
+        >
+          <span>
+            Node2
+          </span>
+        </div>
       </div>
-      <span
-        class="item"
-      >
-        Node2
-      </span>
     </div>
      
     <div

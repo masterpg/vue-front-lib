@@ -1,5 +1,5 @@
 import * as _path from 'path'
-import { CompTreeNode, CompTreeView, StorageNode, StorageNodeType } from '@/lib'
+import { CompTreeView, StorageNode, StorageNodeType } from '@/lib'
 import {
   StorageTreeNodeData,
   getStorageTreeRootNodeData,
@@ -7,11 +7,9 @@ import {
   toStorageTreeNodeData,
 } from '@/example/views/demo/storage/base'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
-import StorageTreeNodeItem from '@/example/views/demo/storage/storage-tree-node-item.vue'
+import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 
 export type StorageTreeView = CompTreeView<StorageTreeNodeData>
-
-export type StorageTreeNode = CompTreeNode<StorageTreeNodeItem>
 
 export class StorageTreeStore {
   //----------------------------------------------------------------------
@@ -55,9 +53,9 @@ export class StorageTreeStore {
     this.m_treeView = treeView
 
     if (!this.rootNode) {
-      this.m_rootNode = this.m_treeView.addChild(getStorageTreeRootNodeData())
+      this.m_rootNode = this.m_treeView.addChild(getStorageTreeRootNodeData()) as StorageTreeNode
     } else {
-      this.m_rootNode = this.m_treeView.addChild(this.rootNode)
+      this.m_rootNode = this.m_treeView.addChild(this.rootNode) as StorageTreeNode
     }
   }
 
@@ -65,7 +63,7 @@ export class StorageTreeStore {
    * ツリービューの全てのツリーノードを取得します。
    */
   getAllNodes(): StorageTreeNode[] {
-    return this.m_treeView.getAllNodes<StorageTreeNodeItem>()
+    return this.m_treeView.getAllNodes<StorageTreeNode>()
   }
 
   /**
@@ -73,7 +71,7 @@ export class StorageTreeStore {
    * @param path
    */
   getNode(path: string): StorageTreeNode | undefined {
-    return this.m_treeView.getNode<StorageTreeNodeItem>(path)
+    return this.m_treeView.getNode<StorageTreeNode>(path)
   }
 
   /**
@@ -161,7 +159,7 @@ export class StorageTreeStore {
       throw new Error(`The specified node was not found: '${fromPath}'`)
     }
 
-    if (target.item.nodeType === StorageNodeType.Dir) {
+    if (target.nodeType === StorageNodeType.Dir) {
       // 移動先ディレクトリが移動元のサブディレクトリでないことを確認
       // from: aaa/bbb → to: aaa/bbb/ccc/bbb [NG]
       //               → to: aaa/zzz/ccc/bbb [OK]
@@ -180,7 +178,7 @@ export class StorageTreeStore {
       sortFunc: storageTreeChildrenSortFunc,
     })
 
-    if (target.item.nodeType === StorageNodeType.Dir) {
+    if (target.nodeType === StorageNodeType.Dir) {
       const descendants = target.getDescendants() as StorageTreeNode[]
       for (const descendant of descendants) {
         const reg = new RegExp(`^${fromPath}`)

@@ -61,12 +61,11 @@ export {
   BaseHistoryDialogManager,
   ChildrenSortFunc,
   CompStorageUploadProgressFloat,
+  CompTreeCheckboxNode,
   CompTreeCheckboxNodeData,
-  CompTreeCheckboxNodeItem,
   CompTreeNode,
   CompTreeNodeData,
   CompTreeNodeEditData,
-  CompTreeNodeItem,
   CompTreeView,
   CompTreeViewUtils,
 } from './components'
