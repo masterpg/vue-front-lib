@@ -35,6 +35,19 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return response.data.customToken
   }
 
+  async getSignedUploadUrls(inputs: { filePath: string; contentType?: string }[]): Promise<string[]> {
+    const response = await this.query<{ signedUploadUrls: string[] }>({
+      query: gql`
+        query GetSignedUploadUrls($inputs: [SignedUploadUrlInput!]!) {
+          signedUploadUrls(inputs: $inputs)
+        }
+      `,
+      variables: { inputs },
+      isAuth: true,
+    })
+    return response.data.signedUploadUrls
+  }
+
   async userStorageDirNodes(dirPath?: string): Promise<APIStorageNode[]> {
     const response = await this.query<{ userStorageDirNodes: APIResponseStorageNode[] }>({
       query: gql`
@@ -195,17 +208,164 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return this.toAPIStorageNode(response.data!.renameUserStorageFile)
   }
 
-  async getSignedUploadUrls(inputs: { filePath: string; contentType?: string }[]): Promise<string[]> {
-    const response = await this.query<{ signedUploadUrls: string[] }>({
+  async storageDirNodes(dirPath?: string): Promise<APIStorageNode[]> {
+    const response = await this.query<{ storageDirNodes: APIResponseStorageNode[] }>({
       query: gql`
-        query GetSignedUploadUrls($inputs: [SignedUploadUrlInput!]!) {
-          signedUploadUrls(inputs: $inputs)
+        query GetStorageNodes($dirPath: String) {
+          storageDirNodes(dirPath: $dirPath) {
+            nodeType
+            name
+            dir
+            path
+            created
+            updated
+          }
         }
       `,
-      variables: { inputs },
+      variables: { dirPath },
       isAuth: true,
     })
-    return response.data.signedUploadUrls
+    return this.toAPIStorageNodes(response.data.storageDirNodes)
+  }
+
+  async createStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+    const response = await this.mutate<{ createStorageDirs: APIResponseStorageNode[] }>({
+      mutation: gql`
+        mutation CreateStorageDirs($dirPaths: [String!]!) {
+          createStorageDirs(dirPaths: $dirPaths) {
+            nodeType
+            name
+            dir
+            path
+            created
+            updated
+          }
+        }
+      `,
+      variables: { dirPaths },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data!.createStorageDirs)
+  }
+
+  async removeStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+    const response = await this.mutate<{ removeStorageDirs: APIResponseStorageNode[] }>({
+      mutation: gql`
+        mutation RemoveStorageDirs($dirPaths: [String!]!) {
+          removeStorageDirs(dirPaths: $dirPaths) {
+            nodeType
+            name
+            dir
+            path
+            created
+            updated
+          }
+        }
+      `,
+      variables: { dirPaths },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data!.removeStorageDirs)
+  }
+
+  async removeStorageFiles(filePaths: string[]): Promise<APIStorageNode[]> {
+    const response = await this.mutate<{ removeStorageFiles: APIResponseStorageNode[] }>({
+      mutation: gql`
+        mutation RemoveStorageFileNodes($filePaths: [String!]!) {
+          removeStorageFiles(filePaths: $filePaths) {
+            nodeType
+            name
+            dir
+            path
+            created
+            updated
+          }
+        }
+      `,
+      variables: { filePaths },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data!.removeStorageFiles)
+  }
+
+  async moveStorageDir(fromDirPath: string, toDirPath: string): Promise<APIStorageNode[]> {
+    const response = await this.mutate<{ moveStorageDir: APIResponseStorageNode[] }>({
+      mutation: gql`
+        mutation MoveStorageDir($fromDirPath: String!, $toDirPath: String!) {
+          moveStorageDir(fromDirPath: $fromDirPath, toDirPath: $toDirPath) {
+            nodeType
+            name
+            dir
+            path
+            created
+            updated
+          }
+        }
+      `,
+      variables: { fromDirPath, toDirPath },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data!.moveStorageDir)
+  }
+
+  async moveStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode> {
+    const response = await this.mutate<{ moveStorageFile: APIResponseStorageNode }>({
+      mutation: gql`
+        mutation MoveStorageFile($fromFilePath: String!, $toFilePath: String!) {
+          moveStorageFile(fromFilePath: $fromFilePath, toFilePath: $toFilePath) {
+            nodeType
+            name
+            dir
+            path
+            created
+            updated
+          }
+        }
+      `,
+      variables: { fromFilePath, toFilePath },
+      isAuth: true,
+    })
+    return this.toAPIStorageNode(response.data!.moveStorageFile)
+  }
+
+  async renameStorageDir(dirPath: string, newName: string): Promise<APIStorageNode[]> {
+    const response = await this.mutate<{ renameStorageDir: APIResponseStorageNode[] }>({
+      mutation: gql`
+        mutation RenameStorageDir($dirPath: String!, $newName: String!) {
+          renameStorageDir(dirPath: $dirPath, newName: $newName) {
+            nodeType
+            name
+            dir
+            path
+            created
+            updated
+          }
+        }
+      `,
+      variables: { dirPath, newName },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data!.renameStorageDir)
+  }
+
+  async renameStorageFile(filePath: string, newName: string): Promise<APIStorageNode> {
+    const response = await this.mutate<{ renameStorageFile: APIResponseStorageNode }>({
+      mutation: gql`
+        mutation RenameStorageFile($filePath: String!, $newName: String!) {
+          renameStorageFile(filePath: $filePath, newName: $newName) {
+            nodeType
+            name
+            dir
+            path
+            created
+            updated
+          }
+        }
+      `,
+      variables: { filePath, newName },
+      isAuth: true,
+    })
+    return this.toAPIStorageNode(response.data!.renameStorageFile)
   }
 
   //----------------------------------------------------------------------

@@ -37,14 +37,14 @@ export interface CompTreeNodeData {
   /**
    * CompTreeNodeを拡張した場合、拡張したノードのクラスを指定します。
    */
-  nodeClass?: Constructor<CompTreeNode>
+  nodeClass?: Constructor
   /**
    * 子ノードを指定します。
    */
   children?: this[]
 }
 
-export interface CompTreeNodeEditData extends Partial<Omit<CompTreeNodeData, 'nodeClass' | 'children'>> {}
+export type CompTreeNodeEditData<T> = Omit<T, 'nodeClass' | 'children'>
 
 export type ChildrenSortFunc = (a: CompTreeNode, b: CompTreeNode) => number
 

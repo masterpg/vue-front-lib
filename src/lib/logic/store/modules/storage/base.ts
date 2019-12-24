@@ -3,7 +3,6 @@ import { StorageNode, StorageNodeForSet, StorageNodeType, StorageState, StorageS
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { BaseStore } from '../../base'
 import { NoCache } from '../../../../base/decorators'
-const isString = require('lodash/isString')
 
 export abstract class BaseStorageStore extends BaseStore<StorageState> implements StorageStore {
   //----------------------------------------------------------------------
@@ -80,11 +79,13 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
       const stateNode = stateNodeMap[node.path]
 
       if (node.nodeType) stateNode.nodeType = node.nodeType
-      if (isString(node.newPath)) {
+      if (typeof node.newPath === 'string') {
         stateNode.name = _path.basename(node.newPath!)
         stateNode.dir = removeStartDirChars(_path.dirname(node.newPath!))
-        stateNode.path = node.newPath!
+        stateNode.path = node.newPath
       }
+      stateNode.created = node.created
+      stateNode.updated = node.updated
 
       result.push(this.clone(stateNode))
     }

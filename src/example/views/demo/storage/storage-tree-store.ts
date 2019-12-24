@@ -179,7 +179,7 @@ export class StorageTreeStore {
     })
 
     if (target.nodeType === StorageNodeType.Dir) {
-      const descendants = target.getDescendants() as StorageTreeNode[]
+      const descendants = target.getDescendants<StorageTreeNode>()
       for (const descendant of descendants) {
         const reg = new RegExp(`^${fromPath}`)
         descendant.value = descendant.value.replace(reg, target.value)

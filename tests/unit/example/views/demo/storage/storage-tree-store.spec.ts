@@ -248,7 +248,17 @@ describe('setNodes', () => {
   })
 
   it('ツリーに存在するノードの設定', () => {
-    // TODO 実装すること
+    const CREATED = dayjs('2019-12-01')
+    const UPDATED = dayjs('2019-12-02')
+    const updatingD11 = Object.assign({}, d11, { created: CREATED, updated: UPDATED })
+    const updatingFileA = Object.assign({}, fileA, { created: CREATED, updated: UPDATED })
+
+    storageTreeStore.setNodes([updatingD11, updatingFileA])
+
+    expect(storageTreeStore.getNode('d1/d11')!.createdDate).toEqual(CREATED)
+    expect(storageTreeStore.getNode('d1/d11')!.updatedDate).toEqual(UPDATED)
+    expect(storageTreeStore.getNode('d1/d11/fileA.txt')!.createdDate).toEqual(CREATED)
+    expect(storageTreeStore.getNode('d1/d11/fileA.txt')!.updatedDate).toEqual(UPDATED)
   })
 })
 

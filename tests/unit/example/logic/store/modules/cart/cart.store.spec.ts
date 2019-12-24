@@ -34,7 +34,7 @@ const CART_ITEMS: CartItem[] = [
 //
 //========================================================================
 
-let cartStore!: TestStore<CartState, CartStore>
+let cartStore!: TestStore<CartStore, CartState>
 
 //========================================================================
 //
@@ -44,7 +44,7 @@ let cartStore!: TestStore<CartState, CartStore>
 
 beforeAll(async () => {
   await initExampleTest()
-  cartStore = store.cart as TestStore<CartState, CartStore>
+  cartStore = store.cart as TestStore<CartStore, CartState>
 })
 
 beforeEach(async () => {

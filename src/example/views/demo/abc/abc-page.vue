@@ -15,7 +15,7 @@
 <template>
   <div class="layout vertical" @component-resize="m_onComponentResize">
     <q-card class="app-pa-12" :class="{ 'app-ma-48': screenSize.pc, 'app-ma-24': screenSize.tab, 'app-ma-12': screenSize.sp }">
-      <div class="app-my-16">{{ $t('hello', { today: $d(new Date(), 'short') }) }}</div>
+      <div class="app-my-16">{{ $t('hello', { today: $d(new Date(), 'dateSec') }) }}</div>
       <q-input ref="messageInput" v-model="m_message" :data-tid="tid('messageInput')" label="Input Message" />
       <div class="app-my-16">
         <span class="title">propA: </span><span class="value">{{ propA }}</span>

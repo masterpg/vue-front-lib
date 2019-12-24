@@ -97,7 +97,7 @@ const STORAGE_NODES: StorageNode[] = [d1, d11, fileA, d12, d2, d21, fileB, fileC
 //========================================================================
 
 class MockStorageStore extends BaseStorageStore {}
-const storageStore = (new MockStorageStore() as any) as TestStore<StorageState, StorageStore>
+const storageStore = (new MockStorageStore() as StorageStore) as TestStore<StorageStore, StorageState>
 
 function getStateNode(path: string): StorageNode | undefined {
   for (const node of storageStore.state.all) {
@@ -259,22 +259,26 @@ describe('setAll', () => {
 
 describe('setList', () => {
   it('pathを変更', () => {
+    const UPDATED = dayjs('2019-01-01')
     const actual = storageStore.setList([
-      { path: 'd1', newPath: 'x1' },
-      { path: 'd1/d11', newPath: 'x1/x11' },
-      { path: 'd1/d11/fileA.txt', newPath: 'x1/x11/fileA.txt' },
+      { path: 'd1', newPath: 'x1', created: UPDATED, updated: UPDATED },
+      { path: 'd1/d11', newPath: 'x1/x11', created: UPDATED, updated: UPDATED },
+      { path: 'd1/d11/fileA.txt', newPath: 'x1/x11/fileA.txt', created: UPDATED, updated: UPDATED },
     ])
 
     expect(actual.length).toBe(3)
     expect(actual[0].name).toEqual('x1')
     expect(actual[0].dir).toEqual('')
     expect(actual[0].path).toEqual('x1')
+    expect(actual[0].updated).toEqual(UPDATED)
     expect(actual[1].name).toEqual('x11')
     expect(actual[1].dir).toEqual('x1')
     expect(actual[1].path).toEqual('x1/x11')
+    expect(actual[1].updated).toEqual(UPDATED)
     expect(actual[2].name).toEqual('fileA.txt')
     expect(actual[2].dir).toEqual('x1/x11')
     expect(actual[2].path).toEqual('x1/x11/fileA.txt')
+    expect(actual[2].updated).toEqual(UPDATED)
 
     verifyStateNodes()
     existsStateNodes(actual)
@@ -284,7 +288,7 @@ describe('setList', () => {
   it('存在しないpathを指定した場合', () => {
     let actual: Error
     try {
-      storageStore.setList([{ path: 'dXXX', newPath: 'dYYY' }])
+      storageStore.setList([{ path: 'dXXX', newPath: 'dYYY', created: dayjs('2019-01-01'), updated: dayjs('2019-01-01') }])
     } catch (err) {
       actual = err
     }

@@ -1,9 +1,24 @@
-import { api } from '../../../mocks/common/logic/api'
+import { TestLibAPIContainer } from '../../../mocks/lib/logic/api'
 import { config } from '@/lib/config'
 import { initLibTest } from '../../../helpers/lib/init'
 
+//========================================================================
+//
+//  Test helpers
+//
+//========================================================================
+
+let api!: TestLibAPIContainer
+
+//========================================================================
+//
+//  Tests
+//
+//========================================================================
+
 beforeAll(async () => {
-  await initLibTest()
+  api = new TestLibAPIContainer()
+  await initLibTest({ api })
 })
 
 describe('LibConfig', () => {

@@ -1,5 +1,5 @@
 import { APIAddCartItemInput, APICartItem, APIEditCartItemResponse, APIProduct } from '@/example/logic/api'
-import { api } from '../../../../../mocks/common/logic/api'
+import { TestAppAPIContainer } from '../../../../../mocks/example/logic/api'
 import { initExampleTest } from '../../../../../helpers/example/init'
 const cloneDeep = require('lodash/cloneDeep')
 
@@ -42,6 +42,8 @@ const CART_ITEMS: APICartItem[] = [
 //
 //========================================================================
 
+let api!: TestAppAPIContainer
+
 function getAPIErrorResponse(error: any): { statusCode: number; error: string; message: string } {
   return error.graphQLErrors[0].extensions.exception.response
 }
@@ -53,7 +55,8 @@ function getAPIErrorResponse(error: any): { statusCode: number; error: string; m
 //========================================================================
 
 beforeAll(async () => {
-  await initExampleTest()
+  api = new TestAppAPIContainer()
+  await initExampleTest({ api })
 })
 
 beforeEach(async () => {

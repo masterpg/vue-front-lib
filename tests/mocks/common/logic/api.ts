@@ -153,18 +153,3 @@ export function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIConta
     }
   }
 }
-
-//========================================================================
-//
-//  MockAPIContainer
-//
-//========================================================================
-
-class MockAPIContainer extends mix(AppGQLAPIContainer).with(TestGQLAPIContainerMixin) {}
-
-export let api: MockAPIContainer
-
-export function initTestAPI(): void {
-  api = new MockAPIContainer()
-  _initAPI({ apiType: 'gql', api })
-}

@@ -2,9 +2,9 @@
 @import '../../../styles/lib.variables'
 
 .child-container
-  color: var(--comp-tree-view-color, $indigo-8)
+  color: var(--comp-tree-view-color, $app-link-color)
   font-size: var(--comp-tree-view-font-size, 14px)
-  font-weight: var(--comp-tree-font-weight, map-get($text-weights, "medium"))
+  font-weight: var(--comp-tree-font-weight, $app-link-font-weight)
   padding: var(--comp-tree-padding, 10px)
 </style>
 
@@ -41,9 +41,9 @@ const isFunction = require('lodash/isFunction')
  * `--comp-tree-distance` | ノードとノードの縦の間隔です | `6px`
  * `--comp-tree-indent` | ノードの左インデントです | `16px`
  * `--comp-tree-view-font-size` | ノードのフォントサイズです | `14px`
- * `--comp-tree-font-weight` | ノードのフォントの太さです | `500`
+ * `--comp-tree-font-weight` | ノードのフォントの太さです | $link-font-weight
  * `--comp-tree-line-height` | ノードの行の高さです | `26px`
- * `--comp-tree-view-color` | ノードの文字色です | `indigo-8`
+ * `--comp-tree-view-color` | ノードの文字色です | $link-color
  * `--comp-tree-selected-color` | ノード選択時の文字色です | `pink-5`
  * `--comp-tree-unselectable-color` | 非選択ノードの文字色です | `grey-9`
  * `--comp-tree-padding` | ツリービューのpaddingです | `10px`

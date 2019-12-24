@@ -22,7 +22,7 @@ const PRODUCTS: Product[] = [
 //
 //========================================================================
 
-let productStore!: TestStore<ProductState, ProductStore>
+let productStore!: TestStore<ProductStore, ProductState>
 
 //========================================================================
 //
@@ -32,7 +32,7 @@ let productStore!: TestStore<ProductState, ProductStore>
 
 beforeAll(async () => {
   await initExampleTest()
-  productStore = store.product as TestStore<ProductState, ProductStore>
+  productStore = store.product as TestStore<ProductStore, ProductState>
 })
 
 beforeEach(async () => {

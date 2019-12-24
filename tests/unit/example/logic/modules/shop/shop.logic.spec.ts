@@ -1,5 +1,5 @@
 import * as td from 'testdouble'
-import { APIEditCartItemResponse, APIProduct, AppAPIContainer, api, initAPI } from '@/example/logic/api'
+import { APIEditCartItemResponse, APIProduct, AppAPIContainer, api } from '@/example/logic/api'
 import { CartItem, CartState, CartStore, CheckoutStatus, ProductState, ProductStore, store } from '@/example/logic/store'
 import { TestLogic, TestStore } from '../../../../../helpers/common/store'
 import { User, UserStore } from '@/lib'
@@ -61,9 +61,9 @@ const GENERAL_USER: User = {
 //========================================================================
 
 let shopLogic!: TestLogic<ShopLogicImpl>
-let cartStore!: TestStore<CartState, CartStore>
-let productStore!: TestStore<ProductState, ProductStore>
-let userStore!: TestStore<void, UserStore>
+let cartStore!: TestStore<CartStore, CartState>
+let productStore!: TestStore<ProductStore, ProductState>
+let userStore!: TestStore<UserStore, void>
 
 //========================================================================
 //
@@ -72,14 +72,14 @@ let userStore!: TestStore<void, UserStore>
 //========================================================================
 
 beforeAll(async () => {
-  await initExampleTest()
-
-  initAPI({ apiType: 'gql', api: td.object<AppAPIContainer>() })
+  await initExampleTest({
+    api: td.object<AppAPIContainer>(),
+  })
 
   shopLogic = logic.shop as TestLogic<ShopLogicImpl>
-  cartStore = store.cart as TestStore<CartState, CartStore>
-  productStore = store.product as TestStore<ProductState, ProductStore>
-  userStore = store.user as TestStore<void, UserStore>
+  cartStore = store.cart as TestStore<CartStore, CartState>
+  productStore = store.product as TestStore<ProductStore, ProductState>
+  userStore = store.user as TestStore<UserStore, void>
 })
 
 beforeEach(async () => {

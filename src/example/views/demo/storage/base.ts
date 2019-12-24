@@ -1,4 +1,5 @@
 import { ChildrenSortFunc, CompTreeNodeData, StorageNode, StorageNodeType } from '@/lib'
+import dayjs, { Dayjs } from 'dayjs'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import { removeBothEndsSlash } from 'web-base-lib'
 
@@ -6,6 +7,8 @@ export interface StorageTreeNodeData extends CompTreeNodeData {
   icon: 'storage' | 'folder' | 'description'
   parent?: string
   nodeType: StorageNodeType | 'Storage'
+  created: Dayjs
+  updated: Dayjs
 }
 
 /**
@@ -19,6 +22,8 @@ export function getStorageTreeRootNodeData(): StorageTreeNodeData {
     opened: true,
     nodeType: 'Storage',
     nodeClass: StorageTreeNode,
+    created: dayjs(0),
+    updated: dayjs(0),
   }
 }
 
@@ -34,6 +39,8 @@ export function toStorageTreeNodeData(source: StorageNode): StorageTreeNodeData 
     icon: source.nodeType === StorageNodeType.Dir ? 'folder' : 'description',
     nodeType: source.nodeType,
     nodeClass: StorageTreeNode,
+    created: source.created,
+    updated: source.updated,
   }
 }
 

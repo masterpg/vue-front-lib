@@ -92,7 +92,7 @@ const isBoolean = require('lodash/isBoolean')
 const isString = require('lodash/isString')
 
 @Component
-export default class CompTreeNode<NodeData extends CompTreeNodeData = any> extends BaseComponent {
+export default class CompTreeNode extends BaseComponent {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -111,6 +111,15 @@ export default class CompTreeNode<NodeData extends CompTreeNodeData = any> exten
   //  Properties
   //
   //----------------------------------------------------------------------
+
+  /**
+   * ノードが発火する標準のイベントとは別に、独自で発火するイベント名のリストです。
+   * CompTreeNodeを拡張し、そのノードで独自イベントを発火するよう実装した場合、
+   * このプロパティをオーバーライドし、イベント名の配列を返すよう実装してください。
+   */
+  get extraEventNames(): string[] {
+    return []
+  }
 
   private m_treeView: CompTreeView | null = null
 
@@ -261,24 +270,15 @@ export default class CompTreeNode<NodeData extends CompTreeNodeData = any> exten
     this.m_minWidth = nodeContainerWidth >= childContainerWidth ? nodeContainerWidth : childContainerWidth
   }
 
-  /**
-   * ノードが発火する標準のイベントとは別に、独自で発火するイベント名のリストです。
-   * CompTreeNodeItemを拡張し、そのノードで独自イベントを発火するよう実装した場合、
-   * このプロパティをオーバーライドし、イベント名の配列を返すよう実装してください。
-   */
-  get extraEventNames(): string[] {
-    return []
-  }
-
   //----------------------------------------------------------------------
   //
   //  Variables
   //
   //----------------------------------------------------------------------
 
-  private m_nodeData: NodeData = {} as any
+  private m_nodeData: CompTreeNodeData = {} as any
 
-  protected get nodeData(): NodeData {
+  protected get nodeData(): CompTreeNodeData {
     return this.m_nodeData
   }
 
@@ -313,7 +313,17 @@ export default class CompTreeNode<NodeData extends CompTreeNodeData = any> exten
    * @param treeView
    * @param nodeData
    */
-  init(treeView: CompTreeView, nodeData: NodeData): void {
+  init(treeView: CompTreeView, nodeData: CompTreeNodeData): void {
+    this.initBase(treeView, nodeData)
+  }
+
+  /**
+   * CompTreeNodeItemを拡張する際、初期化時に独自処理が必要な場合のプレースホルダーです。
+   * 独自処理が必要な場合はこのメソッドをオーバーライドしてください。
+   * @param treeView
+   * @param nodeData
+   */
+  protected initBase(treeView: CompTreeView, nodeData: CompTreeNodeData): void {
     this.m_treeView = treeView
 
     // 任意項目は値が設定されていないとリアクティブにならないのでここで初期化
@@ -325,8 +335,47 @@ export default class CompTreeNode<NodeData extends CompTreeNodeData = any> exten
     this.m_nodeData = nodeData
 
     this.m_setSelected(this.nodeData.selected!, true)
+  }
 
-    this.initPlaceholder(nodeData)
+  /**
+   * ノードを編集するためのデータを設定します。
+   * @param editData
+   */
+  setNodeData(editData: CompTreeNodeEditData<CompTreeNodeData>): void {
+    this.setBaseNodeData(editData)
+  }
+
+  protected setBaseNodeData(editData: CompTreeNodeEditData<CompTreeNodeData>): void {
+    if (isString(editData.label)) {
+      this.label = editData.label!
+    }
+
+    if (isString(editData.value)) {
+      this.value = editData.value!
+    }
+
+    if (isBoolean(editData.unselectable)) {
+      this.unselectable = editData.unselectable!
+    }
+
+    if (isBoolean(editData.selected)) {
+      this.selected = editData.selected!
+    }
+    if (isString(editData.icon)) {
+      this.icon = editData.icon!
+    }
+
+    if (isString(editData.iconColor)) {
+      this.iconColor = editData.iconColor!
+    }
+
+    if (isBoolean(editData.opened)) {
+      if (editData.opened!) {
+        this.open(false)
+      } else {
+        this.close(false)
+      }
+    }
   }
 
   /**
@@ -403,43 +452,6 @@ export default class CompTreeNode<NodeData extends CompTreeNodeData = any> exten
   }
 
   /**
-   * ノードを編集するためのデータを設定します。
-   * @param editData
-   */
-  setNodeData<NodeData extends CompTreeNodeEditData = CompTreeNodeEditData>(editData: NodeData): void {
-    if (isString(editData.label)) {
-      this.label = editData.label!
-    }
-
-    if (isString(editData.value)) {
-      this.value = editData.value!
-    }
-
-    if (isBoolean(editData.unselectable)) {
-      this.unselectable = editData.unselectable!
-    }
-
-    if (isBoolean(editData.selected)) {
-      this.selected = editData.selected!
-    }
-    if (isString(editData.icon)) {
-      this.icon = editData.icon!
-    }
-
-    if (isString(editData.iconColor)) {
-      this.iconColor = editData.iconColor!
-    }
-
-    if (isBoolean(editData.opened)) {
-      if (editData.opened!) {
-        this.open(false)
-      } else {
-        this.close(false)
-      }
-    }
-  }
-
-  /**
    * 子孫ノードを取得します。
    */
   getDescendants<Node extends CompTreeNode = CompTreeNode>(): Node[] {
@@ -451,13 +463,6 @@ export default class CompTreeNode<NodeData extends CompTreeNodeData = any> exten
   //  Internal methods
   //
   //----------------------------------------------------------------------
-
-  /**
-   * CompTreeNodeItemを拡張する際、初期化時に独自処理が必要な場合のプレースホルダーです。
-   * 独自処理が必要な場合はこのメソッドをオーバーライドしてください。
-   * @param nodeData
-   */
-  protected initPlaceholder(nodeData: NodeData): void {}
 
   /**
    * ノードが発火する標準のイベントとは別な独自イベントを発火します。

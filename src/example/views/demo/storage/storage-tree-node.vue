@@ -85,37 +85,37 @@
               <q-item-section @click="m_dispatchReloadSelected()">{{ $t('common.reload') }}</q-item-section>
             </q-item>
             <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchCreateDirSelected()">{{
-                $t('common.createSomehow', { somehow: $tc('common.folder', 1) })
-              }}</q-item-section>
+              <q-item-section @click="m_dispatchCreateDirSelected()">
+                {{ $t('common.createSomehow', { somehow: $tc('common.folder', 1) }) }}
+              </q-item-section>
             </q-item>
             <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchFilesUploadSelected()">{{
-                $t('common.uploadSomehow', { somehow: $tc('common.file', 2) })
-              }}</q-item-section>
+              <q-item-section @click="m_dispatchFilesUploadSelected()">
+                {{ $t('common.uploadSomehow', { somehow: $tc('common.file', 2) }) }}
+              </q-item-section>
             </q-item>
             <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchDirUploadSelected()">{{
-                $t('common.uploadSomehow', { somehow: $tc('common.folder', 1) })
-              }}</q-item-section>
+              <q-item-section @click="m_dispatchDirUploadSelected()">
+                {{ $t('common.uploadSomehow', { somehow: $tc('common.folder', 1) }) }}
+              </q-item-section>
             </q-item>
           </q-list>
           <!-- フォルダ用メニュー -->
           <q-list v-show="m_isDir" dense style="min-width: 100px">
             <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchCreateDirSelected()">{{
-                $t('common.createSomehow', { somehow: $tc('common.folder', 1) })
-              }}</q-item-section>
+              <q-item-section @click="m_dispatchCreateDirSelected()">
+                {{ $t('common.createSomehow', { somehow: $tc('common.folder', 1) }) }}
+              </q-item-section>
             </q-item>
             <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchFilesUploadSelected()">{{
-                $t('common.uploadSomehow', { somehow: $tc('common.file', 2) })
-              }}</q-item-section>
+              <q-item-section @click="m_dispatchFilesUploadSelected()">
+                {{ $t('common.uploadSomehow', { somehow: $tc('common.file', 2) }) }}
+              </q-item-section>
             </q-item>
             <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchDirUploadSelected()">{{
-                $t('common.uploadSomehow', { somehow: $tc('common.folder', 1) })
-              }}</q-item-section>
+              <q-item-section @click="m_dispatchDirUploadSelected()">
+                {{ $t('common.uploadSomehow', { somehow: $tc('common.folder', 1) }) }}
+              </q-item-section>
             </q-item>
             <q-item v-close-popup clickable>
               <q-item-section @click="m_dispatchMoveSelected()">{{ $t('common.move') }}</q-item-section>
@@ -149,21 +149,18 @@
 </template>
 
 <script lang="ts">
-import { CompTreeNode, NoCache, StorageNodeType } from '@/lib'
+import { CompTreeNode, CompTreeNodeEditData, NoCache, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
+import { Dayjs } from 'dayjs'
 import { StorageTreeNodeData } from '@/example/views/demo/storage/base'
 
 @Component
-export default class StorageTreeNode extends CompTreeNode<StorageTreeNodeData> {
+export default class StorageTreeNode extends CompTreeNode {
   //----------------------------------------------------------------------
   //
-  //  Overridden
+  //  Properties
   //
   //----------------------------------------------------------------------
-
-  protected initPlaceholder(nodeData: StorageTreeNodeData): void {
-    this.m_nodeType = nodeData.nodeType
-  }
 
   get extraEventNames(): string[] {
     return [
@@ -177,16 +174,8 @@ export default class StorageTreeNode extends CompTreeNode<StorageTreeNodeData> {
     ]
   }
 
-  //----------------------------------------------------------------------
-  //
-  //  Properties
-  //
-  //----------------------------------------------------------------------
-
-  private m_nodeType: StorageNodeType | 'Storage' = StorageNodeType.Dir
-
   get nodeType(): StorageNodeType | 'Storage' {
-    return this.m_nodeType
+    return this.nodeData.nodeType
   }
 
   get nodeTypeName(): string {
@@ -199,11 +188,21 @@ export default class StorageTreeNode extends CompTreeNode<StorageTreeNodeData> {
     }
   }
 
+  get createdDate(): Dayjs {
+    return this.nodeData.created
+  }
+
+  get updatedDate(): Dayjs {
+    return this.nodeData.updated
+  }
+
   //----------------------------------------------------------------------
   //
   //  Variables
   //
   //----------------------------------------------------------------------
+
+  protected readonly nodeData!: StorageTreeNodeData
 
   private get m_isStorage(): boolean {
     return this.nodeType === 'Storage'
@@ -231,6 +230,12 @@ export default class StorageTreeNode extends CompTreeNode<StorageTreeNodeData> {
   //  Internal methods
   //
   //----------------------------------------------------------------------
+
+  setNodeData(editData: CompTreeNodeEditData<StorageTreeNodeData>): void {
+    this.setBaseNodeData(editData)
+    this.nodeData.created = editData.created
+    this.nodeData.updated = editData.updated
+  }
 
   private m_dispatchReloadSelected(): void {
     this.dispatchExtraEvent('reload-selected')

@@ -26,6 +26,7 @@ import * as _path from "path"
           <comp-tree-view
             ref="treeView"
             class="tree-view"
+            @selected="m_treeViewOnSelected($event)"
             @reload-selected="m_treeViewOnReloadSelected()"
             @create-dir-selected="m_treeViewOnCreateDirSelected($event)"
             @files-upload-selected="m_treeViewOnFilesUploadSelected($event)"
@@ -37,6 +38,8 @@ import * as _path from "path"
         </div>
       </template>
       <template v-slot:after>
+        <storage-dir-children-view ref="dirChildrenView" @dir-changed="m_dirChildrenViewOnDirChanged($event)" />
+        <!--
         <div class="app-ma-20">
           <div class="layout horizontal center">
             <q-input v-model="m_filePath" class="flex" label="File URL" />
@@ -45,6 +48,7 @@ import * as _path from "path"
           </div>
           <img ref="img" class="app-mt-20" crossorigin="anonymous" />
         </div>
+        -->
       </template>
     </q-splitter>
     <storage-dir-create-dialog ref="dirCreateDialog" />
@@ -62,8 +66,19 @@ import * as _path from "path"
 
 <script lang="ts">
 import * as path from 'path'
-import { BaseComponent, CompStorageUploadProgressFloat, CompTreeNode, CompTreeView, NoCache, Resizable, StorageNodeType, User } from '@/lib'
+import {
+  BaseComponent,
+  CompStorageUploadProgressFloat,
+  CompTreeNode,
+  CompTreeView,
+  NoCache,
+  Resizable,
+  StorageNode,
+  StorageNodeType,
+  User,
+} from '@/lib'
 import { Component } from 'vue-property-decorator'
+import StorageDirChildrenView from '@/example/views/demo/storage/storage-dir-children-view.vue'
 import StorageDirCreateDialog from '@/example/views/demo/storage/storage-dir-create-dialog.vue'
 import StorageNodeMoveDialog from '@/example/views/demo/storage/storage-node-move-dialog.vue'
 import StorageNodeRenameDialog from '@/example/views/demo/storage/storage-node-rename-dialog.vue'
@@ -75,12 +90,13 @@ import { storageTreeStore } from '@/example/views/demo/storage/storage-tree-stor
 
 @Component({
   components: {
+    CompStorageUploadProgressFloat,
     CompTreeView,
+    StorageDirChildrenView,
     StorageDirCreateDialog,
     StorageNodeMoveDialog,
     StorageNodeRenameDialog,
     StorageNodesRemoveDialog,
-    CompStorageUploadProgressFloat,
   },
 })
 export default class StoragePage extends mixins(BaseComponent, Resizable) {
@@ -134,8 +150,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   }
 
   @NoCache
-  private get m_uploadFileInput(): HTMLInputElement {
-    return this.$refs.uploadFileInput as HTMLInputElement
+  private get m_dirChildrenView(): StorageDirChildrenView {
+    return this.$refs.dirChildrenView as StorageDirChildrenView
   }
 
   @NoCache
@@ -194,6 +210,10 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
 
     // ロジックのノードをツリービューに反映
     storageTreeStore.setNodes(this.$logic.userStorage.nodes)
+    // ロジックのノードをディレクトリビューに反映(ツリーに選択がある場合)
+    if (this.m_treeView.selectedNode) {
+      this.m_dirChildrenView.setDir(this.m_treeView.selectedNode.value)
+    }
   }
 
   /**
@@ -364,6 +384,31 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     })
     console.log(response)
     */
+  }
+
+  private m_treeViewOnSelected(node: StorageTreeNode) {
+    // console.log('getBoundingClientRect():', node.$el.getBoundingClientRect())
+
+    // const zzz = storageTreeStore.getNode('zzz')!
+    // console.log('getBoundingClientRect():', zzz.$el.getBoundingClientRect())
+    // console.log('pageYOffset:', window.pageYOffset)
+
+    this.m_dirChildrenView.setDir(node.value)
+  }
+
+  private m_dirChildrenViewOnDirChanged(dirPah: string) {
+    const openNode = (dirNode: CompTreeNode) => {
+      if (dirNode.parent) {
+        openNode(dirNode.parent)
+      }
+      dirNode.open()
+    }
+
+    const dirNode = storageTreeStore.getNode(dirPah)!
+    this.m_treeView.selectedNode = dirNode
+    if (dirNode.parent) {
+      openNode(dirNode.parent)
+    }
   }
 
   private async m_treeViewOnReloadSelected() {

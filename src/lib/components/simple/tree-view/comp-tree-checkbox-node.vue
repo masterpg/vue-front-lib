@@ -82,10 +82,21 @@
 <script lang="ts">
 import { CompTreeCheckboxNodeData } from './types'
 import CompTreeNode from '@/lib/components/simple/tree-view/comp-tree-node.vue'
+import CompTreeView from '@/lib/components/simple/tree-view/comp-tree-view.vue'
 import { Component } from 'vue-property-decorator'
 
 @Component
-export default class CompTreeCheckboxNode extends CompTreeNode<CompTreeCheckboxNodeData> {
+export default class CompTreeCheckboxNode extends CompTreeNode {
+  //----------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //----------------------------------------------------------------------
+
+  get extraEventNames(): string[] {
+    return ['checked-changed']
+  }
+
   get checked(): boolean {
     return this.nodeData.checked!
   }
@@ -98,13 +109,24 @@ export default class CompTreeCheckboxNode extends CompTreeNode<CompTreeCheckboxN
     }
   }
 
-  protected initPlaceholder(nodeData: CompTreeCheckboxNodeData): void {
+  //----------------------------------------------------------------------
+  //
+  //  Variables
+  //
+  //----------------------------------------------------------------------
+
+  protected readonly nodeData!: CompTreeCheckboxNodeData
+
+  //----------------------------------------------------------------------
+  //
+  //  Methods
+  //
+  //----------------------------------------------------------------------
+
+  init(treeView: CompTreeView, nodeData: CompTreeCheckboxNodeData): void {
+    this.initBase(treeView, nodeData)
     // 任意項目は値が設定されていないとリアクティブにならないのでここで初期化
     this.$set(nodeData, 'checked', Boolean(nodeData.checked))
-  }
-
-  get extraEventNames(): string[] {
-    return ['checked-changed']
   }
 }
 </script>

@@ -1,4 +1,5 @@
 import { APIStorageNode, APIStorageNodeType as StorageNodeType } from '../api'
+import { Dayjs } from 'dayjs'
 
 //========================================================================
 //
@@ -94,8 +95,10 @@ export interface StorageNode extends APIStorageNode {
   nodeType: StorageNodeType
 }
 
-export type StorageNodeForSet = Partial<Omit<StorageNode, 'name' | 'dir' | 'path'>> & {
+export type StorageNodeForSet = Partial<Omit<StorageNode, 'name' | 'dir'>> & {
   path: string
+  created: Dayjs
+  updated: Dayjs
   newPath?: string
 }
 
