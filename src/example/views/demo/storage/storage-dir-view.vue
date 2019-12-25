@@ -60,7 +60,7 @@
 <template>
   <div class="layout vertical main">
     <div class="layout horizontal">
-      <div v-for="pathBlock of m_dirPathBlocks" :key="pathBlock.label" class="path-blocks">
+      <div v-for="pathBlock of m_pathBlocks" :key="pathBlock.label" class="path-blocks">
         <span :class="{ 'path-block': !pathBlock.last }" @click="m_pathBlockOnClick(pathBlock.path)">{{ pathBlock.name }}</span>
         <span v-show="!pathBlock.last" class="app-mx-8">/</span>
       </div>
@@ -105,6 +105,7 @@ import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import { getStorageTreeRootNodeData } from '@/example/views/demo/storage/base'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
+import { router } from '@/example/router'
 import { storageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
 
 interface TableRow {
@@ -119,7 +120,7 @@ interface TableRow {
 @Component({
   components: {},
 })
-export default class StorageDirChildrenView extends mixins(BaseComponent, Resizable) {
+export default class StorageDirView extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -148,7 +149,7 @@ export default class StorageDirChildrenView extends mixins(BaseComponent, Resiza
 
   private m_childMap: { [value: string]: TableRow } = {}
 
-  private m_dirPathBlocks: { name: string; path: string; last: boolean }[] = []
+  private m_pathBlocks: { name: string; path: string; last: boolean }[] = []
 
   private m_pagination = {
     rowsPerPage: 0,
@@ -172,7 +173,7 @@ export default class StorageDirChildrenView extends mixins(BaseComponent, Resiza
   /**
    * ビューに表示するディレクトリのパスを設定します。
    */
-  setDir(dirPath: string): void {
+  setDirPath(dirPath: string): void {
     dirPath = removeBothEndsSlash(dirPath)
     if (this.m_dirPath !== dirPath) {
       this.m_children = []
@@ -191,23 +192,23 @@ export default class StorageDirChildrenView extends mixins(BaseComponent, Resiza
   //----------------------------------------------------------------------
 
   private m_setupPathBlocks(): void {
-    const rootNodeData = getStorageTreeRootNodeData()
-    this.m_dirPathBlocks = [
-      {
-        name: rootNodeData.label,
-        path: rootNodeData.value,
-        last: false,
-      },
-    ]
-    const pathBlocks = this.m_dirPath!.split('/')
+    this.m_pathBlocks.length = 0
+    const pathBlocks = this.m_dirPath!.split('/').filter(item => !!item)
     for (let i = 0; i < pathBlocks.length; i++) {
       const pathBlock = pathBlocks.slice(0, i + 1)
-      this.m_dirPathBlocks.push({
+      this.m_pathBlocks.push({
         name: pathBlock[pathBlock.length - 1],
         path: pathBlock.join('/'),
         last: i === pathBlocks.length - 1,
       })
     }
+
+    const rootNodeData = getStorageTreeRootNodeData()
+    this.m_pathBlocks.unshift({
+      name: rootNodeData.label,
+      path: rootNodeData.value,
+      last: this.m_pathBlocks.length > 0 ? false : true,
+    })
   }
 
   private m_setupChildren(): void {
@@ -311,7 +312,7 @@ export default class StorageDirChildrenView extends mixins(BaseComponent, Resiza
    * @param path
    */
   private m_pathBlockOnClick(path: string) {
-    this.$emit('dir-changed', path)
+    router.views.demo.storage.move(path)
   }
 
   /**
@@ -319,9 +320,7 @@ export default class StorageDirChildrenView extends mixins(BaseComponent, Resiza
    * @param row
    */
   private m_tableRowNameCellOnClick(row: TableRow) {
-    if (row.nodeType === StorageNodeType.Dir) {
-      this.$emit('dir-changed', row.value)
-    }
+    router.views.demo.storage.move(row.value)
   }
 }
 </script>

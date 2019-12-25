@@ -11,9 +11,9 @@ import * as _path from "path"
 .tree-view-container
   width: 100%
   height: 100%
+  overflow: auto
 
 .tree-view
-  height: 100%
   /*--comp-tree-view-font-size: 26px*/
   /*--comp-tree-node-indent: 20px*/
 </style>
@@ -38,7 +38,7 @@ import * as _path from "path"
         </div>
       </template>
       <template v-slot:after>
-        <storage-dir-children-view ref="dirChildrenView" @dir-changed="m_dirChildrenViewOnDirChanged($event)" />
+        <storage-dir-view ref="dirView" />
         <!--
         <div class="app-ma-20">
           <div class="layout horizontal center">
@@ -66,33 +66,27 @@ import * as _path from "path"
 
 <script lang="ts">
 import * as path from 'path'
-import {
-  BaseComponent,
-  CompStorageUploadProgressFloat,
-  CompTreeNode,
-  CompTreeView,
-  NoCache,
-  Resizable,
-  StorageNode,
-  StorageNodeType,
-  User,
-} from '@/lib'
+import { BaseComponent, CompStorageUploadProgressFloat, CompTreeNode, CompTreeView, NoCache, Resizable, StorageNodeType, User } from '@/lib'
+import { RawLocation, Route } from 'vue-router'
 import { Component } from 'vue-property-decorator'
-import StorageDirChildrenView from '@/example/views/demo/storage/storage-dir-children-view.vue'
 import StorageDirCreateDialog from '@/example/views/demo/storage/storage-dir-create-dialog.vue'
+import StorageDirView from '@/example/views/demo/storage/storage-dir-view.vue'
 import StorageNodeMoveDialog from '@/example/views/demo/storage/storage-node-move-dialog.vue'
 import StorageNodeRenameDialog from '@/example/views/demo/storage/storage-node-rename-dialog.vue'
 import StorageNodesRemoveDialog from '@/example/views/demo/storage/storage-nodes-remove-dialog.vue'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
+import Vue from 'vue'
 import { mixins } from 'vue-class-component'
 import { router } from '@/example/router'
+import { scroll } from 'quasar'
 import { storageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
+const { getScrollPosition, setScrollPosition } = scroll
 
 @Component({
   components: {
     CompStorageUploadProgressFloat,
     CompTreeView,
-    StorageDirChildrenView,
+    StorageDirView,
     StorageDirCreateDialog,
     StorageNodeMoveDialog,
     StorageNodeRenameDialog,
@@ -106,6 +100,21 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
+  async mounted() {
+    storageTreeStore.init(this.m_treeView)
+
+    // URLに選択ノードのパスがなく、かつページに選択ノードのパスが保存されていた場合
+    // 補足: 本ページから別ページに遷移し、その後本ページに戻ってきた場合がこの状況に当たる
+    const urlNodePath = router.views.demo.storage.getNodePath()
+    if (!urlNodePath && StoragePage.m_selectedNodePath) {
+      // ページに保存されていた選択ノードのパスをURLへ反映
+      router.views.demo.storage.move(StoragePage.m_selectedNodePath)
+      return
+    }
+
+    await this.m_setupPage()
+  }
+
   async created() {
     this.$logic.auth.addSignedInListener(this.m_userOnSignedIn)
   }
@@ -114,20 +123,46 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     this.$logic.auth.removeSignedInListener(this.m_userOnSignedIn)
   }
 
-  async mounted() {
-    storageTreeStore.init(this.m_treeView)
-    if (this.$logic.auth.user.isSignedIn) {
-      // 一旦ツリービューが構築されている場合
-      if (storageTreeStore.initialized) {
-        // 既に取得されたデータをもとに、ツリービューを構築
-        this.m_buildTreeView()
-      }
-      // まだツリービューが構築されていない場合
-      else {
-        // サーバーからデータを取得し、ツリービューを構築
-        await this.m_pullStorageNodes()
-      }
+  /**
+   * ユーザーがサインインした際のリスナです。
+   * @param user
+   */
+  private async m_userOnSignedIn(user: User) {
+    await this.m_setupPage()
+  }
+
+  async beforeRouteUpdate(to: Route, from: Route, next: (to?: RawLocation | false | ((vm: Vue) => any) | void) => void) {
+    next()
+    await this.m_setupPage()
+  }
+
+  /**
+   * 本ページのセットアップを行います。
+   */
+  private async m_setupPage(): Promise<void> {
+    // ルーターのパスが本ページのパスと一致しない場合
+    if (!router.views.demo.storage.matchCurrentRoute()) return
+    // ユーザーがサインインしていない場合
+    if (!this.$logic.auth.user.isSignedIn) return
+
+    // まだツリービューが構築されていない場合
+    if (!storageTreeStore.initialized) {
+      // サーバーからストレージノードを取得
+      await this.m_pullStorageNodes()
     }
+
+    // ツリービューの構築
+    this.m_buildTreeView()
+
+    // URLから選択ノードを取得
+    const nodePath = router.views.demo.storage.getNodePath()
+    // ツリーの選択ノード設定
+    this.m_selectTreeNode(nodePath)
+    // ディレクトリビューのディレクトリパス設定
+    this.m_dirView.setDirPath(nodePath)
+
+    // 現在の選択ノードを保存
+    StoragePage.m_selectedNodePath = nodePath
   }
 
   //----------------------------------------------------------------------
@@ -135,6 +170,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   //  Variables
   //
   //----------------------------------------------------------------------
+
+  private static m_selectedNodePath = ''
 
   private m_splitterModel = 30
 
@@ -150,8 +187,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   }
 
   @NoCache
-  private get m_dirChildrenView(): StorageDirChildrenView {
-    return this.$refs.dirChildrenView as StorageDirChildrenView
+  private get m_dirView(): StorageDirView {
+    return this.$refs.dirView as StorageDirView
   }
 
   @NoCache
@@ -192,7 +229,6 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
 
   private async m_pullStorageNodes(): Promise<void> {
     await this.$logic.userStorage.pullNodes()
-    this.m_buildTreeView()
   }
 
   private async m_buildTreeView(): Promise<void> {
@@ -210,10 +246,6 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
 
     // ロジックのノードをツリービューに反映
     storageTreeStore.setNodes(this.$logic.userStorage.nodes)
-    // ロジックのノードをディレクトリビューに反映(ツリーに選択がある場合)
-    if (this.m_treeView.selectedNode) {
-      this.m_dirChildrenView.setDir(this.m_treeView.selectedNode.value)
-    }
   }
 
   /**
@@ -238,7 +270,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       return
     }
 
-    this.m_buildTreeView()
+    await this.m_setupPage()
 
     this.$q.loading.hide()
   }
@@ -269,7 +301,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       return
     }
 
-    this.m_buildTreeView()
+    await this.m_setupPage()
 
     this.$q.loading.hide()
   }
@@ -307,7 +339,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     }
 
     storageTreeStore.moveNode(treeNode.value, toPath)
-    this.m_buildTreeView()
+    await this.m_setupPage()
 
     this.$q.loading.hide()
   }
@@ -340,9 +372,27 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     }
 
     storageTreeStore.renameNode(treeNode.value, newName)
-    this.m_buildTreeView()
+    await this.m_setupPage()
 
     this.$q.loading.hide()
+  }
+
+  /**
+   * 指定されたノードを選択状態にします。
+   * また祖先ノードを展開状態にします。
+   */
+  private m_selectTreeNode(nodePath: string): void {
+    const openParentNode = (dirNode: CompTreeNode) => {
+      if (!dirNode.parent) return
+      dirNode.parent.open()
+      openParentNode(dirNode.parent)
+    }
+
+    const dirNode = storageTreeStore.getNode(nodePath)
+    if (!dirNode) return
+
+    this.m_treeView.selectedNode = dirNode
+    openParentNode(dirNode)
   }
 
   //----------------------------------------------------------------------
@@ -351,15 +401,9 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
-  private async m_userOnSignedIn(user: User) {
-    // ルーターのパスが本ページのパスと一致する場合
-    if (router.currentRoute.path === router.views.demo.storage.path) {
-      await this.m_pullStorageNodes()
-    }
-  }
-
   private async m_refreshStorageButtonOnClick() {
     await this.m_pullStorageNodes()
+    await this.m_setupPage()
   }
 
   private async m_loadFileButtonOnClick(e) {
@@ -387,32 +431,18 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   }
 
   private m_treeViewOnSelected(node: StorageTreeNode) {
-    // console.log('getBoundingClientRect():', node.$el.getBoundingClientRect())
+    // const num = node.$el.getBoundingClientRect().top - this.$el.getBoundingClientRect().top
+    // console.log(`num: ${num}, node: ${node.$el.getBoundingClientRect().top}, top: ${this.$el.getBoundingClientRect().top}`)
+    // setScrollPosition(this.m_treeView.$el.parentElement!, num)
 
-    // const zzz = storageTreeStore.getNode('zzz')!
-    // console.log('getBoundingClientRect():', zzz.$el.getBoundingClientRect())
-    // console.log('pageYOffset:', window.pageYOffset)
+    // this.m_dirView.setDir(node.value)
 
-    this.m_dirChildrenView.setDir(node.value)
-  }
-
-  private m_dirChildrenViewOnDirChanged(dirPah: string) {
-    const openNode = (dirNode: CompTreeNode) => {
-      if (dirNode.parent) {
-        openNode(dirNode.parent)
-      }
-      dirNode.open()
-    }
-
-    const dirNode = storageTreeStore.getNode(dirPah)!
-    this.m_treeView.selectedNode = dirNode
-    if (dirNode.parent) {
-      openNode(dirNode.parent)
-    }
+    router.views.demo.storage.move(node.value)
   }
 
   private async m_treeViewOnReloadSelected() {
     await this.m_pullStorageNodes()
+    await this.m_setupPage()
   }
 
   private async m_treeViewOnFilesUploadSelected(dirNode: StorageTreeNode) {
@@ -453,6 +483,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
 
   private async m_uploadProgressFloatOnUploadEnded() {
     await this.m_pullStorageNodes()
+    await this.m_setupPage()
   }
 }
 </script>

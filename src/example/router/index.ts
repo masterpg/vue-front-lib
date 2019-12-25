@@ -1,3 +1,4 @@
+import * as _path from 'path'
 import { BaseRouter, ViewRoute, setRouter } from '@/lib'
 
 //========================================================================
@@ -55,15 +56,36 @@ const demoRoute = new (class DemoRoute extends ViewRoute {
 
   storage = new (class extends ViewRoute<DemoRoute> {
     get path() {
-      return `${this.parent!.path}/storage`
+      return `${this.basePath}/:nodePath*`
     }
 
     get component() {
       return () => import(/* webpackChunkName: "views/demo/storage" */ '@/example/views/demo/storage')
     }
 
-    move() {
-      router.push(this.path)
+    move(nodePath: string) {
+      const nextPath = _path.join(this.basePath, nodePath)
+      if (router.currentRoute.path === nextPath) {
+        return
+      }
+      router.push(nextPath)
+    }
+
+    get basePath() {
+      return `${this.parent!.path}/storage`
+    }
+
+    getNodePath(): string {
+      if (!this.matchCurrentRoute()) return ''
+      return router.currentRoute.params.nodePath || ''
+    }
+
+    /**
+     * ルーターの現ルートがストレージルートと一致するかを取得します。
+     */
+    matchCurrentRoute(): boolean {
+      const reg = new RegExp(`^${this.basePath}\/?`)
+      return reg.test(router.currentRoute.path)
     }
   })(this)
 })()
