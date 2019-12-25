@@ -51,7 +51,7 @@
             {{ product.stock }}
           </div>
         </div>
-        <div class="flex"></div>
+        <div class="flex-1"></div>
         <q-btn round color="primary" size="xs" icon="add" @click="m_addButtonOnClick(product)" />
       </div>
     </div>
@@ -59,7 +59,7 @@
     <div class="app-mt-20">
       <div class="layout horizontal center">
         <div class="title-text">{{ $t('yourCurt') }}</div>
-        <div class="flex"></div>
+        <div class="flex-1"></div>
       </div>
       <hr style="width: 100%;" />
       <div v-for="cartItem in $logic.shop.cartItems" :key="cartItem.id" class="layout horizontal center cart-item">
@@ -69,11 +69,11 @@
             <span>{{ $t('price') }}</span> &mdash; ${{ cartItem.price }} x {{ cartItem.quantity }}
           </div>
         </div>
-        <div class="flex"></div>
+        <div class="flex-1"></div>
         <q-btn round color="primary" size="xs" icon="remove" @click="m_removeButtonOnClick(cartItem)" />
       </div>
       <div class="layout horizontal center app-mt-12">
-        <div class="flex error-text">{{ m_checkoutStatus.message }}</div>
+        <div class="flex-1 error-text">{{ m_checkoutStatus.message }}</div>
         <q-btn v-show="!m_cartIsEmpty" :label="$t('checkout')" color="primary" @click="m_checkoutButtonOnClick" />
       </div>
     </div>
