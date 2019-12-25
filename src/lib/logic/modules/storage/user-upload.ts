@@ -1,24 +1,21 @@
-import * as path from 'path'
 import { StorageFileUploader, StorageUploadManager } from './base-upload'
 import { Dialog } from 'quasar'
-import { config } from '../../../config'
 import { i18n } from '../../../i18n'
 import { store } from '../../store'
 
 export class UserStorageUploadManager extends StorageUploadManager {
   protected async verifyExecutable(): Promise<void> {
-    if (!store.user.storageDir) {
+    if (!store.user.myDirName) {
       Dialog.create({
         title: String(i18n.t('common.systemError')),
         message: String(i18n.t('error.unexpected')),
       })
-      throw new Error(`The user's "storageDir" could not be obtained.`)
+      throw new Error(`The user's 'myDirName' could not be obtained.`)
     }
   }
 
   protected createUploadingFiles(files: File[]): StorageFileUploader[] {
-    const userStorageDir = store.user.storageDir
-    const basePath = path.join(config.storage.usersDir, userStorageDir)
+    const basePath = store.user.myDirPath
 
     const result: StorageFileUploader[] = []
     for (const file of files) {

@@ -10,9 +10,9 @@ const isEmpty = require('lodash/isEmpty')
 //
 //========================================================================
 
-const GENERAL_USER = { uid: 'general.user', storageDir: 'general.user' }
+const GENERAL_USER = { uid: 'general.user', myDirName: 'general.user' }
 
-const APP_ADMIN_USER = { uid: 'app.admin.user', storageDir: 'app.admin.user', isAppAdmin: true }
+const APP_ADMIN_USER = { uid: 'app.admin.user', myDirName: 'app.admin.user', isAppAdmin: true }
 
 const TEST_FILES_DIR = 'test-files'
 
@@ -59,7 +59,7 @@ describe('Storage API', () => {
   let userStorageBasePath!: string
 
   beforeEach(async () => {
-    userStorageBasePath = path.join(config.storage.usersDir, GENERAL_USER.storageDir)
+    userStorageBasePath = path.join(config.storage.usersDir, GENERAL_USER.myDirName)
     await Promise.all([api.removeTestStorageDir(TEST_FILES_DIR), api.removeTestStorageDir(userStorageBasePath)])
   })
 

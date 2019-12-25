@@ -1,6 +1,8 @@
+import * as _path from 'path'
 import { User, UserStore } from '../../types'
 import { BaseStore } from '../../base'
 import { Component } from 'vue-property-decorator'
+import { config } from '../../../../config'
 const isBoolean = require('lodash/isBoolean')
 const isString = require('lodash/isString')
 
@@ -64,10 +66,17 @@ export class UserStoreImpl extends BaseStore<void> implements UserStore {
     return this.m_isAppAdmin
   }
 
-  private m_storageDir = ''
+  private m_myDirName = ''
 
-  get storageDir(): string {
-    return this.m_storageDir
+  get myDirName(): string {
+    return this.m_myDirName
+  }
+
+  get myDirPath(): string {
+    if (!this.myDirName) {
+      return ''
+    }
+    return _path.join(config.storage.usersDir, this.m_myDirName)
   }
 
   //----------------------------------------------------------------------
@@ -84,7 +93,7 @@ export class UserStoreImpl extends BaseStore<void> implements UserStore {
     if (isString(value.email)) this.m_email = value.email!
     if (isBoolean(value.emailVerified)) this.m_emailVerified = value.emailVerified!
     if (isBoolean(value.isAppAdmin)) this.m_isAppAdmin = value.isAppAdmin!
-    if (isString(value.storageDir)) this.m_storageDir = value.storageDir!
+    if (isString(value.myDirName)) this.m_myDirName = value.myDirName!
   }
 
   clear(): void {
@@ -100,15 +109,16 @@ export class UserStoreImpl extends BaseStore<void> implements UserStore {
       email: this.email,
       emailVerified: this.emailVerified,
       isAppAdmin: this.isAppAdmin,
-      storageDir: this.storageDir,
+      myDirName: this.myDirName,
+      myDirPath: this.myDirPath,
       getIsAppAdmin: this.getIsAppAdmin,
     }
   }
 
   async reflectCustomToken(): Promise<void> {
     const idToken = await firebase.auth().currentUser!.getIdTokenResult()
-    const { isAppAdmin, storageDir } = idToken.claims as Partial<User>
-    this.set({ isAppAdmin, storageDir })
+    const { isAppAdmin, myDirName } = idToken.claims as Partial<User>
+    this.set({ isAppAdmin, myDirName })
   }
 
   async getIsAppAdmin(): Promise<boolean> {
@@ -125,7 +135,11 @@ export class UserStoreImpl extends BaseStore<void> implements UserStore {
   //
   //----------------------------------------------------------------------
 
-  private m_createEmptyState(): User {
+  protected initState(state: Required<void>): void {
+    throw new Error(`Use 'set()' instead of 'initState()'.`)
+  }
+
+  private m_createEmptyState(): Omit<User, 'myDirPath'> {
     return {
       id: '',
       isSignedIn: false,
@@ -134,7 +148,7 @@ export class UserStoreImpl extends BaseStore<void> implements UserStore {
       email: '',
       emailVerified: false,
       isAppAdmin: false,
-      storageDir: '',
+      myDirName: '',
       getIsAppAdmin: this.getIsAppAdmin,
     }
   }

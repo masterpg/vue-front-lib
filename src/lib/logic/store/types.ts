@@ -80,12 +80,13 @@ export interface User {
   email: string
   emailVerified: boolean
   isAppAdmin: boolean
-  storageDir: string
+  myDirName: string
+  myDirPath: string
   /**
    * セキュリティ安全なアプリケーション管理者フラグを取得します。
    * `isAppAdmin`でも同様の値を取得できますが、このプロパティは
    * ブラウザの開発ツールなどで設定値を変更できてしまいます。
-   * このメソッドでは暗号化されたトークンから値を取得しなおすため、
+   * このメソッドは暗号化されたトークンから値を取得しなおすため、
    * 改ざんの心配がない安全な値を取得できます。
    */
   getIsAppAdmin(): Promise<boolean>

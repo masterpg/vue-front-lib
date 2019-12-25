@@ -40,7 +40,7 @@ const CART_ITEMS: CartItem[] = [
   },
 ]
 
-const GENERAL_USER: User = {
+const GENERAL_USER: Omit<User, 'myDirPath'> = {
   id: 'general.user',
   displayName: '一般ユーザー',
   email: 'general.user@example.com',
@@ -48,7 +48,7 @@ const GENERAL_USER: User = {
   isSignedIn: true,
   photoURL: '',
   isAppAdmin: false,
-  storageDir: 'general.user',
+  myDirName: 'general.user',
   getIsAppAdmin(): Promise<boolean> {
     return Promise.resolve(false)
   },
@@ -90,7 +90,7 @@ beforeEach(async () => {
   productStore.initState({
     all: cloneDeep(PRODUCTS),
   })
-  userStore.initState(cloneDeep(GENERAL_USER))
+  userStore.set(GENERAL_USER)
 })
 
 afterEach(() => {})
