@@ -14,15 +14,15 @@ import * as _path from "path"
   overflow: auto
 
 .tree-view
-  /*--comp-tree-view-font-size: 26px*/
-  /*--comp-tree-node-indent: 20px*/
+  //--comp-tree-view-font-size: 26px
+  //--comp-tree-node-indent: 20px
 </style>
 
 <template>
   <div class="container">
     <q-splitter v-model="m_splitterModel" class="splitter">
       <template v-slot:before>
-        <div class="tree-view-container">
+        <div ref="treeViewContainer" class="tree-view-container">
           <comp-tree-view
             ref="treeView"
             class="tree-view"
@@ -38,7 +38,7 @@ import * as _path from "path"
         </div>
       </template>
       <template v-slot:after>
-        <storage-dir-view ref="dirView" />
+        <storage-dir-view ref="dirView" @dir-selected="m_dirViewOnDirSelected($event)" />
         <!--
         <div class="app-ma-20">
           <div class="layout horizontal center">
@@ -163,6 +163,14 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
 
     // 現在の選択ノードを保存
     StoragePage.m_selectedNodePath = nodePath
+
+    // ツリービューの縦スクロール位置が初期化さていない場合
+    if (!this.m_initializedScrollTop) {
+      this.m_initializedScrollTop = true
+      setTimeout(() => {
+        this.m_scrollToSelectedNode(nodePath)
+      }, 250)
+    }
   }
 
   //----------------------------------------------------------------------
@@ -177,9 +185,19 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
 
   private m_filePath: string = ''
 
+  /**
+   * ツリービューの縦スクロール位置が初期化されたか否かです。
+   */
+  private m_initializedScrollTop = false
+
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
+
+  @NoCache
+  get m_treeViewContainer(): HTMLElement {
+    return this.$refs.treeViewContainer as HTMLElement
+  }
 
   @NoCache
   get m_treeView(): CompTreeView {
@@ -388,11 +406,44 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       openParentNode(dirNode.parent)
     }
 
-    const dirNode = storageTreeStore.getNode(nodePath)
-    if (!dirNode) return
+    const node = storageTreeStore.getNode(nodePath)
+    if (!node) return
 
-    this.m_treeView.selectedNode = dirNode
-    openParentNode(dirNode)
+    this.m_treeView.selectedNode = node
+    openParentNode(node)
+  }
+
+  /**
+   * 指定ノードをツリービューの上下中央に位置するようスクロールします。
+   * @param nodePath
+   */
+  private m_scrollToSelectedNode(nodePath: string): void {
+    const treeNode = storageTreeStore.getNode(nodePath)
+    if (!treeNode) return
+
+    // 本ページのグローバルな上位置を取得
+    const globalTop = this.$el.getBoundingClientRect().top
+    // ツリービューの現スクロール位置を取得
+    const scrollTop = getScrollPosition(this.m_treeViewContainer)
+    // 指定ノードの上位置を取得
+    const nodeTop = treeNode.$el.getBoundingClientRect().top - globalTop
+
+    // 指定ノードをツリービューの上下中央に位置するようスクロール(できるだけ)
+    const newScrollY = scrollTop + nodeTop - this.m_treeViewContainer.clientHeight / 2
+    setScrollPosition(this.m_treeViewContainer, newScrollY, 300)
+
+    // console.log(
+    //   JSON.stringify(
+    //     {
+    //       scrollTop,
+    //       nodeTop,
+    //       'treeViewContainer.clientHeight / 2': this.m_treeViewContainer.clientHeight / 2,
+    //       newScrollY,
+    //     },
+    //     null,
+    //     2
+    //   )
+    // )
   }
 
   //----------------------------------------------------------------------
@@ -430,29 +481,42 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     */
   }
 
+  /**
+   * ツリービューでノードが選択された際のリスナです。
+   * @param node
+   */
   private m_treeViewOnSelected(node: StorageTreeNode) {
-    // const num = node.$el.getBoundingClientRect().top - this.$el.getBoundingClientRect().top
-    // console.log(`num: ${num}, node: ${node.$el.getBoundingClientRect().top}, top: ${this.$el.getBoundingClientRect().top}`)
-    // setScrollPosition(this.m_treeView.$el.parentElement!, num)
-
-    // this.m_dirView.setDir(node.value)
-
     router.views.demo.storage.move(node.value)
   }
 
+  /**
+   * ツリービューのノードコンテキストメニューでリロードが選択された際のリスナです。
+   */
   private async m_treeViewOnReloadSelected() {
     await this.m_pullStorageNodes()
     await this.m_setupPage()
   }
 
+  /**
+   * ツリービューのノードコンテキストメニューでファイルのアップロードが選択された際のリスナです。
+   * @param dirNode
+   */
   private async m_treeViewOnFilesUploadSelected(dirNode: StorageTreeNode) {
     this.m_uploadProgressFloat.openFilesSelectDialog(dirNode.value)
   }
 
+  /**
+   * ツリービューのノードコンテキストメニューでフォルダのアップロードが選択された際のリスナです。
+   * @param dirNode
+   */
   private async m_treeViewOnDirUploadSelected(dirNode: StorageTreeNode) {
     this.m_uploadProgressFloat.openDirSelectDialog(dirNode.value)
   }
 
+  /**
+   * ツリービューのノードコンテキストメニューでフォルダの作成が選択された際のリスナです。
+   * @param node
+   */
   private async m_treeViewOnCreateDirSelected(node: StorageTreeNode) {
     const dirPath = await this.m_dirCreateDialog.open(node)
     if (dirPath) {
@@ -460,6 +524,10 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     }
   }
 
+  /**
+   * ツリービューのノードコンテキストメニューで移動が選択された際のリスナです。
+   * @param node
+   */
   private async m_treeViewOnMoveSelected(node: StorageTreeNode) {
     const toDir = await this.m_nodeMoveDialog.open(node)
     if (typeof toDir === 'string') {
@@ -467,6 +535,10 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     }
   }
 
+  /**
+   * ツリービューのノードコンテキストメニューで名前変更が選択された際のリスナです。
+   * @param node
+   */
   private async m_treeViewOnRenameSelected(node: StorageTreeNode) {
     const newName = await this.m_nodeRenameDialog.open(node)
     if (newName) {
@@ -474,6 +546,10 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     }
   }
 
+  /**
+   * ツリービューのノードコンテキストメニューで削除が選択された際のリスナです。
+   * @param node
+   */
   private async m_treeViewOnDeleteSelected(node: StorageTreeNode) {
     const confirmed = await this.m_nodesRemoveDialog.open([node])
     if (confirmed) {
@@ -481,6 +557,20 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     }
   }
 
+  /**
+   * ディレクトリビューでディレクトリが選択された際のリスナです。
+   * @param dirPath
+   */
+  private m_dirViewOnDirSelected(dirPath: string) {
+    router.views.demo.storage.move(dirPath)
+    setTimeout(() => {
+      this.m_scrollToSelectedNode(dirPath)
+    }, 250)
+  }
+
+  /**
+   * アップロード進捗フロートでアップロードが終了した際のハンドラです。
+   */
   private async m_uploadProgressFloatOnUploadEnded() {
     await this.m_pullStorageNodes()
     await this.m_setupPage()

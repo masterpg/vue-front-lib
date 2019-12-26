@@ -312,7 +312,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
    * @param path
    */
   private m_pathBlockOnClick(path: string) {
-    router.views.demo.storage.move(path)
+    this.$emit('dir-selected', path)
   }
 
   /**
@@ -320,7 +320,9 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
    * @param row
    */
   private m_tableRowNameCellOnClick(row: TableRow) {
-    router.views.demo.storage.move(row.value)
+    if (row.nodeType === StorageNodeType.Dir) {
+      this.$emit('dir-selected', row.value)
+    }
   }
 }
 </script>

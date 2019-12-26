@@ -1,5 +1,6 @@
 import * as _path from 'path'
 import { BaseRouter, ViewRoute, setRouter } from '@/lib'
+import { removeEndSlash } from 'web-base-lib'
 
 //========================================================================
 //
@@ -64,8 +65,9 @@ const demoRoute = new (class DemoRoute extends ViewRoute {
     }
 
     move(nodePath: string) {
-      const nextPath = _path.join(this.basePath, nodePath)
-      if (router.currentRoute.path === nextPath) {
+      const currentRoutePath = removeEndSlash(router.currentRoute.path)
+      const nextPath = removeEndSlash(_path.join(this.basePath, nodePath))
+      if (currentRoutePath === nextPath) {
         return
       }
       router.push(nextPath)
