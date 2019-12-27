@@ -105,7 +105,6 @@ import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import { getStorageTreeRootNodeData } from '@/example/views/demo/storage/base'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
-import { router } from '@/example/router'
 import { storageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
 
 interface TableRow {
@@ -322,6 +321,8 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
   private m_tableRowNameCellOnClick(row: TableRow) {
     if (row.nodeType === StorageNodeType.Dir) {
       this.$emit('dir-selected', row.value)
+    } else if (row.nodeType === StorageNodeType.File) {
+      this.$emit('file-selected', row.value)
     }
   }
 }

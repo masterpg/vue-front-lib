@@ -38,7 +38,7 @@ import * as _path from "path"
         </div>
       </template>
       <template v-slot:after>
-        <storage-dir-view ref="dirView" @dir-selected="m_dirViewOnDirSelected($event)" />
+        <storage-dir-view ref="dirView" @dir-selected="m_dirViewOnDirSelected($event)" @file-selected="m_dirViewOnFileSelected($event)" />
         <!--
         <div class="app-ma-20">
           <div class="layout horizontal center">
@@ -59,7 +59,7 @@ import * as _path from "path"
       ref="uploadProgressFloat"
       class="fixed-bottom-right"
       storage-type="user"
-      @upload-ended="m_uploadProgressFloatOnUploadEnded()"
+      @upload-ended="m_uploadProgressFloatOnUploadEnded($event)"
     />
   </div>
 </template>
@@ -112,7 +112,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       return
     }
 
-    await this.m_setupPage()
+    await this.m_refreshPage()
   }
 
   async created() {
@@ -128,18 +128,18 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
    * @param user
    */
   private async m_userOnSignedIn(user: User) {
-    await this.m_setupPage()
+    await this.m_refreshPage()
   }
 
   async beforeRouteUpdate(to: Route, from: Route, next: (to?: RawLocation | false | ((vm: Vue) => any) | void) => void) {
     next()
-    await this.m_setupPage()
+    await this.m_refreshPage()
   }
 
   /**
-   * 本ページのセットアップを行います。
+   * 本ページのリフレッシュを行います。
    */
-  private async m_setupPage(): Promise<void> {
+  private async m_refreshPage(): Promise<void> {
     // ルーターのパスが本ページのパスと一致しない場合
     if (!router.views.demo.storage.matchCurrentRoute()) return
     // ユーザーがサインインしていない場合
@@ -156,9 +156,9 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
 
     // URLから選択ノードを取得
     const nodePath = router.views.demo.storage.getNodePath()
-    // ツリーの選択ノード設定
+    // ツリーの選択ノードを設定
     this.m_selectTreeNode(nodePath)
-    // ディレクトリビューのディレクトリパス設定
+    // ディレクトリビューのディレクトリパスを設定
     this.m_dirView.setDirPath(nodePath)
 
     // 現在の選択ノードを保存
@@ -288,7 +288,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       return
     }
 
-    await this.m_setupPage()
+    await this.m_refreshPage()
 
     this.$q.loading.hide()
   }
@@ -319,7 +319,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       return
     }
 
-    await this.m_setupPage()
+    await this.m_refreshPage()
 
     this.$q.loading.hide()
   }
@@ -357,7 +357,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     }
 
     storageTreeStore.moveNode(treeNode.value, toPath)
-    await this.m_setupPage()
+    await this.m_refreshPage()
 
     this.$q.loading.hide()
   }
@@ -390,7 +390,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     }
 
     storageTreeStore.renameNode(treeNode.value, newName)
-    await this.m_setupPage()
+    await this.m_refreshPage()
 
     this.$q.loading.hide()
   }
@@ -400,17 +400,20 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
    * また祖先ノードを展開状態にします。
    */
   private m_selectTreeNode(nodePath: string): void {
-    const openParentNode = (dirNode: CompTreeNode) => {
-      if (!dirNode.parent) return
-      dirNode.parent.open()
-      openParentNode(dirNode.parent)
-    }
-
     const node = storageTreeStore.getNode(nodePath)
     if (!node) return
 
     this.m_treeView.selectedNode = node
-    openParentNode(node)
+    this.m_openParentNode(node)
+  }
+
+  /**
+   * 指定されたノードの祖先ノードを展開します。
+   */
+  private m_openParentNode(treeNode: CompTreeNode): void {
+    if (!treeNode.parent) return
+    treeNode.parent.open()
+    this.m_openParentNode(treeNode.parent)
   }
 
   /**
@@ -454,7 +457,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
 
   private async m_refreshStorageButtonOnClick() {
     await this.m_pullStorageNodes()
-    await this.m_setupPage()
+    await this.m_refreshPage()
   }
 
   private async m_loadFileButtonOnClick(e) {
@@ -494,7 +497,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
    */
   private async m_treeViewOnReloadSelected() {
     await this.m_pullStorageNodes()
-    await this.m_setupPage()
+    await this.m_refreshPage()
   }
 
   /**
@@ -569,11 +572,24 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   }
 
   /**
-   * アップロード進捗フロートでアップロードが終了した際のハンドラです。
+   * ディレクトリビューでファイルが選択された際のリスナです。
+   * @param filePath
    */
-  private async m_uploadProgressFloatOnUploadEnded() {
+  private m_dirViewOnFileSelected(filePath: string) {
+    location.href = `${this.$logic.userStorage.baseURL}/${filePath}`
+  }
+
+  /**
+   * アップロード進捗フロートでアップロードが終了した際のハンドラです。
+   * @param uploadDirPath アップロード先のディレクトリパス
+   */
+  private async m_uploadProgressFloatOnUploadEnded(uploadDirPath: string) {
+    const uploadDirNode = storageTreeStore.getNode(uploadDirPath)!
+    uploadDirNode.open()
+    this.m_openParentNode(uploadDirNode)
+
     await this.m_pullStorageNodes()
-    await this.m_setupPage()
+    router.views.demo.storage.move(uploadDirPath)
   }
 }
 </script>

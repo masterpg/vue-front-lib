@@ -6,7 +6,6 @@ import { Dialog } from 'quasar'
 import { NoCache } from '../../../base/decorators'
 import { api } from '../../api'
 import { i18n } from '../../../i18n'
-const cloneDeep = require('lodash/cloneDeep')
 
 @Component
 export class AuthLogicImpl extends BaseLogic implements AuthLogic {

@@ -40,7 +40,7 @@ const CART_ITEMS: CartItem[] = [
   },
 ]
 
-const GENERAL_USER: Omit<User, 'myDirPath'> = {
+const GENERAL_USER: User = {
   id: 'general.user',
   displayName: '一般ユーザー',
   email: 'general.user@example.com',

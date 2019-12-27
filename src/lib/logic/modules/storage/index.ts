@@ -1,3 +1,4 @@
+import * as _path from 'path'
 import { APIStorageNode, api } from '../../api'
 import { AppStorageLogic, UserStorageLogic } from '../../types'
 import { AppStorageStore, UserStorageStore, store } from '../../store'
@@ -7,11 +8,18 @@ import { Component } from 'vue-property-decorator'
 import { StorageUploadManager } from './base-upload'
 import { UserStorageUploadManager } from './user-upload'
 import { UserStorageUrlUploadManager } from './user-upload-by-url'
+import { config } from '../../../config'
+import { removeEndSlash } from 'web-base-lib'
 
 @Component
 export class UserStorageLogicImpl extends BaseStorageLogic implements UserStorageLogic {
   protected get storageStore(): UserStorageStore {
     return store.userStorage
+  }
+
+  get baseURL(): string {
+    const baseStorageURL = `${removeEndSlash(config.api.baseURL)}/storage`
+    return `${baseStorageURL}/${_path.join(config.storage.usersDir, store.user.myDirName)}`
   }
 
   newUploadManager(owner: Element): StorageUploadManager {
@@ -59,6 +67,11 @@ export class UserStorageLogicImpl extends BaseStorageLogic implements UserStorag
 export class AppStorageLogicImpl extends BaseStorageLogic implements AppStorageLogic {
   protected get storageStore(): AppStorageStore {
     return store.appStorage
+  }
+
+  get baseURL(): string {
+    const baseStorageURL = `${removeEndSlash(config.api.baseURL)}/storage`
+    return `${baseStorageURL}`
   }
 
   newUploadManager(owner: Element): StorageUploadManager {

@@ -1,5 +1,7 @@
+import * as _path from 'path'
 import { StorageFileUploader, StorageUploadManager } from './base-upload'
 import { Dialog } from 'quasar'
+import { config } from '../../../config'
 import { i18n } from '../../../i18n'
 import { store } from '../../store'
 
@@ -15,7 +17,8 @@ export class UserStorageUploadManager extends StorageUploadManager {
   }
 
   protected createUploadingFiles(files: File[]): StorageFileUploader[] {
-    const basePath = store.user.myDirPath
+    const userStorageDir = store.user.myDirName
+    const basePath = _path.join(config.storage.usersDir, userStorageDir)
 
     const result: StorageFileUploader[] = []
     for (const file of files) {

@@ -1,8 +1,9 @@
-import * as path from 'path'
+import * as _path from 'path'
 import { StorageFileUploader, StorageUploadManager, UploadFileParam } from './base-upload'
 import axios, { Canceler } from 'axios'
 import { Dialog } from 'quasar'
 import { api } from '../../api'
+import { config } from '../../../config'
 import { i18n } from '../../../i18n'
 import { store } from '../../store'
 
@@ -18,7 +19,8 @@ export class UserStorageUrlUploadManager extends StorageUploadManager {
   }
 
   protected createUploadingFiles(files: File[]): StorageFileUploader[] {
-    const basePath = store.user.myDirPath
+    const userStorageDir = store.user.myDirName
+    const basePath = _path.join(config.storage.usersDir, userStorageDir)
 
     const result: StorageFileUploader[] = []
     for (const file of files) {
@@ -127,7 +129,7 @@ class UserStorageUrlFileUploader extends StorageFileUploader {
   private async m_getSignedUploadUrl(): Promise<string> {
     const params = [
       {
-        filePath: path.join(this.uploadParam.basePath || '', this.path),
+        filePath: _path.join(this.uploadParam.basePath || '', this.path),
         contentType: this.uploadParam.type,
       },
     ]

@@ -15,6 +15,8 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
     return this.storageStore.all
   }
 
+  abstract readonly baseURL: string
+
   //----------------------------------------------------------------------
   //
   //  Variables

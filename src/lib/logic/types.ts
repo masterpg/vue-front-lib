@@ -10,6 +10,8 @@ import { StorageUploadManager } from './modules/storage'
 export interface StorageLogic {
   readonly nodes: StorageNode[]
 
+  readonly baseURL: string
+
   getNodeMap(): { [path: string]: StorageNode }
 
   pullNodes(dir?: string): Promise<void>

@@ -4,8 +4,10 @@ import { BaseStorageLogic } from '@/lib/logic/modules/storage/base-storage'
 import { BaseStorageStore } from '@/lib/logic/store/modules/storage/base'
 import { StorageStore } from '@/lib/logic/store'
 import { TestStore } from '../../../../../helpers/common/store'
+import { config } from '@/lib/config'
 import dayjs from 'dayjs'
 import { initLibTest } from '../../../../../helpers/lib/init'
+import { removeEndSlash } from 'web-base-lib'
 const cloneDeep = require('lodash/cloneDeep')
 
 //========================================================================
@@ -107,6 +109,11 @@ class MockStorageStore extends BaseStorageStore {}
 class MockStorageLogic extends BaseStorageLogic {
   protected get storageStore(): StorageStore {
     return storageStore
+  }
+
+  get baseURL(): string {
+    const baseStorageURL = `${removeEndSlash(config.api.baseURL)}/storage`
+    return `${baseStorageURL}`
   }
 
   newUploadManager(owner: Element): StorageUploadManager {

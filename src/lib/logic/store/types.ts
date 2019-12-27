@@ -81,7 +81,6 @@ export interface User {
   emailVerified: boolean
   isAppAdmin: boolean
   myDirName: string
-  myDirPath: string
   /**
    * セキュリティ安全なアプリケーション管理者フラグを取得します。
    * `isAppAdmin`でも同様の値を取得できますが、このプロパティは

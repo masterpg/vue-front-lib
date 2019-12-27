@@ -1,8 +1,6 @@
-import * as _path from 'path'
 import { User, UserStore } from '../../types'
 import { BaseStore } from '../../base'
 import { Component } from 'vue-property-decorator'
-import { config } from '../../../../config'
 const isBoolean = require('lodash/isBoolean')
 const isString = require('lodash/isString')
 
@@ -72,13 +70,6 @@ export class UserStoreImpl extends BaseStore<void> implements UserStore {
     return this.m_myDirName
   }
 
-  get myDirPath(): string {
-    if (!this.myDirName) {
-      return ''
-    }
-    return _path.join(config.storage.usersDir, this.m_myDirName)
-  }
-
   //----------------------------------------------------------------------
   //
   //  Methods
@@ -110,7 +101,6 @@ export class UserStoreImpl extends BaseStore<void> implements UserStore {
       emailVerified: this.emailVerified,
       isAppAdmin: this.isAppAdmin,
       myDirName: this.myDirName,
-      myDirPath: this.myDirPath,
       getIsAppAdmin: this.getIsAppAdmin,
     }
   }
@@ -139,7 +129,7 @@ export class UserStoreImpl extends BaseStore<void> implements UserStore {
     throw new Error(`Use 'set()' instead of 'initState()'.`)
   }
 
-  private m_createEmptyState(): Omit<User, 'myDirPath'> {
+  private m_createEmptyState(): User {
     return {
       id: '',
       isSignedIn: false,

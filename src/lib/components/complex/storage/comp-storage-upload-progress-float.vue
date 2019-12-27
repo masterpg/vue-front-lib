@@ -129,6 +129,11 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
 
   private m_minimize: boolean = false
 
+  /**
+   * アップロード先のディレクトリパスです。
+   */
+  private m_uploadDirPath: string | null = null
+
   //----------------------------------------------------------------------
   //
   //  Methods
@@ -140,6 +145,7 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
    * @param uploadDirPath
    */
   openFilesSelectDialog(uploadDirPath: string): void {
+    this.m_uploadDirPath = uploadDirPath
     this.m_uploadManager.openFilesSelectDialog(uploadDirPath)
     this.m_minimize = false
   }
@@ -149,6 +155,7 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
    * @param uploadDirPath
    */
   openDirSelectDialog(uploadDirPath: string): void {
+    this.m_uploadDirPath = uploadDirPath
     this.m_uploadManager.openDirSelectDialog(uploadDirPath)
     this.m_minimize = false
   }
@@ -183,7 +190,7 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
   @Watch('m_uploadManager.ended')
   private m_uploadManagerOnEnded(newValue: boolean, oldValue: boolean) {
     if (!newValue) return
-    this.$emit(CompStorageUploadProgressFloat.UPLOAD_ENDED)
+    this.$emit(CompStorageUploadProgressFloat.UPLOAD_ENDED, this.m_uploadDirPath)
   }
 }
 </script>
