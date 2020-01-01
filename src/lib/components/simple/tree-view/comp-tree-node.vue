@@ -90,6 +90,7 @@ const isInteger = require('lodash/isInteger')
 const isFunction = require('lodash/isFunction')
 const isBoolean = require('lodash/isBoolean')
 const isString = require('lodash/isString')
+const debounce = require('lodash/debounce')
 
 @Component
 export default class CompTreeNode extends BaseComponent {
@@ -100,6 +101,8 @@ export default class CompTreeNode extends BaseComponent {
   //----------------------------------------------------------------------
 
   mounted() {
+    this.m_toggle = debounce(this.m_toggleFunc)
+
     // this.childContainerObserver = new MutationObserver(records => {
     //   console.log(records)
     // })
@@ -422,6 +425,7 @@ export default class CompTreeNode extends BaseComponent {
    * @param animated
    */
   toggle(animated: boolean = true): void {
+    this.nodeData.opened = !this.nodeData.opened
     this.m_toggle(!this.nodeData.opened, animated)
   }
 
@@ -430,7 +434,8 @@ export default class CompTreeNode extends BaseComponent {
    * @param animated
    */
   open(animated: boolean = true): void {
-    this.m_toggle(true, animated)
+    this.nodeData.opened = true
+    this.m_toggle(this.nodeData.opened, animated)
   }
 
   /**
@@ -438,7 +443,8 @@ export default class CompTreeNode extends BaseComponent {
    * @param animated
    */
   close(animated: boolean = true): void {
-    this.m_toggle(false, animated)
+    this.nodeData.opened = false
+    this.m_toggle(this.nodeData.opened, animated)
   }
 
   /**
@@ -590,8 +596,9 @@ export default class CompTreeNode extends BaseComponent {
     }
   }
 
-  private m_toggle(opened: boolean, animated: boolean = true): void {
-    this.nodeData.opened = opened
+  private m_toggle!: (opened: boolean, animated?: boolean) => void
+
+  private m_toggleFunc(opened: boolean, animated: boolean = true): void {
     this.m_refreshChildrenContainerHeight(animated)
 
     this.$el.dispatchEvent(

@@ -1162,7 +1162,7 @@ describe('CompTreeNode', () => {
     })
   })
 
-  it('子ノード開閉', () => {
+  it('子ノード開閉', done => {
     const wrapper = mount(CompTreeView)
     const treeView = wrapper.vm as CompTreeView | any
     treeView.buildTree(cloneDeep(baseNodeDataList))
@@ -1171,14 +1171,20 @@ describe('CompTreeNode', () => {
     expect(node1_1.opened).toBe(true)
 
     node1_1.open()
-    node1_1.close()
-    node1_1.toggle()
-
-    // イベント発火を検証
-    expect(wrapper.emitted('opened-changed').length).toBe(3) // イベント3回発火される想定
-    expect(wrapper.emitted('opened-changed')[2][0]).toBe(node1_1)
-    // ノードの開閉状態を検証
     expect(node1_1.opened).toBeTruthy()
+    node1_1.close()
+    expect(node1_1.opened).toBeFalsy()
+    node1_1.toggle()
+    expect(node1_1.opened).toBeTruthy()
+
+    setTimeout(() => {
+      // イベント発火を検証(イベントは1回発火される想定)
+      expect(wrapper.emitted('opened-changed').length).toBe(1)
+      expect(wrapper.emitted('opened-changed')[0][0]).toBe(node1_1)
+      // ノードの開閉状態を検証
+      expect(node1_1.opened).toBeTruthy()
+      done()
+    })
   })
 
   describe('プロパティ値の変更', () => {
