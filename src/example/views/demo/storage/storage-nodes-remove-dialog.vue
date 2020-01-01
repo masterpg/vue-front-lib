@@ -25,12 +25,12 @@
       </q-card-section>
 
       <!-- ボタンエリア -->
-      <q-card-section class="layout horizontal center end-justified">
+      <q-card-actions class="layout horizontal center end-justified">
         <!-- CANCELボタン -->
         <q-btn flat rounded color="primary" :label="$t('common.cancel')" @click="close()" />
         <!-- DELETEボタン -->
         <q-btn flat rounded color="primary" :label="$t('common.delete')" @click="close(true)" />
-      </q-card-section>
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
@@ -54,27 +54,31 @@ export default class StorageNodesRemoveDialog extends BaseDialog<StorageTreeNode
     return this.$refs.dialog as QDialog
   }
 
+  private get m_removingNodes(): StorageTreeNode[] | null {
+    return this.params
+  }
+
   private get m_title(): string {
-    if (!this.params) return ''
-    const somehow = String(this.$tc('common.item', this.params.length))
+    if (!this.m_removingNodes) return ''
+    const somehow = String(this.$tc('common.item', this.m_removingNodes.length))
     return String(this.$t('common.deleteSomehow', { somehow }))
   }
 
   private get m_message(): string {
-    if (!this.params) return ''
+    if (!this.m_removingNodes) return ''
 
     // ダイアログ引数で渡されたノードが1つの場合
-    if (this.params.length === 1) {
-      return String(this.$t('storage.deleteTargetQ', { target: this.params[0].label }))
+    if (this.m_removingNodes.length === 1) {
+      return String(this.$t('storage.deleteTargetQ', { target: this.m_removingNodes[0].label }))
     }
     // ダイアログ引数で渡されたノードが複数の場合
     else {
       let fileNum = 0
       let folderNum = 0
-      for (const node of this.params) {
-        if (node.nodeType === StorageNodeType.Dir) {
+      for (const removingNode of this.m_removingNodes) {
+        if (removingNode.nodeType === StorageNodeType.Dir) {
           folderNum++
-        } else if (node.nodeType === StorageNodeType.File) {
+        } else if (removingNode.nodeType === StorageNodeType.File) {
           fileNum++
         }
       }

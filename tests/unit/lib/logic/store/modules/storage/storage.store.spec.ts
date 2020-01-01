@@ -434,6 +434,156 @@ describe('move', () => {
     existsStateNodes(actual)
   })
 
+  it('移動先に同名のディレクトリまたはファイルが存在する場合', () => {
+    const FM_UPDATED = dayjs('2020-01-01')
+    const TO_UPDATED = dayjs('2020-01-02')
+    const d1: StorageNode = {
+      nodeType: StorageNodeType.Dir,
+      name: 'd1',
+      dir: '',
+      path: 'd1',
+      created: dayjs(),
+      updated: FM_UPDATED,
+    }
+    const d1_docs: StorageNode = {
+      nodeType: StorageNodeType.Dir,
+      name: 'docs',
+      dir: 'd1',
+      path: 'd1/docs',
+      created: dayjs(),
+      updated: FM_UPDATED,
+    }
+    const d1_docs_aaa: StorageNode = {
+      nodeType: StorageNodeType.Dir,
+      name: 'aaa',
+      dir: 'd1/docs',
+      path: 'd1/docs/aaa',
+      created: dayjs(),
+      updated: FM_UPDATED,
+    }
+    const d1_docs_aaa_fileA: StorageNode = {
+      nodeType: StorageNodeType.File,
+      name: 'fileA.txt',
+      dir: 'd1/docs/aaa',
+      path: 'd1/docs/aaa/fileA.txt',
+      created: dayjs(),
+      updated: FM_UPDATED,
+    }
+    const d1_docs_fileB: StorageNode = {
+      nodeType: StorageNodeType.File,
+      name: 'fileB.txt',
+      dir: 'd1/docs',
+      path: 'd1/docs/fileB.txt',
+      created: dayjs(),
+      updated: FM_UPDATED,
+    }
+    const d1_docs_fileC: StorageNode = {
+      nodeType: StorageNodeType.File,
+      name: 'fileC.txt',
+      dir: 'd1/docs',
+      path: 'd1/docs/fileC.txt',
+      created: dayjs(),
+      updated: FM_UPDATED,
+    }
+    const docs: StorageNode = {
+      nodeType: StorageNodeType.Dir,
+      name: 'docs',
+      dir: '',
+      path: 'docs',
+      created: dayjs(),
+      updated: FM_UPDATED,
+    }
+    const docs_aaa: StorageNode = {
+      nodeType: StorageNodeType.Dir,
+      name: 'aaa',
+      dir: 'docs',
+      path: 'docs/aaa',
+      created: dayjs(),
+      updated: TO_UPDATED,
+    }
+    const docs_aaa_fileA: StorageNode = {
+      nodeType: StorageNodeType.File,
+      name: 'fileA.txt',
+      dir: 'docs/aaa',
+      path: 'docs/aaa/fileA.txt',
+      created: dayjs(),
+      updated: TO_UPDATED,
+    }
+    const docs_fileB: StorageNode = {
+      nodeType: StorageNodeType.File,
+      name: 'fileB.txt',
+      dir: 'docs',
+      path: 'docs/fileB.txt',
+      created: dayjs(),
+      updated: TO_UPDATED,
+    }
+    const docs_fileD: StorageNode = {
+      nodeType: StorageNodeType.File,
+      name: 'fileD.txt',
+      dir: 'docs',
+      path: 'docs/fileD.txt',
+      created: dayjs(),
+      updated: TO_UPDATED,
+    }
+    const docs_fileE: StorageNode = {
+      nodeType: StorageNodeType.File,
+      name: 'fileE.txt',
+      dir: 'docs',
+      path: 'docs/fileE.txt',
+      created: dayjs(),
+      updated: TO_UPDATED,
+    }
+    storageStore.setAll([
+      d1,
+      d1_docs,
+      d1_docs_aaa,
+      d1_docs_aaa_fileA,
+      d1_docs_fileB,
+      d1_docs_fileC,
+      docs,
+      docs_aaa,
+      docs_aaa_fileA,
+      docs_fileB,
+      docs_fileD,
+      docs_fileE,
+    ])
+
+    // 'd1/docdocs_fileDs'をルート直下の'docs'へ移動
+    // (ルート直下にはdocsが既に存在している)
+    const actual = storageStore.move('d1/docs', 'docs')
+
+    // 戻り値の検証
+    const actualPaths = actual.map(node => node.path)
+    expect(actualPaths).toEqual(['docs', 'docs/aaa', 'docs/aaa/fileA.txt', 'docs/fileB.txt', 'docs/fileC.txt'])
+
+    verifyStateNodes()
+    existsStateNodes(actual)
+    toBeCopy(actual)
+
+    // 全ノードを取得し、移動後に想定したノード一覧となっているか検証
+    const allNodePaths = storageStore.all.map(node => node.path)
+    expect(allNodePaths).toEqual([
+      'd1',
+      'docs',
+      'docs/aaa',
+      'docs/aaa/fileA.txt',
+      'docs/fileB.txt',
+      'docs/fileC.txt',
+      'docs/fileD.txt',
+      'docs/fileE.txt',
+    ])
+
+    // 移動したノードの検証(移動または上書きされたか、もとからあったのか)
+    expect(storageStore.get('docs')!.updated).toEqual(FM_UPDATED)
+    expect(storageStore.get('docs/aaa')!.updated).toEqual(FM_UPDATED)
+    expect(storageStore.get('docs/aaa/fileA.txt')!.updated).toEqual(FM_UPDATED)
+    expect(storageStore.get('docs/fileB.txt')!.updated).toEqual(FM_UPDATED)
+    expect(storageStore.get('docs/fileC.txt')!.updated).toEqual(FM_UPDATED)
+    // 次の2ファイルは移動先にもとからあったので更新日に変化はない
+    expect(storageStore.get('docs/fileD.txt')!.updated).toEqual(TO_UPDATED)
+    expect(storageStore.get('docs/fileE.txt')!.updated).toEqual(TO_UPDATED)
+  })
+
   it('存在しないパスを指定した場合', () => {
     let actual: Error
     try {

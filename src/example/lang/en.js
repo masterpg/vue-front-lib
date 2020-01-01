@@ -21,7 +21,10 @@ export default merge(require('@/lib/lang/en').default, {
     deleteTargetQ: 'Delete "{target}"?',
     deleteNodeQ: 'Delete {nodeNum} {nodeType}?',
     deleteFileAndFolderQ: 'Delete {fileNum} {fileType} and {folderNum} {folderType}?',
+    nodeAlreadyExists: 'A {nodeType} called "{nodeName}" already exists.',
     movingNode: 'Move {nodeType}',
     destNotSelected: 'The destination has not been selected.',
+    movingNodeAlreadyExistsQ: 'Item "{nodeName}" already exists.\nExisting items will be overwritten. Are you sure?',
+    renamingNodeNameIsNotChanged: 'The name has not changed.',
   },
 })

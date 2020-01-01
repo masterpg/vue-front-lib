@@ -29,12 +29,12 @@
       </q-card-section>
 
       <!-- ボタンエリア -->
-      <q-card-section class="layout horizontal center end-justified">
+      <q-card-actions class="layout horizontal center end-justified">
         <!-- CANCELボタン -->
         <q-btn flat rounded color="primary" :label="$t('common.cancel')" @click="close()" />
         <!-- CREATEボタン -->
         <q-btn flat rounded color="primary" :label="$t('common.create')" @click="m_create()" />
-      </q-card-section>
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
@@ -59,6 +59,10 @@ export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, 
     return this.$refs.dialog as QDialog
   }
 
+  private get m_parentNode(): StorageTreeNode | null {
+    return this.params
+  }
+
   private get m_title(): string {
     const nodeTypeName = this.$tc('common.folder', 1)
     return String(this.$t('common.createSomehow', { somehow: nodeTypeName }))
@@ -67,35 +71,18 @@ export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, 
   private m_dirName: string | null = null
 
   private get m_parentPath(): string {
-    if (!this.params) return ''
+    if (!this.m_parentNode) return ''
 
-    const storageNode = this.params.getRootNode()
-    if (storageNode === this.params) {
-      return path.join(this.params.label, '/')
+    const storageNode = this.m_parentNode.getRootNode()
+    if (storageNode === this.m_parentNode) {
+      return path.join(this.m_parentNode.label, '/')
     } else {
-      return path.join(storageNode.label, this.params.value, '/')
+      return path.join(storageNode.label, this.m_parentNode.value, '/')
     }
   }
 
   private get m_isError(): boolean {
-    if (!this.params) return false
-
-    if (this.m_dirName !== null && this.m_dirName === '') {
-      const target = String(this.$t('common.somehowName', { somehow: this.params.nodeTypeName }))
-      this.m_errorMessage = String(this.$t('error.required', { target }))
-      return true
-    }
-
-    if (this.m_dirName) {
-      const matched = this.m_dirName.match(/\r?\n|\t|\//g)
-      if (matched) {
-        this.m_errorMessage = String(this.$t('error.unusable', { target: matched[0] }))
-        return true
-      }
-    }
-
-    this.m_errorMessage = ''
-    return false
+    return !this.m_validate()
   }
 
   private m_errorMessage: string = ''
@@ -131,14 +118,14 @@ export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, 
   //----------------------------------------------------------------------
 
   private async m_create(): Promise<void> {
-    if (this.m_isError) return
+    this.m_dirName = this.m_dirName === null ? '' : this.m_dirName
+    if (!this.m_validate()) return
 
     let dirPath = ''
-    const storageNode = this.params!.getRootNode()
-    if (storageNode === this.params) {
-      dirPath = path.join(this.m_dirName!, '/')
+    if (this.m_parentNode!.getRootNode() === this.m_parentNode) {
+      dirPath = this.m_dirName!
     } else {
-      dirPath = path.join(this.params!.value, this.m_dirName!, '/')
+      dirPath = path.join(this.m_parentNode!.value, this.m_dirName!)
     }
     this.close(dirPath)
   }
@@ -146,6 +133,39 @@ export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, 
   private m_clear(): void {
     this.m_dirName = null
     this.m_dirNameInput.resetValidation()
+  }
+
+  private m_validate(): boolean {
+    const parentNode = this.m_parentNode
+    if (!parentNode) return false
+
+    // ディレクトリ名必須入力チェック
+    if (this.m_dirName === '') {
+      const target = String(this.$t('common.somehowName', { somehow: parentNode.nodeTypeName }))
+      this.m_errorMessage = String(this.$t('error.required', { target }))
+      return false
+    }
+
+    // 禁則文字チェック
+    if (this.m_dirName) {
+      const matched = this.m_dirName.match(/\r?\n|\t|\//g)
+      if (matched) {
+        this.m_errorMessage = String(this.$t('error.unusable', { target: matched[0] }))
+        return false
+      }
+    }
+
+    // 作成しようとする名前のディレクトリが存在しないことをチェック
+    for (const siblingNode of parentNode.children) {
+      if (siblingNode.label === this.m_dirName) {
+        const nodeTypeName = this.$tc('common.folder', 1)
+        this.m_errorMessage = String(this.$t('storage.nodeAlreadyExists', { nodeName: this.m_dirName, nodeType: nodeTypeName }))
+        return false
+      }
+    }
+
+    this.m_errorMessage = ''
+    return true
   }
 
   //----------------------------------------------------------------------

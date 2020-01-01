@@ -299,7 +299,6 @@ describe('moveNode', () => {
     const descendants = actual.getDescendants()
 
     expect(actual.parent!.value).toBe('d2')
-    expect(actual.parent!.opened).toBeTruthy()
     expect(actual.value).toBe('d2/d1')
     expect(descendants.length).toBe(3)
     expect(descendants[0].value).toBe('d2/d1/d11')
@@ -325,7 +324,6 @@ describe('moveNode', () => {
     const actual = storageTreeStore.getNode('d1/d12/fileA.txt')!
 
     expect(actual.parent!.value).toBe('d1/d12')
-    expect(actual.parent!.opened).toBeTruthy()
     expect(actual.value).toBe('d1/d12/fileA.txt')
 
     verifyParentChildRelationForTree(treeView)
@@ -338,6 +336,153 @@ describe('moveNode', () => {
     expect(actual.parent!.value).toBe('')
     expect(actual.parent!.opened).toBeTruthy()
     expect(actual.value).toBe('fileA.txt')
+
+    verifyParentChildRelationForTree(treeView)
+  })
+
+  it('移動先に同名のディレクトリまたはファイルが存在する場合', () => {
+    storageTreeStore.removeNodes(STORAGE_NODES.map(node => node.path))
+
+    const FM_UPDATED = dayjs('2020-01-01')
+    const TO_UPDATED = dayjs('2020-01-02')
+    const d1: StorageNode = {
+      nodeType: StorageNodeType.Dir,
+      name: 'd1',
+      dir: '',
+      path: 'd1',
+      created: dayjs(),
+      updated: FM_UPDATED,
+    }
+    const d1_docs: StorageNode = {
+      nodeType: StorageNodeType.Dir,
+      name: 'docs',
+      dir: 'd1',
+      path: 'd1/docs',
+      created: dayjs(),
+      updated: FM_UPDATED,
+    }
+    const d1_docs_aaa: StorageNode = {
+      nodeType: StorageNodeType.Dir,
+      name: 'aaa',
+      dir: 'd1/docs',
+      path: 'd1/docs/aaa',
+      created: dayjs(),
+      updated: FM_UPDATED,
+    }
+    const d1_docs_aaa_fileA: StorageNode = {
+      nodeType: StorageNodeType.File,
+      name: 'fileA.txt',
+      dir: 'd1/docs/aaa',
+      path: 'd1/docs/aaa/fileA.txt',
+      created: dayjs(),
+      updated: FM_UPDATED,
+    }
+    const d1_docs_fileB: StorageNode = {
+      nodeType: StorageNodeType.File,
+      name: 'fileB.txt',
+      dir: 'd1/docs',
+      path: 'd1/docs/fileB.txt',
+      created: dayjs(),
+      updated: FM_UPDATED,
+    }
+    const d1_docs_fileC: StorageNode = {
+      nodeType: StorageNodeType.File,
+      name: 'fileC.txt',
+      dir: 'd1/docs',
+      path: 'd1/docs/fileC.txt',
+      created: dayjs(),
+      updated: FM_UPDATED,
+    }
+    const docs: StorageNode = {
+      nodeType: StorageNodeType.Dir,
+      name: 'docs',
+      dir: '',
+      path: 'docs',
+      created: dayjs(),
+      updated: FM_UPDATED,
+    }
+    const docs_aaa: StorageNode = {
+      nodeType: StorageNodeType.Dir,
+      name: 'aaa',
+      dir: 'docs',
+      path: 'docs/aaa',
+      created: dayjs(),
+      updated: TO_UPDATED,
+    }
+    const docs_aaa_fileA: StorageNode = {
+      nodeType: StorageNodeType.File,
+      name: 'fileA.txt',
+      dir: 'docs/aaa',
+      path: 'docs/aaa/fileA.txt',
+      created: dayjs(),
+      updated: TO_UPDATED,
+    }
+    const docs_fileB: StorageNode = {
+      nodeType: StorageNodeType.File,
+      name: 'fileB.txt',
+      dir: 'docs',
+      path: 'docs/fileB.txt',
+      created: dayjs(),
+      updated: TO_UPDATED,
+    }
+    const docs_fileD: StorageNode = {
+      nodeType: StorageNodeType.File,
+      name: 'fileD.txt',
+      dir: 'docs',
+      path: 'docs/fileD.txt',
+      created: dayjs(),
+      updated: TO_UPDATED,
+    }
+    const docs_fileE: StorageNode = {
+      nodeType: StorageNodeType.File,
+      name: 'fileE.txt',
+      dir: 'docs',
+      path: 'docs/fileE.txt',
+      created: dayjs(),
+      updated: TO_UPDATED,
+    }
+    storageTreeStore.setNodes([
+      d1,
+      d1_docs,
+      d1_docs_aaa,
+      d1_docs_aaa_fileA,
+      d1_docs_fileB,
+      d1_docs_fileC,
+      docs,
+      docs_aaa,
+      docs_aaa_fileA,
+      docs_fileB,
+      docs_fileD,
+      docs_fileE,
+    ])
+
+    // 'd1/docs'をルート直下の'docs'へ移動
+    // (ルート直下にはdocsが既に存在している)
+    storageTreeStore.moveNode('d1/docs', 'docs')
+
+    const allNodePaths = storageTreeStore.getAllNodes().map(node => node.value)
+    // 補足: 空文字''はルートノード
+    expect(allNodePaths).toEqual([
+      '',
+      'd1',
+      'docs',
+      'docs/aaa',
+      'docs/aaa/fileA.txt',
+      'docs/fileB.txt',
+      'docs/fileC.txt',
+      'docs/fileD.txt',
+      'docs/fileE.txt',
+    ])
+
+    // 移動したノードの検証(移動または上書きされたか、もとからあったのか)
+    expect(storageTreeStore.getNode('docs')!.updatedDate).toEqual(FM_UPDATED)
+    expect(storageTreeStore.getNode('docs/aaa')!.updatedDate).toEqual(FM_UPDATED)
+    expect(storageTreeStore.getNode('docs/aaa/fileA.txt')!.updatedDate).toEqual(FM_UPDATED)
+    expect(storageTreeStore.getNode('docs/fileB.txt')!.updatedDate).toEqual(FM_UPDATED)
+    expect(storageTreeStore.getNode('docs/fileC.txt')!.updatedDate).toEqual(FM_UPDATED)
+    // 次の2ファイルは移動先にもとからあったので更新日に変化はない
+    expect(storageTreeStore.getNode('docs/fileD.txt')!.updatedDate).toEqual(TO_UPDATED)
+    expect(storageTreeStore.getNode('docs/fileE.txt')!.updatedDate).toEqual(TO_UPDATED)
 
     verifyParentChildRelationForTree(treeView)
   })

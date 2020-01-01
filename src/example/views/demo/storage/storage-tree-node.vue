@@ -233,8 +233,12 @@ export default class StorageTreeNode extends CompTreeNode {
 
   setNodeData(editData: CompTreeNodeEditData<StorageTreeNodeData>): void {
     this.setBaseNodeData(editData)
-    this.nodeData.created = editData.created
-    this.nodeData.updated = editData.updated
+    if (editData.created) {
+      this.nodeData.created = editData.created
+    }
+    if (editData.updated) {
+      this.nodeData.updated = editData.updated
+    }
   }
 
   private m_dispatchReloadSelected(): void {

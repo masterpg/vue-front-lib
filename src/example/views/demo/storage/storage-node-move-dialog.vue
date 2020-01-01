@@ -28,47 +28,51 @@
 </style>
 
 <template>
-  <q-dialog ref="dialog" v-model="opened" @show="m_dialogOnShow()" @before-hide="close()">
-    <q-card class="container" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
-      <!-- タイトル -->
-      <q-card-section>
-        <div class="title">{{ m_title }}</div>
-      </q-card-section>
+  <div>
+    <q-dialog ref="dialog" v-model="opened" @show="m_dialogOnShow()" @before-hide="close()">
+      <q-card class="container" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
+        <!-- タイトル -->
+        <q-card-section>
+          <div class="title">{{ m_title }}</div>
+        </q-card-section>
 
-      <!-- コンテンツエリア -->
-      <q-card-section class="content-area scroll" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
-        <q-input ref="newNameInput" v-model="m_nodeName" :label="m_nodeLabel" class="app-pb-20" readonly>
-          <template v-slot:prepend>
-            <q-icon :name="m_nodeIcon" />
-          </template>
-        </q-input>
-        <comp-tree-view ref="treeView" class="tree-view" @selected="m_treeViewOnSelected($event)" />
-      </q-card-section>
+        <!-- コンテンツエリア -->
+        <q-card-section class="content-area scroll" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
+          <q-input ref="newNameInput" v-model="m_nodeName" :label="m_nodeLabel" class="app-pb-20" readonly>
+            <template v-slot:prepend>
+              <q-icon :name="m_nodeIcon" />
+            </template>
+          </q-input>
+          <comp-tree-view ref="treeView" class="tree-view" @selected="m_treeViewOnSelected($event)" />
+        </q-card-section>
 
-      <!-- エラーメッセージ -->
-      <q-card-section v-show="!!m_errorMessage">
-        <span class="error-message">{{ m_errorMessage }}</span>
-      </q-card-section>
+        <!-- エラーメッセージ -->
+        <q-card-section v-show="!!m_errorMessage">
+          <span class="error-message">{{ m_errorMessage }}</span>
+        </q-card-section>
 
-      <!-- ボタンエリア -->
-      <q-card-section class="layout horizontal center end-justified">
-        <!-- CANCELボタン -->
-        <q-btn flat rounded color="primary" :label="$t('common.cancel')" @click="close()" />
-        <!-- CREATEボタン -->
-        <q-btn flat rounded color="primary" :label="$t('common.ok')" @click="m_move()" />
-      </q-card-section>
-    </q-card>
-  </q-dialog>
+        <!-- ボタンエリア -->
+        <q-card-actions class="layout horizontal center end-justified">
+          <!-- CANCELボタン -->
+          <q-btn flat rounded color="primary" :label="$t('common.cancel')" @click="close()" />
+          <!-- OKボタン -->
+          <q-btn flat rounded color="primary" :label="$t('common.ok')" @click="m_move()" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <comp-alert-dialog ref="alertDialog"></comp-alert-dialog>
+  </div>
 </template>
 
 <script lang="ts">
-import { BaseDialog, CompTreeNode, CompTreeView, NoCache, StorageNodeType } from '@/lib'
+import { BaseDialog, CompAlertDialog, CompTreeNode, CompTreeView, NoCache, StorageNodeType } from '@/lib'
 import { getStorageTreeRootNodeData, storageTreeChildrenSortFunc, toStorageTreeNodeData } from '@/example/views/demo/storage/base'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 
-@Component({ components: { CompTreeView } })
+@Component({ components: { CompTreeView, CompAlertDialog } })
 export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode, string | undefined> {
   //----------------------------------------------------------------------
   //
@@ -103,7 +107,7 @@ export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode, s
 
   private m_errorMessage: string = ''
 
-  private m_toDir: string | null = null
+  private m_toDirNode: CompTreeNode | null = null
 
   //--------------------------------------------------
   //  Elements
@@ -112,6 +116,11 @@ export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode, s
   @NoCache
   get m_treeView(): CompTreeView {
     return this.$refs.treeView as CompTreeView
+  }
+
+  @NoCache
+  get m_alertDialog(): CompAlertDialog {
+    return this.$refs.alertDialog as CompAlertDialog
   }
 
   //----------------------------------------------------------------------
@@ -128,9 +137,9 @@ export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode, s
     })
   }
 
-  close(toDir?: string): void {
+  close(toDirPath?: string): void {
     this.m_clear()
-    this.closeProcess(toDir)
+    this.closeProcess(toDirPath)
   }
 
   //----------------------------------------------------------------------
@@ -140,16 +149,31 @@ export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode, s
   //----------------------------------------------------------------------
 
   private async m_move(): Promise<void> {
-    if (this.m_toDir === null) {
+    if (this.m_toDirNode === null) {
       this.m_errorMessage = String(this.$t('storage.destNotSelected'))
       return
     }
 
-    this.close(this.m_toDir)
+    let alreadyExists = false
+    for (const siblingNode of this.m_toDirNode.children) {
+      if (siblingNode.label === this.params!.label) {
+        alreadyExists = true
+      }
+    }
+
+    if (alreadyExists) {
+      const confirmed = await this.m_alertDialog.open({
+        type: 'confirm',
+        message: String(this.$t('storage.movingNodeAlreadyExistsQ', { nodeName: this.params!.label })),
+      })
+      if (!confirmed) return
+    }
+
+    this.close(this.m_toDirNode.value)
   }
 
   private m_clear(): void {
-    this.m_toDir = null
+    this.m_toDirNode = null
     this.m_errorMessage = ''
   }
 
@@ -193,7 +217,7 @@ export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode, s
 
   private m_treeViewOnSelected(node: CompTreeNode) {
     this.m_errorMessage = ''
-    this.m_toDir = node.value
+    this.m_toDirNode = node
   }
 
   private m_dialogOnShow() {}

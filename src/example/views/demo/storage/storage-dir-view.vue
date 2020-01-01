@@ -61,7 +61,8 @@
   <div class="layout vertical main">
     <div class="layout horizontal">
       <div v-for="pathBlock of m_pathBlocks" :key="pathBlock.label" class="path-blocks">
-        <span :class="{ 'path-block': !pathBlock.last }" @click="m_pathBlockOnClick(pathBlock.path)">{{ pathBlock.name }}</span>
+        <span v-if="!pathBlock.last" class="path-block" @click="m_pathBlockOnClick(pathBlock.path)">{{ pathBlock.name }}</span>
+        <span v-else>{{ pathBlock.name }}</span>
         <span v-show="!pathBlock.last" class="app-mx-8">/</span>
       </div>
     </div>

@@ -21,7 +21,6 @@ export function getStorageTreeRootNodeData(): StorageTreeNodeData {
     icon: 'storage',
     opened: true,
     nodeType: 'Storage',
-    nodeClass: StorageTreeNode,
     created: dayjs(0),
     updated: dayjs(0),
   }

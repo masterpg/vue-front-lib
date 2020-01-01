@@ -35,6 +35,17 @@ export class StorageTreeStore {
     return this.rootNode.children.length > 0
   }
 
+  /**
+   * ツリービューの選択ノードです。
+   */
+  get selectedNode(): StorageTreeNode {
+    return this.m_treeView.selectedNode! as StorageTreeNode
+  }
+
+  set selectedNode(value: StorageTreeNode) {
+    this.m_treeView.selectedNode = value
+  }
+
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -53,7 +64,11 @@ export class StorageTreeStore {
     this.m_treeView = treeView
 
     if (!this.rootNode) {
-      this.m_rootNode = this.m_treeView.addChild(getStorageTreeRootNodeData()) as StorageTreeNode
+      const rootNodeData = Object.assign(getStorageTreeRootNodeData(), {
+        nodeClass: StorageTreeNode,
+        selected: true,
+      })
+      this.m_rootNode = this.m_treeView.addChild(rootNodeData) as StorageTreeNode
     } else {
       this.m_rootNode = this.m_treeView.addChild(this.rootNode) as StorageTreeNode
     }
@@ -160,7 +175,7 @@ export class StorageTreeStore {
     }
 
     if (target.nodeType === StorageNodeType.Dir) {
-      // 移動先ディレクトリが移動元のサブディレクトリでないことを確認
+      // 移動先ディレクトリが移動対象のサブディレクトリでないことを確認
       // from: aaa/bbb → to: aaa/bbb/ccc/bbb [NG]
       //               → to: aaa/zzz/ccc/bbb [OK]
       if (toPath.startsWith(fromPath)) {
@@ -168,16 +183,46 @@ export class StorageTreeStore {
       }
     }
 
+    // 移動先ノードを取得
+    // (移動先ディレクトリに移動対象と同名のノードが既に存在することがあるので)
+    const existsNode = this.getNode(toPath)
+
+    // 移動先ディレクトリに移動対象と同名のノードが既に存在する場合
+    if (existsNode) {
+      // 既存ノードをツリーから削除
+      existsNode.opened && target.open()
+      this.m_treeView.removeNode(existsNode.value)
+      // 既存ノードの子孫ノードを移動対象ノードへ付け替え
+      const targetChildMap = (target.children as StorageTreeNode[]).reduce(
+        (result, node) => {
+          result[node.label] = node
+          return result
+        },
+        {} as { [label: string]: StorageTreeNode }
+      )
+      for (const existsChild of [...existsNode.children]) {
+        // 移動先と移動対象に同名の子ノードが存在する場合はスルー
+        // (同名の子ノードがあった場合、移動対象の子ノードが優先される)
+        if (targetChildMap[existsChild.label]) {
+          continue
+        }
+        // 移動先の子ノードを移動対象ノードへ付け替え
+        target.addChild(existsChild, { sortFunc: storageTreeChildrenSortFunc })
+      }
+    }
+
+    // 移動対象ノードのパスを移動先パスへ書き換え
     target.label = _path.basename(toPath)
     target.value = toPath
 
-    // ノードの名前が変わった事により、兄弟ノードの並び順も変える必要性がある。
+    // ノードの名前が変わった場合、兄弟ノードの並び順も変える必要がある。
     // ここでは名前変更があったノードを再度addChildしてソートし直している。
     this.m_treeView.addChild(target, {
       parent: removeStartDirChars(_path.dirname(target.value)),
       sortFunc: storageTreeChildrenSortFunc,
     })
 
+    // 移動対象ノードの子孫のパスを移動先パスへ書き換え
     if (target.nodeType === StorageNodeType.Dir) {
       const descendants = target.getDescendants<StorageTreeNode>()
       for (const descendant of descendants) {
@@ -185,8 +230,6 @@ export class StorageTreeStore {
         descendant.value = descendant.value.replace(reg, target.value)
       }
     }
-
-    target.parent!.open(false)
   }
 
   /**

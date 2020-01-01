@@ -64,13 +64,15 @@ const demoRoute = new (class DemoRoute extends ViewRoute {
       return () => import(/* webpackChunkName: "views/demo/storage" */ '@/example/views/demo/storage')
     }
 
-    move(nodePath: string) {
+    move(nodePath: string): boolean {
       const currentRoutePath = removeEndSlash(router.currentRoute.path)
       const nextPath = removeEndSlash(_path.join(this.basePath, nodePath))
       if (currentRoutePath === nextPath) {
-        return
+        return false
       }
+
       router.push(nextPath)
+      return true
     }
 
     get basePath() {

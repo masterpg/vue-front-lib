@@ -44,7 +44,7 @@ export interface CompTreeNodeData {
   children?: this[]
 }
 
-export type CompTreeNodeEditData<T> = Omit<T, 'nodeClass' | 'children'>
+export type CompTreeNodeEditData<T> = Partial<Omit<T, 'nodeClass' | 'children'>>
 
 export type ChildrenSortFunc = (a: CompTreeNode, b: CompTreeNode) => number
 
