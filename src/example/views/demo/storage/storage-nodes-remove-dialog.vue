@@ -69,7 +69,7 @@ export default class StorageNodesRemoveDialog extends BaseDialog<StorageTreeNode
 
     // ダイアログ引数で渡されたノードが1つの場合
     if (this.m_removingNodes.length === 1) {
-      return String(this.$t('storage.deleteTargetQ', { target: this.m_removingNodes[0].label }))
+      return String(this.$t('storage.delete.deleteTargetQ', { target: this.m_removingNodes[0].label }))
     }
     // ダイアログ引数で渡されたノードが複数の場合
     else {
@@ -87,17 +87,17 @@ export default class StorageNodesRemoveDialog extends BaseDialog<StorageTreeNode
       if (fileNum > 0 && folderNum > 0) {
         const fileType = String(this.$tc('common.file', fileNum))
         const folderType = String(this.$tc('common.folder', folderNum))
-        return String(this.$t('storage.deleteFileAndFolderQ', { fileNum, fileType, folderNum, folderType }))
+        return String(this.$t('storage.delete.deleteFileAndFolderQ', { fileNum, fileType, folderNum, folderType }))
       }
       // ファイルが複数指定された場合
       else if (fileNum > 0) {
         const nodeType = String(this.$tc('common.file', fileNum))
-        return String(this.$t('storage.deleteNodeQ', { nodeNum: fileNum, nodeType }))
+        return String(this.$t('storage.delete.deleteNodeQ', { nodeNum: fileNum, nodeType }))
       }
       // フォルダが複数指定された場合
       else if (folderNum > 0) {
         const nodeType = String(this.$tc('common.folder', folderNum))
-        return String(this.$t('storage.deleteNodeQ', { nodeNum: folderNum, nodeType }))
+        return String(this.$t('storage.delete.deleteNodeQ', { nodeNum: folderNum, nodeType }))
       }
     }
 

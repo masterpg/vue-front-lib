@@ -183,7 +183,7 @@ export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode,
 
     // リネームされているかチェック(入力値が変更されていること)
     if (this.m_newName === targetNode.label) {
-      this.m_errorMessage = String(this.$t('storage.renamingNodeNameIsNotChanged'))
+      this.m_errorMessage = String(this.$t('storage.rename.renamingNodeNameIsNotChanged'))
       return false
     }
 

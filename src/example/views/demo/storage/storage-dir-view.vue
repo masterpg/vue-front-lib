@@ -75,6 +75,8 @@
         :pagination.sync="m_pagination"
         :rows-per-page-options="[0]"
         :sort-method="m_childrenSort"
+        selection="multiple"
+        :selected.sync="m_selected"
         binary-state-sort
         row-key="label"
         hide-bottom
@@ -83,6 +85,9 @@
       >
         <template v-slot:body="props">
           <q-tr :props="props">
+            <q-td auto-width>
+              <q-checkbox v-model="props.selected" />
+            </q-td>
             <q-td key="label" :props="props">
               <span class="label" @click="m_tableRowNameCellOnClick(props.row)">
                 <q-icon :name="props.row.icon" size="24px" class="app-mr-6" />
@@ -90,6 +95,57 @@
               </span>
             </q-td>
             <q-td key="updated" :props="props">{{ props.row.updated }}</q-td>
+            <!-- コンテキストメニュー -->
+            <q-menu touch-position context-menu>
+              <!-- 複数選択時 -->
+              <q-list v-if="props.row.multiSelected" dense style="min-width: 100px">
+                <q-item v-close-popup clickable>
+                  <q-item-section @click="m_dispatchMoveSelected(m_table.selected)">{{ $t('common.move') }}</q-item-section>
+                </q-item>
+                <q-item v-close-popup clickable>
+                  <q-item-section @click="m_dispatchDeleteSelected(m_table.selected)">{{ $t('common.delete') }}</q-item-section>
+                </q-item>
+              </q-list>
+              <!-- フォルダ用メニュー -->
+              <q-list v-else-if="props.row.isDir" dense style="min-width: 100px">
+                <q-item v-close-popup clickable>
+                  <q-item-section @click="m_dispatchCreateDirSelected(props.row)">
+                    {{ $t('common.createSomehow', { somehow: $tc('common.folder', 1) }) }}
+                  </q-item-section>
+                </q-item>
+                <q-item v-close-popup clickable>
+                  <q-item-section @click="m_dispatchFilesUploadSelected(props.row)">
+                    {{ $t('common.uploadSomehow', { somehow: $tc('common.file', 2) }) }}
+                  </q-item-section>
+                </q-item>
+                <q-item v-close-popup clickable>
+                  <q-item-section @click="m_dispatchDirUploadSelected(props.row)">
+                    {{ $t('common.uploadSomehow', { somehow: $tc('common.folder', 1) }) }}
+                  </q-item-section>
+                </q-item>
+                <q-item v-close-popup clickable>
+                  <q-item-section @click="m_dispatchMoveSelected([props.row])">{{ $t('common.move') }}</q-item-section>
+                </q-item>
+                <q-item v-close-popup clickable>
+                  <q-item-section @click="m_dispatchRenameSelected(props.row)">{{ $t('common.rename') }}</q-item-section>
+                </q-item>
+                <q-item v-close-popup clickable>
+                  <q-item-section @click="m_dispatchDeleteSelected([props.row])">{{ $t('common.delete') }}</q-item-section>
+                </q-item>
+              </q-list>
+              <!-- ファイル用メニュー -->
+              <q-list v-else-if="props.row.isFile" dense style="min-width: 100px">
+                <q-item v-close-popup clickable>
+                  <q-item-section @click="m_dispatchMoveSelected([props.row])">{{ $t('common.move') }}</q-item-section>
+                </q-item>
+                <q-item v-close-popup clickable>
+                  <q-item-section @click="m_dispatchRenameSelected(props.row)">{{ $t('common.rename') }}</q-item-section>
+                </q-item>
+                <q-item v-close-popup clickable>
+                  <q-item-section @click="m_dispatchDeleteSelected([props.row])">{{ $t('common.delete') }}</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </q-tr>
         </template>
       </q-table>
@@ -108,19 +164,46 @@ import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
 import { storageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
 
-interface TableRow {
-  nodeType: StorageNodeType
-  label: string
-  value: string
-  icon: string
-  updated: string
-  updatedNum: number
+class TableRow {
+  constructor(private m_table: QTable) {}
+
+  nodeType!: StorageNodeType
+
+  label!: string
+
+  value!: string
+
+  icon!: string
+
+  updated!: string
+
+  updatedNum!: number
+
+  get isDir(): boolean {
+    return this.nodeType === StorageNodeType.Dir
+  }
+
+  get isFile(): boolean {
+    return this.nodeType === StorageNodeType.File
+  }
+
+  get selected(): boolean {
+    if (!this.m_table.selected) return false
+    return this.m_table.selected.includes(this)
+  }
+
+  get multiSelected(): boolean {
+    if (!this.m_table.selected) return false
+    return this.m_table.selected.length >= 2 && this.selected
+  }
 }
 
 @Component({
   components: {},
 })
 export default class StorageDirView extends mixins(BaseComponent, Resizable) {
+  private m_selected = []
+
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -178,6 +261,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
     if (this.m_dirPath !== dirPath) {
       this.m_children = []
       this.m_childMap = {}
+      this.m_table.selected && this.m_table.selected.splice(0)
     }
     this.m_dirPath = dirPath
 
@@ -230,8 +314,16 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
       const child = this.m_children[i]
       const latestChild = latestChildMap[child.value]
       if (!latestChild) {
+        // 最新データにはないノードを削除
         this.m_children.splice(i--, 1)
         delete this.m_childMap[child.value]
+        // 選択ノードを格納している配列から最新データにないノードを削除
+        if (this.m_table.selected) {
+          const selectedIndex = this.m_table.selected.findIndex((row: TableRow) => {
+            return row.value === child.value
+          })
+          selectedIndex >= 0 && this.m_table.selected.splice(selectedIndex, 1)
+        }
       }
     }
 
@@ -252,14 +344,14 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
    * @param node
    */
   private m_toTableRow(node: StorageTreeNode): TableRow {
-    return {
-      nodeType: node.nodeType as StorageNodeType,
-      label: node.nodeType === StorageNodeType.Dir ? `${node.label}/` : node.label,
-      value: node.value,
-      icon: node.nodeType === StorageNodeType.Dir ? 'folder' : 'description',
-      updated: String(this.$d(node.updatedDate.toDate(), 'dateTime')),
-      updatedNum: node.updatedDate.unix(),
-    }
+    const tableRow = new TableRow(this.m_table)
+    tableRow.nodeType = node.nodeType as StorageNodeType
+    tableRow.label = node.nodeType === StorageNodeType.Dir ? `${node.label}/` : node.label
+    tableRow.value = node.value
+    tableRow.icon = node.nodeType === StorageNodeType.Dir ? 'folder' : 'description'
+    tableRow.updated = String(this.$d(node.updatedDate.toDate(), 'dateTime'))
+    tableRow.updatedNum = node.updatedDate.unix()
+    return tableRow
   }
 
   /**
@@ -299,6 +391,30 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
     }
 
     return data
+  }
+
+  private m_dispatchCreateDirSelected(row: TableRow): void {
+    this.$emit('create-dir-selected', row.value)
+  }
+
+  private m_dispatchFilesUploadSelected(row: TableRow): void {
+    this.$emit('files-upload-selected', row.value)
+  }
+
+  private m_dispatchDirUploadSelected(row: TableRow): void {
+    this.$emit('dir-upload-selected', row.value)
+  }
+
+  private m_dispatchMoveSelected(rows: TableRow[]): void {
+    this.$emit('move-selected', rows.map(node => node.value))
+  }
+
+  private m_dispatchRenameSelected(row: TableRow): void {
+    this.$emit('rename-selected', row.value)
+  }
+
+  private m_dispatchDeleteSelected(rows: TableRow[]): void {
+    this.$emit('delete-selected', rows.map(node => node.value))
   }
 
   //----------------------------------------------------------------------

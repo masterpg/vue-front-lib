@@ -14,17 +14,26 @@ export default merge(require('@/lib/lang/ja').default, {
   },
   storage: {
     uploading: 'アップロード中',
-    creationNodeFailed: '{nodeType}の作成に失敗しました。',
-    deletionNodeFailed: '{nodeType}の削除に失敗しました。',
-    moveNodeFailed: '{nodeType}の移動に失敗しました。',
-    renameNodeFailed: '{nodeType}の名前変更に失敗しました。',
-    deleteTargetQ: '「{target}」を削除してよろしいですか？',
-    deleteNodeQ: '{nodeNum}個の{nodeType}を削除してよろしいですか？',
-    deleteFileAndFolderQ: '{fileNum}個の{fileType}と{folderNum}個の{folderType}を削除してよろしいですか？',
     nodeAlreadyExists: '「{nodeName}」という{nodeType}はすでに存在します。',
-    movingNode: '移動{nodeType}',
-    destNotSelected: '移動先が選択されていません。',
-    movingNodeAlreadyExistsQ: '「{nodeName}」というアイテムはすでに存在します。\n既存のアイテムは上書きされますがよろしいですか？',
-    renamingNodeNameIsNotChanged: '名前が変更されていません。',
+    create: {
+      creatingDirError: '「{nodeName}」の作成でエラーが発生しました。',
+    },
+    delete: {
+      deleteTargetQ: '「{target}」を削除してよろしいですか？',
+      deleteNodeQ: '{nodeNum}個の{nodeType}を削除してよろしいですか？',
+      deleteFileAndFolderQ: '{fileNum}個の{fileType}と{folderNum}個の{folderType}を削除してよろしいですか？',
+      deletingError: '「{nodeName}」の削除でエラーが発生しました。',
+    },
+    move: {
+      movingNode: '移動{nodeType}',
+      selectDestPrompt: '移動先を選択してください:',
+      destNotSelected: '移動先が選択されていません。',
+      alreadyExistsQ: '「{nodeName}」というアイテムはすでに存在します。\n既存のアイテムは上書きされますがよろしいですか？',
+      movingError: '「{nodeName}」の移動でエラーが発生しました。',
+    },
+    rename: {
+      renamingNodeNameIsNotChanged: '名前が変更されていません。',
+      renamingError: '「{nodeName}」の名前変更でエラーが発生しました。',
+    },
   },
 })

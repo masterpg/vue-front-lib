@@ -14,17 +14,26 @@ export default merge(require('@/lib/lang/en').default, {
   },
   storage: {
     uploading: 'Uploading',
-    creationNodeFailed: 'Failed to create the {nodeType}.',
-    deletionNodeFailed: 'Failed to delete the {nodeType}.',
-    moveNodeFailed: 'Failed to move the {nodeType}.',
-    renameNodeFailed: 'Failed to rename the {nodeType}.',
-    deleteTargetQ: 'Delete "{target}"?',
-    deleteNodeQ: 'Delete {nodeNum} {nodeType}?',
-    deleteFileAndFolderQ: 'Delete {fileNum} {fileType} and {folderNum} {folderType}?',
     nodeAlreadyExists: 'A {nodeType} called "{nodeName}" already exists.',
-    movingNode: 'Move {nodeType}',
-    destNotSelected: 'The destination has not been selected.',
-    movingNodeAlreadyExistsQ: 'Item "{nodeName}" already exists.\nExisting items will be overwritten. Are you sure?',
-    renamingNodeNameIsNotChanged: 'The name has not changed.',
+    create: {
+      creatingDirError: 'An error occurred while creating "{nodeName}"',
+    },
+    delete: {
+      deleteTargetQ: 'Delete "{target}"?',
+      deleteNodeQ: 'Delete {nodeNum} {nodeType}?',
+      deleteFileAndFolderQ: 'Delete {fileNum} {fileType} and {folderNum} {folderType}?',
+      deletingError: 'An error occurred while deleting "{nodeName}"',
+    },
+    move: {
+      movingNode: 'Move {nodeType}',
+      selectDestPrompt: 'Select a destination:',
+      destNotSelected: 'The destination has not been selected.',
+      alreadyExistsQ: 'Item "{nodeName}" already exists.\nExisting items will be overwritten. Are you sure?',
+      movingError: 'An error occurred while moving "{nodeName}".',
+    },
+    rename: {
+      renamingNodeNameIsNotChanged: 'The name has not changed.',
+      renamingError: 'An error occurred while renaming "{nodeName}".',
+    },
   },
 })

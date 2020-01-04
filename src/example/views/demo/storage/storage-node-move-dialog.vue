@@ -38,11 +38,19 @@
 
         <!-- コンテンツエリア -->
         <q-card-section class="content-area scroll" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
-          <q-input ref="newNameInput" v-model="m_nodeName" :label="m_nodeLabel" class="app-pb-20" readonly>
+          <q-input
+            v-show="m_movingNodes.length === 1"
+            ref="newNameInput"
+            v-model="m_movingNodeName"
+            :label="m_movingNodeLabel"
+            class="app-pb-20"
+            readonly
+          >
             <template v-slot:prepend>
-              <q-icon :name="m_nodeIcon" />
+              <q-icon :name="m_movingNodeIcon" />
             </template>
           </q-input>
+          <div class="app-mb-10">{{ $t('storage.move.selectDestPrompt') }}</div>
           <comp-tree-view ref="treeView" class="tree-view" @selected="m_treeViewOnSelected($event)" />
         </q-card-section>
 
@@ -73,7 +81,7 @@ import { QDialog } from 'quasar'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 
 @Component({ components: { CompTreeView, CompAlertDialog } })
-export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode, string | undefined> {
+export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode[], string | undefined> {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -85,24 +93,44 @@ export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode, s
     return this.$refs.dialog as QDialog
   }
 
+  private get m_movingNodes(): StorageTreeNode[] {
+    return this.params || []
+  }
+
   private get m_title(): string {
-    if (!this.params) return ''
-    return String(this.$t('common.moveSomehow', { somehow: this.params.nodeTypeName }))
+    if (this.m_movingNodes.length === 1) {
+      return String(this.$t('common.moveSomehow', { somehow: this.m_movingNodes[0].nodeTypeName }))
+    } else if (this.m_movingNodes.length >= 2) {
+      const somehow = String(this.$tc('common.item', this.m_movingNodes.length))
+      return String(this.$t('common.moveSomehow', { somehow }))
+    }
+    return ''
   }
 
-  private get m_nodeLabel(): string {
-    if (!this.params) return ''
-    return String(this.$t('storage.movingNode', { nodeType: this.params.nodeTypeName }))
+  private get m_movingNodeLabel(): string {
+    if (this.m_movingNodes.length === 1) {
+      return String(this.$t('storage.move.movingNode', { nodeType: this.m_movingNodes[0].nodeTypeName }))
+    }
+    return ''
   }
 
-  private get m_nodeName(): string {
-    if (!this.params) return ''
-    return this.params.label
+  private get m_movingNodeName(): string {
+    if (this.m_movingNodes.length === 1) {
+      return this.m_movingNodes[0].label
+    }
+    return ''
   }
 
-  private get m_nodeIcon(): string {
-    if (!this.params) return ''
-    return this.params.icon
+  private get m_movingNodeIcon(): string {
+    if (this.m_movingNodes.length === 1) {
+      return this.m_movingNodes[0].icon
+    }
+    return ''
+  }
+
+  private get m_movingNodesParentPath(): string {
+    if (this.m_movingNodes.length === 0) return ''
+    return this.m_movingNodes[0].parent!.value
   }
 
   private m_errorMessage: string = ''
@@ -129,8 +157,18 @@ export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode, s
   //
   //----------------------------------------------------------------------
 
-  open(targetNode: StorageTreeNode): Promise<string | undefined> {
-    return this.openProcess(targetNode, {
+  open(movingNodes: StorageTreeNode[]): Promise<string | undefined> {
+    // 移動ノードが複数指定された場合、親が同じであることを検証
+    let movingNodeParentPath = movingNodes[0].parent!.value
+    for (const movingNode of movingNodes) {
+      if (movingNode.parent!.value !== movingNodeParentPath) {
+        throw new Error('All nodes must have the same parent.')
+      }
+    }
+
+    movingNodes.sort(storageTreeChildrenSortFunc)
+
+    return this.openProcess(movingNodes, {
       opened: () => {
         this.m_buildTreeView()
       },
@@ -150,23 +188,25 @@ export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode, s
 
   private async m_move(): Promise<void> {
     if (this.m_toDirNode === null) {
-      this.m_errorMessage = String(this.$t('storage.destNotSelected'))
+      this.m_errorMessage = String(this.$t('storage.move.destNotSelected'))
       return
     }
 
-    let alreadyExists = false
-    for (const siblingNode of this.m_toDirNode.children) {
-      if (siblingNode.label === this.params!.label) {
-        alreadyExists = true
+    for (const movingNode of this.m_movingNodes) {
+      let alreadyExists = false
+      for (const siblingNode of this.m_toDirNode.children) {
+        if (siblingNode.label === movingNode.label) {
+          alreadyExists = true
+        }
       }
-    }
 
-    if (alreadyExists) {
-      const confirmed = await this.m_alertDialog.open({
-        type: 'confirm',
-        message: String(this.$t('storage.movingNodeAlreadyExistsQ', { nodeName: this.params!.label })),
-      })
-      if (!confirmed) return
+      if (alreadyExists) {
+        const confirmed = await this.m_alertDialog.open({
+          type: 'confirm',
+          message: String(this.$t('storage.move.alreadyExistsQ', { nodeName: movingNode.label })),
+        })
+        if (!confirmed) return
+      }
     }
 
     this.close(this.m_toDirNode.value)
@@ -199,14 +239,13 @@ export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode, s
     }
 
     // 移動ノードはツリービューから削除
-    this.m_treeView.removeNode(this.params!.value)
+    for (const movingNode of this.m_movingNodes) {
+      this.m_treeView.removeNode(movingNode.value)
+    }
 
     // 現在の親ディレクトリは選択できないよう設定
-    {
-      const parentPath = this.params!.parent!.value
-      const parentNode = this.m_treeView.getNode(parentPath)!
-      parentNode.unselectable = true
-    }
+    const parentNode = this.m_treeView.getNode(this.m_movingNodesParentPath)!
+    parentNode.unselectable = true
   }
 
   //----------------------------------------------------------------------

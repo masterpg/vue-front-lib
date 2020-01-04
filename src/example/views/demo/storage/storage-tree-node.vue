@@ -79,7 +79,7 @@
         </div>
         <!-- コンテキストメニュー -->
         <q-menu touch-position context-menu>
-          <!-- ストレージ用メニュー -->
+          <!-- ルートノード用メニュー -->
           <q-list v-show="m_isStorage" dense style="min-width: 100px">
             <q-item v-close-popup clickable>
               <q-item-section @click="m_dispatchReloadSelected()">{{ $t('common.reload') }}</q-item-section>
