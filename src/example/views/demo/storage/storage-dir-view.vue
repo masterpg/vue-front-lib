@@ -94,6 +94,8 @@
                 <span>{{ props.row.label }}</span>
               </span>
             </q-td>
+            <q-td key="contentType" :props="props">{{ props.row.contentType }}</q-td>
+            <q-td key="size" :props="props">{{ props.row.size }}</q-td>
             <q-td key="updated" :props="props">{{ props.row.updated }}</q-td>
             <!-- コンテキストメニュー -->
             <q-menu touch-position context-menu>
@@ -159,6 +161,7 @@ import { NoCache, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QTable } from 'quasar'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
+import bytes from 'bytes'
 import { getStorageTreeRootNodeData } from '@/example/views/demo/storage/base'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
@@ -174,6 +177,10 @@ class TableRow {
   value!: string
 
   icon!: string
+
+  contentType!: string
+
+  size?: number
 
   updated!: string
 
@@ -223,6 +230,8 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
 
   private m_columns = [
     { name: 'label', align: 'left', label: 'Name', field: 'label', sortable: true },
+    { name: 'contentType', align: 'left', label: 'Content type', field: 'contentType', sortable: true },
+    { name: 'size', align: 'right', label: 'Size', field: 'size', sortable: true },
     { name: 'updated', align: 'left', label: 'Updated', field: 'updated', sortable: true },
   ]
 
@@ -349,6 +358,8 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
     tableRow.label = node.nodeType === StorageNodeType.Dir ? `${node.label}/` : node.label
     tableRow.value = node.value
     tableRow.icon = node.nodeType === StorageNodeType.Dir ? 'folder' : 'description'
+    tableRow.contentType = node.contentType
+    tableRow.size = node.nodeType === StorageNodeType.Dir ? undefined : bytes(node.size)
     tableRow.updated = String(this.$d(node.updatedDate.toDate(), 'dateTime'))
     tableRow.updatedNum = node.updatedDate.unix()
     return tableRow

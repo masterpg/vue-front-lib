@@ -57,6 +57,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -77,6 +79,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -97,6 +101,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -117,6 +123,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -137,6 +145,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -157,6 +167,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -177,6 +189,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -197,6 +211,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -217,6 +233,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -237,6 +255,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -257,6 +277,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -277,6 +299,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -297,6 +321,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -317,6 +343,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -337,6 +365,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }
@@ -357,6 +387,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             name
             dir
             path
+            contentType
+            size
             created
             updated
           }

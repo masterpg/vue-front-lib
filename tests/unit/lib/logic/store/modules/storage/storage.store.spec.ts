@@ -21,6 +21,8 @@ const d1: StorageNode = {
   name: 'd1',
   dir: '',
   path: 'd1',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -30,6 +32,8 @@ const d11: StorageNode = {
   name: 'd11',
   dir: 'd1',
   path: 'd1/d11',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -39,6 +43,8 @@ const fileA: StorageNode = {
   name: 'fileA.txt',
   dir: 'd1/d11',
   path: 'd1/d11/fileA.txt',
+  contentType: 'text/plain; charset=utf-8',
+  size: 5,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -48,6 +54,8 @@ const d12: StorageNode = {
   name: 'd12',
   dir: 'd1',
   path: 'd1/d12',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -57,6 +65,8 @@ const d2: StorageNode = {
   name: 'd2',
   dir: '',
   path: 'd2',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -66,6 +76,8 @@ const d21: StorageNode = {
   name: 'd21',
   dir: 'd2',
   path: 'd2/d21',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -75,6 +87,8 @@ const fileB: StorageNode = {
   name: 'fileB.txt',
   dir: 'd2/d21',
   path: 'd2/d21/fileB.txt',
+  contentType: 'text/plain; charset=utf-8',
+  size: 5,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -84,6 +98,8 @@ const fileC: StorageNode = {
   name: 'fileC.txt',
   dir: '',
   path: 'fileC.txt',
+  contentType: 'text/plain; charset=utf-8',
+  size: 5,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -136,6 +152,13 @@ function verifyStateNodes() {
     expect(node.name).toBe(expectName)
     expect(node.dir).toBe(expectDir)
     expect(node.path).toBe(expectPath)
+    if (node.nodeType === StorageNodeType.Dir) {
+      expect(node.contentType).toBe('')
+      expect(node.size).toBe(0)
+    } else if (node.nodeType === StorageNodeType.File) {
+      expect(node.contentType).toBeDefined()
+      expect(node.size).toBeGreaterThan(0)
+    }
     expect(node.created).toBeDefined()
     expect(node.updated).toBeDefined()
   }
@@ -233,6 +256,8 @@ describe('setAll', () => {
     name: 'x1',
     dir: '',
     path: 'x1',
+    contentType: '',
+    size: 0,
     created: dayjs(),
     updated: dayjs(),
   }
@@ -242,6 +267,8 @@ describe('setAll', () => {
     name: 'fileD.txt',
     dir: 'x1',
     path: 'x1/fileD.txt',
+    contentType: 'text/plain; charset=utf-8',
+    size: 5,
     created: dayjs(),
     updated: dayjs(),
   }
@@ -303,6 +330,8 @@ describe('addList', () => {
     name: 'd22',
     dir: 'd2',
     path: 'd2/d22',
+    contentType: '',
+    size: 0,
     created: dayjs(),
     updated: dayjs(),
   }
@@ -312,6 +341,8 @@ describe('addList', () => {
     name: 'fileD.txt',
     dir: 'd2/d22',
     path: 'd2/d22/fileD.txt',
+    contentType: 'text/plain; charset=utf-8',
+    size: 5,
     created: dayjs(),
     updated: dayjs(),
   }
@@ -334,6 +365,8 @@ describe('add', () => {
     name: 'fileD.txt',
     dir: 'd1/21',
     path: 'd1/21/fileD.txt',
+    contentType: 'text/plain; charset=utf-8',
+    size: 5,
     created: dayjs(),
     updated: dayjs(),
   }
@@ -442,6 +475,8 @@ describe('move', () => {
       name: 'd1',
       dir: '',
       path: 'd1',
+      contentType: '',
+      size: 0,
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -450,6 +485,8 @@ describe('move', () => {
       name: 'docs',
       dir: 'd1',
       path: 'd1/docs',
+      contentType: '',
+      size: 0,
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -458,6 +495,8 @@ describe('move', () => {
       name: 'aaa',
       dir: 'd1/docs',
       path: 'd1/docs/aaa',
+      contentType: '',
+      size: 0,
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -466,6 +505,8 @@ describe('move', () => {
       name: 'fileA.txt',
       dir: 'd1/docs/aaa',
       path: 'd1/docs/aaa/fileA.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -474,6 +515,8 @@ describe('move', () => {
       name: 'fileB.txt',
       dir: 'd1/docs',
       path: 'd1/docs/fileB.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -482,6 +525,8 @@ describe('move', () => {
       name: 'fileC.txt',
       dir: 'd1/docs',
       path: 'd1/docs/fileC.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -490,6 +535,8 @@ describe('move', () => {
       name: 'docs',
       dir: '',
       path: 'docs',
+      contentType: '',
+      size: 0,
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -498,6 +545,8 @@ describe('move', () => {
       name: 'aaa',
       dir: 'docs',
       path: 'docs/aaa',
+      contentType: '',
+      size: 0,
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -506,6 +555,8 @@ describe('move', () => {
       name: 'fileA.txt',
       dir: 'docs/aaa',
       path: 'docs/aaa/fileA.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -514,6 +565,8 @@ describe('move', () => {
       name: 'fileB.txt',
       dir: 'docs',
       path: 'docs/fileB.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -522,6 +575,8 @@ describe('move', () => {
       name: 'fileD.txt',
       dir: 'docs',
       path: 'docs/fileD.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -530,6 +585,8 @@ describe('move', () => {
       name: 'fileE.txt',
       dir: 'docs',
       path: 'docs/fileE.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: TO_UPDATED,
     }

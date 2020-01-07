@@ -188,6 +188,14 @@ export default class StorageTreeNode extends CompTreeNode {
     }
   }
 
+  get contentType(): string {
+    return this.nodeData.contentType
+  }
+
+  get size(): number {
+    return this.nodeData.size
+  }
+
   get createdDate(): Dayjs {
     return this.nodeData.created
   }
@@ -233,6 +241,12 @@ export default class StorageTreeNode extends CompTreeNode {
 
   setNodeData(editData: CompTreeNodeEditData<StorageTreeNodeData>): void {
     this.setBaseNodeData(editData)
+    if (typeof editData.contentType === 'string') {
+      this.nodeData.contentType = editData.contentType
+    }
+    if (typeof editData.size === 'number') {
+      this.nodeData.size = editData.size
+    }
     if (editData.created) {
       this.nodeData.created = editData.created
     }

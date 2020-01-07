@@ -61,15 +61,13 @@ export interface APIResponseStorageNode {
   name: string
   dir: string
   path: string
+  contentType: string
+  size: number
   created: string
   updated: string
 }
 
-export interface APIStorageNode {
-  nodeType: APIStorageNodeType
-  name: string
-  dir: string
-  path: string
+export interface APIStorageNode extends Omit<APIResponseStorageNode, 'created' | 'updated'> {
   created: Dayjs
   updated: Dayjs
 }

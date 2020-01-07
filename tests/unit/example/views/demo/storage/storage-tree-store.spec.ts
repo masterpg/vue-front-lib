@@ -16,6 +16,8 @@ const d1: StorageNode = {
   name: 'd1',
   dir: '',
   path: 'd1',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -25,6 +27,8 @@ const d11: StorageNode = {
   name: 'd11',
   dir: 'd1',
   path: 'd1/d11',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -34,6 +38,8 @@ const fileA: StorageNode = {
   name: 'fileA.txt',
   dir: 'd1/d11',
   path: 'd1/d11/fileA.txt',
+  contentType: 'text/plain; charset=utf-8',
+  size: 5,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -43,6 +49,8 @@ const d12: StorageNode = {
   name: 'd12',
   dir: 'd1',
   path: 'd1/d12',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -52,6 +60,8 @@ const d2: StorageNode = {
   name: 'd2',
   dir: '',
   path: 'd2',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -61,6 +71,8 @@ const d21: StorageNode = {
   name: 'd21',
   dir: 'd2',
   path: 'd2/d21',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -70,6 +82,8 @@ const fileB: StorageNode = {
   name: 'fileB.txt',
   dir: 'd2/d21',
   path: 'd2/d21/fileB.txt',
+  contentType: 'text/plain; charset=utf-8',
+  size: 5,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -79,6 +93,8 @@ const fileC: StorageNode = {
   name: 'fileC.txt',
   dir: '',
   path: 'fileC.txt',
+  contentType: 'text/plain; charset=utf-8',
+  size: 5,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -350,6 +366,8 @@ describe('moveNode', () => {
       name: 'd1',
       dir: '',
       path: 'd1',
+      contentType: '',
+      size: 0,
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -358,6 +376,8 @@ describe('moveNode', () => {
       name: 'docs',
       dir: 'd1',
       path: 'd1/docs',
+      contentType: '',
+      size: 0,
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -366,6 +386,8 @@ describe('moveNode', () => {
       name: 'aaa',
       dir: 'd1/docs',
       path: 'd1/docs/aaa',
+      contentType: '',
+      size: 0,
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -374,6 +396,8 @@ describe('moveNode', () => {
       name: 'fileA.txt',
       dir: 'd1/docs/aaa',
       path: 'd1/docs/aaa/fileA.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -382,6 +406,8 @@ describe('moveNode', () => {
       name: 'fileB.txt',
       dir: 'd1/docs',
       path: 'd1/docs/fileB.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -390,6 +416,8 @@ describe('moveNode', () => {
       name: 'fileC.txt',
       dir: 'd1/docs',
       path: 'd1/docs/fileC.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -398,6 +426,8 @@ describe('moveNode', () => {
       name: 'docs',
       dir: '',
       path: 'docs',
+      contentType: '',
+      size: 0,
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -406,6 +436,8 @@ describe('moveNode', () => {
       name: 'aaa',
       dir: 'docs',
       path: 'docs/aaa',
+      contentType: '',
+      size: 0,
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -414,6 +446,8 @@ describe('moveNode', () => {
       name: 'fileA.txt',
       dir: 'docs/aaa',
       path: 'docs/aaa/fileA.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -422,6 +456,8 @@ describe('moveNode', () => {
       name: 'fileB.txt',
       dir: 'docs',
       path: 'docs/fileB.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -430,6 +466,8 @@ describe('moveNode', () => {
       name: 'fileD.txt',
       dir: 'docs',
       path: 'docs/fileD.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -438,6 +476,8 @@ describe('moveNode', () => {
       name: 'fileE.txt',
       dir: 'docs',
       path: 'docs/fileE.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: TO_UPDATED,
     }

@@ -21,6 +21,8 @@ const d1: StorageNode = {
   name: 'd1',
   dir: '',
   path: 'd1',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -30,6 +32,8 @@ const d11: StorageNode = {
   name: 'd11',
   dir: 'd1',
   path: 'd1/d11',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -39,6 +43,8 @@ const fileA: StorageNode = {
   name: 'fileA.txt',
   dir: 'd1/d11',
   path: 'd1/d11/fileA.txt',
+  contentType: 'text/plain; charset=utf-8',
+  size: 5,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -48,6 +54,8 @@ const d12: StorageNode = {
   name: 'd12',
   dir: 'd1',
   path: 'd1/d12',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -57,6 +65,8 @@ const d2: StorageNode = {
   name: 'd2',
   dir: '',
   path: 'd2',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -66,6 +76,8 @@ const d21: StorageNode = {
   name: 'd21',
   dir: 'd2',
   path: 'd2/d21',
+  contentType: '',
+  size: 0,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -75,6 +87,8 @@ const fileB: StorageNode = {
   name: 'fileB.txt',
   dir: 'd2/d21',
   path: 'd2/d21/fileB.txt',
+  contentType: 'text/plain; charset=utf-8',
+  size: 5,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -84,6 +98,8 @@ const fileC: StorageNode = {
   name: 'fileC.txt',
   dir: '',
   path: 'fileC.txt',
+  contentType: 'text/plain; charset=utf-8',
+  size: 5,
   created: dayjs(),
   updated: dayjs(),
 }
@@ -299,19 +315,23 @@ describe('removeFiles', () => {
 describe('moveDir', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, fileA]) })
-    const movedD12 = {
+    const movedD12: StorageNode = {
       nodeType: StorageNodeType.Dir,
       name: 'd12',
       dir: 'd1',
       path: 'd1/d12',
+      contentType: '',
+      size: 0,
       created: dayjs(),
       updated: dayjs(),
     }
-    const movedFileA = {
+    const movedFileA: StorageNode = {
       nodeType: StorageNodeType.File,
       name: 'fileA.txt',
       dir: 'd1/d12',
       path: 'd1/d12/fileA.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: dayjs(),
     }
@@ -325,11 +345,13 @@ describe('moveDir', () => {
 
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11]) })
-    const movedD12 = {
+    const movedD12: StorageNode = {
       nodeType: StorageNodeType.Dir,
       name: 'd12',
       dir: 'd1',
       path: 'd1/d12',
+      contentType: '',
+      size: 0,
       created: dayjs(),
       updated: dayjs(),
     }
@@ -347,11 +369,13 @@ describe('moveDir', () => {
 describe('moveFile', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, fileA, d12]) })
-    const movedFileA = {
+    const movedFileA: StorageNode = {
       nodeType: StorageNodeType.File,
       name: 'fileA.txt',
       dir: 'd1/d12',
       path: 'd1/d12/fileA.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: dayjs(),
     }
@@ -365,11 +389,13 @@ describe('moveFile', () => {
 
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, fileA, d12]) })
-    const movedFileA = {
+    const movedFileA: StorageNode = {
       nodeType: StorageNodeType.File,
       name: 'fileA.txt',
       dir: 'd1/d12',
       path: 'd1/d12/fileA.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: dayjs(),
     }
@@ -387,19 +413,23 @@ describe('moveFile', () => {
 describe('renameDir', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, fileA]) })
-    const renamedX11 = {
+    const renamedX11: StorageNode = {
       nodeType: StorageNodeType.Dir,
       name: 'x11',
       dir: 'd1',
       path: 'd1/x11',
+      contentType: '',
+      size: 0,
       created: dayjs(),
       updated: dayjs(),
     }
-    const renamedFileA = {
+    const renamedFileA: StorageNode = {
       nodeType: StorageNodeType.File,
       name: 'fileA.txt',
       dir: 'd1/x11',
       path: 'd1/x11/fileA.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: dayjs(),
     }
@@ -413,11 +443,13 @@ describe('renameDir', () => {
 
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11]) })
-    const renamedX11 = {
+    const renamedX11: StorageNode = {
       nodeType: StorageNodeType.Dir,
       name: 'x11',
       dir: 'd1',
       path: 'd1/x11',
+      contentType: '',
+      size: 0,
       created: dayjs(),
       updated: dayjs(),
     }
@@ -435,11 +467,13 @@ describe('renameDir', () => {
 describe('renameFile', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, fileA]) })
-    const renamedFileX = {
+    const renamedFileX: StorageNode = {
       nodeType: StorageNodeType.File,
       name: 'fileX.txt',
       dir: 'd1/d11',
       path: 'd1/d11/fileX.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: dayjs(),
     }
@@ -453,11 +487,13 @@ describe('renameFile', () => {
 
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, fileA]) })
-    const renamedFileX = {
+    const renamedFileX: StorageNode = {
       nodeType: StorageNodeType.File,
       name: 'fileX.txt',
       dir: 'd1/d11',
       path: 'd1/d11/fileX.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
       created: dayjs(),
       updated: dayjs(),
     }

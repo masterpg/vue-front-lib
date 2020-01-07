@@ -7,6 +7,8 @@ export interface StorageTreeNodeData extends CompTreeNodeData {
   icon: 'storage' | 'folder' | 'description'
   parent?: string
   nodeType: StorageNodeType | 'Storage'
+  contentType: string
+  size: number
   created: Dayjs
   updated: Dayjs
 }
@@ -21,6 +23,8 @@ export function getStorageTreeRootNodeData(): StorageTreeNodeData {
     icon: 'storage',
     opened: true,
     nodeType: 'Storage',
+    contentType: '',
+    size: 0,
     created: dayjs(0),
     updated: dayjs(0),
   }
@@ -35,9 +39,11 @@ export function toStorageTreeNodeData(source: StorageNode): StorageTreeNodeData 
     label: removeBothEndsSlash(source.name),
     value: removeBothEndsSlash(source.path),
     parent: removeBothEndsSlash(source.dir),
+    nodeClass: StorageTreeNode,
     icon: source.nodeType === StorageNodeType.Dir ? 'folder' : 'description',
     nodeType: source.nodeType,
-    nodeClass: StorageTreeNode,
+    contentType: source.contentType,
+    size: source.size,
     created: source.created,
     updated: source.updated,
   }

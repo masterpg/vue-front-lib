@@ -228,6 +228,8 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
       name: value.name,
       dir: value.dir,
       path: value.path,
+      contentType: value.contentType,
+      size: value.size,
       created: value.created,
       updated: value.updated,
     }
