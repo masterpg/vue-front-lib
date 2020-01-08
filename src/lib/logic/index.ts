@@ -16,9 +16,29 @@ export interface LibLogicContainer {
 }
 
 export abstract class BaseLogicContainer extends Vue implements LibLogicContainer {
-  readonly userStorage: UserStorageLogic = new UserStorageLogicImpl()
-  readonly appStorage: AppStorageLogic = new AppStorageLogicImpl()
-  readonly auth: AuthLogic = new AuthLogicImpl()
+  constructor() {
+    super()
+
+    this.userStorage = this.newUserStorageLogic()
+    this.appStorage = this.newAppStorageLogic()
+    this.auth = this.newAuthLogic()
+  }
+
+  readonly userStorage: UserStorageLogic
+  readonly appStorage: AppStorageLogic
+  readonly auth: AuthLogic
+
+  protected newUserStorageLogic(): UserStorageLogic {
+    return new UserStorageLogicImpl()
+  }
+
+  protected newAppStorageLogic(): AppStorageLogic {
+    return new AppStorageLogicImpl()
+  }
+
+  protected newAuthLogic(): AuthLogic {
+    return new AuthLogicImpl()
+  }
 }
 
 export let logic: LibLogicContainer

@@ -12,7 +12,7 @@ import Vue from 'vue'
 //========================================================================
 
 @Component
-class LogicContainerImpl extends BaseLogicContainer implements LogicContainer {
+export class LogicContainerImpl extends BaseLogicContainer implements LogicContainer {
   private m_apiType = getAPIType()
 
   get apiType(): 'gql' | 'rest' {
@@ -35,8 +35,8 @@ class LogicContainerImpl extends BaseLogicContainer implements LogicContainer {
 
 export let logic: LogicContainer
 
-export function initLogic(): void {
-  logic = new LogicContainerImpl()
+export function initLogic(logicContainer?: LogicContainer): void {
+  logic = logicContainer ? logicContainer : new LogicContainerImpl()
   setLogic(logic)
 
   Object.defineProperty(Vue.prototype, '$logic', {

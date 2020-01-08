@@ -313,6 +313,10 @@ export default class CompTreeNode extends BaseComponent {
 
   /**
    * ノードの初期化を行います。
+   *
+   * CompTreeNodeItemを拡張する際、初期化時に独自処理が必要な場合は
+   * このメソッドをオーバーライドして下さい。
+   *
    * @param treeView
    * @param nodeData
    */
@@ -321,8 +325,7 @@ export default class CompTreeNode extends BaseComponent {
   }
 
   /**
-   * CompTreeNodeItemを拡張する際、初期化時に独自処理が必要な場合のプレースホルダーです。
-   * 独自処理が必要な場合はこのメソッドをオーバーライドしてください。
+   * ノード初期化の基本処理を行います。
    * @param treeView
    * @param nodeData
    */

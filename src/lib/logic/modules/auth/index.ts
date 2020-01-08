@@ -270,7 +270,7 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
   }
 
   /**
-   * サインイン/アウトが変化した際のリスなです。
+   * サインイン/アウトの状態が変化した際のリスナです。
    * @param newValue
    * @param oldValue
    */

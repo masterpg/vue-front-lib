@@ -1,5 +1,6 @@
 import '@/example/quasar'
 import { AppAPIContainer } from '@/example/logic/api'
+import { MockLogicContainer } from '../../mocks/example/logic'
 import { initConfig } from '@/example/config'
 import { initExampleTestAPI } from '../../mocks/example/logic/api'
 import { initI18n } from '@/example/i18n'
@@ -10,6 +11,6 @@ export async function initExampleTest(params: { api?: AppAPIContainer } = {}): P
   initConfig()
   initExampleTestAPI(params.api)
   initStore()
-  initLogic()
+  initLogic(new MockLogicContainer())
   await initI18n()
 }
