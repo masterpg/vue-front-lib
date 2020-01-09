@@ -1,7 +1,6 @@
 import { CompTreeNode, CompTreeView, StorageNode, StorageNodeType } from '@/lib'
-import { StorageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
+import { StorageTreeStore, getStorageTreeRootNodeData } from '@/example/views/demo/storage/base'
 import dayjs from 'dayjs'
-import { getStorageTreeRootNodeData } from '@/example/views/demo/storage/base'
 import { initExampleTest } from '../../../../../helpers/example/init'
 import { mount } from '@vue/test-utils'
 
@@ -107,7 +106,7 @@ const STORAGE_NODES: StorageNode[] = [d1, d11, fileA, d12, d2, d21, fileB, fileC
 //
 //========================================================================
 
-let storageTreeStore!: StorageTreeStore
+let treeStore!: StorageTreeStore
 
 let treeView!: CompTreeView
 
@@ -155,50 +154,49 @@ beforeAll(async () => {
 beforeEach(async () => {
   const wrapper = mount(CompTreeView)
   treeView = wrapper.vm as CompTreeView
-  storageTreeStore = new StorageTreeStore()
-  storageTreeStore.init(treeView)
-  storageTreeStore.setNodes(STORAGE_NODES)
+  treeStore = new StorageTreeStore()
+  treeStore.init(treeView)
+  treeStore.setNodes(STORAGE_NODES)
 })
 
-describe('init', () => {
+describe('constructor + init', () => {
   it('ベーシックケース', () => {
     const wrapper = mount(CompTreeView)
     const treeView = wrapper.vm as CompTreeView
-    const storageTreeStore = new StorageTreeStore()
-
-    storageTreeStore.init(treeView)
+    const treeStore = new StorageTreeStore()
+    treeStore.init(treeView)
 
     const rootNodeData = getStorageTreeRootNodeData()
-    expect(storageTreeStore.rootNode.value).toBe(rootNodeData.value)
-    expect(storageTreeStore.rootNode.label).toBe(rootNodeData.label)
-    expect(storageTreeStore.rootNode.icon).toBe(rootNodeData.icon)
-    expect(storageTreeStore.rootNode.opened).toBe(rootNodeData.opened)
-    expect(storageTreeStore.rootNode.nodeType).toBe(rootNodeData.nodeType)
+    expect(treeStore.rootNode.value).toBe(rootNodeData.value)
+    expect(treeStore.rootNode.label).toBe(rootNodeData.label)
+    expect(treeStore.rootNode.icon).toBe(rootNodeData.icon)
+    expect(treeStore.rootNode.opened).toBe(rootNodeData.opened)
+    expect(treeStore.rootNode.nodeType).toBe(rootNodeData.nodeType)
   })
 
   it('既にルートノードが作成されている場合', () => {
     const wrapper = mount(CompTreeView)
     const treeView = wrapper.vm as CompTreeView
-    const storageTreeStore = new StorageTreeStore()
+    const treeStore = new StorageTreeStore()
+    treeStore.init(treeView)
 
-    // 初期化することでルートノードが作成される
-    storageTreeStore.init(treeView)
-    const rootNode = storageTreeStore.rootNode
+    // コンストラクタでルートノードが作成される
+    const rootNode = treeStore.rootNode
 
     // 再度初期化する
-    storageTreeStore.init(treeView)
+    treeStore.init(treeView)
 
     // 最初に初期化したルートノードが再利用されていることを検証
-    expect(storageTreeStore.rootNode).toBe(rootNode)
+    expect(treeStore.rootNode).toBe(rootNode)
   })
 })
 
 describe('getAllNodes', () => {
   it('ベーシックケース', () => {
-    const actual = storageTreeStore.getAllNodes()
+    const actual = treeStore.getAllNodes()
 
     expect(actual.length).toBe(9)
-    expect(actual[0].value).toBe(storageTreeStore.rootNode.value)
+    expect(actual[0].value).toBe(treeStore.rootNode.value)
     expect(actual[1].value).toBe('d1')
     expect(actual[2].value).toBe('d1/d11')
     expect(actual[3].value).toBe('d1/d11/fileA.txt')
@@ -212,15 +210,15 @@ describe('getAllNodes', () => {
 
 describe('getNode', () => {
   it('ベーシックケース', () => {
-    const actual = storageTreeStore.getNode('d1')!
+    const actual = treeStore.getNode('d1')!
 
     expect(actual.value).toBe('d1')
   })
 
   it('ルートノードを取得', () => {
-    const actual = storageTreeStore.getNode(storageTreeStore.rootNode.value)!
+    const actual = treeStore.getNode(treeStore.rootNode.value)!
 
-    expect(actual.value).toBe(storageTreeStore.rootNode.value)
+    expect(actual.value).toBe(treeStore.rootNode.value)
   })
 })
 
@@ -229,15 +227,15 @@ describe('setNodes', () => {
     for (let i = 0; i < 10; i++) {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView
-      const storageTreeStore = new StorageTreeStore()
-      storageTreeStore.init(treeView)
+      const treeStore = new StorageTreeStore()
+      treeStore.init(treeView)
 
       // ノード配列をシャッフルして実行
-      storageTreeStore.setNodes(shuffle(STORAGE_NODES))
-      const actual = storageTreeStore.getAllNodes()
+      treeStore.setNodes(shuffle(STORAGE_NODES))
+      const actual = treeStore.getAllNodes()
 
       // 先頭はルートノード
-      expect(actual[0].value).toBe(storageTreeStore.rootNode.value)
+      expect(actual[0].value).toBe(treeStore.rootNode.value)
       actual.splice(0, 1)
       // ルートノード配下のノードが適切にソートされているか検証
       for (let index = 0; index < actual.length; index++) {
@@ -250,15 +248,15 @@ describe('setNodes', () => {
 
   it('ツリーに存在しないノードの設定', () => {
     // テスト対象のノードをツリーから削除
-    storageTreeStore.removeNode('d1/d11')
-    expect(storageTreeStore.getNode('d1/d11')).toBeUndefined()
-    expect(storageTreeStore.getNode('d1/d11/fileA.txt')).toBeUndefined()
+    treeStore.removeNode('d1/d11')
+    expect(treeStore.getNode('d1/d11')).toBeUndefined()
+    expect(treeStore.getNode('d1/d11/fileA.txt')).toBeUndefined()
 
-    storageTreeStore.setNodes([d11, fileA])
+    treeStore.setNodes([d11, fileA])
 
     // ノードが追加されたことを検証
-    expect(storageTreeStore.getNode('d1/d11')!.value).toBe('d1/d11')
-    expect(storageTreeStore.getNode('d1/d11/fileA.txt')!.value).toBe('d1/d11/fileA.txt')
+    expect(treeStore.getNode('d1/d11')!.value).toBe('d1/d11')
+    expect(treeStore.getNode('d1/d11/fileA.txt')!.value).toBe('d1/d11/fileA.txt')
 
     verifyParentChildRelationForTree(treeView)
   })
@@ -269,40 +267,40 @@ describe('setNodes', () => {
     const updatingD11 = Object.assign({}, d11, { created: CREATED, updated: UPDATED })
     const updatingFileA = Object.assign({}, fileA, { created: CREATED, updated: UPDATED })
 
-    storageTreeStore.setNodes([updatingD11, updatingFileA])
+    treeStore.setNodes([updatingD11, updatingFileA])
 
-    expect(storageTreeStore.getNode('d1/d11')!.createdDate).toEqual(CREATED)
-    expect(storageTreeStore.getNode('d1/d11')!.updatedDate).toEqual(UPDATED)
-    expect(storageTreeStore.getNode('d1/d11/fileA.txt')!.createdDate).toEqual(CREATED)
-    expect(storageTreeStore.getNode('d1/d11/fileA.txt')!.updatedDate).toEqual(UPDATED)
+    expect(treeStore.getNode('d1/d11')!.createdDate).toEqual(CREATED)
+    expect(treeStore.getNode('d1/d11')!.updatedDate).toEqual(UPDATED)
+    expect(treeStore.getNode('d1/d11/fileA.txt')!.createdDate).toEqual(CREATED)
+    expect(treeStore.getNode('d1/d11/fileA.txt')!.updatedDate).toEqual(UPDATED)
   })
 })
 
 describe('removeNodes', () => {
   it('ベーシックケース', () => {
-    storageTreeStore.removeNodes(['d1/d11', 'd2/d21/fileB.txt'])
+    treeStore.removeNodes(['d1/d11', 'd2/d21/fileB.txt'])
 
-    expect(storageTreeStore.getNode('d1/d11')).toBeUndefined()
-    expect(storageTreeStore.getNode('d1/d11/fileA.txt')).toBeUndefined()
-    expect(storageTreeStore.getNode('d2/d21/fileB.txt')).toBeUndefined()
+    expect(treeStore.getNode('d1/d11')).toBeUndefined()
+    expect(treeStore.getNode('d1/d11/fileA.txt')).toBeUndefined()
+    expect(treeStore.getNode('d2/d21/fileB.txt')).toBeUndefined()
 
     verifyParentChildRelationForTree(treeView)
   })
 
   it(`'d1/d11'と親である'd1'を同時に指定した場合`, () => {
-    storageTreeStore.removeNodes(['d1/d11', 'd1'])
+    treeStore.removeNodes(['d1/d11', 'd1'])
 
-    expect(storageTreeStore.getNode('d1')).toBeUndefined()
-    expect(storageTreeStore.getNode('d1/d11')).toBeUndefined()
-    expect(storageTreeStore.getNode('d1/d11/fileA.txt')).toBeUndefined()
-    expect(storageTreeStore.getNode('d1/d12')).toBeUndefined()
+    expect(treeStore.getNode('d1')).toBeUndefined()
+    expect(treeStore.getNode('d1/d11')).toBeUndefined()
+    expect(treeStore.getNode('d1/d11/fileA.txt')).toBeUndefined()
+    expect(treeStore.getNode('d1/d12')).toBeUndefined()
 
     verifyParentChildRelationForTree(treeView)
   })
 
   it('存在しないパスを指定した場合', () => {
     // 何も起こらない
-    storageTreeStore.removeNodes(['dXXX'])
+    treeStore.removeNodes(['dXXX'])
 
     verifyParentChildRelationForTree(treeView)
   })
@@ -310,8 +308,8 @@ describe('removeNodes', () => {
 
 describe('moveNode', () => {
   it('ディレクトリの移動 - ディレクトリへ移動', () => {
-    storageTreeStore.moveNode('d1', 'd2/d1')
-    const actual = storageTreeStore.getNode('d2/d1')!
+    treeStore.moveNode('d1', 'd2/d1')
+    const actual = treeStore.getNode('d2/d1')!
     const descendants = actual.getDescendants()
 
     expect(actual.parent!.value).toBe('d2')
@@ -325,8 +323,8 @@ describe('moveNode', () => {
   })
 
   it('ディレクトリの移動 - ルートディレクトリへ移動', () => {
-    storageTreeStore.moveNode('d1/d12', 'd12')
-    const actual = storageTreeStore.getNode('d12')!
+    treeStore.moveNode('d1/d12', 'd12')
+    const actual = treeStore.getNode('d12')!
 
     expect(actual.parent!.value).toBe('')
     expect(actual.parent!.opened).toBeTruthy()
@@ -336,8 +334,8 @@ describe('moveNode', () => {
   })
 
   it('ファイルの移動 - ディレクトリへ移動', () => {
-    storageTreeStore.moveNode('d1/d11/fileA.txt', 'd1/d12/fileA.txt')
-    const actual = storageTreeStore.getNode('d1/d12/fileA.txt')!
+    treeStore.moveNode('d1/d11/fileA.txt', 'd1/d12/fileA.txt')
+    const actual = treeStore.getNode('d1/d12/fileA.txt')!
 
     expect(actual.parent!.value).toBe('d1/d12')
     expect(actual.value).toBe('d1/d12/fileA.txt')
@@ -346,8 +344,8 @@ describe('moveNode', () => {
   })
 
   it('ファイルの移動 - ルートディレクトリへ移動', () => {
-    storageTreeStore.moveNode('d1/d11/fileA.txt', 'fileA.txt')
-    const actual = storageTreeStore.getNode('fileA.txt')!
+    treeStore.moveNode('d1/d11/fileA.txt', 'fileA.txt')
+    const actual = treeStore.getNode('fileA.txt')!
 
     expect(actual.parent!.value).toBe('')
     expect(actual.parent!.opened).toBeTruthy()
@@ -357,7 +355,7 @@ describe('moveNode', () => {
   })
 
   it('移動先に同名のディレクトリまたはファイルが存在する場合', () => {
-    storageTreeStore.removeNodes(STORAGE_NODES.map(node => node.path))
+    treeStore.removeNodes(STORAGE_NODES.map(node => node.path))
 
     const FM_UPDATED = dayjs('2020-01-01')
     const TO_UPDATED = dayjs('2020-01-02')
@@ -481,7 +479,7 @@ describe('moveNode', () => {
       created: dayjs(),
       updated: TO_UPDATED,
     }
-    storageTreeStore.setNodes([
+    treeStore.setNodes([
       d1,
       d1_docs,
       d1_docs_aaa,
@@ -498,9 +496,9 @@ describe('moveNode', () => {
 
     // 'd1/docs'をルート直下の'docs'へ移動
     // (ルート直下にはdocsが既に存在している)
-    storageTreeStore.moveNode('d1/docs', 'docs')
+    treeStore.moveNode('d1/docs', 'docs')
 
-    const allNodePaths = storageTreeStore.getAllNodes().map(node => node.value)
+    const allNodePaths = treeStore.getAllNodes().map(node => node.value)
     // 補足: 空文字''はルートノード
     expect(allNodePaths).toEqual([
       '',
@@ -515,14 +513,14 @@ describe('moveNode', () => {
     ])
 
     // 移動したノードの検証(移動または上書きされたか、もとからあったのか)
-    expect(storageTreeStore.getNode('docs')!.updatedDate).toEqual(FM_UPDATED)
-    expect(storageTreeStore.getNode('docs/aaa')!.updatedDate).toEqual(FM_UPDATED)
-    expect(storageTreeStore.getNode('docs/aaa/fileA.txt')!.updatedDate).toEqual(FM_UPDATED)
-    expect(storageTreeStore.getNode('docs/fileB.txt')!.updatedDate).toEqual(FM_UPDATED)
-    expect(storageTreeStore.getNode('docs/fileC.txt')!.updatedDate).toEqual(FM_UPDATED)
+    expect(treeStore.getNode('docs')!.updatedDate).toEqual(FM_UPDATED)
+    expect(treeStore.getNode('docs/aaa')!.updatedDate).toEqual(FM_UPDATED)
+    expect(treeStore.getNode('docs/aaa/fileA.txt')!.updatedDate).toEqual(FM_UPDATED)
+    expect(treeStore.getNode('docs/fileB.txt')!.updatedDate).toEqual(FM_UPDATED)
+    expect(treeStore.getNode('docs/fileC.txt')!.updatedDate).toEqual(FM_UPDATED)
     // 次の2ファイルは移動先にもとからあったので更新日に変化はない
-    expect(storageTreeStore.getNode('docs/fileD.txt')!.updatedDate).toEqual(TO_UPDATED)
-    expect(storageTreeStore.getNode('docs/fileE.txt')!.updatedDate).toEqual(TO_UPDATED)
+    expect(treeStore.getNode('docs/fileD.txt')!.updatedDate).toEqual(TO_UPDATED)
+    expect(treeStore.getNode('docs/fileE.txt')!.updatedDate).toEqual(TO_UPDATED)
 
     verifyParentChildRelationForTree(treeView)
   })
@@ -530,7 +528,7 @@ describe('moveNode', () => {
   it('存在しないパスを指定した場合', () => {
     let actual: Error
     try {
-      storageTreeStore.moveNode('dXXX', 'd2/dXXX')
+      treeStore.moveNode('dXXX', 'd2/dXXX')
     } catch (err) {
       actual = err
     }
@@ -541,7 +539,7 @@ describe('moveNode', () => {
   it('移動先ディレクトリが移動元のサブディレクトリの場合', () => {
     let actual: Error
     try {
-      storageTreeStore.moveNode('d1', 'd1/d11/d1')
+      treeStore.moveNode('d1', 'd1/d11/d1')
     } catch (err) {
       actual = err
     }
@@ -552,8 +550,8 @@ describe('moveNode', () => {
 
 describe('renameNode', () => {
   it('ディレクトリの名前変更', () => {
-    storageTreeStore.renameNode('d1', 'x1')
-    const actual = storageTreeStore.getNode('x1')!
+    treeStore.renameNode('d1', 'x1')
+    const actual = treeStore.getNode('x1')!
     const descendants = actual.getDescendants()
 
     expect(actual.value).toBe('x1')
@@ -566,8 +564,8 @@ describe('renameNode', () => {
   })
 
   it('ファイルの名前変更', () => {
-    storageTreeStore.renameNode('d1/d11/fileA.txt', 'fileX.txt')
-    const actual = storageTreeStore.getNode('d1/d11/fileX.txt')!
+    treeStore.renameNode('d1/d11/fileA.txt', 'fileX.txt')
+    const actual = treeStore.getNode('d1/d11/fileX.txt')!
 
     expect(actual.value).toBe('d1/d11/fileX.txt')
 
@@ -577,7 +575,7 @@ describe('renameNode', () => {
   it('存在しないパスを指定した場合', () => {
     let actual: Error
     try {
-      storageTreeStore.renameNode('dXXX', 'x1')
+      treeStore.renameNode('dXXX', 'x1')
     } catch (err) {
       actual = err
     }

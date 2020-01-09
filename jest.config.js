@@ -17,7 +17,8 @@ module.exports = {
         // error TS2315: Type 'Vue' is not generic.
         // TS2339: Property 'xxx' does not exist on type 'Vue'.
         // error TS2551: Property 'xxx' does not exist on type 'Vue'. Did you mean '$xxx'?
-        ignoreCodes: [2315, 2339, 2551],
+        // TS2347: Untyped function calls may not accept type arguments.
+        ignoreCodes: [2315, 2339, 2551, 2347],
       },
     },
   },

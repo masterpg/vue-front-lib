@@ -165,7 +165,7 @@ import bytes from 'bytes'
 import { getStorageTreeRootNodeData } from '@/example/views/demo/storage/base'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
-import { storageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
+import { treeStore } from '@/example/views/demo/storage/storage-tree-store'
 
 class TableRow {
   constructor(private m_table: QTable) {}
@@ -305,7 +305,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
   }
 
   private m_setupChildren(): void {
-    const dirNode = storageTreeStore.getNode(this.m_dirPath!)
+    const dirNode = treeStore.getNode(this.m_dirPath!)
     if (!dirNode) {
       throw new Error(`'storageTreeStore' does not have specified path's node: '${this.m_dirPath}'`)
     }
