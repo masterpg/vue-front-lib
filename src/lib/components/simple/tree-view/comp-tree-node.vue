@@ -429,7 +429,7 @@ export default class CompTreeNode extends BaseComponent {
    */
   toggle(animated: boolean = true): void {
     this.nodeData.opened = !this.nodeData.opened
-    this.m_toggle(!this.nodeData.opened, animated)
+    this.m_toggle(this.nodeData.opened, animated)
   }
 
   /**
@@ -437,6 +437,7 @@ export default class CompTreeNode extends BaseComponent {
    * @param animated
    */
   open(animated: boolean = true): void {
+    if (this.nodeData.opened) return
     this.nodeData.opened = true
     this.m_toggle(this.nodeData.opened, animated)
   }
@@ -446,6 +447,7 @@ export default class CompTreeNode extends BaseComponent {
    * @param animated
    */
   close(animated: boolean = true): void {
+    if (!this.nodeData.opened) return
     this.nodeData.opened = false
     this.m_toggle(this.nodeData.opened, animated)
   }
@@ -518,7 +520,7 @@ export default class CompTreeNode extends BaseComponent {
 
     // 親ノードのコンテナの高さを設定
     if (this.parent) {
-      this.parent.m_refreshChildrenContainerHeight(false)
+      this.parent.m_refreshChildrenContainerHeight()
     }
 
     // 子ノードの設定
@@ -569,7 +571,7 @@ export default class CompTreeNode extends BaseComponent {
 
     // 親ノードのコンテナの高さを設定
     if (this.parent) {
-      this.parent.m_refreshChildrenContainerHeight(false)
+      this.parent.m_refreshChildrenContainerHeight()
     }
 
     // 子ノードの設定
@@ -602,8 +604,11 @@ export default class CompTreeNode extends BaseComponent {
   private m_toggle!: (opened: boolean, animated?: boolean) => void
 
   private m_toggleFunc(opened: boolean, animated: boolean = true): void {
-    this.m_refreshChildrenContainerHeight(animated)
-
+    if (animated) {
+      this.m_refreshChildrenContainerHeightWithAnimation()
+    } else {
+      this.m_refreshChildrenContainerHeight()
+    }
     this.$el.dispatchEvent(
       new CustomEvent('opened-changed', {
         bubbles: true,
@@ -615,36 +620,49 @@ export default class CompTreeNode extends BaseComponent {
 
   /**
    * 子ノードが配置されるコンテナの高さを再計算し、高さをリフレッシュします。
-   * @param animated
+   * (アニメーションなしで)
    */
-  private m_refreshChildrenContainerHeight(animated: boolean): Promise<void> {
+  private m_refreshChildrenContainerHeight(): void {
+    const newHeight = this.m_getChildrenContainerHeight(this)
+    this.m_childContainer.style.transition = ''
+    this.m_childContainer.style.height = `${newHeight}px`
+
+    if (this.parent) {
+      this.parent.m_refreshChildrenContainerHeight()
+    }
+  }
+
+  /**
+   * 子ノードが配置されるコンテナの高さを再計算し、高さをリフレッシュします。
+   * (アニメーションしながら)
+   */
+  private m_refreshChildrenContainerHeightWithAnimation(): Promise<void> {
     const DURATION = 500
-    const duration = animated ? DURATION : 0
 
     return new Promise<void>(resolve => {
-      this.m_childContainer.style.transition = animated ? `height ${duration / 1000}s` : ''
+      this.m_childContainer.style.transition = `height ${DURATION / 1000}s`
 
       const newHeight = this.m_getChildrenContainerHeight(this)
       this.m_childContainer.style.height = `${newHeight}px`
 
       if (this.parent) {
-        this.parent.m_refreshChildrenContainerHeight(animated)
+        this.parent.m_refreshChildrenContainerHeightWithAnimation()
       }
 
-      setTimeout(resolve, duration)
+      setTimeout(resolve, DURATION)
     })
   }
 
   /**
    * 子ノードが配置されるコンテナの高さを算出します。
-   * @param base 基準となるノードを指定します。このノードの子孫を走査して高さが算出されるます。
+   * @param base 基準となるノードを指定します。このノードの子孫を走査して高さが算出されます。
    */
   private m_getChildrenContainerHeight(base: CompTreeNode): number {
     let result = 0
 
     if (this.opened) {
       result += CompTreeViewUtils.getElementFrameHeight(this.m_childContainer)
-      for (let child of this.children) {
+      for (const child of this.children) {
         result += child.m_getChildrenContainerHeight(base)
       }
     }
@@ -692,7 +710,7 @@ export default class CompTreeNode extends BaseComponent {
       childNode.m_parent = null
       this.m_children.splice(index, 1)
       this.m_removeChildFromContainer(childNode)
-      this.m_refreshChildrenContainerHeight(false)
+      this.m_refreshChildrenContainerHeight()
       isDispatchEvent && CompTreeViewUtils.dispatchNodeRemoved(this, childNode)
       return true
     }
