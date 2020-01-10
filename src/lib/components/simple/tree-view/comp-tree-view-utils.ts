@@ -6,13 +6,12 @@ import Vue from 'vue'
 export namespace CompTreeViewUtils {
   /**
    * ノードを作成します。
-   * @param treeView
    * @param nodeData
    */
-  export function newNode(treeView: CompTreeView, nodeData: CompTreeNodeData): CompTreeNode {
+  export function newNode(nodeData: CompTreeNodeData): CompTreeNode {
     const NodeClass = Vue.extend(nodeData.nodeClass || CompTreeNode)
     const node = new NodeClass() as any
-    node.init(treeView, nodeData)
+    node.init(nodeData)
     node.$mount()
     return node
   }

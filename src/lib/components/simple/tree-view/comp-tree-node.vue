@@ -124,10 +124,24 @@ export default class CompTreeNode extends BaseComponent {
     return []
   }
 
-  private m_treeView: CompTreeView | null = null
-
+  /**
+   * 本ノードが所属するツリービューです。
+   */
   get treeView(): CompTreeView {
-    return this.m_treeView!
+    const errorMessage = `'CompTreeView' not found.`
+
+    const rootNode = this.getRootNode()
+    const parentElement = rootNode.$el.parentElement
+    if (!parentElement) {
+      throw new Error(errorMessage)
+    }
+
+    const treeView = (parentElement as any).__vue__ as CompTreeView | undefined
+    if (!treeView || !treeView.isTreeView) {
+      throw new Error(errorMessage)
+    }
+
+    return treeView
   }
 
   /**
@@ -317,21 +331,17 @@ export default class CompTreeNode extends BaseComponent {
    * CompTreeNodeItemを拡張する際、初期化時に独自処理が必要な場合は
    * このメソッドをオーバーライドして下さい。
    *
-   * @param treeView
    * @param nodeData
    */
-  init(treeView: CompTreeView, nodeData: CompTreeNodeData): void {
-    this.initBase(treeView, nodeData)
+  init(nodeData: CompTreeNodeData): void {
+    this.initBase(nodeData)
   }
 
   /**
    * ノード初期化の基本処理を行います。
-   * @param treeView
    * @param nodeData
    */
-  protected initBase(treeView: CompTreeView, nodeData: CompTreeNodeData): void {
-    this.m_treeView = treeView
-
+  protected initBase(nodeData: CompTreeNodeData): void {
     // 任意項目は値が設定されていないとリアクティブにならないのでここで初期化
     this.$set(nodeData, 'icon', nodeData.icon || '')
     this.$set(nodeData, 'iconColor', nodeData.iconColor || '')
@@ -499,7 +509,7 @@ export default class CompTreeNode extends BaseComponent {
     }
 
     // 子ノードの作成
-    const childNode = CompTreeViewUtils.newNode(this.treeView, childNodeData)
+    const childNode = CompTreeViewUtils.newNode(childNodeData)
 
     // ノード挿入位置を決定
     const insertIndex = this.m_getInsertIndex(childNode, options)
@@ -549,7 +559,7 @@ export default class CompTreeNode extends BaseComponent {
       childNode.parent.m_removeChild(childNode, false)
     } else {
       // 親がない場合、ツリービューが親
-      childNode.treeView.removeNode(childNode.value)
+      this.treeView.removeNode(childNode.value)
     }
 
     // ノード挿入位置を決定

@@ -123,8 +123,8 @@ export default class CompTreeCheckboxNode extends CompTreeNode {
   //
   //----------------------------------------------------------------------
 
-  init(treeView: CompTreeView, nodeData: CompTreeCheckboxNodeData): void {
-    this.initBase(treeView, nodeData)
+  init(nodeData: CompTreeCheckboxNodeData): void {
+    this.initBase(nodeData)
     // 任意項目は値が設定されていないとリアクティブにならないのでここで初期化
     this.$set(nodeData, 'checked', Boolean(nodeData.checked))
   }

@@ -90,6 +90,12 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
     }
   }
 
+  /**
+   * このプロパティはツリービューが内部的に使用するものであり、
+   * ツリービューの利用者が使用することを想定していません。
+   */
+  readonly isTreeView = true
+
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -244,7 +250,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
     }
 
     // ノードの作成
-    const node = CompTreeViewUtils.newNode(this, nodeData)
+    const node = CompTreeViewUtils.newNode(nodeData)
 
     // ノード挿入位置を決定
     const insertIndex = this.m_getInsertIndex(node, options)
