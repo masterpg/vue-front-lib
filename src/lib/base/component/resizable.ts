@@ -251,7 +251,7 @@ export class Resizable extends Breakpoint {
 
   /**
    * iron-request-resize-notificationsイベントのリスナです。
-   * このイベントは、子孫が祖先との関連付けを必要とした場合発火されます。
+   * このイベントは、子孫が祖先との関連付けが必要な際に発火されます。
    * @param e
    */
   private Resizable_onIronRequestResizeNotifications(e): void {
