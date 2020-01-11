@@ -193,6 +193,10 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
       title: 'Tree View',
       path: router.views.components.treeView.path,
     },
+    {
+      title: 'Img',
+      path: router.views.components.img.path,
+    },
   ]
 
   private m_leftDrawerOpen: boolean = false

@@ -116,6 +116,20 @@ const componentsRoute = new (class ComponentsRoute extends ViewRoute {
       router.push(this.path)
     }
   })(this)
+
+  img = new (class extends ViewRoute<ComponentsRoute> {
+    get path() {
+      return `${this.parent!.path}/img`
+    }
+
+    get component() {
+      return () => import(/* webpackChunkName: "views/components/img" */ '@/example/views/components/img')
+    }
+
+    move() {
+      router.push(this.path)
+    }
+  })(this)
 })()
 
 class AppRouter extends BaseRouter {
@@ -139,7 +153,7 @@ export let router: AppRouter
 export function initRouter() {
   router = new AppRouter({
     mode: 'history',
-    routes: [error404Route, demoRoute.abc, demoRoute.shop, demoRoute.storage, componentsRoute.treeView],
+    routes: [error404Route, demoRoute.abc, demoRoute.shop, demoRoute.storage, componentsRoute.treeView, componentsRoute.img],
   })
   setRouter(router)
 }

@@ -61,6 +61,7 @@ export {
   BaseHistoryDialogManager,
   ChildrenSortFunc,
   CompAlertDialog,
+  CompImg,
   CompStorageUploadProgressFloat,
   CompTreeCheckboxNode,
   CompTreeCheckboxNodeData,
