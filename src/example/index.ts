@@ -1,5 +1,5 @@
 import 'animate.css/animate.css'
-import '@/example/index.sass'
+import '@/example/styles/app.sass'
 
 import '@/example/quasar'
 import '@/example/quasar.extras'
