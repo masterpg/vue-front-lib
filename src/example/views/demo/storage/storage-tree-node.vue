@@ -80,7 +80,7 @@
         <!-- コンテキストメニュー -->
         <q-menu touch-position context-menu>
           <!-- ルートノード用メニュー -->
-          <q-list v-show="m_isStorage" dense style="min-width: 100px">
+          <q-list v-show="m_isRoot" dense style="min-width: 100px">
             <q-item v-close-popup clickable>
               <q-item-section @click="m_dispatchReloadSelected()">{{ $t('common.reload') }}</q-item-section>
             </q-item>
@@ -174,14 +174,12 @@ export default class StorageTreeNode extends CompTreeNode {
     ]
   }
 
-  get nodeType(): StorageNodeType | 'Storage' {
+  get nodeType(): StorageNodeType {
     return this.nodeData.nodeType
   }
 
   get nodeTypeName(): string {
-    if (this.nodeType === 'Storage') {
-      return 'Storage'
-    } else if (this.nodeType === StorageNodeType.Dir) {
+    if (this.nodeType === StorageNodeType.Dir) {
       return String(this.$tc('common.folder', 1))
     } else {
       return String(this.$tc('common.file', 1))
@@ -194,6 +192,14 @@ export default class StorageTreeNode extends CompTreeNode {
 
   get size(): number {
     return this.nodeData.size
+  }
+
+  get baseURL(): string {
+    return this.nodeData.baseURL
+  }
+
+  get fileURL(): string {
+    return `${this.baseURL}/${this.value}`
   }
 
   get createdDate(): Dayjs {
@@ -212,15 +218,17 @@ export default class StorageTreeNode extends CompTreeNode {
 
   protected readonly nodeData!: StorageTreeNodeData
 
-  private get m_isStorage(): boolean {
-    return this.nodeType === 'Storage'
+  private get m_isRoot(): boolean {
+    return this.parent === null
   }
 
   private get m_isDir(): boolean {
+    if (this.m_isRoot) return false
     return this.nodeType === StorageNodeType.Dir
   }
 
   private get m_isFile(): boolean {
+    if (this.m_isRoot) return false
     return this.nodeType === StorageNodeType.File
   }
 
@@ -241,11 +249,15 @@ export default class StorageTreeNode extends CompTreeNode {
 
   setNodeData(editData: CompTreeNodeEditData<StorageTreeNodeData>): void {
     this.setBaseNodeData(editData)
+
     if (typeof editData.contentType === 'string') {
       this.nodeData.contentType = editData.contentType
     }
     if (typeof editData.size === 'number') {
       this.nodeData.size = editData.size
+    }
+    if (typeof editData.baseURL === 'string') {
+      this.nodeData.baseURL = editData.baseURL
     }
     if (editData.created) {
       this.nodeData.created = editData.created

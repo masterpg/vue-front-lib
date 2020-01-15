@@ -1,5 +1,6 @@
+import * as td from 'testdouble'
 import { CompTreeNode, CompTreeView, StorageNode, StorageNodeType } from '@/lib'
-import { StorageTreeStore, getStorageTreeRootNodeData } from '@/example/views/demo/storage/base'
+import { StorageTreeStore } from '@/example/views/demo/storage/base'
 import dayjs from 'dayjs'
 import { initExampleTest } from '../../../../../helpers/example/init'
 import { mount } from '@vue/test-utils'
@@ -114,7 +115,7 @@ function verifyParentChildRelationForTree(treeView: CompTreeView | any) {
   for (let i = 0; i < treeView.children.length; i++) {
     const node = treeView.children[i]
     // ノードの親が空であることを検証
-    expect(node.parent).toBeUndefined()
+    expect(node.parent).toBeNull()
     // ノードの親子(子孫)関係の検証
     verifyParentChildRelationForNode(node)
   }
@@ -152,6 +153,11 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
+  // StorageTreeStoreは内部でrouterから取得する値をもとにストレージのタイプを
+  // 切り替える。ここではrouterから取得する値を強制的に'user'に置き換えている。
+  const router = require('@/example/router').router
+  td.replace(router.views.demo.storage, 'getType', () => 'user')
+
   const wrapper = mount(CompTreeView)
   treeView = wrapper.vm as CompTreeView
   treeStore = new StorageTreeStore()
@@ -166,12 +172,8 @@ describe('constructor + init', () => {
     const treeStore = new StorageTreeStore()
     treeStore.init(treeView)
 
-    const rootNodeData = getStorageTreeRootNodeData()
-    expect(treeStore.rootNode.value).toBe(rootNodeData.value)
-    expect(treeStore.rootNode.label).toBe(rootNodeData.label)
-    expect(treeStore.rootNode.icon).toBe(rootNodeData.icon)
-    expect(treeStore.rootNode.opened).toBe(rootNodeData.opened)
-    expect(treeStore.rootNode.nodeType).toBe(rootNodeData.nodeType)
+    const rootNode = treeStore.rootNode
+    expect(treeStore.rootNode.value).toBe('')
   })
 
   it('既にルートノードが作成されている場合', () => {

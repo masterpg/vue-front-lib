@@ -1,7 +1,7 @@
 <style lang="sass" scoped>
 @import '../../../styles/lib.variables'
 
-.main
+.comp-storage-upload-progress-float-main
   margin: 10px
   border-radius: 2px
   box-shadow: $shadow-2
@@ -48,7 +48,10 @@
 </style>
 
 <template>
-  <div class="main animated fadeInUp" :class="{ fadeOutDown: !m_opened, pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
+  <div
+    class="comp-storage-upload-progress-float-main animated fadeInUp"
+    :class="{ fadeOutDown: !m_opened, pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }"
+  >
     <q-bar class="bar">
       <div class="title">{{ $t('storage.uploadTotalRatio', [m_uploadManager.uploadedCount, m_uploadManager.totalUploadCount]) }}</div>
       <q-space />

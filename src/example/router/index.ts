@@ -56,17 +56,31 @@ const demoRoute = new (class DemoRoute extends ViewRoute {
   })(this)
 
   storage = new (class extends ViewRoute<DemoRoute> {
+    get basePath() {
+      return `${this.parent!.path}/storage`
+    }
+
+    get userBasePath() {
+      return `${this.basePath}/user`
+    }
+
+    get appBasePath() {
+      return `${this.basePath}/app`
+    }
+
     get path() {
-      return `${this.basePath}/:nodePath*`
+      // https://github.com/pillarjs/path-to-regexp/tree/v1.7.0#custom-match-parameters
+      // https://github.com/pillarjs/path-to-regexp/tree/v1.7.0#zero-or-more
+      return `${this.basePath}/:type(user|app)/:nodePath*`
     }
 
     get component() {
       return () => import(/* webpackChunkName: "views/demo/storage" */ '@/example/views/demo/storage')
     }
 
-    move(nodePath: string): boolean {
+    move(type: 'user' | 'app', nodePath: string): boolean {
       const currentRoutePath = removeEndSlash(router.currentRoute.path)
-      const nextPath = removeEndSlash(_path.join(this.basePath, nodePath))
+      const nextPath = removeEndSlash(_path.join(this.basePath, type, nodePath))
       if (currentRoutePath === nextPath) {
         return false
       }
@@ -75,20 +89,21 @@ const demoRoute = new (class DemoRoute extends ViewRoute {
       return true
     }
 
-    get basePath() {
-      return `${this.parent!.path}/storage`
+    getType(): 'user' | 'app' {
+      if (!this.isCurrentRoute) return 'user'
+      return router.currentRoute.params.type as 'user' | 'app'
     }
 
     getNodePath(): string {
-      if (!this.matchCurrentRoute()) return ''
+      if (!this.isCurrentRoute) return ''
       return router.currentRoute.params.nodePath || ''
     }
 
     /**
-     * ルーターの現ルートがストレージルートと一致するかを取得します。
+     * 現在ルートが本ルートか否かを示します。
      */
-    matchCurrentRoute(): boolean {
-      const reg = new RegExp(`^${this.basePath}\/?`)
+    get isCurrentRoute(): boolean {
+      const reg = new RegExp(`^${this.basePath}\/user|app\/?`)
       return reg.test(router.currentRoute.path)
     }
   })(this)

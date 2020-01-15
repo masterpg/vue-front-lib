@@ -74,11 +74,12 @@
 </template>
 
 <script lang="ts">
-import { BaseDialog, CompAlertDialog, CompTreeNode, CompTreeView, NoCache, StorageNodeType } from '@/lib'
-import { getStorageTreeRootNodeData, storageTreeChildrenSortFunc, toStorageTreeNodeData } from '@/example/views/demo/storage/base'
+import { BaseDialog, CompAlertDialog, CompTreeNode, CompTreeNodeData, CompTreeView, NoCache, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
+import { treeSortFunc } from '@/example/views/demo/storage/base'
+import { treeStore } from '@/example/views/demo/storage/storage-tree-store'
 
 @Component({ components: { CompTreeView, CompAlertDialog } })
 export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode[], string | undefined> {
@@ -166,7 +167,7 @@ export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode[],
       }
     }
 
-    movingNodes.sort(storageTreeChildrenSortFunc)
+    movingNodes.sort(treeSortFunc)
 
     return this.openProcess(movingNodes, {
       opened: () => {
@@ -218,25 +219,21 @@ export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode[],
   }
 
   private m_buildTreeView(): void {
-    const rootNode = this.m_treeView.addChild(getStorageTreeRootNodeData()) as StorageTreeNode
-
-    for (const node of this.$logic.userStorage.nodes) {
+    for (const srcTreeNode of treeStore.getAllNodes()) {
       // ファイルは追加しない
-      if (node.nodeType === StorageNodeType.File) continue
+      if (srcTreeNode.nodeType === StorageNodeType.File) continue
 
       // ツリービューにディレクトリノードを追加
-      const treeNode = this.m_treeView.getNode(node.path)
-      const treeNodeData = toStorageTreeNodeData(node)
-      delete treeNodeData.nodeClass
-      if (treeNode) {
-        treeNode.setNodeData(treeNodeData)
-      } else {
-        this.m_treeView.addChild(treeNodeData, {
-          parent: treeNodeData.parent || rootNode.value,
-          sortFunc: storageTreeChildrenSortFunc,
-        })
-      }
+      const treeNodeData = this.m_toTreeNodeData(srcTreeNode)
+      this.m_treeView.addChild(treeNodeData, {
+        parent: srcTreeNode.parent ? srcTreeNode.parent.value : undefined,
+        sortFunc: treeSortFunc,
+      })
     }
+
+    // ルートノードは展開しておく
+    const rootTreeNode = this.m_treeView.children[0]
+    rootTreeNode.open(false)
 
     // 移動ノードはツリービューから削除
     for (const movingNode of this.m_movingNodes) {
@@ -246,6 +243,19 @@ export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode[],
     // 現在の親ディレクトリは選択できないよう設定
     const parentNode = this.m_treeView.getNode(this.m_movingNodesParentPath)!
     parentNode.unselectable = true
+  }
+
+  /**
+   * 指定されたノードを本ツリービューで扱える形式のデータに変換します。
+   * @param source
+   */
+  private m_toTreeNodeData(source: StorageTreeNode): CompTreeNodeData {
+    return {
+      label: source.label,
+      value: source.value,
+      icon: source.icon,
+      iconColor: source.iconColor,
+    }
   }
 
   //----------------------------------------------------------------------

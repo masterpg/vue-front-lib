@@ -181,8 +181,12 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
       path: router.views.demo.shop.path,
     },
     {
-      title: 'Cloud Storage',
-      path: router.views.demo.storage.basePath,
+      title: 'User Storage',
+      path: `${router.views.demo.storage.userBasePath}`,
+    },
+    {
+      title: 'App Storage',
+      path: `${router.views.demo.storage.appBasePath}`,
     },
   ]
 

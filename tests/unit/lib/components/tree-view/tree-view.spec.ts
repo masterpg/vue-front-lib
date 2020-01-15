@@ -58,7 +58,7 @@ function verifyTreeView(treeView: CompTreeView | any) {
     // ノードにツリービューが設定されていることを検証
     expect(node.treeView).toBe(treeView)
     // ノードの親が空であることを検証
-    expect(node.parent).toBeUndefined()
+    expect(node.parent).toBeNull()
     // ツリービューのコンテナにノードが存在することを検証
     const containerChildren = Array.from(treeView.m_childContainer.children)
     expect(containerChildren[i]).toBe(node.$el)
@@ -482,7 +482,7 @@ describe('CompTreeView', () => {
 
       expect(treeView.children.length).toBe(treeViewNodesLength + 1)
       expect(treeView.children[2]).toBe(node1_1)
-      expect(node1_1.parent).toBeUndefined()
+      expect(node1_1.parent).toBeNull()
       expect(node1.children.includes(node1_1)).not.toBeTruthy()
       verifyTreeView(treeView)
     })

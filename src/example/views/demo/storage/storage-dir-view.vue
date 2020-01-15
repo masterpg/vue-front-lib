@@ -29,129 +29,118 @@
 <style lang="sass" scoped>
 @import '../../../styles/app.variables'
 
-.main
-  height: 100%
-  padding: 16px
+.storage-dir-view-main
 
-.path-blocks
-  display: inline-block
-  @extend %text-h6
-  .path-block
-    @extend %app-pseudo-link
-
-.breadcrumbs-el-active
-  @extend %app-link-text
-
-.table-container
-  height: 100%
+.left-container
   overflow: hidden
-  margin-top: 16px
+  height: 100%
 
-.label
-  @extend %app-link-text
-  cursor: pointer
-  span
-    vertical-align: middle
-  &:hover
-    span
-      text-decoration: underline
+  .table-container
+    overflow: hidden
+
+    .label
+      @extend %app-link-text
+      cursor: pointer
+      span
+        vertical-align: middle
+      &:hover
+        span
+          text-decoration: underline
+
+.file-node-view
+  width: 320px
 </style>
 
 <template>
-  <div class="layout vertical main">
-    <div class="layout horizontal">
-      <div v-for="pathBlock of m_pathBlocks" :key="pathBlock.label" class="path-blocks">
-        <span v-if="!pathBlock.last" class="path-block" @click="m_pathBlockOnClick(pathBlock.path)">{{ pathBlock.name }}</span>
-        <span v-else>{{ pathBlock.name }}</span>
-        <span v-show="!pathBlock.last" class="app-mx-8">/</span>
+  <div class="storage-dir-view-main layout horizontal">
+    <div class="left-container layout vertical flex-1">
+      <div ref="tableContainer" class="table-container flex-1">
+        <q-table
+          ref="table"
+          :data="m_children"
+          :columns="m_columns"
+          :pagination.sync="m_pagination"
+          :rows-per-page-options="[0]"
+          :sort-method="m_childrenSort"
+          selection="multiple"
+          :selected.sync="m_selectedRows"
+          binary-state-sort
+          row-key="label"
+          hide-bottom
+          flat
+          class="storage-dir-children-view__table"
+        >
+          <template v-slot:body="props">
+            <q-tr :props="props">
+              <q-td auto-width>
+                <q-checkbox v-model="props.selected" />
+              </q-td>
+              <q-td key="label" :props="props">
+                <span class="label" @click="m_tableRowNameCellOnClick(props.row)">
+                  <q-icon :name="props.row.icon" size="24px" class="app-mr-6" />
+                  <span>{{ props.row.label }}</span>
+                </span>
+              </q-td>
+              <q-td key="contentType" :props="props">{{ props.row.contentType }}</q-td>
+              <q-td key="size" :props="props">{{ props.row.size }}</q-td>
+              <q-td key="updated" :props="props">{{ props.row.updated }}</q-td>
+              <!-- コンテキストメニュー -->
+              <q-menu touch-position context-menu>
+                <!-- 複数選択時 -->
+                <q-list v-if="props.row.multiSelected" dense style="min-width: 100px">
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchMoveSelected(m_table.selected)">{{ $t('common.move') }}</q-item-section>
+                  </q-item>
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchDeleteSelected(m_table.selected)">{{ $t('common.delete') }}</q-item-section>
+                  </q-item>
+                </q-list>
+                <!-- フォルダ用メニュー -->
+                <q-list v-else-if="props.row.isDir" dense style="min-width: 100px">
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchCreateDirSelected(props.row)">
+                      {{ $t('common.createSomehow', { somehow: $tc('common.folder', 1) }) }}
+                    </q-item-section>
+                  </q-item>
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchFilesUploadSelected(props.row)">
+                      {{ $t('common.uploadSomehow', { somehow: $tc('common.file', 2) }) }}
+                    </q-item-section>
+                  </q-item>
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchDirUploadSelected(props.row)">
+                      {{ $t('common.uploadSomehow', { somehow: $tc('common.folder', 1) }) }}
+                    </q-item-section>
+                  </q-item>
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchMoveSelected([props.row])">{{ $t('common.move') }}</q-item-section>
+                  </q-item>
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchRenameSelected(props.row)">{{ $t('common.rename') }}</q-item-section>
+                  </q-item>
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchDeleteSelected([props.row])">{{ $t('common.delete') }}</q-item-section>
+                  </q-item>
+                </q-list>
+                <!-- ファイル用メニュー -->
+                <q-list v-else-if="props.row.isFile" dense style="min-width: 100px">
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchMoveSelected([props.row])">{{ $t('common.move') }}</q-item-section>
+                  </q-item>
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchRenameSelected(props.row)">{{ $t('common.rename') }}</q-item-section>
+                  </q-item>
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchDeleteSelected([props.row])">{{ $t('common.delete') }}</q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
+            </q-tr>
+          </template>
+        </q-table>
       </div>
     </div>
-
-    <div class="table-container">
-      <q-table
-        ref="table"
-        :data="m_children"
-        :columns="m_columns"
-        :pagination.sync="m_pagination"
-        :rows-per-page-options="[0]"
-        :sort-method="m_childrenSort"
-        selection="multiple"
-        :selected.sync="m_selected"
-        binary-state-sort
-        row-key="label"
-        hide-bottom
-        flat
-        class="storage-dir-children-view__table"
-      >
-        <template v-slot:body="props">
-          <q-tr :props="props">
-            <q-td auto-width>
-              <q-checkbox v-model="props.selected" />
-            </q-td>
-            <q-td key="label" :props="props">
-              <span class="label" @click="m_tableRowNameCellOnClick(props.row)">
-                <q-icon :name="props.row.icon" size="24px" class="app-mr-6" />
-                <span>{{ props.row.label }}</span>
-              </span>
-            </q-td>
-            <q-td key="contentType" :props="props">{{ props.row.contentType }}</q-td>
-            <q-td key="size" :props="props">{{ props.row.size }}</q-td>
-            <q-td key="updated" :props="props">{{ props.row.updated }}</q-td>
-            <!-- コンテキストメニュー -->
-            <q-menu touch-position context-menu>
-              <!-- 複数選択時 -->
-              <q-list v-if="props.row.multiSelected" dense style="min-width: 100px">
-                <q-item v-close-popup clickable>
-                  <q-item-section @click="m_dispatchMoveSelected(m_table.selected)">{{ $t('common.move') }}</q-item-section>
-                </q-item>
-                <q-item v-close-popup clickable>
-                  <q-item-section @click="m_dispatchDeleteSelected(m_table.selected)">{{ $t('common.delete') }}</q-item-section>
-                </q-item>
-              </q-list>
-              <!-- フォルダ用メニュー -->
-              <q-list v-else-if="props.row.isDir" dense style="min-width: 100px">
-                <q-item v-close-popup clickable>
-                  <q-item-section @click="m_dispatchCreateDirSelected(props.row)">
-                    {{ $t('common.createSomehow', { somehow: $tc('common.folder', 1) }) }}
-                  </q-item-section>
-                </q-item>
-                <q-item v-close-popup clickable>
-                  <q-item-section @click="m_dispatchFilesUploadSelected(props.row)">
-                    {{ $t('common.uploadSomehow', { somehow: $tc('common.file', 2) }) }}
-                  </q-item-section>
-                </q-item>
-                <q-item v-close-popup clickable>
-                  <q-item-section @click="m_dispatchDirUploadSelected(props.row)">
-                    {{ $t('common.uploadSomehow', { somehow: $tc('common.folder', 1) }) }}
-                  </q-item-section>
-                </q-item>
-                <q-item v-close-popup clickable>
-                  <q-item-section @click="m_dispatchMoveSelected([props.row])">{{ $t('common.move') }}</q-item-section>
-                </q-item>
-                <q-item v-close-popup clickable>
-                  <q-item-section @click="m_dispatchRenameSelected(props.row)">{{ $t('common.rename') }}</q-item-section>
-                </q-item>
-                <q-item v-close-popup clickable>
-                  <q-item-section @click="m_dispatchDeleteSelected([props.row])">{{ $t('common.delete') }}</q-item-section>
-                </q-item>
-              </q-list>
-              <!-- ファイル用メニュー -->
-              <q-list v-else-if="props.row.isFile" dense style="min-width: 100px">
-                <q-item v-close-popup clickable>
-                  <q-item-section @click="m_dispatchMoveSelected([props.row])">{{ $t('common.move') }}</q-item-section>
-                </q-item>
-                <q-item v-close-popup clickable>
-                  <q-item-section @click="m_dispatchRenameSelected(props.row)">{{ $t('common.rename') }}</q-item-section>
-                </q-item>
-                <q-item v-close-popup clickable>
-                  <q-item-section @click="m_dispatchDeleteSelected([props.row])">{{ $t('common.delete') }}</q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
-          </q-tr>
-        </template>
-      </q-table>
-    </div>
+    <storage-file-view v-show="m_visibleFileNodeView" ref="fileView" class="file-node-view" @close="m_fileViewOnClose" />
   </div>
 </template>
 
@@ -160,9 +149,9 @@ import { BaseComponent, Resizable } from '../../../../lib/base/component'
 import { NoCache, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QTable } from 'quasar'
+import StorageFileView from '@/example/views/demo/storage/storage-file-view.vue'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import bytes from 'bytes'
-import { getStorageTreeRootNodeData } from '@/example/views/demo/storage/base'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
 import { treeStore } from '@/example/views/demo/storage/storage-tree-store'
@@ -206,11 +195,11 @@ class TableRow {
 }
 
 @Component({
-  components: {},
+  components: {
+    StorageFileView,
+  },
 })
 export default class StorageDirView extends mixins(BaseComponent, Resizable) {
-  private m_selected = []
-
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -228,12 +217,14 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
-  private m_columns = [
-    { name: 'label', align: 'left', label: 'Name', field: 'label', sortable: true },
-    { name: 'contentType', align: 'left', label: 'Content type', field: 'contentType', sortable: true },
-    { name: 'size', align: 'right', label: 'Size', field: 'size', sortable: true },
-    { name: 'updated', align: 'left', label: 'Updated', field: 'updated', sortable: true },
-  ]
+  private get m_columns() {
+    return [
+      { name: 'label', align: 'left', label: this.$t('storage.nodeDetail.name'), field: 'label', sortable: true },
+      { name: 'contentType', align: 'left', label: this.$t('storage.nodeDetail.type'), field: 'contentType', sortable: true },
+      { name: 'size', align: 'right', label: this.$t('storage.nodeDetail.size'), field: 'size', sortable: true },
+      { name: 'updated', align: 'left', label: this.$t('storage.nodeDetail.updated'), field: 'updated', sortable: true },
+    ]
+  }
 
   private m_dirPath: string | null = null
 
@@ -241,11 +232,13 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
 
   private m_childMap: { [value: string]: TableRow } = {}
 
-  private m_pathBlocks: { name: string; path: string; last: boolean }[] = []
-
   private m_pagination = {
     rowsPerPage: 0,
   }
+
+  private m_selectedRows: TableRow[] = []
+
+  private m_visibleFileNodeView = false
 
   //--------------------------------------------------
   //  Elements
@@ -256,6 +249,11 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
     return this.$refs.table as QTable
   }
 
+  @NoCache
+  private get m_fileView(): StorageFileView {
+    return this.$refs.fileView as StorageFileView
+  }
+
   //----------------------------------------------------------------------
   //
   //  Methods
@@ -264,17 +262,28 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
 
   /**
    * ビューに表示するディレクトリのパスを設定します。
+   * @param dirPath
    */
-  setDirPath(dirPath: string): void {
-    dirPath = removeBothEndsSlash(dirPath)
-    if (this.m_dirPath !== dirPath) {
+  setDirPath(dirPath?: string): void {
+    const clear = () => {
       this.m_children = []
       this.m_childMap = {}
       this.m_table.selected && this.m_table.selected.splice(0)
     }
+
+    if (typeof dirPath !== 'string') {
+      clear()
+      return
+    }
+
+    dirPath = removeBothEndsSlash(dirPath)
+    if (this.m_dirPath !== dirPath) {
+      clear()
+    }
     this.m_dirPath = dirPath
 
-    this.m_setupPathBlocks()
+    this.m_visibleFileNodeView = false
+
     this.m_setupChildren()
   }
 
@@ -284,30 +293,10 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
-  private m_setupPathBlocks(): void {
-    this.m_pathBlocks.length = 0
-    const pathBlocks = this.m_dirPath!.split('/').filter(item => !!item)
-    for (let i = 0; i < pathBlocks.length; i++) {
-      const pathBlock = pathBlocks.slice(0, i + 1)
-      this.m_pathBlocks.push({
-        name: pathBlock[pathBlock.length - 1],
-        path: pathBlock.join('/'),
-        last: i === pathBlocks.length - 1,
-      })
-    }
-
-    const rootNodeData = getStorageTreeRootNodeData()
-    this.m_pathBlocks.unshift({
-      name: rootNodeData.label,
-      path: rootNodeData.value,
-      last: this.m_pathBlocks.length > 0 ? false : true,
-    })
-  }
-
   private m_setupChildren(): void {
     const dirNode = treeStore.getNode(this.m_dirPath!)
     if (!dirNode) {
-      throw new Error(`'storageTreeStore' does not have specified path's node: '${this.m_dirPath}'`)
+      throw new Error(`'treeStore' does not have specified path's node: '${this.m_dirPath}'`)
     }
 
     const latestChildren: TableRow[] = []
@@ -435,15 +424,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
 
   /**
-   * パスのパンくずのブロックがクリックされた際のリスナです。
-   * @param path
-   */
-  private m_pathBlockOnClick(path: string) {
-    this.$emit('dir-selected', path)
-  }
-
-  /**
-   * テーブル行の名称セルがクリックされた際のハンドラです。
+   * テーブル行の名称セルがクリックされた際のリスナです。
    * @param row
    */
   private m_tableRowNameCellOnClick(row: TableRow) {
@@ -451,7 +432,16 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
       this.$emit('dir-selected', row.value)
     } else if (row.nodeType === StorageNodeType.File) {
       this.$emit('file-selected', row.value)
+      this.m_fileView.setFilePath(row.value)
+      this.m_visibleFileNodeView = true
     }
+  }
+
+  /**
+   * ファイルビューが閉じられる際のリスナです。
+   */
+  private m_fileViewOnClose() {
+    this.m_visibleFileNodeView = false
   }
 }
 </script>

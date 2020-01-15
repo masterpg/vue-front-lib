@@ -1,58 +1,34 @@
 import * as _path from 'path'
-import { ChildrenSortFunc, CompTreeNodeData, CompTreeView, CompTreeViewUtils, StorageNode, StorageNodeType } from '@/lib'
+import { ChildrenSortFunc, CompTreeNodeData, CompTreeView, CompTreeViewUtils, StorageLogic, StorageNode, StorageNodeType } from '@/lib'
 import dayjs, { Dayjs } from 'dayjs'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { Component } from 'vue-property-decorator'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import Vue from 'vue'
+import { mixins } from 'vue-class-component'
+import { router } from '@/example/router'
+
+export function toStorageTreeNodeType(nodeType: StorageNodeType): StorageNodeType {
+  if (nodeType === StorageNodeType.Dir) {
+    return StorageNodeType.Dir
+  } else if (nodeType === StorageNodeType.File) {
+    return StorageNodeType.File
+  } else {
+    throw new Error(`Invalid value passed: '${nodeType}'`)
+  }
+}
 
 export interface StorageTreeNodeData extends CompTreeNodeData {
-  icon: 'storage' | 'folder' | 'description'
-  parent?: string
-  nodeType: StorageNodeType | 'Storage'
+  icon: string
+  nodeType: StorageNodeType
   contentType: string
   size: number
+  baseURL: string
   created: Dayjs
   updated: Dayjs
 }
 
-/**
- * ツリービューのルートノードデータを取得します。
- */
-export function getStorageTreeRootNodeData(): StorageTreeNodeData {
-  return {
-    value: '',
-    label: 'Storage',
-    icon: 'storage',
-    opened: true,
-    nodeType: 'Storage',
-    contentType: '',
-    size: 0,
-    created: dayjs(0),
-    updated: dayjs(0),
-  }
-}
-
-/**
- * `StorageNode`をツリービューで扱える形式の`StorageTreeNodeData`へ変換します。
- * @param source
- */
-export function toStorageTreeNodeData(source: StorageNode): StorageTreeNodeData {
-  return {
-    label: removeBothEndsSlash(source.name),
-    value: removeBothEndsSlash(source.path),
-    parent: removeBothEndsSlash(source.dir),
-    nodeClass: StorageTreeNode,
-    icon: source.nodeType === StorageNodeType.Dir ? 'folder' : 'description',
-    nodeType: source.nodeType,
-    contentType: source.contentType,
-    size: source.size,
-    created: source.created,
-    updated: source.updated,
-  }
-}
-
-export const storageTreeChildrenSortFunc: ChildrenSortFunc = (a, b) => {
+export const treeSortFunc: ChildrenSortFunc = (a, b) => {
   const _a = a as StorageTreeNode
   const _b = b as StorageTreeNode
   if (_a.nodeType === StorageNodeType.Dir && _b.nodeType === StorageNodeType.File) {
@@ -70,34 +46,38 @@ export const storageTreeChildrenSortFunc: ChildrenSortFunc = (a, b) => {
 }
 
 @Component
-export class StorageTreeStore extends Vue {
-  //----------------------------------------------------------------------
-  //
-  //  Lifecycle hooks
-  //
-  //----------------------------------------------------------------------
-
-  constructor() {
-    super()
-    const rootNodeData = Object.assign(getStorageTreeRootNodeData(), {
-      nodeClass: StorageTreeNode,
-      selected: true,
-    })
-    this.m_rootNode = CompTreeViewUtils.newNode(rootNodeData) as StorageTreeNode
+export class StorageTypeMixin extends Vue {
+  get storageType(): 'user' | 'app' {
+    return router.views.demo.storage.getType()
   }
 
+  protected get storageLogic(): StorageLogic {
+    if (this.storageType === 'user') {
+      return this.$logic.userStorage
+    } else {
+      return this.$logic.appStorage
+    }
+  }
+}
+
+@Component
+export class StorageTreeStore extends mixins(Vue, StorageTypeMixin) {
   //----------------------------------------------------------------------
   //
   //  Properties
   //
   //----------------------------------------------------------------------
 
-  private m_rootNode!: StorageTreeNode
+  private m_rootNode: StorageTreeNode | null = null
 
   /**
    * ツリービューのルートノードです。
    */
   get rootNode(): StorageTreeNode {
+    if (!this.m_rootNode) {
+      const rootNodeData = this.m_createRootNodeData()
+      this.m_rootNode = CompTreeViewUtils.newNode(rootNodeData) as StorageTreeNode
+    }
     return this.m_rootNode
   }
 
@@ -132,7 +112,7 @@ export class StorageTreeStore extends Vue {
 
   init(treeView: CompTreeView<StorageTreeNodeData>) {
     this.m_treeView = treeView
-    this.m_rootNode = this.m_treeView!.addChild(this.rootNode) as StorageTreeNode
+    this.m_treeView!.addChild(this.rootNode)
   }
 
   /**
@@ -168,13 +148,13 @@ export class StorageTreeStore extends Vue {
 
     for (const node of sortedNodes) {
       const treeNode = this.m_treeView!.getNode(node.path)
-      const treeNodeData = toStorageTreeNodeData(node)
+      const treeNodeData = this.m_toTreeNodeData(node)
       if (treeNode) {
         treeNode.setNodeData(treeNodeData)
       } else {
         this.m_treeView!.addChild(treeNodeData, {
-          parent: treeNodeData.parent || this.rootNode.value,
-          sortFunc: storageTreeChildrenSortFunc,
+          parent: node.dir || this.rootNode.value,
+          sortFunc: treeSortFunc,
         })
       }
     }
@@ -268,7 +248,7 @@ export class StorageTreeStore extends Vue {
           continue
         }
         // 移動先の子ノードを移動対象ノードへ付け替え
-        target.addChild(existsChild, { sortFunc: storageTreeChildrenSortFunc })
+        target.addChild(existsChild, { sortFunc: treeSortFunc })
       }
     }
 
@@ -280,7 +260,7 @@ export class StorageTreeStore extends Vue {
     // ここでは名前変更があったノードを再度addChildしてソートし直している。
     this.m_treeView!.addChild(target, {
       parent: removeStartDirChars(_path.dirname(target.value)),
-      sortFunc: storageTreeChildrenSortFunc,
+      sortFunc: treeSortFunc,
     })
 
     // 移動対象ノードの子孫のパスを移動先パスへ書き換え
@@ -310,5 +290,76 @@ export class StorageTreeStore extends Vue {
     const toPath = _path.join(dirPath, newName)
 
     this.moveNode(path, toPath)
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
+
+  /**
+   * ルートノードデータを作成します。
+   */
+  private m_createRootNodeData(): StorageTreeNodeData {
+    const label = (() => {
+      if (this.storageType === 'user') {
+        return String(this.$t('storage.userRootName'))
+      } else {
+        return String(this.$t('storage.appRootName'))
+      }
+    })()
+
+    return {
+      nodeClass: StorageTreeNode,
+      label,
+      value: '',
+      icon: 'storage',
+      nodeType: StorageNodeType.Dir,
+      contentType: '',
+      size: 0,
+      baseURL: this.storageLogic.baseURL,
+      created: dayjs(0),
+      updated: dayjs(0),
+      selected: true,
+      opened: true,
+    }
+  }
+
+  /**
+   * `StorageNode`または`StorageTreeNode`をツリービューで扱える形式の
+   * `StorageTreeNodeData`へ変換します。
+   * @param source
+   */
+  private m_toTreeNodeData(source: StorageNode | StorageTreeNode): StorageTreeNodeData {
+    if ((source as any).__vue__) {
+      source = source as StorageTreeNode
+      return {
+        label: source.label,
+        value: source.value,
+        nodeClass: StorageTreeNode,
+        icon: source.icon,
+        nodeType: source.nodeType,
+        contentType: source.contentType,
+        size: source.size,
+        baseURL: source.baseURL,
+        created: source.createdDate,
+        updated: source.updatedDate,
+      }
+    } else {
+      source = source as StorageNode
+      return {
+        label: removeBothEndsSlash(source.name),
+        value: removeBothEndsSlash(source.path),
+        nodeClass: StorageTreeNode,
+        icon: source.nodeType === StorageNodeType.Dir ? 'folder' : 'description',
+        nodeType: toStorageTreeNodeType(source.nodeType),
+        contentType: source.contentType,
+        size: source.size,
+        baseURL: this.storageLogic.baseURL,
+        created: source.created,
+        updated: source.updated,
+      }
+    }
   }
 }

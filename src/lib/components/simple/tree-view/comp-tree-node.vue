@@ -236,13 +236,13 @@ export default class CompTreeNode extends BaseComponent {
     this.m_setSelected(value, false)
   }
 
-  private m_parent?: CompTreeNode | null = null
+  private m_parent: CompTreeNode | null = null
 
   /**
    * 親ノードです。
    */
-  get parent(): CompTreeNode | undefined {
-    return this.m_parent === null ? undefined : this.m_parent
+  get parent(): CompTreeNode | null {
+    return this.m_parent
   }
 
   private m_children: CompTreeNode[] = []

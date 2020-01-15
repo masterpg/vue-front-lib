@@ -30,8 +30,8 @@ export function setRouter(value: BaseRouter): void {
   }
 }
 
-export abstract class ViewRoute<T extends ViewRoute = any> {
-  constructor(public readonly parent?: T) {}
+export abstract class ViewRoute<PARENT extends ViewRoute = any> {
+  constructor(public readonly parent?: PARENT) {}
 
   abstract readonly path: string
 

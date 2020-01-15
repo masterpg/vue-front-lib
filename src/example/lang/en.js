@@ -13,6 +13,8 @@ export default merge(require('@/lib/lang/en').default, {
     error: 'Error during service worker registration: {error}',
   },
   storage: {
+    userRootName: 'Home',
+    appRootName: 'Storage',
     uploading: 'Uploading',
     nodeAlreadyExists: 'A {nodeType} called "{nodeName}" already exists.',
     create: {
@@ -34,6 +36,14 @@ export default merge(require('@/lib/lang/en').default, {
     rename: {
       renamingNodeNameIsNotChanged: 'The name has not changed.',
       renamingError: 'An error occurred while renaming "{nodeName}".',
+    },
+    nodeDetail: {
+      name: 'Name',
+      type: 'Type',
+      size: 'Size',
+      path: 'Path',
+      url: 'URL',
+      updated: 'Updated',
     },
   },
 })

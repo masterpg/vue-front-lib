@@ -1,7 +1,7 @@
 <style lang="sass" scoped>
 @import '../../../styles/app.variables'
 
-.container
+.storage-page-main
   height: 100%
 
 .splitter
@@ -15,13 +15,36 @@
 .tree-view
   //--comp-tree-view-font-size: 26px
   //--comp-tree-node-indent: 20px
+
+.content-container
+  @extend %layout-vertical
+  height: 100%
+
+.path-block-container
+  @extend %layout-horizontal
+  @extend %layout-wrap
+  margin: 16px
+  .path-block
+    display: inline-block
+    @extend %text-h6
+    .path-block
+      @extend %app-pseudo-link
+
+.view-container
+  @extend %layout-vertical
+  @extend %layout-flex-1
+
+.dir-view
+  @extend %layout-flex-1
+
+.image-node-view
+  @extend %layout-flex-1
 </style>
 
 <template>
-  <div class="container">
+  <div class="storage-page-main">
     <q-splitter v-model="m_splitterModel" class="splitter">
       <template v-slot:before>
-        <div>nodeType: {{ m_selectedNodeType }}</div>
         <div ref="treeViewContainer" class="tree-view-container">
           <comp-tree-view
             ref="treeView"
@@ -38,33 +61,38 @@
         </div>
       </template>
       <template v-slot:after>
-        <storage-dir-view
-          ref="dirView"
-          @dir-selected="m_dirViewOnDirSelected($event)"
-          @file-selected="m_dirViewOnFileSelected($event)"
-          @create-dir-selected="m_treeViewOnCreateDirSelected($event)"
-          @files-upload-selected="m_treeViewOnFilesUploadSelected($event)"
-          @dir-upload-selected="m_treeViewOnDirUploadSelected($event)"
-          @move-selected="m_treeViewOnMoveSelected($event)"
-          @rename-selected="m_treeViewOnRenameSelected($event)"
-          @delete-selected="m_onDeleteSelected($event)"
-        />
-        <!--
-        <div class="app-ma-20">
-          <div class="layout horizontal center">
-            <q-input v-model="m_filePath" class="flex" label="File URL" />
-            <q-btn label="Load" color="primary" class="app-ml-10" @click="m_loadFileButtonOnClick()" />
-            <q-btn label="Refresh" color="primary" icon="storage" class="app-ml-10" @click="m_refreshStorageButtonOnClick()" />
+        <div class="content-container">
+          <div class="path-block-container">
+            <div v-for="pathBlock of m_pathBlocks" :key="pathBlock.label" class="path-block">
+              <span v-if="!pathBlock.last" class="path-block" @click="m_pathBlockOnClick(pathBlock.path)">{{ pathBlock.name }}</span>
+              <span v-else>{{ pathBlock.name }}</span>
+              <span v-show="!pathBlock.last" class="app-mx-8">/</span>
+            </div>
           </div>
-          <img ref="img" class="app-mt-20" crossorigin="anonymous" />
+
+          <div class="view-container">
+            <storage-dir-view
+              ref="dirView"
+              class="dir-view"
+              @dir-selected="m_dirViewOnDirSelected($event)"
+              @file-selected="m_dirViewOnFileSelected($event)"
+              @create-dir-selected="m_treeViewOnCreateDirSelected($event)"
+              @files-upload-selected="m_treeViewOnFilesUploadSelected($event)"
+              @dir-upload-selected="m_treeViewOnDirUploadSelected($event)"
+              @move-selected="m_treeViewOnMoveSelected($event)"
+              @rename-selected="m_treeViewOnRenameSelected($event)"
+              @delete-selected="m_onDeleteSelected($event)"
+            />
+          </div>
         </div>
-        -->
       </template>
     </q-splitter>
+
     <storage-dir-create-dialog ref="dirCreateDialog" />
     <storage-node-move-dialog ref="nodeMoveDialog" />
     <storage-node-rename-dialog ref="nodeRenameDialog" />
     <storage-nodes-remove-dialog ref="nodesRemoveDialog" />
+
     <comp-storage-upload-progress-float
       ref="uploadProgressFloat"
       class="fixed-bottom-right"
@@ -85,6 +113,7 @@ import StorageNodeMoveDialog from '@/example/views/demo/storage/storage-node-mov
 import StorageNodeRenameDialog from '@/example/views/demo/storage/storage-node-rename-dialog.vue'
 import StorageNodesRemoveDialog from '@/example/views/demo/storage/storage-nodes-remove-dialog.vue'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
+import { StorageTypeMixin } from '@/example/views/demo/storage/base'
 import Vue from 'vue'
 import { mixins } from 'vue-class-component'
 import { router } from '@/example/router'
@@ -94,9 +123,14 @@ const { getScrollPosition, setScrollPosition } = scroll
 const debounce = require('lodash/debounce')
 
 /**
- * ページが初期化されたかを示すフラグです。
+ * ユーザーのストレージノードが読み込まれているかを示すフラグです。
  */
-let isPageInitialized: boolean = false
+let isPulledUserStorageNodes: boolean = false
+
+/**
+ * アプリケーションのストレージノードが読み込まれているかを示すフラグです。
+ */
+let isPulledAppStorageNodes: boolean = false
 
 @Component({
   components: {
@@ -109,7 +143,7 @@ let isPageInitialized: boolean = false
     StorageNodesRemoveDialog,
   },
 })
-export default class StoragePage extends mixins(BaseComponent, Resizable) {
+export default class StoragePage extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -162,23 +196,19 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
 
   private m_splitterModel = 30
 
-  private m_filePath: string = ''
-
   /**
    * ツリービューの縦スクロール位置が初期化されたか否かです。
    */
   private m_initializedScrollTop = false
 
   /**
-   * 現在選択されているノードのノードタイプです。
+   * パスのパンくずのブロック配列です。
    */
-  private get m_selectedNodeType(): StorageNodeType {
-    const nodeType = treeStore.selectedNode.nodeType
-    if (nodeType === StorageNodeType.Dir || nodeType === 'Storage') {
-      return StorageNodeType.Dir
-    } else {
-      return StorageNodeType.File
-    }
+  private m_pathBlocks: { name: string; path: string; last: boolean }[] = []
+
+  @NoCache
+  private get m_selectedNode(): StorageTreeNode {
+    return treeStore.selectedNode
   }
 
   //--------------------------------------------------
@@ -243,14 +273,16 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
    */
   private async m_refreshPage(selectedNodePath?: string): Promise<void> {
     // ルーターのパスが本ページのパスと一致しない場合
-    if (!router.views.demo.storage.matchCurrentRoute()) return
+    if (!router.views.demo.storage.isCurrentRoute) return
     // ユーザーがサインインしていない場合
     if (!this.$logic.auth.user.isSignedIn) return
 
-    // まだページが初期化されていない場合
-    if (!isPageInitialized) {
-      isPageInitialized = true
-      // サーバーからストレージノードを取得
+    // まだストレージノードが読み込まれていない場合、ストレージノードを読み込む
+    if (this.storageType === 'user' && !isPulledUserStorageNodes) {
+      isPulledUserStorageNodes = true
+      await this.m_pullStorageNodes()
+    } else if (this.storageType === 'app' && !isPulledAppStorageNodes) {
+      isPulledAppStorageNodes = true
       await this.m_pullStorageNodes()
     }
 
@@ -278,6 +310,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
       treeStore.selectedNode = selectingNode
       // 選択ノードの祖先ノードを展開
       this.m_openParentNode(selectingNode.value)
+      // パンくずの設定
+      this.m_setupPathBlocks()
       // ディレクトリビューのディレクトリパスを設定
       this.m_dirView.setDirPath(selectingNode.value)
 
@@ -295,7 +329,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
    * サーバーからストレージノード一覧を取得します。
    */
   private async m_pullStorageNodes(): Promise<void> {
-    await this.$logic.userStorage.pullNodes()
+    await this.storageLogic.pullNodes()
   }
 
   /**
@@ -303,7 +337,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
    */
   private async m_buildTreeView(): Promise<void> {
     // ロジックストアにないのにツリーには存在するノードを削除
-    const storeNodeMap = this.$logic.userStorage.getNodeMap()
+    const storeNodeMap = this.storageLogic.getNodeMap()
     for (const treeNode of treeStore.getAllNodes()) {
       // ツリーのルートノードはロジックには存在しないので無視
       if (treeNode === treeStore.rootNode) continue
@@ -315,7 +349,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     }
 
     // ロジックのノードをツリービューに反映
-    treeStore.setNodes(this.$logic.userStorage.nodes)
+    treeStore.setNodes(this.storageLogic.nodes)
   }
 
   /**
@@ -327,7 +361,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
 
     let dirNode: StorageNode
     try {
-      dirNode = (await this.$logic.userStorage.createDirs([dirPath]))[0]
+      dirNode = (await this.storageLogic.createDirs([dirPath]))[0]
     } catch (err) {
       this.$q.loading.hide()
       console.error(err)
@@ -376,13 +410,13 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     const promises: Promise<void>[] = []
     for (const treeNode of treeNodes) {
       if (treeNode.nodeType === StorageNodeType.Dir) {
-        const promise = this.$logic.userStorage.removeDirs([treeNode.value]).catch(err => {
+        const promise = this.storageLogic.removeDirs([treeNode.value]).catch(err => {
           console.error(err)
           showNotification(treeNode)
         }) as Promise<void>
         promises.push(promise)
       } else if (treeNode.nodeType === StorageNodeType.File) {
-        const promise = this.$logic.userStorage.removeFiles([treeNode.value]).catch(err => {
+        const promise = this.storageLogic.removeFiles([treeNode.value]).catch(err => {
           console.error(err)
           showNotification(treeNode)
         }) as Promise<void>
@@ -429,13 +463,13 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     const promises: Promise<void>[] = []
     for (const treeNode of treeNodes) {
       if (treeNode.nodeType === StorageNodeType.Dir) {
-        const promise = this.$logic.userStorage.moveDir(treeNode.value, toPath(treeNode)).catch(err => {
+        const promise = this.storageLogic.moveDir(treeNode.value, toPath(treeNode)).catch(err => {
           console.error(err)
           showNotification(treeNode)
         }) as Promise<void>
         promises.push(promise)
       } else if (treeNode.nodeType === StorageNodeType.File) {
-        const promise = this.$logic.userStorage.moveFile(treeNode.value, toPath(treeNode)).catch(err => {
+        const promise = this.storageLogic.moveFile(treeNode.value, toPath(treeNode)).catch(err => {
           console.error(err)
           showNotification(treeNode)
         }) as Promise<void>
@@ -469,9 +503,9 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
 
     try {
       if (treeNode.nodeType === StorageNodeType.Dir) {
-        await this.$logic.userStorage.renameDir(treeNode.value, newName)
+        await this.storageLogic.renameDir(treeNode.value, newName)
       } else if (treeNode.nodeType === StorageNodeType.File) {
-        await this.$logic.userStorage.renameFile(treeNode.value, newName)
+        await this.storageLogic.renameFile(treeNode.value, newName)
       }
     } catch (err) {
       this.$q.loading.hide()
@@ -504,7 +538,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   private m_moveByRouter!: (nodePath: string) => void
 
   private async m_moveByRouterFunc(nodePath: string) {
-    router.views.demo.storage.move(nodePath)
+    router.views.demo.storage.move(this.storageType, nodePath)
     await this.m_refreshPage(nodePath)
   }
 
@@ -555,6 +589,45 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     // )
   }
 
+  /**
+   * パンくず用に選択ノードのパスを配列に分割します。
+   */
+  private m_setupPathBlocks(): void {
+    this.m_pathBlocks.length = 0
+    const pathBlocks = treeStore.selectedNode.value.split('/').filter(item => !!item)
+    for (let i = 0; i < pathBlocks.length; i++) {
+      const pathBlock = pathBlocks.slice(0, i + 1)
+      this.m_pathBlocks.push({
+        name: pathBlock[pathBlock.length - 1],
+        path: pathBlock.join('/'),
+        last: i === pathBlocks.length - 1,
+      })
+    }
+
+    const rootNode = treeStore.rootNode
+    this.m_pathBlocks.unshift({
+      name: rootNode.label,
+      path: rootNode.value,
+      last: this.m_pathBlocks.length > 0 ? false : true,
+    })
+  }
+
+  /**
+   * 選択ノードがディレクトリに変更された際の処理を行います。
+   * @param dirPath
+   */
+  private m_selectedNodeOnChangedToDir(dirPath: string): void {
+    const dirNode = treeStore.getNode(dirPath)
+    if (!dirNode) {
+      throw new Error(`The specified node was not found: '${dirPath}'`)
+    }
+    treeStore.selectedNode = dirNode
+
+    setTimeout(() => {
+      this.m_scrollToSelectedNode(dirPath)
+    }, 250)
+  }
+
   //----------------------------------------------------------------------
   //
   //  Event listeners
@@ -562,8 +635,6 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
 
   private async m_loadFileButtonOnClick(e) {
-    this.m_img.src = this.m_filePath
-
     /*
     // 画像パス(例: images/space.png)から参照を取得
     const ref = firebase.storage().ref(this.m_filePath)
@@ -584,6 +655,45 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     console.log(response)
     */
   }
+
+  /**
+   * パスのパンくずのブロックがクリックされた際のリスナです。
+   * @param dirPath
+   */
+  private m_pathBlockOnClick(dirPath: string) {
+    this.m_selectedNodeOnChangedToDir(dirPath)
+  }
+
+  /**
+   * ディレクトリビューでディレクトリが選択された際のリスナです。
+   * @param dirPath
+   */
+  private async m_dirViewOnDirSelected(dirPath: string) {
+    this.m_selectedNodeOnChangedToDir(dirPath)
+  }
+
+  /**
+   * ディレクトリビューでファイルが選択された際のリスナです。
+   * @param filePath
+   */
+  private m_dirViewOnFileSelected(filePath: string) {}
+
+  /**
+   * アップロード進捗フロートでアップロードが終了した際のハンドラです。
+   * @param uploadDirPath アップロード先のディレクトリパス
+   */
+  private async m_uploadProgressFloatOnUploadEnded(uploadDirPath: string) {
+    const uploadDirNode = treeStore.getNode(uploadDirPath)!
+    uploadDirNode.open()
+    this.m_openParentNode(uploadDirNode.value)
+
+    await this.m_pullStorageNodes()
+    this.m_moveByRouter(uploadDirPath)
+  }
+
+  //--------------------------------------------------
+  //  ツリービュー
+  //--------------------------------------------------
 
   /**
    * ツリービューでノードが選択された際のリスナです。
@@ -663,43 +773,6 @@ export default class StoragePage extends mixins(BaseComponent, Resizable) {
     if (confirmed) {
       await this.m_removeNodes(nodes)
     }
-  }
-
-  /**
-   * ディレクトリビューでディレクトリが選択された際のリスナです。
-   * @param dirPath
-   */
-  private async m_dirViewOnDirSelected(dirPath: string) {
-    const dirNode = treeStore.getNode(dirPath)
-    if (!dirNode) {
-      throw new Error(`The specified node was not found: '${dirPath}'`)
-    }
-    treeStore.selectedNode = dirNode
-
-    setTimeout(() => {
-      this.m_scrollToSelectedNode(dirPath)
-    }, 250)
-  }
-
-  /**
-   * ディレクトリビューでファイルが選択された際のリスナです。
-   * @param filePath
-   */
-  private m_dirViewOnFileSelected(filePath: string) {
-    location.href = `${this.$logic.userStorage.baseURL}/${filePath}`
-  }
-
-  /**
-   * アップロード進捗フロートでアップロードが終了した際のハンドラです。
-   * @param uploadDirPath アップロード先のディレクトリパス
-   */
-  private async m_uploadProgressFloatOnUploadEnded(uploadDirPath: string) {
-    const uploadDirNode = treeStore.getNode(uploadDirPath)!
-    uploadDirNode.open()
-    this.m_openParentNode(uploadDirNode.value)
-
-    await this.m_pullStorageNodes()
-    this.m_moveByRouter(uploadDirPath)
   }
 }
 </script>
