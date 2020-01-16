@@ -74,6 +74,7 @@
             <storage-dir-view
               ref="dirView"
               class="dir-view"
+              :storage-type="storageType"
               @dir-selected="m_dirViewOnDirSelected($event)"
               @file-selected="m_dirViewOnFileSelected($event)"
               @create-dir-selected="m_treeViewOnCreateDirSelected($event)"
@@ -89,7 +90,7 @@
     </q-splitter>
 
     <storage-dir-create-dialog ref="dirCreateDialog" />
-    <storage-node-move-dialog ref="nodeMoveDialog" />
+    <storage-node-move-dialog ref="nodeMoveDialog" :storage-type="storageType" />
     <storage-node-rename-dialog ref="nodeRenameDialog" />
     <storage-nodes-remove-dialog ref="nodesRemoveDialog" />
 
@@ -116,9 +117,7 @@ import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import { StorageTypeMixin } from '@/example/views/demo/storage/base'
 import Vue from 'vue'
 import { mixins } from 'vue-class-component'
-import { router } from '@/example/router'
 import { scroll } from 'quasar'
-import { treeStore } from '@/example/views/demo/storage/storage-tree-store'
 const { getScrollPosition, setScrollPosition } = scroll
 const debounce = require('lodash/debounce')
 
@@ -160,14 +159,14 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
 
   async mounted() {
     this.m_moveByRouter = debounce(this.m_moveByRouterFunc, 100)
-    treeStore.init(this.m_treeView)
+    this.treeStore.init(this.m_treeView)
 
     // URLから選択ノードのパスを取得
-    let nodePath = router.views.demo.storage.getNodePath()
+    let nodePath = this.storageRoute.getNodePath()
 
     // URLから選択ノードのパスが取得された場合をそれを、取得されなかったら選択されていたノードを
     // パスに付与し、ページをリフレッシュ
-    this.m_moveByRouter(nodePath || treeStore.selectedNode.value)
+    this.m_moveByRouter(nodePath || this.treeStore.selectedNode.value)
   }
 
   /**
@@ -175,7 +174,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param user
    */
   private async m_userOnSignedIn(user: User) {
-    const nodePath = router.views.demo.storage.getNodePath()
+    const nodePath = this.storageRoute.getNodePath()
     await this.m_refreshPage(nodePath)
   }
 
@@ -183,7 +182,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     next()
 
     // URLから選択ノードパスを取得(取得できなかった場合はルートノード)
-    const selectedNodePath = router.views.demo.storage.getNodePath() || treeStore.rootNode.value
+    const selectedNodePath = this.storageRoute.getNodePath() || this.treeStore.rootNode.value
     // ノードの選択状態を設定
     this.m_selectNode(selectedNodePath)
   }
@@ -205,11 +204,6 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * パスのパンくずのブロック配列です。
    */
   private m_pathBlocks: { name: string; path: string; last: boolean }[] = []
-
-  @NoCache
-  private get m_selectedNode(): StorageTreeNode {
-    return treeStore.selectedNode
-  }
 
   //--------------------------------------------------
   //  Elements
@@ -273,7 +267,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    */
   private async m_refreshPage(selectedNodePath?: string): Promise<void> {
     // ルーターのパスが本ページのパスと一致しない場合
-    if (!router.views.demo.storage.isCurrentRoute) return
+    if (!this.storageRoute.isCurrentRoute) return
     // ユーザーがサインインしていない場合
     if (!this.$logic.auth.user.isSignedIn) return
 
@@ -292,7 +286,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     // 引数でノードパスの指定がない場合
     if (typeof selectedNodePath !== 'string') {
       // 現在の選択ノードのパスを取得
-      selectedNodePath = treeStore.selectedNode.value
+      selectedNodePath = this.treeStore.selectedNode.value
     }
 
     // ノードの選択状態を設定
@@ -304,10 +298,10 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param selectingNodePath 選択するノードのパス
    */
   private m_selectNode(selectingNodePath: string): void {
-    const selectingNode = treeStore.getNode(selectingNodePath)
+    const selectingNode = this.treeStore.getNode(selectingNodePath)
     if (selectingNode) {
       // 選択ノードを設定
-      treeStore.selectedNode = selectingNode
+      this.treeStore.selectedNode = selectingNode
       // 選択ノードの祖先ノードを展開
       this.m_openParentNode(selectingNode.value)
       // パンくずの設定
@@ -338,18 +332,18 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   private async m_buildTreeView(): Promise<void> {
     // ロジックストアにないのにツリーには存在するノードを削除
     const storeNodeMap = this.storageLogic.getNodeMap()
-    for (const treeNode of treeStore.getAllNodes()) {
+    for (const treeNode of this.treeStore.getAllNodes()) {
       // ツリーのルートノードはロジックには存在しないので無視
-      if (treeNode === treeStore.rootNode) continue
+      if (treeNode === this.treeStore.rootNode) continue
 
       const storeNode = storeNodeMap[treeNode.value]
       if (!storeNode) {
-        treeStore.removeNode(treeNode.value)
+        this.treeStore.removeNode(treeNode.value)
       }
     }
 
     // ロジックのノードをツリービューに反映
-    treeStore.setNodes(this.storageLogic.nodes)
+    this.treeStore.setNodes(this.storageLogic.nodes)
   }
 
   /**
@@ -376,16 +370,16 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     }
 
     // ツリービューに作成したディレクトリノードを追加
-    treeStore.setNode(dirNode)
+    this.treeStore.setNode(dirNode)
 
     // 作成したディレクトリの祖先を展開
-    const dirTreeNode = treeStore.getNode(dirPath)!
+    const dirTreeNode = this.treeStore.getNode(dirPath)!
     this.m_openParentNode(dirPath)
 
     // 作成したディレクトリの親ノードを選択状態に設定
-    treeStore.selectedNode = dirTreeNode.parent! as StorageTreeNode
+    this.treeStore.selectedNode = dirTreeNode.parent! as StorageTreeNode
     // URLに選択ノードのパスを付与し、ページをリフレッシュ
-    this.m_moveByRouter(treeStore.selectedNode.value)
+    this.m_moveByRouter(this.treeStore.selectedNode.value)
 
     this.$q.loading.hide()
   }
@@ -426,9 +420,9 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     await Promise.all(promises)
 
     // 親ノードを選択状態に設定
-    treeStore.selectedNode = treeNodes[0].parent! as StorageTreeNode
+    this.treeStore.selectedNode = treeNodes[0].parent! as StorageTreeNode
     // URLに選択ノードのパスを付与し、ページをリフレッシュ
-    this.m_moveByRouter(treeStore.selectedNode.value)
+    this.m_moveByRouter(this.treeStore.selectedNode.value)
 
     this.$q.loading.hide()
   }
@@ -480,15 +474,15 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
 
     // ツリービューでノードの移動を実施
     for (const treeNode of treeNodes) {
-      treeStore.moveNode(treeNode.value, toPath(treeNode))
+      this.treeStore.moveNode(treeNode.value, toPath(treeNode))
     }
 
     // 移動対象ノードの祖先を展開
     this.m_openParentNode(treeNodes[0].value)
     // 移動対象の親ノードを選択状態に設定
-    treeStore.selectedNode = treeNodes[0].parent! as StorageTreeNode
+    this.treeStore.selectedNode = treeNodes[0].parent! as StorageTreeNode
     // URLに選択ノードのパスを付与し、ページをリフレッシュ
-    this.m_moveByRouter(treeStore.selectedNode.value)
+    this.m_moveByRouter(this.treeStore.selectedNode.value)
 
     this.$q.loading.hide()
   }
@@ -521,12 +515,12 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     }
 
     // ツリービューでノードのリネームを実施
-    treeStore.renameNode(treeNode.value, newName)
+    this.treeStore.renameNode(treeNode.value, newName)
 
     // リネーム対象の親ノードを選択状態に設定
-    treeStore.selectedNode = treeNode.parent! as StorageTreeNode
+    this.treeStore.selectedNode = treeNode.parent! as StorageTreeNode
     // URLに選択ノードのパスを付与し、ページをリフレッシュ
-    this.m_moveByRouter(treeStore.selectedNode.value)
+    this.m_moveByRouter(this.treeStore.selectedNode.value)
 
     this.$q.loading.hide()
   }
@@ -538,7 +532,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   private m_moveByRouter!: (nodePath: string) => void
 
   private async m_moveByRouterFunc(nodePath: string) {
-    router.views.demo.storage.move(this.storageType, nodePath)
+    this.storageRoute.move(nodePath)
     await this.m_refreshPage(nodePath)
   }
 
@@ -547,7 +541,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param nodePath
    */
   private m_openParentNode(nodePath: string): void {
-    const treeNode = treeStore.getNode(nodePath)
+    const treeNode = this.treeStore.getNode(nodePath)
     if (!treeNode || !treeNode.parent) return
 
     treeNode.parent.open()
@@ -561,7 +555,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param nodePath
    */
   private m_scrollToSelectedNode(nodePath: string): void {
-    const treeNode = treeStore.getNode(nodePath)
+    const treeNode = this.treeStore.getNode(nodePath)
     if (!treeNode) return
 
     // 本ページのグローバルな上位置を取得
@@ -594,7 +588,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    */
   private m_setupPathBlocks(): void {
     this.m_pathBlocks.length = 0
-    const pathBlocks = treeStore.selectedNode.value.split('/').filter(item => !!item)
+    const pathBlocks = this.treeStore.selectedNode.value.split('/').filter(item => !!item)
     for (let i = 0; i < pathBlocks.length; i++) {
       const pathBlock = pathBlocks.slice(0, i + 1)
       this.m_pathBlocks.push({
@@ -604,7 +598,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
       })
     }
 
-    const rootNode = treeStore.rootNode
+    const rootNode = this.treeStore.rootNode
     this.m_pathBlocks.unshift({
       name: rootNode.label,
       path: rootNode.value,
@@ -617,11 +611,11 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param dirPath
    */
   private m_selectedNodeOnChangedToDir(dirPath: string): void {
-    const dirNode = treeStore.getNode(dirPath)
+    const dirNode = this.treeStore.getNode(dirPath)
     if (!dirNode) {
       throw new Error(`The specified node was not found: '${dirPath}'`)
     }
-    treeStore.selectedNode = dirNode
+    this.treeStore.selectedNode = dirNode
 
     setTimeout(() => {
       this.m_scrollToSelectedNode(dirPath)
@@ -683,7 +677,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param uploadDirPath アップロード先のディレクトリパス
    */
   private async m_uploadProgressFloatOnUploadEnded(uploadDirPath: string) {
-    const uploadDirNode = treeStore.getNode(uploadDirPath)!
+    const uploadDirNode = this.treeStore.getNode(uploadDirPath)!
     uploadDirNode.open()
     this.m_openParentNode(uploadDirNode.value)
 
@@ -716,7 +710,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param dirNodePath
    */
   private async m_treeViewOnCreateDirSelected(dirNodePath: string) {
-    const dirNode = treeStore.getNode(dirNodePath)!
+    const dirNode = this.treeStore.getNode(dirNodePath)!
     const dirPath = await this.m_dirCreateDialog.open(dirNode)
     if (dirPath) {
       await this.m_createDir(dirPath)
@@ -744,7 +738,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param nodePaths
    */
   private async m_treeViewOnMoveSelected(nodePaths: string[]) {
-    const nodes = nodePaths.map(nodePath => treeStore.getNode(nodePath)!)
+    const nodes = nodePaths.map(nodePath => this.treeStore.getNode(nodePath)!)
     const toDir = await this.m_nodeMoveDialog.open(nodes)
     if (typeof toDir === 'string') {
       await this.m_moveNodes(nodes, toDir)
@@ -756,7 +750,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param nodePath
    */
   private async m_treeViewOnRenameSelected(nodePath: string) {
-    const node = treeStore.getNode(nodePath)!
+    const node = this.treeStore.getNode(nodePath)!
     const newName = await this.m_nodeRenameDialog.open(node)
     if (newName) {
       await this.m_renameNode(node, newName)
@@ -768,7 +762,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param nodePaths
    */
   private async m_onDeleteSelected(nodePaths: string[]) {
-    const nodes = nodePaths.map(nodePath => treeStore.getNode(nodePath)!)
+    const nodes = nodePaths.map(nodePath => this.treeStore.getNode(nodePath)!)
     const confirmed = await this.m_nodesRemoveDialog.open(nodes)
     if (confirmed) {
       await this.m_removeNodes(nodes)

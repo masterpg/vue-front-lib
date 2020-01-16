@@ -9,6 +9,8 @@ export namespace CompTreeViewUtils {
    * @param nodeData
    */
   export function newNode(nodeData: CompTreeNodeData): CompTreeNode {
+    // プログラム的にコンポーネントのインスタンスを生成
+    // https://css-tricks.com/creating-vue-js-component-instances-programmatically/
     const NodeClass = Vue.extend(nodeData.nodeClass || CompTreeNode)
     const node = new NodeClass() as any
     node.init(nodeData)

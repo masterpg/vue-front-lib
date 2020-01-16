@@ -67,16 +67,16 @@ import { BaseComponent, Resizable } from '../../../../lib/base/component'
 import { CompImg } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
+import { StorageTypeMixin } from '@/example/views/demo/storage/base'
 import axios from 'axios'
 import bytes from 'bytes'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
-import { treeStore } from '@/example/views/demo/storage/storage-tree-store'
 
 @Component({
   components: { CompImg },
 })
-export default class StorageFileView extends mixins(BaseComponent, Resizable) {
+export default class StorageFileView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -156,7 +156,7 @@ export default class StorageFileView extends mixins(BaseComponent, Resizable) {
     }
 
     this.m_filePath = filePath
-    this.m_fileNode = treeStore.getNode(filePath)!
+    this.m_fileNode = this.treeStore.getNode(filePath)!
 
     if (this.m_isText) {
       this.m_loadTextFile(this.m_url)

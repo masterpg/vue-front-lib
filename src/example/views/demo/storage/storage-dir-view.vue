@@ -140,7 +140,7 @@
         </q-table>
       </div>
     </div>
-    <storage-file-view v-show="m_visibleFileNodeView" ref="fileView" class="file-node-view" @close="m_fileViewOnClose" />
+    <storage-file-view v-show="m_visibleFileNodeView" ref="fileView" class="file-node-view" :storage-type="storageType" @close="m_fileViewOnClose" />
   </div>
 </template>
 
@@ -151,10 +151,10 @@ import { Component } from 'vue-property-decorator'
 import { QTable } from 'quasar'
 import StorageFileView from '@/example/views/demo/storage/storage-file-view.vue'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
+import { StorageTypeMixin } from '@/example/views/demo/storage/base'
 import bytes from 'bytes'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
-import { treeStore } from '@/example/views/demo/storage/storage-tree-store'
 
 class TableRow {
   constructor(private m_table: QTable) {}
@@ -199,7 +199,7 @@ class TableRow {
     StorageFileView,
   },
 })
-export default class StorageDirView extends mixins(BaseComponent, Resizable) {
+export default class StorageDirView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -294,7 +294,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
 
   private m_setupChildren(): void {
-    const dirNode = treeStore.getNode(this.m_dirPath!)
+    const dirNode = this.treeStore.getNode(this.m_dirPath!)
     if (!dirNode) {
       throw new Error(`'treeStore' does not have specified path's node: '${this.m_dirPath}'`)
     }

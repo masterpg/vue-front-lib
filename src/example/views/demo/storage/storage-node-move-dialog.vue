@@ -75,14 +75,17 @@
 
 <script lang="ts">
 import { BaseDialog, CompAlertDialog, CompTreeNode, CompTreeNodeData, CompTreeView, NoCache, StorageNodeType } from '@/lib'
+import { StorageTypeMixin, treeSortFunc } from '@/example/views/demo/storage/base'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
-import { treeSortFunc } from '@/example/views/demo/storage/base'
-import { treeStore } from '@/example/views/demo/storage/storage-tree-store'
+import { mixins } from 'vue-class-component'
+
+@Component
+class BaseDialogMixin extends BaseDialog<StorageTreeNode[], string | undefined> {}
 
 @Component({ components: { CompTreeView, CompAlertDialog } })
-export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode[], string | undefined> {
+export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, StorageTypeMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -219,7 +222,7 @@ export default class StorageNodeMoveDialog extends BaseDialog<StorageTreeNode[],
   }
 
   private m_buildTreeView(): void {
-    for (const srcTreeNode of treeStore.getAllNodes()) {
+    for (const srcTreeNode of this.treeStore.getAllNodes()) {
       // ファイルは追加しない
       if (srcTreeNode.nodeType === StorageNodeType.File) continue
 

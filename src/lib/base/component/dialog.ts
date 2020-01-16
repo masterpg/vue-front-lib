@@ -1,4 +1,5 @@
 import { BaseComponent } from './base-component'
+import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
 import { Resizable } from './resizable'
 import Vue from 'vue'
@@ -15,15 +16,46 @@ export interface Dialog<PARAMS = void, RESULT = void> extends Vue {
 
 /**
  * ダイアログの基底クラスです。
+ *
+ * mixin()を使用して本クラスを継承する場合について:
+ * 本クラスはジェネリクスの指定が必要ですが、ジェネリクスを付与したクラスを`mixin()`に指定
+ * するとコンパイルエラーになります。このため一旦ジェネリクスを付与したクラスを作成し、
+ * このクラスを`mixin()`に渡すようにしてコンパイルエラーを回避してください。以下に例を示します。
+ * ```
+ * @Component
+ * class BaseDialogMixin extends BaseDialog<string> {}
+ *
+ * @Component
+ * export default class CustomDialog extends mixins(BaseDialogMixin, OtherMixin) {
+ *   …
+ * }
+ * ```
  */
-export abstract class BaseDialog<PARAMS = void, RESULT = void> extends mixins(BaseComponent, Resizable) implements Dialog<PARAMS, RESULT> {
+@Component
+export class BaseDialog<PARAMS = void, RESULT = void> extends mixins(BaseComponent, Resizable) implements Dialog<PARAMS, RESULT> {
+  //----------------------------------------------------------------------
+  //
+  //  Abstract members
+  //
+  //----------------------------------------------------------------------
+
+  protected get dialog(): QDialog {
+    throw new Error('Not implemented.')
+  }
+
+  open(params: PARAMS): Promise<RESULT> {
+    throw new Error('Not implemented.')
+  }
+
+  close(result: RESULT): void {
+    throw new Error('Not implemented.')
+  }
+
   //----------------------------------------------------------------------
   //
   //  Variables
   //
   //----------------------------------------------------------------------
-
-  protected abstract readonly dialog: QDialog
 
   protected opened: boolean = false
 
@@ -32,16 +64,6 @@ export abstract class BaseDialog<PARAMS = void, RESULT = void> extends mixins(Ba
   private m_dialogResolver: ((value: RESULT) => void) | null = null
 
   private m_openedCallback: () => void = () => {}
-
-  //----------------------------------------------------------------------
-  //
-  //  Methods
-  //
-  //----------------------------------------------------------------------
-
-  abstract open(params: PARAMS): Promise<RESULT>
-
-  abstract close(result: RESULT): void
 
   //----------------------------------------------------------------------
   //
