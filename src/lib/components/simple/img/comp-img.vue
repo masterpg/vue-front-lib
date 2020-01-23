@@ -10,42 +10,42 @@
   max-width: var(--comp-img-max-width, 100%)
   max-height: var(--comp-img-max-height, 100%)
 
-.loading
+.spinner-container
   width: 100%
   height: 100%
   top: 0
   left: 0
   position: absolute
 
-.loader
-  position: relative
-  display: inline-block
-  width: 20px
-  height: 20px
-  border: 2px solid #0cf
-  border-radius: 50%
-  animation: spin 0.75s infinite linear
+  .spinner
+    position: relative
+    display: inline-block
+    width: 20px
+    height: 20px
+    border: 2px solid #0cf
+    border-radius: 50%
+    animation: spin 0.75s infinite linear
 
-.loader::before,
-.loader::after
-  left: -2px
-  top: -2px
-  display: none
-  position: absolute
-  content: ''
-  width: inherit
-  height: inherit
-  border: inherit
-  border-radius: inherit
+  .spinner::before,
+  .spinner::after
+    left: -2px
+    top: -2px
+    display: none
+    position: absolute
+    content: ''
+    width: inherit
+    height: inherit
+    border: inherit
+    border-radius: inherit
 
-.loader-type-one,
-.loader-type-one::before
-  display: inline-block
-  border-color: transparent
-  border-top-color: $grey-6
+  .spinner-type-one,
+  .spinner-type-one::before
+    display: inline-block
+    border-color: transparent
+    border-top-color: $grey-6
 
-.loader-type-one::before
-  animation: spin 1.5s infinite ease
+  .spinner-type-one::before
+    animation: spin 1.5s infinite ease
 
 @keyframes spin
   from
@@ -56,8 +56,8 @@
 
 <template>
   <div ref="container" class="com-img-main layout horizontal" @component-resize="m_onComponentResize">
-    <div ref="loading" class="loading layout vertical center-center" hidden>
-      <div style="height: 20px"><div class="loader loader-type-one" /></div>
+    <div ref="spinnerContainer" class="spinner-container layout vertical center-center" hidden>
+      <div style="height: 20px"><div class="spinner spinner-type-one" /></div>
     </div>
     <img ref="img" :src="src" :alt="alt" h-align="center" class="img-tag" @load="m_imgOnLoad" />
   </div>
@@ -119,6 +119,9 @@ export default class CompImg extends mixins(BaseComponent, Resizable) {
     this.m_vAlignChanged(newValue, oldValue as AlignType | undefined)
   }
 
+  @Prop({ default: true })
+  autoSpinner!: boolean
+
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -140,8 +143,40 @@ export default class CompImg extends mixins(BaseComponent, Resizable) {
   }
 
   @NoCache
-  get m_loading(): HTMLElement {
-    return this.$refs.loading as HTMLElement
+  get m_spinnerContainer(): HTMLElement {
+    return this.$refs.spinnerContainer as HTMLElement
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Methods
+  //
+  //----------------------------------------------------------------------
+
+  spinner(spin: boolean) {
+    if (spin) {
+      const opacity = parseFloat(this.m_spinnerContainer.style.opacity || '0')
+      if (opacity === 1) {
+        this.m_spinnerContainer.style.opacity = '0'
+      }
+      this.m_spinnerContainer.hidden = false
+      anime({
+        targets: this.m_spinnerContainer,
+        opacity: 1,
+        duration: 500,
+        easing: 'easeInOutQuad',
+      })
+    } else {
+      anime({
+        targets: this.m_spinnerContainer,
+        opacity: 0,
+        duration: 500,
+        easing: 'easeInOutQuad',
+        complete: () => {
+          this.m_spinnerContainer.hidden = true
+        },
+      })
+    }
   }
 
   //----------------------------------------------------------------------
@@ -156,17 +191,19 @@ export default class CompImg extends mixins(BaseComponent, Resizable) {
    * @param oldValue
    */
   private m_srcChanged(newValue: string, oldValue: string | undefined) {
-    this.src = newValue || ''
-
     if (this.src) {
-      this.m_loading.hidden = false
-      this.m_loading.style.opacity = '1'
-      this.m_img.hidden = false
+      if (this.autoSpinner) {
+        this.spinner(true)
+      }
       this.m_img.style.opacity = '0'
     } else {
-      this.m_loading.hidden = true
-      this.m_img.hidden = true
+      if (this.autoSpinner) {
+        this.spinner(false)
+      }
+      this.m_img.style.opacity = '0'
     }
+
+    this.src = newValue || ''
 
     this.m_img.style.width = 'auto'
     this.m_img.style.height = 'auto'
@@ -246,6 +283,15 @@ export default class CompImg extends mixins(BaseComponent, Resizable) {
     return parsedValue
   }
 
+  private m_fadeInImg() {
+    anime({
+      targets: this.m_img,
+      opacity: 1,
+      duration: 500,
+      easing: 'easeInOutQuad',
+    })
+  }
+
   //----------------------------------------------------------------------
   //
   //  Event handlers
@@ -255,22 +301,11 @@ export default class CompImg extends mixins(BaseComponent, Resizable) {
   private m_onComponentResize(e) {}
 
   private m_imgOnLoad(e) {
-    anime({
-      targets: this.m_img,
-      opacity: 1,
-      duration: 1000,
-      easing: 'easeInOutQuad',
-    })
+    this.m_fadeInImg()
 
-    anime({
-      targets: this.m_loading,
-      opacity: 0,
-      duration: 500,
-      easing: 'easeInOutQuad',
-      complete: () => {
-        this.m_loading.hidden = true
-      },
-    })
+    if (this.autoSpinner) {
+      this.spinner(false)
+    }
   }
 }
 </script>
