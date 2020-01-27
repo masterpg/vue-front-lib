@@ -83,6 +83,9 @@
               </q-td>
               <q-td key="contentType" :props="props">{{ props.row.contentType }}</q-td>
               <q-td key="size" :props="props">{{ props.row.size }}</q-td>
+              <q-td key="share" :props="props">
+                <q-icon :name="props.row.share.icon" size="24px" />
+              </q-td>
               <q-td key="updated" :props="props">{{ props.row.updated }}</q-td>
               <!-- コンテキストメニュー -->
               <q-menu touch-position context-menu>
@@ -93,6 +96,9 @@
                   </q-item>
                   <q-item v-close-popup clickable>
                     <q-item-section @click="m_dispatchDeleteSelected(m_table.selected)">{{ $t('common.delete') }}</q-item-section>
+                  </q-item>
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchShareSelected(m_table.selected)">{{ $t('common.share') }}</q-item-section>
                   </q-item>
                 </q-list>
                 <!-- フォルダ用メニュー -->
@@ -121,6 +127,9 @@
                   <q-item v-close-popup clickable>
                     <q-item-section @click="m_dispatchDeleteSelected([props.row])">{{ $t('common.delete') }}</q-item-section>
                   </q-item>
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchShareSelected([props.row])">{{ $t('common.share') }}</q-item-section>
+                  </q-item>
                 </q-list>
                 <!-- ファイル用メニュー -->
                 <q-list v-else-if="props.row.isFile" dense style="min-width: 100px">
@@ -133,6 +142,9 @@
                   <q-item v-close-popup clickable>
                     <q-item-section @click="m_dispatchDeleteSelected([props.row])">{{ $t('common.delete') }}</q-item-section>
                   </q-item>
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchShareSelected([props.row])">{{ $t('common.share') }}</q-item-section>
+                  </q-item>
                 </q-list>
               </q-menu>
             </q-tr>
@@ -140,7 +152,13 @@
         </q-table>
       </div>
     </div>
-    <storage-file-view v-show="m_visibleFileNodeView" ref="fileView" class="file-node-view" :storage-type="storageType" @close="m_fileViewOnClose" />
+    <storage-node-detail-view
+      v-show="m_visibleNodeDetailView"
+      ref="nodeDetailView"
+      class="file-node-view"
+      :storage-type="storageType"
+      @close="m_nodeDetailViewOnClose"
+    />
   </div>
 </template>
 
@@ -149,7 +167,7 @@ import { BaseComponent, Resizable } from '../../../../lib/base/component'
 import { NoCache, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QTable } from 'quasar'
-import StorageFileView from '@/example/views/demo/storage/storage-file-view.vue'
+import StorageNodeDetailView from '@/example/views/demo/storage/storage-node-detail-view.vue'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import { StorageTypeMixin } from '@/example/views/demo/storage/base'
 import bytes from 'bytes'
@@ -170,6 +188,10 @@ class TableRow {
   contentType!: string
 
   size?: number
+
+  share!: {
+    icon: string
+  }
 
   updated!: string
 
@@ -196,7 +218,7 @@ class TableRow {
 
 @Component({
   components: {
-    StorageFileView,
+    StorageNodeDetailView,
   },
 })
 export default class StorageDirView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
@@ -222,6 +244,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
       { name: 'label', align: 'left', label: this.$t('storage.nodeDetail.name'), field: 'label', sortable: true },
       { name: 'contentType', align: 'left', label: this.$t('storage.nodeDetail.type'), field: 'contentType', sortable: true },
       { name: 'size', align: 'right', label: this.$t('storage.nodeDetail.size'), field: 'size', sortable: true },
+      { name: 'share', align: 'center', label: this.$t('storage.nodeDetail.share'), field: 'share', sortable: true },
       { name: 'updated', align: 'left', label: this.$t('storage.nodeDetail.updated'), field: 'updated', sortable: true },
     ]
   }
@@ -238,7 +261,11 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
 
   private m_selectedRows: TableRow[] = []
 
-  private m_visibleFileNodeView = false
+  private m_visibleNodeDetailRow: TableRow | null = null
+
+  private get m_visibleNodeDetailView(): boolean {
+    return !!this.m_visibleNodeDetailRow
+  }
 
   //--------------------------------------------------
   //  Elements
@@ -250,8 +277,8 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
   }
 
   @NoCache
-  private get m_fileView(): StorageFileView {
-    return this.$refs.fileView as StorageFileView
+  private get m_nodeDetailView(): StorageNodeDetailView {
+    return this.$refs.nodeDetailView as StorageNodeDetailView
   }
 
   //----------------------------------------------------------------------
@@ -271,18 +298,29 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
       this.m_table.selected && this.m_table.selected.splice(0)
     }
 
+    // 文字列以外が渡された場合、ビューをクリアして終了
     if (typeof dirPath !== 'string') {
       clear()
       return
     }
 
     dirPath = removeBothEndsSlash(dirPath)
-    if (this.m_dirPath !== dirPath) {
-      clear()
-    }
-    this.m_dirPath = dirPath
 
-    this.m_visibleFileNodeView = false
+    // 前回と今回で設定されるディレクトリパスが同じ場合
+    if (this.m_dirPath === dirPath) {
+      if (this.m_visibleNodeDetailRow) {
+        this.m_nodeDetailView.setNodePath(this.m_visibleNodeDetailRow.value)
+      }
+    }
+    // 前回と今回で設定されるディレクトリパスが異なる場合
+    else {
+      // ビューをクリア
+      clear()
+      // ノード詳細ビューを非表示
+      this.m_visibleNodeDetailRow = null
+    }
+
+    this.m_dirPath = dirPath
 
     this.m_setupChildren()
   }
@@ -349,6 +387,10 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     tableRow.icon = node.nodeType === StorageNodeType.Dir ? 'folder' : 'description'
     tableRow.contentType = node.contentType
     tableRow.size = node.nodeType === StorageNodeType.Dir ? undefined : bytes(node.size)
+    tableRow.share = { icon: '' }
+    if (node.share.isPublic) {
+      tableRow.share = { icon: 'public' }
+    }
     tableRow.updated = String(this.$d(node.updatedDate.toDate(), 'dateTime'))
     tableRow.updatedNum = node.updatedDate.unix()
     return tableRow
@@ -363,6 +405,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     return Object.assign(dest, {
       label: source.label,
       value: source.value,
+      share: source.share,
       updated: source.updated,
     })
   }
@@ -417,6 +460,10 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     this.$emit('delete-selected', rows.map(node => node.value))
   }
 
+  private m_dispatchShareSelected(rows: TableRow[]): void {
+    this.$emit('share-selected', rows.map(node => node.value))
+  }
+
   //----------------------------------------------------------------------
   //
   //  Event listeners
@@ -432,16 +479,17 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
       this.$emit('dir-selected', row.value)
     } else if (row.nodeType === StorageNodeType.File) {
       this.$emit('file-selected', row.value)
-      this.m_fileView.setFilePath(row.value)
-      this.m_visibleFileNodeView = true
+      // ノード詳細ビューを表示
+      this.m_nodeDetailView.setNodePath(row.value)
+      this.m_visibleNodeDetailRow = row
     }
   }
 
   /**
-   * ファイルビューが閉じられる際のリスナです。
+   * ノード詳細ビューが閉じられる際のリスナです。
    */
-  private m_fileViewOnClose() {
-    this.m_visibleFileNodeView = false
+  private m_nodeDetailViewOnClose() {
+    this.m_visibleNodeDetailRow = null
   }
 }
 </script>

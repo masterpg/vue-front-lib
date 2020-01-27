@@ -1,11 +1,20 @@
 import * as td from 'testdouble'
-import { APIStorageNode, LibAPIContainer, StorageNode, StorageNodeType, StorageState, StorageUploadManager } from '@/lib'
+import {
+  LibAPIContainer,
+  StorageNode,
+  StorageNodeShareSettings,
+  StorageNodeShareSettingsInput,
+  StorageNodeType,
+  StorageState,
+  StorageUploadManager,
+} from '@/lib'
 import { BaseStorageLogic } from '@/lib/logic/modules/storage/base-storage'
 import { BaseStorageStore } from '@/lib/logic/store/modules/storage/base'
 import { StorageStore } from '@/lib/logic/store'
 import { TestStore } from '../../../../../helpers/common/store'
 import { config } from '@/lib/config'
 import dayjs from 'dayjs'
+import deepmerge from 'deepmerge'
 import { initLibTest } from '../../../../../helpers/lib/init'
 import { removeEndSlash } from 'web-base-lib'
 const cloneDeep = require('lodash/cloneDeep')
@@ -16,6 +25,11 @@ const cloneDeep = require('lodash/cloneDeep')
 //
 //========================================================================
 
+const EMPTY_SHARE_SETTINGS: StorageNodeShareSettings = {
+  isPublic: false,
+  uids: [],
+}
+
 const d1: StorageNode = {
   nodeType: StorageNodeType.Dir,
   name: 'd1',
@@ -23,6 +37,7 @@ const d1: StorageNode = {
   path: 'd1',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -34,6 +49,7 @@ const d11: StorageNode = {
   path: 'd1/d11',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -45,6 +61,7 @@ const fileA: StorageNode = {
   path: 'd1/d11/fileA.txt',
   contentType: 'text/plain; charset=utf-8',
   size: 5,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -56,6 +73,7 @@ const d12: StorageNode = {
   path: 'd1/d12',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -67,6 +85,7 @@ const d2: StorageNode = {
   path: 'd2',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -78,6 +97,7 @@ const d21: StorageNode = {
   path: 'd2/d21',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -89,6 +109,7 @@ const fileB: StorageNode = {
   path: 'd2/d21/fileB.txt',
   contentType: 'text/plain; charset=utf-8',
   size: 5,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -100,6 +121,7 @@ const fileC: StorageNode = {
   path: 'fileC.txt',
   contentType: 'text/plain; charset=utf-8',
   size: 5,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -136,36 +158,44 @@ class MockStorageLogic extends BaseStorageLogic {
     return {} as any
   }
 
-  protected storageDirNodes(dirPath?: string): Promise<APIStorageNode[]> {
+  protected storageDirNodes(dirPath?: string): Promise<StorageNode[]> {
     return api.storageDirNodes(dirPath)
   }
 
-  protected createStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+  protected createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
     return api.createStorageDirs(dirPaths)
   }
 
-  protected removeStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+  protected removeStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
     return api.removeStorageDirs(dirPaths)
   }
 
-  protected removeStorageFiles(filePaths: string[]): Promise<APIStorageNode[]> {
+  protected removeStorageFiles(filePaths: string[]): Promise<StorageNode[]> {
     return api.removeStorageFiles(filePaths)
   }
 
-  protected moveStorageDir(fromDirPath: string, toDirPath: string): Promise<APIStorageNode[]> {
+  protected moveStorageDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
     return api.moveStorageDir(fromDirPath, toDirPath)
   }
 
-  protected moveStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode> {
+  protected moveStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode> {
     return api.moveStorageFile(fromFilePath, toFilePath)
   }
 
-  protected renameStorageDir(dirPath: string, newName: string): Promise<APIStorageNode[]> {
+  protected renameStorageDir(dirPath: string, newName: string): Promise<StorageNode[]> {
     return api.renameStorageDir(dirPath, newName)
   }
 
-  protected renameStorageFile(filePath: string, newName: string): Promise<APIStorageNode> {
+  protected renameStorageFile(filePath: string, newName: string): Promise<StorageNode> {
     return api.renameStorageFile(filePath, newName)
+  }
+
+  protected setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]> {
+    return api.setStorageDirShareSettings(dirPath, settings)
+  }
+
+  protected setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
+    return api.setStorageFileShareSettings(filePath, settings)
   }
 }
 
@@ -315,26 +345,20 @@ describe('removeFiles', () => {
 describe('moveDir', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, fileA]) })
-    const movedD12: StorageNode = {
-      nodeType: StorageNodeType.Dir,
+
+    const movedD12 = deepmerge(cloneDeep(d11), {
       name: 'd12',
       dir: 'd1',
       path: 'd1/d12',
-      contentType: '',
-      size: 0,
       created: dayjs(),
       updated: dayjs(),
-    }
-    const movedFileA: StorageNode = {
-      nodeType: StorageNodeType.File,
-      name: 'fileA.txt',
+    }) as StorageNode
+    const movedFileA = deepmerge(cloneDeep(fileA), {
       dir: 'd1/d12',
       path: 'd1/d12/fileA.txt',
-      contentType: 'text/plain; charset=utf-8',
-      size: 5,
       created: dayjs(),
       updated: dayjs(),
-    }
+    }) as StorageNode
     td.when(api.moveStorageDir(d11.path, movedD12.path)).thenResolve([movedD12, movedFileA])
 
     const actual = await storageLogic.moveDir(d11.path, movedD12.path)
@@ -345,16 +369,13 @@ describe('moveDir', () => {
 
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11]) })
-    const movedD12: StorageNode = {
-      nodeType: StorageNodeType.Dir,
-      name: 'd12',
+
+    const movedD12 = deepmerge(cloneDeep(d11), {
       dir: 'd1',
       path: 'd1/d12',
-      contentType: '',
-      size: 0,
       created: dayjs(),
       updated: dayjs(),
-    }
+    }) as StorageNode
     td.when(api.moveStorageDir(d11.path, movedD12.path)).thenThrow(new Error())
 
     try {
@@ -369,16 +390,13 @@ describe('moveDir', () => {
 describe('moveFile', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, fileA, d12]) })
-    const movedFileA: StorageNode = {
-      nodeType: StorageNodeType.File,
-      name: 'fileA.txt',
+
+    const movedFileA = deepmerge(cloneDeep(fileA), {
       dir: 'd1/d12',
       path: 'd1/d12/fileA.txt',
-      contentType: 'text/plain; charset=utf-8',
-      size: 5,
       created: dayjs(),
       updated: dayjs(),
-    }
+    }) as StorageNode
     td.when(api.moveStorageFile(fileA.path, movedFileA.path)).thenResolve(movedFileA)
 
     const actual = await storageLogic.moveFile(fileA.path, movedFileA.path)
@@ -389,16 +407,13 @@ describe('moveFile', () => {
 
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, fileA, d12]) })
-    const movedFileA: StorageNode = {
-      nodeType: StorageNodeType.File,
-      name: 'fileA.txt',
+
+    const movedFileA = deepmerge(cloneDeep(fileA), {
       dir: 'd1/d12',
       path: 'd1/d12/fileA.txt',
-      contentType: 'text/plain; charset=utf-8',
-      size: 5,
       created: dayjs(),
       updated: dayjs(),
-    }
+    }) as StorageNode
     td.when(api.moveStorageFile(fileA.path, movedFileA.path)).thenThrow(new Error())
 
     try {
@@ -413,26 +428,19 @@ describe('moveFile', () => {
 describe('renameDir', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, fileA]) })
-    const renamedX11: StorageNode = {
-      nodeType: StorageNodeType.Dir,
+
+    const renamedX11 = deepmerge(cloneDeep(d11), {
       name: 'x11',
-      dir: 'd1',
       path: 'd1/x11',
-      contentType: '',
-      size: 0,
       created: dayjs(),
       updated: dayjs(),
-    }
-    const renamedFileA: StorageNode = {
-      nodeType: StorageNodeType.File,
-      name: 'fileA.txt',
+    }) as StorageNode
+    const renamedFileA = deepmerge(cloneDeep(fileA), {
       dir: 'd1/x11',
       path: 'd1/x11/fileA.txt',
-      contentType: 'text/plain; charset=utf-8',
-      size: 5,
       created: dayjs(),
       updated: dayjs(),
-    }
+    }) as StorageNode
     td.when(api.renameStorageDir(d11.path, renamedX11.name)).thenResolve([renamedX11, renamedFileA])
 
     const actual = await storageLogic.renameDir(d11.path, renamedX11.name)
@@ -443,16 +451,13 @@ describe('renameDir', () => {
 
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11]) })
-    const renamedX11: StorageNode = {
-      nodeType: StorageNodeType.Dir,
+
+    const renamedX11 = deepmerge(cloneDeep(d11), {
       name: 'x11',
-      dir: 'd1',
       path: 'd1/x11',
-      contentType: '',
-      size: 0,
       created: dayjs(),
       updated: dayjs(),
-    }
+    }) as StorageNode
     td.when(api.renameStorageDir(d11.path, renamedX11.name)).thenThrow(new Error())
 
     try {
@@ -467,16 +472,13 @@ describe('renameDir', () => {
 describe('renameFile', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, fileA]) })
-    const renamedFileX: StorageNode = {
-      nodeType: StorageNodeType.File,
+
+    const renamedFileX = deepmerge(cloneDeep(fileA), {
       name: 'fileX.txt',
-      dir: 'd1/d11',
       path: 'd1/d11/fileX.txt',
-      contentType: 'text/plain; charset=utf-8',
-      size: 5,
       created: dayjs(),
       updated: dayjs(),
-    }
+    }) as StorageNode
     td.when(api.renameStorageFile(fileA.path, renamedFileX.name)).thenResolve(renamedFileX)
 
     const actual = await storageLogic.renameFile(fileA.path, renamedFileX.name)
@@ -487,20 +489,94 @@ describe('renameFile', () => {
 
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, fileA]) })
-    const renamedFileX: StorageNode = {
-      nodeType: StorageNodeType.File,
+
+    const renamedFileX = deepmerge(cloneDeep(fileA), {
       name: 'fileX.txt',
-      dir: 'd1/d11',
       path: 'd1/d11/fileX.txt',
-      contentType: 'text/plain; charset=utf-8',
-      size: 5,
       created: dayjs(),
       updated: dayjs(),
-    }
+    }) as StorageNode
     td.when(api.renameStorageFile(fileA.path, renamedFileX.name)).thenThrow(new Error())
 
     try {
       await storageLogic.renameFile(fileA.path, renamedFileX.name)
+    } catch (err) {}
+
+    // ノード一覧に変化がないことを検証
+    expect(storageLogic.nodes).toEqual([d1, d11, fileA])
+  })
+})
+
+describe('setDirShareSettings', () => {
+  const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
+    isPublic: true,
+    uids: ['ichiro'],
+  }
+
+  it('ベーシックケース', async () => {
+    storageStore.initState({ all: cloneDeep([d1, d11, fileA]) })
+
+    const updatedX11 = deepmerge(cloneDeep(d11), {
+      share: NEW_SHARE_SETTINGS,
+      created: dayjs(),
+      updated: dayjs(),
+    }) as StorageNode
+    const updatedFileA = deepmerge(cloneDeep(fileA), {
+      share: NEW_SHARE_SETTINGS,
+      created: dayjs(),
+      updated: dayjs(),
+    }) as StorageNode
+    td.when(api.setStorageDirShareSettings(d11.path, NEW_SHARE_SETTINGS)).thenResolve([updatedX11, updatedFileA])
+
+    const actual = await storageLogic.setDirShareSettings(d11.path, NEW_SHARE_SETTINGS)
+
+    expect(actual).toEqual([updatedX11, updatedFileA])
+    expect(storageLogic.nodes).toEqual([d1, updatedX11, updatedFileA])
+  })
+
+  it('APIでエラーが発生した場合', async () => {
+    storageStore.initState({ all: cloneDeep([d1, d11]) })
+
+    td.when(api.setStorageDirShareSettings(d11.path, NEW_SHARE_SETTINGS)).thenThrow(new Error())
+
+    try {
+      await storageLogic.setDirShareSettings(d11.path, NEW_SHARE_SETTINGS)
+    } catch (err) {}
+
+    // ノード一覧に変化がないことを検証
+    expect(storageLogic.nodes).toEqual([d1, d11])
+  })
+})
+
+describe('setFileShareSettings', () => {
+  const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
+    isPublic: true,
+    uids: ['ichiro'],
+  }
+
+  it('ベーシックケース', async () => {
+    storageStore.initState({ all: cloneDeep([d1, d11, fileA]) })
+
+    const updatedFileA = deepmerge(cloneDeep(fileA), {
+      share: NEW_SHARE_SETTINGS,
+      created: dayjs(),
+      updated: dayjs(),
+    }) as StorageNode
+    td.when(api.setStorageFileShareSettings(fileA.path, NEW_SHARE_SETTINGS)).thenResolve(updatedFileA)
+
+    const actual = await storageLogic.setFileShareSettings(fileA.path, NEW_SHARE_SETTINGS)
+
+    expect(actual).toEqual(updatedFileA)
+    expect(storageLogic.nodes).toEqual([d1, d11, updatedFileA])
+  })
+
+  it('APIでエラーが発生した場合', async () => {
+    storageStore.initState({ all: cloneDeep([d1, d11, fileA]) })
+
+    td.when(api.setStorageFileShareSettings(fileA.path, NEW_SHARE_SETTINGS)).thenThrow(new Error())
+
+    try {
+      await storageLogic.setFileShareSettings(fileA.path, NEW_SHARE_SETTINGS)
     } catch (err) {}
 
     // ノード一覧に変化がないことを検証

@@ -27,18 +27,7 @@ export function setStore(value: LibStoreContainer): void {
   store = value
 }
 
-export {
-  AppStorageStore,
-  StatePartial,
-  StorageNode,
-  StorageNodeType,
-  StorageState,
-  StorageStore,
-  StoreError,
-  User,
-  UserStorageStore,
-  UserStore,
-} from './types'
+export { AppStorageStore, StatePartial, StorageState, StorageStore, StoreError, User, UserStorageStore, UserStore } from './types'
 
 export { BaseStore } from './base'
 

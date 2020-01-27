@@ -1,5 +1,6 @@
 import * as _path from 'path'
-import { StorageNode, StorageNodeForSet, StorageNodeType, StorageState, StorageStore } from '../../types'
+import { StorageNode, StorageNodeType } from '../../../api'
+import { StorageNodeForSet, StorageState, StorageStore } from '../../types'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { BaseStore } from '../../base'
 import { NoCache } from '../../../../base/decorators'
@@ -88,6 +89,12 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
         stateNode.name = _path.basename(node.newPath!)
         stateNode.dir = removeStartDirChars(_path.dirname(node.newPath!))
         stateNode.path = node.newPath
+      }
+      if (node.share) {
+        stateNode.share = {
+          isPublic: node.share.isPublic,
+          uids: [...node.share.uids],
+        }
       }
       stateNode.created = node.created
       stateNode.updated = node.updated
@@ -230,6 +237,10 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
       path: value.path,
       contentType: value.contentType,
       size: value.size,
+      share: {
+        isPublic: value.share.isPublic,
+        uids: [...value.share.uids],
+      },
       created: value.created,
       updated: value.updated,
     }

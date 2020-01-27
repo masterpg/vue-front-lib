@@ -42,7 +42,7 @@ import { QDialog } from 'quasar'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 
 @Component
-export default class StorageNodesRemoveDialog extends BaseDialog<StorageTreeNode[], boolean> {
+export default class StorageNodeRemoveDialog extends BaseDialog<StorageTreeNode[], boolean> {
   //----------------------------------------------------------------------
   //
   //  Variables

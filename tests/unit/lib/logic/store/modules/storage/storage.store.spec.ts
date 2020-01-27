@@ -1,12 +1,11 @@
 import * as path from 'path'
-import { StorageNode, StorageNodeType, StorageState } from '@/lib/logic/store'
+import { StorageNode, StorageNodeShareSettings, StorageNodeType, StorageState } from '@/lib'
 import { BaseStorageStore } from '@/lib/logic/store/modules/storage/base'
 import { StorageStore } from '@/lib/logic/store/types'
 import { TestStore } from '../../../../../../helpers/common/store'
 import dayjs from 'dayjs'
 import { initLibTest } from '../../../../../../helpers/lib/init'
 import { removeStartDirChars } from 'web-base-lib'
-const clone = require('lodash/clone')
 const cloneDeep = require('lodash/cloneDeep')
 const isArray = require('lodash/isArray')
 
@@ -16,6 +15,11 @@ const isArray = require('lodash/isArray')
 //
 //========================================================================
 
+const EMPTY_SHARE_SETTINGS: StorageNodeShareSettings = {
+  isPublic: false,
+  uids: [],
+}
+
 const d1: StorageNode = {
   nodeType: StorageNodeType.Dir,
   name: 'd1',
@@ -23,6 +27,7 @@ const d1: StorageNode = {
   path: 'd1',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -34,6 +39,7 @@ const d11: StorageNode = {
   path: 'd1/d11',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -45,6 +51,7 @@ const fileA: StorageNode = {
   path: 'd1/d11/fileA.txt',
   contentType: 'text/plain; charset=utf-8',
   size: 5,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -56,6 +63,7 @@ const d12: StorageNode = {
   path: 'd1/d12',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -67,6 +75,7 @@ const d2: StorageNode = {
   path: 'd2',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -78,6 +87,7 @@ const d21: StorageNode = {
   path: 'd2/d21',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -89,6 +99,7 @@ const fileB: StorageNode = {
   path: 'd2/d21/fileB.txt',
   contentType: 'text/plain; charset=utf-8',
   size: 5,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -100,6 +111,7 @@ const fileC: StorageNode = {
   path: 'fileC.txt',
   contentType: 'text/plain; charset=utf-8',
   size: 5,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -181,7 +193,7 @@ function toBeCopy(node: StorageNode | StorageNode[]): void {
  * ステートのノードがソートされているか検証します。
  */
 function toBeSorted(): void {
-  const beforeAll = clone(storageStore.state.all)
+  const beforeAll = [...storageStore.state.all]
   const sortedAll = storageStore.sort(beforeAll)
   expect(storageStore.state.all).toEqual(sortedAll)
 }
@@ -258,6 +270,7 @@ describe('setAll', () => {
     path: 'x1',
     contentType: '',
     size: 0,
+    share: cloneDeep(EMPTY_SHARE_SETTINGS),
     created: dayjs(),
     updated: dayjs(),
   }
@@ -269,6 +282,7 @@ describe('setAll', () => {
     path: 'x1/fileD.txt',
     contentType: 'text/plain; charset=utf-8',
     size: 5,
+    share: cloneDeep(EMPTY_SHARE_SETTINGS),
     created: dayjs(),
     updated: dayjs(),
   }
@@ -287,24 +301,38 @@ describe('setAll', () => {
 describe('setList', () => {
   it('pathを変更', () => {
     const UPDATED = dayjs('2019-01-01')
+    const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
+      isPublic: true,
+      uids: ['ichiro'],
+    }
     const actual = storageStore.setList([
       { path: 'd1', newPath: 'x1', created: UPDATED, updated: UPDATED },
       { path: 'd1/d11', newPath: 'x1/x11', created: UPDATED, updated: UPDATED },
-      { path: 'd1/d11/fileA.txt', newPath: 'x1/x11/fileA.txt', created: UPDATED, updated: UPDATED },
+      { path: 'd1/d11/fileA.txt', newPath: 'x1/x11/fileA.txt', share: NEW_SHARE_SETTINGS, created: UPDATED, updated: UPDATED },
     ])
 
     expect(actual.length).toBe(3)
+
     expect(actual[0].name).toEqual('x1')
     expect(actual[0].dir).toEqual('')
     expect(actual[0].path).toEqual('x1')
+    expect(actual[0].share).toEqual(EMPTY_SHARE_SETTINGS)
     expect(actual[0].updated).toEqual(UPDATED)
+
     expect(actual[1].name).toEqual('x11')
     expect(actual[1].dir).toEqual('x1')
     expect(actual[1].path).toEqual('x1/x11')
+    expect(actual[1].share).toEqual(EMPTY_SHARE_SETTINGS)
     expect(actual[1].updated).toEqual(UPDATED)
+
     expect(actual[2].name).toEqual('fileA.txt')
     expect(actual[2].dir).toEqual('x1/x11')
     expect(actual[2].path).toEqual('x1/x11/fileA.txt')
+    // ---> コピーが設定されていることを検証
+    expect(actual[2].share).not.toBe(NEW_SHARE_SETTINGS)
+    expect(actual[2].share.uids).not.toBe(NEW_SHARE_SETTINGS.uids)
+    expect(actual[2].share).toEqual(NEW_SHARE_SETTINGS)
+    // <---
     expect(actual[2].updated).toEqual(UPDATED)
 
     verifyStateNodes()
@@ -332,6 +360,7 @@ describe('addList', () => {
     path: 'd2/d22',
     contentType: '',
     size: 0,
+    share: cloneDeep(EMPTY_SHARE_SETTINGS),
     created: dayjs(),
     updated: dayjs(),
   }
@@ -343,6 +372,7 @@ describe('addList', () => {
     path: 'd2/d22/fileD.txt',
     contentType: 'text/plain; charset=utf-8',
     size: 5,
+    share: cloneDeep(EMPTY_SHARE_SETTINGS),
     created: dayjs(),
     updated: dayjs(),
   }
@@ -367,6 +397,7 @@ describe('add', () => {
     path: 'd1/21/fileD.txt',
     contentType: 'text/plain; charset=utf-8',
     size: 5,
+    share: cloneDeep(EMPTY_SHARE_SETTINGS),
     created: dayjs(),
     updated: dayjs(),
   }
@@ -477,6 +508,7 @@ describe('move', () => {
       path: 'd1',
       contentType: '',
       size: 0,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -487,6 +519,7 @@ describe('move', () => {
       path: 'd1/docs',
       contentType: '',
       size: 0,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -497,6 +530,7 @@ describe('move', () => {
       path: 'd1/docs/aaa',
       contentType: '',
       size: 0,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -507,6 +541,7 @@ describe('move', () => {
       path: 'd1/docs/aaa/fileA.txt',
       contentType: 'text/plain; charset=utf-8',
       size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -517,6 +552,7 @@ describe('move', () => {
       path: 'd1/docs/fileB.txt',
       contentType: 'text/plain; charset=utf-8',
       size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -527,6 +563,7 @@ describe('move', () => {
       path: 'd1/docs/fileC.txt',
       contentType: 'text/plain; charset=utf-8',
       size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -537,6 +574,7 @@ describe('move', () => {
       path: 'docs',
       contentType: '',
       size: 0,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -547,6 +585,7 @@ describe('move', () => {
       path: 'docs/aaa',
       contentType: '',
       size: 0,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -557,6 +596,7 @@ describe('move', () => {
       path: 'docs/aaa/fileA.txt',
       contentType: 'text/plain; charset=utf-8',
       size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -567,6 +607,7 @@ describe('move', () => {
       path: 'docs/fileB.txt',
       contentType: 'text/plain; charset=utf-8',
       size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -577,6 +618,7 @@ describe('move', () => {
       path: 'docs/fileD.txt',
       contentType: 'text/plain; charset=utf-8',
       size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -587,6 +629,7 @@ describe('move', () => {
       path: 'docs/fileE.txt',
       contentType: 'text/plain; charset=utf-8',
       size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -697,6 +740,17 @@ describe('rename', () => {
     }
 
     expect(actual!.message).toBe(`The specified node was not found: 'dXXX'`)
+  })
+})
+
+describe('clone', () => {
+  it('ベーシックケース', () => {
+    const actual = storageStore.clone(d1)
+
+    expect(actual).not.toBe(d1)
+    expect(actual.share).not.toBe(d1.share)
+    expect(actual.share.uids).not.toBe(d1.share.uids)
+    expect(actual).toEqual(d1)
   })
 })
 

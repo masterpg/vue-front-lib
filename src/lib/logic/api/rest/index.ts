@@ -1,4 +1,4 @@
-import { APIStorageNode, AppConfigResponse, LibAPIContainer } from '../types'
+import { AppConfigResponse, LibAPIContainer, StorageNode } from '../types'
 import { BaseRESTClient } from './base'
 
 export abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPIContainer {
@@ -14,67 +14,83 @@ export abstract class BaseRESTAPIContainer extends BaseRESTClient implements Lib
     throw new Error(`This method 'getSignedUploadUrls' is not implemented.`)
   }
 
-  async userStorageDirNodes(dirPath?: string): Promise<APIStorageNode[]> {
+  async userStorageDirNodes(dirPath?: string): Promise<StorageNode[]> {
     throw new Error(`This method 'userStorageDirNodes' is not implemented.`)
   }
 
-  async createUserStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+  async createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
     throw new Error(`This method 'createUserStorageDirs' is not implemented.`)
   }
 
-  async removeUserStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
-    throw new Error(`This method 'removeUserStorageDir' is not implemented.`)
-  }
-
-  async removeUserStorageFiles(filePaths: string[]): Promise<APIStorageNode[]> {
-    throw new Error(`This method 'removeUserStorageFiles' is not implemented.`)
-  }
-
-  async renameUserStorageDir(dirPath: string, newName: string): Promise<APIStorageNode[]> {
-    throw new Error(`This method 'renameUserStorageDir' is not implemented.`)
-  }
-
-  async renameUserStorageFile(filePath: string, newName: string): Promise<APIStorageNode> {
-    throw new Error(`This method 'renameUserStorageFile' is not implemented.`)
-  }
-
-  moveUserStorageDir(fromDirPath: string, toDirPath: string): Promise<APIStorageNode[]> {
+  moveUserStorageDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
     throw new Error(`This method 'moveUserStorageDir' is not implemented.`)
   }
 
-  moveUserStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode> {
+  moveUserStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode> {
     throw new Error(`This method 'moveUserStorageFile' is not implemented.`)
   }
 
-  async storageDirNodes(dirPath?: string): Promise<APIStorageNode[]> {
+  async removeUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
+    throw new Error(`This method 'removeUserStorageDir' is not implemented.`)
+  }
+
+  async removeUserStorageFiles(filePaths: string[]): Promise<StorageNode[]> {
+    throw new Error(`This method 'removeUserStorageFiles' is not implemented.`)
+  }
+
+  async renameUserStorageDir(dirPath: string, newName: string): Promise<StorageNode[]> {
+    throw new Error(`This method 'renameUserStorageDir' is not implemented.`)
+  }
+
+  async renameUserStorageFile(filePath: string, newName: string): Promise<StorageNode> {
+    throw new Error(`This method 'renameUserStorageFile' is not implemented.`)
+  }
+
+  setUserStorageDirShareSettings(dirPath: string, settings: import('../types').StorageNodeShareSettingsInput): Promise<StorageNode[]> {
+    throw new Error(`This method 'setUserStorageDirShareSettings' is not implemented.`)
+  }
+
+  setUserStorageFileShareSettings(filePath: string, settings: import('../types').StorageNodeShareSettingsInput): Promise<StorageNode> {
+    throw new Error(`This method 'setUserStorageFileShareSettings' is not implemented.`)
+  }
+
+  async storageDirNodes(dirPath?: string): Promise<StorageNode[]> {
     throw new Error(`This method 'storageDirNodes' is not implemented.`)
   }
 
-  async createStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+  async createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
     throw new Error(`This method 'createStorageDirs' is not implemented.`)
   }
 
-  async removeStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+  async removeStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
     throw new Error(`This method 'removeStorageDir' is not implemented.`)
   }
 
-  async removeStorageFiles(filePaths: string[]): Promise<APIStorageNode[]> {
+  async removeStorageFiles(filePaths: string[]): Promise<StorageNode[]> {
     throw new Error(`This method 'removeStorageFiles' is not implemented.`)
   }
 
-  async renameStorageDir(dirPath: string, newName: string): Promise<APIStorageNode[]> {
-    throw new Error(`This method 'renameStorageDir' is not implemented.`)
-  }
-
-  async renameStorageFile(filePath: string, newName: string): Promise<APIStorageNode> {
-    throw new Error(`This method 'renameStorageFile' is not implemented.`)
-  }
-
-  moveStorageDir(fromDirPath: string, toDirPath: string): Promise<APIStorageNode[]> {
+  moveStorageDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
     throw new Error(`This method 'moveStorageDir' is not implemented.`)
   }
 
-  moveStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode> {
+  moveStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode> {
     throw new Error(`This method 'moveStorageFile' is not implemented.`)
+  }
+
+  async renameStorageDir(dirPath: string, newName: string): Promise<StorageNode[]> {
+    throw new Error(`This method 'renameStorageDir' is not implemented.`)
+  }
+
+  async renameStorageFile(filePath: string, newName: string): Promise<StorageNode> {
+    throw new Error(`This method 'renameStorageFile' is not implemented.`)
+  }
+
+  setStorageDirShareSettings(dirPath: string, settings: import('../types').StorageNodeShareSettingsInput): Promise<StorageNode[]> {
+    throw new Error(`This method 'setStorageDirShareSettings' is not implemented.`)
+  }
+
+  setStorageFileShareSettings(filePath: string, settings: import('../types').StorageNodeShareSettingsInput): Promise<StorageNode> {
+    throw new Error(`This method 'setStorageFileShareSettings' is not implemented.`)
   }
 }

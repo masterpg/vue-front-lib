@@ -55,6 +55,10 @@
         <div class="value">{{ m_size }} ({{ m_bytes }} bytes)</div>
       </div>
       <div class="item">
+        <div class="title">{{ this.$t('storage.nodeDetail.share') }}</div>
+        <div class="value">{{ m_share }}</div>
+      </div>
+      <div class="item">
         <div class="title">{{ this.$t('storage.nodeDetail.updated') }}</div>
         <div class="value">{{ m_updated }}</div>
       </div>
@@ -76,14 +80,14 @@ import { removeBothEndsSlash } from 'web-base-lib'
 @Component({
   components: { CompImg },
 })
-export default class StorageFileView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
+export default class StorageNodeDetailView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables
   //
   //----------------------------------------------------------------------
 
-  private m_filePath: string | null = null
+  private m_nodePath: string | null = null
 
   private m_fileNode: StorageTreeNode | null = null
 
@@ -117,6 +121,15 @@ export default class StorageFileView extends mixins(BaseComponent, Resizable, St
     return bytes(this.m_fileNode.size)
   }
 
+  private get m_share(): string {
+    if (!this.m_fileNode) return ''
+    if (this.m_fileNode.share.isPublic) {
+      return String(this.$t('storage.share.public'))
+    } else {
+      return String(this.$t('storage.share.private'))
+    }
+  }
+
   private get m_bytes(): string {
     if (!this.m_fileNode) return ''
     return this.m_fileNode.size.toLocaleString()
@@ -141,22 +154,22 @@ export default class StorageFileView extends mixins(BaseComponent, Resizable, St
   //----------------------------------------------------------------------
 
   /**
-   * ビューに表示するファイルのパスを設定します。
-   * @param filePath
+   * ビューに表示するノードのパスを設定します。
+   * @param nodePath
    */
-  setFilePath(filePath: string): void {
+  setNodePath(nodePath: string): void {
     const clear = () => {
       this.m_fileNode = null
       this.m_textData = ''
     }
 
-    filePath = removeBothEndsSlash(filePath)
-    if (this.m_filePath !== filePath) {
+    nodePath = removeBothEndsSlash(nodePath)
+    if (this.m_nodePath !== nodePath) {
       clear()
     }
 
-    this.m_filePath = filePath
-    this.m_fileNode = this.treeStore.getNode(filePath)!
+    this.m_nodePath = nodePath
+    this.m_fileNode = this.treeStore.getNode(nodePath)!
 
     if (this.m_isText) {
       this.m_loadTextFile(this.m_url)

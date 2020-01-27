@@ -57,6 +57,7 @@
             @move-selected="m_treeViewOnMoveSelected([$event.value])"
             @rename-selected="m_treeViewOnRenameSelected($event.value)"
             @delete-selected="m_onDeleteSelected([$event.value])"
+            @share-selected="m_onShareSelected([$event.value])"
           />
         </div>
       </template>
@@ -83,6 +84,7 @@
               @move-selected="m_treeViewOnMoveSelected($event)"
               @rename-selected="m_treeViewOnRenameSelected($event)"
               @delete-selected="m_onDeleteSelected($event)"
+              @share-selected="m_onShareSelected($event)"
             />
           </div>
         </div>
@@ -92,7 +94,8 @@
     <storage-dir-create-dialog ref="dirCreateDialog" />
     <storage-node-move-dialog ref="nodeMoveDialog" :storage-type="storageType" />
     <storage-node-rename-dialog ref="nodeRenameDialog" />
-    <storage-nodes-remove-dialog ref="nodesRemoveDialog" />
+    <storage-node-remove-dialog ref="nodeRemoveDialog" />
+    <storage-node-share-dialog ref="nodeShareDialog" />
 
     <comp-storage-upload-progress-float
       ref="uploadProgressFloat"
@@ -105,14 +108,25 @@
 
 <script lang="ts">
 import * as path from 'path'
-import { BaseComponent, CompStorageUploadProgressFloat, CompTreeView, NoCache, Resizable, StorageNode, StorageNodeType, User } from '@/lib'
+import {
+  BaseComponent,
+  CompStorageUploadProgressFloat,
+  CompTreeView,
+  NoCache,
+  Resizable,
+  StorageNode,
+  StorageNodeShareSettings,
+  StorageNodeType,
+  User,
+} from '@/lib'
 import { RawLocation, Route } from 'vue-router'
 import { Component } from 'vue-property-decorator'
 import StorageDirCreateDialog from '@/example/views/demo/storage/storage-dir-create-dialog.vue'
 import StorageDirView from '@/example/views/demo/storage/storage-dir-view.vue'
 import StorageNodeMoveDialog from '@/example/views/demo/storage/storage-node-move-dialog.vue'
+import StorageNodeRemoveDialog from '@/example/views/demo/storage/storage-node-remove-dialog.vue'
 import StorageNodeRenameDialog from '@/example/views/demo/storage/storage-node-rename-dialog.vue'
-import StorageNodesRemoveDialog from '@/example/views/demo/storage/storage-nodes-remove-dialog.vue'
+import StorageNodeShareDialog from '@/example/views/demo/storage/storage-node-share-dialog.vue'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import { StorageTypeMixin } from '@/example/views/demo/storage/base'
 import Vue from 'vue'
@@ -139,7 +153,8 @@ let isPulledAppStorageNodes: boolean = false
     StorageDirCreateDialog,
     StorageNodeMoveDialog,
     StorageNodeRenameDialog,
-    StorageNodesRemoveDialog,
+    StorageNodeRemoveDialog,
+    StorageNodeShareDialog,
   },
 })
 export default class StoragePage extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
@@ -240,8 +255,13 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   }
 
   @NoCache
-  private get m_nodesRemoveDialog(): StorageNodesRemoveDialog {
-    return this.$refs.nodesRemoveDialog as StorageNodesRemoveDialog
+  private get m_nodeRemoveDialog(): StorageNodeRemoveDialog {
+    return this.$refs.nodeRemoveDialog as StorageNodeRemoveDialog
+  }
+
+  @NoCache
+  private get m_nodeShareDialog(): StorageNodeShareDialog {
+    return this.$refs.nodeShareDialog as StorageNodeShareDialog
   }
 
   @NoCache
@@ -526,6 +546,48 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   }
 
   /**
+   * ノードの共有設定を行います。
+   * @param treeNodes 共有設定するツリーノード
+   * @param settings 共有設定の内容
+   */
+  private async m_setShareSettings(treeNodes: StorageTreeNode[], settings: StorageNodeShareSettings): Promise<void> {
+    const showNotification = (treeNode: StorageTreeNode) => {
+      this.$q.notify({
+        icon: 'report',
+        position: 'bottom-left',
+        message: String(this.$t('storage.share.sharingError', { nodeName: treeNode.label })),
+        timeout: 0,
+        actions: [{ icon: 'close', color: 'white' }],
+      })
+    }
+
+    this.$q.loading.show()
+
+    const promises: Promise<void>[] = []
+    for (const treeNode of treeNodes) {
+      if (treeNode.nodeType === StorageNodeType.Dir) {
+        const promise = this.storageLogic.setDirShareSettings(treeNode.value, settings).catch(err => {
+          console.error(err)
+          showNotification(treeNode)
+        }) as Promise<void>
+        promises.push(promise)
+      } else if (treeNode.nodeType === StorageNodeType.File) {
+        const promise = this.storageLogic.setFileShareSettings(treeNode.value, settings).catch(err => {
+          console.error(err)
+          showNotification(treeNode)
+        }) as Promise<void>
+        promises.push(promise)
+      }
+    }
+    await Promise.all(promises)
+
+    // 現在の選択ノードでページをリフレッシュ
+    this.m_moveByRouter(this.treeStore.selectedNode.value)
+
+    this.$q.loading.hide()
+  }
+
+  /**
    * 指定ノードのパスをURLへ付与し、このノードをもとにページをリフレッシュします。
    * @param nodePath ノードパス
    */
@@ -763,9 +825,21 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    */
   private async m_onDeleteSelected(nodePaths: string[]) {
     const nodes = nodePaths.map(nodePath => this.treeStore.getNode(nodePath)!)
-    const confirmed = await this.m_nodesRemoveDialog.open(nodes)
+    const confirmed = await this.m_nodeRemoveDialog.open(nodes)
     if (confirmed) {
       await this.m_removeNodes(nodes)
+    }
+  }
+
+  /**
+   * ツリービューのノードコンテキストメニューで共有が選択された際のリスナです。
+   * @param nodePaths
+   */
+  private async m_onShareSelected(nodePaths: string[]) {
+    const nodes = nodePaths.map(nodePath => this.treeStore.getNode(nodePath)!)
+    const settings = await this.m_nodeShareDialog.open(nodes)
+    if (settings) {
+      await this.m_setShareSettings(nodes, settings)
     }
   }
 }

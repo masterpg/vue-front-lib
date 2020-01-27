@@ -1,16 +1,23 @@
 import { CompTreeNode, CompTreeView, StorageNode, StorageNodeType } from '@/lib'
 import { StorageTreeStore, newStorageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
+import { StorageNodeShareSettings } from '@/lib'
 import dayjs from 'dayjs'
 import { i18n } from '@/example/i18n'
 import { initExampleTest } from '../../../../../helpers/example/init'
-import { mount } from '@vue/test-utils'
 import { logic } from '@/example/logic'
+import { mount } from '@vue/test-utils'
+const cloneDeep = require('lodash/cloneDeep')
 
 //========================================================================
 //
 //  Test data
 //
 //========================================================================
+
+const EMPTY_SHARE_SETTINGS: StorageNodeShareSettings = {
+  isPublic: false,
+  uids: [],
+}
 
 const d1: StorageNode = {
   nodeType: StorageNodeType.Dir,
@@ -19,6 +26,7 @@ const d1: StorageNode = {
   path: 'd1',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -30,6 +38,7 @@ const d11: StorageNode = {
   path: 'd1/d11',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -41,6 +50,7 @@ const fileA: StorageNode = {
   path: 'd1/d11/fileA.txt',
   contentType: 'text/plain; charset=utf-8',
   size: 5,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -52,6 +62,7 @@ const d12: StorageNode = {
   path: 'd1/d12',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -63,6 +74,7 @@ const d2: StorageNode = {
   path: 'd2',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -74,6 +86,7 @@ const d21: StorageNode = {
   path: 'd2/d21',
   contentType: '',
   size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -85,6 +98,7 @@ const fileB: StorageNode = {
   path: 'd2/d21/fileB.txt',
   contentType: 'text/plain; charset=utf-8',
   size: 5,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -96,6 +110,7 @@ const fileC: StorageNode = {
   path: 'fileC.txt',
   contentType: 'text/plain; charset=utf-8',
   size: 5,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
 }
@@ -386,6 +401,7 @@ describe('moveNode', () => {
       path: 'd1',
       contentType: '',
       size: 0,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -396,6 +412,7 @@ describe('moveNode', () => {
       path: 'd1/docs',
       contentType: '',
       size: 0,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -406,6 +423,7 @@ describe('moveNode', () => {
       path: 'd1/docs/aaa',
       contentType: '',
       size: 0,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -416,6 +434,7 @@ describe('moveNode', () => {
       path: 'd1/docs/aaa/fileA.txt',
       contentType: 'text/plain; charset=utf-8',
       size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -426,6 +445,7 @@ describe('moveNode', () => {
       path: 'd1/docs/fileB.txt',
       contentType: 'text/plain; charset=utf-8',
       size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -436,6 +456,7 @@ describe('moveNode', () => {
       path: 'd1/docs/fileC.txt',
       contentType: 'text/plain; charset=utf-8',
       size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -446,6 +467,7 @@ describe('moveNode', () => {
       path: 'docs',
       contentType: '',
       size: 0,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: FM_UPDATED,
     }
@@ -456,6 +478,7 @@ describe('moveNode', () => {
       path: 'docs/aaa',
       contentType: '',
       size: 0,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -466,6 +489,7 @@ describe('moveNode', () => {
       path: 'docs/aaa/fileA.txt',
       contentType: 'text/plain; charset=utf-8',
       size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -476,6 +500,7 @@ describe('moveNode', () => {
       path: 'docs/fileB.txt',
       contentType: 'text/plain; charset=utf-8',
       size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -486,6 +511,7 @@ describe('moveNode', () => {
       path: 'docs/fileD.txt',
       contentType: 'text/plain; charset=utf-8',
       size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: TO_UPDATED,
     }
@@ -496,6 +522,7 @@ describe('moveNode', () => {
       path: 'docs/fileE.txt',
       contentType: 'text/plain; charset=utf-8',
       size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
       created: dayjs(),
       updated: TO_UPDATED,
     }

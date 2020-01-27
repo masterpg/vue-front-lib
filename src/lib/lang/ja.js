@@ -7,6 +7,7 @@ export default {
     delete: '削除',
     failed: '失敗',
     move: '移動',
+    share: '共有',
     rename: '名前変更',
     reload: 'リロード',
     error: 'エラー',
@@ -20,6 +21,7 @@ export default {
     moveSomehow: '{somehow}の移動',
     renameSomehow: '{somehow}の名前変更',
     uploadSomehow: '{somehow}のアップロード',
+    shareSomehow: '{somehow}の共有',
   },
   error: {
     required: '「{target}」は必須です。',

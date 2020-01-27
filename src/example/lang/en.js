@@ -37,10 +37,17 @@ export default merge(require('@/lib/lang/en').default, {
       renamingNodeNameIsNotChanged: 'The name has not changed.',
       renamingError: 'An error occurred while renaming "{nodeName}".',
     },
+    share: {
+      selectPublicPrompt: 'Choose whether to publish {nodeType}:',
+      public: 'Public',
+      private: 'Private',
+      sharingError: 'An error occurred while sharing "{nodeName}".',
+    },
     nodeDetail: {
       name: 'Name',
       type: 'Type',
       size: 'Size',
+      share: 'Share',
       path: 'Path',
       url: 'URL',
       updated: 'Updated',

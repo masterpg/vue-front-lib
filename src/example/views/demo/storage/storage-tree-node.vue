@@ -126,6 +126,9 @@
             <q-item v-close-popup clickable>
               <q-item-section @click="m_dispatchDeleteSelected()">{{ $t('common.delete') }}</q-item-section>
             </q-item>
+            <q-item v-close-popup clickable>
+              <q-item-section @click="m_dispatchShareSelected()">{{ $t('common.share') }}</q-item-section>
+            </q-item>
           </q-list>
           <!-- ファイル用メニュー -->
           <q-list v-show="m_isFile" dense style="min-width: 100px">
@@ -138,6 +141,9 @@
             <q-item v-close-popup clickable>
               <q-item-section @click="m_dispatchDeleteSelected()">{{ $t('common.delete') }}</q-item-section>
             </q-item>
+            <q-item v-close-popup clickable>
+              <q-item-section @click="m_dispatchShareSelected()">{{ $t('common.share') }}</q-item-section>
+            </q-item>
           </q-list>
         </q-menu>
       </div>
@@ -149,7 +155,7 @@
 </template>
 
 <script lang="ts">
-import { CompTreeNode, CompTreeNodeEditData, NoCache, StorageNodeType } from '@/lib'
+import { CompTreeNode, CompTreeNodeEditData, NoCache, StorageNodeShareSettings, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { Dayjs } from 'dayjs'
 import { StorageTreeNodeData } from '@/example/views/demo/storage/base'
@@ -171,6 +177,7 @@ export default class StorageTreeNode extends CompTreeNode {
       'move-selected',
       'rename-selected',
       'delete-selected',
+      'share-selected',
     ]
   }
 
@@ -192,6 +199,10 @@ export default class StorageTreeNode extends CompTreeNode {
 
   get size(): number {
     return this.nodeData.size
+  }
+
+  get share(): StorageNodeShareSettings {
+    return this.nodeData.share
   }
 
   get baseURL(): string {
@@ -256,6 +267,12 @@ export default class StorageTreeNode extends CompTreeNode {
     if (typeof editData.size === 'number') {
       this.nodeData.size = editData.size
     }
+    if (editData.share) {
+      this.nodeData.share = {
+        isPublic: editData.share.isPublic,
+        uids: [...editData.share.uids],
+      }
+    }
     if (typeof editData.baseURL === 'string') {
       this.nodeData.baseURL = editData.baseURL
     }
@@ -293,6 +310,10 @@ export default class StorageTreeNode extends CompTreeNode {
 
   private m_dispatchDeleteSelected(): void {
     this.dispatchExtraEvent('delete-selected')
+  }
+
+  private m_dispatchShareSelected(): void {
+    this.dispatchExtraEvent('share-selected')
   }
 
   //----------------------------------------------------------------------

@@ -1,7 +1,7 @@
 import * as _path from 'path'
-import { APIStorageNode, api } from '../../api'
 import { AppStorageLogic, UserStorageLogic } from '../../types'
 import { AppStorageStore, UserStorageStore, store } from '../../store'
+import { StorageNode, StorageNodeShareSettingsInput, api } from '../../api'
 import { AppStorageUploadManager } from './app-upload'
 import { BaseStorageLogic } from './base-storage'
 import { Component } from 'vue-property-decorator'
@@ -30,36 +30,44 @@ export class UserStorageLogicImpl extends BaseStorageLogic implements UserStorag
     return new UserStorageUrlUploadManager(owner)
   }
 
-  protected storageDirNodes(dirPath?: string): Promise<APIStorageNode[]> {
+  protected storageDirNodes(dirPath?: string): Promise<StorageNode[]> {
     return api.userStorageDirNodes(dirPath)
   }
 
-  protected createStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+  protected createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
     return api.createUserStorageDirs(dirPaths)
   }
 
-  protected removeStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+  protected removeStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
     return api.removeUserStorageDirs(dirPaths)
   }
 
-  protected removeStorageFiles(filePaths: string[]): Promise<APIStorageNode[]> {
+  protected removeStorageFiles(filePaths: string[]): Promise<StorageNode[]> {
     return api.removeUserStorageFiles(filePaths)
   }
 
-  protected moveStorageDir(fromDirPath: string, toDirPath: string): Promise<APIStorageNode[]> {
+  protected moveStorageDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
     return api.moveUserStorageDir(fromDirPath, toDirPath)
   }
 
-  protected moveStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode> {
+  protected moveStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode> {
     return api.moveUserStorageFile(fromFilePath, toFilePath)
   }
 
-  protected renameStorageDir(dirPath: string, newName: string): Promise<APIStorageNode[]> {
+  protected renameStorageDir(dirPath: string, newName: string): Promise<StorageNode[]> {
     return api.renameUserStorageDir(dirPath, newName)
   }
 
-  protected renameStorageFile(filePath: string, newName: string): Promise<APIStorageNode> {
+  protected renameStorageFile(filePath: string, newName: string): Promise<StorageNode> {
     return api.renameUserStorageFile(filePath, newName)
+  }
+
+  protected setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]> {
+    return api.setUserStorageDirShareSettings(dirPath, settings)
+  }
+
+  protected setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
+    return api.setUserStorageFileShareSettings(filePath, settings)
   }
 }
 
@@ -78,36 +86,44 @@ export class AppStorageLogicImpl extends BaseStorageLogic implements AppStorageL
     return new AppStorageUploadManager(owner)
   }
 
-  protected storageDirNodes(dirPath?: string): Promise<APIStorageNode[]> {
+  protected storageDirNodes(dirPath?: string): Promise<StorageNode[]> {
     return api.storageDirNodes(dirPath)
   }
 
-  protected createStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+  protected createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
     return api.createStorageDirs(dirPaths)
   }
 
-  protected removeStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+  protected removeStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
     return api.removeStorageDirs(dirPaths)
   }
 
-  protected removeStorageFiles(filePaths: string[]): Promise<APIStorageNode[]> {
+  protected removeStorageFiles(filePaths: string[]): Promise<StorageNode[]> {
     return api.removeStorageFiles(filePaths)
   }
 
-  protected moveStorageDir(fromDirPath: string, toDirPath: string): Promise<APIStorageNode[]> {
+  protected moveStorageDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
     return api.moveStorageDir(fromDirPath, toDirPath)
   }
 
-  protected moveStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode> {
+  protected moveStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode> {
     return api.moveStorageFile(fromFilePath, toFilePath)
   }
 
-  protected renameStorageDir(dirPath: string, newName: string): Promise<APIStorageNode[]> {
+  protected renameStorageDir(dirPath: string, newName: string): Promise<StorageNode[]> {
     return api.renameStorageDir(dirPath, newName)
   }
 
-  protected renameStorageFile(filePath: string, newName: string): Promise<APIStorageNode> {
+  protected renameStorageFile(filePath: string, newName: string): Promise<StorageNode> {
     return api.renameStorageFile(filePath, newName)
+  }
+
+  protected setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]> {
+    return api.setStorageDirShareSettings(dirPath, settings)
+  }
+
+  protected setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
+    return api.setStorageFileShareSettings(filePath, settings)
   }
 }
 

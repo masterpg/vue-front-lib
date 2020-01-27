@@ -165,6 +165,32 @@ describe('Storage API', () => {
     })
   })
 
+  describe('setUserStorageDirShareSettings', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(GENERAL_USER)
+      await api.createUserStorageDirs([`dir1`])
+      await api.uploadTestFiles([{ filePath: `${userStorageBasePath}/dir1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+
+      const actual = await api.setUserStorageDirShareSettings(`dir1`, { isPublic: true, uids: ['ichiro'] })
+
+      expect(actual.length).toBe(2)
+      expect(actual[0].path).toBe(`dir1`)
+      expect(actual[1].path).toBe(`dir1/fileA.txt`)
+    })
+  })
+
+  describe('setUserStorageFileShareSettings', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(GENERAL_USER)
+      await api.createUserStorageDirs([`dir1`])
+      await api.uploadTestFiles([{ filePath: `${userStorageBasePath}/dir1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+
+      const actual = await api.setUserStorageFileShareSettings(`dir1/fileA.txt`, { isPublic: true, uids: ['ichiro'] })
+
+      expect(actual.path).toBe(`dir1/fileA.txt`)
+    })
+  })
+
   describe('storageDirNodes', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
@@ -265,6 +291,32 @@ describe('Storage API', () => {
       const actual = await api.renameStorageFile(`${TEST_FILES_DIR}/dir1/fileA.txt`, `fileB.txt`)
 
       expect(actual.path).toBe(`${TEST_FILES_DIR}/dir1/fileB.txt`)
+    })
+  })
+
+  describe('setStorageDirShareSettings', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(APP_ADMIN_USER)
+      await api.createStorageDirs([`${TEST_FILES_DIR}/dir1`])
+      await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/dir1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+
+      const actual = await api.setStorageDirShareSettings(`${TEST_FILES_DIR}/dir1`, { isPublic: true, uids: ['ichiro'] })
+
+      expect(actual.length).toBe(2)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/dir1`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/dir1/fileA.txt`)
+    })
+  })
+
+  describe('setStorageFileShareSettings', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(APP_ADMIN_USER)
+      await api.createStorageDirs([`${TEST_FILES_DIR}/dir1`])
+      await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/dir1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+
+      const actual = await api.setStorageFileShareSettings(`${TEST_FILES_DIR}/dir1/fileA.txt`, { isPublic: true, uids: ['ichiro'] })
+
+      expect(actual.path).toBe(`${TEST_FILES_DIR}/dir1/fileA.txt`)
     })
   })
 })

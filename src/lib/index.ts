@@ -14,11 +14,13 @@ export { BaseSWManager, SWChangeState, SWStateChangeInfo, StateChangeLister, set
 
 export {
   APIResponseStorageNode,
-  APIStorageNode,
-  APIStorageNodeType,
   BaseGQLAPIContainer,
   BaseRESTAPIContainer,
   LibAPIContainer,
+  StorageNode,
+  StorageNodeShareSettings,
+  StorageNodeShareSettingsInput,
+  StorageNodeType,
   setAPI,
 } from './logic/api'
 
@@ -29,8 +31,6 @@ export {
   BaseStoreContainer,
   LibStoreContainer,
   StatePartial,
-  StorageNode,
-  StorageNodeType,
   StorageState,
   StoreError,
   User,

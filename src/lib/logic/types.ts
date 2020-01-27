@@ -1,5 +1,6 @@
-import { StorageNode, User } from './store'
+import { StorageNode, StorageNodeShareSettingsInput } from './api'
 import { StorageUploadManager } from './modules/storage'
+import { User } from './store'
 
 //========================================================================
 //
@@ -29,6 +30,10 @@ export interface StorageLogic {
   renameDir(dirPath: string, newName: string): Promise<StorageNode[]>
 
   renameFile(filePath: string, newName: string): Promise<StorageNode>
+
+  setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]>
+
+  setFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
   newUploadManager(owner: Element): StorageUploadManager
 }

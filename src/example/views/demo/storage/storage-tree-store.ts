@@ -296,6 +296,10 @@ export class StorageTreeStore extends Vue {
       nodeType: StorageNodeType.Dir,
       contentType: '',
       size: 0,
+      share: {
+        isPublic: false,
+        uids: [],
+      },
       baseURL: this.m_storageLogic.baseURL,
       created: dayjs(0),
       updated: dayjs(0),
@@ -320,6 +324,10 @@ export class StorageTreeStore extends Vue {
         nodeType: source.nodeType,
         contentType: source.contentType,
         size: source.size,
+        share: {
+          isPublic: source.share.isPublic,
+          uids: [...source.share.uids],
+        },
         baseURL: source.baseURL,
         created: source.createdDate,
         updated: source.updatedDate,
@@ -334,6 +342,10 @@ export class StorageTreeStore extends Vue {
         nodeType: source.nodeType,
         contentType: source.contentType,
         size: source.size,
+        share: {
+          isPublic: source.share.isPublic,
+          uids: [...source.share.uids],
+        },
         baseURL: this.m_storageLogic.baseURL,
         created: source.created,
         updated: source.updated,

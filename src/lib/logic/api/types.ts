@@ -11,39 +11,47 @@ export interface LibAPIContainer {
 
   customToken(): Promise<string>
 
-  userStorageDirNodes(dirPath?: string): Promise<APIStorageNode[]>
+  userStorageDirNodes(dirPath?: string): Promise<StorageNode[]>
 
-  createUserStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]>
+  createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 
-  removeUserStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]>
+  removeUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 
-  removeUserStorageFiles(filePaths: string[]): Promise<APIStorageNode[]>
+  removeUserStorageFiles(filePaths: string[]): Promise<StorageNode[]>
 
-  moveUserStorageDir(fromDirPath: string, toDirPath: string): Promise<APIStorageNode[]>
+  moveUserStorageDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]>
 
-  moveUserStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode>
+  moveUserStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode>
 
-  renameUserStorageDir(dirPath: string, newName: string): Promise<APIStorageNode[]>
+  renameUserStorageDir(dirPath: string, newName: string): Promise<StorageNode[]>
 
-  renameUserStorageFile(filePath: string, newName: string): Promise<APIStorageNode>
+  renameUserStorageFile(filePath: string, newName: string): Promise<StorageNode>
 
-  storageDirNodes(dirPath?: string): Promise<APIStorageNode[]>
+  setUserStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]>
 
-  createStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]>
+  setUserStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
-  removeStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]>
+  storageDirNodes(dirPath?: string): Promise<StorageNode[]>
 
-  removeStorageFiles(filePaths: string[]): Promise<APIStorageNode[]>
+  createStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 
-  moveStorageDir(fromDirPath: string, toDirPath: string): Promise<APIStorageNode[]>
+  removeStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 
-  moveStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode>
+  removeStorageFiles(filePaths: string[]): Promise<StorageNode[]>
 
-  renameStorageDir(dirPath: string, newName: string): Promise<APIStorageNode[]>
+  moveStorageDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]>
 
-  renameStorageFile(filePath: string, newName: string): Promise<APIStorageNode>
+  moveStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode>
+
+  renameStorageDir(dirPath: string, newName: string): Promise<StorageNode[]>
+
+  renameStorageFile(filePath: string, newName: string): Promise<StorageNode>
 
   getSignedUploadUrls(params: { filePath: string; contentType?: string }[]): Promise<string[]>
+
+  setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]>
+
+  setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 }
 
 //========================================================================
@@ -52,27 +60,37 @@ export interface LibAPIContainer {
 //
 //========================================================================
 
+export enum StorageNodeType {
+  File = 'File',
+  Dir = 'Dir',
+}
+
 export interface AppConfigResponse {
   usersDir: string
 }
 
 export interface APIResponseStorageNode {
-  nodeType: APIStorageNodeType
+  nodeType: StorageNodeType
   name: string
   dir: string
   path: string
   contentType: string
   size: number
+  share: StorageNodeShareSettings
   created: string
   updated: string
 }
 
-export interface APIStorageNode extends Omit<APIResponseStorageNode, 'created' | 'updated'> {
+export interface StorageNode extends Omit<APIResponseStorageNode, 'created' | 'updated'> {
   created: Dayjs
   updated: Dayjs
 }
 
-export enum APIStorageNodeType {
-  File = 'File',
-  Dir = 'Dir',
+export interface StorageNodeShareSettings {
+  isPublic: boolean
+  uids: string[]
+}
+
+export interface StorageNodeShareSettingsInput extends Omit<StorageNodeShareSettings, 'uids'> {
+  uids?: string[]
 }

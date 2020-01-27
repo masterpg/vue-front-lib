@@ -1,5 +1,5 @@
-import { APIStorageNode, APIStorageNodeType as StorageNodeType } from '../api'
 import { Dayjs } from 'dayjs'
+import { StorageNode } from '../api'
 
 //========================================================================
 //
@@ -91,10 +91,6 @@ export interface User {
   getIsAppAdmin(): Promise<boolean>
 }
 
-export interface StorageNode extends APIStorageNode {
-  nodeType: StorageNodeType
-}
-
 export type StorageNodeForSet = Partial<Omit<StorageNode, 'name' | 'dir'>> & {
   path: string
   created: Dayjs
@@ -107,8 +103,6 @@ export type StorageNodeForSet = Partial<Omit<StorageNode, 'name' | 'dir'>> & {
 //  Constants
 //
 //========================================================================
-
-export { StorageNodeType }
 
 //========================================================================
 //

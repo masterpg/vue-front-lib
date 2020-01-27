@@ -1,4 +1,4 @@
-import { ChildrenSortFunc, CompTreeNodeData, StorageLogic, StorageNodeType } from '@/lib'
+import { ChildrenSortFunc, CompTreeNodeData, StorageLogic, StorageNodeShareSettings, StorageNodeType } from '@/lib'
 import { Component, Prop } from 'vue-property-decorator'
 import { StorageRoute, router } from '@/example/router'
 import { StorageTreeStore, newStorageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
@@ -13,6 +13,7 @@ export interface StorageTreeNodeData extends CompTreeNodeData {
   nodeType: StorageNodeType
   contentType: string
   size: number
+  share: StorageNodeShareSettings
   baseURL: string
   created: Dayjs
   updated: Dayjs
