@@ -62,6 +62,7 @@ export {
   ChildrenSortFunc,
   CompAlertDialog,
   CompImg,
+  CompStorageImg,
   CompStorageUploadProgressFloat,
   CompTreeCheckboxNode,
   CompTreeCheckboxNodeData,

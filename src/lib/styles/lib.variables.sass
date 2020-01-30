@@ -24,7 +24,7 @@ $warning: #F2C037 !default
 
 $text-primary-color: $grey-9 !default
 $text-secondary-color: $grey-6 !default
-$text-disabled-color: $grey-4 !default
+$text-disabled-color: $grey-6 !default
 $text-accent-color: $pink-12 !default
 $text-error-color: $red-14 !default
 
@@ -65,5 +65,8 @@ $app-link-font-weight: map-get($text-weights, "medium") !default
   color: $app-link-color
   font-weight: $app-link-font-weight
   cursor: pointer
-  &:hover
+  &:not([disabled]):hover
     text-decoration: underline
+  &[disabled]
+    color: $text-disabled-color
+    pointer-events: none

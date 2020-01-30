@@ -59,7 +59,7 @@
     <div ref="spinnerContainer" class="spinner-container layout vertical center-center" hidden>
       <div style="height: 20px"><div class="spinner spinner-type-one" /></div>
     </div>
-    <img ref="img" :src="src" :alt="alt" h-align="center" class="img-tag" @load="m_imgOnLoad" />
+    <img ref="img" :src="src" :alt="alt" h-align="center" class="img-tag" @load="imgOnLoad" />
   </div>
 </template>
 
@@ -97,7 +97,7 @@ export default class CompImg extends mixins(BaseComponent, Resizable) {
 
   @Watch('src')
   private m_srcOnChange(newValue: string, oldValue: string): void {
-    this.m_srcChanged(newValue, oldValue)
+    this.srcChanged(newValue, oldValue)
   }
 
   @Prop({ default: '' })
@@ -119,9 +119,6 @@ export default class CompImg extends mixins(BaseComponent, Resizable) {
     this.m_vAlignChanged(newValue, oldValue as AlignType | undefined)
   }
 
-  @Prop({ default: true })
-  autoSpinner!: boolean
-
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -133,17 +130,17 @@ export default class CompImg extends mixins(BaseComponent, Resizable) {
   //--------------------------------------------------
 
   @NoCache
-  get m_container(): HTMLElement {
-    return this.$refs.container as HTMLElement
-  }
-
-  @NoCache
-  get m_img(): HTMLImageElement {
+  protected get img(): HTMLImageElement {
     return this.$refs.img as HTMLImageElement
   }
 
   @NoCache
-  get m_spinnerContainer(): HTMLElement {
+  private get m_container(): HTMLElement {
+    return this.$refs.container as HTMLElement
+  }
+
+  @NoCache
+  private get m_spinnerContainer(): HTMLElement {
     return this.$refs.spinnerContainer as HTMLElement
   }
 
@@ -153,7 +150,7 @@ export default class CompImg extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
-  spinner(spin: boolean) {
+  spinner(spin: boolean): void {
     if (spin) {
       const opacity = parseFloat(this.m_spinnerContainer.style.opacity || '0')
       if (opacity === 1) {
@@ -190,23 +187,21 @@ export default class CompImg extends mixins(BaseComponent, Resizable) {
    * @param newValue
    * @param oldValue
    */
-  private m_srcChanged(newValue: string, oldValue: string | undefined) {
+  protected srcChanged(newValue: string, oldValue?: string) {
+    this.img.style.opacity = '0'
     if (this.src) {
-      if (this.autoSpinner) {
-        this.spinner(true)
-      }
-      this.m_img.style.opacity = '0'
+      this.spinner(true)
     } else {
-      if (this.autoSpinner) {
-        this.spinner(false)
-      }
-      this.m_img.style.opacity = '0'
+      this.spinner(false)
     }
 
-    this.src = newValue || ''
+    // 現在の画像のサイズを一旦固定
+    // ※画像切り替わり時のガタつき回避のため
+    const imgStyle = getComputedStyle(this.img)
+    this.img.style.width = imgStyle.width
+    this.img.style.height = imgStyle.height
 
-    this.m_img.style.width = 'auto'
-    this.m_img.style.height = 'auto'
+    this.src = newValue || ''
   }
 
   /**
@@ -248,7 +243,7 @@ export default class CompImg extends mixins(BaseComponent, Resizable) {
    * 現在のimgのアスペクト比を取得します。
    */
   private m_getCurrentAspect(): number {
-    const num = this.m_img.width / this.m_img.height
+    const num = this.img.width / this.img.height
     return num
   }
 
@@ -256,7 +251,7 @@ export default class CompImg extends mixins(BaseComponent, Resizable) {
    * 画像本来のアスペクト比を取得します。
    */
   private m_getOriginalAspect(): number {
-    const num = this.m_img.naturalWidth / this.m_img.naturalHeight
+    const num = this.img.naturalWidth / this.img.naturalHeight
     return num
   }
 
@@ -285,7 +280,7 @@ export default class CompImg extends mixins(BaseComponent, Resizable) {
 
   private m_fadeInImg() {
     anime({
-      targets: this.m_img,
+      targets: this.img,
       opacity: 1,
       duration: 500,
       easing: 'easeInOutQuad',
@@ -298,14 +293,15 @@ export default class CompImg extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
-  private m_onComponentResize(e) {}
+  protected imgOnLoad(e) {
+    // ロードされた画像サイズへ自動調整
+    this.img.style.width = 'auto'
+    this.img.style.height = 'auto'
 
-  private m_imgOnLoad(e) {
     this.m_fadeInImg()
-
-    if (this.autoSpinner) {
-      this.spinner(false)
-    }
+    this.spinner(false)
   }
+
+  private m_onComponentResize(e) {}
 }
 </script>

@@ -9,6 +9,7 @@ export default {
     move: '移動',
     share: '共有',
     rename: '名前変更',
+    download: 'ダウンロード',
     reload: 'リロード',
     error: 'エラー',
     folder: 'フォルダ',

@@ -133,7 +133,7 @@ describe('Cart API', () => {
         actual = err
       }
 
-      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
     })
   })
 
@@ -168,7 +168,7 @@ describe('Cart API', () => {
         actual = err
       }
 
-      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
     })
   })
 
@@ -215,7 +215,7 @@ describe('Cart API', () => {
         actual = err
       }
 
-      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
     })
   })
 
@@ -249,7 +249,7 @@ describe('Cart API', () => {
         actual = err
       }
 
-      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
     })
   })
 
@@ -289,7 +289,7 @@ describe('Cart API', () => {
         actual = err
       }
 
-      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
     })
   })
 
@@ -316,7 +316,7 @@ describe('Cart API', () => {
         actual = err
       }
 
-      expect(getAPIErrorResponse(actual).statusCode).toBe(403)
+      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
     })
   })
 })

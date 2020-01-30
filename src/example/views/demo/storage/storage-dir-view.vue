@@ -261,10 +261,10 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
 
   private m_selectedRows: TableRow[] = []
 
-  private m_visibleNodeDetailRow: TableRow | null = null
+  private m_detailViewNode: StorageTreeNode | null = null
 
   private get m_visibleNodeDetailView(): boolean {
-    return !!this.m_visibleNodeDetailRow
+    return !!this.m_detailViewNode
   }
 
   //--------------------------------------------------
@@ -308,8 +308,19 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
 
     // 前回と今回で設定されるディレクトリパスが同じ場合
     if (this.m_dirPath === dirPath) {
-      if (this.m_visibleNodeDetailRow) {
-        this.m_nodeDetailView.setNodePath(this.m_visibleNodeDetailRow.value)
+      this.m_detailViewNode = (() => {
+        if (!this.m_detailViewNode) return null
+        return this.treeStore.getNode(this.m_detailViewNode.value) || null
+      })()
+      // ノード詳細ビューに表示されていたノードが存在する場合
+      if (this.m_detailViewNode) {
+        // ノード詳細ビューを更新
+        this.m_nodeDetailView.setNodePath(this.m_detailViewNode.value)
+      }
+      // ノード詳細ビューに表示されていたノードが存在しない場合
+      else {
+        // ノード詳細ビューを非表示
+        this.m_detailViewNode = null
       }
     }
     // 前回と今回で設定されるディレクトリパスが異なる場合
@@ -317,7 +328,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
       // ビューをクリア
       clear()
       // ノード詳細ビューを非表示
-      this.m_visibleNodeDetailRow = null
+      this.m_detailViewNode = null
     }
 
     this.m_dirPath = dirPath
@@ -481,7 +492,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
       this.$emit('file-selected', row.value)
       // ノード詳細ビューを表示
       this.m_nodeDetailView.setNodePath(row.value)
-      this.m_visibleNodeDetailRow = row
+      this.m_detailViewNode = this.treeStore.getNode(row.value)!
     }
   }
 
@@ -489,7 +500,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
    * ノード詳細ビューが閉じられる際のリスナです。
    */
   private m_nodeDetailViewOnClose() {
-    this.m_visibleNodeDetailRow = null
+    this.m_detailViewNode = null
   }
 }
 </script>

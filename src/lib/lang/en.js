@@ -9,6 +9,7 @@ export default {
     move: 'Move',
     share: 'Share',
     rename: 'Rename',
+    download: 'Download',
     reload: 'Reload',
     error: 'Error | Errors',
     folder: 'Folder | Folders',
