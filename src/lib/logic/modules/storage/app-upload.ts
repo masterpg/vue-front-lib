@@ -1,4 +1,5 @@
 import { StorageFileUploader, StorageUploadManager } from './base-upload'
+import { StorageNode, api } from '../../api'
 import { Dialog } from 'quasar'
 import { i18n } from '../../../i18n'
 import { store } from '../../store'
@@ -27,5 +28,9 @@ export class AppStorageUploadManager extends StorageUploadManager {
       result.push(fileUploader)
     }
     return result
+  }
+
+  protected handleUploadedFiles(filePaths: string[]): Promise<StorageNode[]> {
+    return api.handleUploadedFiles(filePaths)
   }
 }

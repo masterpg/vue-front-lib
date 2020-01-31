@@ -22,6 +22,10 @@ export abstract class BaseRESTAPIContainer extends BaseRESTClient implements Lib
     throw new Error(`This method 'createUserStorageDirs' is not implemented.`)
   }
 
+  async handleUploadedUserFiles(filePaths: string[]): Promise<StorageNode[]> {
+    throw new Error(`This method 'handleUploadedUserFiles' is not implemented.`)
+  }
+
   moveUserStorageDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
     throw new Error(`This method 'moveUserStorageDir' is not implemented.`)
   }
@@ -60,6 +64,10 @@ export abstract class BaseRESTAPIContainer extends BaseRESTClient implements Lib
 
   async createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
     throw new Error(`This method 'createStorageDirs' is not implemented.`)
+  }
+
+  async handleUploadedFiles(filePaths: string[]): Promise<StorageNode[]> {
+    throw new Error(`This method 'handleUploadedFiles' is not implemented.`)
   }
 
   async removeStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {

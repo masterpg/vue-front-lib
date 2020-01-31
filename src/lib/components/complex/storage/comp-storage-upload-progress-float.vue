@@ -3,6 +3,7 @@
 
 .comp-storage-upload-progress-float-main
   margin: 10px
+  background-color: white
   border-radius: 2px
   box-shadow: $shadow-2
 

@@ -100,6 +100,32 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return this.toAPIStorageNodes(response.data!.createUserStorageDirs)
   }
 
+  async handleUploadedUserFiles(filePaths: string[]): Promise<StorageNode[]> {
+    const response = await this.mutate<{ handleUploadedUserFiles: APIResponseStorageNode[] }>({
+      mutation: gql`
+        mutation HandleUploadedUserFiles($filePaths: [String!]!) {
+          handleUploadedUserFiles(filePaths: $filePaths) {
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              uids
+            }
+            created
+            updated
+          }
+        }
+      `,
+      variables: { filePaths },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data!.handleUploadedUserFiles)
+  }
+
   async removeUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
     const response = await this.mutate<{ removeUserStorageDirs: APIResponseStorageNode[] }>({
       mutation: gql`
@@ -358,6 +384,32 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       isAuth: true,
     })
     return this.toAPIStorageNodes(response.data!.createStorageDirs)
+  }
+
+  async handleUploadedFiles(filePaths: string[]): Promise<StorageNode[]> {
+    const response = await this.mutate<{ handleUploadedFiles: APIResponseStorageNode[] }>({
+      mutation: gql`
+        mutation HandleUploadedFiles($filePaths: [String!]!) {
+          handleUploadedFiles(filePaths: $filePaths) {
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              uids
+            }
+            created
+            updated
+          }
+        }
+      `,
+      variables: { filePaths },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data!.handleUploadedFiles)
   }
 
   async removeStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {

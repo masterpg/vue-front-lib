@@ -1,8 +1,8 @@
 import * as _path from 'path'
 import { StorageFileUploader, StorageUploadManager, UploadFileParam } from './base-upload'
+import { StorageNode, api } from '../../api'
 import axios, { Canceler } from 'axios'
 import { Dialog } from 'quasar'
-import { api } from '../../api'
 import { config } from '../../../config'
 import { i18n } from '../../../i18n'
 import { store } from '../../store'
@@ -34,6 +34,10 @@ export class UserStorageUrlUploadManager extends StorageUploadManager {
       result.push(fileUploader)
     }
     return result
+  }
+
+  protected handleUploadedFiles(filePaths: string[]): Promise<StorageNode[]> {
+    return api.handleUploadedUserFiles(filePaths)
   }
 }
 

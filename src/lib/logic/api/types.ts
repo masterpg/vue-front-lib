@@ -15,6 +15,8 @@ export interface LibAPIContainer {
 
   createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 
+  handleUploadedUserFiles(filePaths: string[]): Promise<StorageNode[]>
+
   removeUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 
   removeUserStorageFiles(filePaths: string[]): Promise<StorageNode[]>
@@ -34,6 +36,8 @@ export interface LibAPIContainer {
   storageDirNodes(dirPath?: string): Promise<StorageNode[]>
 
   createStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
+
+  handleUploadedFiles(filePaths: string[]): Promise<StorageNode[]>
 
   removeStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 

@@ -1,3 +1,4 @@
+export * from './complex/dialog'
 export * from './complex/storage'
 export * from './simple/alert-dialog'
 export * from './simple/img'

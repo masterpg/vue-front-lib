@@ -86,6 +86,19 @@ describe('Storage API', () => {
     })
   })
 
+  describe('handleUploadedUserFiles', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(GENERAL_USER)
+      await api.createUserStorageDirs([`docs`])
+      await api.uploadTestFiles([{ filePath: `${userStorageBasePath}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+
+      const actual = await api.handleUploadedUserFiles([`docs/fileA.txt`])
+
+      expect(actual.length).toBe(1)
+      expect(actual[0].path).toBe(`docs/fileA.txt`)
+    })
+  })
+
   describe('removeUserStorageFiles', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
@@ -212,6 +225,19 @@ describe('Storage API', () => {
       expect(actual[0].path).toBe(`${TEST_FILES_DIR}`)
       expect(actual[1].path).toBe(`${TEST_FILES_DIR}/dir1`)
       expect(actual[2].path).toBe(`${TEST_FILES_DIR}/dir1/dir1_1`)
+    })
+  })
+
+  describe('handleUploadedFiles', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(APP_ADMIN_USER)
+      await api.createStorageDirs([`${TEST_FILES_DIR}/docs`])
+      await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+
+      const actual = await api.handleUploadedFiles([`${TEST_FILES_DIR}/docs/fileA.txt`])
+
+      expect(actual.length).toBe(1)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/docs/fileA.txt`)
     })
   })
 

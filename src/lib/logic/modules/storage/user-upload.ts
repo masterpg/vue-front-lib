@@ -1,5 +1,6 @@
 import * as _path from 'path'
 import { StorageFileUploader, StorageUploadManager } from './base-upload'
+import { StorageNode, api } from '../../api'
 import { Dialog } from 'quasar'
 import { config } from '../../../config'
 import { i18n } from '../../../i18n'
@@ -17,8 +18,7 @@ export class UserStorageUploadManager extends StorageUploadManager {
   }
 
   protected createUploadingFiles(files: File[]): StorageFileUploader[] {
-    const userStorageDir = store.user.myDirName
-    const basePath = _path.join(config.storage.usersDir, userStorageDir)
+    const basePath = _path.join(config.storage.usersDir, store.user.myDirName)
 
     const result: StorageFileUploader[] = []
     for (const file of files) {
@@ -32,5 +32,9 @@ export class UserStorageUploadManager extends StorageUploadManager {
       result.push(fileUploader)
     }
     return result
+  }
+
+  protected handleUploadedFiles(filePaths: string[]): Promise<StorageNode[]> {
+    return api.handleUploadedUserFiles(filePaths)
   }
 }

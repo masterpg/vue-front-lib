@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { api } from '../../api'
+import { StorageNode } from '../../api'
 import { removeEndSlash } from 'web-base-lib'
 
 /**
@@ -162,6 +162,8 @@ export abstract class StorageUploadManager {
 
   protected abstract createUploadingFiles(files: File[]): StorageFileUploader[]
 
+  protected abstract handleUploadedFiles(filePaths: string[]): Promise<StorageNode[]>
+
   /**
    * 指定されたファイルのディレクトリ構造をもとにアップロード先のディレクトリを取得します。
    * @param file
@@ -242,17 +244,6 @@ export abstract class StorageUploadManager {
     // 状態をアップロード中に設定
     this.m_uploading = files.length > 0
 
-    // アップロード先のディレクトリを作成
-    const dirPaths = this.m_uploadingFiles.reduce<string[]>((result, item) => {
-      if (item.dirPath) {
-        result.push(`${item.dirPath}/`)
-      }
-      return result
-    }, [])
-    if (dirPaths.length > 0) {
-      await api.createUserStorageDirs(dirPaths)
-    }
-
     // 実際にアップロードを実行
     for (const uploadingFile of this.m_uploadingFiles) {
       if (uploadingFile.completed) continue
@@ -262,6 +253,11 @@ export abstract class StorageUploadManager {
         console.error(err)
       }
     }
+
+    // ファイルアップロードの後に必要な処理を実行
+    const filePaths = this.m_uploadingFiles.map(uploadingFile => uploadingFile.path)
+    await this.handleUploadedFiles(filePaths)
+
     this.m_ended = true
   }
 }
