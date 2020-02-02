@@ -273,12 +273,17 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
   private m_addNodeByNode(node: CompTreeNode, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
     options = options || {}
 
+    //
     // 一旦親からノードを削除
+    //
     if (node.parent) {
+      // 親ノードから自ノードを削除
       node.parent.removeChild(node)
     } else {
-      // 親がない場合、ツリービューが親
-      this.removeNode(node.value)
+      // 親ノードがない場合ツリービューが親となるので、ツリービューから自ノードを削除
+      if (node.treeView) {
+        node.treeView.removeNode(node.value)
+      }
     }
 
     // ノード挿入位置を決定

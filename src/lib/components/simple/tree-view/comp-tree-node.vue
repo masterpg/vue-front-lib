@@ -127,18 +127,17 @@ export default class CompTreeNode extends BaseComponent {
   /**
    * 本ノードが所属するツリービューです。
    */
-  get treeView(): CompTreeView {
-    const errorMessage = `'CompTreeView' not found.`
-
+  @NoCache
+  get treeView(): CompTreeView | null {
     const rootNode = this.getRootNode()
     const parentElement = rootNode.$el.parentElement
     if (!parentElement) {
-      throw new Error(errorMessage)
+      return null
     }
 
     const treeView = (parentElement as any).__vue__ as CompTreeView | undefined
     if (!treeView || !treeView.isTreeView) {
-      throw new Error(errorMessage)
+      return null
     }
 
     return treeView
@@ -503,6 +502,9 @@ export default class CompTreeNode extends BaseComponent {
 
   private m_addChildByData(childNodeData: CompTreeNodeData, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
     options = options || {}
+    if (!this.treeView) {
+      throw new Error(`'treeView' not found.`)
+    }
 
     if (this.treeView.getNode(childNodeData.value)) {
       throw new Error(`The node "${childNodeData.value}" already exists.`)
@@ -554,12 +556,15 @@ export default class CompTreeNode extends BaseComponent {
       throw new Error(`The specified node "${childNode.value}" contains the new parent "${this.value}".`)
     }
 
-    // 一旦親から子ノードを削除
+    //
+    // 一旦親からノードを削除
+    //
     if (childNode.parent) {
+      // 親ノードから自ノードを削除
       childNode.parent.m_removeChild(childNode, false)
     } else {
-      // 親がない場合、ツリービューが親
-      this.treeView.removeNode(childNode.value)
+      // 親ノードがない場合ツリービューが親となるので、ツリービューから自ノードを削除
+      this.treeView && this.treeView.removeNode(childNode.value)
     }
 
     // ノード挿入位置を決定
