@@ -39,13 +39,11 @@
     overflow: hidden
 
     .label
-      @extend %app-link-text
-      cursor: pointer
+      color: $app-link-color
       span
+        @extend %app-link
+        font-weight: map-get($text-weights, "medium")
         vertical-align: middle
-      &:hover
-        span
-          text-decoration: underline
 
 .file-node-view
   width: 320px

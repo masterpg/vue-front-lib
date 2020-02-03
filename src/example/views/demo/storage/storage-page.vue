@@ -28,7 +28,7 @@
     display: inline-block
     @extend %text-h6
     .path-block
-      @extend %app-pseudo-link
+      @extend %app-link
 
 .view-container
   @extend %layout-vertical

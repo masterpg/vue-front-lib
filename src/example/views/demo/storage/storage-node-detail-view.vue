@@ -28,9 +28,13 @@
     @extend %app-item-value
     @extend %layout-flex-1
     word-break: break-all
+    &.link
+      @extend %app-link
 
 .download-btn
-  @extend %app-pseudo-link
+  @extend %app-link
+  &[disabled]
+    pointer-events: none
 </style>
 
 <template>
@@ -63,7 +67,7 @@
       <div class="layout vertical">
         <div class="item">
           <div class="title">{{ this.$t('storage.nodeDetail.url') }}</div>
-          <div class="value">{{ m_url }}</div>
+          <a class="value link" :href="m_url" target="_blank">{{ m_url }}</a>
         </div>
         <div class="item">
           <div class="title">{{ this.$t('storage.nodeDetail.path') }}</div>

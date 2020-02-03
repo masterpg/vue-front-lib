@@ -57,16 +57,12 @@ $app-item-value-font-weight: map-get($text-weights, "regular") !default
 $app-link-color: $indigo-8 !default
 $app-link-font-weight: map-get($text-weights, "medium") !default
 
-%app-link-text
+%app-link
   color: $app-link-color
-  font-weight: $app-link-font-weight
-
-%app-pseudo-link
-  color: $app-link-color
-  font-weight: $app-link-font-weight
+  text-decoration: none
   cursor: pointer
   &:not([disabled]):hover
     text-decoration: underline
   &[disabled]
     color: $text-disabled-color
-    pointer-events: none
+    cursor: not-allowed !important
