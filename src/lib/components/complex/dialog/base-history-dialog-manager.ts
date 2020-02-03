@@ -64,7 +64,7 @@ export abstract class BaseHistoryDialogManager extends Vue {
     const info = router.getDialogInfo(to)
     if (!info) return
 
-    // URLからダイアログ情報できた場合、対象ダイアログのインスタンスを取得
+    // URLからダイアログ情報が取得できた場合、対象ダイアログのインスタンスを取得
     const dialog = this.dialogs[info.dialogName]
     if (!dialog) {
       console.warn(`There is no dialog named ${info.dialogName}.`)

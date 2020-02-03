@@ -433,6 +433,15 @@ export default class CompTreeNode extends BaseComponent {
   }
 
   /**
+   * 全ての子ノードを削除します。
+   */
+  removeAllChildren(): void {
+    for (const node of [...this.children]) {
+      this.removeChild(node)
+    }
+  }
+
+  /**
    * 子ノードの開閉をトグルします。
    * @param animated
    */

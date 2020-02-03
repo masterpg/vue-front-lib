@@ -291,11 +291,12 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
    * ビューに表示するディレクトリのパスを設定します。
    * @param dirPath
    */
-  setDirPath(dirPath?: string): void {
+  setDirPath(dirPath: string | null): void {
     const clear = () => {
       this.m_children = []
       this.m_childMap = {}
       this.m_table.selected && this.m_table.selected.splice(0)
+      this.m_detailViewNode = null
     }
 
     // 文字列以外が渡された場合、ビューをクリアして終了
@@ -327,8 +328,6 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     else {
       // ビューをクリア
       clear()
-      // ノード詳細ビューを非表示
-      this.m_detailViewNode = null
     }
 
     this.m_dirPath = dirPath

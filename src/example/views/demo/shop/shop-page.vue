@@ -81,7 +81,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, Resizable } from '@/lib'
+import { BaseComponent, Resizable, User } from '@/lib'
 import { CartItem, CheckoutStatus, Product } from '@/example/logic'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
@@ -94,7 +94,15 @@ export default class ShopPage extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
-  created() {}
+  async created() {
+    this.$logic.auth.addSignedInListener(this.m_userOnSignedIn)
+    this.$logic.auth.addSignedOutListener(this.m_userOnSignedOut)
+  }
+
+  destroyed() {
+    this.$logic.auth.removeSignedInListener(this.m_userOnSignedIn)
+    this.$logic.auth.removeSignedOutListener(this.m_userOnSignedOut)
+  }
 
   //----------------------------------------------------------------------
   //
@@ -146,6 +154,20 @@ export default class ShopPage extends mixins(BaseComponent, Resizable) {
     await this.$logic.shop.checkout()
     this.$q.loading.hide()
   }
+
+  /**
+   * ユーザーがサインインした際のリスナです。
+   * @param user
+   */
+  private async m_userOnSignedIn(user: User) {
+    await this.$logic.shop.pullCartItems()
+  }
+
+  /**
+   * ユーザーがサインアウトした際のリスナです。
+   * @param user
+   */
+  private async m_userOnSignedOut(user: User) {}
 }
 </script>
 

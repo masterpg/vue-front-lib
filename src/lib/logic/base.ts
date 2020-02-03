@@ -1,6 +1,15 @@
+import { User } from './store'
 import Vue from 'vue'
 
+export type SignedInListenerFunc = (user: User) => any
+
+export type SignedOutListenerFunc = (user: User) => any
+
 let db: firebase.firestore.Firestore
+
+const signedInListeners: SignedInListenerFunc[] = []
+
+const signedOutListeners: SignedOutListenerFunc[] = []
 
 export abstract class BaseLogic extends Vue {
   //----------------------------------------------------------------------
@@ -24,11 +33,43 @@ export abstract class BaseLogic extends Vue {
     return db
   }
 
+  protected get signedInListeners(): SignedInListenerFunc[] {
+    return [...signedInListeners]
+  }
+
+  protected get signedOutListeners(): SignedOutListenerFunc[] {
+    return [...signedOutListeners]
+  }
+
   //----------------------------------------------------------------------
   //
   //  Internal methods
   //
   //----------------------------------------------------------------------
+
+  protected addSignedInListener(listener: SignedInListenerFunc): void {
+    if (this.signedInListeners.includes(listener)) return
+    signedInListeners.push(listener)
+  }
+
+  protected removeSignedInListener(listener: SignedInListenerFunc): void {
+    const index = this.signedInListeners.indexOf(listener)
+    if (index >= 0) {
+      signedInListeners.splice(index, 1)
+    }
+  }
+
+  protected addSignedOutListener(listener: SignedOutListenerFunc): void {
+    if (signedOutListeners.includes(listener)) return
+    signedOutListeners.push(listener)
+  }
+
+  protected removeSignedOutListener(listener: SignedOutListenerFunc): void {
+    const index = signedOutListeners.indexOf(listener)
+    if (index >= 0) {
+      signedOutListeners.splice(index, 1)
+    }
+  }
 
   /**
    * Firestoreを初期化します。

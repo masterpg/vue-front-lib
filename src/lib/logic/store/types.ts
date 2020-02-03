@@ -46,6 +46,8 @@ export interface StorageStore {
 
   clone(value: StorageNode): StorageNode
 
+  clear(): void
+
   /**
    * ノード配列をディレクトリ階層に従ってソートします。
    * @param values

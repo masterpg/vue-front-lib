@@ -78,6 +78,10 @@ export interface AuthLogic {
   addSignedInListener(listener: (user: User) => any): void
 
   removeSignedInListener(listener: (user: User) => any): void
+
+  addSignedOutListener(listener: (user: User) => any): void
+
+  removeSignedOutListener(listener: (user: User) => any): void
 }
 
 //========================================================================

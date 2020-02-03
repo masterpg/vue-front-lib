@@ -229,6 +229,10 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
     return this.move(path, toPath)
   }
 
+  clear(): void {
+    this.state.all.splice(0)
+  }
+
   clone(value: StorageNode): StorageNode {
     return {
       nodeType: value.nodeType,

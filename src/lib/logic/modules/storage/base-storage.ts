@@ -1,10 +1,23 @@
 import { StorageNode, StorageNodeShareSettingsInput } from '../../api'
+import { StorageStore, User } from '../../store'
 import { BaseLogic } from '../../base'
+import { Component } from 'vue-property-decorator'
 import { StorageLogic } from '../../types'
-import { StorageStore } from '../../store'
 import { StorageUploadManager } from './base-upload'
 
+// @ts-ignore: Vueを継承した抽象クラスに@Componentを付与するとでるエラーの回避
+@Component
 export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic {
+  //----------------------------------------------------------------------
+  //
+  //  Lifecycle hooks
+  //
+  //----------------------------------------------------------------------
+
+  created() {
+    this.addSignedOutListener(this.m_userOnSignedOut)
+  }
+
   //----------------------------------------------------------------------
   //
   //  Properties
@@ -134,4 +147,14 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   protected abstract setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]>
 
   protected abstract setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
+
+  //----------------------------------------------------------------------
+  //
+  //  Event listeners
+  //
+  //----------------------------------------------------------------------
+
+  private m_userOnSignedOut(user: User) {
+    this.storageStore.clear()
+  }
 }

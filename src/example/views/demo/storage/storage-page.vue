@@ -135,16 +135,6 @@ import { scroll } from 'quasar'
 const { getScrollPosition, setScrollPosition } = scroll
 const debounce = require('lodash/debounce')
 
-/**
- * ユーザーのストレージノードが読み込まれているかを示すフラグです。
- */
-let isPulledUserStorageNodes: boolean = false
-
-/**
- * アプリケーションのストレージノードが読み込まれているかを示すフラグです。
- */
-let isPulledAppStorageNodes: boolean = false
-
 @Component({
   components: {
     CompStorageUploadProgressFloat,
@@ -164,33 +154,36 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   //
   //----------------------------------------------------------------------
 
-  async created() {
-    this.$logic.auth.addSignedInListener(this.m_userOnSignedIn)
+  created() {
+    this.m_moveByRouter = debounce(this.m_moveByRouterFunc, 100)
+
+    this.treeStore.setup({
+      pulled: () => {
+        // URLから選択ノードのパスを取得
+        const nodePath = this.storageRoute.getNodePath()
+        // URLから取得した選択ノードまたは以前選択されていたノードでページリフレッシュ
+        this.m_refreshPage(nodePath || this.treeStore.selectedNode.value)
+      },
+      cleared: () => {
+        this.m_dirView.setDirPath(null)
+        this.m_setupPathBlocks()
+      },
+    })
   }
 
   destroyed() {
-    this.$logic.auth.removeSignedInListener(this.m_userOnSignedIn)
+    this.treeStore.teardown()
   }
 
   async mounted() {
-    this.m_moveByRouter = debounce(this.m_moveByRouterFunc, 100)
-    this.treeStore.init(this.m_treeView)
+    // ツリーストアを初期化
+    this.treeStore.start(this.m_treeView)
 
-    // URLから選択ノードのパスを取得
-    let nodePath = this.storageRoute.getNodePath()
-
-    // URLから選択ノードのパスが取得された場合をそれを、取得されなかったら選択されていたノードを
-    // パスに付与し、ページをリフレッシュ
-    this.m_moveByRouter(nodePath || this.treeStore.selectedNode.value)
-  }
-
-  /**
-   * ユーザーがサインインした際のリスナです。
-   * @param user
-   */
-  private async m_userOnSignedIn(user: User) {
-    const nodePath = this.storageRoute.getNodePath()
-    await this.m_refreshPage(nodePath)
+    // サーバーからストレージノード一覧が取得済みの場合
+    // ※本ページから別ページに遷移し、その後本ページに戻ってきた場合がこの状況に当たる
+    if (this.treeStore.isNodesPulled) {
+      this.m_refreshPage()
+    }
   }
 
   async beforeRouteUpdate(to: Route, from: Route, next: (to?: RawLocation | false | ((vm: Vue) => any) | void) => void) {
@@ -285,20 +278,9 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * ノードが指定されなかった場合、現在選択されているノードをもとにページをリフレッシュします。
    * @param selectedNodePath
    */
-  private async m_refreshPage(selectedNodePath?: string): Promise<void> {
+  private m_refreshPage(selectedNodePath?: string): void {
     // ルーターのパスが本ページのパスと一致しない場合
     if (!this.storageRoute.isCurrentRoute) return
-    // ユーザーがサインインしていない場合
-    if (!this.$logic.auth.user.isSignedIn) return
-
-    // まだストレージノードが読み込まれていない場合、ストレージノードを読み込む
-    if (this.storageType === 'user' && !isPulledUserStorageNodes) {
-      isPulledUserStorageNodes = true
-      await this.m_pullStorageNodes()
-    } else if (this.storageType === 'app' && !isPulledAppStorageNodes) {
-      isPulledAppStorageNodes = true
-      await this.m_pullStorageNodes()
-    }
 
     // ツリービューの構築
     this.m_buildTreeView()
@@ -337,13 +319,6 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
         }, 250)
       }
     }
-  }
-
-  /**
-   * サーバーからストレージノード一覧を取得します。
-   */
-  private async m_pullStorageNodes(): Promise<void> {
-    await this.storageLogic.pullNodes()
   }
 
   /**
@@ -595,7 +570,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
 
   private async m_moveByRouterFunc(nodePath: string) {
     this.storageRoute.move(nodePath)
-    await this.m_refreshPage(nodePath)
+    this.m_refreshPage(nodePath)
   }
 
   /**
@@ -743,7 +718,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     uploadDirNode.open()
     this.m_openParentNode(uploadDirNode.value)
 
-    await this.m_pullStorageNodes()
+    await this.treeStore.pullNodes()
     this.m_moveByRouter(uploadDirPath)
   }
 
@@ -763,8 +738,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * ツリービューのノードコンテキストメニューでリロードが選択された際のリスナです。
    */
   private async m_treeViewOnReloadSelected() {
-    await this.m_pullStorageNodes()
-    await this.m_refreshPage()
+    await this.treeStore.pullNodes()
   }
 
   /**

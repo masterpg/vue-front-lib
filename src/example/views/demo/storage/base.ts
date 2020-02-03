@@ -43,20 +43,16 @@ let appTreeStore: StorageTreeStore
 @Component
 export class StorageTypeMixin extends Vue {
   created() {
-    // プログラム的にコンポーネントのインスタンスを生成
-    // https://css-tricks.com/creating-vue-js-component-instances-programmatically/
-    const CompClass = Vue.extend(StorageTreeStore)
-
     switch (this.storageType) {
       case 'user':
         if (!userTreeStore) {
-          userTreeStore = newStorageTreeStore(this.storageType)
+          userTreeStore = newStorageTreeStore(this.storageType, this.storageLogic)
         }
         this.m_treeStore = userTreeStore
         break
       case 'app':
         if (!appTreeStore) {
-          appTreeStore = newStorageTreeStore(this.storageType)
+          appTreeStore = newStorageTreeStore(this.storageType, this.storageLogic)
         }
         this.m_treeStore = appTreeStore
         break

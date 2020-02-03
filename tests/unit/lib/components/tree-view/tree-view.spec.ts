@@ -639,6 +639,36 @@ describe('CompTreeView', () => {
     })
   })
 
+  describe('removeAllNodes()', () => {
+    it('ベーシックケース', () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      treeView.buildTree(cloneDeep(baseNodeDataList))
+
+      // 選択ノードを設定しておく
+      treeView.selectedNode = treeView.getNode('node1_1_1')
+      // 削除前の全ノードをとっておく
+      const allNodes = treeView.getAllNodes()
+
+      // 全てノードの削除を実行
+      treeView.removeAllNodes()
+
+      // ノードが削除されているか検証
+      expect(treeView.getAllNodes().length).toBe(0)
+      expect(treeView.children.length).toBe(0)
+      expect(Array.from(treeView.m_childContainer.children).length).toBe(0)
+
+      for (const node of allNodes) {
+        expect(treeView.getNode(node.value)).toBeUndefined()
+      }
+
+      // 選択ノードがないことを検証
+      expect(treeView.selectedNode).toBeUndefined()
+
+      verifyTreeView(treeView)
+    })
+  })
+
   describe('selectedNode', () => {
     it('選択ノードがある状態で取得', () => {
       const wrapper = mount(CompTreeView)
@@ -1138,6 +1168,29 @@ describe('CompTreeNode', () => {
 
       for (const descendant of node1_1Descendants) {
         expect(treeView.getNode((descendant as any).value)).toBeTruthy()
+      }
+
+      verifyTreeView(treeView)
+    })
+  })
+
+  describe('removeAllChildren()', () => {
+    it('ベーシックケース', () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      treeView.buildTree(cloneDeep(baseNodeDataList))
+
+      const node1_1 = treeView.getNode('node1_1')!
+      const node1_1Descendants = CompTreeViewUtils.getDescendants(node1_1)
+      const node1 = node1_1.parent!
+
+      node1.removeAllChildren()
+
+      expect(node1.children.length).toBe(0)
+      expect(Array.from(node1.m_childContainer.children).length).toBe(0)
+
+      for (const descendant of node1_1Descendants) {
+        expect(treeView.getNode((descendant as any).value)).toBeUndefined()
       }
 
       verifyTreeView(treeView)

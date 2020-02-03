@@ -48,17 +48,6 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   //
   //----------------------------------------------------------------------
 
-  clone(value: CartItem): CartItem {
-    return {
-      id: value.id,
-      uid: value.uid,
-      productId: value.productId,
-      title: value.title,
-      price: value.price,
-      quantity: value.quantity,
-    }
-  }
-
   getById(id: string): CartItem | undefined {
     const stateItem = this.m_getById(id)
     return stateItem ? this.clone(stateItem) : undefined
@@ -110,6 +99,22 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
       return result
     }
     return undefined
+  }
+
+  clear(): void {
+    this.state.checkoutStatus = CheckoutStatus.None
+    this.state.all.splice(0, this.state.all.length)
+  }
+
+  clone(value: CartItem): CartItem {
+    return {
+      id: value.id,
+      uid: value.uid,
+      productId: value.productId,
+      title: value.title,
+      price: value.price,
+      quantity: value.quantity,
+    }
   }
 
   //----------------------------------------------------------------------

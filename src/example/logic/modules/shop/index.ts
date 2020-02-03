@@ -1,6 +1,6 @@
 import { APICartItem, APIEditCartItemResponse, APIProduct, api } from '@/example/logic/api'
+import { BaseLogic, User } from '@/lib'
 import { CartItem, CheckoutStatus, Product, ShopLogic } from '@/example/logic/types'
-import { BaseLogic } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { store } from '@/example/logic/store'
 const assign = require('lodash/assign')
@@ -15,6 +15,8 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
   //----------------------------------------------------------------------
 
   async created() {
+    this.addSignedOutListener(this.m_userOnSignedOut)
+
     // // `products`の変更をリッスン
     // this.db.collection('products').onSnapshot(snapshot => {
     //   snapshot.forEach(doc => {
@@ -199,5 +201,15 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
     if (!store.user.isSignedIn) {
       throw new Error('Not signed in.')
     }
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Event listeners
+  //
+  //----------------------------------------------------------------------
+
+  private m_userOnSignedOut(user: User) {
+    store.cart.clear()
   }
 }

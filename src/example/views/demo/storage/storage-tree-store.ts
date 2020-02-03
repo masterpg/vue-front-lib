@@ -1,5 +1,5 @@
 import * as _path from 'path'
-import { CompTreeView, CompTreeViewUtils, StorageLogic, StorageNode, StorageNodeType } from '@/lib'
+import { CompTreeView, CompTreeViewUtils, StorageLogic, StorageNode, StorageNodeType, User } from '@/lib'
 import { Component, Prop } from 'vue-property-decorator'
 import { StorageTreeNodeData, StorageType, treeSortFunc } from '@/example/views/demo/storage/base'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
@@ -7,14 +7,13 @@ import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import Vue from 'vue'
 import dayjs from 'dayjs'
 import { i18n } from '@/example/i18n'
-import { logic } from '@/example/logic'
 
-export function newStorageTreeStore(storageType: StorageType): StorageTreeStore {
+export function newStorageTreeStore(storageType: StorageType, storageLogic: StorageLogic): StorageTreeStore {
   // プログラム的にコンポーネントのインスタンスを生成
   // https://css-tricks.com/creating-vue-js-component-instances-programmatically/
   const ComponentClass = Vue.extend(StorageTreeStore)
   return new ComponentClass({
-    propsData: { storageType },
+    propsData: { storageType, storageLogic },
   }) as StorageTreeStore
 }
 
@@ -27,8 +26,10 @@ export class StorageTreeStore extends Vue {
   //----------------------------------------------------------------------
 
   created() {
-    const rootNodeData = this.m_createRootNodeData()
-    this.m_rootNode = CompTreeViewUtils.newNode(rootNodeData) as StorageTreeNode
+    this.m_rootNode = this.m_createRootNode()
+
+    this.$logic.auth.addSignedInListener(this.m_userOnSignedIn)
+    this.$logic.auth.addSignedOutListener(this.m_userOnSignedOut)
   }
 
   //----------------------------------------------------------------------
@@ -40,7 +41,10 @@ export class StorageTreeStore extends Vue {
   @Prop({ required: true })
   storageType!: StorageType
 
-  private m_rootNode!: StorageTreeNode
+  @Prop({ required: true })
+  storageLogic!: StorageLogic
+
+  private m_rootNode: StorageTreeNode = {} as any
 
   /**
    * ツリービューのルートノードです。
@@ -64,22 +68,37 @@ export class StorageTreeStore extends Vue {
     this.m_treeView!.selectedNode = value
   }
 
+  private m_isNodesPulled: boolean = false
+
+  /**
+   * サーバーからストレージノード一覧が取得済みかを示すフラグです。
+   */
+  get isNodesPulled(): boolean {
+    return this.m_isNodesPulled
+  }
+
   //----------------------------------------------------------------------
   //
   //  Variables
   //
   //----------------------------------------------------------------------
 
+  /**
+   * 本クラスがアクティブな状態か否かを示すフラグです。
+   * アクティブ状態はストレージページが表示されている状態です。
+   * 非アクティブ状態はストレージページが表示されていない状態です。
+   */
+  private get m_isActive(): boolean {
+    // ツリービューがある場合は既に本クラスが開始状態になっているのでアクティブとなる。
+    // ツリービューがない場合はまだ本クラスが開始状態になっていないので非アクティブとなる。
+    return Boolean(this.m_treeView)
+  }
+
   private m_treeView: CompTreeView<StorageTreeNodeData> | null = null
 
-  private get m_storageLogic(): StorageLogic {
-    switch (this.storageType) {
-      case 'user':
-        return logic.userStorage
-      case 'app':
-        return logic.appStorage
-    }
-  }
+  private m_pulledListener: (() => void) | null = null
+
+  private m_clearedListener: (() => void) | null = null
 
   //----------------------------------------------------------------------
   //
@@ -87,9 +106,52 @@ export class StorageTreeStore extends Vue {
   //
   //----------------------------------------------------------------------
 
-  init(treeView: CompTreeView<StorageTreeNodeData>) {
+  setup(params: { pulled: () => void; cleared: () => void }): void {
+    this.m_pulledListener = params.pulled
+    this.m_clearedListener = params.cleared
+  }
+
+  teardown(): void {
+    this.m_pulledListener = null
+    this.m_clearedListener = null
+    this.m_treeView = null
+  }
+
+  start(treeView: CompTreeView<StorageTreeNodeData>): void {
     this.m_treeView = treeView
-    this.m_treeView!.addChild(this.rootNode)
+    this.m_treeView.addChild(this.rootNode)
+
+    // サインイン済み、かつまだサーバーからストレージノード一覧を取得していない場合
+    if (this.$logic.auth.user.isSignedIn && !this.m_isNodesPulled) {
+      this.pullNodes()
+    }
+  }
+
+  clear(): void {
+    this.m_isNodesPulled = false
+
+    // 本クラスがアクティブ状態の場合(ストレージページが表示中)
+    if (this.m_isActive) {
+      // 表示中のルートノード配下全ノードを削除し、ルートノードを選択ノードにする
+      this.rootNode.removeAllChildren()
+      this.selectedNode = this.rootNode
+    }
+    // 本クラスが非アクティブ状態の場合(ストレージページが非表示)
+    else {
+      // ルートノードを作成し直す
+      this.m_rootNode = this.m_createRootNode()
+    }
+
+    this.m_clearedListener && this.m_clearedListener()
+  }
+
+  /**
+   * サーバーからストレージノード一覧を取得します。
+   */
+  async pullNodes(): Promise<void> {
+    await this.storageLogic.pullNodes()
+    this.m_isNodesPulled = true
+    this.m_pulledListener && this.m_pulledListener()
   }
 
   /**
@@ -276,9 +338,9 @@ export class StorageTreeStore extends Vue {
   //----------------------------------------------------------------------
 
   /**
-   * ルートノードデータを作成します。
+   * ルートノードを作成します。
    */
-  private m_createRootNodeData(): StorageTreeNodeData {
+  private m_createRootNode(): StorageTreeNode {
     const label = (() => {
       switch (this.storageType) {
         case 'user':
@@ -288,7 +350,7 @@ export class StorageTreeStore extends Vue {
       }
     })()
 
-    return {
+    const rootNodeData = {
       nodeClass: StorageTreeNode,
       label,
       value: '',
@@ -300,12 +362,14 @@ export class StorageTreeStore extends Vue {
         isPublic: false,
         uids: [],
       },
-      baseURL: this.m_storageLogic.baseURL,
+      baseURL: this.storageLogic.baseURL,
       created: dayjs(0),
       updated: dayjs(0),
       selected: true,
       opened: true,
     }
+
+    return CompTreeViewUtils.newNode(rootNodeData) as StorageTreeNode
   }
 
   /**
@@ -346,10 +410,36 @@ export class StorageTreeStore extends Vue {
           isPublic: source.share.isPublic,
           uids: [...source.share.uids],
         },
-        baseURL: this.m_storageLogic.baseURL,
+        baseURL: this.storageLogic.baseURL,
         created: source.created,
         updated: source.updated,
       }
     }
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Event listeners
+  //
+  //----------------------------------------------------------------------
+
+  /**
+   * ユーザーがサインインした際のリスナです。
+   * @param user
+   */
+  private async m_userOnSignedIn(user: User) {
+    // 本クラスがアクティブ状態の場合(ストレージページが表示中)、
+    // サーバーからストレージノード一覧の取得を行う
+    if (this.m_isActive) {
+      await this.pullNodes()
+    }
+  }
+
+  /**
+   * ユーザーがサインアウトした際のリスナです。
+   * @param user
+   */
+  private async m_userOnSignedOut(user: User) {
+    this.clear()
   }
 }

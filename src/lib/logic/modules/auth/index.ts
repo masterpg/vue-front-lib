@@ -1,7 +1,7 @@
 import { AuthLogic, AuthProviderType } from '../../types'
+import { BaseLogic, SignedInListenerFunc, SignedOutListenerFunc } from '../../base'
 import { Component, Watch } from 'vue-property-decorator'
 import { User, store } from '../../store'
-import { BaseLogic } from '../../base'
 import { Dialog } from 'quasar'
 import { NoCache } from '../../../base/decorators'
 import { api } from '../../api'
@@ -45,8 +45,6 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
   private m_googleProvider!: firebase.auth.GoogleAuthProvider
 
   private m_facebookProvider!: firebase.auth.FacebookAuthProvider
-
-  private m_signedInListeners: ((user: User) => any)[] = []
 
   //----------------------------------------------------------------------
   //
@@ -181,16 +179,20 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
     return (await firebase.auth().fetchSignInMethodsForEmail(email)) as AuthProviderType[]
   }
 
-  addSignedInListener(listener: (user: User) => any): void {
-    if (this.m_signedInListeners.includes(listener)) return
-    this.m_signedInListeners.push(listener)
+  addSignedInListener(listener: SignedInListenerFunc): void {
+    super.addSignedInListener(listener)
   }
 
-  removeSignedInListener(listener: (user: User) => any): void {
-    const index = this.m_signedInListeners.indexOf(listener)
-    if (index >= 0) {
-      this.m_signedInListeners.splice(index, 1)
-    }
+  removeSignedInListener(listener: SignedInListenerFunc): void {
+    super.removeSignedInListener(listener)
+  }
+
+  addSignedOutListener(listener: SignedOutListenerFunc): void {
+    super.addSignedOutListener(listener)
+  }
+
+  removeSignedOutListener(listener: SignedOutListenerFunc): void {
+    super.removeSignedOutListener(listener)
   }
 
   //----------------------------------------------------------------------
@@ -247,13 +249,16 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
     // 取得したカスタムトークンをストアへ反映
     await store.user.reflectCustomToken()
     // 登録されているサインインリスナの実行
-    this.m_signedInListeners.forEach(listener => listener(this.user))
+    this.signedInListeners.forEach(listener => listener(this.user))
   }
 
   /**
    * サインアウトした際に必要な処理を行います。
    */
-  private async m_signedOutProcess(): Promise<void> {}
+  private async m_signedOutProcess(): Promise<void> {
+    // 登録されているサインアウトリスナの実行
+    this.signedOutListeners.forEach(listener => listener(this.user))
+  }
 
   //----------------------------------------------------------------------
   //

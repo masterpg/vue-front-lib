@@ -217,6 +217,15 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
   }
 
   /**
+   * 全てのノードを削除します。
+   */
+  removeAllNodes(): void {
+    for (const node of Object.values(this.m_allNodeMap)) {
+      this.removeNode(node.value)
+    }
+  }
+
+  /**
    * ノードを特定するためのvalueと一致するノードを取得します。
    * @param value ノードを特定するための値
    */

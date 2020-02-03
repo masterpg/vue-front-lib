@@ -35,6 +35,10 @@ export interface CartStore {
 
   readonly checkoutStatus: CheckoutStatus
 
+  getById(id: string): CartItem | undefined
+
+  getByProductId(productId: string): CartItem | undefined
+
   set(item: StatePartial<Omit<CartItem, 'uid' | 'productId'>>): CartItem | undefined
 
   setAll(items: CartItem[]): void
@@ -45,9 +49,7 @@ export interface CartStore {
 
   remove(id: string): CartItem | undefined
 
-  getById(id: string): CartItem | undefined
-
-  getByProductId(productId: string): CartItem | undefined
+  clear(): void
 }
 
 //========================================================================

@@ -106,7 +106,7 @@
         <q-expansion-item v-model="m_demoExpanded" icon="star" label="Demo" expand-separator>
           <q-list padding>
             <template v-for="(item, index) in m_demoItems">
-              <q-item :key="index" v-ripple :to="item.path" class="app-ml-20" clickable>
+              <q-item :key="index" v-ripple :to="item.path" :hidden="item.hidden" class="app-ml-20" clickable>
                 <q-item-section>{{ item.title }}</q-item-section>
               </q-item>
             </template>
@@ -171,24 +171,30 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
 
   private m_demoExpanded: boolean = true
 
-  private m_demoItems: Array<{ title: string; path: string; icon?: string }> = [
-    {
-      title: 'ABC',
-      path: router.views.demo.abc.path,
-    },
-    {
-      title: 'Shop',
-      path: router.views.demo.shop.path,
-    },
-    {
-      title: 'User Storage',
-      path: `${router.views.demo.userStorage.basePath}`,
-    },
-    {
-      title: 'App Storage',
-      path: `${router.views.demo.appStorage.basePath}`,
-    },
-  ]
+  private get m_demoItems(): Array<{ title: string; path: string; icon?: string; hidden: boolean }> {
+    return [
+      {
+        title: 'ABC',
+        path: router.views.demo.abc.path,
+        hidden: false,
+      },
+      {
+        title: 'Shop',
+        path: router.views.demo.shop.path,
+        hidden: false,
+      },
+      {
+        title: 'User Storage',
+        path: `${router.views.demo.userStorage.basePath}`,
+        hidden: false,
+      },
+      {
+        title: 'App Storage',
+        path: `${router.views.demo.appStorage.basePath}`,
+        hidden: this.m_user.isAppAdmin ? false : true,
+      },
+    ]
+  }
 
   private m_componentsExpanded: boolean = true
 
@@ -208,11 +214,7 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
   private m_swUpdateIsRequired: boolean = false
 
   private get m_user(): User {
-    const user = this.$logic.auth.user
-    if (user.isSignedIn) {
-      this.$logic.shop.pullCartItems()
-    }
-    return user
+    return this.$logic.auth.user
   }
 
   //--------------------------------------------------

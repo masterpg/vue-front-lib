@@ -171,8 +171,8 @@ beforeAll(async () => {
 beforeEach(async () => {
   const wrapper = mount(CompTreeView)
   treeView = wrapper.vm as CompTreeView
-  treeStore = newStorageTreeStore('user')
-  treeStore.init(treeView)
+  treeStore = newStorageTreeStore('user', logic.userStorage)
+  treeStore.start(treeView)
   treeStore.setNodes(STORAGE_NODES)
 })
 
@@ -180,8 +180,8 @@ describe('constructor + init', () => {
   it('ベーシックケース', () => {
     const wrapper = mount(CompTreeView)
     const treeView = wrapper.vm as CompTreeView
-    const treeStore = newStorageTreeStore('user')
-    treeStore.init(treeView)
+    const treeStore = newStorageTreeStore('user', logic.userStorage)
+    treeStore.start(treeView)
 
     const rootNode = treeStore.rootNode
     expect(treeStore.rootNode.value).toBe('')
@@ -190,8 +190,8 @@ describe('constructor + init', () => {
   it('StorageTreeStoreを作成 - ユーザータイプ', () => {
     const wrapper = mount(CompTreeView)
     const treeView = wrapper.vm as CompTreeView
-    const treeStore = newStorageTreeStore('user')
-    treeStore.init(treeView)
+    const treeStore = newStorageTreeStore('user', logic.userStorage)
+    treeStore.start(treeView)
 
     const rootNodeLabel = String(i18n.t('storage.userRootName'))
     expect(treeStore.rootNode.label).toBe(rootNodeLabel)
@@ -201,8 +201,8 @@ describe('constructor + init', () => {
   it('StorageTreeStoreを作成 - アプリケーションタイプ', () => {
     const wrapper = mount(CompTreeView)
     const treeView = wrapper.vm as CompTreeView
-    const treeStore = newStorageTreeStore('app')
-    treeStore.init(treeView)
+    const treeStore = newStorageTreeStore('app', logic.appStorage)
+    treeStore.start(treeView)
 
     const rootNodeLabel = String(i18n.t('storage.appRootName'))
     expect(treeStore.rootNode.label).toBe(rootNodeLabel)
@@ -212,14 +212,14 @@ describe('constructor + init', () => {
   it('既にルートノードが作成されている場合', () => {
     const wrapper = mount(CompTreeView)
     const treeView = wrapper.vm as CompTreeView
-    const treeStore = newStorageTreeStore('user')
-    treeStore.init(treeView)
+    const treeStore = newStorageTreeStore('user', logic.userStorage)
+    treeStore.start(treeView)
 
     // コンストラクタでルートノードが作成される
     const rootNode = treeStore.rootNode
 
     // 再度初期化する
-    treeStore.init(treeView)
+    treeStore.start(treeView)
 
     // 最初に初期化したルートノードが再利用されていることを検証
     expect(treeStore.rootNode).toBe(rootNode)
@@ -262,8 +262,8 @@ describe('setNodes', () => {
     for (let i = 0; i < 10; i++) {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView
-      const treeStore = newStorageTreeStore('user')
-      treeStore.init(treeView)
+      const treeStore = newStorageTreeStore('user', logic.userStorage)
+      treeStore.start(treeView)
 
       // ノード配列をシャッフルして実行
       treeStore.setNodes(shuffle(STORAGE_NODES))

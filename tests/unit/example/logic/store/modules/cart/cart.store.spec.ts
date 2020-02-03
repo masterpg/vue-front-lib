@@ -36,6 +36,25 @@ const CART_ITEMS: CartItem[] = [
 
 let cartStore!: TestStore<CartStore, CartState>
 
+function getStateCartItem(cartItemId: string): CartItem | undefined {
+  for (const item of cartStore.state.all) {
+    if (item.id === cartItemId) return item
+  }
+  return undefined
+}
+
+/**
+ * 指定されたアイテムがステートのコピーであり、実態でないことを検証します。
+ * @param cartItem
+ */
+function toBeCopy(cartItem: CartItem | CartItem[]): void {
+  const nodes = Array.isArray(cartItem) ? (cartItem as CartItem[]) : [cartItem as CartItem]
+  for (const cartItem of nodes) {
+    const stateNode = getStateCartItem(cartItem.id)
+    expect(cartItem).not.toBe(stateNode)
+  }
+}
+
 //========================================================================
 //
 //  Tests
@@ -56,7 +75,10 @@ beforeEach(async () => {
 
 describe('all', () => {
   it('ベーシックケース', () => {
-    expect(cartStore.all).toEqual(CART_ITEMS)
+    const actual = cartStore.all
+
+    expect(actual).toEqual(CART_ITEMS)
+    toBeCopy(actual)
   })
 })
 
@@ -76,10 +98,10 @@ describe('getById()', () => {
   it('ベーシックケース', () => {
     const stateCartItem = cartStore.state.all[0]
 
-    const actual = cartStore.getById(stateCartItem.id)
+    const actual = cartStore.getById(stateCartItem.id)!
 
     expect(actual).toEqual(stateCartItem)
-    expect(actual).not.toBe(stateCartItem)
+    toBeCopy(actual)
   })
 
   it('カートに存在しないカートアイテムIDを指定した場合', () => {
@@ -92,10 +114,10 @@ describe('getByProductId()', () => {
   it('ベーシックケース', () => {
     const stateCartItem = cartStore.state.all[0]
 
-    const actual = cartStore.getByProductId(stateCartItem.productId)
+    const actual = cartStore.getByProductId(stateCartItem.productId)!
 
     expect(actual).toEqual(stateCartItem)
-    expect(actual).not.toBe(stateCartItem)
+    toBeCopy(actual)
   })
 
   it('カートに存在しない商品IDを指定した場合', () => {
@@ -117,7 +139,7 @@ describe('set()', () => {
 
     const stateProduct = cartStore.state.all[0]
     expect(actual).toEqual(cartItem)
-    expect(actual).not.toBe(stateProduct)
+    toBeCopy(actual)
   })
 
   it('余分なプロパティを含んだ場合', () => {
@@ -142,6 +164,7 @@ describe('set()', () => {
 describe('setAll()', () => {
   it('ベーシックケース', () => {
     cartStore.setAll(CART_ITEMS)
+
     expect(cartStore.state.all).toEqual(CART_ITEMS)
     expect(cartStore.state.all).not.toBe(CART_ITEMS)
   })
@@ -168,15 +191,26 @@ describe('add()', () => {
 
     const stateCartItem = cartStore.state.all[cartStore.state.all.length - 1]
     expect(actual).toEqual(stateCartItem)
-    expect(actual).not.toBe(stateCartItem)
+    toBeCopy(actual)
   })
 })
 
 describe('remove()', () => {
   it('ベーシックケース', () => {
     const cartItem = cartStore.state.all[1]
-    const actual = cartStore.remove(cartItem.id)
+
+    const actual = cartStore.remove(cartItem.id)!
+
     expect(actual).toEqual(cartItem)
     expect(cartStore.getById(cartItem.id)).toBeUndefined()
+  })
+})
+
+describe('clear()', () => {
+  it('ベーシックケース', () => {
+    cartStore.clear()
+
+    expect(cartStore.all.length).toEqual(0)
+    expect(cartStore.checkoutStatus).toBe(CheckoutStatus.None)
   })
 })

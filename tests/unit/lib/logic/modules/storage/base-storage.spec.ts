@@ -10,6 +10,7 @@ import {
 } from '@/lib'
 import { BaseStorageLogic } from '@/lib/logic/modules/storage/base-storage'
 import { BaseStorageStore } from '@/lib/logic/store/modules/storage/base'
+import { Component } from 'vue-property-decorator'
 import { StorageStore } from '@/lib/logic/store'
 import { TestStore } from '../../../../../helpers/common/store'
 import { config } from '@/lib/config'
@@ -142,8 +143,10 @@ const STORAGE_NODE_MAP = STORAGE_NODES.reduce(
 //
 //========================================================================
 
+@Component
 class MockStorageStore extends BaseStorageStore {}
 
+@Component
 class MockStorageLogic extends BaseStorageLogic {
   protected get storageStore(): StorageStore {
     return storageStore

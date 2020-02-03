@@ -1,13 +1,13 @@
 import * as path from 'path'
 import { StorageNode, StorageNodeShareSettings, StorageNodeType, StorageState } from '@/lib'
 import { BaseStorageStore } from '@/lib/logic/store/modules/storage/base'
+import { Component } from 'vue-property-decorator'
 import { StorageStore } from '@/lib/logic/store/types'
 import { TestStore } from '../../../../../../helpers/common/store'
 import dayjs from 'dayjs'
 import { initLibTest } from '../../../../../../helpers/lib/init'
 import { removeStartDirChars } from 'web-base-lib'
 const cloneDeep = require('lodash/cloneDeep')
-const isArray = require('lodash/isArray')
 
 //========================================================================
 //
@@ -124,20 +124,20 @@ const STORAGE_NODES: StorageNode[] = [d1, d11, fileA, d12, d2, d21, fileB, fileC
 //
 //========================================================================
 
+@Component
 class MockStorageStore extends BaseStorageStore {}
+
 const storageStore = (new MockStorageStore() as StorageStore) as TestStore<StorageStore, StorageState>
 
 function getStateNode(path: string): StorageNode | undefined {
   for (const node of storageStore.state.all) {
-    if (node.path === path) {
-      return node
-    }
+    if (node.path === path) return node
   }
   return undefined
 }
 
 function existsStateNodes(value: StorageNode | StorageNode[]) {
-  const nodes = isArray(value) ? (value as StorageNode[]) : [value as StorageNode]
+  const nodes = Array.isArray(value) ? (value as StorageNode[]) : [value as StorageNode]
   for (const node of nodes) {
     const exists = getStateNode(node.path)
     if (!exists) {
@@ -147,7 +147,7 @@ function existsStateNodes(value: StorageNode | StorageNode[]) {
 }
 
 function notExistsStateNodes(value: StorageNode | StorageNode[]) {
-  const nodes = isArray(value) ? (value as StorageNode[]) : [value as StorageNode]
+  const nodes = Array.isArray(value) ? (value as StorageNode[]) : [value as StorageNode]
   for (const node of nodes) {
     const exists = getStateNode(node.path)
     if (exists) {
@@ -178,11 +178,11 @@ function verifyStateNodes() {
 }
 
 /**
- * 指定されたノードがステートのコピーであり実態でないことを検証します。
+ * 指定されたアイテムがステートのコピーであり、実態でないことを検証します。
  * @param node
  */
 function toBeCopy(node: StorageNode | StorageNode[]): void {
-  const nodes = isArray(node) ? (node as StorageNode[]) : [node as StorageNode]
+  const nodes = Array.isArray(node) ? (node as StorageNode[]) : [node as StorageNode]
   for (const node of nodes) {
     const stateNode = getStateNode(node.path)
     expect(node).not.toBe(stateNode)
@@ -740,6 +740,17 @@ describe('rename', () => {
     }
 
     expect(actual!.message).toBe(`The specified node was not found: 'dXXX'`)
+  })
+})
+
+describe('clear', () => {
+  it('ベーシックケース', () => {
+    const beforeAll = storageStore.all
+
+    storageStore.clear()
+
+    expect(storageStore.all.length).toBe(0)
+    notExistsStateNodes(beforeAll)
   })
 })
 
