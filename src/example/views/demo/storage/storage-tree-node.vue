@@ -124,10 +124,10 @@
               <q-item-section @click="m_dispatchRenameSelected()">{{ $t('common.rename') }}</q-item-section>
             </q-item>
             <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchDeleteSelected()">{{ $t('common.delete') }}</q-item-section>
+              <q-item-section @click="m_dispatchShareSelected()">{{ $t('common.share') }}</q-item-section>
             </q-item>
             <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchShareSelected()">{{ $t('common.share') }}</q-item-section>
+              <q-item-section @click="m_dispatchDeleteSelected()">{{ $t('common.delete') }}</q-item-section>
             </q-item>
           </q-list>
           <!-- ファイル用メニュー -->
@@ -139,10 +139,10 @@
               <q-item-section @click="m_dispatchRenameSelected()">{{ $t('common.rename') }}</q-item-section>
             </q-item>
             <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchDeleteSelected()">{{ $t('common.delete') }}</q-item-section>
+              <q-item-section @click="m_dispatchShareSelected()">{{ $t('common.share') }}</q-item-section>
             </q-item>
             <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchShareSelected()">{{ $t('common.share') }}</q-item-section>
+              <q-item-section @click="m_dispatchDeleteSelected()">{{ $t('common.delete') }}</q-item-section>
             </q-item>
           </q-list>
         </q-menu>
