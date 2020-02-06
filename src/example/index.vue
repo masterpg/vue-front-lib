@@ -207,6 +207,10 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
       title: 'Img',
       path: router.views.components.img.path,
     },
+    {
+      title: 'markdown-it',
+      path: router.views.components.markdownIt.path,
+    },
   ]
 
   private m_leftDrawerOpen: boolean = false
