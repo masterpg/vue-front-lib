@@ -139,7 +139,6 @@ import { BaseComponent, NoCache, Resizable } from '@/lib'
 import { Component, Watch } from 'vue-property-decorator'
 import CompImg from '@/lib/components/simple/img/comp-img.vue'
 import MarkdownIt from 'markdown-it'
-import Vue from 'vue'
 import anime from 'animejs'
 import cheatSheet from './cheat-sheet.md'
 import hljs from 'highlight.js'
@@ -371,13 +370,6 @@ export default class MarkdownItPage extends mixins(BaseComponent, Resizable) {
         break
       }
       default: {
-        // const CompImgClass = Vue.extend(CompImg)
-        // const img: CompImg = new CompImgClass({
-        //   propsData: { src: 'https://dummyimage.com/300x200/000/fff' },
-        // })
-        // img.$mount()
-        // this.m_resultHTML.appendChild(img.$el)
-
         this.m_resultHTML.innerHTML = this.mdHtml.render(source)
       }
     }

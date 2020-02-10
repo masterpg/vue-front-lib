@@ -1,4 +1,5 @@
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
 const path = require('path')
 
 // ベースURLの設定
@@ -130,6 +131,12 @@ module.exports = {
         .use(CopyWebpackPlugin, [copyFiles])
         // 参照: https://github.com/vuejs/vue-cli/blob/c76d2e691d8ea58b219394ca7799f50d873b8588/packages/%40vue/cli-service/lib/commands/build/resolveAppConfig.js#L7
         .after('copy')
+
+    // Monaco Editor
+    // https://github.com/microsoft/monaco-editor-webpack-plugin
+    config
+      .plugin('monaco')
+      .use(MonacoWebpackPlugin)
 
     // テキストファイルのインポート
     config.module

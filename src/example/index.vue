@@ -100,7 +100,16 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="m_leftDrawerOpen" :width="300" :breakpoint="500" show-if-above bordered content-class="bg-grey-2">
+    <q-drawer
+      v-model="m_leftDrawerOpen"
+      :width="300"
+      :breakpoint="500"
+      show-if-above
+      bordered
+      content-class="bg-grey-2"
+      @show="m_leftDrawerOnShowOrHide"
+      @hide="m_leftDrawerOnShowOrHide"
+    >
       <q-scroll-area class="drawer-scroll-area">
         <!-- Demo -->
         <q-expansion-item v-model="m_demoExpanded" icon="star" label="Demo" expand-separator>
@@ -208,6 +217,10 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
       path: router.views.components.img.path,
     },
     {
+      title: 'Markdown',
+      path: router.views.components.markdown.path,
+    },
+    {
       title: 'markdown-it',
       path: router.views.components.markdownIt.path,
     },
@@ -282,8 +295,10 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
     }
   }
 
-  private m_onComponentResize(e) {
-    console.log('app-view:', e)
+  private m_onComponentResize(e) {}
+
+  private m_leftDrawerOnShowOrHide() {
+    this.notifyResize()
   }
 
   private async m_signOutMenuItemOnClick() {

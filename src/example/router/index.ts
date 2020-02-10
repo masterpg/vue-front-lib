@@ -163,6 +163,20 @@ const componentsRoute = new (class ComponentsRoute extends ViewRoute {
     }
   })(this)
 
+  markdown = new (class extends ViewRoute<ComponentsRoute> {
+    get path() {
+      return `${this.parent!.path}/markdown`
+    }
+
+    get component() {
+      return () => import(/* webpackChunkName: "views/components/markdown" */ '@/example/views/components/markdown')
+    }
+
+    move() {
+      router.push(this.path)
+    }
+  })(this)
+
   markdownIt = new (class extends ViewRoute<ComponentsRoute> {
     get path() {
       return `${this.parent!.path}/markdown-it`
@@ -211,6 +225,7 @@ export function initRouter() {
       demoRoute.appStorage,
       componentsRoute.treeView,
       componentsRoute.img,
+      componentsRoute.markdown,
       componentsRoute.markdownIt,
     ],
   })
