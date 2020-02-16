@@ -3,7 +3,6 @@
 
 .com-img-main
   box-sizing: border-box
-  height: 100%
   position: relative
 
 .img-tag

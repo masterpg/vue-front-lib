@@ -10,6 +10,7 @@
   border: solid 1px $grey-4
 
 .img
+  height: 100%
   /*--comp-img-max-width: 400px*/
   /*--comp-img-max-height: 400px*/
 
