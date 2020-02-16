@@ -243,3 +243,17 @@ It converts "HTML", but keep intact partial entries like "xxxHTMLyyy" and so on.
 ::: warning
 *here be dragons*
 :::
+
+
+## Vue Component
+
+You can use your own Vue components. It can be used by writing as follows.
+
+```
+@vue.CompImg({ src: "https://dummyimage.com/300x200", hAlign: "center" })
+```
+
+`CompImg` is the class name of the Vue component. Write an argument in object format between `({ … })`.
+
+@vue.CompImg({ src: "https://dummyimage.com/300x200", hAlign: "center" })
+

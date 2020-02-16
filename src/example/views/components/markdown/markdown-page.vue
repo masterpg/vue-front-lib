@@ -1,3 +1,11 @@
+<style lang="sass">
+.markdown-page-main .markdown-body
+  .warning
+    background-color: #ff8
+    padding: 20px
+    border-radius: 6px
+</style>
+
 <style lang="sass" scoped>
 @import '../../../styles/app.variables'
 
@@ -62,7 +70,7 @@
  */
 
 import * as monaco from 'monaco-editor'
-import { BaseComponent, NoCache, Resizable } from '@/lib'
+import { BaseComponent, CompImg, NoCache, Resizable } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import MarkdownIt from 'markdown-it'
 import MarkdownItAddr from 'markdown-it-abbr'
@@ -74,6 +82,7 @@ import MarkdownItIns from 'markdown-it-ins'
 import MarkdownItMark from 'markdown-it-mark'
 import MarkdownItSub from 'markdown-it-sub'
 import MarkdownItSup from 'markdown-it-sup'
+import MarkdownItVueComponent from '@/lib/markdown-it/plugins/vue-component'
 import cheatSheet from './cheat-sheet.md'
 import hljs from 'highlight.js'
 import { mixins } from 'vue-class-component'
@@ -199,6 +208,9 @@ export default class MarkdownPage extends mixins(BaseComponent, Resizable) {
       .use(MarkdownItMark)
       .use(MarkdownItSub)
       .use(MarkdownItSup)
+      .use(MarkdownItVueComponent, {
+        components: { CompImg },
+      })
 
     // Beautify output of parser for html content
     // this.m_md.renderer.rules.table_open = function() {

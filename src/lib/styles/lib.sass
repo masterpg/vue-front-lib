@@ -1,6 +1,7 @@
 @import './lib.variables'
 @import './classes/flex-layout'
 @import './classes/spacing'
+@import '~github-markdown-css/github-markdown'
 
 @import '~quasar/dist/quasar'
 //@import '~quasar/src/css/flex-addon'
@@ -16,3 +17,17 @@ a
 
 .app-link
   @extend %app-link
+
+.markdown-body
+  --comp-img-max-height: 400px
+
+  > div
+    margin-bottom: 16px
+
+  img
+    max-width: 35%
+    vertical-align: middle
+
+  // hack to allign emojies to line height
+  .emoji
+    height: 1.2em

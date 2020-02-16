@@ -1,0 +1,59 @@
+---
+desc: common.md
+---
+
+引数にオブジェクトJSON文字列を渡す場合
+.
+@vue.TestCompCommon({ person: "{ "name": "Taro", "age": 18 }" })
+.
+<span>name: Taro, age: 18, arr: [], flag: false, num: 0</span>
+.
+
+引数に配列JSON文字列を渡す場合
+.
+@vue.TestCompCommon({ arr: "["aaa", "bbb"]" })
+.
+<span>name: Anonymous, age: 0, arr: [aaa, bbb], flag: false, num: 0</span>
+.
+
+引数に空オブジェクトJSON文字列を渡す場合
+.
+@vue.TestCompCommon({ person: "{}" })
+.
+<span>name: undefined, age: undefined, arr: [], flag: false, num: 0</span>
+.
+
+引数に空配列JSON文字列を渡す場合
+.
+@vue.TestCompCommon({ arr: "[]" })
+.
+<span>name: Anonymous, age: 0, arr: [], flag: false, num: 0</span>
+.
+
+引数にBooleanを渡す場合
+.
+@vue.TestCompCommon({ flag: true })
+.
+<span>name: Anonymous, age: 0, arr: [], flag: true, num: 0</span>
+.
+
+引数に数値を渡す場合
+.
+@vue.TestCompCommon({ num: 20 })
+.
+<span>name: Anonymous, age: 0, arr: [], flag: false, num: 20</span>
+.
+
+引数にCSSクラスを指定した場合
+.
+@vue.TestCompCommon({ class: "class1 class2" })
+.
+<span class="class1 class2">name: Anonymous, age: 0, arr: [], flag: false, num: 0</span>
+.
+
+引数を省略した場合
+.
+@vue.TestCompCommon()
+.
+<span>name: Anonymous, age: 0, arr: [], flag: false, num: 0</span>
+.
