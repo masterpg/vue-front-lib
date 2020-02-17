@@ -50,6 +50,7 @@
           class="result-html markdown-body full-height"
           @mouseover="m_resultHTMLOnStartScroll"
           @touchstart="m_resultHTMLOnStartScroll"
+          @wheel="m_resultHTMLOnStartScroll"
         />
       </div>
     </div>
@@ -113,6 +114,10 @@ export default class MarkdownPage extends mixins(BaseComponent, Resizable) {
     this.m_syncResultScroll = debounce(this.m_syncResultScrollFunc, 50, { maxWait: 50 })
     this.m_syncEditorScroll = debounce(this.m_syncEditorScrollFunc, 50, { maxWait: 50 })
 
+    //
+    // Monacoエディタの生成
+    //
+
     this.m_editor = monaco.editor.create(this.m_editorContainer, {
       value: cheatSheet,
       language: 'markdown',
@@ -126,6 +131,12 @@ export default class MarkdownPage extends mixins(BaseComponent, Resizable) {
     this.m_editor.onDidChangeModelContent(e => {
       this.m_updateResult()
     })
+
+    this.m_editorContainer.firstChild!.addEventListener('wheel', this.m_editorContainerOnStartScroll)
+
+    //
+    // Markdownパーサーの設定
+    //
 
     // https://markdown-it.github.io/markdown-it/#MarkdownIt.new
     this.m_mdParserDefaults = {
@@ -173,6 +184,11 @@ export default class MarkdownPage extends mixins(BaseComponent, Resizable) {
   private m_scrollLineItems: ScrollLineItem[] | null = null
 
   private m_syncEditorScrollDisposable: monaco.IDisposable | null = null
+
+  /**
+   * Markdownのエディタエリアと結果エリアのどちらがアクティブかを示す変数
+   */
+  private m_activeArea: 'editor' | 'result' | null = null
 
   //--------------------------------------------------
   //  Elements
@@ -404,6 +420,9 @@ export default class MarkdownPage extends mixins(BaseComponent, Resizable) {
    * エディタエリアのスクロールが開始される際のリスナです。
    */
   private m_editorContainerOnStartScroll() {
+    if (this.m_activeArea === 'editor') return
+    this.m_activeArea = 'editor'
+
     this.m_resultHTML.removeEventListener('scroll', this.m_syncEditorScroll)
     if (!this.m_syncEditorScrollDisposable) {
       this.m_syncEditorScrollDisposable = this.m_editor!.onDidScrollChange(this.m_syncResultScroll)
@@ -414,6 +433,9 @@ export default class MarkdownPage extends mixins(BaseComponent, Resizable) {
    * 結果エリアのスクロールが開始される際のリスナです。
    */
   private m_resultHTMLOnStartScroll() {
+    if (this.m_activeArea === 'result') return
+    this.m_activeArea = 'result'
+
     if (this.m_syncEditorScrollDisposable) {
       this.m_syncEditorScrollDisposable.dispose()
       this.m_syncEditorScrollDisposable = null

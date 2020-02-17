@@ -100,6 +100,7 @@
           @mouseup="updateResult"
           @mouseover="m_textareaOnStartScroll"
           @touchstart="m_textareaOnStartScroll"
+          @wheel="m_textareaOnStartScroll"
         ></textarea>
       </div>
       <!-- 区切り -->
@@ -119,6 +120,7 @@
           class="result-html markdown-body flex-1"
           @mouseover="m_resultHTMLOnStartScroll"
           @touchstart="m_resultHTMLOnStartScroll"
+          @wheel="m_resultHTMLOnStartScroll"
         ></div>
         <!-- HTMLソース出力 -->
         <pre v-show="defaults._view === 'src'" ref="resultSrc" class="hljs result-src flex-1"></pre>
@@ -263,6 +265,8 @@ export default class MarkdownItPage extends mixins(BaseComponent, Resizable) {
   private m_strictOnChange(newValue: string, oldValue: string): void {
     this.m_defaultsOnChange('_strict')
   }
+
+  private m_activeArea: 'editor' | 'result' | null = null
 
   private m_textareaAnime: anime.AnimeInstance | null = null
 
@@ -550,12 +554,18 @@ export default class MarkdownItPage extends mixins(BaseComponent, Resizable) {
   }
 
   private m_textareaOnStartScroll() {
+    if (this.m_activeArea === 'editor') return
+    this.m_activeArea = 'editor'
+
     this.m_resultHTML.removeEventListener('scroll', this.syncSrcScroll)
     this.m_textarea.removeEventListener('scroll', this.syncResultScroll)
     this.m_textarea.addEventListener('scroll', this.syncResultScroll)
   }
 
   private m_resultHTMLOnStartScroll() {
+    if (this.m_activeArea === 'result') return
+    this.m_activeArea = 'result'
+
     this.m_textarea.removeEventListener('scroll', this.syncResultScroll)
     this.m_resultHTML.removeEventListener('scroll', this.syncSrcScroll)
     this.m_resultHTML.addEventListener('scroll', this.syncSrcScroll)
