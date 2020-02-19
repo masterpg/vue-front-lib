@@ -7,11 +7,11 @@ import { Dayjs } from 'dayjs'
 //========================================================================
 
 export interface LibAPIContainer {
-  appConfig(): Promise<AppConfigResponse>
+  getAppConfig(): Promise<AppConfigResponse>
 
-  customToken(): Promise<string>
+  getCustomToken(): Promise<string>
 
-  userStorageDirNodes(dirPath?: string): Promise<StorageNode[]>
+  getUserStorageDirAndDescendants(dirPath?: string): Promise<StorageNode[]>
 
   createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 
@@ -33,7 +33,7 @@ export interface LibAPIContainer {
 
   setUserStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
-  storageDirNodes(dirPath?: string): Promise<StorageNode[]>
+  getStorageDirAndDescendants(dirPath?: string): Promise<StorageNode[]>
 
   createStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 

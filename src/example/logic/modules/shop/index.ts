@@ -66,7 +66,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
   async pullProducts(): Promise<void> {
     let products: APIProduct[]
     try {
-      products = await api.products()
+      products = await api.getProducts()
     } catch (err) {
       console.error(err)
       return
@@ -79,7 +79,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
 
     let items: APICartItem[]
     try {
-      items = await api.cartItems()
+      items = await api.getCartItems()
     } catch (err) {
       console.error(err)
       return

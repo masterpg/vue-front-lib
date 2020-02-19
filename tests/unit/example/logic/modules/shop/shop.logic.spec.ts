@@ -95,7 +95,7 @@ beforeEach(async () => {
 
 afterEach(() => {})
 
-describe('products', () => {
+describe('getProducts', () => {
   it('ベーシックケース', () => {
     const actual = shopLogic.products
     expect(actual).toEqual(PRODUCTS)
@@ -133,7 +133,7 @@ describe('checkoutStatus', () => {
 
 describe('pullProducts()', () => {
   it('ベーシックケース', async () => {
-    td.when(api.products()).thenResolve(PRODUCTS)
+    td.when(api.getProducts()).thenResolve(PRODUCTS)
 
     await shopLogic.pullProducts()
     const actual = shopLogic.products
@@ -142,7 +142,7 @@ describe('pullProducts()', () => {
   })
 
   it('APIでエラーが発生した場合', async () => {
-    td.when(api.products()).thenThrow(new Error())
+    td.when(api.getProducts()).thenThrow(new Error())
     productStore.state.all = []
 
     await shopLogic.pullProducts()
@@ -157,7 +157,7 @@ describe('pullCartItems()', () => {
     // ユーザーがサインインしている状態へ変更
     userStore.set({ isSignedIn: true })
 
-    td.when(api.cartItems()).thenResolve(CART_ITEMS)
+    td.when(api.getCartItems()).thenResolve(CART_ITEMS)
 
     await shopLogic.pullCartItems()
     const actual = shopLogic.cartItems
@@ -169,7 +169,7 @@ describe('pullCartItems()', () => {
     // ユーザーがサインインしている状態へ変更
     userStore.set({ isSignedIn: true })
 
-    td.when(api.cartItems()).thenThrow(new Error())
+    td.when(api.getCartItems()).thenThrow(new Error())
     cartStore.state.all = []
 
     await shopLogic.pullCartItems()

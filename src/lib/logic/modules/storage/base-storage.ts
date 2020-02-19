@@ -51,7 +51,7 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   }
 
   async pullNodes(dirPath?: string): Promise<void> {
-    const apiNodes = await this.storageDirNodes(dirPath)
+    const apiNodes = await this.getStorageDirAndDescendants(dirPath)
     if (dirPath) {
       this.storageStore.addList(apiNodes)
     } else {
@@ -128,7 +128,7 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   //  API
   //--------------------------------------------------
 
-  protected abstract storageDirNodes(dirPath?: string): Promise<StorageNode[]>
+  protected abstract getStorageDirAndDescendants(dirPath?: string): Promise<StorageNode[]>
 
   protected abstract createStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 

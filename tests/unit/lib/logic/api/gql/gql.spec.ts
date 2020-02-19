@@ -44,11 +44,11 @@ beforeEach(async () => {
 })
 
 describe('App API', () => {
-  describe('customToken', () => {
+  describe('getCustomToken', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
 
-      const actual = await api.customToken()
+      const actual = await api.getCustomToken()
 
       expect(isEmpty(actual)).toBeFalsy()
     })
@@ -63,12 +63,12 @@ describe('Storage API', () => {
     await Promise.all([api.removeTestStorageDir(TEST_FILES_DIR), api.removeTestStorageDir(userStorageBasePath)])
   })
 
-  describe('userStorageDirNodes', () => {
+  describe('getUserStorageDirAndDescendants', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.uploadTestFiles([{ filePath: `${userStorageBasePath}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.userStorageDirNodes('docs')
+      const actual = await api.getUserStorageDirAndDescendants('docs')
 
       expect(actual.length).toBe(2)
     })
@@ -204,12 +204,12 @@ describe('Storage API', () => {
     })
   })
 
-  describe('storageDirNodes', () => {
+  describe('getStorageDirAndDescendants', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.storageDirNodes(`${TEST_FILES_DIR}`)
+      const actual = await api.getStorageDirAndDescendants(`${TEST_FILES_DIR}`)
 
       expect(actual.length).toBe(3)
     })

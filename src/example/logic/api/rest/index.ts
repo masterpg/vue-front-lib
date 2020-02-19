@@ -9,22 +9,22 @@ import {
 import { BaseRESTAPIContainer } from '@/lib'
 
 export class AppRESTAPIContainer extends BaseRESTAPIContainer implements AppAPIContainer {
-  async product(id: string): Promise<APIProduct | undefined> {
+  async getProduct(id: string): Promise<APIProduct | undefined> {
     const response = await this.get<APIProduct>(`products/${id}`)
     return response.data
   }
 
-  async products(ids?: string[]): Promise<APIProduct[]> {
+  async getProducts(ids?: string[]): Promise<APIProduct[]> {
     const response = await this.get<APIProduct[]>('products')
     return response.data
   }
 
-  async cartItem(id: string): Promise<APICartItem | undefined> {
+  async getCartItem(id: string): Promise<APICartItem | undefined> {
     const response = await this.get<APICartItem>(`cartItems/${id}`, { isAuth: true })
     return response.data
   }
 
-  async cartItems(ids?: string[]): Promise<APICartItem[]> {
+  async getCartItems(ids?: string[]): Promise<APICartItem[]> {
     const response = await this.get<APICartItem[]>('cartItems', { isAuth: true })
     return response.data
   }

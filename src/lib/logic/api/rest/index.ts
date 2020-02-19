@@ -2,20 +2,20 @@ import { AppConfigResponse, LibAPIContainer, StorageNode } from '../types'
 import { BaseRESTClient } from './base'
 
 export abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPIContainer {
-  async appConfig(): Promise<AppConfigResponse> {
-    throw new Error(`This method 'appConfig' is not implemented.`)
+  async getAppConfig(): Promise<AppConfigResponse> {
+    throw new Error(`This method 'getAppConfig' is not implemented.`)
   }
 
-  async customToken(): Promise<string> {
-    throw new Error(`This method 'customToken' is not implemented.`)
+  async getCustomToken(): Promise<string> {
+    throw new Error(`This method 'getCustomToken' is not implemented.`)
   }
 
   async getSignedUploadUrls(inputs: { filePath: string; contentType?: string }[]): Promise<string[]> {
     throw new Error(`This method 'getSignedUploadUrls' is not implemented.`)
   }
 
-  async userStorageDirNodes(dirPath?: string): Promise<StorageNode[]> {
-    throw new Error(`This method 'userStorageDirNodes' is not implemented.`)
+  async getUserStorageDirAndDescendants(dirPath?: string): Promise<StorageNode[]> {
+    throw new Error(`This method 'getUserStorageDirAndDescendants' is not implemented.`)
   }
 
   async createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
@@ -58,8 +58,8 @@ export abstract class BaseRESTAPIContainer extends BaseRESTClient implements Lib
     throw new Error(`This method 'setUserStorageFileShareSettings' is not implemented.`)
   }
 
-  async storageDirNodes(dirPath?: string): Promise<StorageNode[]> {
-    throw new Error(`This method 'storageDirNodes' is not implemented.`)
+  async getStorageDirAndDescendants(dirPath?: string): Promise<StorageNode[]> {
+    throw new Error(`This method 'getStorageDirAndDescendants' is not implemented.`)
   }
 
   async createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {

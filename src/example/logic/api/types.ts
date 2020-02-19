@@ -7,13 +7,13 @@ import { LibAPIContainer } from '@/lib'
 //========================================================================
 
 export interface AppAPIContainer extends LibAPIContainer {
-  product(id: string): Promise<APIProduct | undefined>
+  getProduct(id: string): Promise<APIProduct | undefined>
 
-  products(ids?: string[]): Promise<APIProduct[]>
+  getProducts(ids?: string[]): Promise<APIProduct[]>
 
-  cartItem(id: string): Promise<APICartItem | undefined>
+  getCartItem(id: string): Promise<APICartItem | undefined>
 
-  cartItems(ids?: string[]): Promise<APICartItem[]>
+  getCartItems(ids?: string[]): Promise<APICartItem[]>
 
   addCartItems(items: APIAddCartItemInput[]): Promise<APIEditCartItemResponse[]>
 

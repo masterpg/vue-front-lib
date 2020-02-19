@@ -237,7 +237,7 @@ export class AuthLogicImpl extends BaseLogic implements AuthLogic {
   private async m_signedInProcess(): Promise<void> {
     // カスタムトークンをサーバーから取得
     try {
-      const customToken = await api.customToken()
+      const customToken = await api.getCustomToken()
       await firebase.auth().signInWithCustomToken(customToken)
     } catch (err) {
       Dialog.create({

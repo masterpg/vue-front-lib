@@ -43,7 +43,7 @@
 
 <template>
   <div class="storage-page-main">
-    <q-splitter v-model="m_splitterModel" class="splitter">
+    <q-splitter v-model="m_splitterModel" unit="px" class="splitter">
       <template v-slot:before>
         <div ref="treeViewContainer" class="tree-view-container">
           <comp-tree-view
@@ -201,7 +201,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   //
   //----------------------------------------------------------------------
 
-  private m_splitterModel = 30
+  private m_splitterModel = 300
 
   /**
    * ツリービューの縦スクロール位置が初期化されたか否かです。

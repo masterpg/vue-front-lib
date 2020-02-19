@@ -30,8 +30,8 @@ export class UserStorageLogicImpl extends BaseStorageLogic implements UserStorag
     return new UserStorageUrlUploadManager(owner)
   }
 
-  protected storageDirNodes(dirPath?: string): Promise<StorageNode[]> {
-    return api.userStorageDirNodes(dirPath)
+  protected getStorageDirAndDescendants(dirPath?: string): Promise<StorageNode[]> {
+    return api.getUserStorageDirAndDescendants(dirPath)
   }
 
   protected createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
@@ -86,8 +86,8 @@ export class AppStorageLogicImpl extends BaseStorageLogic implements AppStorageL
     return new AppStorageUploadManager(owner)
   }
 
-  protected storageDirNodes(dirPath?: string): Promise<StorageNode[]> {
-    return api.storageDirNodes(dirPath)
+  protected getStorageDirAndDescendants(dirPath?: string): Promise<StorageNode[]> {
+    return api.getStorageDirAndDescendants(dirPath)
   }
 
   protected createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {

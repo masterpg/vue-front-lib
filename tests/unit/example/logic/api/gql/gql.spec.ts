@@ -64,30 +64,30 @@ beforeEach(async () => {
 })
 
 describe('Product API', () => {
-  describe('product', () => {
+  describe('getProduct', () => {
     it('疎通確認', async () => {
       await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }])
       const product = PRODUCTS[0]
 
-      const actual = await api.product(product.id)
+      const actual = await api.getProduct(product.id)
 
       expect(actual).toMatchObject(product)
     })
 
     it('存在しない商品IDを指定した場合', async () => {
       await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }])
-      const actual = await api.product('productXXX')
+      const actual = await api.getProduct('productXXX')
 
       expect(actual).toBeUndefined()
     })
   })
 
-  describe('products', () => {
+  describe('getProducts', () => {
     it('疎通確認', async () => {
       await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }])
       const ids = [PRODUCTS[0].id, PRODUCTS[1].id]
 
-      const actual = await api.products(ids)
+      const actual = await api.getProducts(ids)
 
       expect(actual).toMatchObject([PRODUCTS[0], PRODUCTS[1]])
     })
@@ -96,7 +96,7 @@ describe('Product API', () => {
       await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }])
       const ids = ['productXXX', 'productYYY']
 
-      const actual = await api.products(ids)
+      const actual = await api.getProducts(ids)
 
       expect(actual.length).toBe(0)
     })
@@ -104,13 +104,13 @@ describe('Product API', () => {
 })
 
 describe('Cart API', () => {
-  describe('cartItem', () => {
+  describe('getCartItem', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
       const cartItem = CART_ITEMS[0]
 
-      const actual = await api.cartItem(cartItem.id)
+      const actual = await api.getCartItem(cartItem.id)
 
       expect(actual).toMatchObject(cartItem)
     })
@@ -118,7 +118,7 @@ describe('Cart API', () => {
     it('存在しないカートアイテムIDを指定した場合', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
-      const actual = await api.cartItem('cartItemXXX')
+      const actual = await api.getCartItem('cartItemXXX')
 
       expect(actual).toBeUndefined()
     })
@@ -128,7 +128,7 @@ describe('Cart API', () => {
 
       let actual!: Error
       try {
-        await api.cartItem(cartItem.id)
+        await api.getCartItem(cartItem.id)
       } catch (err) {
         actual = err
       }
@@ -137,13 +137,13 @@ describe('Cart API', () => {
     })
   })
 
-  describe('cartItems', () => {
+  describe('getCartItems', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
       const ids = [CART_ITEMS[0].id, CART_ITEMS[1].id]
 
-      const actual = await api.cartItems(ids)
+      const actual = await api.getCartItems(ids)
 
       expect(actual).toMatchObject([CART_ITEMS[0], CART_ITEMS[1]])
     })
@@ -153,7 +153,7 @@ describe('Cart API', () => {
       await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
       const ids = ['cartItemXXX', 'cartItemYYY']
 
-      const actual = await api.cartItems(ids)
+      const actual = await api.getCartItems(ids)
 
       expect(actual.length).toBe(0)
     })
@@ -163,7 +163,7 @@ describe('Cart API', () => {
 
       let actual!: Error
       try {
-        await api.cartItems(ids)
+        await api.getCartItems(ids)
       } catch (err) {
         actual = err
       }
@@ -302,7 +302,7 @@ describe('Cart API', () => {
 
       expect(actual).toBeTruthy()
       // カートアイテムが削除されてることを検証
-      const cartItems = await api.cartItems()
+      const cartItems = await api.getCartItems()
       expect(cartItems.length).toBe(0)
     })
 

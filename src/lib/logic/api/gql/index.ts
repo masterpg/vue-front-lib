@@ -10,7 +10,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
   //
   //----------------------------------------------------------------------
 
-  async appConfig(): Promise<AppConfigResponse> {
+  async getAppConfig(): Promise<AppConfigResponse> {
     const response = await this.query<{ appConfig: AppConfigResponse }>({
       query: gql`
         query GetAppConfig {
@@ -23,7 +23,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return response.data.appConfig
   }
 
-  async customToken(): Promise<string> {
+  async getCustomToken(): Promise<string> {
     const response = await this.query<{ customToken: string }>({
       query: gql`
         query GetCustomToken {
@@ -48,11 +48,11 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return response.data.signedUploadUrls
   }
 
-  async userStorageDirNodes(dirPath?: string): Promise<StorageNode[]> {
-    const response = await this.query<{ userStorageDirNodes: APIResponseStorageNode[] }>({
+  async getUserStorageDirAndDescendants(dirPath?: string): Promise<StorageNode[]> {
+    const response = await this.query<{ userStorageDirAndDescendants: APIResponseStorageNode[] }>({
       query: gql`
-        query GetUserStorageNodes($dirPath: String) {
-          userStorageDirNodes(dirPath: $dirPath) {
+        query GetUserDirAndDescendants($dirPath: String) {
+          userStorageDirAndDescendants(dirPath: $dirPath) {
             nodeType
             name
             dir
@@ -71,7 +71,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       variables: { dirPath },
       isAuth: true,
     })
-    return this.toAPIStorageNodes(response.data.userStorageDirNodes)
+    return this.toAPIStorageNodes(response.data.userStorageDirAndDescendants)
   }
 
   async createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
@@ -334,11 +334,11 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return this.toAPIStorageNode(response.data!.setUserStorageFileShareSettings)
   }
 
-  async storageDirNodes(dirPath?: string): Promise<StorageNode[]> {
-    const response = await this.query<{ storageDirNodes: APIResponseStorageNode[] }>({
+  async getStorageDirAndDescendants(dirPath?: string): Promise<StorageNode[]> {
+    const response = await this.query<{ storageDirAndDescendants: APIResponseStorageNode[] }>({
       query: gql`
         query GetStorageNodes($dirPath: String) {
-          storageDirNodes(dirPath: $dirPath) {
+          storageDirAndDescendants(dirPath: $dirPath) {
             nodeType
             name
             dir
@@ -357,7 +357,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       variables: { dirPath },
       isAuth: true,
     })
-    return this.toAPIStorageNodes(response.data.storageDirNodes)
+    return this.toAPIStorageNodes(response.data.storageDirAndDescendants)
   }
 
   async createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {

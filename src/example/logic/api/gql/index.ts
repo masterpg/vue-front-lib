@@ -10,12 +10,12 @@ import { BaseGQLAPIContainer } from '@/lib'
 import gql from 'graphql-tag'
 
 export class AppGQLAPIContainer extends BaseGQLAPIContainer implements AppAPIContainer {
-  async product(id: string): Promise<APIProduct | undefined> {
-    const products = await this.products([id])
+  async getProduct(id: string): Promise<APIProduct | undefined> {
+    const products = await this.getProducts([id])
     return products.length === 1 ? products[0] : undefined
   }
 
-  async products(ids?: string[]): Promise<APIProduct[]> {
+  async getProducts(ids?: string[]): Promise<APIProduct[]> {
     const response = await this.query<{ products: APIProduct[] }>({
       query: gql`
         query GetProducts($ids: [ID!]) {
@@ -32,12 +32,12 @@ export class AppGQLAPIContainer extends BaseGQLAPIContainer implements AppAPICon
     return response.data.products
   }
 
-  async cartItem(id: string): Promise<APICartItem | undefined> {
-    const items = await this.cartItems([id])
+  async getCartItem(id: string): Promise<APICartItem | undefined> {
+    const items = await this.getCartItems([id])
     return items.length === 1 ? items[0] : undefined
   }
 
-  async cartItems(ids?: string[]): Promise<APICartItem[]> {
+  async getCartItems(ids?: string[]): Promise<APICartItem[]> {
     const response = await this.query<{ cartItems: APICartItem[] }>({
       query: gql`
         query GetCartItems($ids: [ID!]) {
