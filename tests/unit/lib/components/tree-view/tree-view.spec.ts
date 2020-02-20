@@ -1,6 +1,6 @@
 import { CompTreeCheckboxNode, CompTreeNode, CompTreeNodeData, CompTreeView, CompTreeViewUtils } from '@/lib'
+import { Wrapper, mount } from '@vue/test-utils'
 import { initLibTest } from '../../../../helpers/lib/init'
-import { mount } from '@vue/test-utils'
 const merge = require('lodash/merge')
 const cloneDeep = require('lodash/cloneDeep')
 
@@ -62,8 +62,10 @@ function verifyTreeView(treeView: CompTreeView | any) {
     // ツリービューのコンテナにノードが存在することを検証
     const containerChildren = Array.from(treeView.m_childContainer.children)
     expect(containerChildren[i]).toBe(node.$el)
+    // ツリービューからノードを取得できることを検証
+    expect(treeView.getNode(node.value).value).toBe(node.value)
     // ノードの親子(子孫)関係の検証
-    verifyParentChildRelation(node)
+    verifyParentChildRelation(treeView, node)
     // ノードが選択状態の場合
     if (node.selected) {
       expect(treeView.selectedNode.selected).toBe(node)
@@ -77,16 +79,18 @@ function verifyTreeView(treeView: CompTreeView | any) {
   }
 }
 
-function verifyParentChildRelation(node: CompTreeNode | any) {
+function verifyParentChildRelation(treeView: CompTreeView | any, node: CompTreeNode | any) {
   for (let i = 0; i < node.children.length; i++) {
     const child = node.children[i] as CompTreeNode | any
+    // ツリービューから子ノードを取得できることを検証
+    expect(treeView.getNode(child.value).value).toBe(child.value)
     // ノードの親子関係を検証
     expect(child.parent).toBe(node)
     // ノードのコンテナに子ノードが存在することを検証
     const containerChildren = Array.from(node.m_childContainer.children)
     expect(containerChildren[i]).toBe(child.$el)
     // 孫ノードの検証
-    verifyParentChildRelation(child)
+    verifyParentChildRelation(treeView, child)
   }
 }
 
@@ -358,43 +362,6 @@ describe('CompTreeView', () => {
       verifyTreeView(treeView)
     })
 
-    it('挿入位置にFloatを指定', () => {
-      const wrapper = mount(CompTreeView)
-      const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildTree(cloneDeep(baseNodeDataList))
-
-      const node3 = treeView.addChild(
-        {
-          label: 'Node3',
-          value: 'node3',
-        },
-        { insertIndex: 1.5 }
-      )
-
-      expect(treeView.getNode('node3')).toBe(node3)
-      // 最後尾に挿入される
-      expect(treeView.children[treeView.children.length - 1]).toBe(node3)
-      verifyTreeView(treeView)
-    })
-
-    it('挿入位置にFloat(実際はInteger)を指定', () => {
-      const wrapper = mount(CompTreeView)
-      const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildTree(cloneDeep(baseNodeDataList))
-
-      const node3 = treeView.addChild(
-        {
-          label: 'Node3',
-          value: 'node3',
-        },
-        { insertIndex: 1.0 }
-      )
-
-      expect(treeView.getNode('node3')).toBe(node3)
-      expect(treeView.children[1]).toBe(node3)
-      verifyTreeView(treeView)
-    })
-
     it('既に存在するノードを指定して追加', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
@@ -453,20 +420,122 @@ describe('CompTreeView', () => {
       verifyTreeView(treeView)
     })
 
-    it('ノードを入れ替え', () => {
-      const wrapper = mount(CompTreeView)
-      const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildTree(cloneDeep(baseNodeDataList))
+    describe('ノードを入れ替え', () => {
+      let wrapper!: Wrapper<CompTreeView>
+      let treeView!: CompTreeView | any
 
-      const node1 = treeView.getNode('node1')!
-      const node2 = treeView.getNode('node2')!
+      beforeEach(() => {
+        wrapper = mount(CompTreeView)
+        treeView = wrapper.vm
+        treeView.buildTree([
+          {
+            label: 'Node1',
+            value: 'node1',
+            children: [
+              {
+                label: 'Node1_1',
+                value: 'node1_1',
+              },
+              {
+                label: 'Node1_2',
+                value: 'node1_2',
+              },
+            ],
+          },
+          {
+            label: 'Node2',
+            value: 'node2',
+          },
+          {
+            label: 'Node3',
+            value: 'node3',
+          },
+          {
+            label: 'Node4',
+            value: 'node4',
+          },
+        ])
+      })
 
-      treeView.addChild(node1)
+      it('挿入位置を指定しない場合', () => {
+        const node1 = treeView.getNode('node1')!
+        const node2 = treeView.getNode('node2')!
+        const node3 = treeView.getNode('node3')!
+        const node4 = treeView.getNode('node4')!
 
-      expect(treeView.children.length).toBe(2)
-      expect(treeView.children[0]).toBe(node2)
-      expect(treeView.children[1]).toBe(node1)
-      verifyTreeView(treeView)
+        treeView.addChild(node1)
+
+        expect(treeView.children.length).toBe(4)
+        expect(treeView.children[0]).toBe(node2)
+        expect(treeView.children[1]).toBe(node3)
+        expect(treeView.children[2]).toBe(node4)
+        expect(treeView.children[3]).toBe(node1)
+        verifyTreeView(treeView)
+      })
+
+      it('挿入位置に先頭を指定した場合', () => {
+        const node1 = treeView.getNode('node1')!
+        const node2 = treeView.getNode('node2')!
+        const node3 = treeView.getNode('node3')!
+        const node4 = treeView.getNode('node4')!
+
+        treeView.addChild(node3, { insertIndex: 0 })
+
+        expect(treeView.children.length).toBe(4)
+        expect(treeView.children[0]).toBe(node3)
+        expect(treeView.children[1]).toBe(node1)
+        expect(treeView.children[2]).toBe(node2)
+        expect(treeView.children[3]).toBe(node4)
+        verifyTreeView(treeView)
+      })
+
+      it('中間の挿入位置を指定した場合', () => {
+        const node1 = treeView.getNode('node1')!
+        const node2 = treeView.getNode('node2')!
+        const node3 = treeView.getNode('node3')!
+        const node4 = treeView.getNode('node4')!
+
+        treeView.addChild(node2, { insertIndex: 2 })
+
+        expect(treeView.children.length).toBe(4)
+        expect(treeView.children[0]).toBe(node1)
+        expect(treeView.children[1]).toBe(node3)
+        expect(treeView.children[2]).toBe(node2)
+        expect(treeView.children[3]).toBe(node4)
+        verifyTreeView(treeView)
+      })
+
+      it('挿入位置に最後尾を指定した場合', () => {
+        const node1 = treeView.getNode('node1')!
+        const node2 = treeView.getNode('node2')!
+        const node3 = treeView.getNode('node3')!
+        const node4 = treeView.getNode('node4')!
+
+        treeView.addChild(node2, { insertIndex: 3 })
+
+        expect(treeView.children.length).toBe(4)
+        expect(treeView.children[0]).toBe(node1)
+        expect(treeView.children[1]).toBe(node3)
+        expect(treeView.children[2]).toBe(node4)
+        expect(treeView.children[3]).toBe(node2)
+        verifyTreeView(treeView)
+      })
+
+      it('挿入位置に現在と同じ値を指定した場合', () => {
+        const node1 = treeView.getNode('node1')!
+        const node2 = treeView.getNode('node2')!
+        const node3 = treeView.getNode('node3')!
+        const node4 = treeView.getNode('node4')!
+
+        treeView.addChild(node1, { insertIndex: 0 })
+
+        expect(treeView.children.length).toBe(4)
+        expect(treeView.children[0]).toBe(node1)
+        expect(treeView.children[1]).toBe(node2)
+        expect(treeView.children[2]).toBe(node3)
+        expect(treeView.children[3]).toBe(node4)
+        verifyTreeView(treeView)
+      })
     })
 
     it('下位レベルのノードをトップレベルへ移動', () => {
@@ -620,9 +689,9 @@ describe('CompTreeView', () => {
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
       const node1 = treeView.getNode('node1')!
-      const descendants = CompTreeViewUtils.getDescendants(node1)
       const treeViewNodesLength = treeView.children.length
 
+      // 削除してから追加
       const actual = treeView.removeNode(node1.value)
       treeView.addChild(actual, { insertIndex: 0 })
 
@@ -630,11 +699,6 @@ describe('CompTreeView', () => {
       expect(treeView.getNode(node1.value)).toBe(node1)
       expect(treeView.children.length).toBe(treeViewNodesLength)
       expect(treeView.children[0]).toBe(node1)
-
-      for (const descendant of descendants) {
-        expect(treeView.getNode((descendant as any).value)).toBeTruthy()
-      }
-
       verifyTreeView(treeView)
     })
   })
@@ -936,62 +1000,125 @@ describe('CompTreeNode', () => {
       verifyTreeView(treeView)
     })
 
-    it('挿入位置にFloatを指定', () => {
-      const wrapper = mount(CompTreeView)
-      const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildTree(cloneDeep(baseNodeDataList))
+    describe('ノードを入れ替え', () => {
+      let wrapper!: Wrapper<CompTreeView>
+      let treeView!: CompTreeView | any
 
-      const node1_1 = treeView.getNode('node1_1')!
+      beforeEach(() => {
+        wrapper = mount(CompTreeView)
+        treeView = wrapper.vm
+        treeView.buildTree([
+          {
+            label: 'Node1',
+            value: 'node1',
+            children: [
+              {
+                label: 'Node1_1',
+                value: 'node1_1',
+                children: [{ label: 'Node1_1_1', value: 'node1_1_1' }, { label: 'Node1_1_2', value: 'node1_1_2' }],
+              },
+              {
+                label: 'Node1_2',
+                value: 'node1_2',
+              },
+              {
+                label: 'Node1_3',
+                value: 'node1_3',
+              },
+              {
+                label: 'Node1_4',
+                value: 'node1_4',
+              },
+            ],
+          },
+        ])
+      })
 
-      const node1_1_4 = node1_1.addChild(
-        {
-          label: 'Node1_1_4',
-          value: 'node1_1_4',
-        },
-        { insertIndex: 1.5 }
-      )
+      it('挿入位置を指定しない場合', () => {
+        const node1 = treeView.getNode('node1')!
+        const node1_1 = treeView.getNode('node1_1')!
+        const node1_2 = treeView.getNode('node1_2')!
+        const node1_3 = treeView.getNode('node1_3')!
+        const node1_4 = treeView.getNode('node1_4')!
 
-      expect(treeView.getNode('node1_1_4')).toBe(node1_1_4)
-      // 最後尾に挿入される
-      expect(node1_1.children[node1_1.children.length - 1]).toBe(node1_1_4)
-      verifyTreeView(treeView)
-    })
+        node1.addChild(node1_1)
 
-    it('挿入位置にFloat(実際はInteger)を指定', () => {
-      const wrapper = mount(CompTreeView)
-      const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildTree(cloneDeep(baseNodeDataList))
+        expect(node1.children.length).toBe(4)
+        expect(node1.children[0]).toBe(node1_2)
+        expect(node1.children[1]).toBe(node1_3)
+        expect(node1.children[2]).toBe(node1_4)
+        expect(node1.children[3]).toBe(node1_1)
+        verifyTreeView(treeView)
+      })
 
-      const node1_1 = treeView.getNode('node1_1')!
+      it('挿入位置に先頭を指定した場合', () => {
+        const node1 = treeView.getNode('node1')!
+        const node1_1 = treeView.getNode('node1_1')!
+        const node1_2 = treeView.getNode('node1_2')!
+        const node1_3 = treeView.getNode('node1_3')!
+        const node1_4 = treeView.getNode('node1_4')!
 
-      const node1_1_4 = node1_1.addChild(
-        {
-          label: 'Node1_1_4',
-          value: 'node1_1_4',
-        },
-        { insertIndex: 1 }
-      )
+        node1.addChild(node1_3, { insertIndex: 0 })
 
-      expect(treeView.getNode('node1_1_4')).toBe(node1_1_4)
-      expect(node1_1.children[1]).toBe(node1_1_4)
-      verifyTreeView(treeView)
-    })
+        expect(node1.children.length).toBe(4)
+        expect(node1.children[0]).toBe(node1_3)
+        expect(node1.children[1]).toBe(node1_1)
+        expect(node1.children[2]).toBe(node1_2)
+        expect(node1.children[3]).toBe(node1_4)
+        verifyTreeView(treeView)
+      })
 
-    it('ノードを入れ替え', () => {
-      const wrapper = mount(CompTreeView)
-      const treeView = wrapper.vm as CompTreeView | any
-      treeView.buildTree(cloneDeep(baseNodeDataList))
+      it('中間の挿入位置を指定した場合', () => {
+        const node1 = treeView.getNode('node1')!
+        const node1_1 = treeView.getNode('node1_1')!
+        const node1_2 = treeView.getNode('node1_2')!
+        const node1_3 = treeView.getNode('node1_3')!
+        const node1_4 = treeView.getNode('node1_4')!
 
-      const node1_1 = treeView.getNode('node1_1')!
-      const node1_1_1 = treeView.getNode('node1_1_1')!
-      const node1_1_2 = treeView.getNode('node1_1_2')!
+        node1.addChild(node1_2, { insertIndex: 2 })
 
-      node1_1.addChild(node1_1_1)
+        expect(node1.children.length).toBe(4)
+        expect(node1.children[0]).toBe(node1_1)
+        expect(node1.children[1]).toBe(node1_3)
+        expect(node1.children[2]).toBe(node1_2)
+        expect(node1.children[3]).toBe(node1_4)
+        verifyTreeView(treeView)
+      })
 
-      expect(node1_1.children.length).toBe(3)
-      expect(node1_1.children[0]).toBe(node1_1_2)
-      expect(node1_1.children[node1_1.children.length - 1]).toBe(node1_1_1)
-      verifyTreeView(treeView)
+      it('挿入位置に最後尾を指定した場合', () => {
+        const node1 = treeView.getNode('node1')!
+        const node1_1 = treeView.getNode('node1_1')!
+        const node1_2 = treeView.getNode('node1_2')!
+        const node1_3 = treeView.getNode('node1_3')!
+        const node1_4 = treeView.getNode('node1_4')!
+
+        node1.addChild(node1_2, { insertIndex: 3 })
+
+        expect(node1.children.length).toBe(4)
+        expect(node1.children[0]).toBe(node1_1)
+        expect(node1.children[1]).toBe(node1_3)
+        expect(node1.children[2]).toBe(node1_4)
+        expect(node1.children[3]).toBe(node1_2)
+        verifyTreeView(treeView)
+      })
+
+      it('挿入位置に現在と同じ値を指定した場合', () => {
+        const node1 = treeView.getNode('node1')!
+        const node1_1 = treeView.getNode('node1_1')!
+        const node1_2 = treeView.getNode('node1_2')!
+        const node1_3 = treeView.getNode('node1_3')!
+        const node1_4 = treeView.getNode('node1_4')!
+        const node1_1_descendants = CompTreeViewUtils.getDescendants(node1_1)
+
+        node1.addChild(node1_1, { insertIndex: 0 })
+
+        expect(node1.children.length).toBe(4)
+        expect(node1.children[0]).toBe(node1_1)
+        expect(node1.children[1]).toBe(node1_2)
+        expect(node1.children[2]).toBe(node1_3)
+        expect(node1.children[3]).toBe(node1_4)
+        verifyTreeView(treeView)
+      })
     })
 
     it('トップレベルのノードを下位レベルへ移動', () => {
@@ -1154,10 +1281,10 @@ describe('CompTreeNode', () => {
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
       const node1_1 = treeView.getNode('node1_1')!
-      const node1_1Descendants = CompTreeViewUtils.getDescendants(node1_1)
       const node1 = node1_1.parent!
       const node1ChildrenLength = node1.children.length
 
+      // 削除してから追加
       node1.removeChild(node1_1)
       const actual = node1.addChild(node1_1, { insertIndex: 0 })
 
@@ -1165,10 +1292,6 @@ describe('CompTreeNode', () => {
       expect(treeView.getNode(node1_1.value)).toBe(node1_1)
       expect(node1.children.length).toBe(node1ChildrenLength)
       expect(node1.children[0]).toBe(node1_1)
-
-      for (const descendant of node1_1Descendants) {
-        expect(treeView.getNode((descendant as any).value)).toBeTruthy()
-      }
 
       verifyTreeView(treeView)
     })
@@ -1215,28 +1338,60 @@ describe('CompTreeNode', () => {
     })
   })
 
-  it('子ノード開閉', done => {
-    const wrapper = mount(CompTreeView)
-    const treeView = wrapper.vm as CompTreeView | any
-    treeView.buildTree(cloneDeep(baseNodeDataList))
+  describe('子ノード開閉', () => {
+    it('ベーシックケース', done => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1', opened: false }])
+      treeView.buildTree(nodeDataList)
 
-    const node1_1 = treeView.getNode('node1_1')!
-    expect(node1_1.opened).toBe(true)
+      const node1_1 = treeView.getNode('node1_1')!
+      expect(node1_1.opened).toBe(false)
 
-    node1_1.open()
-    expect(node1_1.opened).toBeTruthy()
-    node1_1.close()
-    expect(node1_1.opened).toBeFalsy()
-    node1_1.toggle()
-    expect(node1_1.opened).toBeTruthy()
-
-    setTimeout(() => {
-      // イベント発火を検証(イベントは1回発火される想定)
-      expect(wrapper.emitted('opened-changed').length).toBe(1)
-      expect(wrapper.emitted('opened-changed')[0][0]).toBe(node1_1)
-      // ノードの開閉状態を検証
+      // 以下で子ノード開閉を複数回行う
+      node1_1.open()
       expect(node1_1.opened).toBeTruthy()
-      done()
+      node1_1.close()
+      expect(node1_1.opened).toBeFalsy()
+      node1_1.toggle()
+      expect(node1_1.opened).toBeTruthy()
+
+      // ノード開閉のアニメーションを考慮して一定時間待機
+      setTimeout(() => {
+        // イベント発火を検証
+        expect(wrapper.emitted('opened-changed').length).toBe(3)
+        expect(wrapper.emitted('opened-changed')[0][0]).toBe(node1_1)
+        expect(wrapper.emitted('opened-changed')[1][0]).toBe(node1_1)
+        expect(wrapper.emitted('opened-changed')[2][0]).toBe(node1_1)
+        // ノードの開閉状態を検証
+        expect(node1_1.opened).toBeTruthy()
+        done()
+      }, 1000)
+    })
+
+    it('閉じている中のノード選択時にイベントが発火する事を検証', done => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1', opened: false }, { value: 'node1_1_1', selected: false }])
+      treeView.buildTree(nodeDataList)
+
+      // 子ノードは閉じている
+      const node1_1 = treeView.getNode('node1_1')!
+      expect(node1_1.opened).toBe(false)
+      // 閉じている中のノードは未選択である
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      expect(node1_1_1.selected).toBe(false)
+
+      // 閉じている中のノードは選択する
+      node1_1_1.selected = true
+
+      // ノード開閉のアニメーションを考慮して一定時間待機
+      setTimeout(() => {
+        // イベント発火を検証
+        expect(wrapper.emitted('selected').length).toBe(1)
+        expect(wrapper.emitted('selected')[0][0]).toBe(node1_1_1)
+        done()
+      }, 1000)
     })
   })
 

@@ -30,8 +30,6 @@ import { CompTreeViewUtils } from './comp-tree-view-utils'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '../../../base/decorators'
 import Vue from 'vue'
-const isInteger = require('lodash/isInteger')
-const isFunction = require('lodash/isFunction')
 
 /**
  * ツリーコンポーネントです。
@@ -163,7 +161,7 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
   addChild(child: NodeData | CompTreeNode, options?: { parent?: string; insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
     options = options || {}
 
-    if (isInteger(options.insertIndex) && options.insertIndex! >= 0 && options.sortFunc) {
+    if (typeof options.insertIndex === 'number' && options.insertIndex >= 0 && options.sortFunc) {
       throw new Error('You cannot specify both "insertIndex" and "sortFunc".')
     }
 
@@ -282,17 +280,29 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
   private m_addNodeByNode(node: CompTreeNode, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
     options = options || {}
 
+    // 追加ノードの親が自身のツリービューの場合
+    // ※自身のツリービューの子として追加ノードが既に存在する場合
+    if (!node.parent && node.treeView === this) {
+      const currentIndex = this.children.indexOf(node)
+      // 挿入位置が指定されていて、かつ現在の位置と挿入位置が同じ場合
+      if (typeof options.insertIndex === 'number' && options.insertIndex === currentIndex) {
+        CompTreeViewUtils.dispatchNodeAdded(node)
+        for (const descendant of CompTreeViewUtils.getDescendants(node)) {
+          CompTreeViewUtils.dispatchNodeAdded(descendant)
+        }
+        return node
+      }
+    }
+
     //
-    // 一旦親からノードを削除
+    // 前の親から追加ノードを削除
     //
     if (node.parent) {
-      // 親ノードから自ノードを削除
+      // 親ノードから追加ノードを削除
       node.parent.removeChild(node)
     } else {
       // 親ノードがない場合ツリービューが親となるので、ツリービューから自ノードを削除
-      if (node.treeView) {
-        node.treeView.removeNode(node.value)
-      }
+      node.treeView && node.treeView.removeNode(node.value)
     }
 
     // ノード挿入位置を決定
@@ -316,14 +326,19 @@ export default class CompTreeView<NodeData extends CompTreeNodeData = any> exten
   private m_getInsertIndex(newNode: CompTreeNode, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): number {
     options = options || {}
 
-    if (isInteger(options.insertIndex)) {
-      return options.insertIndex!
-    } else if (isFunction(options.sortFunc)) {
+    // 挿入位置が指定された場合
+    if (typeof options.insertIndex === 'number') {
+      return options.insertIndex
+    }
+    // ソート関数が指定された場合
+    else if (typeof options.sortFunc === 'function') {
       const children = [...this.children, newNode]
-      children.sort(options.sortFunc!)
+      children.sort(options.sortFunc)
       const index = children.indexOf(newNode)
       return index === -1 ? this.children.length : index
-    } else {
+    }
+    // 何も指定されていなかった場合
+    else {
       return this.m_children.length
     }
   }

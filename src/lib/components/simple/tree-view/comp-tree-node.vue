@@ -74,7 +74,7 @@
     </div>
 
     <!-- 子ノード -->
-    <div ref="childContainer" class="child-container" :class="{ opened: opened }"></div>
+    <div ref="childContainer" class="child-container"></div>
   </div>
 </template>
 
@@ -86,11 +86,9 @@ import { CompTreeViewUtils } from './comp-tree-view-utils'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '../../../base/decorators'
 import Vue from 'vue'
-const isInteger = require('lodash/isInteger')
-const isFunction = require('lodash/isFunction')
+import anime from 'animejs'
 const isBoolean = require('lodash/isBoolean')
 const isString = require('lodash/isString')
-const debounce = require('lodash/debounce')
 
 @Component
 export default class CompTreeNode extends BaseComponent {
@@ -101,8 +99,6 @@ export default class CompTreeNode extends BaseComponent {
   //----------------------------------------------------------------------
 
   mounted() {
-    this.m_toggle = debounce(this.m_toggleFunc)
-
     // this.childContainerObserver = new MutationObserver(records => {
     //   console.log(records)
     // })
@@ -302,6 +298,8 @@ export default class CompTreeNode extends BaseComponent {
     return this.children.length > 0
   }
 
+  private m_toggleAnime: { resolve: () => void; anime: anime.AnimeInstance } | null = null
+
   private childContainerObserver!: MutationObserver
 
   //--------------------------------------------------
@@ -405,7 +403,7 @@ export default class CompTreeNode extends BaseComponent {
   addChild(child: CompTreeNodeData | CompTreeNode, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
     options = options || {}
 
-    if (isInteger(options.insertIndex) && options.insertIndex! >= 0 && options.sortFunc) {
+    if (typeof options.insertIndex === 'number' && options.insertIndex >= 0 && options.sortFunc) {
       throw new Error('You cannot specify both "insertIndex" and "sortFunc".')
     }
 
@@ -446,8 +444,7 @@ export default class CompTreeNode extends BaseComponent {
    * @param animated
    */
   toggle(animated: boolean = true): void {
-    this.nodeData.opened = !this.nodeData.opened
-    this.m_toggle(this.nodeData.opened, animated)
+    this.m_toggle(!this.opened, animated)
   }
 
   /**
@@ -456,8 +453,7 @@ export default class CompTreeNode extends BaseComponent {
    */
   open(animated: boolean = true): void {
     if (this.nodeData.opened) return
-    this.nodeData.opened = true
-    this.m_toggle(this.nodeData.opened, animated)
+    this.m_toggle(true, animated)
   }
 
   /**
@@ -466,8 +462,7 @@ export default class CompTreeNode extends BaseComponent {
    */
   close(animated: boolean = true): void {
     if (!this.nodeData.opened) return
-    this.nodeData.opened = false
-    this.m_toggle(this.nodeData.opened, animated)
+    this.m_toggle(false, animated)
   }
 
   /**
@@ -519,6 +514,8 @@ export default class CompTreeNode extends BaseComponent {
       throw new Error(`The node "${childNodeData.value}" already exists.`)
     }
 
+    this.m_ascendSetBlockForDisplay()
+
     // 子ノードの作成
     const childNode = CompTreeViewUtils.newNode(childNodeData)
 
@@ -537,11 +534,11 @@ export default class CompTreeNode extends BaseComponent {
 
     // ノードの親子関係を設定
     childNode.m_parent = this
-    this.children.splice(insertIndex, 0, childNode)
+    this.m_children.splice(insertIndex, 0, childNode)
 
     // 親ノードのコンテナの高さを設定
     if (this.parent) {
-      this.parent.m_refreshChildrenContainerHeight()
+      this.parent.m_refreshChildContainerHeight()
     }
 
     // 子ノードの設定
@@ -549,6 +546,8 @@ export default class CompTreeNode extends BaseComponent {
     for (let i = 0; i < len; i++) {
       childNode.addChild(childNodeData.children![i], { insertIndex: i })
     }
+
+    this.m_ascendSetAnyForDisplay()
 
     // ノードが追加されたことを通知するイベントを発火
     CompTreeViewUtils.dispatchNodeAdded(childNode)
@@ -559,20 +558,36 @@ export default class CompTreeNode extends BaseComponent {
   private m_addChildByNode(childNode: CompTreeNode, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
     options = options || {}
 
-    // 追加しようとするノードの子に自ノードが含まれないことを検証
+    // 追加ノードの子に自ノードが含まれないことを検証
     const descendantMap = CompTreeViewUtils.getDescendantMap(childNode)
     if (descendantMap[this.value]) {
       throw new Error(`The specified node "${childNode.value}" contains the new parent "${this.value}".`)
     }
 
+    // 追加ノードの親が自ノードの場合
+    // ※自ノードの子として追加ノードが既に存在する場合
+    if (childNode.parent === this) {
+      const currentIndex = this.children.indexOf(childNode)
+      // 挿入位置が指定されていて、かつ現在の位置と挿入位置が同じ場合
+      if (typeof options.insertIndex === 'number' && options.insertIndex === currentIndex) {
+        CompTreeViewUtils.dispatchNodeAdded(childNode)
+        for (const descendant of CompTreeViewUtils.getDescendants(childNode)) {
+          CompTreeViewUtils.dispatchNodeAdded(descendant)
+        }
+        return childNode
+      }
+    }
+
+    this.m_ascendSetBlockForDisplay()
+
     //
-    // 一旦親からノードを削除
+    // 前の親から追加ノードを削除
     //
     if (childNode.parent) {
-      // 親ノードから自ノードを削除
+      // 前の親ノードから追加ノードを削除
       childNode.parent.m_removeChild(childNode, false)
     } else {
-      // 親ノードがない場合ツリービューが親となるので、ツリービューから自ノードを削除
+      // 親ノードがない場合ツリービューが親となるので、ツリービューから追加ノードを削除
       this.treeView && this.treeView.removeNode(childNode.value)
     }
 
@@ -591,11 +606,11 @@ export default class CompTreeNode extends BaseComponent {
 
     // ノードの親子関係を設定
     childNode.m_parent = this
-    this.children.splice(insertIndex, 0, childNode)
+    this.m_children.splice(insertIndex, 0, childNode)
 
     // 親ノードのコンテナの高さを設定
     if (this.parent) {
-      this.parent.m_refreshChildrenContainerHeight()
+      this.parent.m_refreshChildContainerHeight()
     }
 
     // 子ノードの設定
@@ -603,6 +618,8 @@ export default class CompTreeNode extends BaseComponent {
       const descendant = childNode.children[i]
       childNode.addChild(descendant, { insertIndex: i })
     }
+
+    this.m_ascendSetAnyForDisplay()
 
     // ノードが追加されたことを通知するイベントを発火
     CompTreeViewUtils.dispatchNodeAdded(childNode)
@@ -613,67 +630,101 @@ export default class CompTreeNode extends BaseComponent {
   private m_getInsertIndex(newNode: CompTreeNode, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): number {
     options = options || {}
 
-    if (isInteger(options.insertIndex)) {
-      return options.insertIndex!
-    } else if (isFunction(options.sortFunc)) {
+    // 挿入位置が指定された場合
+    if (typeof options.insertIndex === 'number') {
+      return options.insertIndex
+    }
+    // ソート関数が指定された場合
+    else if (typeof options.sortFunc === 'function') {
       const children = [...this.children, newNode]
-      children.sort(options.sortFunc!)
+      children.sort(options.sortFunc)
       const index = children.indexOf(newNode)
       return index === -1 ? this.children.length : index
-    } else {
+    }
+    // 何も指定されていなかった場合
+    else {
       return this.children.length
     }
   }
 
-  private m_toggle!: (opened: boolean, animated?: boolean) => void
+  private m_toggle(opened: boolean, animated: boolean): void {
+    const changed = this.opened !== opened
+    this.nodeData.opened = opened
 
-  private m_toggleFunc(opened: boolean, animated: boolean = true): void {
     if (animated) {
-      this.m_refreshChildrenContainerHeightWithAnimation()
+      this.m_refreshChildContainerHeightWithAnimation()
     } else {
-      this.m_refreshChildrenContainerHeight()
+      this.m_refreshChildContainerHeight()
     }
-    this.$el.dispatchEvent(
-      new CustomEvent('opened-changed', {
-        bubbles: true,
-        cancelable: true,
-        composed: true,
-      })
-    )
+
+    if (changed) {
+      this.$el.dispatchEvent(
+        new CustomEvent('opened-changed', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+        })
+      )
+    }
   }
 
   /**
    * 子ノードが配置されるコンテナの高さを再計算し、高さをリフレッシュします。
    * (アニメーションなしで)
    */
-  private m_refreshChildrenContainerHeight(): void {
+  private m_refreshChildContainerHeight(): void {
+    this.m_ascendSetBlockForDisplay()
+
+    // 子ノードコンテナの高さを取得
     const newHeight = this.m_getChildrenContainerHeight(this)
-    this.m_childContainer.style.transition = ''
+
+    // 子ノードコンテナの高さを設定
     this.m_childContainer.style.height = `${newHeight}px`
 
-    if (this.parent) {
-      this.parent.m_refreshChildrenContainerHeight()
-    }
+    // 親ノードの高さも再計算して、高さをリフレッシュ
+    this.parent && this.parent.m_refreshChildContainerHeight()
+
+    this.m_ascendSetAnyForDisplay()
   }
 
   /**
    * 子ノードが配置されるコンテナの高さを再計算し、高さをリフレッシュします。
    * (アニメーションしながら)
    */
-  private m_refreshChildrenContainerHeightWithAnimation(): Promise<void> {
+  private m_refreshChildContainerHeightWithAnimation(): Promise<void> {
     const DURATION = 500
 
     return new Promise<void>(resolve => {
-      this.m_childContainer.style.transition = `height ${DURATION / 1000}s`
-
-      const newHeight = this.m_getChildrenContainerHeight(this)
-      this.m_childContainer.style.height = `${newHeight}px`
-
-      if (this.parent) {
-        this.parent.m_refreshChildrenContainerHeightWithAnimation()
+      // アニメーションが実行中の場合は停止
+      if (this.m_toggleAnime) {
+        this.m_toggleAnime.anime.pause()
+        this.m_toggleAnime.resolve()
+        this.m_toggleAnime = null
       }
 
-      setTimeout(resolve, DURATION)
+      this.m_ascendSetBlockForDisplay()
+
+      // 子ノードコンテナの高さを取得
+      const newHeight = this.m_getChildrenContainerHeight(this)
+
+      // アニメーションを実行
+      const toggleAnime = anime({
+        targets: this.m_childContainer,
+        height: `${newHeight}px`,
+        duration: DURATION,
+        easing: 'easeOutCubic',
+        complete: () => {
+          this.m_toggleAnime = null
+          this.m_ascendSetAnyForDisplay()
+          resolve()
+        },
+      })
+
+      // 実行中アニメーションの情報を保存
+      this.m_toggleAnime = { resolve, anime: toggleAnime }
+
+      // 親ノードの高さも再計算して、高さをリフレッシュ
+      this.parent && this.parent.m_refreshChildContainerHeightWithAnimation()
     })
   }
 
@@ -734,7 +785,7 @@ export default class CompTreeNode extends BaseComponent {
       childNode.m_parent = null
       this.m_children.splice(index, 1)
       this.m_removeChildFromContainer(childNode)
-      this.m_refreshChildrenContainerHeight()
+      this.m_refreshChildContainerHeight()
       isDispatchEvent && CompTreeViewUtils.dispatchNodeRemoved(this, childNode)
       return true
     }
@@ -769,6 +820,36 @@ export default class CompTreeNode extends BaseComponent {
         this.nodeData.selected = value
         !initializing && CompTreeViewUtils.dispatchSelectedChanged(this)
       }
+    }
+  }
+
+  /**
+   * 自ノードから上位ノードに向かって再帰的に「display: block」を設定します。
+   *
+   * ※このメソッドの存在理由:
+   * 自ノードに子ノードを追加する際、いずれかの祖先が「display: none」だと
+   * 追加する子ノードのサイズが決定されないため、ノードの高さなどサイズ調整
+   * をすることができません。この対応として一時的に上位ノードに「display: block」
+   * を設定することでサイズ調整が可能になります。
+   */
+  private m_ascendSetBlockForDisplay(): void {
+    this.m_childContainer.style.display = 'block'
+    if (this.parent) {
+      this.parent.m_ascendSetBlockForDisplay()
+    }
+  }
+
+  /**
+   * 自ノードから上位ノードに向かって再帰的に適切な「display: [any]」を設定します。
+   *
+   * ※このメソッドの存在理由:
+   * `m_ascendSetBlockForDisplay()`によって一時的に「display: block」にされていた
+   * 値を適切な値に設定し直す役割をします。
+   */
+  private m_ascendSetAnyForDisplay(): void {
+    this.m_childContainer.style.display = this.opened ? 'block' : 'none'
+    if (this.parent) {
+      this.parent.m_ascendSetAnyForDisplay()
     }
   }
 

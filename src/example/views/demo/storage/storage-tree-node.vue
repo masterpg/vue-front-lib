@@ -150,7 +150,7 @@
     </div>
 
     <!-- 子ノード -->
-    <div ref="childContainer" class="child-container" :class="{ opened: opened }"></div>
+    <div ref="childContainer" class="child-container"></div>
   </div>
 </template>
 

@@ -14,7 +14,8 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
       >
         <i
           aria-hidden="true"
-          class="material-icons q-icon text-grey-6 toggle-icon rotate-90"
+          class="toggle-icon material-icons q-icon notranslate text-grey-6 rotate-90"
+          role="presentation"
           style="font-size: 26px;"
         >
           arrow_right
@@ -55,8 +56,8 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
     </div>
      
     <div
-      class="child-container opened"
-      style="height: 0px;"
+      class="child-container"
+      style="display: block; height: 0px;"
     >
       <div>
         <div
@@ -67,7 +68,8 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
           >
             <i
               aria-hidden="true"
-              class="material-icons q-icon text-grey-6 toggle-icon rotate-90"
+              class="toggle-icon material-icons q-icon notranslate text-grey-6 rotate-90"
+              role="presentation"
               style="font-size: 26px;"
             >
               arrow_right
@@ -108,8 +110,8 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
         </div>
          
         <div
-          class="child-container opened"
-          style="height: 0px;"
+          class="child-container"
+          style="display: block; height: 0px;"
         >
           <div>
             <div
@@ -120,6 +122,8 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
               >
                 <i
                   aria-hidden="true"
+                  class="q-icon notranslate"
+                  role="presentation"
                   style="font-size: 26px;"
                 />
               </div>
@@ -132,7 +136,8 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
                 >
                   <i
                     aria-hidden="true"
-                    class="material-icons q-icon text-"
+                    class="material-icons q-icon notranslate text-"
+                    role="presentation"
                     style="font-size: 24px;"
                   >
                     inbox
@@ -162,6 +167,8 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
               >
                 <i
                   aria-hidden="true"
+                  class="q-icon notranslate"
+                  role="presentation"
                   style="font-size: 26px;"
                 />
               </div>
@@ -212,6 +219,8 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
               >
                 <i
                   aria-hidden="true"
+                  class="q-icon notranslate"
+                  role="presentation"
                   style="font-size: 26px;"
                 />
               </div>
@@ -266,6 +275,8 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
       >
         <i
           aria-hidden="true"
+          class="q-icon notranslate"
+          role="presentation"
           style="font-size: 26px;"
         />
       </div>
