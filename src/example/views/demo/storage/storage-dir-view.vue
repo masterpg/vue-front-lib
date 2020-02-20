@@ -57,6 +57,7 @@
           ref="table"
           :data="m_children"
           :columns="m_columns"
+          virtual-scroll
           :pagination.sync="m_pagination"
           :rows-per-page-options="[0]"
           :sort-method="m_childrenSort"
@@ -381,6 +382,9 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
         this.m_childMap[latestChild.value] = latestChild
       }
     }
+
+    // スクロール位置を先頭へ初期化
+    this.m_table.$el.querySelector('.scroll')!.scrollTop = 0
   }
 
   /**

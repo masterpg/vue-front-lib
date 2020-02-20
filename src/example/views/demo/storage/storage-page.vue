@@ -652,6 +652,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     if (!dirNode) {
       throw new Error(`The specified node was not found: '${dirPath}'`)
     }
+    // 選択ノードを設定することにより、イベント経由でm_treeViewOnSelected()が実行される
     this.treeStore.selectedNode = dirNode
 
     setTimeout(() => {
