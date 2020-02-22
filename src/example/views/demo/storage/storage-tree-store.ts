@@ -17,6 +17,10 @@ export function newStorageTreeStore(storageType: StorageType, storageLogic: Stor
   }) as StorageTreeStore
 }
 
+export interface StorageNodeForTree extends StorageNode {
+  opened?: boolean
+}
+
 @Component
 export class StorageTreeStore extends Vue {
   //----------------------------------------------------------------------
@@ -174,7 +178,7 @@ export class StorageTreeStore extends Vue {
    * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
    * @param nodes
    */
-  setNodes(nodes: StorageNode[]): void {
+  setNodes(nodes: StorageNodeForTree[]): void {
     const sortedNodes = (Object.assign([], nodes) as StorageNode[]).sort((a, b) => {
       if (a.path < b.path) {
         return -1
@@ -377,12 +381,13 @@ export class StorageTreeStore extends Vue {
    * `StorageTreeNodeData`へ変換します。
    * @param source
    */
-  private m_toTreeNodeData(source: StorageNode | StorageTreeNode): StorageTreeNodeData {
+  private m_toTreeNodeData(source: StorageNodeForTree | StorageTreeNode): StorageTreeNodeData {
     if ((source as any).__vue__) {
       source = source as StorageTreeNode
-      return {
+      const result: StorageTreeNodeData = {
         label: source.label,
         value: source.value,
+        opened: source.opened,
         nodeClass: StorageTreeNode,
         icon: source.icon,
         nodeType: source.nodeType,
@@ -396,9 +401,10 @@ export class StorageTreeStore extends Vue {
         created: source.createdDate,
         updated: source.updatedDate,
       }
+      return result
     } else {
-      source = source as StorageNode
-      return {
+      source = source as StorageNodeForTree
+      const result: StorageTreeNodeData = {
         label: removeBothEndsSlash(source.name),
         value: removeBothEndsSlash(source.path),
         nodeClass: StorageTreeNode,
@@ -414,6 +420,10 @@ export class StorageTreeStore extends Vue {
         created: source.created,
         updated: source.updated,
       }
+      if (typeof source.opened === 'boolean') {
+        result.opened = source.opened
+      }
+      return result
     }
   }
 

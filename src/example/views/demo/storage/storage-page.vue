@@ -117,12 +117,12 @@ import {
   StorageNode,
   StorageNodeShareSettings,
   StorageNodeType,
-  User,
 } from '@/lib'
 import { RawLocation, Route } from 'vue-router'
 import { Component } from 'vue-property-decorator'
 import StorageDirCreateDialog from '@/example/views/demo/storage/storage-dir-create-dialog.vue'
 import StorageDirView from '@/example/views/demo/storage/storage-dir-view.vue'
+import { StorageNodeForTree } from '@/example/views/demo/storage/storage-tree-store'
 import StorageNodeMoveDialog from '@/example/views/demo/storage/storage-node-move-dialog.vue'
 import StorageNodeRemoveDialog from '@/example/views/demo/storage/storage-node-remove-dialog.vue'
 import StorageNodeRenameDialog from '@/example/views/demo/storage/storage-node-rename-dialog.vue'
@@ -130,9 +130,8 @@ import StorageNodeShareDialog from '@/example/views/demo/storage/storage-node-sh
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import { StorageTypeMixin } from '@/example/views/demo/storage/base'
 import Vue from 'vue'
+import anime from 'animejs'
 import { mixins } from 'vue-class-component'
-import { scroll } from 'quasar'
-const { getScrollPosition, setScrollPosition } = scroll
 const debounce = require('lodash/debounce')
 
 @Component({
@@ -163,6 +162,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
         const nodePath = this.storageRoute.getNodePath()
         // URLから取得した選択ノードまたは以前選択されていたノードでページリフレッシュ
         this.m_refreshPage(nodePath || this.treeStore.selectedNode.value)
+        // 選択ノードの位置までスクロールする
+        this.m_scrollToSelectedNode(this.treeStore.selectedNode.value, false)
       },
       cleared: () => {
         this.m_dirView.setDirPath(null)
@@ -182,7 +183,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     // サーバーからストレージノード一覧が取得済みの場合
     // ※本ページから別ページに遷移し、その後本ページに戻ってきた場合がこの状況に当たる
     if (this.treeStore.isNodesPulled) {
-      this.m_refreshPage()
+      this.m_moveByRouter(this.treeStore.selectedNode.value)
+      this.m_scrollToSelectedNode(this.treeStore.selectedNode.value, false)
     }
   }
 
@@ -202,6 +204,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   //----------------------------------------------------------------------
 
   private m_splitterModel = 300
+
+  private m_scrollAnime: anime.AnimeInstance | null = null
 
   /**
    * ツリービューの縦スクロール位置が初期化されたか否かです。
@@ -283,7 +287,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     if (!this.storageRoute.isCurrentRoute) return
 
     // ツリービューの構築
-    this.m_buildTreeView()
+    this.m_buildTreeView(selectedNodePath)
 
     // 引数でノードパスの指定がない場合
     if (typeof selectedNodePath !== 'string') {
@@ -310,21 +314,14 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
       this.m_setupPathBlocks()
       // ディレクトリビューのディレクトリパスを設定
       this.m_dirView.setDirPath(selectingNode.value)
-
-      // ツリービューの縦スクロール位置が初期化さていない場合
-      if (!this.m_initializedScrollTop) {
-        this.m_initializedScrollTop = true
-        setTimeout(() => {
-          this.m_scrollToSelectedNode(selectingNode.value)
-        }, 250)
-      }
     }
   }
 
   /**
    * ロジックストアに格納されているストレージノード一覧をもとにツリービューを構築します。
+   * @param selectedNodePath
    */
-  private async m_buildTreeView(): Promise<void> {
+  private async m_buildTreeView(selectedNodePath?: string): Promise<void> {
     // ロジックストアにないのにツリーには存在するノードを削除
     const storeNodeMap = this.storageLogic.getNodeMap()
     for (const treeNode of this.treeStore.getAllNodes()) {
@@ -337,8 +334,21 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
       }
     }
 
+    // 選択ノードの祖先ノードを展開
+    if (selectedNodePath) {
+      const parentPathArr = selectedNodePath.split('/')
+      parentPathArr.splice(parentPathArr.length - 1, 1)
+      for (let i = 0; i < parentPathArr.length; i++) {
+        const parentPath = parentPathArr.slice(0, i + 1).join('/')
+        const parentNode = storeNodeMap[parentPath] as StorageNodeForTree
+        if (parentNode) {
+          parentNode.opened = true
+        }
+      }
+    }
+
     // ロジックのノードをツリービューに反映
-    this.treeStore.setNodes(this.storageLogic.nodes)
+    this.treeStore.setNodes(Object.values(storeNodeMap))
   }
 
   /**
@@ -369,12 +379,10 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
 
     // 作成したディレクトリの祖先を展開
     const dirTreeNode = this.treeStore.getNode(dirPath)!
-    this.m_openParentNode(dirPath)
+    this.m_openParentNode(dirTreeNode.value)
 
-    // 作成したディレクトリの親ノードを選択状態に設定
-    this.treeStore.selectedNode = dirTreeNode.parent! as StorageTreeNode
-    // URLに選択ノードのパスを付与し、ページをリフレッシュ
-    this.m_moveByRouter(this.treeStore.selectedNode.value)
+    // 作成したディレクトリの親ノードのパスをURLに付与し、ページをリフレッシュ
+    this.m_moveByRouter(dirTreeNode.parent!.value)
 
     this.$q.loading.hide()
   }
@@ -414,10 +422,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     }
     await Promise.all(promises)
 
-    // 親ノードを選択状態に設定
-    this.treeStore.selectedNode = treeNodes[0].parent! as StorageTreeNode
-    // URLに選択ノードのパスを付与し、ページをリフレッシュ
-    this.m_moveByRouter(this.treeStore.selectedNode.value)
+    // 親ノードのパスをURLに付与し、ページをリフレッシュ
+    this.m_moveByRouter(treeNodes[0].parent!.value)
 
     this.$q.loading.hide()
   }
@@ -474,10 +480,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
 
     // 移動対象ノードの祖先を展開
     this.m_openParentNode(treeNodes[0].value)
-    // 移動対象の親ノードを選択状態に設定
-    this.treeStore.selectedNode = treeNodes[0].parent! as StorageTreeNode
-    // URLに選択ノードのパスを付与し、ページをリフレッシュ
-    this.m_moveByRouter(this.treeStore.selectedNode.value)
+    // 移動対象の親ノードのパスをURLに付与し、ページをリフレッシュ
+    this.m_moveByRouter(treeNodes[0].parent!.value)
 
     this.$q.loading.hide()
   }
@@ -512,9 +516,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     // ツリービューでノードのリネームを実施
     this.treeStore.renameNode(treeNode.value, newName)
 
-    // リネーム対象の親ノードを選択状態に設定
-    this.treeStore.selectedNode = treeNode.parent! as StorageTreeNode
-    // URLに選択ノードのパスを付与し、ページをリフレッシュ
+    // 選択ノードのパスをURLに付与し、ページをリフレッシュ
     this.m_moveByRouter(this.treeStore.selectedNode.value)
 
     this.$q.loading.hide()
@@ -590,21 +592,39 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   /**
    * 指定ノードをツリービューの上下中央に位置するようスクロールします。
    * @param nodePath
+   * @param animated
    */
-  private m_scrollToSelectedNode(nodePath: string): void {
+  private m_scrollToSelectedNode(nodePath: string, animated: boolean): void {
     const treeNode = this.treeStore.getNode(nodePath)
     if (!treeNode) return
 
     // 本ページのグローバルな上位置を取得
     const globalTop = this.$el.getBoundingClientRect().top
     // ツリービューの現スクロール位置を取得
-    const scrollTop = getScrollPosition(this.m_treeViewContainer)
+    const scrollTop = this.m_treeViewContainer.scrollTop
     // 指定ノードの上位置を取得
     const nodeTop = treeNode.$el.getBoundingClientRect().top - globalTop
+    // スクロール値の最大を取得
+    const maxScrollTop = this.m_treeView.$el.scrollHeight - this.m_treeViewContainer.clientHeight
 
     // 指定ノードをツリービューの上下中央に位置するようスクロール(できるだけ)
-    const newScrollY = scrollTop + nodeTop - this.m_treeViewContainer.clientHeight / 2
-    setScrollPosition(this.m_treeViewContainer, newScrollY, 300)
+    let newScrollTop = scrollTop + nodeTop - this.m_treeViewContainer.clientHeight / 2
+    if (newScrollTop < 0) {
+      newScrollTop = 0
+    } else if (maxScrollTop < newScrollTop) {
+      newScrollTop = maxScrollTop
+    }
+
+    this.m_scrollAnime && this.m_scrollAnime.pause()
+    this.m_scrollAnime = anime({
+      targets: this.m_treeViewContainer,
+      scrollTop: newScrollTop,
+      duration: animated ? 750 : 0,
+      easing: 'easeOutQuart',
+      complete: () => {
+        this.m_scrollAnime = null
+      },
+    })
 
     // console.log(
     //   JSON.stringify(
@@ -612,7 +632,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     //       scrollTop,
     //       nodeTop,
     //       'treeViewContainer.clientHeight / 2': this.m_treeViewContainer.clientHeight / 2,
-    //       newScrollY,
+    //       newScrollTop,
     //     },
     //     null,
     //     2
@@ -644,7 +664,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   }
 
   /**
-   * 選択ノードがディレクトリに変更された際の処理を行います。
+   * 選択ノードが変更された際の処理を行います。
    * @param dirPath
    */
   private m_selectedNodeOnChangedToDir(dirPath: string): void {
@@ -652,12 +672,15 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     if (!dirNode) {
       throw new Error(`The specified node was not found: '${dirPath}'`)
     }
-    // 選択ノードを設定することにより、イベント経由でm_treeViewOnSelected()が実行される
-    this.treeStore.selectedNode = dirNode
 
+    // 選択されたノードをURLに付与し、ページをリフレッシュ
+    this.m_moveByRouter(dirPath)
+
+    // 上記のページリフレッシュにより選択ノードの祖先が展開される。
+    // その際の展開アニメーションが終わるのを待ってから選択ノードへスクロールしている。
     setTimeout(() => {
-      this.m_scrollToSelectedNode(dirPath)
-    }, 250)
+      this.m_scrollToSelectedNode(dirPath, true)
+    }, 500)
   }
 
   //----------------------------------------------------------------------
