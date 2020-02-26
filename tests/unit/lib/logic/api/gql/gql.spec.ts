@@ -63,26 +63,41 @@ describe('Storage API', () => {
     await Promise.all([api.removeTestStorageDir(TEST_FILES_DIR), api.removeTestStorageDir(userStorageBasePath)])
   })
 
-  describe('getUserStorageDirAndDescendants', () => {
+  describe('getHierarchicalUserStorageDirDescendants', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.uploadTestFiles([{ filePath: `${userStorageBasePath}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.getUserStorageDirAndDescendants('docs')
+      const actual = await api.getHierarchicalUserStorageDirDescendants('docs')
 
       expect(actual.length).toBe(2)
+      expect(actual[0].path).toBe(`docs`)
+      expect(actual[1].path).toBe(`docs/fileA.txt`)
     })
   })
 
-  describe('createUserStorageDirs', () => {
+  describe('getHierarchicalUserStorageDirChildren', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
+      await api.uploadTestFiles([{ filePath: `${userStorageBasePath}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.createUserStorageDirs([`dir1/dir1_1`])
+      const actual = await api.getHierarchicalUserStorageDirChildren('docs')
 
       expect(actual.length).toBe(2)
-      expect(actual[0].path).toBe(`dir1`)
-      expect(actual[1].path).toBe(`dir1/dir1_1`)
+      expect(actual[0].path).toBe(`docs`)
+      expect(actual[1].path).toBe(`docs/fileA.txt`)
+    })
+  })
+
+  describe('getUserStorageDirChildren', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(GENERAL_USER)
+      await api.uploadTestFiles([{ filePath: `${userStorageBasePath}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+
+      const actual = await api.getUserStorageDirChildren('docs')
+
+      expect(actual.length).toBe(1)
+      expect(actual[0].path).toBe(`docs/fileA.txt`)
     })
   })
 
@@ -96,6 +111,18 @@ describe('Storage API', () => {
 
       expect(actual.length).toBe(1)
       expect(actual[0].path).toBe(`docs/fileA.txt`)
+    })
+  })
+
+  describe('createUserStorageDirs', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(GENERAL_USER)
+
+      const actual = await api.createUserStorageDirs([`dir1/dir1_1`])
+
+      expect(actual.length).toBe(2)
+      expect(actual[0].path).toBe(`dir1`)
+      expect(actual[1].path).toBe(`dir1/dir1_1`)
     })
   })
 
@@ -204,27 +231,43 @@ describe('Storage API', () => {
     })
   })
 
-  describe('getStorageDirAndDescendants', () => {
+  describe('getHierarchicalStorageDirDescendants', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.getStorageDirAndDescendants(`${TEST_FILES_DIR}`)
-
-      expect(actual.length).toBe(3)
-    })
-  })
-
-  describe('createStorageDirs', () => {
-    it('疎通確認', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
-
-      const actual = await api.createStorageDirs([`${TEST_FILES_DIR}/dir1/dir1_1`])
+      const actual = await api.getHierarchicalStorageDirDescendants(`${TEST_FILES_DIR}/docs`)
 
       expect(actual.length).toBe(3)
       expect(actual[0].path).toBe(`${TEST_FILES_DIR}`)
-      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/dir1`)
-      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/dir1/dir1_1`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/docs`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/docs/fileA.txt`)
+    })
+  })
+
+  describe('getHierarchicalStorageDirChildren', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(APP_ADMIN_USER)
+      await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+
+      const actual = await api.getHierarchicalStorageDirChildren(`${TEST_FILES_DIR}/docs`)
+
+      expect(actual.length).toBe(3)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/docs`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/docs/fileA.txt`)
+    })
+  })
+
+  describe('getStorageDirChildren', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(APP_ADMIN_USER)
+      await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+
+      const actual = await api.getStorageDirChildren(`${TEST_FILES_DIR}/docs`)
+
+      expect(actual.length).toBe(1)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/docs/fileA.txt`)
     })
   })
 
@@ -238,6 +281,19 @@ describe('Storage API', () => {
 
       expect(actual.length).toBe(1)
       expect(actual[0].path).toBe(`${TEST_FILES_DIR}/docs/fileA.txt`)
+    })
+  })
+
+  describe('createStorageDirs', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthUser(APP_ADMIN_USER)
+
+      const actual = await api.createStorageDirs([`${TEST_FILES_DIR}/dir1/dir1_1`])
+
+      expect(actual.length).toBe(3)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/dir1`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/dir1/dir1_1`)
     })
   })
 

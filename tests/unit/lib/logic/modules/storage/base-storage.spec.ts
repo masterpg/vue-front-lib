@@ -161,8 +161,16 @@ class MockStorageLogic extends BaseStorageLogic {
     return {} as any
   }
 
-  protected getStorageDirAndDescendants(dirPath?: string): Promise<StorageNode[]> {
-    return api.getStorageDirAndDescendants(dirPath)
+  protected getHierarchicalStorageDirDescendants(dirPath?: string): Promise<StorageNode[]> {
+    return api.getHierarchicalStorageDirDescendants(dirPath)
+  }
+
+  protected getHierarchicalStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
+    return api.getHierarchicalStorageDirChildren(dirPath)
+  }
+
+  protected getStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
+    return api.getStorageDirChildren(dirPath)
   }
 
   protected createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
@@ -236,7 +244,7 @@ describe('getNodeMap', () => {
 
 describe('pullNodes', () => {
   it(`'dirPath'を指定しなかった場合`, async () => {
-    td.when(api.getStorageDirAndDescendants(undefined)).thenResolve(STORAGE_NODES)
+    td.when(api.getHierarchicalStorageDirDescendants(undefined)).thenResolve(STORAGE_NODES)
 
     await storageLogic.pullNodes()
 
@@ -245,7 +253,7 @@ describe('pullNodes', () => {
 
   it(`'dirPath'を指定した場合`, async () => {
     storageStore.initState({ all: cloneDeep([d1]) })
-    td.when(api.getStorageDirAndDescendants(d11.path)).thenResolve([d11, fileA])
+    td.when(api.getHierarchicalStorageDirDescendants(d11.path)).thenResolve([d11, fileA])
 
     await storageLogic.pullNodes(d11.path)
 

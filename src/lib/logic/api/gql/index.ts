@@ -48,11 +48,11 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return response.data.signedUploadUrls
   }
 
-  async getUserStorageDirAndDescendants(dirPath?: string): Promise<StorageNode[]> {
-    const response = await this.query<{ userStorageDirAndDescendants: APIResponseStorageNode[] }>({
+  async getHierarchicalUserStorageDirDescendants(dirPath?: string): Promise<StorageNode[]> {
+    const response = await this.query<{ hierarchicalUserStorageDirDescendants: APIResponseStorageNode[] }>({
       query: gql`
-        query GetUserDirAndDescendants($dirPath: String) {
-          userStorageDirAndDescendants(dirPath: $dirPath) {
+        query GetHierarchicalUserStorageDirDescendants($dirPath: String) {
+          hierarchicalUserStorageDirDescendants(dirPath: $dirPath) {
             nodeType
             name
             dir
@@ -71,14 +71,14 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       variables: { dirPath },
       isAuth: true,
     })
-    return this.toAPIStorageNodes(response.data.userStorageDirAndDescendants)
+    return this.toAPIStorageNodes(response.data.hierarchicalUserStorageDirDescendants)
   }
 
-  async createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
-    const response = await this.mutate<{ createUserStorageDirs: APIResponseStorageNode[] }>({
-      mutation: gql`
-        mutation CreateUserStorageDirs($dirPaths: [String!]!) {
-          createUserStorageDirs(dirPaths: $dirPaths) {
+  async getHierarchicalUserStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
+    const response = await this.query<{ hierarchicalUserStorageDirChildren: APIResponseStorageNode[] }>({
+      query: gql`
+        query GetHierarchicalUserStorageDirChildren($dirPath: String) {
+          hierarchicalUserStorageDirChildren(dirPath: $dirPath) {
             nodeType
             name
             dir
@@ -94,10 +94,36 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
           }
         }
       `,
-      variables: { dirPaths },
+      variables: { dirPath },
       isAuth: true,
     })
-    return this.toAPIStorageNodes(response.data!.createUserStorageDirs)
+    return this.toAPIStorageNodes(response.data.hierarchicalUserStorageDirChildren)
+  }
+
+  async getUserStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
+    const response = await this.query<{ userStorageDirChildren: APIResponseStorageNode[] }>({
+      query: gql`
+        query GetUserStorageDirChildren($dirPath: String) {
+          userStorageDirChildren(dirPath: $dirPath) {
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              uids
+            }
+            created
+            updated
+          }
+        }
+      `,
+      variables: { dirPath },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data.userStorageDirChildren)
   }
 
   async handleUploadedUserFiles(filePaths: string[]): Promise<StorageNode[]> {
@@ -124,6 +150,32 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       isAuth: true,
     })
     return this.toAPIStorageNodes(response.data!.handleUploadedUserFiles)
+  }
+
+  async createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
+    const response = await this.mutate<{ createUserStorageDirs: APIResponseStorageNode[] }>({
+      mutation: gql`
+        mutation CreateUserStorageDirs($dirPaths: [String!]!) {
+          createUserStorageDirs(dirPaths: $dirPaths) {
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              uids
+            }
+            created
+            updated
+          }
+        }
+      `,
+      variables: { dirPaths },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data!.createUserStorageDirs)
   }
 
   async removeUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
@@ -334,11 +386,11 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return this.toAPIStorageNode(response.data!.setUserStorageFileShareSettings)
   }
 
-  async getStorageDirAndDescendants(dirPath?: string): Promise<StorageNode[]> {
-    const response = await this.query<{ storageDirAndDescendants: APIResponseStorageNode[] }>({
+  async getHierarchicalStorageDirDescendants(dirPath?: string): Promise<StorageNode[]> {
+    const response = await this.query<{ hierarchicalStorageDirDescendants: APIResponseStorageNode[] }>({
       query: gql`
-        query GetStorageNodes($dirPath: String) {
-          storageDirAndDescendants(dirPath: $dirPath) {
+        query GetHierarchicalStorageDirDescendants($dirPath: String) {
+          hierarchicalStorageDirDescendants(dirPath: $dirPath) {
             nodeType
             name
             dir
@@ -357,14 +409,14 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       variables: { dirPath },
       isAuth: true,
     })
-    return this.toAPIStorageNodes(response.data.storageDirAndDescendants)
+    return this.toAPIStorageNodes(response.data.hierarchicalStorageDirDescendants)
   }
 
-  async createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
-    const response = await this.mutate<{ createStorageDirs: APIResponseStorageNode[] }>({
-      mutation: gql`
-        mutation CreateStorageDirs($dirPaths: [String!]!) {
-          createStorageDirs(dirPaths: $dirPaths) {
+  async getHierarchicalStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
+    const response = await this.query<{ hierarchicalStorageDirChildren: APIResponseStorageNode[] }>({
+      query: gql`
+        query GetHierarchicalStorageDirChildren($dirPath: String) {
+          hierarchicalStorageDirChildren(dirPath: $dirPath) {
             nodeType
             name
             dir
@@ -380,10 +432,36 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
           }
         }
       `,
-      variables: { dirPaths },
+      variables: { dirPath },
       isAuth: true,
     })
-    return this.toAPIStorageNodes(response.data!.createStorageDirs)
+    return this.toAPIStorageNodes(response.data.hierarchicalStorageDirChildren)
+  }
+
+  async getStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
+    const response = await this.query<{ storageDirChildren: APIResponseStorageNode[] }>({
+      query: gql`
+        query GetStorageDirChildren($dirPath: String) {
+          storageDirChildren(dirPath: $dirPath) {
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              uids
+            }
+            created
+            updated
+          }
+        }
+      `,
+      variables: { dirPath },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data.storageDirChildren)
   }
 
   async handleUploadedFiles(filePaths: string[]): Promise<StorageNode[]> {
@@ -410,6 +488,32 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       isAuth: true,
     })
     return this.toAPIStorageNodes(response.data!.handleUploadedFiles)
+  }
+
+  async createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
+    const response = await this.mutate<{ createStorageDirs: APIResponseStorageNode[] }>({
+      mutation: gql`
+        mutation CreateStorageDirs($dirPaths: [String!]!) {
+          createStorageDirs(dirPaths: $dirPaths) {
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              uids
+            }
+            created
+            updated
+          }
+        }
+      `,
+      variables: { dirPaths },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data!.createStorageDirs)
   }
 
   async removeStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {

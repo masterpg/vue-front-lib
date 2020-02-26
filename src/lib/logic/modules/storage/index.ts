@@ -30,8 +30,16 @@ export class UserStorageLogicImpl extends BaseStorageLogic implements UserStorag
     return new UserStorageUrlUploadManager(owner)
   }
 
-  protected getStorageDirAndDescendants(dirPath?: string): Promise<StorageNode[]> {
-    return api.getUserStorageDirAndDescendants(dirPath)
+  protected getHierarchicalStorageDirDescendants(dirPath?: string): Promise<StorageNode[]> {
+    return api.getHierarchicalUserStorageDirDescendants(dirPath)
+  }
+
+  protected getHierarchicalStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
+    return api.getHierarchicalUserStorageDirChildren(dirPath)
+  }
+
+  protected getStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
+    return api.getUserStorageDirChildren(dirPath)
   }
 
   protected createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
@@ -86,8 +94,16 @@ export class AppStorageLogicImpl extends BaseStorageLogic implements AppStorageL
     return new AppStorageUploadManager(owner)
   }
 
-  protected getStorageDirAndDescendants(dirPath?: string): Promise<StorageNode[]> {
-    return api.getStorageDirAndDescendants(dirPath)
+  protected getHierarchicalStorageDirDescendants(dirPath?: string): Promise<StorageNode[]> {
+    return api.getHierarchicalStorageDirDescendants(dirPath)
+  }
+
+  protected getHierarchicalStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
+    return api.getHierarchicalStorageDirChildren(dirPath)
+  }
+
+  protected getStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
+    return api.getStorageDirChildren(dirPath)
   }
 
   protected createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
