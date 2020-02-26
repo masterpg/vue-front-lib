@@ -1,3 +1,4 @@
+import { StorageNodeType } from '@/lib'
 <style lang="sass" scoped>
 @import '../../../styles/app.variables'
 
@@ -727,12 +728,13 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param uploadDirPath アップロード先のディレクトリパス
    */
   private async m_uploadProgressFloatOnUploadEnded(uploadDirPath: string) {
+    await this.treeStore.pullNodes()
+    this.m_moveByRouter(uploadDirPath)
+
+    // アップロード先のディレクトリとその祖先を展開
     const uploadDirNode = this.treeStore.getNode(uploadDirPath)!
     uploadDirNode.open()
     this.m_openParentNode(uploadDirNode.value, true)
-
-    await this.treeStore.pullNodes()
-    this.m_moveByRouter(uploadDirPath)
   }
 
   //--------------------------------------------------
