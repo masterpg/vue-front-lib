@@ -30,16 +30,16 @@ export class UserStorageLogicImpl extends BaseStorageLogic implements UserStorag
     return new UserStorageUrlUploadManager(owner)
   }
 
-  protected getHierarchicalStorageDirDescendants(dirPath?: string): Promise<StorageNode[]> {
-    return api.getHierarchicalUserStorageDirDescendants(dirPath)
+  protected getHierarchicalStorageDescendants(dirPath?: string): Promise<StorageNode[]> {
+    return api.getHierarchicalUserStorageDescendants(dirPath)
   }
 
-  protected getHierarchicalStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
-    return api.getHierarchicalUserStorageDirChildren(dirPath)
+  protected getHierarchicalStorageChildren(dirPath?: string): Promise<StorageNode[]> {
+    return api.getHierarchicalUserStorageChildren(dirPath)
   }
 
-  protected getStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
-    return api.getUserStorageDirChildren(dirPath)
+  protected getStorageChildren(dirPath?: string): Promise<StorageNode[]> {
+    return api.getUserStorageChildren(dirPath)
   }
 
   protected createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
@@ -94,16 +94,16 @@ export class AppStorageLogicImpl extends BaseStorageLogic implements AppStorageL
     return new AppStorageUploadManager(owner)
   }
 
-  protected getHierarchicalStorageDirDescendants(dirPath?: string): Promise<StorageNode[]> {
-    return api.getHierarchicalStorageDirDescendants(dirPath)
+  protected getHierarchicalStorageDescendants(dirPath?: string): Promise<StorageNode[]> {
+    return api.getHierarchicalStorageDescendants(dirPath)
   }
 
-  protected getHierarchicalStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
-    return api.getHierarchicalStorageDirChildren(dirPath)
+  protected getHierarchicalStorageChildren(dirPath?: string): Promise<StorageNode[]> {
+    return api.getHierarchicalStorageChildren(dirPath)
   }
 
-  protected getStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
-    return api.getStorageDirChildren(dirPath)
+  protected getStorageChildren(dirPath?: string): Promise<StorageNode[]> {
+    return api.getStorageChildren(dirPath)
   }
 
   protected createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {

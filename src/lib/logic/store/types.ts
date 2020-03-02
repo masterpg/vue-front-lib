@@ -22,6 +22,10 @@ export interface StorageStore {
 
   get(path: string): StorageNode | undefined
 
+  getById(id: string): StorageNode | undefined
+
+  getChildren(path: string): StorageNode[]
+
   getDescendants(path: string): StorageNode[]
 
   getMap(): { [path: string]: StorageNode }
@@ -34,7 +38,7 @@ export interface StorageStore {
 
   setList(nodes: StorageNodeForSet[]): StorageNode[]
 
-  set(node: StorageNodeForSet, newPath?: string): StorageNode
+  set(node: StorageNodeForSet): StorageNode
 
   removeList(paths: string[]): StorageNode[]
 
@@ -93,11 +97,8 @@ export interface User {
   getIsAppAdmin(): Promise<boolean>
 }
 
-export type StorageNodeForSet = Partial<Omit<StorageNode, 'name' | 'dir'>> & {
-  path: string
-  created: Dayjs
-  updated: Dayjs
-  newPath?: string
+export type StorageNodeForSet = Partial<Omit<StorageNode, 'nodeType'>> & {
+  id: string
 }
 
 //========================================================================

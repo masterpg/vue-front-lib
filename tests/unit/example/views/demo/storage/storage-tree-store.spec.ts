@@ -1,3 +1,4 @@
+import * as shortid from 'shortid'
 import { CompTreeNode, CompTreeView, StorageNode, StorageNodeType } from '@/lib'
 import { StorageTreeStore, newStorageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
 import { StorageNodeShareSettings } from '@/lib'
@@ -20,6 +21,7 @@ const EMPTY_SHARE_SETTINGS: StorageNodeShareSettings = {
 }
 
 const d1: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd1',
   dir: '',
@@ -32,6 +34,7 @@ const d1: StorageNode = {
 }
 
 const d11: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd11',
   dir: 'd1',
@@ -44,6 +47,7 @@ const d11: StorageNode = {
 }
 
 const fileA: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.File,
   name: 'fileA.txt',
   dir: 'd1/d11',
@@ -56,6 +60,7 @@ const fileA: StorageNode = {
 }
 
 const d12: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd12',
   dir: 'd1',
@@ -68,6 +73,7 @@ const d12: StorageNode = {
 }
 
 const d2: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd2',
   dir: '',
@@ -80,6 +86,7 @@ const d2: StorageNode = {
 }
 
 const d21: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd21',
   dir: 'd2',
@@ -92,6 +99,7 @@ const d21: StorageNode = {
 }
 
 const fileB: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.File,
   name: 'fileB.txt',
   dir: 'd2/d21',
@@ -104,6 +112,7 @@ const fileB: StorageNode = {
 }
 
 const fileC: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.File,
   name: 'fileC.txt',
   dir: '',
@@ -173,7 +182,6 @@ beforeEach(async () => {
   treeView = wrapper.vm as CompTreeView
   treeStore = newStorageTreeStore('user', logic.userStorage)
   treeStore.start(treeView)
-  treeStore.setNodes(STORAGE_NODES)
 })
 
 describe('constructor + init', () => {
@@ -228,6 +236,8 @@ describe('constructor + init', () => {
 
 describe('getAllNodes', () => {
   it('ベーシックケース', () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     const actual = treeStore.getAllNodes()
 
     expect(actual.length).toBe(9)
@@ -245,49 +255,83 @@ describe('getAllNodes', () => {
 
 describe('getNode', () => {
   it('ベーシックケース', () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     const actual = treeStore.getNode('d1')!
 
     expect(actual.value).toBe('d1')
   })
 
   it('ルートノードを取得', () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     const actual = treeStore.getNode(treeStore.rootNode.value)!
 
     expect(actual.value).toBe(treeStore.rootNode.value)
   })
 })
 
-describe('setNodes', () => {
-  it('ノードが適切にソートされているか検証', () => {
-    for (let i = 0; i < 10; i++) {
-      const wrapper = mount(CompTreeView)
-      const treeView = wrapper.vm as CompTreeView
-      const treeStore = newStorageTreeStore('user', logic.userStorage)
-      treeStore.start(treeView)
+describe('setAllNodes', () => {
+  it('ソートされていないノードリストを渡した場合', () => {
+    treeStore.setAllNodes(shuffle(STORAGE_NODES))
+    const actual = treeStore.getAllNodes()
 
-      // ノード配列をシャッフルして実行
-      treeStore.setNodes(shuffle(STORAGE_NODES))
-      const actual = treeStore.getAllNodes()
+    expect(actual.length).toBe(9)
+    expect(actual[0].value).toBe(treeStore.rootNode.value)
+    expect(actual[1].value).toBe('d1')
+    expect(actual[2].value).toBe('d1/d11')
+    expect(actual[3].value).toBe('d1/d11/fileA.txt')
+    expect(actual[4].value).toBe('d1/d12')
+    expect(actual[5].value).toBe('d2')
+    expect(actual[6].value).toBe('d2/d21')
+    expect(actual[7].value).toBe('d2/d21/fileB.txt')
+    expect(actual[8].value).toBe('fileC.txt')
 
-      // 先頭はルートノード
-      expect(actual[0].value).toBe(treeStore.rootNode.value)
-      actual.splice(0, 1)
-      // ルートノード配下のノードが適切にソートされているか検証
-      for (let index = 0; index < actual.length; index++) {
-        expect(actual[index].value).toBe(STORAGE_NODES[index].path)
-      }
-
-      verifyParentChildRelationForTree(treeView)
-    }
+    verifyParentChildRelationForTree(treeView)
   })
+})
 
+describe('mergeAllNodes', () => {
+  it('ベーシックケース', () => {
+    treeStore.setAllNodes([d1, d11, fileA, d12])
+
+    // 以下の状態のノードリストを引数に設定する
+    // ・'d1/d11/fileA.txt'が'fileA.txt'へ移動された
+    // ・'d/d11/fileD.txt'が追加された
+    // ・'d/d12が削除された
+    const newFileA: StorageNode = Object.assign(cloneDeep(fileA), {
+      dir: '',
+      path: 'fileA.txt',
+    })
+    const newFileD: StorageNode = {
+      id: shortid.generate(),
+      nodeType: StorageNodeType.File,
+      name: 'fileD.txt',
+      dir: 'd1/d11',
+      path: 'd1/d11/fileD.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
+      created: dayjs(),
+      updated: dayjs(),
+    }
+    treeStore.mergeAllNodes([d1, d11, newFileD, newFileA])
+    const actual = treeStore.getAllNodes()
+
+    expect(actual.length).toBe(5)
+    expect(actual[0].value).toBe(treeStore.rootNode.value)
+    expect(actual[1].value).toBe('d1')
+    expect(actual[2].value).toBe('d1/d11')
+    expect(actual[3].value).toBe('d1/d11/fileD.txt')
+    expect(actual[4].value).toBe('fileA.txt')
+
+    verifyParentChildRelationForTree(treeView)
+  })
+})
+
+describe('setNode + setNodes', () => {
   it('ツリーに存在しないノードの設定', () => {
-    // テスト対象のノードをツリーから削除
-    treeStore.removeNode('d1/d11')
-    expect(treeStore.getNode('d1/d11')).toBeUndefined()
-    expect(treeStore.getNode('d1/d11/fileA.txt')).toBeUndefined()
-
-    treeStore.setNodes([d11, fileA])
+    treeStore.setNodes([d1, d11, fileA])
 
     // ノードが追加されたことを検証
     expect(treeStore.getNode('d1/d11')!.value).toBe('d1/d11')
@@ -297,22 +341,44 @@ describe('setNodes', () => {
   })
 
   it('ツリーに存在するノードの設定', () => {
-    const CREATED = dayjs('2019-12-01')
-    const UPDATED = dayjs('2019-12-02')
-    const updatingD11 = Object.assign({}, d11, { created: CREATED, updated: UPDATED })
-    const updatingFileA = Object.assign({}, fileA, { created: CREATED, updated: UPDATED })
+    treeStore.setAllNodes([d1, d11, fileA])
+
+    const created = dayjs('2019-12-01')
+    const updated = dayjs('2019-12-02')
+    const updatingD11 = Object.assign({}, d11, { created, updated })
+    const updatingFileA = Object.assign({}, fileA, { created, updated })
 
     treeStore.setNodes([updatingD11, updatingFileA])
 
-    expect(treeStore.getNode('d1/d11')!.createdDate).toEqual(CREATED)
-    expect(treeStore.getNode('d1/d11')!.updatedDate).toEqual(UPDATED)
-    expect(treeStore.getNode('d1/d11/fileA.txt')!.createdDate).toEqual(CREATED)
-    expect(treeStore.getNode('d1/d11/fileA.txt')!.updatedDate).toEqual(UPDATED)
+    expect(treeStore.getNode('d1/d11')!.createdDate).toEqual(created)
+    expect(treeStore.getNode('d1/d11')!.updatedDate).toEqual(updated)
+    expect(treeStore.getNode('d1/d11/fileA.txt')!.createdDate).toEqual(created)
+    expect(treeStore.getNode('d1/d11/fileA.txt')!.updatedDate).toEqual(updated)
+  })
+
+  it('ソートされていないノードリストを渡した場合', () => {
+    treeStore.setNodes(shuffle(STORAGE_NODES))
+    const actual = treeStore.getAllNodes()
+
+    expect(actual.length).toBe(9)
+    expect(actual[0].value).toBe(treeStore.rootNode.value)
+    expect(actual[1].value).toBe('d1')
+    expect(actual[2].value).toBe('d1/d11')
+    expect(actual[3].value).toBe('d1/d11/fileA.txt')
+    expect(actual[4].value).toBe('d1/d12')
+    expect(actual[5].value).toBe('d2')
+    expect(actual[6].value).toBe('d2/d21')
+    expect(actual[7].value).toBe('d2/d21/fileB.txt')
+    expect(actual[8].value).toBe('fileC.txt')
+
+    verifyParentChildRelationForTree(treeView)
   })
 })
 
 describe('removeNodes', () => {
   it('ベーシックケース', () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     treeStore.removeNodes(['d1/d11', 'd2/d21/fileB.txt'])
 
     expect(treeStore.getNode('d1/d11')).toBeUndefined()
@@ -323,6 +389,8 @@ describe('removeNodes', () => {
   })
 
   it(`'d1/d11'と親である'd1'を同時に指定した場合`, () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     treeStore.removeNodes(['d1/d11', 'd1'])
 
     expect(treeStore.getNode('d1')).toBeUndefined()
@@ -334,6 +402,8 @@ describe('removeNodes', () => {
   })
 
   it('存在しないパスを指定した場合', () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     // 何も起こらない
     treeStore.removeNodes(['dXXX'])
 
@@ -343,6 +413,8 @@ describe('removeNodes', () => {
 
 describe('moveNode', () => {
   it('ディレクトリの移動 - ディレクトリへ移動', () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     treeStore.moveNode('d1', 'd2/d1')
     const actual = treeStore.getNode('d2/d1')!
     const descendants = actual.getDescendants()
@@ -358,6 +430,8 @@ describe('moveNode', () => {
   })
 
   it('ディレクトリの移動 - ルートディレクトリへ移動', () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     treeStore.moveNode('d1/d12', 'd12')
     const actual = treeStore.getNode('d12')!
 
@@ -369,6 +443,8 @@ describe('moveNode', () => {
   })
 
   it('ファイルの移動 - ディレクトリへ移動', () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     treeStore.moveNode('d1/d11/fileA.txt', 'd1/d12/fileA.txt')
     const actual = treeStore.getNode('d1/d12/fileA.txt')!
 
@@ -379,6 +455,8 @@ describe('moveNode', () => {
   })
 
   it('ファイルの移動 - ルートディレクトリへ移動', () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     treeStore.moveNode('d1/d11/fileA.txt', 'fileA.txt')
     const actual = treeStore.getNode('fileA.txt')!
 
@@ -390,11 +468,10 @@ describe('moveNode', () => {
   })
 
   it('移動先に同名のディレクトリまたはファイルが存在する場合', () => {
-    treeStore.removeNodes(STORAGE_NODES.map(node => node.path))
-
     const FM_UPDATED = dayjs('2020-01-01')
     const TO_UPDATED = dayjs('2020-01-02')
     const d1: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.Dir,
       name: 'd1',
       dir: '',
@@ -406,6 +483,7 @@ describe('moveNode', () => {
       updated: FM_UPDATED,
     }
     const d1_docs: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.Dir,
       name: 'docs',
       dir: 'd1',
@@ -417,6 +495,7 @@ describe('moveNode', () => {
       updated: FM_UPDATED,
     }
     const d1_docs_aaa: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.Dir,
       name: 'aaa',
       dir: 'd1/docs',
@@ -428,6 +507,7 @@ describe('moveNode', () => {
       updated: FM_UPDATED,
     }
     const d1_docs_aaa_fileA: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.File,
       name: 'fileA.txt',
       dir: 'd1/docs/aaa',
@@ -439,6 +519,7 @@ describe('moveNode', () => {
       updated: FM_UPDATED,
     }
     const d1_docs_fileB: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.File,
       name: 'fileB.txt',
       dir: 'd1/docs',
@@ -450,6 +531,7 @@ describe('moveNode', () => {
       updated: FM_UPDATED,
     }
     const d1_docs_fileC: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.File,
       name: 'fileC.txt',
       dir: 'd1/docs',
@@ -461,6 +543,7 @@ describe('moveNode', () => {
       updated: FM_UPDATED,
     }
     const docs: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.Dir,
       name: 'docs',
       dir: '',
@@ -472,6 +555,7 @@ describe('moveNode', () => {
       updated: FM_UPDATED,
     }
     const docs_aaa: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.Dir,
       name: 'aaa',
       dir: 'docs',
@@ -483,6 +567,7 @@ describe('moveNode', () => {
       updated: TO_UPDATED,
     }
     const docs_aaa_fileA: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.File,
       name: 'fileA.txt',
       dir: 'docs/aaa',
@@ -494,6 +579,7 @@ describe('moveNode', () => {
       updated: TO_UPDATED,
     }
     const docs_fileB: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.File,
       name: 'fileB.txt',
       dir: 'docs',
@@ -505,6 +591,7 @@ describe('moveNode', () => {
       updated: TO_UPDATED,
     }
     const docs_fileD: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.File,
       name: 'fileD.txt',
       dir: 'docs',
@@ -516,6 +603,7 @@ describe('moveNode', () => {
       updated: TO_UPDATED,
     }
     const docs_fileE: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.File,
       name: 'fileE.txt',
       dir: 'docs',
@@ -526,7 +614,7 @@ describe('moveNode', () => {
       created: dayjs(),
       updated: TO_UPDATED,
     }
-    treeStore.setNodes([
+    treeStore.setAllNodes([
       d1,
       d1_docs,
       d1_docs_aaa,
@@ -573,6 +661,8 @@ describe('moveNode', () => {
   })
 
   it('存在しないパスを指定した場合', () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     let actual: Error
     try {
       treeStore.moveNode('dXXX', 'd2/dXXX')
@@ -584,6 +674,8 @@ describe('moveNode', () => {
   })
 
   it('移動先ディレクトリが移動元のサブディレクトリの場合', () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     let actual: Error
     try {
       treeStore.moveNode('d1', 'd1/d11/d1')
@@ -597,6 +689,8 @@ describe('moveNode', () => {
 
 describe('renameNode', () => {
   it('ディレクトリの名前変更', () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     treeStore.renameNode('d1', 'x1')
     const actual = treeStore.getNode('x1')!
     const descendants = actual.getDescendants()
@@ -611,6 +705,8 @@ describe('renameNode', () => {
   })
 
   it('ファイルの名前変更', () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     treeStore.renameNode('d1/d11/fileA.txt', 'fileX.txt')
     const actual = treeStore.getNode('d1/d11/fileX.txt')!
 
@@ -620,6 +716,8 @@ describe('renameNode', () => {
   })
 
   it('存在しないパスを指定した場合', () => {
+    treeStore.setAllNodes(STORAGE_NODES)
+
     let actual: Error
     try {
       treeStore.renameNode('dXXX', 'x1')

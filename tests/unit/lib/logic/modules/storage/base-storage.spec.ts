@@ -1,3 +1,4 @@
+import * as shortid from 'shortid'
 import * as td from 'testdouble'
 import {
   LibAPIContainer,
@@ -32,6 +33,7 @@ const EMPTY_SHARE_SETTINGS: StorageNodeShareSettings = {
 }
 
 const d1: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd1',
   dir: '',
@@ -44,6 +46,7 @@ const d1: StorageNode = {
 }
 
 const d11: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd11',
   dir: 'd1',
@@ -56,6 +59,7 @@ const d11: StorageNode = {
 }
 
 const fileA: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.File,
   name: 'fileA.txt',
   dir: 'd1/d11',
@@ -68,6 +72,7 @@ const fileA: StorageNode = {
 }
 
 const d12: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd12',
   dir: 'd1',
@@ -80,6 +85,7 @@ const d12: StorageNode = {
 }
 
 const d2: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd2',
   dir: '',
@@ -92,6 +98,7 @@ const d2: StorageNode = {
 }
 
 const d21: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd21',
   dir: 'd2',
@@ -104,6 +111,7 @@ const d21: StorageNode = {
 }
 
 const fileB: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.File,
   name: 'fileB.txt',
   dir: 'd2/d21',
@@ -116,6 +124,7 @@ const fileB: StorageNode = {
 }
 
 const fileC: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.File,
   name: 'fileC.txt',
   dir: '',
@@ -161,16 +170,16 @@ class MockStorageLogic extends BaseStorageLogic {
     return {} as any
   }
 
-  protected getHierarchicalStorageDirDescendants(dirPath?: string): Promise<StorageNode[]> {
-    return api.getHierarchicalStorageDirDescendants(dirPath)
+  protected getHierarchicalStorageDescendants(dirPath?: string): Promise<StorageNode[]> {
+    return api.getHierarchicalStorageDescendants(dirPath)
   }
 
-  protected getHierarchicalStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
-    return api.getHierarchicalStorageDirChildren(dirPath)
+  protected getHierarchicalStorageChildren(dirPath?: string): Promise<StorageNode[]> {
+    return api.getHierarchicalStorageChildren(dirPath)
   }
 
-  protected getStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
-    return api.getStorageDirChildren(dirPath)
+  protected getStorageChildren(dirPath?: string): Promise<StorageNode[]> {
+    return api.getStorageChildren(dirPath)
   }
 
   protected createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
@@ -243,21 +252,42 @@ describe('getNodeMap', () => {
 })
 
 describe('pullNodes', () => {
-  it(`'dirPath'を指定しなかった場合`, async () => {
-    td.when(api.getHierarchicalStorageDirDescendants(undefined)).thenResolve(STORAGE_NODES)
+  it('dirPathを指定しなかった場合', async () => {
+    td.when(api.getHierarchicalStorageDescendants(undefined)).thenResolve(STORAGE_NODES)
 
     await storageLogic.pullNodes()
 
     expect(storageLogic.nodes).toEqual(STORAGE_NODES)
   })
 
-  it(`'dirPath'を指定した場合`, async () => {
-    storageStore.initState({ all: cloneDeep([d1]) })
-    td.when(api.getHierarchicalStorageDirDescendants(d11.path)).thenResolve([d11, fileA])
+  it('dirPathを指定した場合', async () => {
+    storageStore.initState({ all: cloneDeep([d1, d11, fileA, d12]) })
 
-    await storageLogic.pullNodes(d11.path)
+    // APIから以下の状態のノードリストが取得される
+    // ・'d1/d11/fileA.txt'が'fileA.txt'へ移動された
+    // ・'d/d11/fileD.txt'が追加された
+    // ・'d/d12が削除された
+    const newFileA: StorageNode = Object.assign(cloneDeep(fileA), {
+      dir: '',
+      path: 'fileA.txt',
+    })
+    const newFileD: StorageNode = {
+      id: shortid.generate(),
+      nodeType: StorageNodeType.File,
+      name: 'fileD.txt',
+      dir: 'd1/d11',
+      path: 'd1/d11/fileD.txt',
+      contentType: 'text/plain; charset=utf-8',
+      size: 5,
+      share: cloneDeep(EMPTY_SHARE_SETTINGS),
+      created: dayjs(),
+      updated: dayjs(),
+    }
+    td.when(api.getHierarchicalStorageDescendants(d1.path)).thenResolve([d11, newFileD, newFileA])
 
-    expect(storageLogic.nodes).toEqual([d1, d11, fileA])
+    await storageLogic.pullNodes(d1.path)
+
+    expect(storageLogic.nodes).toEqual([d1, d11, newFileD, newFileA])
   })
 })
 

@@ -174,42 +174,82 @@ export class StorageTreeStore extends Vue {
   }
 
   /**
-   * 指定されたノードをツリーノードに設定します。
-   * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
+   * ツリービューにあるノードを全て削除し、指定されたノードに置き換えます。
    * @param nodes
    */
-  setNodes(nodes: StorageNodeForTree[]): void {
-    const sortedNodes = (Object.assign([], nodes) as StorageNode[]).sort((a, b) => {
-      if (a.path < b.path) {
-        return -1
-      } else if (a.path > b.path) {
-        return 1
-      } else {
-        return 0
-      }
-    })
+  setAllNodes(nodes: StorageNodeForTree[]): void {
+    const targetNodePaths = this.getAllNodes().reduce(
+      (result, node) => {
+        node !== this.rootNode && result.push(node.value)
+        return result
+      },
+      [] as string[]
+    )
+    this.removeNodes(targetNodePaths)
 
-    for (const node of sortedNodes) {
-      const treeNode = this.m_treeView!.getNode(node.path)
-      const treeNodeData = this.m_toTreeNodeData(node)
-      if (treeNode) {
-        treeNode.setNodeData(treeNodeData)
-      } else {
-        this.m_treeView!.addChild(treeNodeData, {
-          parent: node.dir || this.rootNode.value,
-          sortFunc: treeSortFunc,
-        })
-      }
+    this.setNodes(nodes)
+  }
+
+  /**
+   * ツリービューのノードと指定されたノードをマージしてツリービューに反映します。
+   * @param nodes
+   */
+  mergeAllNodes(nodes: StorageNodeForTree[]): void {
+    nodes = this.storageLogic.sortNodes([...nodes])
+
+    const nodeMap = nodes.reduce(
+      (result, node) => {
+        result[node.path] = node
+        return result
+      },
+      {} as { [path: string]: StorageNode }
+    )
+
+    // 新ノードリストにないのにツリーには存在するノードを削除
+    // ※他の端末で削除、移動、リネームされたノードが削除される
+    for (const treeNode of this.getAllNodes()) {
+      // ツリーのルートノードは新ノードリストには存在しないので無視
+      if (treeNode === this.rootNode) continue
+
+      const node = nodeMap[treeNode.value]
+      !node && this.removeNode(treeNode.value)
+    }
+
+    // 新ノードリストをツリービューへ反映
+    for (const newNode of nodes) {
+      this.setNode(newNode)
     }
   }
 
   /**
-   * 指定されたノードを一致するツリーノードに設定します。
+   * 指定されたノードリストをツリービューに設定します。
+   * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
+   * @param nodes
+   */
+  setNodes(nodes: StorageNode[]): void {
+    nodes = this.storageLogic.sortNodes([...nodes])
+
+    for (const node of nodes) {
+      this.setNode(node)
+    }
+  }
+
+  /**
+   * 指定されたノードをツリービューに設定します。
    * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
    * @param node
    */
   setNode(node: StorageNode): void {
-    this.setNodes([node])
+    const treeNode = this.m_getNodeById(node.id)
+    const treeNodeData = this.m_toTreeNodeData(node)
+    if (treeNode) {
+      treeNode.setNodeData(treeNodeData)
+    } else {
+      this.m_treeView!.addChild(treeNodeData, {
+        parent: node.dir || this.rootNode.value,
+        sortFunc: treeSortFunc,
+      })
+    }
   }
 
   /**
@@ -342,6 +382,18 @@ export class StorageTreeStore extends Vue {
   //----------------------------------------------------------------------
 
   /**
+   * 指定されたIDと一致するツリーノードを取得します。
+   * @param id
+   */
+  private m_getNodeById(id: string): StorageTreeNode | undefined {
+    const allTreeNodes = this.m_treeView!.getAllNodes<StorageTreeNode>()
+    for (const treeNode of allTreeNodes) {
+      if (treeNode.id === id) return treeNode
+    }
+    return undefined
+  }
+
+  /**
    * ルートノードを作成します。
    */
   private m_createRootNode(): StorageTreeNode {
@@ -354,11 +406,12 @@ export class StorageTreeStore extends Vue {
       }
     })()
 
-    const rootNodeData = {
+    const rootNodeData: StorageTreeNodeData = {
       nodeClass: StorageTreeNode,
       label,
       value: '',
       icon: 'storage',
+      id: '',
       nodeType: StorageNodeType.Dir,
       contentType: '',
       size: 0,
@@ -390,6 +443,7 @@ export class StorageTreeStore extends Vue {
         opened: source.opened,
         nodeClass: StorageTreeNode,
         icon: source.icon,
+        id: source.id,
         nodeType: source.nodeType,
         contentType: source.contentType,
         size: source.size,
@@ -409,6 +463,7 @@ export class StorageTreeStore extends Vue {
         value: removeBothEndsSlash(source.path),
         nodeClass: StorageTreeNode,
         icon: source.nodeType === StorageNodeType.Dir ? 'folder' : 'description',
+        id: source.id,
         nodeType: source.nodeType,
         contentType: source.contentType,
         size: source.size,

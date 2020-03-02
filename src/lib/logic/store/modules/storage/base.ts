@@ -44,6 +44,14 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
     return undefined
   }
 
+  getById(id: string): StorageNode | undefined {
+    const stateNode = this.getStateNodeById(id)
+    if (stateNode) {
+      return this.clone(stateNode)
+    }
+    return undefined
+  }
+
   getChildren(path: string): StorageNode[] {
     const children = this.getStateChildren(path)
     return children.map(child => this.clone(child))
@@ -72,32 +80,25 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
   setList(nodes: StorageNodeForSet[]): StorageNode[] {
     const result: StorageNode[] = []
 
-    const stateNodeMap: { [path: string]: StorageNode } = {}
-    nodes.forEach(node => {
-      const stateNode = this.getStateNode(node.path)
-      if (!stateNode) {
-        throw new Error(`The specified node was not found: '${node.path}'`)
-      }
-      stateNodeMap[node.path] = stateNode
-    })
-
     for (const node of nodes) {
-      const stateNode = stateNodeMap[node.path]
-
-      if (node.nodeType) stateNode.nodeType = node.nodeType
-      if (typeof node.newPath === 'string') {
-        stateNode.name = _path.basename(node.newPath!)
-        stateNode.dir = removeStartDirChars(_path.dirname(node.newPath!))
-        stateNode.path = node.newPath
+      const stateNode = this.getStateNodeById(node.id)
+      if (!stateNode) {
+        throw new Error(`The specified node was not found: '${node.id}'`)
       }
+
+      if (typeof node.name === 'string') stateNode.name = node.name
+      if (typeof node.dir === 'string') stateNode.dir = node.dir
+      if (typeof node.path === 'string') stateNode.path = node.path
+      if (typeof node.contentType === 'string') stateNode.contentType = node.contentType
+      if (typeof node.size === 'number') stateNode.size = node.size
       if (node.share) {
         stateNode.share = {
           isPublic: node.share.isPublic,
           uids: [...node.share.uids],
         }
       }
-      stateNode.created = node.created
-      stateNode.updated = node.updated
+      if (node.created) stateNode.created = node.created
+      if (node.updated) stateNode.updated = node.updated
 
       result.push(this.clone(stateNode))
     }
@@ -107,7 +108,7 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
     return result
   }
 
-  set(node: StorageNodeForSet, newPath?: string): StorageNode {
+  set(node: StorageNodeForSet): StorageNode {
     return this.setList([node])[0]
   }
 
@@ -235,6 +236,7 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
 
   clone(value: StorageNode): StorageNode {
     return {
+      id: value.id,
       nodeType: value.nodeType,
       name: value.name,
       dir: value.dir,
@@ -283,9 +285,14 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
   protected getStateNode(path: string): StorageNode | undefined {
     path = removeBothEndsSlash(path)
     for (const node of this.state.all) {
-      if (node.path === path) {
-        return node
-      }
+      if (node.path === path) return node
+    }
+    return undefined
+  }
+
+  protected getStateNodeById(id: string): StorageNode | undefined {
+    for (const node of this.state.all) {
+      if (node.id === id) return node
     }
     return undefined
   }

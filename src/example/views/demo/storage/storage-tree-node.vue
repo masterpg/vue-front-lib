@@ -181,6 +181,10 @@ export default class StorageTreeNode extends CompTreeNode {
     ]
   }
 
+  get id(): string {
+    return this.nodeData.id
+  }
+
   get nodeType(): StorageNodeType {
     return this.nodeData.nodeType
   }

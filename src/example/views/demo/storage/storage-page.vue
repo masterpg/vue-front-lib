@@ -324,22 +324,10 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   }
 
   /**
-   * ロジックストアに格納されているストレージノード一覧をもとにツリービューを構築します。
+   * ロジックストアに格納されているストレージノードをもとにツリービューを構築します。
    */
   private async m_buildTreeView(): Promise<void> {
-    // ロジックストアにないのにツリーには存在するノードを削除
-    const storeNodeMap = this.storageLogic.getNodeMap()
-    for (const treeNode of this.treeStore.getAllNodes()) {
-      // ツリーのルートノードはロジックには存在しないので無視
-      if (treeNode === this.treeStore.rootNode) continue
-
-      const storeNode = storeNodeMap[treeNode.value]
-      if (!storeNode) {
-        this.treeStore.removeNode(treeNode.value)
-      }
-    }
-    // ロジックのノードをツリービューに反映
-    this.treeStore.setNodes(Object.values(storeNodeMap))
+    this.treeStore.mergeAllNodes(this.storageLogic.nodes)
   }
 
   /**

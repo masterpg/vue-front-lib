@@ -36,6 +36,8 @@ export interface StorageLogic {
   setFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
   newUploadManager(owner: Element): StorageUploadManager
+
+  sortNodes(nodes: StorageNode[]): StorageNode[]
 }
 
 export interface UserStorageLogic extends StorageLogic {

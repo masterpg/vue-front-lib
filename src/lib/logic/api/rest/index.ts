@@ -14,16 +14,16 @@ export abstract class BaseRESTAPIContainer extends BaseRESTClient implements Lib
     throw new Error(`This method 'getSignedUploadUrls' is not implemented.`)
   }
 
-  async getHierarchicalUserStorageDirDescendants(dirPath?: string): Promise<StorageNode[]> {
-    throw new Error(`This method 'getHierarchicalUserStorageDirDescendants' is not implemented.`)
+  async getHierarchicalUserStorageDescendants(dirPath?: string): Promise<StorageNode[]> {
+    throw new Error(`This method 'getHierarchicalUserStorageDescendants' is not implemented.`)
   }
 
-  async getHierarchicalUserStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
-    throw new Error(`This method 'getHierarchicalUserStorageDirChildren' is not implemented.`)
+  async getHierarchicalUserStorageChildren(dirPath?: string): Promise<StorageNode[]> {
+    throw new Error(`This method 'getHierarchicalUserStorageChildren' is not implemented.`)
   }
 
-  async getUserStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
-    throw new Error(`This method 'getUserStorageDirChildren' is not implemented.`)
+  async getUserStorageChildren(dirPath?: string): Promise<StorageNode[]> {
+    throw new Error(`This method 'getUserStorageChildren' is not implemented.`)
   }
 
   async handleUploadedUserFiles(filePaths: string[]): Promise<StorageNode[]> {
@@ -66,16 +66,16 @@ export abstract class BaseRESTAPIContainer extends BaseRESTClient implements Lib
     throw new Error(`This method 'setUserStorageFileShareSettings' is not implemented.`)
   }
 
-  async getHierarchicalStorageDirDescendants(dirPath?: string): Promise<StorageNode[]> {
-    throw new Error(`This method 'getHierarchicalStorageDirDescendants' is not implemented.`)
+  async getHierarchicalStorageDescendants(dirPath?: string): Promise<StorageNode[]> {
+    throw new Error(`This method 'getHierarchicalStorageDescendants' is not implemented.`)
   }
 
-  async getHierarchicalStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
-    throw new Error(`This method 'getHierarchicalStorageDirChildren' is not implemented.`)
+  async getHierarchicalStorageChildren(dirPath?: string): Promise<StorageNode[]> {
+    throw new Error(`This method 'getHierarchicalStorageChildren' is not implemented.`)
   }
 
-  async getStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
-    throw new Error(`This method 'getStorageDirChildren' is not implemented.`)
+  async getStorageChildren(dirPath?: string): Promise<StorageNode[]> {
+    throw new Error(`This method 'getStorageChildren' is not implemented.`)
   }
 
   async handleUploadedFiles(filePaths: string[]): Promise<StorageNode[]> {

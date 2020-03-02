@@ -48,11 +48,12 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return response.data.signedUploadUrls
   }
 
-  async getHierarchicalUserStorageDirDescendants(dirPath?: string): Promise<StorageNode[]> {
-    const response = await this.query<{ hierarchicalUserStorageDirDescendants: APIResponseStorageNode[] }>({
+  async getHierarchicalUserStorageDescendants(dirPath?: string): Promise<StorageNode[]> {
+    const response = await this.query<{ hierarchicalUserStorageDescendants: APIResponseStorageNode[] }>({
       query: gql`
-        query GetHierarchicalUserStorageDirDescendants($dirPath: String) {
-          hierarchicalUserStorageDirDescendants(dirPath: $dirPath) {
+        query GetHierarchicalUserStorageDescendants($dirPath: String) {
+          hierarchicalUserStorageDescendants(dirPath: $dirPath) {
+            id
             nodeType
             name
             dir
@@ -71,14 +72,15 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       variables: { dirPath },
       isAuth: true,
     })
-    return this.toAPIStorageNodes(response.data.hierarchicalUserStorageDirDescendants)
+    return this.toAPIStorageNodes(response.data.hierarchicalUserStorageDescendants)
   }
 
-  async getHierarchicalUserStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
-    const response = await this.query<{ hierarchicalUserStorageDirChildren: APIResponseStorageNode[] }>({
+  async getHierarchicalUserStorageChildren(dirPath?: string): Promise<StorageNode[]> {
+    const response = await this.query<{ hierarchicalUserStorageChildren: APIResponseStorageNode[] }>({
       query: gql`
-        query GetHierarchicalUserStorageDirChildren($dirPath: String) {
-          hierarchicalUserStorageDirChildren(dirPath: $dirPath) {
+        query GetHierarchicalUserStorageChildren($dirPath: String) {
+          hierarchicalUserStorageChildren(dirPath: $dirPath) {
+            id
             nodeType
             name
             dir
@@ -97,14 +99,15 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       variables: { dirPath },
       isAuth: true,
     })
-    return this.toAPIStorageNodes(response.data.hierarchicalUserStorageDirChildren)
+    return this.toAPIStorageNodes(response.data.hierarchicalUserStorageChildren)
   }
 
-  async getUserStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
-    const response = await this.query<{ userStorageDirChildren: APIResponseStorageNode[] }>({
+  async getUserStorageChildren(dirPath?: string): Promise<StorageNode[]> {
+    const response = await this.query<{ userStorageChildren: APIResponseStorageNode[] }>({
       query: gql`
-        query GetUserStorageDirChildren($dirPath: String) {
-          userStorageDirChildren(dirPath: $dirPath) {
+        query GetUserStorageChildren($dirPath: String) {
+          userStorageChildren(dirPath: $dirPath) {
+            id
             nodeType
             name
             dir
@@ -123,7 +126,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       variables: { dirPath },
       isAuth: true,
     })
-    return this.toAPIStorageNodes(response.data.userStorageDirChildren)
+    return this.toAPIStorageNodes(response.data.userStorageChildren)
   }
 
   async handleUploadedUserFiles(filePaths: string[]): Promise<StorageNode[]> {
@@ -131,6 +134,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation HandleUploadedUserFiles($filePaths: [String!]!) {
           handleUploadedUserFiles(filePaths: $filePaths) {
+            id
             nodeType
             name
             dir
@@ -157,6 +161,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation CreateUserStorageDirs($dirPaths: [String!]!) {
           createUserStorageDirs(dirPaths: $dirPaths) {
+            id
             nodeType
             name
             dir
@@ -183,6 +188,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation RemoveUserStorageDirs($dirPaths: [String!]!) {
           removeUserStorageDirs(dirPaths: $dirPaths) {
+            id
             nodeType
             name
             dir
@@ -209,6 +215,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation RemoveUserStorageFileNodes($filePaths: [String!]!) {
           removeUserStorageFiles(filePaths: $filePaths) {
+            id
             nodeType
             name
             dir
@@ -235,6 +242,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation MoveUserStorageDir($fromDirPath: String!, $toDirPath: String!) {
           moveUserStorageDir(fromDirPath: $fromDirPath, toDirPath: $toDirPath) {
+            id
             nodeType
             name
             dir
@@ -261,6 +269,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation MoveUserStorageFile($fromFilePath: String!, $toFilePath: String!) {
           moveUserStorageFile(fromFilePath: $fromFilePath, toFilePath: $toFilePath) {
+            id
             nodeType
             name
             dir
@@ -287,6 +296,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation RenameUserStorageDir($dirPath: String!, $newName: String!) {
           renameUserStorageDir(dirPath: $dirPath, newName: $newName) {
+            id
             nodeType
             name
             dir
@@ -313,6 +323,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation RenameUserStorageFile($filePath: String!, $newName: String!) {
           renameUserStorageFile(filePath: $filePath, newName: $newName) {
+            id
             nodeType
             name
             dir
@@ -339,6 +350,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation SetUserStorageDirShareSettings($dirPath: String!, $settings: StorageNodeShareSettingsInput!) {
           setUserStorageDirShareSettings(dirPath: $dirPath, settings: $settings) {
+            id
             nodeType
             name
             dir
@@ -365,6 +377,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation SetUserStorageFileShareSettings($filePath: String!, $settings: StorageNodeShareSettingsInput!) {
           setUserStorageFileShareSettings(filePath: $filePath, settings: $settings) {
+            id
             nodeType
             name
             dir
@@ -386,11 +399,12 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return this.toAPIStorageNode(response.data!.setUserStorageFileShareSettings)
   }
 
-  async getHierarchicalStorageDirDescendants(dirPath?: string): Promise<StorageNode[]> {
-    const response = await this.query<{ hierarchicalStorageDirDescendants: APIResponseStorageNode[] }>({
+  async getHierarchicalStorageDescendants(dirPath?: string): Promise<StorageNode[]> {
+    const response = await this.query<{ hierarchicalStorageDescendants: APIResponseStorageNode[] }>({
       query: gql`
-        query GetHierarchicalStorageDirDescendants($dirPath: String) {
-          hierarchicalStorageDirDescendants(dirPath: $dirPath) {
+        query GetHierarchicalStorageDescendants($dirPath: String) {
+          hierarchicalStorageDescendants(dirPath: $dirPath) {
+            id
             nodeType
             name
             dir
@@ -409,14 +423,15 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       variables: { dirPath },
       isAuth: true,
     })
-    return this.toAPIStorageNodes(response.data.hierarchicalStorageDirDescendants)
+    return this.toAPIStorageNodes(response.data.hierarchicalStorageDescendants)
   }
 
-  async getHierarchicalStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
-    const response = await this.query<{ hierarchicalStorageDirChildren: APIResponseStorageNode[] }>({
+  async getHierarchicalStorageChildren(dirPath?: string): Promise<StorageNode[]> {
+    const response = await this.query<{ hierarchicalStorageChildren: APIResponseStorageNode[] }>({
       query: gql`
-        query GetHierarchicalStorageDirChildren($dirPath: String) {
-          hierarchicalStorageDirChildren(dirPath: $dirPath) {
+        query GetHierarchicalStorageChildren($dirPath: String) {
+          hierarchicalStorageChildren(dirPath: $dirPath) {
+            id
             nodeType
             name
             dir
@@ -435,14 +450,15 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       variables: { dirPath },
       isAuth: true,
     })
-    return this.toAPIStorageNodes(response.data.hierarchicalStorageDirChildren)
+    return this.toAPIStorageNodes(response.data.hierarchicalStorageChildren)
   }
 
-  async getStorageDirChildren(dirPath?: string): Promise<StorageNode[]> {
-    const response = await this.query<{ storageDirChildren: APIResponseStorageNode[] }>({
+  async getStorageChildren(dirPath?: string): Promise<StorageNode[]> {
+    const response = await this.query<{ storageChildren: APIResponseStorageNode[] }>({
       query: gql`
-        query GetStorageDirChildren($dirPath: String) {
-          storageDirChildren(dirPath: $dirPath) {
+        query GetStorageChildren($dirPath: String) {
+          storageChildren(dirPath: $dirPath) {
+            id
             nodeType
             name
             dir
@@ -461,7 +477,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       variables: { dirPath },
       isAuth: true,
     })
-    return this.toAPIStorageNodes(response.data.storageDirChildren)
+    return this.toAPIStorageNodes(response.data.storageChildren)
   }
 
   async handleUploadedFiles(filePaths: string[]): Promise<StorageNode[]> {
@@ -469,6 +485,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation HandleUploadedFiles($filePaths: [String!]!) {
           handleUploadedFiles(filePaths: $filePaths) {
+            id
             nodeType
             name
             dir
@@ -495,6 +512,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation CreateStorageDirs($dirPaths: [String!]!) {
           createStorageDirs(dirPaths: $dirPaths) {
+            id
             nodeType
             name
             dir
@@ -521,6 +539,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation RemoveStorageDirs($dirPaths: [String!]!) {
           removeStorageDirs(dirPaths: $dirPaths) {
+            id
             nodeType
             name
             dir
@@ -547,6 +566,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation RemoveStorageFileNodes($filePaths: [String!]!) {
           removeStorageFiles(filePaths: $filePaths) {
+            id
             nodeType
             name
             dir
@@ -573,6 +593,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation MoveStorageDir($fromDirPath: String!, $toDirPath: String!) {
           moveStorageDir(fromDirPath: $fromDirPath, toDirPath: $toDirPath) {
+            id
             nodeType
             name
             dir
@@ -599,6 +620,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation MoveStorageFile($fromFilePath: String!, $toFilePath: String!) {
           moveStorageFile(fromFilePath: $fromFilePath, toFilePath: $toFilePath) {
+            id
             nodeType
             name
             dir
@@ -625,6 +647,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation RenameStorageDir($dirPath: String!, $newName: String!) {
           renameStorageDir(dirPath: $dirPath, newName: $newName) {
+            id
             nodeType
             name
             dir
@@ -651,6 +674,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation RenameStorageFile($filePath: String!, $newName: String!) {
           renameStorageFile(filePath: $filePath, newName: $newName) {
+            id
             nodeType
             name
             dir
@@ -677,6 +701,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation SetStorageDirShareSettings($dirPath: String!, $settings: StorageNodeShareSettingsInput!) {
           setStorageDirShareSettings(dirPath: $dirPath, settings: $settings) {
+            id
             nodeType
             name
             dir
@@ -703,6 +728,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       mutation: gql`
         mutation SetStorageFileShareSettings($filePath: String!, $settings: StorageNodeShareSettingsInput!) {
           setStorageFileShareSettings(filePath: $filePath, settings: $settings) {
+            id
             nodeType
             name
             dir

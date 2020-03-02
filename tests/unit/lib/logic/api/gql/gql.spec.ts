@@ -28,6 +28,12 @@ function getAPIErrorResponse(error: any): { statusCode: number; error: string; m
   return error.graphQLErrors[0].extensions.exception.response
 }
 
+async function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms)
+  }) as Promise<void>
+}
+
 //========================================================================
 //
 //  Tests
@@ -61,14 +67,17 @@ describe('Storage API', () => {
   beforeEach(async () => {
     userStorageBasePath = path.join(config.storage.usersDir, GENERAL_USER.myDirName)
     await Promise.all([api.removeTestStorageDir(TEST_FILES_DIR), api.removeTestStorageDir(userStorageBasePath)])
+
+    // Cloud Storageで短い間隔のノード追加・削除を行うとエラーが発生するので間隔調整している
+    await sleep(1000)
   })
 
-  describe('getHierarchicalUserStorageDirDescendants', () => {
+  describe('getHierarchicalUserStorageDescendants', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.uploadTestFiles([{ filePath: `${userStorageBasePath}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.getHierarchicalUserStorageDirDescendants('docs')
+      const actual = await api.getHierarchicalUserStorageDescendants('docs')
 
       expect(actual.length).toBe(2)
       expect(actual[0].path).toBe(`docs`)
@@ -76,12 +85,12 @@ describe('Storage API', () => {
     })
   })
 
-  describe('getHierarchicalUserStorageDirChildren', () => {
+  describe('getHierarchicalUserStorageChildren', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.uploadTestFiles([{ filePath: `${userStorageBasePath}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.getHierarchicalUserStorageDirChildren('docs')
+      const actual = await api.getHierarchicalUserStorageChildren('docs')
 
       expect(actual.length).toBe(2)
       expect(actual[0].path).toBe(`docs`)
@@ -89,12 +98,12 @@ describe('Storage API', () => {
     })
   })
 
-  describe('getUserStorageDirChildren', () => {
+  describe('getUserStorageChildren', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.uploadTestFiles([{ filePath: `${userStorageBasePath}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.getUserStorageDirChildren('docs')
+      const actual = await api.getUserStorageChildren('docs')
 
       expect(actual.length).toBe(1)
       expect(actual[0].path).toBe(`docs/fileA.txt`)
@@ -151,9 +160,10 @@ describe('Storage API', () => {
 
       const actual = await api.removeUserStorageDirs([`docs`])
 
-      expect(actual.length).toBe(2)
-      expect(actual[0].path).toBe(`docs/fileA.txt`)
-      expect(actual[1].path).toBe(`docs/fileB.txt`)
+      expect(actual.length).toBe(3)
+      expect(actual[0].path).toBe(`docs`)
+      expect(actual[1].path).toBe(`docs/fileA.txt`)
+      expect(actual[2].path).toBe(`docs/fileB.txt`)
     })
   })
 
@@ -231,12 +241,12 @@ describe('Storage API', () => {
     })
   })
 
-  describe('getHierarchicalStorageDirDescendants', () => {
+  describe('getHierarchicalStorageDescendants', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.getHierarchicalStorageDirDescendants(`${TEST_FILES_DIR}/docs`)
+      const actual = await api.getHierarchicalStorageDescendants(`${TEST_FILES_DIR}/docs`)
 
       expect(actual.length).toBe(3)
       expect(actual[0].path).toBe(`${TEST_FILES_DIR}`)
@@ -245,12 +255,12 @@ describe('Storage API', () => {
     })
   })
 
-  describe('getHierarchicalStorageDirChildren', () => {
+  describe('getHierarchicalStorageChildren', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.getHierarchicalStorageDirChildren(`${TEST_FILES_DIR}/docs`)
+      const actual = await api.getHierarchicalStorageChildren(`${TEST_FILES_DIR}/docs`)
 
       expect(actual.length).toBe(3)
       expect(actual[0].path).toBe(`${TEST_FILES_DIR}`)
@@ -259,12 +269,12 @@ describe('Storage API', () => {
     })
   })
 
-  describe('getStorageDirChildren', () => {
+  describe('getStorageChildren', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.getStorageDirChildren(`${TEST_FILES_DIR}/docs`)
+      const actual = await api.getStorageChildren(`${TEST_FILES_DIR}/docs`)
 
       expect(actual.length).toBe(1)
       expect(actual[0].path).toBe(`${TEST_FILES_DIR}/docs/fileA.txt`)
@@ -322,9 +332,10 @@ describe('Storage API', () => {
 
       const actual = await api.removeStorageDirs([`${TEST_FILES_DIR}/docs`])
 
-      expect(actual.length).toBe(2)
-      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/docs/fileA.txt`)
-      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/docs/fileB.txt`)
+      expect(actual.length).toBe(3)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/docs`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/docs/fileA.txt`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/docs/fileB.txt`)
     })
   })
 

@@ -10,6 +10,7 @@ export type StorageType = 'user' | 'app'
 
 export interface StorageTreeNodeData extends CompTreeNodeData {
   icon: string
+  id: string
   nodeType: StorageNodeType
   contentType: string
   size: number

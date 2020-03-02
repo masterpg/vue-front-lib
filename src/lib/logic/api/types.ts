@@ -11,11 +11,11 @@ export interface LibAPIContainer {
 
   getCustomToken(): Promise<string>
 
-  getHierarchicalUserStorageDirDescendants(dirPath?: string): Promise<StorageNode[]>
+  getHierarchicalUserStorageDescendants(dirPath?: string): Promise<StorageNode[]>
 
-  getHierarchicalUserStorageDirChildren(dirPath?: string): Promise<StorageNode[]>
+  getHierarchicalUserStorageChildren(dirPath?: string): Promise<StorageNode[]>
 
-  getUserStorageDirChildren(dirPath?: string): Promise<StorageNode[]>
+  getUserStorageChildren(dirPath?: string): Promise<StorageNode[]>
 
   handleUploadedUserFiles(filePaths: string[]): Promise<StorageNode[]>
 
@@ -37,11 +37,11 @@ export interface LibAPIContainer {
 
   setUserStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
-  getHierarchicalStorageDirDescendants(dirPath?: string): Promise<StorageNode[]>
+  getHierarchicalStorageDescendants(dirPath?: string): Promise<StorageNode[]>
 
-  getHierarchicalStorageDirChildren(dirPath?: string): Promise<StorageNode[]>
+  getHierarchicalStorageChildren(dirPath?: string): Promise<StorageNode[]>
 
-  getStorageDirChildren(dirPath?: string): Promise<StorageNode[]>
+  getStorageChildren(dirPath?: string): Promise<StorageNode[]>
 
   handleUploadedFiles(filePaths: string[]): Promise<StorageNode[]>
 
@@ -82,6 +82,7 @@ export interface AppConfigResponse {
 }
 
 export interface APIResponseStorageNode {
+  id: string
   nodeType: StorageNodeType
   name: string
   dir: string

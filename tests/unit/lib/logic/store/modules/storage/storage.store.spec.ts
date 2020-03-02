@@ -1,4 +1,5 @@
 import * as path from 'path'
+import * as shortid from 'shortid'
 import { StorageNode, StorageNodeShareSettings, StorageNodeType, StorageState } from '@/lib'
 import { BaseStorageStore } from '@/lib/logic/store/modules/storage/base'
 import { Component } from 'vue-property-decorator'
@@ -21,6 +22,7 @@ const EMPTY_SHARE_SETTINGS: StorageNodeShareSettings = {
 }
 
 const d1: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd1',
   dir: '',
@@ -33,6 +35,7 @@ const d1: StorageNode = {
 }
 
 const d11: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd11',
   dir: 'd1',
@@ -45,6 +48,7 @@ const d11: StorageNode = {
 }
 
 const fileA: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.File,
   name: 'fileA.txt',
   dir: 'd1/d11',
@@ -57,6 +61,7 @@ const fileA: StorageNode = {
 }
 
 const d12: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd12',
   dir: 'd1',
@@ -69,6 +74,7 @@ const d12: StorageNode = {
 }
 
 const d2: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd2',
   dir: '',
@@ -81,6 +87,7 @@ const d2: StorageNode = {
 }
 
 const d21: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd21',
   dir: 'd2',
@@ -93,6 +100,7 @@ const d21: StorageNode = {
 }
 
 const fileB: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.File,
   name: 'fileB.txt',
   dir: 'd2/d21',
@@ -105,6 +113,7 @@ const fileB: StorageNode = {
 }
 
 const fileC: StorageNode = {
+  id: shortid.generate(),
   nodeType: StorageNodeType.File,
   name: 'fileC.txt',
   dir: '',
@@ -264,6 +273,7 @@ describe('getMap', () => {
 
 describe('setAll', () => {
   const x1: StorageNode = {
+    id: shortid.generate(),
     nodeType: StorageNodeType.Dir,
     name: 'x1',
     dir: '',
@@ -276,6 +286,7 @@ describe('setAll', () => {
   }
 
   const fileD: StorageNode = {
+    id: shortid.generate(),
     nodeType: StorageNodeType.File,
     name: 'fileD.txt',
     dir: 'x1',
@@ -299,41 +310,96 @@ describe('setAll', () => {
 })
 
 describe('setList', () => {
-  it('pathを変更', () => {
+  it('ベーシックケース', () => {
     const UPDATED = dayjs('2019-01-01')
     const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
       isPublic: true,
       uids: ['ichiro'],
     }
     const actual = storageStore.setList([
-      { path: 'd1', newPath: 'x1', created: UPDATED, updated: UPDATED },
-      { path: 'd1/d11', newPath: 'x1/x11', created: UPDATED, updated: UPDATED },
-      { path: 'd1/d11/fileA.txt', newPath: 'x1/x11/fileA.txt', share: NEW_SHARE_SETTINGS, created: UPDATED, updated: UPDATED },
+      {
+        id: d11.id,
+        share: NEW_SHARE_SETTINGS,
+        created: UPDATED,
+        updated: UPDATED,
+      },
+      {
+        id: fileA.id,
+        share: NEW_SHARE_SETTINGS,
+        created: UPDATED,
+        updated: UPDATED,
+      },
     ])
 
-    expect(actual.length).toBe(3)
-
-    expect(actual[0].name).toEqual('x1')
-    expect(actual[0].dir).toEqual('')
-    expect(actual[0].path).toEqual('x1')
-    expect(actual[0].share).toEqual(EMPTY_SHARE_SETTINGS)
+    expect(actual.length).toBe(2)
+    expect(actual[0].id).toBe(d11.id)
+    expect(actual[0].share).toEqual(NEW_SHARE_SETTINGS)
+    expect(actual[0].created).toEqual(UPDATED)
     expect(actual[0].updated).toEqual(UPDATED)
-
-    expect(actual[1].name).toEqual('x11')
-    expect(actual[1].dir).toEqual('x1')
-    expect(actual[1].path).toEqual('x1/x11')
-    expect(actual[1].share).toEqual(EMPTY_SHARE_SETTINGS)
+    expect(actual[1].id).toBe(fileA.id)
+    expect(actual[1].share).toEqual(NEW_SHARE_SETTINGS)
+    expect(actual[1].created).toEqual(UPDATED)
     expect(actual[1].updated).toEqual(UPDATED)
 
-    expect(actual[2].name).toEqual('fileA.txt')
-    expect(actual[2].dir).toEqual('x1/x11')
-    expect(actual[2].path).toEqual('x1/x11/fileA.txt')
+    verifyStateNodes()
+    existsStateNodes(actual)
+    toBeCopy(actual)
+  })
+
+  it('プロパティの変更', () => {
+    const UPDATED = dayjs('2019-01-01')
+    const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
+      isPublic: true,
+      uids: ['ichiro'],
+    }
+    const actual = storageStore.setList([
+      {
+        id: fileA.id,
+        name: 'newFileA.txt',
+        dir: 'd1',
+        path: 'd1/newFileA.txt',
+        contentType: 'application/octet-stream',
+        share: NEW_SHARE_SETTINGS,
+        created: UPDATED,
+        updated: UPDATED,
+      },
+    ])
+
+    expect(actual.length).toBe(1)
+    expect(actual[0].id).toBe(fileA.id)
+    expect(actual[0].name).toBe('newFileA.txt')
+    expect(actual[0].dir).toBe('d1')
+    expect(actual[0].path).toBe('d1/newFileA.txt')
+    expect(actual[0].contentType).toBe('application/octet-stream')
+    expect(actual[0].share).toEqual(NEW_SHARE_SETTINGS)
+    expect(actual[0].created).toEqual(UPDATED)
+    expect(actual[0].updated).toEqual(UPDATED)
     // ---> コピーが設定されていることを検証
-    expect(actual[2].share).not.toBe(NEW_SHARE_SETTINGS)
-    expect(actual[2].share.uids).not.toBe(NEW_SHARE_SETTINGS.uids)
-    expect(actual[2].share).toEqual(NEW_SHARE_SETTINGS)
+    expect(actual[0].share).not.toBe(NEW_SHARE_SETTINGS)
+    expect(actual[0].share.uids).not.toBe(NEW_SHARE_SETTINGS.uids)
     // <---
-    expect(actual[2].updated).toEqual(UPDATED)
+
+    verifyStateNodes()
+    existsStateNodes(actual)
+    toBeCopy(actual)
+  })
+
+  it('プロパティの変更がない場合', () => {
+    const actual = storageStore.setList([
+      {
+        id: fileA.id,
+      },
+    ])
+
+    expect(actual.length).toBe(1)
+    expect(actual[0].id).toBe(fileA.id)
+    expect(actual[0].name).toBe(fileA.name)
+    expect(actual[0].dir).toBe(fileA.dir)
+    expect(actual[0].path).toBe(fileA.path)
+    expect(actual[0].contentType).toBe(fileA.contentType)
+    expect(actual[0].share).toEqual(fileA.share)
+    expect(actual[0].created).toEqual(fileA.created)
+    expect(actual[0].updated).toEqual(fileA.updated)
 
     verifyStateNodes()
     existsStateNodes(actual)
@@ -342,18 +408,20 @@ describe('setList', () => {
 
   it('存在しないpathを指定した場合', () => {
     let actual: Error
+    const notExistsId = shortid.generate()
     try {
-      storageStore.setList([{ path: 'dXXX', newPath: 'dYYY', created: dayjs('2019-01-01'), updated: dayjs('2019-01-01') }])
+      storageStore.setList([{ id: notExistsId }])
     } catch (err) {
       actual = err
     }
 
-    expect(actual!.message).toBe(`The specified node was not found: 'dXXX'`)
+    expect(actual!.message).toBe(`The specified node was not found: '${notExistsId}'`)
   })
 })
 
 describe('addList', () => {
   const d22: StorageNode = {
+    id: shortid.generate(),
     nodeType: StorageNodeType.Dir,
     name: 'd22',
     dir: 'd2',
@@ -366,6 +434,7 @@ describe('addList', () => {
   }
 
   const fileD: StorageNode = {
+    id: shortid.generate(),
     nodeType: StorageNodeType.File,
     name: 'fileD.txt',
     dir: 'd2/d22',
@@ -391,6 +460,7 @@ describe('addList', () => {
 
 describe('add', () => {
   const fileD: StorageNode = {
+    id: shortid.generate(),
     nodeType: StorageNodeType.File,
     name: 'fileD.txt',
     dir: 'd1/21',
@@ -502,6 +572,7 @@ describe('move', () => {
     const FM_UPDATED = dayjs('2020-01-01')
     const TO_UPDATED = dayjs('2020-01-02')
     const d1: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.Dir,
       name: 'd1',
       dir: '',
@@ -513,6 +584,7 @@ describe('move', () => {
       updated: FM_UPDATED,
     }
     const d1_docs: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.Dir,
       name: 'docs',
       dir: 'd1',
@@ -524,6 +596,7 @@ describe('move', () => {
       updated: FM_UPDATED,
     }
     const d1_docs_aaa: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.Dir,
       name: 'aaa',
       dir: 'd1/docs',
@@ -535,6 +608,7 @@ describe('move', () => {
       updated: FM_UPDATED,
     }
     const d1_docs_aaa_fileA: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.File,
       name: 'fileA.txt',
       dir: 'd1/docs/aaa',
@@ -546,6 +620,7 @@ describe('move', () => {
       updated: FM_UPDATED,
     }
     const d1_docs_fileB: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.File,
       name: 'fileB.txt',
       dir: 'd1/docs',
@@ -557,6 +632,7 @@ describe('move', () => {
       updated: FM_UPDATED,
     }
     const d1_docs_fileC: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.File,
       name: 'fileC.txt',
       dir: 'd1/docs',
@@ -568,6 +644,7 @@ describe('move', () => {
       updated: FM_UPDATED,
     }
     const docs: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.Dir,
       name: 'docs',
       dir: '',
@@ -579,6 +656,7 @@ describe('move', () => {
       updated: FM_UPDATED,
     }
     const docs_aaa: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.Dir,
       name: 'aaa',
       dir: 'docs',
@@ -590,6 +668,7 @@ describe('move', () => {
       updated: TO_UPDATED,
     }
     const docs_aaa_fileA: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.File,
       name: 'fileA.txt',
       dir: 'docs/aaa',
@@ -601,6 +680,7 @@ describe('move', () => {
       updated: TO_UPDATED,
     }
     const docs_fileB: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.File,
       name: 'fileB.txt',
       dir: 'docs',
@@ -612,6 +692,7 @@ describe('move', () => {
       updated: TO_UPDATED,
     }
     const docs_fileD: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.File,
       name: 'fileD.txt',
       dir: 'docs',
@@ -623,6 +704,7 @@ describe('move', () => {
       updated: TO_UPDATED,
     }
     const docs_fileE: StorageNode = {
+      id: shortid.generate(),
       nodeType: StorageNodeType.File,
       name: 'fileE.txt',
       dir: 'docs',
