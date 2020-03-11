@@ -45,13 +45,20 @@
   <div>
     <!-- 自ノード -->
     <div ref="nodeContainer" class="node-container layout horizontal center" :class="{ eldest: isEldest }">
-      <!-- トグルアイコン有り -->
-      <div v-if="hasChildren" class="icon-container">
-        <q-icon name="arrow_right" size="26px" color="grey-6" class="toggle-icon" :class="[opened ? 'rotate-90' : '']" @click="toggleIconOnClick" />
+      <!-- 遅延ロードアイコン -->
+      <div v-show="lazyLoadStatus === 'loading'" ref="lazyLoadIcon" class="icon-container">
+        <comp-loading-spinner size="20px" />
       </div>
-      <!-- トグルアイコン無し -->
-      <div v-else class="icon-container">
-        <q-icon name="" size="26px" />
+      <!-- トグルアイコン -->
+      <div v-show="lazyLoadStatus !== 'loading'" class="icon-container">
+        <!-- トグルアイコン有り -->
+        <template v-if="hasChildren">
+          <q-icon name="arrow_right" size="26px" color="grey-6" class="toggle-icon" :class="[opened ? 'rotate-90' : '']" @click="toggleIconOnClick" />
+        </template>
+        <!-- トグルアイコン無し -->
+        <template v-else>
+          <q-icon name="" size="26px" />
+        </template>
       </div>
 
       <!-- アイテムコンテナ -->
@@ -79,18 +86,19 @@
 </template>
 
 <script lang="ts">
-import { ChildrenSortFunc, CompTreeNodeData, CompTreeNodeEditData } from './types'
+import { ChildrenSortFunc, CompTreeNodeData, CompTreeNodeEditData, CompTreeViewLazyLoadStatus } from './types'
 import { BaseComponent } from '../../../base/component'
+import CompLoadingSpinner from '@/lib/components/simple/loading-spinner/comp-loading-spinner.vue'
 import CompTreeView from './comp-tree-view.vue'
 import { CompTreeViewUtils } from './comp-tree-view-utils'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '../../../base/decorators'
 import Vue from 'vue'
 import anime from 'animejs'
-const isBoolean = require('lodash/isBoolean')
-const isString = require('lodash/isString')
 
-@Component
+@Component({
+  components: { CompLoadingSpinner },
+})
 export default class CompTreeNode extends BaseComponent {
   //----------------------------------------------------------------------
   //
@@ -126,10 +134,11 @@ export default class CompTreeNode extends BaseComponent {
   @NoCache
   get treeView(): CompTreeView | null {
     const rootNode = this.getRootNode()
+
+    if (!rootNode.$el) return null
+
     const parentElement = rootNode.$el.parentElement
-    if (!parentElement) {
-      return null
-    }
+    if (!parentElement) return null
 
     const treeView = (parentElement as any).__vue__ as CompTreeView | undefined
     if (!treeView || !treeView.isTreeView) {
@@ -249,6 +258,28 @@ export default class CompTreeNode extends BaseComponent {
     return this.m_children
   }
 
+  /**
+   * 子ノードの読み込みを遅延ロードするか否かです。
+   */
+  get lazy(): boolean {
+    return this.nodeData.lazy!
+  }
+
+  set lazy(value: boolean) {
+    this.nodeData.lazy = value
+  }
+
+  /**
+   * 子ノード読み込みの遅延ロード状態です。
+   */
+  get lazyLoadStatus(): CompTreeViewLazyLoadStatus {
+    return this.nodeData.lazyLoadStatus!
+  }
+
+  set lazyLoadStatus(value: CompTreeViewLazyLoadStatus) {
+    this.nodeData.lazyLoadStatus = value
+  }
+
   private m_minWidth: number = 0
 
   /**
@@ -294,8 +325,17 @@ export default class CompTreeNode extends BaseComponent {
     return this.m_nodeData
   }
 
-  protected get hasChildren() {
-    return this.children.length > 0
+  protected get hasChildren(): boolean {
+    // 遅延ロードが指定され、かつまだロードされていない場合
+    if (this.lazy && this.lazyLoadStatus === 'none') {
+      // 子ノードが存在すると仮定する
+      return true
+    }
+    // 上記以外の場合
+    else {
+      // 実際に子ノードが存在するかを判定する
+      return this.children.length > 0
+    }
   }
 
   private m_toggleAnime: { resolve: () => void; anime: anime.AnimeInstance } | null = null
@@ -314,6 +354,11 @@ export default class CompTreeNode extends BaseComponent {
   @NoCache
   get m_childContainer(): HTMLElement {
     return this.$refs.childContainer as HTMLElement
+  }
+
+  @NoCache
+  protected get m_lazyLoadIcon(): HTMLElement {
+    return this.$refs.lazyLoadIcon as HTMLElement
   }
 
   //----------------------------------------------------------------------
@@ -345,6 +390,8 @@ export default class CompTreeNode extends BaseComponent {
     this.$set(nodeData, 'opened', Boolean(nodeData.opened))
     this.$set(nodeData, 'unselectable', Boolean(nodeData.unselectable))
     this.$set(nodeData, 'selected', Boolean(nodeData.selected))
+    this.$set(nodeData, 'lazy', Boolean(nodeData.lazy))
+    this.$set(nodeData, 'lazyLoadStatus', nodeData.lazyLoadStatus || 'none')
     this.m_nodeData = nodeData
 
     this.m_setSelected(this.nodeData.selected!, true)
@@ -359,35 +406,44 @@ export default class CompTreeNode extends BaseComponent {
   }
 
   protected setBaseNodeData(editData: CompTreeNodeEditData<CompTreeNodeData>): void {
-    if (isString(editData.label)) {
+    if (typeof editData.label === 'string') {
       this.label = editData.label!
     }
 
-    if (isString(editData.value)) {
-      this.value = editData.value!
+    if (typeof editData.value === 'string') {
+      this.value = editData.value
     }
 
-    if (isBoolean(editData.unselectable)) {
-      this.unselectable = editData.unselectable!
+    if (typeof editData.unselectable === 'boolean') {
+      this.unselectable = editData.unselectable
     }
 
-    if (isBoolean(editData.selected)) {
-      this.selected = editData.selected!
-    }
-    if (isString(editData.icon)) {
-      this.icon = editData.icon!
+    if (typeof editData.selected === 'boolean') {
+      this.selected = editData.selected
     }
 
-    if (isString(editData.iconColor)) {
-      this.iconColor = editData.iconColor!
+    if (typeof editData.icon === 'string') {
+      this.icon = editData.icon
     }
 
-    if (isBoolean(editData.opened)) {
-      if (editData.opened!) {
+    if (typeof editData.iconColor === 'string') {
+      this.iconColor = editData.iconColor
+    }
+
+    if (typeof editData.opened === 'boolean') {
+      if (editData.opened) {
         this.open(false)
       } else {
         this.close(false)
       }
+    }
+
+    if (typeof editData.lazy === 'boolean') {
+      this.lazy = editData.lazy
+    }
+
+    if (typeof editData.lazyLoadStatus === 'string') {
+      this.lazyLoadStatus = editData.lazyLoadStatus
     }
   }
 
@@ -648,23 +704,32 @@ export default class CompTreeNode extends BaseComponent {
   }
 
   private m_toggle(opened: boolean, animated: boolean): void {
-    const changed = this.opened !== opened
-    this.nodeData.opened = opened
-
-    if (animated) {
-      this.m_refreshChildContainerHeightWithAnimation()
-    } else {
-      this.m_refreshChildContainerHeight()
+    // 遅延ロードが指定され、かつまだロードされていない場合
+    if (this.lazy && this.lazyLoadStatus === 'none') {
+      this.m_startLazyLoad(() => {
+        this.m_toggle(opened, animated)
+      })
     }
+    // 上記以外の場合
+    else {
+      const changed = this.opened !== opened
+      this.nodeData.opened = opened
 
-    if (changed) {
-      this.$el.dispatchEvent(
-        new CustomEvent('opened-changed', {
-          bubbles: true,
-          cancelable: true,
-          composed: true,
-        })
-      )
+      if (animated) {
+        this.m_refreshChildContainerHeightWithAnimation()
+      } else {
+        this.m_refreshChildContainerHeight()
+      }
+
+      if (changed) {
+        this.$el.dispatchEvent(
+          new CustomEvent('opened-changed', {
+            bubbles: true,
+            cancelable: true,
+            composed: true,
+          })
+        )
+      }
     }
   }
 
@@ -817,10 +882,41 @@ export default class CompTreeNode extends BaseComponent {
     // 選択可能な場合
     else {
       if (changed) {
-        this.nodeData.selected = value
-        !initializing && CompTreeViewUtils.dispatchSelectedChanged(this)
+        // 遅延ロードが指定され、かつまだロードが開始されていない場合
+        if (this.lazy && this.lazyLoadStatus === 'none') {
+          this.m_startLazyLoad(() => {
+            this.nodeData.selected = value
+            !initializing && CompTreeViewUtils.dispatchSelectedChanged(this)
+          })
+        }
+        // 上記以外の場合
+        else {
+          this.nodeData.selected = value
+          !initializing && CompTreeViewUtils.dispatchSelectedChanged(this)
+        }
       }
     }
+  }
+
+  /**
+   * 子ノードを取得するための遅延ロードを開始します。
+   * @param completed 遅延ロードが完了した際に実行されるコールバック関数を指定
+   */
+  private m_startLazyLoad(completed: () => void): void {
+    this.m_lazyLoadIcon.style.opacity = '1'
+    this.lazyLoadStatus = 'loading'
+    CompTreeViewUtils.dispatchLazyLoad(this, () => {
+      anime({
+        targets: this.m_lazyLoadIcon,
+        opacity: '0',
+        duration: 150,
+        easing: 'easeOutCubic',
+        complete: () => {
+          this.lazyLoadStatus = 'loaded'
+          completed()
+        },
+      })
+    })
   }
 
   /**
@@ -842,9 +938,9 @@ export default class CompTreeNode extends BaseComponent {
   /**
    * 自ノードから上位ノードに向かって再帰的に適切な「display: [any]」を設定します。
    *
-   * ※このメソッドの存在理由:
-   * `m_ascendSetBlockForDisplay()`によって一時的に「display: block」にされていた
-   * 値を適切な値に設定し直す役割をします。
+   * ※このメソッドの役割:
+   * `m_ascendSetBlockForDisplay()`によって一時的に「display: block」にされていた値を
+   * 適切な値に設定し直す役割をします。
    */
   private m_ascendSetAnyForDisplay(): void {
     this.m_childContainer.style.display = this.opened ? 'block' : 'none'

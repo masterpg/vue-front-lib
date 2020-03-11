@@ -52,14 +52,32 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
     return undefined
   }
 
-  getChildren(path: string): StorageNode[] {
-    const children = this.getStateChildren(path)
+  getChildren(dirPath?: string): StorageNode[] {
+    const children = this.getStateChildren(dirPath)
     return children.map(child => this.clone(child))
   }
 
-  getDescendants(path: string): StorageNode[] {
-    const descendants = this.getStateDescendants(path)
+  getDirChildren(dirPath: string): StorageNode[] {
+    const dirNode = this.get(dirPath)
+    let result: StorageNode[] = []
+    if (dirNode) {
+      result = [dirNode, ...this.getChildren(dirPath)]
+    }
+    return result
+  }
+
+  getDescendants(dirPath?: string): StorageNode[] {
+    const descendants = this.getStateDescendants(dirPath)
     return descendants.map(descendant => this.clone(descendant))
+  }
+
+  getDirDescendants(dirPath: string): StorageNode[] {
+    const dirNode = this.get(dirPath)
+    let result: StorageNode[] = []
+    if (dirNode) {
+      result = [dirNode, ...this.getDescendants(dirPath)]
+    }
+    return result
   }
 
   getMap(): { [path: string]: StorageNode } {
@@ -297,7 +315,7 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
     return undefined
   }
 
-  protected getStateChildren(path: string): StorageNode[] {
+  protected getStateChildren(path?: string): StorageNode[] {
     path = removeBothEndsSlash(path)
     const result: StorageNode[] = []
     for (const node of this.state.all) {
@@ -308,7 +326,7 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
     return result
   }
 
-  protected getStateDescendants(path: string): StorageNode[] {
+  protected getStateDescendants(path?: string): StorageNode[] {
     path = removeBothEndsSlash(path)
     const result: StorageNode[] = []
     for (const node of this.state.all) {

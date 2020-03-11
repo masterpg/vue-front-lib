@@ -42,6 +42,14 @@ export interface CompTreeNodeData {
    * 子ノードを指定します。
    */
   children?: this[]
+  /**
+   * 子ノードの読み込みを遅延ロードするか否かを指定します。
+   */
+  lazy?: boolean
+  /**
+   * 子ノード読み込みの遅延ロード状態を指定します。
+   */
+  lazyLoadStatus?: CompTreeViewLazyLoadStatus
 }
 
 export type CompTreeNodeEditData<T> = Partial<Omit<T, 'nodeClass' | 'children'>>
@@ -50,4 +58,13 @@ export type ChildrenSortFunc = (a: CompTreeNode, b: CompTreeNode) => number
 
 export interface CompTreeCheckboxNodeData extends CompTreeNodeData {
   checked?: boolean
+}
+
+export type CompTreeViewLazyLoadStatus = 'none' | 'loading' | 'loaded'
+
+export type CompTreeViewLazyLoadDoneFunc = () => void
+
+export interface CompTreeViewLazyLoadEvent<NODE extends CompTreeNode = any> {
+  node: NODE
+  done: CompTreeViewLazyLoadDoneFunc
 }

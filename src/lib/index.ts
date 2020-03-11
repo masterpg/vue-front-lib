@@ -62,6 +62,7 @@ export {
   ChildrenSortFunc,
   CompAlertDialog,
   CompImg,
+  CompLoadingSpinner,
   CompStorageImg,
   CompStorageUploadProgressFloat,
   CompTreeCheckboxNode,
@@ -70,5 +71,8 @@ export {
   CompTreeNodeData,
   CompTreeNodeEditData,
   CompTreeView,
+  CompTreeViewLazyLoadDoneFunc,
+  CompTreeViewLazyLoadEvent,
+  CompTreeViewLazyLoadStatus,
   CompTreeViewUtils,
 } from './components'

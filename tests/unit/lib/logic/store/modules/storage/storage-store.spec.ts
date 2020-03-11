@@ -73,6 +73,19 @@ const d12: StorageNode = {
   updated: dayjs(),
 }
 
+const fileD: StorageNode = {
+  id: shortid.generate(),
+  nodeType: StorageNodeType.File,
+  name: 'fileD.txt',
+  dir: 'd1/d12',
+  path: 'd1/d12/fileD.txt',
+  contentType: 'text/plain; charset=utf-8',
+  size: 5,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
+  created: dayjs(),
+  updated: dayjs(),
+}
+
 const d2: StorageNode = {
   id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
@@ -218,13 +231,17 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  storageStore.initState({
-    all: storageStore.sort(cloneDeep(STORAGE_NODES)),
-  })
+  // storageStore.initState({
+  //   all: storageStore.sort(cloneDeep(STORAGE_NODES)),
+  // })
 })
 
 describe('all', () => {
   it('ベーシックケース', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep(STORAGE_NODES)),
+    })
+
     const actual = storageStore.all
 
     expect(actual).toEqual(storageStore.state.all)
@@ -234,7 +251,10 @@ describe('all', () => {
 
 describe('get', () => {
   it('ベーシックケース', () => {
-    const d11 = getStateNode('d1/d11')!
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     const actual = storageStore.get(d11.path)!
 
     expect(actual).toEqual(d11)
@@ -242,9 +262,57 @@ describe('get', () => {
   })
 })
 
+describe('getById', () => {
+  it('ベーシックケース', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
+    const actual = storageStore.getById(d11.id)!
+
+    expect(actual).toEqual(d11)
+    toBeCopy(actual)
+  })
+})
+
+describe('getChildren', () => {
+  it('ベーシックケース', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
+    const actual = storageStore.getChildren(d1.path)
+
+    expect(actual.length).toBe(2)
+    expect(actual[0].path).toEqual('d1/d11')
+    expect(actual[1].path).toEqual('d1/d12')
+    toBeCopy(actual)
+  })
+})
+
+describe('getDirChildren', () => {
+  it('ベーシックケース', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
+    const actual = storageStore.getDirChildren('d1')
+
+    expect(actual.length).toBe(3)
+    expect(actual[0].path).toEqual('d1')
+    expect(actual[1].path).toEqual('d1/d11')
+    expect(actual[2].path).toEqual('d1/d12')
+    toBeCopy(actual)
+  })
+})
+
 describe('getDescendants', () => {
   it('ベーシックケース', () => {
-    const actual = storageStore.getDescendants('d1')
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
+    const actual = storageStore.getDescendants(d1.path)
 
     expect(actual.length).toBe(3)
     expect(actual[0].path).toEqual('d1/d11')
@@ -254,8 +322,29 @@ describe('getDescendants', () => {
   })
 })
 
+describe('getDirDescendants', () => {
+  it('ベーシックケース', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
+    const actual = storageStore.getDirDescendants(d1.path)
+
+    expect(actual.length).toBe(4)
+    expect(actual[0].path).toEqual('d1')
+    expect(actual[1].path).toEqual('d1/d11')
+    expect(actual[2].path).toEqual('d1/d11/fileA.txt')
+    expect(actual[3].path).toEqual('d1/d12')
+    toBeCopy(actual)
+  })
+})
+
 describe('getMap', () => {
   it('ベーシックケース', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2, d21, fileB, fileC])),
+    })
+
     const actual = storageStore.getMap()
 
     expect(Object.keys(actual).length).toBe(8)
@@ -272,38 +361,16 @@ describe('getMap', () => {
 })
 
 describe('setAll', () => {
-  const x1: StorageNode = {
-    id: shortid.generate(),
-    nodeType: StorageNodeType.Dir,
-    name: 'x1',
-    dir: '',
-    path: 'x1',
-    contentType: '',
-    size: 0,
-    share: cloneDeep(EMPTY_SHARE_SETTINGS),
-    created: dayjs(),
-    updated: dayjs(),
-  }
-
-  const fileD: StorageNode = {
-    id: shortid.generate(),
-    nodeType: StorageNodeType.File,
-    name: 'fileD.txt',
-    dir: 'x1',
-    path: 'x1/fileD.txt',
-    contentType: 'text/plain; charset=utf-8',
-    size: 5,
-    share: cloneDeep(EMPTY_SHARE_SETTINGS),
-    created: dayjs(),
-    updated: dayjs(),
-  }
-
   it('ベーシックケース', () => {
-    storageStore.setAll([fileD, x1])
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
+    storageStore.setAll([d2, fileC])
 
     expect(storageStore.all.length).toBe(2)
-    expect(storageStore.get(x1.path)).toEqual(x1)
-    expect(storageStore.get(fileD.path)).toEqual(fileD)
+    expect(storageStore.get(d2.path)).toEqual(d2)
+    expect(storageStore.get(fileC.path)).toEqual(fileC)
 
     verifyStateNodes()
   })
@@ -311,6 +378,10 @@ describe('setAll', () => {
 
 describe('setList', () => {
   it('ベーシックケース', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     const UPDATED = dayjs('2019-01-01')
     const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
       isPublic: true,
@@ -347,6 +418,10 @@ describe('setList', () => {
   })
 
   it('プロパティの変更', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     const UPDATED = dayjs('2019-01-01')
     const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
       isPublic: true,
@@ -385,6 +460,10 @@ describe('setList', () => {
   })
 
   it('プロパティの変更がない場合', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     const actual = storageStore.setList([
       {
         id: fileA.id,
@@ -407,6 +486,10 @@ describe('setList', () => {
   })
 
   it('存在しないpathを指定した場合', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     let actual: Error
     const notExistsId = shortid.generate()
     try {
@@ -420,36 +503,14 @@ describe('setList', () => {
 })
 
 describe('addList', () => {
-  const d22: StorageNode = {
-    id: shortid.generate(),
-    nodeType: StorageNodeType.Dir,
-    name: 'd22',
-    dir: 'd2',
-    path: 'd2/d22',
-    contentType: '',
-    size: 0,
-    share: cloneDeep(EMPTY_SHARE_SETTINGS),
-    created: dayjs(),
-    updated: dayjs(),
-  }
-
-  const fileD: StorageNode = {
-    id: shortid.generate(),
-    nodeType: StorageNodeType.File,
-    name: 'fileD.txt',
-    dir: 'd2/d22',
-    path: 'd2/d22/fileD.txt',
-    contentType: 'text/plain; charset=utf-8',
-    size: 5,
-    share: cloneDeep(EMPTY_SHARE_SETTINGS),
-    created: dayjs(),
-    updated: dayjs(),
-  }
-
   it('ベーシックケース', () => {
-    const actual = storageStore.addList([d22, fileD])
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
 
-    expect(actual[0]).toEqual(d22)
+    const actual = storageStore.addList([d12, fileD])
+
+    expect(actual[0]).toEqual(d12)
     expect(actual[1]).toEqual(fileD)
 
     verifyStateNodes()
@@ -459,20 +520,11 @@ describe('addList', () => {
 })
 
 describe('add', () => {
-  const fileD: StorageNode = {
-    id: shortid.generate(),
-    nodeType: StorageNodeType.File,
-    name: 'fileD.txt',
-    dir: 'd1/21',
-    path: 'd1/21/fileD.txt',
-    contentType: 'text/plain; charset=utf-8',
-    size: 5,
-    share: cloneDeep(EMPTY_SHARE_SETTINGS),
-    created: dayjs(),
-    updated: dayjs(),
-  }
-
   it('ベーシックケース', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     const actual = storageStore.add(fileD)
 
     expect(actual).toEqual(fileD)
@@ -485,7 +537,11 @@ describe('add', () => {
 
 describe('removeList', () => {
   it('ベーシックケース', () => {
-    const actual = storageStore.removeList(['d1/d11', 'd1/d12'])
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
+    const actual = storageStore.removeList([d11.path, d12.path])
 
     expect(actual.length).toBe(3)
     expect(actual[0].path).toBe('d1/d11')
@@ -495,7 +551,11 @@ describe('removeList', () => {
   })
 
   it(`'d1/d11'と親である'd1'を同時に指定した場合`, () => {
-    const actual = storageStore.removeList(['d1/d11', 'd1'])
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
+    const actual = storageStore.removeList([d11.path, d1.path])
 
     storageStore.sort(actual)
     expect(actual.length).toBe(4)
@@ -507,6 +567,10 @@ describe('removeList', () => {
   })
 
   it('存在しないパスを指定した場合', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     const actual = storageStore.removeList(['dXXX'])
 
     expect(actual.length).toBe(0)
@@ -515,7 +579,11 @@ describe('removeList', () => {
 
 describe('remove', () => {
   it('ベーシックケース', () => {
-    const actual = storageStore.remove('d1/d11')
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
+    const actual = storageStore.remove(d11.path)
 
     expect(actual.length).toBe(2)
     expect(actual[0].path).toBe('d1/d11')
@@ -526,6 +594,10 @@ describe('remove', () => {
 
 describe('move', () => {
   it('ディレクトリの移動 - ディレクトリへ移動', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     const actual = storageStore.move('d1', 'd2/d1')
 
     expect(actual.length).toBe(4)
@@ -539,6 +611,10 @@ describe('move', () => {
   })
 
   it('ディレクトリの移動 - ルートディレクトリへ移動', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     const actual = storageStore.move('d1/d12', 'd12')
 
     expect(actual.length).toBe(1)
@@ -549,6 +625,10 @@ describe('move', () => {
   })
 
   it('ファイルの移動 - ディレクトリへ移動', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     const actual = storageStore.move('d1/d11/fileA.txt', 'd1/d12/fileA.txt')
 
     expect(actual.length).toBe(1)
@@ -559,6 +639,10 @@ describe('move', () => {
   })
 
   it('ファイルの移動 - ルートディレクトリへ移動', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     const actual = storageStore.move('d1/d11/fileA.txt', 'fileA.txt')
 
     expect(actual.length).toBe(1)
@@ -715,20 +799,23 @@ describe('move', () => {
       created: dayjs(),
       updated: TO_UPDATED,
     }
-    storageStore.setAll([
-      d1,
-      d1_docs,
-      d1_docs_aaa,
-      d1_docs_aaa_fileA,
-      d1_docs_fileB,
-      d1_docs_fileC,
-      docs,
-      docs_aaa,
-      docs_aaa_fileA,
-      docs_fileB,
-      docs_fileD,
-      docs_fileE,
-    ])
+
+    storageStore.initState({
+      all: storageStore.sort([
+        d1,
+        d1_docs,
+        d1_docs_aaa,
+        d1_docs_aaa_fileA,
+        d1_docs_fileB,
+        d1_docs_fileC,
+        docs,
+        docs_aaa,
+        docs_aaa_fileA,
+        docs_fileB,
+        docs_fileD,
+        docs_fileE,
+      ]),
+    })
 
     // 'd1/docdocs_fileDs'をルート直下の'docs'へ移動
     // (ルート直下にはdocsが既に存在している)
@@ -767,6 +854,10 @@ describe('move', () => {
   })
 
   it('存在しないパスを指定した場合', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     let actual: Error
     try {
       storageStore.move('dXXX', 'd2/dXXX')
@@ -778,6 +869,10 @@ describe('move', () => {
   })
 
   it('移動先ディレクトリが移動元のサブディレクトリの場合', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     let actual: Error
     try {
       storageStore.move('d1', 'd1/d11/d1')
@@ -791,6 +886,10 @@ describe('move', () => {
 
 describe('rename', () => {
   it('ディレクトリの名前変更', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     const actual = storageStore.rename('d1', 'x1')
 
     expect(actual.length).toBe(4)
@@ -804,6 +903,10 @@ describe('rename', () => {
   })
 
   it('ファイルの名前変更', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     const actual = storageStore.rename('d1/d11/fileA.txt', 'fileX.txt')
 
     expect(actual.length).toBe(1)
@@ -814,6 +917,10 @@ describe('rename', () => {
   })
 
   it('存在しないパスを指定した場合', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     let actual: Error
     try {
       storageStore.rename('dXXX', 'x1')
@@ -827,6 +934,10 @@ describe('rename', () => {
 
 describe('clear', () => {
   it('ベーシックケース', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
     const beforeAll = storageStore.all
 
     storageStore.clear()

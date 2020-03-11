@@ -45,13 +45,20 @@
   <div>
     <!-- 自ノード -->
     <div ref="nodeContainer" class="node-container layout horizontal center" :class="{ eldest: isEldest }">
-      <!-- トグルアイコン有り -->
-      <div v-if="hasChildren" class="icon-container">
-        <q-icon name="arrow_right" size="26px" color="grey-6" class="toggle-icon" :class="[opened ? 'rotate-90' : '']" @click="toggleIconOnClick" />
+      <!-- 遅延ロードアイコン -->
+      <div v-show="lazyLoadStatus === 'loading'" ref="lazyLoadIcon" class="icon-container">
+        <comp-loading-spinner size="20px" />
       </div>
-      <!-- トグルアイコン無し -->
-      <div v-else class="icon-container">
-        <q-icon name="" size="26px" />
+      <!-- トグルアイコン -->
+      <div v-show="lazyLoadStatus !== 'loading'" class="icon-container">
+        <!-- トグルアイコン有り -->
+        <template v-if="hasChildren">
+          <q-icon name="arrow_right" size="26px" color="grey-6" class="toggle-icon" :class="[opened ? 'rotate-90' : '']" @click="toggleIconOnClick" />
+        </template>
+        <!-- トグルアイコン無し -->
+        <template v-else>
+          <q-icon name="" size="26px" />
+        </template>
       </div>
 
       <!-- アイテムコンテナ -->
@@ -82,7 +89,6 @@
 <script lang="ts">
 import { CompTreeCheckboxNodeData } from './types'
 import CompTreeNode from '@/lib/components/simple/tree-view/comp-tree-node.vue'
-import CompTreeView from '@/lib/components/simple/tree-view/comp-tree-view.vue'
 import { Component } from 'vue-property-decorator'
 
 @Component

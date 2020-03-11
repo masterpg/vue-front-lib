@@ -24,15 +24,19 @@ export interface StorageStore {
 
   getById(id: string): StorageNode | undefined
 
-  getChildren(path: string): StorageNode[]
+  getChildren(dirPath?: string): StorageNode[]
 
-  getDescendants(path: string): StorageNode[]
+  getDirChildren(dirPath: string): StorageNode[]
+
+  getDescendants(dirPath?: string): StorageNode[]
+
+  getDirDescendants(dirPath: string): StorageNode[]
 
   getMap(): { [path: string]: StorageNode }
 
-  add(value: StorageNode): StorageNode
-
   addList(nodes: StorageNode[]): StorageNode[]
+
+  add(value: StorageNode): StorageNode
 
   setAll(values: StorageNode[]): void
 

@@ -51,7 +51,8 @@ import { StorageNodeType } from '@/lib'
             ref="treeView"
             class="tree-view"
             @selected="m_treeViewOnSelected($event)"
-            @reload-selected="m_treeViewOnReloadSelected()"
+            @lazy-load="m_treeViewOnLazyLoad($event)"
+            @reload-selected="m_treeViewOnReloadSelected($event.value)"
             @create-dir-selected="m_treeViewOnCreateDirSelected($event.value)"
             @files-upload-selected="m_treeViewOnFilesUploadSelected($event.value)"
             @dir-upload-selected="m_treeViewOnDirUploadSelected($event.value)"
@@ -113,11 +114,13 @@ import {
   BaseComponent,
   CompStorageUploadProgressFloat,
   CompTreeView,
+  CompTreeViewLazyLoadEvent,
   NoCache,
   Resizable,
   StorageNode,
   StorageNodeShareSettings,
   StorageNodeType,
+  User,
 } from '@/lib'
 import { RawLocation, Route } from 'vue-router'
 import { Component } from 'vue-property-decorator'
@@ -156,43 +159,37 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   created() {
     this.m_moveByRouter = debounce(this.m_moveByRouterFunc, 100)
 
-    this.treeStore.setup({
-      pulled: () => {
-        // URLから選択ノードのパスを取得
-        const nodePath = this.storageRoute.getNodePath()
-        // URLから取得した選択ノードまたは以前選択されていたノードでページリフレッシュ
-        const selectedNodeValue = nodePath || this.treeStore.selectedNode.value
-        this.m_refreshPage(selectedNodeValue)
-        // 選択ノードの祖先ノードを展開
-        this.m_openParentNode(selectedNodeValue, false)
-        // 選択ノードの位置までスクロールする
-        this.m_scrollToSelectedNode(selectedNodeValue, false)
-      },
-      cleared: () => {
-        this.m_dirView.setDirPath(null)
-        this.m_setupPathBlocks()
-      },
-    })
+    this.$logic.auth.addSignedInListener(this.m_userOnSignedIn)
+    this.$logic.auth.addSignedOutListener(this.m_userOnSignedOut)
   }
 
   destroyed() {
+    this.$logic.auth.removeSignedInListener(this.m_userOnSignedIn)
+    this.$logic.auth.removeSignedOutListener(this.m_userOnSignedOut)
+
     this.treeStore.teardown()
   }
 
   async mounted() {
     // ツリーストアを初期化
-    this.treeStore.start(this.m_treeView)
+    this.treeStore.setup(this.m_treeView)
+    // ディレクトリビューとパスブロックの空表示
+    this.m_setDirView(this.treeStore.selectedNode.value)
 
-    // サーバーからストレージノード一覧が取得済みの場合
+    // 初期ストレージノードの読み込みが既に行われている場合
     // ※本ページから別ページに遷移し、その後本ページに戻ってきた場合がこの状況に当たる
-    if (this.treeStore.isNodesPulled) {
-      const selectedNodeValue = this.treeStore.selectedNode.value
+    if (this.treeStore.isInitialPulled) {
       // 選択ノードのパスをURLに付与し、ページをリフレッシュ
-      this.m_moveByRouter(selectedNodeValue)
+      const dirPath = this.treeStore.selectedNode.value
+      this.m_moveByRouter(dirPath)
       // 選択ノードの祖先ノードを展開
-      this.m_openParentNode(selectedNodeValue, false)
+      this.m_openParentNode(dirPath, false)
       // 選択ノードの位置までスクロールする
-      this.m_scrollToSelectedNode(selectedNodeValue, false)
+      this.m_scrollToSelectedNode(dirPath, false)
+    }
+    // 初期ストレージノードの読み込みが行われていなく、かつユーザーがサインインしてる場合
+    else if (this.$logic.auth.user.isSignedIn) {
+      await this.m_pullInitialNodes()
     }
   }
 
@@ -200,9 +197,9 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     next()
 
     // URLから選択ノードパスを取得(取得できなかった場合はルートノード)
-    const selectedNodePath = this.storageRoute.getNodePath() || this.treeStore.rootNode.value
-    // ノードの選択状態を設定
-    this.m_selectNode(selectedNodePath)
+    const dirPath = this.storageRoute.getNodePath() || this.treeStore.rootNode.value
+    // ディレクトリビューの設定
+    this.m_setDirView(dirPath)
   }
 
   //----------------------------------------------------------------------
@@ -294,8 +291,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     // ルーターのパスが本ページのパスと一致しない場合
     if (!this.storageRoute.isCurrentRoute) return
 
-    // ツリービューの構築
-    this.m_buildTreeView()
+    // ロジックストアに格納されているストレージノードをツリービューへマージ
+    this.treeStore.mergeAllNodes(this.storageLogic.nodes)
 
     // 引数でノードパスの指定がない場合
     if (typeof selectedNodePath !== 'string') {
@@ -303,16 +300,16 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
       selectedNodePath = this.treeStore.selectedNode.value
     }
 
-    // ノードの選択状態を設定
-    this.m_selectNode(selectedNodePath)
+    // ディレクトリビューの設定
+    this.m_setDirView(selectedNodePath)
   }
 
   /**
-   * 指定されたノードを選択状態にします。
-   * @param selectingNodePath 選択するノードのパス
+   * 指定されたディレクトリをディレクトリビューに設定します。
+   * @param dirPath
    */
-  private m_selectNode(selectingNodePath: string): void {
-    const selectingNode = this.treeStore.getNode(selectingNodePath)
+  private m_setDirView(dirPath: string): void {
+    const selectingNode = this.treeStore.getNode(dirPath)
     if (selectingNode) {
       // 選択ノードを設定
       this.treeStore.selectedNode = selectingNode
@@ -324,10 +321,23 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   }
 
   /**
-   * ロジックストアに格納されているストレージノードをもとにツリービューを構築します。
+   * 初回に読み込むべきストレージノードの読み込みを行います。
    */
-  private async m_buildTreeView(): Promise<void> {
-    this.treeStore.mergeAllNodes(this.storageLogic.nodes)
+  private async m_pullInitialNodes(): Promise<void> {
+    this.m_dirView.loading = true
+
+    // URLから選択ノードのパスを取得
+    const urlDirPath = this.storageRoute.getNodePath()
+    // URLから取得した選択ノードまたは現在の選択ノードでページリフレッシュ
+    const dirPath = urlDirPath || this.treeStore.selectedNode.value
+    // 初期ストレージノードの読み込み
+    await this.treeStore.pullInitialNodes(dirPath)
+    // ディレクトリビューの設定
+    this.m_setDirView(dirPath)
+    // 選択ノードの位置までスクロールする
+    this.m_scrollToSelectedNode(dirPath, false)
+
+    this.m_dirView.loading = false
   }
 
   /**
@@ -644,17 +654,18 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   }
 
   /**
-   * 選択ノードが変更された際の処理を行います。
+   * パスのパンくずのブロック、またはディレクトリビューでディレクトリパス
+   * が変更された際の処理を行います。
    * @param dirPath
    */
-  private m_selectedNodeOnChangedToDir(dirPath: string): void {
+  private m_dirPathOnChanged(dirPath: string): void {
     const dirNode = this.treeStore.getNode(dirPath)
     if (!dirNode) {
       throw new Error(`The specified node was not found: '${dirPath}'`)
     }
 
-    // 選択されたノードをURLに付与し、ページをリフレッシュ
-    this.m_moveByRouter(dirPath)
+    // ツリービューに変更された選択ノードを設定
+    this.treeStore.selectedNode = dirNode
     // 選択されたノードの祖先を展開
     this.m_openParentNode(dirPath, true)
     // 選択ノードの位置までスクロールする
@@ -694,7 +705,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param dirPath
    */
   private m_pathBlockOnClick(dirPath: string) {
-    this.m_selectedNodeOnChangedToDir(dirPath)
+    this.m_dirPathOnChanged(dirPath)
   }
 
   /**
@@ -702,7 +713,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param dirPath
    */
   private async m_dirViewOnDirSelected(dirPath: string) {
-    this.m_selectedNodeOnChangedToDir(dirPath)
+    this.m_dirPathOnChanged(dirPath)
   }
 
   /**
@@ -716,13 +727,30 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param uploadDirPath アップロード先のディレクトリパス
    */
   private async m_uploadProgressFloatOnUploadEnded(uploadDirPath: string) {
-    await this.treeStore.pullNodes()
+    await this.treeStore.pullDescendants()
     this.m_moveByRouter(uploadDirPath)
 
     // アップロード先のディレクトリとその祖先を展開
     const uploadDirNode = this.treeStore.getNode(uploadDirPath)!
     uploadDirNode.open()
     this.m_openParentNode(uploadDirNode.value, true)
+  }
+
+  /**
+   * ユーザーがサインインした際のリスナです。
+   * @param user
+   */
+  private async m_userOnSignedIn(user: User) {
+    await this.m_pullInitialNodes()
+  }
+
+  /**
+   * ユーザーがサインアウトした際のリスナです。
+   * @param user
+   */
+  private async m_userOnSignedOut(user: User) {
+    this.m_dirView.setDirPath(null)
+    this.m_setupPathBlocks()
   }
 
   //--------------------------------------------------
@@ -738,38 +766,52 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   }
 
   /**
-   * ツリービューのノードコンテキストメニューでリロードが選択された際のリスナです。
+   * ツリービューで遅延ロードが開始された際のリスナです。
+   * @param e
    */
-  private async m_treeViewOnReloadSelected() {
-    await this.treeStore.pullNodes()
+  private async m_treeViewOnLazyLoad(e: CompTreeViewLazyLoadEvent<StorageTreeNode>) {
+    this.m_dirView.loading = true
+
+    await this.treeStore.pullChildren(e.node.value)
+    e.done()
+
+    this.m_dirView.loading = false
+  }
+
+  /**
+   * ツリービューのノードコンテキストメニューでリロードが選択された際のリスナです。
+   * @param dirPath
+   */
+  private async m_treeViewOnReloadSelected(dirPath: string) {
+    await this.treeStore.pullDescendants(dirPath)
   }
 
   /**
    * ツリービューのノードコンテキストメニューでフォルダの作成が選択された際のリスナです。
-   * @param dirNodePath
+   * @param dirPath
    */
-  private async m_treeViewOnCreateDirSelected(dirNodePath: string) {
-    const dirNode = this.treeStore.getNode(dirNodePath)!
-    const dirPath = await this.m_dirCreateDialog.open(dirNode)
-    if (dirPath) {
-      await this.m_createDir(dirPath)
+  private async m_treeViewOnCreateDirSelected(dirPath: string) {
+    const dirNode = this.treeStore.getNode(dirPath)!
+    const creatingDirPath = await this.m_dirCreateDialog.open(dirNode)
+    if (creatingDirPath) {
+      await this.m_createDir(creatingDirPath)
     }
   }
 
   /**
    * ツリービューのノードコンテキストメニューでファイルのアップロードが選択された際のリスナです。
-   * @param dirNodePath
+   * @param dirPath
    */
-  private async m_treeViewOnFilesUploadSelected(dirNodePath: string) {
-    this.m_uploadProgressFloat.openFilesSelectDialog(dirNodePath)
+  private async m_treeViewOnFilesUploadSelected(dirPath: string) {
+    this.m_uploadProgressFloat.openFilesSelectDialog(dirPath)
   }
 
   /**
    * ツリービューのノードコンテキストメニューでフォルダのアップロードが選択された際のリスナです。
-   * @param dirNodePath
+   * @param dirPath
    */
-  private async m_treeViewOnDirUploadSelected(dirNodePath: string) {
-    this.m_uploadProgressFloat.openDirSelectDialog(dirNodePath)
+  private async m_treeViewOnDirUploadSelected(dirPath: string) {
+    this.m_uploadProgressFloat.openDirSelectDialog(dirPath)
   }
 
   /**

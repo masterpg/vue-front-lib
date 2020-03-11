@@ -1,4 +1,12 @@
-import { CompTreeCheckboxNode, CompTreeNode, CompTreeNodeData, CompTreeView, CompTreeViewUtils } from '@/lib'
+import {
+  CompTreeCheckboxNode,
+  CompTreeNode,
+  CompTreeNodeData,
+  CompTreeView,
+  CompTreeViewLazyLoadEvent,
+  CompTreeViewLazyLoadStatus,
+  CompTreeViewUtils,
+} from '@/lib'
 import { Wrapper, mount } from '@vue/test-utils'
 import { initLibTest } from '../../../../helpers/lib/init'
 const merge = require('lodash/merge')
@@ -274,13 +282,13 @@ describe('CompTreeView', () => {
     })
   })
 
-  describe('addChild()', () => {
+  describe('addNode()', () => {
     it('挿入位置の指定なし', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node3 = treeView.addChild({
+      const node3 = treeView.addNode({
         label: 'Node3',
         value: 'node3',
       })
@@ -295,7 +303,7 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node3 = treeView.addChild(
+      const node3 = treeView.addNode(
         {
           label: 'Node3',
           value: 'node3',
@@ -313,7 +321,7 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node3 = treeView.addChild(
+      const node3 = treeView.addNode(
         {
           label: 'Node3',
           value: 'node3',
@@ -331,7 +339,7 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node1p5 = treeView.addChild(
+      const node1p5 = treeView.addNode(
         {
           label: 'Node1.5',
           value: 'node1.5',
@@ -349,7 +357,7 @@ describe('CompTreeView', () => {
       const treeView = wrapper.vm as CompTreeView | any
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
-      const node3 = treeView.addChild(
+      const node3 = treeView.addNode(
         {
           label: 'Node3',
           value: 'node3',
@@ -369,7 +377,7 @@ describe('CompTreeView', () => {
 
       let actual!: Error
       try {
-        treeView.addChild({
+        treeView.addNode({
           label: 'Node2',
           value: 'node2',
         })
@@ -388,7 +396,7 @@ describe('CompTreeView', () => {
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
       const node1_1 = treeView.getNode('node1_1')!
-      const node1_1_x = treeView.addChild(
+      const node1_1_x = treeView.addNode(
         {
           label: 'Node2_1',
           value: 'node2_1',
@@ -407,7 +415,7 @@ describe('CompTreeView', () => {
       treeView.buildTree(cloneDeep(baseNodeDataList))
 
       const node1_1 = treeView.getNode('node1_1')!
-      const node1_1_x = treeView.addChild(
+      const node1_1_x = treeView.addNode(
         {
           label: 'Node2_1',
           value: 'node2_1',
@@ -463,7 +471,7 @@ describe('CompTreeView', () => {
         const node3 = treeView.getNode('node3')!
         const node4 = treeView.getNode('node4')!
 
-        treeView.addChild(node1)
+        treeView.addNode(node1)
 
         expect(treeView.children.length).toBe(4)
         expect(treeView.children[0]).toBe(node2)
@@ -479,7 +487,7 @@ describe('CompTreeView', () => {
         const node3 = treeView.getNode('node3')!
         const node4 = treeView.getNode('node4')!
 
-        treeView.addChild(node3, { insertIndex: 0 })
+        treeView.addNode(node3, { insertIndex: 0 })
 
         expect(treeView.children.length).toBe(4)
         expect(treeView.children[0]).toBe(node3)
@@ -495,7 +503,7 @@ describe('CompTreeView', () => {
         const node3 = treeView.getNode('node3')!
         const node4 = treeView.getNode('node4')!
 
-        treeView.addChild(node2, { insertIndex: 2 })
+        treeView.addNode(node2, { insertIndex: 2 })
 
         expect(treeView.children.length).toBe(4)
         expect(treeView.children[0]).toBe(node1)
@@ -511,7 +519,7 @@ describe('CompTreeView', () => {
         const node3 = treeView.getNode('node3')!
         const node4 = treeView.getNode('node4')!
 
-        treeView.addChild(node2, { insertIndex: 3 })
+        treeView.addNode(node2, { insertIndex: 3 })
 
         expect(treeView.children.length).toBe(4)
         expect(treeView.children[0]).toBe(node1)
@@ -527,7 +535,7 @@ describe('CompTreeView', () => {
         const node3 = treeView.getNode('node3')!
         const node4 = treeView.getNode('node4')!
 
-        treeView.addChild(node1, { insertIndex: 0 })
+        treeView.addNode(node1, { insertIndex: 0 })
 
         expect(treeView.children.length).toBe(4)
         expect(treeView.children[0]).toBe(node1)
@@ -547,7 +555,7 @@ describe('CompTreeView', () => {
       const node1_1 = treeView.getNode('node1_1')!
       const node1 = node1_1.parent!
 
-      treeView.addChild(node1_1)
+      treeView.addNode(node1_1)
 
       expect(treeView.children.length).toBe(treeViewNodesLength + 1)
       expect(treeView.children[2]).toBe(node1_1)
@@ -563,7 +571,7 @@ describe('CompTreeView', () => {
 
       let actual!: Error
       try {
-        treeView.addChild(
+        treeView.addNode(
           {
             label: 'Node2_1',
             value: 'node2_1',
@@ -586,7 +594,7 @@ describe('CompTreeView', () => {
 
       let actual!: Error
       try {
-        const node3 = treeView.addChild(
+        const node3 = treeView.addNode(
           {
             label: 'Node3',
             value: 'node3',
@@ -693,7 +701,7 @@ describe('CompTreeView', () => {
 
       // 削除してから追加
       const actual = treeView.removeNode(node1.value)
-      treeView.addChild(actual, { insertIndex: 0 })
+      treeView.addNode(actual, { insertIndex: 0 })
 
       expect(actual).toBe(node1)
       expect(treeView.getNode(node1.value)).toBe(node1)
@@ -847,7 +855,7 @@ describe('CompTreeView', () => {
 
       // node1とnode2の位置を入れ替え
       const node1 = treeView.getNode('node1')
-      treeView.addChild(node1, { insertIndex: 1 })
+      treeView.addNode(node1, { insertIndex: 1 })
 
       // node1_1_1とnode1_1_2の位置を入れ替え
       const node1_1 = treeView.getNode('node1_1')!
@@ -885,7 +893,7 @@ describe('CompTreeView', () => {
     const anonymous = treeView.getNode('')!
 
     // 親に空文字("")のノードを指定
-    const anonymous_child1 = treeView.addChild(
+    const anonymous_child1 = treeView.addNode(
       {
         label: 'Anonymous_child1',
         value: 'anonymous_child1',
@@ -1392,6 +1400,78 @@ describe('CompTreeNode', () => {
         expect(wrapper.emitted('selected')[0][0]).toBe(node1_1_1)
         done()
       }, 1000)
+    })
+  })
+
+  describe('遅延ロード', () => {
+    it('ノード展開時', done => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1', opened: false, lazy: true }])
+      treeView.buildTree(nodeDataList)
+
+      const node1_1 = treeView.getNode('node1_1')!
+      expect(node1_1.lazy).toBe(true)
+      expect(node1_1.lazyLoadStatus).toBe('none')
+      expect(node1_1.opened).toBe(false)
+
+      // 遅延ロードイベントのリスナ登録
+      treeView.$on('lazy-load', (e: CompTreeViewLazyLoadEvent) => {
+        // 遅延ロード中の状態を検証
+        expect(node1_1.lazyLoadStatus).toBe('loading')
+        expect(node1_1.opened).toBe(false)
+        // 遅延ロードを完了する
+        e.done()
+        // 遅延ロードのアニメーションを考慮して一定時間待機
+        setTimeout(() => {
+          // 遅延ロード完了後の状態を検証
+          expect(node1_1.lazyLoadStatus).toBe('loaded')
+          expect(node1_1.opened).toBe(true)
+          // ノード開閉イベント発火を検証
+          expect(wrapper.emitted('opened-changed').length).toBe(1)
+          expect(wrapper.emitted('opened-changed')[0][0]).toBe(node1_1)
+          // 単体テスト完了
+          done()
+        }, 1000)
+      })
+
+      // 子ノードを開くと遅延ロードが開始される
+      node1_1.open()
+    })
+
+    it('選択ノード変更時', done => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1', selected: false, lazy: true }])
+      treeView.buildTree(nodeDataList)
+
+      const node1_1 = treeView.getNode('node1_1')!
+      expect(node1_1.lazy).toBe(true)
+      expect(node1_1.lazyLoadStatus).toBe('none')
+      expect(node1_1.selected).toBe(false)
+
+      // 遅延ロードイベントのリスナ登録
+      treeView.$on('lazy-load', (e: CompTreeViewLazyLoadEvent) => {
+        // 遅延ロード中の状態を検証
+        expect(node1_1.lazyLoadStatus).toBe('loading')
+        expect(node1_1.selected).toBe(false)
+        // 遅延ロードを完了する
+        e.done()
+        // 遅延ロードのアニメーションを考慮して一定時間待機
+        setTimeout(() => {
+          // 遅延ロード完了後の状態を検証
+          expect(node1_1.lazyLoadStatus).toBe('loaded')
+          expect(node1_1.selected).toBe(true)
+          // 選択イベント発火を検証
+          expect(wrapper.emitted('selected').length).toBe(1)
+          expect(wrapper.emitted('selected')[0][0]).toBe(node1_1)
+          // 単体テスト完了
+          done()
+        }, 1000)
+      })
+
+      // ノードを選択すると遅延ロードが開始される
+      node1_1.selected = true
     })
   })
 
@@ -1965,6 +2045,70 @@ describe('CompTreeNode', () => {
       expect(node1_1_1.selected).toBeFalsy()
       expect(getNodeData(nodeDataList, node1_1_1.value)!.selected).toBeFalsy()
 
+      verifyTreeView(treeView)
+    })
+
+    it('lazyを変更 - プロパティ変更', () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      const nodeDataList = editNodeDataList(baseNodeDataList)
+      treeView.buildTree(nodeDataList)
+
+      const node1_1 = treeView.getNode('node1_1')!
+      const newLazy = true
+
+      node1_1.lazy = newLazy
+
+      expect(node1_1.lazy).toBe(newLazy)
+      expect(getNodeData(nodeDataList, node1_1.value)!.lazy).toBe(newLazy)
+      verifyTreeView(treeView)
+    })
+
+    it('lazyを変更 - setNodeData()', () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      const nodeDataList = editNodeDataList(baseNodeDataList)
+      treeView.buildTree(nodeDataList)
+
+      const node1_1 = treeView.getNode('node1_1')!
+      const newLazy = true
+
+      node1_1.setNodeData({ lazy: newLazy })
+
+      expect(node1_1.lazy).toBe(newLazy)
+      expect(getNodeData(nodeDataList, node1_1.value)!.lazy).toBe(newLazy)
+      verifyTreeView(treeView)
+    })
+
+    it('lazyLoadStatusを変更 - プロパティ変更', () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      const nodeDataList = editNodeDataList(baseNodeDataList)
+      treeView.buildTree(nodeDataList)
+
+      const node1_1 = treeView.getNode('node1_1')!
+      const newLazyLoadStatus: CompTreeViewLazyLoadStatus = 'loaded'
+
+      node1_1.lazyLoadStatus = newLazyLoadStatus
+
+      expect(node1_1.lazyLoadStatus).toBe(newLazyLoadStatus)
+      expect(getNodeData(nodeDataList, node1_1.value)!.lazyLoadStatus).toBe(newLazyLoadStatus)
+      verifyTreeView(treeView)
+    })
+
+    it('lazyLoadStatusを変更 - setNodeData()', () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      const nodeDataList = editNodeDataList(baseNodeDataList)
+      treeView.buildTree(nodeDataList)
+
+      const node1_1 = treeView.getNode('node1_1')!
+      const newLazyLoadStatus: CompTreeViewLazyLoadStatus = 'loaded'
+
+      node1_1.setNodeData({ lazyLoadStatus: newLazyLoadStatus })
+
+      expect(node1_1.lazyLoadStatus).toBe(newLazyLoadStatus)
+      expect(getNodeData(nodeDataList, node1_1.value)!.lazyLoadStatus).toBe(newLazyLoadStatus)
       verifyTreeView(treeView)
     })
   })

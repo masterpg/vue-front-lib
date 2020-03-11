@@ -13,9 +13,19 @@ export interface StorageLogic {
 
   readonly baseURL: string
 
+  getNode(path: string): StorageNode | undefined
+
   getNodeMap(): { [path: string]: StorageNode }
 
-  pullNodes(dir?: string): Promise<void>
+  getChildren(dirPath: string): StorageNode[]
+
+  getDescendants(dirPath: string): StorageNode[]
+
+  getDirDescendants(dirPath: string): StorageNode[]
+
+  pullDescendants(dirPath?: string): Promise<void>
+
+  pullChildren(dirPath?: string): Promise<void>
 
   createDirs(dirPaths: string[]): Promise<StorageNode[]>
 

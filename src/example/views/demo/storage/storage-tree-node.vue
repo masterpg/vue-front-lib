@@ -41,19 +41,32 @@
   padding-left: var(--comp-tree-indent, 16px)
   height: 0
   overflow: hidden
+
+.fade-enter-active, .fade-leave-active
+  transition: opacity .5s
+
+.fade-enter, .fade-leave
+  opacity: 0
 </style>
 
 <template>
   <div>
     <!-- 自ノード -->
     <div ref="nodeContainer" class="node-container layout horizontal center" :class="{ eldest: isEldest }">
-      <!-- トグルアイコン有り -->
-      <div v-if="hasChildren" class="icon-container">
-        <q-icon name="arrow_right" size="26px" color="grey-6" class="toggle-icon" :class="[opened ? 'rotate-90' : '']" @click="toggleIconOnClick" />
+      <!-- 遅延ロードアイコン -->
+      <div v-show="lazyLoadStatus === 'loading'" ref="lazyLoadIcon" class="icon-container">
+        <comp-loading-spinner size="20px" />
       </div>
-      <!-- トグルアイコン無し -->
-      <div v-else class="icon-container">
-        <q-icon name="" size="26px" />
+      <!-- トグルアイコン -->
+      <div v-show="lazyLoadStatus !== 'loading'" class="icon-container">
+        <!-- トグルアイコン有り -->
+        <template v-if="hasChildren">
+          <q-icon name="arrow_right" size="26px" color="grey-6" class="toggle-icon" :class="[opened ? 'rotate-90' : '']" @click="toggleIconOnClick" />
+        </template>
+        <!-- トグルアイコン無し -->
+        <template v-else>
+          <q-icon name="" size="26px" />
+        </template>
       </div>
 
       <!-- アイテムコンテナ -->
@@ -102,6 +115,9 @@
           </q-list>
           <!-- フォルダ用メニュー -->
           <q-list v-show="m_isDir" dense style="min-width: 100px">
+            <q-item v-close-popup clickable>
+              <q-item-section @click="m_dispatchReloadSelected()">{{ $t('common.reload') }}</q-item-section>
+            </q-item>
             <q-item v-close-popup clickable>
               <q-item-section @click="m_dispatchCreateDirSelected()">
                 {{ $t('common.createSomehow', { somehow: $tc('common.folder', 1) }) }}

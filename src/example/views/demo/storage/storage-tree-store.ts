@@ -1,8 +1,8 @@
 import * as _path from 'path'
-import { CompTreeView, CompTreeViewUtils, StorageLogic, StorageNode, StorageNodeType, User } from '@/lib'
+import { CompTreeView, CompTreeViewLazyLoadStatus, CompTreeViewUtils, StorageLogic, StorageNode, StorageNodeType, User } from '@/lib'
 import { Component, Prop } from 'vue-property-decorator'
 import { StorageTreeNodeData, StorageType, treeSortFunc } from '@/example/views/demo/storage/base'
-import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
+import { removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import Vue from 'vue'
 import dayjs from 'dayjs'
@@ -19,6 +19,7 @@ export function newStorageTreeStore(storageType: StorageType, storageLogic: Stor
 
 export interface StorageNodeForTree extends StorageNode {
   opened?: boolean
+  lazyLoadStatus?: CompTreeViewLazyLoadStatus
 }
 
 @Component
@@ -32,7 +33,6 @@ export class StorageTreeStore extends Vue {
   created() {
     this.m_rootNode = this.m_createRootNode()
 
-    this.$logic.auth.addSignedInListener(this.m_userOnSignedIn)
     this.$logic.auth.addSignedOutListener(this.m_userOnSignedOut)
   }
 
@@ -72,13 +72,13 @@ export class StorageTreeStore extends Vue {
     this.m_treeView!.selectedNode = value
   }
 
-  private m_isNodesPulled: boolean = false
+  private m_isInitialPulled: boolean = false
 
   /**
-   * サーバーからストレージノード一覧が取得済みかを示すフラグです。
+   * 初期ストレージノードの読み込みが行われたかを示すフラグです。
    */
-  get isNodesPulled(): boolean {
-    return this.m_isNodesPulled
+  get isInitialPulled(): boolean {
+    return this.m_isInitialPulled
   }
 
   //----------------------------------------------------------------------
@@ -100,39 +100,23 @@ export class StorageTreeStore extends Vue {
 
   private m_treeView: CompTreeView<StorageTreeNodeData> | null = null
 
-  private m_pulledListener: (() => void) | null = null
-
-  private m_clearedListener: (() => void) | null = null
-
   //----------------------------------------------------------------------
   //
   //  Methods
   //
   //----------------------------------------------------------------------
 
-  setup(params: { pulled: () => void; cleared: () => void }): void {
-    this.m_pulledListener = params.pulled
-    this.m_clearedListener = params.cleared
+  setup(treeView: CompTreeView<StorageTreeNodeData>): void {
+    this.m_treeView = treeView
+    this.m_treeView.addNode(this.rootNode)
   }
 
   teardown(): void {
-    this.m_pulledListener = null
-    this.m_clearedListener = null
     this.m_treeView = null
   }
 
-  start(treeView: CompTreeView<StorageTreeNodeData>): void {
-    this.m_treeView = treeView
-    this.m_treeView.addChild(this.rootNode)
-
-    // サインイン済み、かつまだサーバーからストレージノード一覧を取得していない場合
-    if (this.$logic.auth.user.isSignedIn && !this.m_isNodesPulled) {
-      this.pullNodes()
-    }
-  }
-
   clear(): void {
-    this.m_isNodesPulled = false
+    this.m_isInitialPulled = false
 
     // 本クラスがアクティブ状態の場合(ストレージページが表示中)
     if (this.m_isActive) {
@@ -145,17 +129,88 @@ export class StorageTreeStore extends Vue {
       // ルートノードを作成し直す
       this.m_rootNode = this.m_createRootNode()
     }
-
-    this.m_clearedListener && this.m_clearedListener()
   }
 
   /**
-   * サーバーからストレージノード一覧を取得します。
+   * サーバーから初期ストレージの読み込みを行います。
+   * @param dirPath
    */
-  async pullNodes(): Promise<void> {
-    await this.storageLogic.pullNodes()
-    this.m_isNodesPulled = true
-    this.m_pulledListener && this.m_pulledListener()
+  async pullInitialNodes(dirPath?: string): Promise<void> {
+    if (this.m_isInitialPulled) return
+    this.m_isInitialPulled = true
+
+    dirPath = removeBothEndsSlash(dirPath)
+
+    // ルートノードを遅延ロード中に設定
+    this.rootNode.open(false)
+    this.rootNode.lazy = true
+    this.rootNode.lazyLoadStatus = 'loading'
+
+    // 指定されたディレクトリパスを構成する各ディレクトリの子ノードをサーバーから取得
+    const dirPaths = splitHierarchicalPaths(dirPath)
+    await Promise.all(
+      ['', ...dirPaths].map(async iDirPath => {
+        await this.storageLogic.pullChildren(iDirPath)
+      })
+    )
+
+    // サーバーから取得された最新のストレージノードを取得
+    const nodeMap = this.storageLogic.getNodeMap()
+
+    // 指定されたディレクトリパスを構成するディレクトリは展開した状態にする
+    // ※初期表示時は指定されたディレクトリを表示しておきたいので
+    for (const dirPath of dirPaths) {
+      const dirNode = nodeMap[dirPath]
+      if (dirNode) {
+        ;(dirNode as StorageNodeForTree).opened = true
+      }
+    }
+
+    // 最新のストレージノードをツリービューに設定
+    this.setAllNodes(Object.values(nodeMap))
+
+    // 指定されたディレクトリパスを構成する各ディレクトリは子ノードが取得済みなので、
+    // 各ディレクトリの遅延ロードは完了状態にする
+    for (const dirPath of dirPaths) {
+      const dirNode = this.getNode(dirPath)
+      if (dirNode) {
+        dirNode.lazyLoadStatus = 'loaded'
+      }
+    }
+
+    // ルートノードを遅延ロード完了に設定
+    this.rootNode.lazyLoadStatus = 'loaded'
+  }
+
+  /**
+   * 指定されたディレクトリ配下の子ノードをサーバーから取得します。
+   * @param dirPath
+   */
+  async pullDescendants(dirPath?: string): Promise<void> {
+    dirPath = removeBothEndsSlash(dirPath)
+    await this.storageLogic.pullDescendants(dirPath)
+
+    // ロジックストアから全ノードをマップ形式で取得
+    const nodeMap = this.storageLogic.getNodeMap()
+    // 引数ディレクトリを含め配下ディレクトリの遅延ロード状態を完了に設定
+    for (const node of Object.values(nodeMap)) {
+      const isChildrenLoaded = node.path === dirPath || (node.nodeType === StorageNodeType.Dir && node.dir.startsWith(dirPath))
+      if (isChildrenLoaded) {
+        ;(node as StorageNodeForTree).lazyLoadStatus = 'loaded'
+      }
+    }
+
+    this.mergeAllNodes(Object.values(nodeMap))
+  }
+
+  /**
+   * 指定されたディレクトリ直下の子ノードをサーバーから取得します。
+   * @param dirPath
+   */
+  async pullChildren(dirPath: string): Promise<void> {
+    dirPath = removeBothEndsSlash(dirPath)
+    await this.storageLogic.pullChildren(dirPath)
+    this.mergeAllNodes(this.storageLogic.nodes)
   }
 
   /**
@@ -226,7 +281,7 @@ export class StorageTreeStore extends Vue {
    * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
    * @param nodes
    */
-  setNodes(nodes: StorageNode[]): void {
+  setNodes(nodes: StorageNodeForTree[]): void {
     nodes = this.storageLogic.sortNodes([...nodes])
 
     for (const node of nodes) {
@@ -239,13 +294,14 @@ export class StorageTreeStore extends Vue {
    * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
    * @param node
    */
-  setNode(node: StorageNode): void {
+  setNode(node: StorageNodeForTree): void {
+    // 引数ノードが移動またはリネームされている可能性があるのでIDで検索
     const treeNode = this.m_getNodeById(node.id)
     const treeNodeData = this.m_toTreeNodeData(node)
     if (treeNode) {
       treeNode.setNodeData(treeNodeData)
     } else {
-      this.m_treeView!.addChild(treeNodeData, {
+      this.m_treeView!.addNode(treeNodeData, {
         parent: node.dir || this.rootNode.value,
         sortFunc: treeSortFunc,
       })
@@ -341,7 +397,7 @@ export class StorageTreeStore extends Vue {
 
     // ノードの名前が変わった場合、兄弟ノードの並び順も変える必要がある。
     // ここでは名前変更があったノードを再度addChildしてソートし直している。
-    this.m_treeView!.addChild(target, {
+    this.m_treeView!.addNode(target, {
       parent: removeStartDirChars(_path.dirname(target.value)),
       sortFunc: treeSortFunc,
     })
@@ -411,6 +467,9 @@ export class StorageTreeStore extends Vue {
       label,
       value: '',
       icon: 'storage',
+      opened: false,
+      lazy: false,
+      selected: true,
       id: '',
       nodeType: StorageNodeType.Dir,
       contentType: '',
@@ -422,8 +481,6 @@ export class StorageTreeStore extends Vue {
       baseURL: this.storageLogic.baseURL,
       created: dayjs(0),
       updated: dayjs(0),
-      selected: true,
-      opened: true,
     }
 
     return CompTreeViewUtils.newNode(rootNodeData) as StorageTreeNode
@@ -438,11 +495,13 @@ export class StorageTreeStore extends Vue {
     if ((source as any).__vue__) {
       source = source as StorageTreeNode
       const result: StorageTreeNodeData = {
-        label: source.label,
         value: source.value,
+        label: source.label,
+        icon: source.icon,
         opened: source.opened,
         nodeClass: StorageTreeNode,
-        icon: source.icon,
+        lazy: source.nodeType === StorageNodeType.Dir,
+        lazyLoadStatus: source.lazyLoadStatus,
         id: source.id,
         nodeType: source.nodeType,
         contentType: source.contentType,
@@ -459,10 +518,12 @@ export class StorageTreeStore extends Vue {
     } else {
       source = source as StorageNodeForTree
       const result: StorageTreeNodeData = {
-        label: removeBothEndsSlash(source.name),
         value: removeBothEndsSlash(source.path),
-        nodeClass: StorageTreeNode,
+        label: removeBothEndsSlash(source.name),
         icon: source.nodeType === StorageNodeType.Dir ? 'folder' : 'description',
+        nodeClass: StorageTreeNode,
+        lazy: source.nodeType === StorageNodeType.Dir,
+        lazyLoadStatus: source.lazyLoadStatus,
         id: source.id,
         nodeType: source.nodeType,
         contentType: source.contentType,
@@ -487,18 +548,6 @@ export class StorageTreeStore extends Vue {
   //  Event listeners
   //
   //----------------------------------------------------------------------
-
-  /**
-   * ユーザーがサインインした際のリスナです。
-   * @param user
-   */
-  private async m_userOnSignedIn(user: User) {
-    // 本クラスがアクティブ状態の場合(ストレージページが表示中)、
-    // サーバーからストレージノード一覧の取得を行う
-    if (this.m_isActive) {
-      await this.pullNodes()
-    }
-  }
 
   /**
    * ユーザーがサインアウトした際のリスナです。

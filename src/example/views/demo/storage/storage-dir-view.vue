@@ -67,6 +67,7 @@
           row-key="label"
           hide-bottom
           flat
+          :loading="loading"
           class="storage-dir-children-view__table"
         >
           <template v-slot:body="props">
@@ -231,6 +232,14 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     const labelCol = this.m_columns[0]
     this.m_table.sort(labelCol)
   }
+
+  //----------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //----------------------------------------------------------------------
+
+  loading: boolean = false
 
   //----------------------------------------------------------------------
   //

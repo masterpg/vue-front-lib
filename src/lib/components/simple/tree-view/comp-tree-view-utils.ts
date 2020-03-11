@@ -1,5 +1,5 @@
+import { CompTreeNodeData, CompTreeViewLazyLoadDoneFunc } from './types'
 import CompTreeNode from './comp-tree-node.vue'
-import { CompTreeNodeData } from './types'
 import CompTreeView from './comp-tree-view.vue'
 import Vue from 'vue'
 
@@ -139,6 +139,22 @@ export namespace CompTreeViewUtils {
         cancelable: true,
         composed: true,
         detail,
+      })
+    )
+  }
+
+  /**
+   * ノードの遅延ローディングが開始された旨を通知するイベントを発火します。
+   * @param target
+   * @param done
+   */
+  export function dispatchLazyLoad(target: CompTreeNode, done: CompTreeViewLazyLoadDoneFunc): void {
+    target.$el.dispatchEvent(
+      new CustomEvent('lazy-load', {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        detail: { done },
       })
     )
   }
