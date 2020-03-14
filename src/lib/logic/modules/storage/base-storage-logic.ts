@@ -55,11 +55,11 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
     return this.storageStore.getMap()
   }
 
-  getChildren(dirPath: string): StorageNode[] {
+  getChildren(dirPath?: string): StorageNode[] {
     return this.storageStore.getChildren(dirPath)
   }
 
-  getDirChildren(dirPath: string): StorageNode[] {
+  getDirChildren(dirPath?: string): StorageNode[] {
     return this.storageStore.getDirChildren(dirPath)
   }
 
@@ -71,48 +71,51 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
     return this.storageStore.getDirDescendants(dirPath)
   }
 
-  async pullDescendants(dirPath?: string): Promise<void> {
+  async pullDescendants(dirPath?: string): Promise<{ added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] }> {
+    const result: { added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] } = { added: [], updated: [], removed: [] }
+
     const apiNodes = await this.getHierarchicalStorageDescendants(dirPath)
 
-    if (!dirPath) {
-      this.storageStore.setAll(apiNodes)
-    } else {
-      // 取得したノードリストをストアへ反映
-      this.setNodesToStore(apiNodes)
-      // ストアにあって取得ノードリストにはないノードをストアから削除
-      const apiNodeMap = apiNodes.reduce(
-        (result, node) => {
-          result[node.id] = node
-          return result
-        },
-        {} as { [id: string]: StorageNode }
-      )
-      // ストアから対象ノードを取得
-      const hierarchicalDirPaths = splitHierarchicalPaths(dirPath)
-      let storeNodes = hierarchicalDirPaths.reduce(
-        (result, path) => {
-          const node = this.getNode(path)
-          node && result.push(node)
-          return result
-        },
-        [] as StorageNode[]
-      )
-      storeNodes = storeNodes.concat(...this.storageStore.getDescendants(dirPath))
-      // ストアにあって取得ノードリストにないノードをストアから削除
-      const removingNodes: string[] = []
-      for (const storeNode of storeNodes) {
-        const exists = Boolean(apiNodeMap[storeNode.id])
-        !exists && removingNodes.push(storeNode.path)
-      }
-      this.storageStore.removeList(removingNodes)
+    // 取得したノードリストをストアへ反映
+    Object.assign(result, this.setNodesToStore(apiNodes))
+
+    // 取得ノードリストをマップ化
+    const apiNodeMap = apiNodes.reduce(
+      (result, node) => {
+        result[node.id] = node
+        return result
+      },
+      {} as { [id: string]: StorageNode }
+    )
+    // ストアから対象ノードを取得
+    const hierarchicalDirPaths = splitHierarchicalPaths(dirPath)
+    let storeNodes = hierarchicalDirPaths.reduce(
+      (result, path) => {
+        const node = this.getNode(path)
+        node && result.push(node)
+        return result
+      },
+      [] as StorageNode[]
+    )
+    storeNodes = storeNodes.concat(...this.storageStore.getDescendants(dirPath))
+    // ストアにあって取得ノードリストにないノードをストアから削除
+    const removingNodes: string[] = []
+    for (const storeNode of storeNodes) {
+      const exists = Boolean(apiNodeMap[storeNode.id])
+      !exists && removingNodes.push(storeNode.path)
     }
+    result.removed = this.storageStore.removeList(removingNodes)
+
+    return result
   }
 
-  async pullChildren(dirPath?: string): Promise<void> {
+  async pullChildren(dirPath?: string): Promise<{ added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] }> {
+    const result: { added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] } = { added: [], updated: [], removed: [] }
+
     const apiNodes = await this.getStorageChildren(dirPath)
 
     // 取得したノードリストをストアへ反映
-    this.setNodesToStore(apiNodes)
+    Object.assign(result, this.setNodesToStore(apiNodes))
     // ストアにあって取得ノードリストにないノードをストアから削除
     const apiNodeMap = apiNodes.reduce(
       (result, node) => {
@@ -126,7 +129,9 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
       const exists = Boolean(apiNodeMap[storeNode.id])
       !exists && removingNodes.push(storeNode.path)
     }
-    this.storageStore.removeList(removingNodes)
+    result.removed = this.storageStore.removeList(removingNodes)
+
+    return result
   }
 
   async createDirs(dirPaths: string[]): Promise<StorageNode[]> {
@@ -157,7 +162,8 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   async moveDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
     const apiNodes = await this.moveStorageDir(fromDirPath, toDirPath)
     this.storageStore.move(fromDirPath, toDirPath)
-    return this.setNodesToStore(apiNodes)
+    const result = this.setNodesToStore(apiNodes)
+    return this.sortNodes([...result.added, ...result.updated])
   }
 
   async moveFile(fromFilePath: string, toFilePath: string): Promise<StorageNode> {
@@ -169,7 +175,8 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   async renameDir(dirPath: string, newName: string): Promise<StorageNode[]> {
     const apiNodes = await this.renameStorageDir(dirPath, newName)
     this.storageStore.rename(dirPath, newName)
-    return this.setNodesToStore(apiNodes)
+    const result = this.setNodesToStore(apiNodes)
+    return this.sortNodes([...result.added, ...result.updated])
   }
 
   async renameFile(filePath: string, newName: string): Promise<StorageNode> {
@@ -180,7 +187,8 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
 
   async setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]> {
     const apiNodes = await this.setStorageDirShareSettings(dirPath, settings)
-    return this.setNodesToStore(apiNodes)
+    const result = this.setNodesToStore(apiNodes)
+    return this.sortNodes([...result.added, ...result.updated])
   }
 
   async setFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
@@ -199,7 +207,7 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   //
   //----------------------------------------------------------------------
 
-  protected setNodesToStore(nodes: StorageNode[]): StorageNode[] {
+  protected setNodesToStore(nodes: StorageNode[]): { added: StorageNode[]; updated: StorageNode[] } {
     const stateNodeMap = this.storageStore.all.reduce(
       (result, node) => {
         result[node.id] = node
@@ -219,9 +227,10 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
       }
     }
 
-    const result: StorageNode[] = []
-    result.push(...this.storageStore.setList(updatingNodes))
-    result.push(...this.storageStore.addList(addingNodes))
+    const result = {
+      added: this.storageStore.addList(addingNodes),
+      updated: this.storageStore.setList(updatingNodes),
+    }
 
     return result
   }

@@ -12699,8 +12699,8 @@ wcwidth@^1.0.1:
     defaults "^1.0.3"
 
 "web-base-lib@https://github.com/masterpg/web-base-lib.git":
-  version "0.0.4"
-  resolved "https://github.com/masterpg/web-base-lib.git#62a763f50e75e57b5061c4d6f93bdd3a3d7d3fb4"
+  version "0.0.5"
+  resolved "https://github.com/masterpg/web-base-lib.git#36e1b0ecdf24ac1f85b81f2dd896837ce278e80e"
 
 webauth@^1.1.0:
   version "1.1.0"

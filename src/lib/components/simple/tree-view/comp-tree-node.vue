@@ -903,7 +903,6 @@ export default class CompTreeNode extends BaseComponent {
    * @param completed 遅延ロードが完了した際に実行されるコールバック関数を指定
    */
   private m_startLazyLoad(completed: () => void): void {
-    this.m_lazyLoadIcon.style.opacity = '1'
     this.lazyLoadStatus = 'loading'
     CompTreeViewUtils.dispatchLazyLoad(this, () => {
       anime({
@@ -912,6 +911,7 @@ export default class CompTreeNode extends BaseComponent {
         duration: 150,
         easing: 'easeOutCubic',
         complete: () => {
+          this.m_lazyLoadIcon.style.opacity = '1'
           this.lazyLoadStatus = 'loaded'
           completed()
         },

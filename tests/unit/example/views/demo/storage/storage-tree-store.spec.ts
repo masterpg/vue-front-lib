@@ -21,11 +21,13 @@ const EMPTY_SHARE_SETTINGS: StorageNodeShareSettings = {
   uids: [],
 }
 
+const ROOT_NODE_PATH = ''
+
 const d1: StorageNode = {
   id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd1',
-  dir: '',
+  dir: ROOT_NODE_PATH,
   path: 'd1',
   contentType: '',
   size: 0,
@@ -60,12 +62,38 @@ const f111: StorageNode = {
   updated: dayjs(),
 }
 
+const f112: StorageNode = {
+  id: shortid.generate(),
+  nodeType: StorageNodeType.File,
+  name: 'f112.txt',
+  dir: 'd1/d11',
+  path: 'd1/d11/f112.txt',
+  contentType: 'text/plain; charset=utf-8',
+  size: 5,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
+  created: dayjs(),
+  updated: dayjs(),
+}
+
 const d12: StorageNode = {
   id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd12',
   dir: 'd1',
   path: 'd1/d12',
+  contentType: '',
+  size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
+  created: dayjs(),
+  updated: dayjs(),
+}
+
+const d13: StorageNode = {
+  id: shortid.generate(),
+  nodeType: StorageNodeType.Dir,
+  name: 'd13',
+  dir: 'd1',
+  path: 'd1/d13',
   contentType: '',
   size: 0,
   share: cloneDeep(EMPTY_SHARE_SETTINGS),
@@ -103,7 +131,7 @@ const d2: StorageNode = {
   id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
   name: 'd2',
-  dir: '',
+  dir: ROOT_NODE_PATH,
   path: 'd2',
   contentType: '',
   size: 0,
@@ -138,11 +166,24 @@ const f211: StorageNode = {
   updated: dayjs(),
 }
 
+const d3: StorageNode = {
+  id: shortid.generate(),
+  nodeType: StorageNodeType.Dir,
+  name: 'd3',
+  dir: ROOT_NODE_PATH,
+  path: 'd3',
+  contentType: '',
+  size: 0,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
+  created: dayjs(),
+  updated: dayjs(),
+}
+
 const f1: StorageNode = {
   id: shortid.generate(),
   nodeType: StorageNodeType.File,
   name: 'f1.txt',
-  dir: '',
+  dir: ROOT_NODE_PATH,
   path: 'f1.txt',
   contentType: 'text/plain; charset=utf-8',
   size: 5,
@@ -227,7 +268,7 @@ describe('constructor + init', () => {
     const treeStore = newStorageTreeStore('user', logic.userStorage)
     treeStore.setup(treeView)
 
-    expect(treeStore.rootNode.value).toBe('')
+    expect(treeStore.rootNode.value).toBe(ROOT_NODE_PATH)
   })
 
   it('StorageTreeStoreを作成 - ユーザータイプ', () => {
@@ -310,59 +351,169 @@ describe('pullInitialNodes', () => {
     expect(actual[3].lazyLoadStatus).toBe('none')
     // pullChildren()が正常に呼び出されたか検証
     const pullChildren_exp = td.explain(storageLogic.pullChildren)
-    expect(pullChildren_exp.calls[0].args[0]).toBe('')
+    expect(pullChildren_exp.calls[0].args[0]).toBe(treeStore.rootNode.value)
     expect(pullChildren_exp.calls[1].args[0]).toBe('d1')
     expect(pullChildren_exp.calls[2].args[0]).toBe('d1/d11')
   })
 })
 
 describe('pullDescendants', () => {
-  it('ベーシックケース', async () => {
-    // ツリービューの初期設定
-    treeStore.rootNode.lazyLoadStatus = 'loaded'
-    treeStore.setNode(Object.assign(d1, { lazyLoadStatus: 'loaded' }))
-    // StorageLogic.pullDescendants()をモック化
-    td.when(storageLogic.pullDescendants(td.matchers.anything())).thenReturn()
-    // StorageLogic.nodesをモック化
-    td.replace<StorageLogic>(storageLogic, 'getNodeMap', () => {
-      return [d1, d11, f111, d12, f121].reduce(
-        (result, node) => {
-          result[node.path] = node
-          return result
-        },
-        {} as { [path: string]: StorageNode }
-      )
+  it('dirPathを指定した場合 - ルートノードを指定', async () => {
+    // root
+    // ├d1
+    // │├d11
+    // ││└f111.txt
+    // │└d12
+    // └d2
+    treeStore.setAllNodes([d1, d11, f111, d12, d2])
+    expect(treeStore.rootNode.lazyLoadStatus).toBe('none')
+    expect(treeStore.getNode(d1.path)!.lazyLoadStatus).toBe('none')
+    expect(treeStore.getNode(d11.path)!.lazyLoadStatus).toBe('none')
+    expect(treeStore.getNode(f111.path)!.lazyLoadStatus).toBe('none')
+    expect(treeStore.getNode(d12.path)!.lazyLoadStatus).toBe('none')
+    expect(treeStore.getNode(d2.path)!.lazyLoadStatus).toBe('none')
+
+    // 以下の状態のノードリストを引数に設定する
+    // ・'d1/d11/f111.txt'が'f1.txt'へ移動+リネームされた
+    // ・'d1/d11/f112.txt'が追加された
+    // ・'d1/d12'が削除された
+    const f1: StorageNode = Object.assign(cloneDeep(f111), {
+      dir: treeStore.rootNode.value,
+      path: 'f1.txt',
     })
+    // StorageLogic.getDirDescendants()をモック化
+    td.when(storageLogic.getDirDescendants(treeStore.rootNode.value)).thenReturn([d1, d11, f112, d2, f1])
 
-    await treeStore.pullDescendants('d1/d11')
+    await treeStore.pullDescendants(treeStore.rootNode.value)
     const actual = treeStore.getAllNodes()
-    const [_root, _d1, _d11, _f111, _d12, _f121] = actual
+    const [_root, _d1, _d11, _f112, _d2, _f1] = actual
 
-    // ツリービューが想定したノード構成になっているか検証
+    // root
+    // ├d1
+    // │└d11
+    // │  └f112.txt
+    // ├d2
+    // └f1.txt
     expect(actual.length).toBe(6)
     expect(_root.value).toBe(treeStore.rootNode.value)
     expect(_d1.value).toBe('d1')
     expect(_d11.value).toBe('d1/d11')
-    expect(_f111.value).toBe('d1/d11/f111.txt')
-    expect(_d12.value).toBe('d1/d12')
-    expect(_f121.value).toBe('d1/d12/f121.txt')
+    expect(_f112.value).toBe('d1/d11/f112.txt')
+    expect(_d2.value).toBe('d2')
+    expect(_f1.value).toBe('f1.txt')
     // 遅延ロード状態の検証
     expect(_root.lazyLoadStatus).toBe('loaded')
     expect(_d1.lazyLoadStatus).toBe('loaded')
     expect(_d11.lazyLoadStatus).toBe('loaded')
-    expect(_f111.lazyLoadStatus).toBe('none')
-    expect(_d12.lazyLoadStatus).toBe('none')
-    expect(_f121.lazyLoadStatus).toBe('none')
+    expect(_f112.lazyLoadStatus).toBe('none')
+    expect(_d2.lazyLoadStatus).toBe('loaded')
+    expect(_f1.lazyLoadStatus).toBe('none')
+    // pullChildren()が正常に呼び出されたか検証
+    const pullChildren_exp = td.explain(storageLogic.pullChildren)
+    expect(pullChildren_exp.calls.length).toBe(0)
     // pullDescendants()が正常に呼び出されたか検証
-    const pullChildren_exp = td.explain(storageLogic.pullDescendants)
-    expect(pullChildren_exp.calls[0].args[0]).toBe('d1/d11')
+    const pullDescendants_exp = td.explain(storageLogic.pullDescendants)
+    expect(pullDescendants_exp.calls[0].args[0]).toBe(treeStore.rootNode.value)
+
+    verifyParentChildRelationForTree(treeView)
+  })
+
+  it('dirPathを指定した場合 - ルートノード配下のディレクトリを指定', async () => {
+    // root
+    // ├d1
+    // │├d11
+    // ││└f111.txt
+    // │└d12
+    // └d2
+    treeStore.setAllNodes([d1, d11, f111, d12, d2])
+    expect(treeStore.rootNode.lazyLoadStatus).toBe('none')
+    expect(treeStore.getNode(d1.path)!.lazyLoadStatus).toBe('none')
+    expect(treeStore.getNode(d11.path)!.lazyLoadStatus).toBe('none')
+    expect(treeStore.getNode(f111.path)!.lazyLoadStatus).toBe('none')
+    expect(treeStore.getNode(d12.path)!.lazyLoadStatus).toBe('none')
+    expect(treeStore.getNode(d2.path)!.lazyLoadStatus).toBe('none')
+
+    // 以下の状態のノードリストを引数に設定する
+    // ・'d1/d11/f111.txt'が'f1.txt'へ移動+リネームされた
+    // ・'d1/d11/f112.txt'が追加された
+    // ・'d1/d12'が削除された
+    const f1: StorageNode = Object.assign(cloneDeep(f111), {
+      dir: treeStore.rootNode.value,
+      path: 'f1.txt',
+    })
+    // StorageLogic.getDirChildren()をモック化
+    td.when(storageLogic.getDirChildren(treeStore.rootNode.value)).thenReturn([d1, d2, f1])
+    // StorageLogic.getDirDescendants()をモック化
+    td.when(storageLogic.getDirDescendants(d1.path)).thenReturn([d1, d11, f112])
+
+    await treeStore.pullDescendants(d1.path)
+    const actual = treeStore.getAllNodes()
+    const [_root, _d1, _d11, _f112, _d2, _f1] = actual
+
+    // root
+    // ├d1
+    // │└d11
+    // │  └f112.txt
+    // ├d2
+    // └f1.txt
+    expect(actual.length).toBe(6)
+    expect(_root.value).toBe(treeStore.rootNode.value)
+    expect(_d1.value).toBe('d1')
+    expect(_d11.value).toBe('d1/d11')
+    expect(_f112.value).toBe('d1/d11/f112.txt')
+    expect(_d2.value).toBe('d2')
+    expect(_f1.value).toBe('f1.txt')
+    // 遅延ロード状態の検証
+    expect(_root.lazyLoadStatus).toBe('loaded')
+    expect(_d1.lazyLoadStatus).toBe('loaded')
+    expect(_d11.lazyLoadStatus).toBe('loaded')
+    expect(_f112.lazyLoadStatus).toBe('none')
+    expect(_d2.lazyLoadStatus).toBe('none')
+    expect(_f1.lazyLoadStatus).toBe('none')
+    // pullChildren()が正常に呼び出されたか検証
+    const pullChildren_exp = td.explain(storageLogic.pullChildren)
+    expect(pullChildren_exp.calls[0].args[0]).toBe(treeStore.rootNode.value)
+    // pullDescendants()が正常に呼び出されたか検証
+    const pullDescendants_exp = td.explain(storageLogic.pullDescendants)
+    expect(pullDescendants_exp.calls[0].args[0]).toBe('d1')
+
+    verifyParentChildRelationForTree(treeView)
   })
 })
 
 describe('pullChildren', () => {
-  it('ベーシックケース', async () => {
-    // StorageLogic.nodesをモック化
-    td.replace<StorageLogic>(storageLogic, 'nodes', [d1, d11, d12])
+  it('dirPathを指定した場合 - ルートノードを指定', async () => {
+    treeStore.setAllNodes([d1, d3])
+
+    // StorageLogic.pullChildrenをモック化
+    td.when(storageLogic.pullChildren(treeStore.rootNode.value)).thenResolve({
+      added: [d2],
+      updated: [d1],
+      removed: [d3],
+    })
+
+    await treeStore.pullChildren(treeStore.rootNode.value)
+    const actual = treeStore.getAllNodes()
+
+    // ツリービューが想定したノード構成になっているか検証
+    expect(actual.length).toBe(3)
+    expect(actual[0].value).toBe(treeStore.rootNode.value)
+    expect(actual[1].value).toBe('d1')
+    expect(actual[2].value).toBe('d2')
+    // pullChildren()が正常に呼び出されたか検証
+    const pullChildren_exp = td.explain(storageLogic.pullChildren)
+    expect(pullChildren_exp.calls[0].args[0]).toBe(treeStore.rootNode.value)
+  })
+
+  it('dirPathを指定した場合 - ルートノード配下のディレクトリを指定', async () => {
+    treeStore.setAllNodes([d1, d11, d13])
+
+    // StorageLogic.pullChildrenをモック化
+    td.when(storageLogic.pullChildren('d1')).thenResolve({
+      added: [d12],
+      updated: [d11],
+      removed: [d13],
+    })
 
     await treeStore.pullChildren('d1')
     const actual = treeStore.getAllNodes()
@@ -451,7 +602,7 @@ describe('mergeAllNodes', () => {
     // ・'d1/d11/f11A.txt'が追加された
     // ・'d1/d12'が削除された
     const fA: StorageNode = Object.assign(cloneDeep(f111), {
-      dir: '',
+      dir: treeStore.rootNode.value,
       path: 'fA.txt',
     })
     const f11A: StorageNode = {
@@ -487,6 +638,134 @@ describe('mergeAllNodes', () => {
   })
 })
 
+describe('mergeDirDescendants', () => {
+  it('ベーシックケース', () => {
+    // root
+    // ├d1
+    // │├d11
+    // ││└f111.txt
+    // │└d12
+    // │  └f121.txt
+    // └d2
+    treeStore.setAllNodes([d1, d11, f111, d12, f121, d2])
+
+    // ロジックストアから以下の状態のノードリストが取得される
+    // ・'d1/d11/f112.txt'が追加された
+    // ・'d1/f11.txt'が追加された
+    // ・'d1/d12'が削除(または移動)された
+    td.when(storageLogic.getDirDescendants(d1.path)).thenReturn([d1, d11, f111, f112, f11])
+
+    treeStore.mergeDirDescendants(d1.path)
+    const actual = treeStore.getAllNodes()
+
+    // root
+    // ├d1
+    // │├d11
+    // ││├f111.txt
+    // ││└f112.txt
+    // │└f11.txt
+    // └d2
+    expect(actual.length).toBe(7)
+    expect(actual[0].value).toBe(treeStore.rootNode.value)
+    expect(actual[1].value).toBe('d1')
+    expect(actual[2].value).toBe('d1/d11')
+    expect(actual[3].value).toBe('d1/d11/f111.txt')
+    expect(actual[4].value).toBe('d1/d11/f112.txt')
+    expect(actual[5].value).toBe('d1/f11.txt')
+    expect(actual[6].value).toBe('d2')
+
+    verifyParentChildRelationForTree(treeView)
+  })
+
+  it('引数ディレクトリが削除されていた', () => {
+    // root
+    // ├d1
+    // │└d11
+    // │  └f111.txt
+    // └d2
+    treeStore.setAllNodes([d1, d11, f111, d2])
+
+    // ロジックストアから以下の状態のノードリストが取得される
+    // ・'d1'が削除(または移動)された
+    td.when(storageLogic.getDirDescendants(d1.path)).thenReturn([])
+
+    treeStore.mergeDirDescendants(d1.path)
+    const actual = treeStore.getAllNodes()
+
+    // root
+    // └d2
+    expect(actual.length).toBe(2)
+    expect(actual[0].value).toBe(treeStore.rootNode.value)
+    expect(actual[1].value).toBe('d2')
+
+    verifyParentChildRelationForTree(treeView)
+  })
+})
+
+describe('mergeDirChildren', () => {
+  it('ベーシックケース', () => {
+    // root
+    // ├d1
+    // │├d11
+    // ││└f111.txt
+    // │└d12
+    // │  └f121.txt
+    // └d2
+    treeStore.setAllNodes([d1, d11, f111, d12, f121, d2])
+
+    // ロジックストアから以下の状態のノードリストが取得される
+    // ・'d1/d11/f112.txt'が追加された
+    // ・'d1/f11.txt'が追加された
+    // ・'d1/d12'が削除(または移動)された
+    td.when(storageLogic.getDirChildren(d1.path)).thenReturn([d1, d11, f112, f11])
+
+    treeStore.mergeDirChildren(d1.path)
+    const actual = treeStore.getAllNodes()
+
+    // root
+    // ├d1
+    // │├d11
+    // ││└f111.txt
+    // ││└f112.txt
+    // │└f11.txt
+    // └d2
+    expect(actual.length).toBe(7)
+    expect(actual[0].value).toBe(treeStore.rootNode.value)
+    expect(actual[1].value).toBe('d1')
+    expect(actual[2].value).toBe('d1/d11')
+    expect(actual[3].value).toBe('d1/d11/f111.txt')
+    expect(actual[4].value).toBe('d1/d11/f112.txt')
+    expect(actual[5].value).toBe('d1/f11.txt')
+    expect(actual[6].value).toBe('d2')
+
+    verifyParentChildRelationForTree(treeView)
+  })
+
+  it('引数ディレクトリが削除されていた', () => {
+    // root
+    // ├d1
+    // │└d11
+    // │  └f111.txt
+    // └d2
+    treeStore.setAllNodes([d1, d11, f111, d2])
+
+    // ロジックストアから以下の状態のノードリストが取得される
+    // ・'d1'が削除(または移動)された
+    td.when(storageLogic.getDirChildren(d1.path)).thenReturn([])
+
+    treeStore.mergeDirChildren(d1.path)
+    const actual = treeStore.getAllNodes()
+
+    // root
+    // └d2
+    expect(actual.length).toBe(2)
+    expect(actual[0].value).toBe(treeStore.rootNode.value)
+    expect(actual[1].value).toBe('d2')
+
+    verifyParentChildRelationForTree(treeView)
+  })
+})
+
 describe('setNode + setNodes', () => {
   it('ツリーに存在しないノードの設定', () => {
     treeStore.setNodes([d1, d11, f111])
@@ -499,7 +778,7 @@ describe('setNode + setNodes', () => {
   })
 
   it('ツリーに存在するノードの設定', () => {
-    treeStore.setAllNodes([d1, d11, f111])
+    treeStore.setAllNodes([d1, d11, f111, d2])
 
     const created = dayjs('2019-12-01')
     const updated = dayjs('2019-12-02')
@@ -512,6 +791,50 @@ describe('setNode + setNodes', () => {
     expect(treeStore.getNode('d1/d11')!.updatedDate).toEqual(updated)
     expect(treeStore.getNode('d1/d11/f111.txt')!.createdDate).toEqual(created)
     expect(treeStore.getNode('d1/d11/f111.txt')!.updatedDate).toEqual(updated)
+  })
+
+  it('ツリーに存在するノードの設定 - 親が変わっていた場合', () => {
+    treeStore.setAllNodes([d1, d11, f111, d2])
+
+    // 'd1/d11'が移動+リネームで'd2/d21'となった
+    const d21_from_d11 = Object.assign({}, d11, {
+      name: 'd21',
+      dir: 'd2',
+      path: 'd2/d21',
+    })
+    // 'd1/d11/f111.txt'が移動+リネームで'd2/d21/d211.txt'となった
+    const f211_from_f111 = Object.assign({}, f111, {
+      name: 'f211.txt',
+      dir: 'd2/d21',
+      path: 'd2/d21/f211.txt',
+    })
+    treeStore.setNodes([d21_from_d11, f211_from_f111])
+
+    const _d21 = treeStore.getNode('d2/d21')!
+    expect(_d21.parent!.value).toBe('d2')
+    const _f211 = treeStore.getNode('d2/d21/f211.txt')!
+    expect(_f211.parent!.value).toBe('d2/d21')
+
+    verifyParentChildRelationForTree(treeView)
+  })
+
+  it('ツリーに存在するノードの設定 - リネームされていた場合', () => {
+    treeStore.setAllNodes([d1, d11, f111, f112])
+
+    // 'd1/d11/f112.txt'がリネームされて'd1/d11/f110.txt'となった
+    const f110_from_f112 = Object.assign({}, f112, {
+      name: 'f110.txt',
+      dir: 'd1/d11',
+      path: 'd1/d11/f110.txt',
+    })
+    treeStore.setNodes([f110_from_f112])
+
+    const _d11 = treeStore.getNode('d1/d11')!
+    const _f110 = treeStore.getNode('d1/d11/f110.txt')!
+    const _f111 = treeStore.getNode('d1/d11/f111.txt')!
+    expect(_d11.children).toEqual([_f110, _f111])
+
+    verifyParentChildRelationForTree(treeView)
   })
 
   it('ソートされていないノードリストを渡した場合', () => {
@@ -593,7 +916,7 @@ describe('moveNode', () => {
     treeStore.moveNode('d1/d12', 'd12')
     const actual = treeStore.getNode('d12')!
 
-    expect(actual.parent!.value).toBe('')
+    expect(actual.parent!.value).toBe(treeStore.rootNode.value)
     expect(actual.value).toBe('d12')
 
     verifyParentChildRelationForTree(treeView)
@@ -617,7 +940,7 @@ describe('moveNode', () => {
     treeStore.moveNode('d1/d11/f111.txt', 'f111.txt')
     const actual = treeStore.getNode('f111.txt')!
 
-    expect(actual.parent!.value).toBe('')
+    expect(actual.parent!.value).toBe(treeStore.rootNode.value)
     expect(actual.value).toBe('f111.txt')
 
     verifyParentChildRelationForTree(treeView)
@@ -630,7 +953,7 @@ describe('moveNode', () => {
       id: shortid.generate(),
       nodeType: StorageNodeType.Dir,
       name: 'd1',
-      dir: '',
+      dir: ROOT_NODE_PATH,
       path: 'd1',
       contentType: '',
       size: 0,
@@ -702,7 +1025,7 @@ describe('moveNode', () => {
       id: shortid.generate(),
       nodeType: StorageNodeType.Dir,
       name: 'docs',
-      dir: '',
+      dir: ROOT_NODE_PATH,
       path: 'docs',
       contentType: '',
       size: 0,
@@ -790,9 +1113,8 @@ describe('moveNode', () => {
     treeStore.moveNode('d1/docs', 'docs')
 
     const allNodePaths = treeStore.getAllNodes().map(node => node.value)
-    // 補足: 空文字''はルートノード
     expect(allNodePaths).toEqual([
-      '',
+      treeStore.rootNode.value,
       'd1',
       'docs',
       'docs/aaa',

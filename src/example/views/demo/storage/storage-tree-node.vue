@@ -95,9 +95,6 @@
           <!-- ルートノード用メニュー -->
           <q-list v-show="m_isRoot" dense style="min-width: 100px">
             <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchReloadSelected()">{{ $t('common.reload') }}</q-item-section>
-            </q-item>
-            <q-item v-close-popup clickable>
               <q-item-section @click="m_dispatchCreateDirSelected()">
                 {{ $t('common.createSomehow', { somehow: $tc('common.folder', 1) }) }}
               </q-item-section>
@@ -112,12 +109,12 @@
                 {{ $t('common.uploadSomehow', { somehow: $tc('common.folder', 1) }) }}
               </q-item-section>
             </q-item>
-          </q-list>
-          <!-- フォルダ用メニュー -->
-          <q-list v-show="m_isDir" dense style="min-width: 100px">
             <q-item v-close-popup clickable>
               <q-item-section @click="m_dispatchReloadSelected()">{{ $t('common.reload') }}</q-item-section>
             </q-item>
+          </q-list>
+          <!-- フォルダ用メニュー -->
+          <q-list v-show="m_isDir" dense style="min-width: 100px">
             <q-item v-close-popup clickable>
               <q-item-section @click="m_dispatchCreateDirSelected()">
                 {{ $t('common.createSomehow', { somehow: $tc('common.folder', 1) }) }}
@@ -144,6 +141,9 @@
             </q-item>
             <q-item v-close-popup clickable>
               <q-item-section @click="m_dispatchDeleteSelected()">{{ $t('common.delete') }}</q-item-section>
+            </q-item>
+            <q-item v-close-popup clickable>
+              <q-item-section @click="m_dispatchReloadSelected()">{{ $t('common.reload') }}</q-item-section>
             </q-item>
           </q-list>
           <!-- ファイル用メニュー -->
@@ -304,10 +304,6 @@ export default class StorageTreeNode extends CompTreeNode {
     }
   }
 
-  private m_dispatchReloadSelected(): void {
-    this.dispatchExtraEvent('reload-selected')
-  }
-
   private m_dispatchCreateDirSelected(): void {
     this.dispatchExtraEvent('create-dir-selected')
   }
@@ -334,6 +330,10 @@ export default class StorageTreeNode extends CompTreeNode {
 
   private m_dispatchShareSelected(): void {
     this.dispatchExtraEvent('share-selected')
+  }
+
+  private m_dispatchReloadSelected(): void {
+    this.dispatchExtraEvent('reload-selected')
   }
 
   //----------------------------------------------------------------------

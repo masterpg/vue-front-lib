@@ -52,7 +52,6 @@ import { StorageNodeType } from '@/lib'
             class="tree-view"
             @selected="m_treeViewOnSelected($event)"
             @lazy-load="m_treeViewOnLazyLoad($event)"
-            @reload-selected="m_treeViewOnReloadSelected($event.value)"
             @create-dir-selected="m_treeViewOnCreateDirSelected($event.value)"
             @files-upload-selected="m_treeViewOnFilesUploadSelected($event.value)"
             @dir-upload-selected="m_treeViewOnDirUploadSelected($event.value)"
@@ -60,6 +59,7 @@ import { StorageNodeType } from '@/lib'
             @rename-selected="m_treeViewOnRenameSelected($event.value)"
             @delete-selected="m_onDeleteSelected([$event.value])"
             @share-selected="m_onShareSelected([$event.value])"
+            @reload-selected="m_treeViewOnReloadSelected($event.value)"
           />
         </div>
       </template>
@@ -87,6 +87,7 @@ import { StorageNodeType } from '@/lib'
               @rename-selected="m_treeViewOnRenameSelected($event)"
               @delete-selected="m_onDeleteSelected($event)"
               @share-selected="m_onShareSelected($event)"
+              @reload-selected="m_treeViewOnReloadSelected($event)"
             />
           </div>
         </div>
@@ -288,9 +289,6 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param selectedNodePath
    */
   private m_refreshPage(selectedNodePath?: string): void {
-    // ルーターのパスが本ページのパスと一致しない場合
-    if (!this.storageRoute.isCurrentRoute) return
-
     // ロジックストアに格納されているストレージノードをツリービューへマージ
     this.treeStore.mergeAllNodes(this.storageLogic.nodes)
 
@@ -727,7 +725,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param uploadDirPath アップロード先のディレクトリパス
    */
   private async m_uploadProgressFloatOnUploadEnded(uploadDirPath: string) {
-    await this.treeStore.pullDescendants()
+    await this.treeStore.pullDescendants(uploadDirPath)
     this.m_moveByRouter(uploadDirPath)
 
     // アップロード先のディレクトリとその祖先を展開
@@ -758,24 +756,29 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   //--------------------------------------------------
 
   /**
-   * ツリービューでノードが選択された際のリスナです。
-   * @param node
-   */
-  private async m_treeViewOnSelected(node: StorageTreeNode) {
-    this.m_moveByRouter(node.value)
-  }
-
-  /**
    * ツリービューで遅延ロードが開始された際のリスナです。
    * @param e
    */
   private async m_treeViewOnLazyLoad(e: CompTreeViewLazyLoadEvent<StorageTreeNode>) {
     this.m_dirView.loading = true
 
+    // 選択または展開されようとしているディレクトリ直下のノードをサーバーから取得
+    // ※done()が実行された後にselectedイベントが発火し、ページがリフレッシュされる
     await this.treeStore.pullChildren(e.node.value)
     e.done()
 
     this.m_dirView.loading = false
+  }
+
+  /**
+   * ツリービューでノードが選択された際のリスナです。
+   * @param node
+   */
+  private async m_treeViewOnSelected(node: StorageTreeNode) {
+    // 選択ノードのパスをURLに付与
+    this.storageRoute.move(node.value)
+    // ディレクトリビューの設定
+    this.m_setDirView(node.value)
   }
 
   /**
@@ -784,6 +787,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    */
   private async m_treeViewOnReloadSelected(dirPath: string) {
     await this.treeStore.pullDescendants(dirPath)
+    // ディレクトリビューの設定
+    this.m_setDirView(this.treeStore.selectedNode.value)
   }
 
   /**

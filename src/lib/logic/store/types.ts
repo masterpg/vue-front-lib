@@ -26,11 +26,11 @@ export interface StorageStore {
 
   getChildren(dirPath?: string): StorageNode[]
 
-  getDirChildren(dirPath: string): StorageNode[]
+  getDirChildren(dirPath?: string): StorageNode[]
 
   getDescendants(dirPath?: string): StorageNode[]
 
-  getDirDescendants(dirPath: string): StorageNode[]
+  getDirDescendants(dirPath?: string): StorageNode[]
 
   getMap(): { [path: string]: StorageNode }
 

@@ -71,6 +71,19 @@ const f111: StorageNode = {
   updated: dayjs(),
 }
 
+const f112: StorageNode = {
+  id: shortid.generate(),
+  nodeType: StorageNodeType.File,
+  name: 'f112.txt',
+  dir: 'd1/d11',
+  path: 'd1/d11/f112.txt',
+  contentType: 'text/plain; charset=utf-8',
+  size: 5,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
+  created: dayjs(),
+  updated: dayjs(),
+}
+
 const d12: StorageNode = {
   id: shortid.generate(),
   nodeType: StorageNodeType.Dir,
@@ -144,6 +157,19 @@ const f211: StorageNode = {
   path: 'd2/d21/f211.txt',
   contentType: 'text/plain; charset=utf-8',
   size: 5,
+  share: cloneDeep(EMPTY_SHARE_SETTINGS),
+  created: dayjs(),
+  updated: dayjs(),
+}
+
+const d3: StorageNode = {
+  id: shortid.generate(),
+  nodeType: StorageNodeType.Dir,
+  name: 'd3',
+  dir: '',
+  path: 'd3',
+  contentType: '',
+  size: 0,
   share: cloneDeep(EMPTY_SHARE_SETTINGS),
   created: dayjs(),
   updated: dayjs(),
@@ -279,12 +305,37 @@ describe('getNodeMap', () => {
 
 describe('pullDescendants', () => {
   it('dirPathを指定しなかった場合', async () => {
-    storageStore.initState({ all: [] })
-    td.when(api.getHierarchicalStorageDescendants(undefined)).thenResolve(STORAGE_NODES)
+    // root
+    // ├d1
+    // │├d11
+    // ││└f111.txt
+    // │└d12
+    // └d2
+    storageStore.initState({ all: cloneDeep([d1, d11, f111, d12, d2]) })
 
-    await storageLogic.pullDescendants()
+    // APIから以下の状態のノードリストが取得される
+    // ・'d1/d11/f111.txt'が'f1.txt'へ移動+リネームされた
+    // ・'d1/d11/f112.txt'が追加された
+    // ・'d1/d12'が削除された
+    const f1: StorageNode = Object.assign(cloneDeep(f111), {
+      dir: '',
+      path: 'f1.txt',
+    })
+    td.when(api.getHierarchicalStorageDescendants(undefined)).thenResolve([d1, d11, f112, f1, d2])
 
-    expect(storageLogic.nodes).toEqual(STORAGE_NODES)
+    const actual = await storageLogic.pullDescendants()
+
+    // root
+    // ├d1
+    // │└d11
+    // │  └f112.txt
+    // ├d2
+    // └f1.txt
+    expect(storageLogic.nodes).toEqual([d1, d11, f112, d2, f1])
+
+    expect(storageLogic.sortNodes(actual.added)).toEqual([f112])
+    expect(storageLogic.sortNodes(actual.updated)).toEqual([d1, d11, d2, f1])
+    expect(storageLogic.sortNodes(actual.removed)).toEqual([d12])
   })
 
   it('dirPathを指定した場合 - ベーシックケース', async () => {
@@ -297,36 +348,28 @@ describe('pullDescendants', () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111, d12, d2]) })
 
     // APIから以下の状態のノードリストが取得される
-    // ・'d1/d11/f111.txt'が'fA.txt'へ移動+リネームされた
-    // ・'d1/d11/f11A.txt'が追加された
+    // ・'d1/d11/f111.txt'が'f1.txt'へ移動+リネームされた
+    // ・'d1/d11/f112.txt'が追加された
     // ・'d1/d12'が削除された
-    const fA: StorageNode = Object.assign(cloneDeep(f111), {
+    const f1: StorageNode = Object.assign(cloneDeep(f111), {
       dir: '',
-      path: 'fA.txt',
+      path: 'f1.txt',
     })
-    const f11A: StorageNode = {
-      id: shortid.generate(),
-      nodeType: StorageNodeType.File,
-      name: 'f11A.txt',
-      dir: 'd1/d11',
-      path: 'd1/d11/f11A.txt',
-      contentType: 'text/plain; charset=utf-8',
-      size: 5,
-      share: cloneDeep(EMPTY_SHARE_SETTINGS),
-      created: dayjs(),
-      updated: dayjs(),
-    }
-    td.when(api.getHierarchicalStorageDescendants(d1.path)).thenResolve([d1, d11, f11A, fA])
+    td.when(api.getHierarchicalStorageDescendants(d1.path)).thenResolve([d1, d11, f112, f1])
 
-    await storageLogic.pullDescendants(d1.path)
+    const actual = await storageLogic.pullDescendants(d1.path)
 
     // root
     // ├d1
     // │└d11
-    // │  └f11A.txt
+    // │  └f112.txt
     // ├d2
-    // └fA.txt
-    expect(storageLogic.nodes).toEqual([d1, d11, f11A, d2, fA])
+    // └f1.txt
+    expect(storageLogic.nodes).toEqual([d1, d11, f112, d2, f1])
+
+    expect(storageLogic.sortNodes(actual.added)).toEqual([f112])
+    expect(storageLogic.sortNodes(actual.updated)).toEqual([d1, d11, f1])
+    expect(storageLogic.sortNodes(actual.removed)).toEqual([d12])
   })
 
   it('dirPathを指定した場合 - dirPathのノードが削除されていた', async () => {
@@ -342,13 +385,17 @@ describe('pullDescendants', () => {
     // ・'d1/d11'が削除され存在しない
     td.when(api.getHierarchicalStorageDescendants(d11.path)).thenResolve([d1])
 
-    await storageLogic.pullDescendants(d11.path)
+    const actual = await storageLogic.pullDescendants(d11.path)
 
     // root
     // ├d1
     // │└d12
     // └d2
     expect(storageLogic.nodes).toEqual([d1, d12, d2])
+
+    expect(storageLogic.sortNodes(actual.added)).toEqual([])
+    expect(storageLogic.sortNodes(actual.updated)).toEqual([d1])
+    expect(storageLogic.sortNodes(actual.removed)).toEqual([d11, f111])
   })
 
   it('dirPathを指定した場合 - dirPathの上位ノードが削除されていた', async () => {
@@ -364,11 +411,15 @@ describe('pullDescendants', () => {
     // ・'d1/d11'の上位である'd1'が削除され存在しない
     td.when(api.getHierarchicalStorageDescendants(d11.path)).thenResolve([])
 
-    await storageLogic.pullDescendants(d11.path)
+    const actual = await storageLogic.pullDescendants(d11.path)
 
     // root
     // └d2
     expect(storageLogic.nodes).toEqual([d2])
+
+    expect(storageLogic.sortNodes(actual.added)).toEqual([])
+    expect(storageLogic.sortNodes(actual.updated)).toEqual([])
+    expect(storageLogic.sortNodes(actual.removed)).toEqual([d1, d11, f111, d12])
   })
 })
 
@@ -410,7 +461,7 @@ describe('pullChildren', () => {
     }
     td.when(api.getStorageChildren(d1.path)).thenResolve([d11, f11, f12])
 
-    await storageLogic.pullChildren(d1.path)
+    const actual = await storageLogic.pullChildren(d1.path)
 
     // root
     // ├d1
@@ -420,6 +471,10 @@ describe('pullChildren', () => {
     // │└f12.txt
     // └d2
     expect(storageLogic.nodes).toEqual([d1, d11, f111, f11, f12, d2])
+
+    expect(storageLogic.sortNodes(actual.added)).toEqual([f12])
+    expect(storageLogic.sortNodes(actual.updated)).toEqual([d11, f11])
+    expect(storageLogic.sortNodes(actual.removed)).toEqual([d12, f121])
   })
 })
 

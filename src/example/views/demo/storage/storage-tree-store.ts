@@ -146,7 +146,7 @@ export class StorageTreeStore extends Vue {
     this.rootNode.lazy = true
     this.rootNode.lazyLoadStatus = 'loading'
 
-    // 指定されたディレクトリパスを構成する各ディレクトリの子ノードをサーバーから取得
+    // 引数ディレクトリのパスを構成する各ディレクトリの子ノードをサーバーから取得
     const dirPaths = splitHierarchicalPaths(dirPath)
     await Promise.all(
       ['', ...dirPaths].map(async iDirPath => {
@@ -157,7 +157,7 @@ export class StorageTreeStore extends Vue {
     // サーバーから取得された最新のストレージノードを取得
     const nodeMap = this.storageLogic.getNodeMap()
 
-    // 指定されたディレクトリパスを構成するディレクトリは展開した状態にする
+    // 引数ディレクトリのパスを構成するディレクトリは展開した状態にする
     // ※初期表示時は指定されたディレクトリを表示しておきたいので
     for (const dirPath of dirPaths) {
       const dirNode = nodeMap[dirPath]
@@ -169,7 +169,7 @@ export class StorageTreeStore extends Vue {
     // 最新のストレージノードをツリービューに設定
     this.setAllNodes(Object.values(nodeMap))
 
-    // 指定されたディレクトリパスを構成する各ディレクトリは子ノードが取得済みなので、
+    // 引数ディレクトリのパスを構成する各ディレクトリは子ノードが取得済みなので、
     // 各ディレクトリの遅延ロードは完了状態にする
     for (const dirPath of dirPaths) {
       const dirNode = this.getNode(dirPath)
@@ -186,21 +186,64 @@ export class StorageTreeStore extends Vue {
    * 指定されたディレクトリ配下の子ノードをサーバーから取得します。
    * @param dirPath
    */
-  async pullDescendants(dirPath?: string): Promise<void> {
+  async pullDescendants(dirPath: string): Promise<void> {
     dirPath = removeBothEndsSlash(dirPath)
-    await this.storageLogic.pullDescendants(dirPath)
 
-    // ロジックストアから全ノードをマップ形式で取得
-    const nodeMap = this.storageLogic.getNodeMap()
-    // 引数ディレクトリを含め配下ディレクトリの遅延ロード状態を完了に設定
-    for (const node of Object.values(nodeMap)) {
-      const isChildrenLoaded = node.path === dirPath || (node.nodeType === StorageNodeType.Dir && node.dir.startsWith(dirPath))
-      if (isChildrenLoaded) {
-        ;(node as StorageNodeForTree).lazyLoadStatus = 'loaded'
+    // 引数ディレクトリを遅延ロード中に設定
+    const dirTreeNode = this.getNode(dirPath)!
+    dirTreeNode.lazyLoadStatus = 'loading'
+
+    // 引数ディレクトリのパスを構成する各ディレクトリの子ノードをサーバーから取得
+    // ※引数ディレクトリは除く
+    const dirPaths = splitHierarchicalPaths(dirPath)
+    const promises: Promise<any>[] = []
+    for (const iDirPath of [this.rootNode.value, ...dirPaths]) {
+      if (iDirPath === dirPath) continue
+      promises.push(this.storageLogic.pullChildren(iDirPath))
+    }
+    // 引数ディレクトリ配下のノードをサーバーから取得
+    promises.push(
+      (async () => {
+        await this.storageLogic.pullDescendants(dirPath)
+      })()
+    )
+    await Promise.all(promises)
+
+    // ロジックストアのノードをツリービューに反映
+    // ※引数ディレクトリのパスを構成する各ディレクトリ(引数ディレクトリは除く)が対象
+    for (const iDirPath of [this.rootNode.value, ...dirPaths]) {
+      if (iDirPath === dirPath) continue
+      // ロジックストアのディレクトリと直下の子ノードをツリービューにマージ
+      this.mergeDirChildren(iDirPath)
+      // ディレクトリの遅延ロード状態を完了に設定
+      const dirTreeNode = this.m_treeView!.getNode(iDirPath)
+      if (dirTreeNode) {
+        dirTreeNode.lazyLoadStatus = 'loaded'
       }
     }
 
-    this.mergeAllNodes(Object.values(nodeMap))
+    // ロジックストアのノードをツリービューに反映
+    // ※引数ディレクトリが対象
+    this.mergeDirDescendants(dirPath)
+
+    // 引数ディレクトリ配下にあるディレクトリの遅延ロード状態を完了に設定
+    let treeDescendants: StorageTreeNode[] = []
+    if (dirPath === this.rootNode.value) {
+      treeDescendants = this.getAllNodes()
+    } else {
+      const dirTreeNode = this.m_treeView!.getNode(dirPath)
+      if (dirTreeNode) {
+        treeDescendants = dirTreeNode.getDescendants()
+      }
+    }
+    for (const treeNode of treeDescendants) {
+      if (treeNode.nodeType === StorageNodeType.Dir) {
+        treeNode.lazyLoadStatus = 'loaded'
+      }
+    }
+
+    // 引数ディレクトリを遅延ロード完了に設定
+    dirTreeNode.lazyLoadStatus = 'loaded'
   }
 
   /**
@@ -208,9 +251,9 @@ export class StorageTreeStore extends Vue {
    * @param dirPath
    */
   async pullChildren(dirPath: string): Promise<void> {
-    dirPath = removeBothEndsSlash(dirPath)
-    await this.storageLogic.pullChildren(dirPath)
-    this.mergeAllNodes(this.storageLogic.nodes)
+    const pulled = await this.storageLogic.pullChildren(dirPath)
+    this.setNodes([...pulled.added, ...pulled.updated])
+    this.removeNodes(pulled.removed.map(node => node.path))
   }
 
   /**
@@ -277,6 +320,78 @@ export class StorageTreeStore extends Vue {
   }
 
   /**
+   * ツリービューのノードと指定されたノード＋配下ノードをロジックストアから取得し、ツリービューにマージします。
+   * @param dirPath
+   */
+  mergeDirDescendants(dirPath: string): void {
+    // ロジックストアから引数ディレクトリと配下のノードを取得
+    const storeDirDescendantMap = this.storageLogic.getDirDescendants(dirPath).reduce(
+      (result, node) => {
+        result[node.path] = node
+        return result
+      },
+      {} as { [path: string]: StorageNode }
+    )
+
+    // ツリービューから引数ディレクトリと配下のノードを取得
+    const dirTreeNode = this.getNode(dirPath)
+    const driTreeDescendants: StorageTreeNode[] = []
+    if (dirTreeNode) {
+      driTreeDescendants.push(dirTreeNode)
+      driTreeDescendants.push(...dirTreeNode.getDescendants<StorageTreeNode>())
+    }
+
+    // ロジックストアのノードリストにないのにツリーには存在するノードを削除
+    // ※他の端末で削除、移動、リネームされたノードが削除される
+    for (const treeNode of driTreeDescendants) {
+      // ツリーのルートノードはロジックストアには存在しないので無視
+      if (treeNode === this.rootNode) continue
+
+      const storeNode = storeDirDescendantMap[treeNode.value]
+      !storeNode && this.removeNode(treeNode.value)
+    }
+
+    // ロジックストアのノードリストをツリービューへ反映
+    this.setNodes(Object.values(storeDirDescendantMap))
+  }
+
+  /**
+   * ツリービューのノードと指定されたノード＋直下ノードをロジックストアから取得し、ツリービューにマージします。
+   * @param dirPath
+   */
+  mergeDirChildren(dirPath: string): void {
+    // ロジックストアから引数ディレクトリと直下のノードを取得
+    const storeDirChildMap = this.storageLogic.getDirChildren(dirPath).reduce(
+      (result, node) => {
+        result[node.path] = node
+        return result
+      },
+      {} as { [path: string]: StorageNode }
+    )
+
+    // ツリービューから引数ディレクトリと直下のノードを取得
+    const dirTreeNode = this.getNode(dirPath)
+    const dirTreeChildren: StorageTreeNode[] = []
+    if (dirTreeNode) {
+      dirTreeChildren.push(dirTreeNode)
+      dirTreeChildren.push(...(dirTreeNode.children as StorageTreeNode[]))
+    }
+
+    // ロジックストアのノードリストにないのにツリーには存在するノードを削除
+    // ※他の端末で削除、移動、リネームされたノードが削除される
+    for (const treeNode of dirTreeChildren) {
+      // ツリーのルートノードはロジックストアには存在しないので無視
+      if (treeNode === this.rootNode) continue
+
+      const storeNode = storeDirChildMap[treeNode.value]
+      !storeNode && this.removeNode(treeNode.value)
+    }
+
+    // ロジックストアのノードリストをツリービューへ反映
+    this.setNodes(Object.values(storeDirChildMap))
+  }
+
+  /**
    * 指定されたノードリストをツリービューに設定します。
    * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
    * @param nodes
@@ -297,11 +412,25 @@ export class StorageTreeStore extends Vue {
   setNode(node: StorageNodeForTree): void {
     // 引数ノードが移動またはリネームされている可能性があるのでIDで検索
     const treeNode = this.m_getNodeById(node.id)
-    const treeNodeData = this.m_toTreeNodeData(node)
+
+    // ツリービューに引数ノードが既に存在する場合
     if (treeNode) {
-      treeNode.setNodeData(treeNodeData)
-    } else {
-      this.m_treeView!.addNode(treeNodeData, {
+      // パスに変更がない場合(移動またはリネームされていない)
+      if (treeNode.value === node.path) {
+        treeNode.setNodeData(this.m_toTreeNodeData(node))
+      }
+      // 移動またはリネームされていた場合
+      else {
+        treeNode.setNodeData(this.m_toTreeNodeData(node))
+        this.m_treeView!.addNode(treeNode, {
+          parent: node.dir || this.rootNode.value,
+          sortFunc: treeSortFunc,
+        })
+      }
+    }
+    // ツリービューに引数ノードがまだ存在しない場合
+    else {
+      this.m_treeView!.addNode(this.m_toTreeNodeData(node), {
         parent: node.dir || this.rootNode.value,
         sortFunc: treeSortFunc,
       })

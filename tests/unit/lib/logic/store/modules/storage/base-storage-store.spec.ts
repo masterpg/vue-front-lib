@@ -304,6 +304,19 @@ describe('getDirChildren', () => {
     expect(actual[2].path).toEqual('d1/d12')
     toBeCopy(actual)
   })
+
+  it('dirPathを指定しない場合', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
+    const actual = storageStore.getDirChildren()
+
+    expect(actual.length).toBe(2)
+    expect(actual[0].path).toEqual('d1')
+    expect(actual[1].path).toEqual('d2')
+    toBeCopy(actual)
+  })
 })
 
 describe('getDescendants', () => {
@@ -335,6 +348,22 @@ describe('getDirDescendants', () => {
     expect(actual[1].path).toEqual('d1/d11')
     expect(actual[2].path).toEqual('d1/d11/fileA.txt')
     expect(actual[3].path).toEqual('d1/d12')
+    toBeCopy(actual)
+  })
+
+  it('dirPathを指定しない場合', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
+    const actual = storageStore.getDirDescendants()
+
+    expect(actual.length).toBe(5)
+    expect(actual[0].path).toEqual('d1')
+    expect(actual[1].path).toEqual('d1/d11')
+    expect(actual[2].path).toEqual('d1/d11/fileA.txt')
+    expect(actual[3].path).toEqual('d1/d12')
+    expect(actual[4].path).toEqual('d2')
     toBeCopy(actual)
   })
 })

@@ -17,15 +17,17 @@ export interface StorageLogic {
 
   getNodeMap(): { [path: string]: StorageNode }
 
-  getChildren(dirPath: string): StorageNode[]
+  getChildren(dirPath?: string): StorageNode[]
+
+  getDirChildren(dirPath?: string): StorageNode[]
 
   getDescendants(dirPath: string): StorageNode[]
 
   getDirDescendants(dirPath: string): StorageNode[]
 
-  pullDescendants(dirPath?: string): Promise<void>
+  pullDescendants(dirPath?: string): Promise<{ added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] }>
 
-  pullChildren(dirPath?: string): Promise<void>
+  pullChildren(dirPath?: string): Promise<{ added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] }>
 
   createDirs(dirPaths: string[]): Promise<StorageNode[]>
 

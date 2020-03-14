@@ -130,6 +130,9 @@
                   <q-item v-close-popup clickable>
                     <q-item-section @click="m_dispatchDeleteSelected([props.row])">{{ $t('common.delete') }}</q-item-section>
                   </q-item>
+                  <q-item v-close-popup clickable>
+                    <q-item-section @click="m_dispatchReloadSelected(props.row)">{{ $t('common.reload') }}</q-item-section>
+                  </q-item>
                 </q-list>
                 <!-- ファイル用メニュー -->
                 <q-list v-else-if="props.row.isFile" dense style="min-width: 100px">
@@ -483,6 +486,10 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
 
   private m_dispatchShareSelected(rows: TableRow[]): void {
     this.$emit('share-selected', rows.map(node => node.value))
+  }
+
+  private m_dispatchReloadSelected(row: TableRow): void {
+    this.$emit('reload-selected', row.value)
   }
 
   //----------------------------------------------------------------------
