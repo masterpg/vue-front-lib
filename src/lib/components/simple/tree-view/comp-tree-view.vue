@@ -440,8 +440,12 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
 
     const node = e.detail.node as CompTreeNode
 
-    if (this.selectedNode === node) {
-      this.selectedNode = undefined
+    const nodeDescendants = [node, ...node.getDescendants()]
+    for (const iNode of nodeDescendants) {
+      if (this.selectedNode === iNode) {
+        this.selectedNode = undefined
+        break
+      }
     }
   }
 

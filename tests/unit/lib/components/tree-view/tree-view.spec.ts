@@ -680,6 +680,28 @@ describe('CompTreeView', () => {
       verifyTreeView(treeView)
     })
 
+    it('選択ノードを子に持つ親ノードを削除', () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      treeView.buildTree(cloneDeep(baseNodeDataList))
+
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      expect(node1_1_1.selected).toBeTruthy()
+      const node1_1 = node1_1_1.parent!
+
+      // 選択ノード(node1_1_1)の親(node1_1)を削除
+      treeView.removeNode(node1_1.value)
+
+      // イベント発火を検証
+      expect(wrapper.emitted('unselected').length).toBe(1)
+      expect(wrapper.emitted('unselected')[0][0]).toBe(node1_1_1)
+      // ノードの選択状態を検証
+      expect(treeView.selectedNode).toBeUndefined()
+      expect(node1_1_1.selected).toBeFalsy()
+
+      verifyTreeView(treeView)
+    })
+
     it('存在しないノードを指定', () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
@@ -1252,6 +1274,29 @@ describe('CompTreeNode', () => {
       const node1_1 = node1_1_1.parent!
 
       node1_1.removeChild(node1_1_1)
+
+      // イベント発火を検証
+      expect(wrapper.emitted('unselected').length).toBe(1)
+      expect(wrapper.emitted('unselected')[0][0]).toBe(node1_1_1)
+      // ノードの選択状態を検証
+      expect(treeView.selectedNode).toBeUndefined()
+      expect(node1_1_1.selected).toBeFalsy()
+
+      verifyTreeView(treeView)
+    })
+
+    it('選択ノードを子に持つ親ノードを削除', () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      treeView.buildTree(cloneDeep(baseNodeDataList))
+
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      expect(node1_1_1.selected).toBeTruthy()
+      const node1_1 = node1_1_1.parent!
+      const node1 = node1_1.parent!
+
+      // 選択ノード(node1_1_1)の親(node1_1)を削除
+      node1.removeChild(node1_1)
 
       // イベント発火を検証
       expect(wrapper.emitted('unselected').length).toBe(1)
