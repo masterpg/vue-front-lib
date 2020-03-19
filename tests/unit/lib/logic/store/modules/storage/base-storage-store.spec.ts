@@ -914,7 +914,7 @@ describe('move', () => {
 })
 
 describe('rename', () => {
-  it('ディレクトリの名前変更', () => {
+  it('ディレクトリのリネーム - ベーシックケース', () => {
     storageStore.initState({
       all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
     })
@@ -931,7 +931,25 @@ describe('rename', () => {
     existsStateNodes(actual)
   })
 
-  it('ファイルの名前変更', () => {
+  it('ディレクトリのリネーム - 既存のディレクトリ名に文字を付け加える形でリネームをした場合', () => {
+    storageStore.initState({
+      all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
+    })
+
+    // 'd1'を'd1XXX'へリネーム
+    const actual = storageStore.rename('d1', 'd1XXX')
+
+    expect(actual.length).toBe(4)
+    expect(actual[0].path).toBe('d1XXX')
+    expect(actual[1].path).toBe('d1XXX/d11')
+    expect(actual[2].path).toBe('d1XXX/d11/fileA.txt')
+    expect(actual[3].path).toBe('d1XXX/d12')
+
+    verifyStateNodes()
+    existsStateNodes(actual)
+  })
+
+  it('ファイルのリネーム', () => {
     storageStore.initState({
       all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2])),
     })

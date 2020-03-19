@@ -1166,7 +1166,7 @@ describe('moveNode', () => {
 })
 
 describe('renameNode', () => {
-  it('ディレクトリの名前変更', () => {
+  it('ディレクトリのリネーム - ベーシックケース', () => {
     treeStore.setAllNodes([d1, d11, f111, d12, f11])
 
     treeStore.renameNode('d1', 'x1')
@@ -1183,7 +1183,25 @@ describe('renameNode', () => {
     verifyParentChildRelationForTree(treeView)
   })
 
-  it('ファイルの名前変更', () => {
+  it('ディレクトリのリネーム - 既存のディレクトリ名に文字を付け加える形でリネームをした場合', () => {
+    treeStore.setAllNodes([d1, d11, f111, d12, f11])
+
+    // 'd1'を'd1XXX'へリネーム
+    treeStore.renameNode('d1', 'd1XXX')
+    const actual = treeStore.getNode('d1XXX')!
+    const descendants = actual.getDescendants()
+
+    expect(actual.value).toBe('d1XXX')
+    expect(descendants.length).toBe(4)
+    expect(descendants[0].value).toBe('d1XXX/d11')
+    expect(descendants[1].value).toBe('d1XXX/d11/f111.txt')
+    expect(descendants[2].value).toBe('d1XXX/d12')
+    expect(descendants[3].value).toBe('d1XXX/f11.txt')
+
+    verifyParentChildRelationForTree(treeView)
+  })
+
+  it('ファイルのリネーム', () => {
     treeStore.setAllNodes(STORAGE_NODES)
 
     treeStore.renameNode('d1/d11/f111.txt', 'fileX.txt')

@@ -191,7 +191,7 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
       // 移動先ディレクトリが移動対象のサブディレクトリでないことを確認
       // from: aaa/bbb → to: aaa/bbb/ccc/bbb [NG]
       //               → to: aaa/zzz/ccc/bbb [OK]
-      if (toPath.startsWith(fromPath)) {
+      if (toPath.startsWith(_path.join(fromPath, '/'))) {
         throw new Error(`The destination directory is its own subdirectory: '${fromPath}' -> '${toPath}'`)
       }
     }
