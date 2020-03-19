@@ -58,7 +58,7 @@ export abstract class BaseRESTAPIContainer extends BaseRESTClient implements Lib
     throw new Error(`This method 'renameUserStorageFile' is not implemented.`)
   }
 
-  setUserStorageDirShareSettings(dirPath: string, settings: import('../types').StorageNodeShareSettingsInput): Promise<StorageNode[]> {
+  setUserStorageDirShareSettings(dirPath: string, settings: import('../types').StorageNodeShareSettingsInput): Promise<StorageNode> {
     throw new Error(`This method 'setUserStorageDirShareSettings' is not implemented.`)
   }
 
@@ -110,7 +110,7 @@ export abstract class BaseRESTAPIContainer extends BaseRESTClient implements Lib
     throw new Error(`This method 'renameStorageFile' is not implemented.`)
   }
 
-  setStorageDirShareSettings(dirPath: string, settings: import('../types').StorageNodeShareSettingsInput): Promise<StorageNode[]> {
+  setStorageDirShareSettings(dirPath: string, settings: import('../types').StorageNodeShareSettingsInput): Promise<StorageNode> {
     throw new Error(`This method 'setStorageDirShareSettings' is not implemented.`)
   }
 

@@ -39,8 +39,8 @@ export default merge(require('@/lib/lang/ja').default, {
     },
     share: {
       sharingNode: '共有する{nodeType}',
-      selectDestPrompt: '移動先を選択してください:',
       selectPublicPrompt: '{nodeType}を公開するか選択してください:',
+      notSet: '未設定',
       public: '公開',
       private: '非公開',
       sharingError: '「{nodeName}」の共有でエラーが発生しました。',

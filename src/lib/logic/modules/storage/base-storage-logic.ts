@@ -185,10 +185,9 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
     return this.storageStore.set(apiNode)
   }
 
-  async setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]> {
-    const apiNodes = await this.setStorageDirShareSettings(dirPath, settings)
-    const result = this.setNodesToStore(apiNodes)
-    return this.sortNodes([...result.added, ...result.updated])
+  async setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
+    const apiNode = await this.setStorageDirShareSettings(dirPath, settings)
+    return this.storageStore.set(apiNode)
   }
 
   async setFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
@@ -259,7 +258,7 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
 
   protected abstract renameStorageFile(filePath: string, newName: string): Promise<StorageNode>
 
-  protected abstract setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]>
+  protected abstract setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
   protected abstract setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 

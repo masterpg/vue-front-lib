@@ -33,7 +33,7 @@ export interface LibAPIContainer {
 
   renameUserStorageFile(filePath: string, newName: string): Promise<StorageNode>
 
-  setUserStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]>
+  setUserStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
   setUserStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
@@ -61,7 +61,7 @@ export interface LibAPIContainer {
 
   getSignedUploadUrls(params: { filePath: string; contentType?: string }[]): Promise<string[]>
 
-  setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]>
+  setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
   setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 }
@@ -100,10 +100,8 @@ export interface StorageNode extends Omit<APIResponseStorageNode, 'created' | 'u
 }
 
 export interface StorageNodeShareSettings {
-  isPublic: boolean
-  uids: string[]
-}
-
-export interface StorageNodeShareSettingsInput extends Omit<StorageNodeShareSettings, 'uids'> {
+  isPublic?: boolean
   uids?: string[]
 }
+
+export interface StorageNodeShareSettingsInput extends StorageNodeShareSettings {}

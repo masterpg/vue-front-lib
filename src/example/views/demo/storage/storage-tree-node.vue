@@ -241,6 +241,14 @@ export default class StorageTreeNode extends CompTreeNode {
     return this.nodeData.updated
   }
 
+  private m_inheritedShare: StorageNodeShareSettings = { isPublic: undefined, uids: undefined }
+
+  get inheritedShare(): StorageNodeShareSettings {
+    this.m_inheritedShare.isPublic = this.m_getIsPublic()
+    this.m_inheritedShare.uids = this.m_getUIds()
+    return this.m_inheritedShare
+  }
+
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -288,10 +296,8 @@ export default class StorageTreeNode extends CompTreeNode {
       this.nodeData.size = editData.size
     }
     if (editData.share) {
-      this.nodeData.share = {
-        isPublic: editData.share.isPublic,
-        uids: [...editData.share.uids],
-      }
+      this.nodeData.share.isPublic = editData.share.isPublic
+      this.nodeData.share.uids = editData.share.uids
     }
     if (typeof editData.baseURL === 'string') {
       this.nodeData.baseURL = editData.baseURL
@@ -301,6 +307,46 @@ export default class StorageTreeNode extends CompTreeNode {
     }
     if (editData.updated) {
       this.nodeData.updated = editData.updated
+    }
+  }
+
+  /**
+   * 上位ディレクトリの共有設定を加味した公開フラグを取得します。
+   */
+  private m_getIsPublic(): boolean {
+    if (typeof this.share.isPublic === 'boolean') {
+      return this.share.isPublic
+    } else {
+      if (this.parent) {
+        const parent = this.parent as StorageTreeNode
+        if (typeof parent.share.isPublic === 'boolean') {
+          return parent.share.isPublic
+        } else {
+          return parent.m_getIsPublic()
+        }
+      } else {
+        return Boolean(this.share.isPublic)
+      }
+    }
+  }
+
+  /**
+   * 上位ディレクトリの共有設定を加味した共有ユーザーIDを取得します。
+   */
+  private m_getUIds(): string[] {
+    if (this.share.uids) {
+      return this.share.uids
+    } else {
+      if (this.parent) {
+        const parent = this.parent as StorageTreeNode
+        if (parent.share.uids) {
+          return parent.share.uids
+        } else {
+          return parent.m_getUIds()
+        }
+      } else {
+        return []
+      }
     }
   }
 

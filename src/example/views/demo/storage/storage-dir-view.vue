@@ -412,7 +412,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     tableRow.contentType = node.contentType
     tableRow.size = node.nodeType === StorageNodeType.Dir ? undefined : bytes(node.size)
     tableRow.share = { icon: '' }
-    if (node.share.isPublic) {
+    if (node.inheritedShare.isPublic) {
       tableRow.share = { icon: 'public' }
     }
     tableRow.updated = String(this.$d(node.updatedDate.toDate(), 'dateTime'))

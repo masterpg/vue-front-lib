@@ -43,7 +43,7 @@ export interface StorageLogic {
 
   renameFile(filePath: string, newName: string): Promise<StorageNode>
 
-  setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]>
+  setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
   setFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 

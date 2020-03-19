@@ -223,9 +223,8 @@ describe('Storage API', () => {
 
       const actual = await api.setUserStorageDirShareSettings(`dir1`, { isPublic: true, uids: ['ichiro'] })
 
-      expect(actual.length).toBe(2)
-      expect(actual[0].path).toBe(`dir1`)
-      expect(actual[1].path).toBe(`dir1/fileA.txt`)
+      expect(actual.path).toBe(`dir1`)
+      expect(actual.share).toMatchObject({ isPublic: true, uids: ['ichiro'] })
     })
   })
 
@@ -395,9 +394,8 @@ describe('Storage API', () => {
 
       const actual = await api.setStorageDirShareSettings(`${TEST_FILES_DIR}/dir1`, { isPublic: true, uids: ['ichiro'] })
 
-      expect(actual.length).toBe(2)
-      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/dir1`)
-      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/dir1/fileA.txt`)
+      expect(actual.path).toBe(`${TEST_FILES_DIR}/dir1`)
+      expect(actual.share).toMatchObject({ isPublic: true, uids: ['ichiro'] })
     })
   })
 

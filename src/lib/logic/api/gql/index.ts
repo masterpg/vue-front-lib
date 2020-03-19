@@ -345,8 +345,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return this.toAPIStorageNode(response.data!.renameUserStorageFile)
   }
 
-  async setUserStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]> {
-    const response = await this.mutate<{ setUserStorageDirShareSettings: APIResponseStorageNode[] }>({
+  async setUserStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
+    const response = await this.mutate<{ setUserStorageDirShareSettings: APIResponseStorageNode }>({
       mutation: gql`
         mutation SetUserStorageDirShareSettings($dirPath: String!, $settings: StorageNodeShareSettingsInput!) {
           setUserStorageDirShareSettings(dirPath: $dirPath, settings: $settings) {
@@ -369,7 +369,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       variables: { dirPath, settings },
       isAuth: true,
     })
-    return this.toAPIStorageNodes(response.data!.setUserStorageDirShareSettings)
+    return this.toAPIStorageNode(response.data!.setUserStorageDirShareSettings)
   }
 
   async setUserStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
@@ -696,8 +696,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return this.toAPIStorageNode(response.data!.renameStorageFile)
   }
 
-  async setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]> {
-    const response = await this.mutate<{ setStorageDirShareSettings: APIResponseStorageNode[] }>({
+  async setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
+    const response = await this.mutate<{ setStorageDirShareSettings: APIResponseStorageNode }>({
       mutation: gql`
         mutation SetStorageDirShareSettings($dirPath: String!, $settings: StorageNodeShareSettingsInput!) {
           setStorageDirShareSettings(dirPath: $dirPath, settings: $settings) {
@@ -720,7 +720,7 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       variables: { dirPath, settings },
       isAuth: true,
     })
-    return this.toAPIStorageNodes(response.data!.setStorageDirShareSettings)
+    return this.toAPIStorageNode(response.data!.setStorageDirShareSettings)
   }
 
   async setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {

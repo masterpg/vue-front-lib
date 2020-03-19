@@ -52,9 +52,13 @@
           </q-input>
           <div class="app-mb-10">{{ m_selectPublicPrompt }}</div>
           <q-btn-toggle
-            v-model="m_isPublic"
+            v-model="m_publicType"
             toggle-color="primary"
-            :options="[{ label: $t('storage.share.private'), value: false }, { label: $t('storage.share.public'), value: true }]"
+            :options="[
+              { label: $t('storage.share.notSet'), value: 'notSet' },
+              { label: $t('storage.share.private'), value: 'private' },
+              { label: $t('storage.share.public'), value: 'public' },
+            ]"
           />
         </q-card-section>
 
@@ -141,7 +145,7 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
     return ''
   }
 
-  private m_isPublic: boolean = false
+  private m_publicType: 'notSet' | 'private' | 'public' = 'notSet'
 
   private m_errorMessage: string = ''
 
@@ -156,8 +160,32 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
   //----------------------------------------------------------------------
 
   open(sharingNodes: StorageTreeNode[]): Promise<StorageNodeShareSettings | undefined> {
-    // 全てのノードの公開フラグがオンの場合に公開フラグのトグルボタンをオンにする
-    this.m_isPublic = sharingNodes.every(node => node.share.isPublic)
+    // ノードが複数指定された場合、親が同じであることを検証
+    let sharingNodeParentPath = sharingNodes[0].parent!.value
+    for (const sharingNode of sharingNodes) {
+      if (sharingNode.parent!.value !== sharingNodeParentPath) {
+        throw new Error('All nodes must have the same parent.')
+      }
+    }
+
+    // 全てのノードの公開タイプが同じ場合、公開フラグのトグルボタンに反映する
+    // 一つでも公開タイプが違う場合、公開フラグのトグルボタンは未設定にする
+    const toPublicType: (node: StorageTreeNode) => 'notSet' | 'private' | 'public' = node => {
+      if (typeof node.share.isPublic === 'boolean') {
+        return node.share.isPublic ? 'public' : 'private'
+      } else {
+        return 'notSet'
+      }
+    }
+
+    let publicType = toPublicType(sharingNodes[0])
+    for (const sharingNode of sharingNodes) {
+      if (publicType !== toPublicType(sharingNode)) {
+        publicType = 'notSet'
+        break
+      }
+    }
+    this.m_publicType = publicType
 
     return this.openProcess(sharingNodes, {
       opened: () => {},
@@ -176,9 +204,16 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
   //----------------------------------------------------------------------
 
   private m_setShareSettings(): void {
+    let isPublic: boolean | undefined = undefined
+    if (this.m_publicType === 'public') {
+      isPublic = true
+    } else if (this.m_publicType === 'private') {
+      isPublic = false
+    }
+
     const settings: StorageNodeShareSettings = {
-      isPublic: this.m_isPublic,
-      uids: [],
+      isPublic,
+      uids: undefined,
     }
     this.close(settings)
   }

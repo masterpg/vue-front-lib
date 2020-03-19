@@ -38,7 +38,9 @@ export default merge(require('@/lib/lang/en').default, {
       renamingError: 'An error occurred while renaming "{nodeName}".',
     },
     share: {
+      sharingNode: 'Share {nodeType}',
       selectPublicPrompt: 'Choose whether to publish {nodeType}:',
+      notSet: 'Not set',
       public: 'Public',
       private: 'Private',
       sharingError: 'An error occurred while sharing "{nodeName}".',

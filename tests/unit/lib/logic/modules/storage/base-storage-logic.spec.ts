@@ -262,7 +262,7 @@ class MockStorageLogic extends BaseStorageLogic {
     return api.renameStorageFile(filePath, newName)
   }
 
-  protected setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]> {
+  protected setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
     return api.setStorageDirShareSettings(dirPath, settings)
   }
 
@@ -798,39 +798,12 @@ describe('setDirShareSettings', () => {
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    const updatedFileA = deepmerge(cloneDeep(f111), {
-      share: NEW_SHARE_SETTINGS,
-      created: dayjs(),
-      updated: dayjs(),
-    }) as StorageNode
-    td.when(api.setStorageDirShareSettings(d11.path, NEW_SHARE_SETTINGS)).thenResolve([updatedX11, updatedFileA])
+    td.when(api.setStorageDirShareSettings(d11.path, NEW_SHARE_SETTINGS)).thenResolve(updatedX11)
 
     const actual = await storageLogic.setDirShareSettings(d11.path, NEW_SHARE_SETTINGS)
 
-    expect(actual).toEqual([updatedX11, updatedFileA])
-    expect(storageLogic.nodes).toEqual([d1, updatedX11, updatedFileA])
-  })
-
-  it('共有設定ノードの配下がストアに読み込まれていない場合', async () => {
-    // 共有設定ノード'd1/d11'の配下ノードがストアに読み込まれていない状態にする
-    storageStore.initState({ all: cloneDeep([d1, d11]) })
-
-    const updatedX11 = deepmerge(cloneDeep(d11), {
-      share: NEW_SHARE_SETTINGS,
-      created: dayjs(),
-      updated: dayjs(),
-    }) as StorageNode
-    const updatedFileA = deepmerge(cloneDeep(f111), {
-      share: NEW_SHARE_SETTINGS,
-      created: dayjs(),
-      updated: dayjs(),
-    }) as StorageNode
-    td.when(api.setStorageDirShareSettings(d11.path, NEW_SHARE_SETTINGS)).thenResolve([updatedX11, updatedFileA])
-
-    const actual = await storageLogic.setDirShareSettings(d11.path, NEW_SHARE_SETTINGS)
-
-    expect(actual).toEqual([updatedX11, updatedFileA])
-    expect(storageLogic.nodes).toEqual([d1, updatedX11, updatedFileA])
+    expect(actual).toEqual(updatedX11)
+    expect(storageLogic.nodes).toEqual([d1, updatedX11, f111])
   })
 
   it('APIでエラーが発生した場合', async () => {

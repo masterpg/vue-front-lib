@@ -70,7 +70,7 @@ export class UserStorageLogicImpl extends BaseStorageLogic implements UserStorag
     return api.renameUserStorageFile(filePath, newName)
   }
 
-  protected setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]> {
+  protected setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
     return api.setUserStorageDirShareSettings(dirPath, settings)
   }
 
@@ -134,7 +134,7 @@ export class AppStorageLogicImpl extends BaseStorageLogic implements AppStorageL
     return api.renameStorageFile(filePath, newName)
   }
 
-  protected setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode[]> {
+  protected setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
     return api.setStorageDirShareSettings(dirPath, settings)
   }
 
