@@ -164,7 +164,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
   //----------------------------------------------------------------------
 
   open(movingNodes: StorageTreeNode[]): Promise<string | undefined> {
-    // 移動ノードが複数指定された場合、親が同じであることを検証
+    // ノードが複数指定された場合、親が同じであることを検証
     let movingNodeParentPath = movingNodes[0].parent!.value
     for (const movingNode of movingNodes) {
       if (movingNode.parent!.value !== movingNodeParentPath) {
@@ -231,10 +231,16 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
       value: srcRootTreeNode.value,
       icon: srcRootTreeNode.icon,
       opened: true,
+      // 現在の親ディレクトリがルートノードの場合、ルートノードを選択できないよう設定
+      unselectable: this.m_movingNodesParentPath === srcRootTreeNode.value,
     })
+
+    rootTreeNode.lazyLoadStatus = 'loading'
 
     // サーバーから子ノードを読み込む
     await this.m_pullChildren(rootTreeNode.value)
+
+    rootTreeNode.lazyLoadStatus = 'loaded'
   }
 
   /**
@@ -295,6 +301,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
   private async m_treeViewOnLazyLoad(e: CompTreeViewLazyLoadEvent<StorageTreeNode>) {
     await this.m_pullChildren(e.node.value)
     e.done()
+    e.node.open()
   }
 
   private m_dialogOnShow() {}
