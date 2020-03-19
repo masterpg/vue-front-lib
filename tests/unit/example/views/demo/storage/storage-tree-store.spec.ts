@@ -479,6 +479,35 @@ describe('pullDescendants', () => {
 
     verifyParentChildRelationForTree(treeView)
   })
+
+  it('選択ノードがなくなった場合', async () => {
+    // root
+    // └d1
+    //   └d11
+    treeStore.setAllNodes([d1, d11])
+    treeStore.selectedNode = treeStore.getNode(d11.path)!
+
+    // 以下の状態のノードリストを引数に設定する
+    // ・'d1/d11'が削除された
+    // StorageLogic.getDirChildren()をモック化
+    td.when(storageLogic.getDirChildren(treeStore.rootNode.value)).thenReturn([d1])
+    // StorageLogic.getDirDescendants()をモック化
+    td.when(storageLogic.getDirDescendants(d1.path)).thenReturn([d1])
+
+    await treeStore.pullDescendants(d1.path)
+    const actual = treeStore.getAllNodes()
+    const [_root, _d1] = actual
+
+    // root
+    // └d1
+    expect(actual.length).toBe(2)
+    expect(_root.value).toBe(treeStore.rootNode.value)
+    expect(_d1.value).toBe('d1')
+    // 選択ノードがルートノードになっていることを検証
+    expect(treeStore.selectedNode).toBe(treeStore.rootNode)
+
+    verifyParentChildRelationForTree(treeView)
+  })
 })
 
 describe('pullChildren', () => {
@@ -887,6 +916,21 @@ describe('removeNodes', () => {
 
     // 何も起こらない
     treeStore.removeNodes(['dXXX'])
+
+    verifyParentChildRelationForTree(treeView)
+  })
+
+  it('削除により選択ノードがなくなった場合', () => {
+    treeStore.setAllNodes([d1, d11, f111])
+    // 'd1/d11/f111.txt'を選択ノードに設定
+    treeStore.selectedNode = treeStore.getNode(f111.path)!
+
+    treeStore.removeNodes(['d1/d11'])
+
+    expect(treeStore.getNode('d1/d11')).toBeUndefined()
+    expect(treeStore.getNode('d1/d11/f111.txt')).toBeUndefined()
+    // 選択ノードがルートノードになっていることを検証
+    expect(treeStore.selectedNode).toBe(treeStore.rootNode)
 
     verifyParentChildRelationForTree(treeView)
   })

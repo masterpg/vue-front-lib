@@ -242,6 +242,11 @@ export class StorageTreeStore extends Vue {
       }
     }
 
+    // 選択ノードがなくなってしまった場合
+    if (!this.selectedNode) {
+      this.selectedNode = this.rootNode
+    }
+
     // 引数ディレクトリを遅延ロード完了に設定
     dirTreeNode.lazyLoadStatus = 'loaded'
   }
@@ -444,6 +449,11 @@ export class StorageTreeStore extends Vue {
   removeNodes(paths: string[]): void {
     for (const path of paths) {
       this.m_treeView!.removeNode(path)
+    }
+
+    // 選択ノードがなくなってしまった場合
+    if (!this.selectedNode) {
+      this.selectedNode = this.rootNode
     }
   }
 
