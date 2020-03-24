@@ -1,10 +1,10 @@
-import { StorageNode, StorageNodeShareSettingsInput } from '../../api'
+import * as _path from 'path'
+import { GetStorageOptionsInput, GetStorageResult, LibAPIContainer, StorageNode, StorageNodeShareSettingsInput } from '../../api'
 import { StorageStore, User } from '../../store'
 import { BaseLogic } from '../../base'
 import { Component } from 'vue-property-decorator'
 import { StorageLogic } from '../../types'
 import { StorageUploadManager } from './base-upload'
-import { splitHierarchicalPaths } from 'web-base-lib'
 
 // @ts-ignore: Vueを継承した抽象クラスに@Componentを付与するとでるエラーの回避
 @Component
@@ -74,13 +74,13 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   async pullDescendants(dirPath?: string): Promise<{ added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] }> {
     const result: { added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] } = { added: [], updated: [], removed: [] }
 
-    const apiNodes = await this.getHierarchicalStorageDescendants(dirPath)
+    const apiNodes = await this.getDirDescendantsAPI(dirPath)
 
     // 取得したノードリストをストアへ反映
     Object.assign(result, this.setNodesToStore(apiNodes))
 
     // 取得ノードリストをマップ化
-    const apiNodeMap = apiNodes.reduce(
+    const apiNodeDict = apiNodes.reduce(
       (result, node) => {
         result[node.id] = node
         return result
@@ -88,20 +88,11 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
       {} as { [id: string]: StorageNode }
     )
     // ストアから対象ノードを取得
-    const hierarchicalDirPaths = splitHierarchicalPaths(dirPath)
-    let storeNodes = hierarchicalDirPaths.reduce(
-      (result, path) => {
-        const node = this.getNode(path)
-        node && result.push(node)
-        return result
-      },
-      [] as StorageNode[]
-    )
-    storeNodes = storeNodes.concat(...this.storageStore.getDescendants(dirPath))
+    const storeNodes = this.storageStore.getDirDescendants(dirPath)
     // ストアにあって取得ノードリストにないノードをストアから削除
     const removingNodes: string[] = []
     for (const storeNode of storeNodes) {
-      const exists = Boolean(apiNodeMap[storeNode.id])
+      const exists = Boolean(apiNodeDict[storeNode.id])
       !exists && removingNodes.push(storeNode.path)
     }
     result.removed = this.storageStore.removeList(removingNodes)
@@ -112,12 +103,12 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   async pullChildren(dirPath?: string): Promise<{ added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] }> {
     const result: { added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] } = { added: [], updated: [], removed: [] }
 
-    const apiNodes = await this.getStorageChildren(dirPath)
+    const apiNodes = await this.getChildrenAPI(dirPath)
 
     // 取得したノードリストをストアへ反映
     Object.assign(result, this.setNodesToStore(apiNodes))
     // ストアにあって取得ノードリストにないノードをストアから削除
-    const apiNodeMap = apiNodes.reduce(
+    const apiNodeDict = apiNodes.reduce(
       (result, node) => {
         result[node.id] = node
         return result
@@ -126,7 +117,7 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
     )
     const removingNodes: string[] = []
     for (const storeNode of this.storageStore.getChildren(dirPath)) {
-      const exists = Boolean(apiNodeMap[storeNode.id])
+      const exists = Boolean(apiNodeDict[storeNode.id])
       !exists && removingNodes.push(storeNode.path)
     }
     result.removed = this.storageStore.removeList(removingNodes)
@@ -135,63 +126,61 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   }
 
   async createDirs(dirPaths: string[]): Promise<StorageNode[]> {
-    const apiNodes = await this.createStorageDirs(dirPaths)
+    const apiNodes = await this.createDirsAPI(dirPaths)
     return this.storageStore.addList(apiNodes)
   }
 
-  async removeDirs(dirPaths: string[]): Promise<StorageNode[]> {
-    const apiNodes = await this.removeStorageDirs(dirPaths)
-    const result: StorageNode[] = []
-    for (const apiNode of apiNodes) {
-      const removedNodes = this.storageStore.remove(apiNode.path)
-      removedNodes && result.push(...removedNodes)
-    }
-    return result
+  async removeDirs(dirPaths: string[]): Promise<void> {
+    await this.removeDirsAPI(dirPaths)
+    this.storageStore.removeList(dirPaths)
   }
 
-  async removeFiles(filePaths: string[]): Promise<StorageNode[]> {
-    const apiNodes = await this.removeStorageFiles(filePaths)
-    const result: StorageNode[] = []
-    for (const apiNode of apiNodes) {
-      const removedNodes = this.storageStore.remove(apiNode.path)
-      removedNodes && result.push(...removedNodes)
-    }
-    return result
+  async removeFiles(filePaths: string[]): Promise<void> {
+    await this.removeFilesAPI(filePaths)
+    this.storageStore.removeList(filePaths)
   }
 
-  async moveDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
-    const apiNodes = await this.moveStorageDir(fromDirPath, toDirPath)
+  async moveDir(fromDirPath: string, toDirPath: string): Promise<void> {
+    await this.moveDirAPI(fromDirPath, toDirPath)
     this.storageStore.move(fromDirPath, toDirPath)
-    const result = this.setNodesToStore(apiNodes)
-    return this.sortNodes([...result.added, ...result.updated])
+
+    this.setNodesToStore(await this.getDirDescendantsAPI(toDirPath))
   }
 
-  async moveFile(fromFilePath: string, toFilePath: string): Promise<StorageNode> {
-    const apiNode = await this.moveStorageFile(fromFilePath, toFilePath)
+  async moveFile(fromFilePath: string, toFilePath: string): Promise<void> {
+    await this.moveFileAPI(fromFilePath, toFilePath)
     this.storageStore.move(fromFilePath, toFilePath)
-    return this.storageStore.set(apiNode)
+
+    const apiNode = await this.getNodeAPI(toFilePath)
+    apiNode && this.storageStore.set(apiNode)
   }
 
-  async renameDir(dirPath: string, newName: string): Promise<StorageNode[]> {
-    const apiNodes = await this.renameStorageDir(dirPath, newName)
+  async renameDir(dirPath: string, newName: string): Promise<void> {
+    await this.renameDirAPI(dirPath, newName)
     this.storageStore.rename(dirPath, newName)
-    const result = this.setNodesToStore(apiNodes)
-    return this.sortNodes([...result.added, ...result.updated])
+
+    const reg = new RegExp(`${_path.basename(dirPath)}$`)
+    const toDirPath = dirPath.replace(reg, newName)
+    this.setNodesToStore(await this.getDirDescendantsAPI(toDirPath))
   }
 
-  async renameFile(filePath: string, newName: string): Promise<StorageNode> {
-    const apiNode = await this.renameStorageFile(filePath, newName)
+  async renameFile(filePath: string, newName: string): Promise<void> {
+    await this.renameFileAPI(filePath, newName)
     this.storageStore.rename(filePath, newName)
-    return this.storageStore.set(apiNode)
+
+    const reg = new RegExp(`${_path.basename(filePath)}$`)
+    const toFilePath = filePath.replace(reg, newName)
+    const apiNode = await this.getNodeAPI(toFilePath)
+    apiNode && this.storageStore.set(apiNode)
   }
 
   async setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
-    const apiNode = await this.setStorageDirShareSettings(dirPath, settings)
+    const apiNode = await this.setDirShareSettingsAPI(dirPath, settings)
     return this.storageStore.set(apiNode)
   }
 
   async setFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
-    const apiNode = await this.setStorageFileShareSettings(filePath, settings)
+    const apiNode = await this.setFileShareSettingsAPI(filePath, settings)
     return this.storageStore.set(apiNode)
   }
 
@@ -238,29 +227,77 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   //  API
   //--------------------------------------------------
 
-  protected abstract getHierarchicalStorageDescendants(dirPath?: string): Promise<StorageNode[]>
+  /**
+   * ページングが必要なノード検索APIをページングがなくなるまで実行し結果を取得します。
+   * 注意: ノード検索API関数の第一引数は検索オプション（GetStorageOptionsInput）であることを前提とします。
+   *
+   * @param api ノード検索API関数のオーナーであるAPIを指定
+   * @param func ノード検索API関数を指定
+   * @param params ノード検索APIに渡す引数を指定
+   */
+  // eslint-disable-next-line space-before-function-paren
+  protected async getPaginationNodesAPI<FUNC extends (...args: any[]) => Promise<GetStorageResult>>(
+    api: LibAPIContainer,
+    func: FUNC,
+    ...params: Parameters<FUNC>
+  ): Promise<StorageNode[]> {
+    const toDict = (list: StorageNode[]) => {
+      return list.reduce(
+        (result, item) => {
+          result[item.path] = item
+          return result
+        },
+        {} as { [path: string]: StorageNode }
+      )
+    }
 
-  protected abstract getHierarchicalStorageChildren(dirPath?: string): Promise<StorageNode[]>
+    const nodeDict: { [path: string]: StorageNode } = {}
 
-  protected abstract getStorageChildren(dirPath?: string): Promise<StorageNode[]>
+    // ノード検索APIの検索オプションを取得
+    // ※ノード検索APIの第一引数は検索オプションという前提
+    const options: GetStorageOptionsInput = Object.assign({ maxResults: undefined, pageToken: undefined }, params[0])
+    params[0] = options
 
-  protected abstract createStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
+    // ノード検索APIの実行
+    // ※ページングがなくなるまで実行
+    let nodeData = await func.call(api, ...params)
+    Object.assign(nodeDict, toDict(nodeData.list))
+    while (nodeData.nextPageToken) {
+      options.pageToken = nodeData.nextPageToken
+      nodeData = await func.call(api, ...params)
+      Object.assign(nodeDict, toDict(nodeData.list))
+    }
 
-  protected abstract removeStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
+    return this.sortNodes(Object.values(nodeDict))
+  }
 
-  protected abstract removeStorageFiles(filePaths: string[]): Promise<StorageNode[]>
+  protected abstract getNodeAPI(nodePath: string): Promise<StorageNode | undefined>
 
-  protected abstract moveStorageDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]>
+  protected abstract getDirDescendantsAPI(dirPath?: string): Promise<StorageNode[]>
 
-  protected abstract moveStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode>
+  protected abstract getDescendantsAPI(dirPath?: string): Promise<StorageNode[]>
 
-  protected abstract renameStorageDir(dirPath: string, newName: string): Promise<StorageNode[]>
+  protected abstract getDirChildrenAPI(dirPath?: string): Promise<StorageNode[]>
 
-  protected abstract renameStorageFile(filePath: string, newName: string): Promise<StorageNode>
+  protected abstract getChildrenAPI(dirPath?: string): Promise<StorageNode[]>
 
-  protected abstract setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
+  protected abstract createDirsAPI(dirPaths: string[]): Promise<StorageNode[]>
 
-  protected abstract setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
+  protected abstract removeDirsAPI(dirPaths: string[]): Promise<void>
+
+  protected abstract removeFilesAPI(filePaths: string[]): Promise<void>
+
+  protected abstract moveDirAPI(fromDirPath: string, toDirPath: string): Promise<void>
+
+  protected abstract moveFileAPI(fromFilePath: string, toFilePath: string): Promise<void>
+
+  protected abstract renameDirAPI(dirPath: string, newName: string): Promise<void>
+
+  protected abstract renameFileAPI(filePath: string, newName: string): Promise<void>
+
+  protected abstract setDirShareSettingsAPI(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
+
+  protected abstract setFileShareSettingsAPI(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
   //----------------------------------------------------------------------
   //

@@ -34,7 +34,7 @@ export class UserStorageUploadManager extends StorageUploadManager {
     return result
   }
 
-  protected handleUploadedFiles(filePaths: string[]): Promise<StorageNode[]> {
-    return api.handleUploadedUserFiles(filePaths)
+  protected async handleUploadedFiles(filePaths: string[]): Promise<void> {
+    await api.handleUploadedUserFiles(filePaths)
   }
 }

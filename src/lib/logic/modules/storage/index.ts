@@ -30,51 +30,59 @@ export class UserStorageLogicImpl extends BaseStorageLogic implements UserStorag
     return new UserStorageUrlUploadManager(owner)
   }
 
-  protected getHierarchicalStorageDescendants(dirPath?: string): Promise<StorageNode[]> {
-    return api.getHierarchicalUserStorageDescendants(dirPath)
+  protected getNodeAPI(nodePath: string): Promise<StorageNode | undefined> {
+    return api.getUserStorageNode(nodePath)
   }
 
-  protected getHierarchicalStorageChildren(dirPath?: string): Promise<StorageNode[]> {
-    return api.getHierarchicalUserStorageChildren(dirPath)
+  protected getDirDescendantsAPI(dirPath?: string): Promise<StorageNode[]> {
+    return this.getPaginationNodesAPI(api, api.getUserStorageDirDescendants, null, dirPath)
   }
 
-  protected getStorageChildren(dirPath?: string): Promise<StorageNode[]> {
-    return api.getUserStorageChildren(dirPath)
+  protected getDescendantsAPI(dirPath?: string): Promise<StorageNode[]> {
+    return this.getPaginationNodesAPI(api, api.getUserStorageDescendants, null, dirPath)
   }
 
-  protected createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
+  protected getDirChildrenAPI(dirPath?: string): Promise<StorageNode[]> {
+    return this.getPaginationNodesAPI(api, api.getUserStorageDirChildren, null, dirPath)
+  }
+
+  protected getChildrenAPI(dirPath?: string): Promise<StorageNode[]> {
+    return this.getPaginationNodesAPI(api, api.getUserStorageChildren, null, dirPath)
+  }
+
+  protected createDirsAPI(dirPaths: string[]): Promise<StorageNode[]> {
     return api.createUserStorageDirs(dirPaths)
   }
 
-  protected removeStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
+  protected removeDirsAPI(dirPaths: string[]): Promise<void> {
     return api.removeUserStorageDirs(dirPaths)
   }
 
-  protected removeStorageFiles(filePaths: string[]): Promise<StorageNode[]> {
+  protected removeFilesAPI(filePaths: string[]): Promise<void> {
     return api.removeUserStorageFiles(filePaths)
   }
 
-  protected moveStorageDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
+  protected moveDirAPI(fromDirPath: string, toDirPath: string): Promise<void> {
     return api.moveUserStorageDir(fromDirPath, toDirPath)
   }
 
-  protected moveStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode> {
+  protected moveFileAPI(fromFilePath: string, toFilePath: string): Promise<void> {
     return api.moveUserStorageFile(fromFilePath, toFilePath)
   }
 
-  protected renameStorageDir(dirPath: string, newName: string): Promise<StorageNode[]> {
+  protected renameDirAPI(dirPath: string, newName: string): Promise<void> {
     return api.renameUserStorageDir(dirPath, newName)
   }
 
-  protected renameStorageFile(filePath: string, newName: string): Promise<StorageNode> {
+  protected renameFileAPI(filePath: string, newName: string): Promise<void> {
     return api.renameUserStorageFile(filePath, newName)
   }
 
-  protected setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
+  protected setDirShareSettingsAPI(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
     return api.setUserStorageDirShareSettings(dirPath, settings)
   }
 
-  protected setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
+  protected setFileShareSettingsAPI(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
     return api.setUserStorageFileShareSettings(filePath, settings)
   }
 }
@@ -94,51 +102,59 @@ export class AppStorageLogicImpl extends BaseStorageLogic implements AppStorageL
     return new AppStorageUploadManager(owner)
   }
 
-  protected getHierarchicalStorageDescendants(dirPath?: string): Promise<StorageNode[]> {
-    return api.getHierarchicalStorageDescendants(dirPath)
+  protected getNodeAPI(nodePath: string): Promise<StorageNode | undefined> {
+    return api.getStorageNode(nodePath)
   }
 
-  protected getHierarchicalStorageChildren(dirPath?: string): Promise<StorageNode[]> {
-    return api.getHierarchicalStorageChildren(dirPath)
+  protected getDirDescendantsAPI(dirPath?: string): Promise<StorageNode[]> {
+    return this.getPaginationNodesAPI(api, api.getStorageDirDescendants, null, dirPath)
   }
 
-  protected getStorageChildren(dirPath?: string): Promise<StorageNode[]> {
-    return api.getStorageChildren(dirPath)
+  protected getDescendantsAPI(dirPath?: string): Promise<StorageNode[]> {
+    return this.getPaginationNodesAPI(api, api.getStorageDescendants, null, dirPath)
   }
 
-  protected createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
+  protected getDirChildrenAPI(dirPath?: string): Promise<StorageNode[]> {
+    return this.getPaginationNodesAPI(api, api.getStorageDirChildren, null, dirPath)
+  }
+
+  protected getChildrenAPI(dirPath?: string): Promise<StorageNode[]> {
+    return this.getPaginationNodesAPI(api, api.getStorageChildren, null, dirPath)
+  }
+
+  protected createDirsAPI(dirPaths: string[]): Promise<StorageNode[]> {
     return api.createStorageDirs(dirPaths)
   }
 
-  protected removeStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
+  protected removeDirsAPI(dirPaths: string[]): Promise<void> {
     return api.removeStorageDirs(dirPaths)
   }
 
-  protected removeStorageFiles(filePaths: string[]): Promise<StorageNode[]> {
+  protected removeFilesAPI(filePaths: string[]): Promise<void> {
     return api.removeStorageFiles(filePaths)
   }
 
-  protected moveStorageDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
+  protected moveDirAPI(fromDirPath: string, toDirPath: string): Promise<void> {
     return api.moveStorageDir(fromDirPath, toDirPath)
   }
 
-  protected moveStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode> {
+  protected moveFileAPI(fromFilePath: string, toFilePath: string): Promise<void> {
     return api.moveStorageFile(fromFilePath, toFilePath)
   }
 
-  protected renameStorageDir(dirPath: string, newName: string): Promise<StorageNode[]> {
+  protected renameDirAPI(dirPath: string, newName: string): Promise<void> {
     return api.renameStorageDir(dirPath, newName)
   }
 
-  protected renameStorageFile(filePath: string, newName: string): Promise<StorageNode> {
+  protected renameFileAPI(filePath: string, newName: string): Promise<void> {
     return api.renameStorageFile(filePath, newName)
   }
 
-  protected setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
+  protected setDirShareSettingsAPI(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
     return api.setStorageDirShareSettings(dirPath, settings)
   }
 
-  protected setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
+  protected setFileShareSettingsAPI(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
     return api.setStorageFileShareSettings(filePath, settings)
   }
 }

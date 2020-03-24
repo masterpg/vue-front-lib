@@ -1,5 +1,4 @@
 import * as path from 'path'
-import { StorageNode } from '../../api'
 import { removeEndSlash } from 'web-base-lib'
 
 /**
@@ -162,7 +161,7 @@ export abstract class StorageUploadManager {
 
   protected abstract createUploadingFiles(files: File[]): StorageFileUploader[]
 
-  protected abstract handleUploadedFiles(filePaths: string[]): Promise<StorageNode[]>
+  protected abstract handleUploadedFiles(filePaths: string[]): Promise<void>
 
   /**
    * 指定されたファイルのディレクトリ構造をもとにアップロード先のディレクトリを取得します。

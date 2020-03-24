@@ -31,17 +31,17 @@ export interface StorageLogic {
 
   createDirs(dirPaths: string[]): Promise<StorageNode[]>
 
-  removeDirs(dirPaths: string[]): Promise<StorageNode[]>
+  removeDirs(dirPaths: string[]): Promise<void>
 
-  removeFiles(filePaths: string[]): Promise<StorageNode[]>
+  removeFiles(filePaths: string[]): Promise<void>
 
-  moveDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]>
+  moveDir(fromDirPath: string, toDirPath: string): Promise<void>
 
-  moveFile(fromFilePath: string, toFilePath: string): Promise<StorageNode>
+  moveFile(fromFilePath: string, toFilePath: string): Promise<void>
 
-  renameDir(dirPath: string, newName: string): Promise<StorageNode[]>
+  renameDir(dirPath: string, newName: string): Promise<void>
 
-  renameFile(filePath: string, newName: string): Promise<StorageNode>
+  renameFile(filePath: string, newName: string): Promise<void>
 
   setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 

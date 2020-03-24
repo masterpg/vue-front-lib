@@ -14,6 +14,8 @@ export function setAPI(value: LibAPIContainer): void {
 
 export {
   APIResponseStorageNode,
+  GetStorageOptionsInput,
+  GetStorageResult,
   LibAPIContainer,
   StorageNode,
   StorageNodeShareSettings,

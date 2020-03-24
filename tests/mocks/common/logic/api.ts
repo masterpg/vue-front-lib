@@ -1,8 +1,8 @@
+import * as path from 'path'
 import { BaseGQLAPIContainer, LibAPIContainer } from '@/lib'
-import { Constructor, mix } from 'web-base-lib'
-import { AppGQLAPIContainer } from '@/example/logic/api/gql'
-import { initAPI as _initAPI } from '@/example/logic/api'
+import { Constructor } from 'web-base-lib'
 import axios from 'axios'
+import { config } from '@/lib/config'
 import gql from 'graphql-tag'
 
 //========================================================================
@@ -13,6 +13,7 @@ import gql from 'graphql-tag'
 
 export interface AuthUser {
   uid: string
+  myDirName: string
   email?: string
   isAppAdmin?: boolean
 }
@@ -32,14 +33,39 @@ export interface TestAPIContainer extends LibAPIContainer {
   setTestAuthUser(user: AuthUser): void
   clearTestAuthUser(): void
   putTestData(inputs: CollectionData[]): Promise<void>
+  uploadUserTestFiles(user: AuthUser, uploadList: UploadFileItem[])
   uploadTestFiles(uploadList: UploadFileItem[])
-  removeTestStorageFiles(filePaths: string[]): Promise<boolean>
-  removeTestStorageDir(dirPath: string): Promise<boolean>
+  removeUserBaseTestDir(user: AuthUser): Promise<void>
+  removeUserTestDir(user: AuthUser, dirPaths: string[]): Promise<void>
+  removeUserTestFiles(user: AuthUser, filePaths: string[]): Promise<void>
+  removeTestDir(dirPaths: string[]): Promise<void>
+  removeTestFiles(filePaths: string[]): Promise<void>
 }
+
+const TEMP_ADMIN_USER = { uid: 'temp.admin.user', myDirName: 'temp.admin.user', isAppAdmin: true }
 
 export function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>): Constructor<TestAPIContainer> {
   return class extends superclass implements TestAPIContainer {
+    //----------------------------------------------------------------------
+    //
+    //  Variables
+    //
+    //----------------------------------------------------------------------
+
+    protected async getIdToken(): Promise<string> {
+      if (this.m_user) {
+        return JSON.stringify(this.m_user)
+      }
+      return ''
+    }
+
     private m_user?: AuthUser
+
+    //----------------------------------------------------------------------
+    //
+    //  Methods
+    //
+    //----------------------------------------------------------------------
 
     setTestAuthUser(user: AuthUser): void {
       this.m_user = user
@@ -47,13 +73,6 @@ export function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIConta
 
     clearTestAuthUser(): void {
       this.m_user = undefined
-    }
-
-    protected async getIdToken(): Promise<string> {
-      if (this.m_user) {
-        return JSON.stringify(this.m_user)
-      }
-      return ''
     }
 
     async putTestData(inputs: CollectionData[]): Promise<void> {
@@ -67,89 +86,115 @@ export function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIConta
       })
     }
 
-    async uploadTestFiles(uploadList: UploadFileItem[]) {
-      const readAsArrayBuffer = (fileData: string | Blob | Uint8Array | ArrayBuffer | File) => {
-        return new Promise<ArrayBuffer>((resolve, reject) => {
-          if (typeof fileData === 'string') {
-            const enc = new TextEncoder()
-            resolve(enc.encode(fileData))
-          } else if (fileData instanceof Blob) {
-            const reader = new FileReader()
-            reader.onload = () => {
-              resolve(reader.result as ArrayBuffer)
-            }
-            reader.onerror = err => {
-              reject(err)
-            }
-            reader.readAsArrayBuffer(fileData)
-          } else {
-            resolve(fileData)
-          }
+    async uploadUserTestFiles(user: AuthUser, uploadList: UploadFileItem[]): Promise<void> {
+      await this.uploadTestFiles(
+        uploadList.map(uploadItem => {
+          uploadItem.filePath = path.join(this.m_toUserStorageBasePath(user), uploadItem.filePath)
+          return uploadItem
         })
-      }
+      )
+    }
+
+    async uploadTestFiles(uploadList: UploadFileItem[]): Promise<void> {
+      const userBackup = this.m_user
+      this.m_user = TEMP_ADMIN_USER
 
       const _uploadList = uploadList as (UploadFileItem & { signedUploadUrl: string })[]
 
-      const inputs = _uploadList.map(item => {
-        return { filePath: item.filePath, contentType: item.contentType }
-      })
-      const signedUploadUrls = await (async () => {
-        const response = await this.query<{ testSignedUploadUrls: string[] }>({
-          query: gql`
-            query GetTestSignedUploadUrls($inputs: [TestSignedUploadUrlInput!]!) {
-              testSignedUploadUrls(inputs: $inputs)
-            }
-          `,
-          variables: { inputs },
+      const signedUploadUrls = await this.getSignedUploadUrls(
+        _uploadList.map(item => {
+          return { filePath: item.filePath, contentType: item.contentType }
         })
-        return response.data.testSignedUploadUrls
-      })()
-
+      )
       signedUploadUrls.forEach((url, index) => {
         _uploadList[index].signedUploadUrl = url
       })
 
-      const promises: Promise<void>[] = []
-      for (const uploadItem of _uploadList) {
-        promises.push(
-          (async () => {
-            const data = await readAsArrayBuffer(uploadItem.fileData)
-            await axios.request({
-              url: uploadItem.signedUploadUrl,
-              method: 'put',
-              data,
-              headers: {
-                'content-type': 'application/octet-stream',
-              },
-            })
-          })()
-        )
-      }
-      await Promise.all(promises)
+      await Promise.all(
+        _uploadList.map(async uploadItem => {
+          const data = await this.m_readAsArrayBuffer(uploadItem.fileData)
+          await axios.request({
+            url: uploadItem.signedUploadUrl,
+            method: 'put',
+            data,
+            headers: {
+              'content-type': 'application/octet-stream',
+            },
+          })
+        })
+      )
+
+      await this.handleUploadedFiles(_uploadList.map(uploadItem => uploadItem.filePath))
+
+      this.m_user = userBackup
     }
 
-    async removeTestStorageFiles(filePaths: string[]): Promise<boolean> {
-      const response = await this.mutate<{ removeTestStorageFiles: boolean }>({
-        mutation: gql`
-          mutation RemoveTestStorageFiles($filePaths: [String!]!) {
-            removeTestStorageFiles(filePaths: $filePaths)
-          }
-        `,
-        variables: { filePaths },
-      })
-      return response.data!.removeTestStorageFiles
+    async removeUserBaseTestDir(user: AuthUser): Promise<void> {
+      await this.removeTestDir([this.m_toUserStorageBasePath(user)])
     }
 
-    async removeTestStorageDir(dirPath: string): Promise<boolean> {
-      const response = await this.mutate<{ removeTestStorageDir: boolean }>({
-        mutation: gql`
-          mutation RemoveTestStorageDir($dirPath: String!) {
-            removeTestStorageDir(dirPath: $dirPath)
+    async removeUserTestDir(user: AuthUser, dirPaths: string[]): Promise<void> {
+      await this.removeTestDir(
+        dirPaths.map(dirPath => {
+          return path.join(this.m_toUserStorageBasePath(user), dirPath)
+        })
+      )
+    }
+
+    async removeUserTestFiles(user: AuthUser, filePaths: string[]): Promise<void> {
+      await this.removeTestFiles(
+        filePaths.map(filePath => {
+          return path.join(this.m_toUserStorageBasePath(user), filePath)
+        })
+      )
+    }
+
+    async removeTestDir(dirPaths: string[]): Promise<void> {
+      const userBackup = this.m_user
+      this.m_user = TEMP_ADMIN_USER
+
+      await this.removeStorageDirs(dirPaths)
+
+      this.m_user = userBackup
+    }
+
+    async removeTestFiles(filePaths: string[]): Promise<void> {
+      const userBackup = this.m_user
+      this.m_user = TEMP_ADMIN_USER
+
+      await this.removeStorageFiles(filePaths)
+
+      this.m_user = userBackup
+    }
+
+    //----------------------------------------------------------------------
+    //
+    //  Internal methods
+    //
+    //----------------------------------------------------------------------
+
+    private m_toUserStorageBasePath(user: AuthUser): string {
+      return path.join(config.storage.usersDir, user.myDirName)
+    }
+
+    private m_readAsArrayBuffer(fileData: string | Blob | Uint8Array | ArrayBuffer | File): Promise<ArrayBuffer> {
+      return new Promise<ArrayBuffer>((resolve, reject) => {
+        if (typeof fileData === 'string') {
+          const enc = new TextEncoder()
+          resolve(enc.encode(fileData))
+        } else if (fileData instanceof Blob) {
+          const reader = new FileReader()
+          reader.onload = () => {
+            resolve(reader.result as ArrayBuffer)
           }
-        `,
-        variables: { dirPath },
+          reader.onerror = err => {
+            reject(err)
+          }
+          reader.readAsArrayBuffer(fileData)
+        } else {
+          resolve(fileData)
+        }
       })
-      return response.data!.removeTestStorageDir
     }
   }
 }

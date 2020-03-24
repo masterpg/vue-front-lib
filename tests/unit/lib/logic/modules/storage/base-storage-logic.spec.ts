@@ -1,14 +1,6 @@
 import * as shortid from 'shortid'
 import * as td from 'testdouble'
-import {
-  LibAPIContainer,
-  StorageNode,
-  StorageNodeShareSettings,
-  StorageNodeShareSettingsInput,
-  StorageNodeType,
-  StorageState,
-  StorageUploadManager,
-} from '@/lib'
+import { LibAPIContainer, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageState } from '@/lib'
 import { BaseStorageLogic } from '@/lib/logic/modules/storage/base-storage-logic'
 import { BaseStorageStore } from '@/lib/logic/store/modules/storage/base'
 import { Component } from 'vue-property-decorator'
@@ -214,68 +206,47 @@ class MockStorageLogic extends BaseStorageLogic {
   }
 
   get baseURL(): string {
-    const baseStorageURL = `${removeEndSlash(config.api.baseURL)}/storage`
-    return `${baseStorageURL}`
+    return `${removeEndSlash(config.api.baseURL)}/storage`
   }
 
-  newUploadManager(owner: Element): StorageUploadManager {
-    return {} as any
-  }
-
-  protected getHierarchicalStorageDescendants(dirPath?: string): Promise<StorageNode[]> {
-    return api.getHierarchicalStorageDescendants(dirPath)
-  }
-
-  protected getHierarchicalStorageChildren(dirPath?: string): Promise<StorageNode[]> {
-    return api.getHierarchicalStorageChildren(dirPath)
-  }
-
-  protected getStorageChildren(dirPath?: string): Promise<StorageNode[]> {
-    return api.getStorageChildren(dirPath)
-  }
-
-  protected createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
-    return api.createStorageDirs(dirPaths)
-  }
-
-  protected removeStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
-    return api.removeStorageDirs(dirPaths)
-  }
-
-  protected removeStorageFiles(filePaths: string[]): Promise<StorageNode[]> {
-    return api.removeStorageFiles(filePaths)
-  }
-
-  protected moveStorageDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
-    return api.moveStorageDir(fromDirPath, toDirPath)
-  }
-
-  protected moveStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode> {
-    return api.moveStorageFile(fromFilePath, toFilePath)
-  }
-
-  protected renameStorageDir(dirPath: string, newName: string): Promise<StorageNode[]> {
-    return api.renameStorageDir(dirPath, newName)
-  }
-
-  protected renameStorageFile(filePath: string, newName: string): Promise<StorageNode> {
-    return api.renameStorageFile(filePath, newName)
-  }
-
-  protected setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
-    return api.setStorageDirShareSettings(dirPath, settings)
-  }
-
-  protected setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
-    return api.setStorageFileShareSettings(filePath, settings)
-  }
+  newUploadManager = td.func() as any
+  protected getNodeAPI = td.func() as any
+  protected getDirDescendantsAPI = td.func() as any
+  protected getDescendantsAPI = td.func() as any
+  protected getDirChildrenAPI = td.func() as any
+  protected getChildrenAPI = td.func() as any
+  protected createDirsAPI = td.func() as any
+  protected removeDirsAPI = td.func() as any
+  protected removeFilesAPI = td.func() as any
+  protected moveDirAPI = td.func() as any
+  protected moveFileAPI = td.func() as any
+  protected renameDirAPI = td.func() as any
+  protected renameFileAPI = td.func() as any
+  protected setDirShareSettingsAPI = td.func() as any
+  protected setFileShareSettingsAPI = td.func() as any
 }
 
 let api!: LibAPIContainer
 
 let storageStore!: TestStore<StorageStore, StorageState>
 
-let storageLogic!: BaseStorageLogic
+let storageLogic!: BaseStorageLogic & {
+  getNodeAPI: BaseStorageLogic['getNodeAPI']
+  getDirDescendantsAPI: BaseStorageLogic['getDirDescendantsAPI']
+  getDescendantsAPI: BaseStorageLogic['getDescendantsAPI']
+  getDirChildrenAPI: BaseStorageLogic['getDirChildrenAPI']
+  getChildrenAPI: BaseStorageLogic['getChildrenAPI']
+  createDirsAPI: BaseStorageLogic['createDirsAPI']
+  removeDirsAPI: BaseStorageLogic['removeDirsAPI']
+  removeFilesAPI: BaseStorageLogic['removeFilesAPI']
+  moveDirAPI: BaseStorageLogic['moveDirAPI']
+  moveFileAPI: BaseStorageLogic['moveFileAPI']
+  renameDirAPI: BaseStorageLogic['renameDirAPI']
+  renameFileAPI: BaseStorageLogic['renameFileAPI']
+  setDirShareSettingsAPI: BaseStorageLogic['setDirShareSettingsAPI']
+  setFileShareSettingsAPI: BaseStorageLogic['setFileShareSettingsAPI']
+  getPaginationNodesAPI: BaseStorageLogic['getPaginationNodesAPI']
+}
 
 //========================================================================
 //
@@ -288,7 +259,7 @@ beforeAll(async () => {
   await initLibTest({ api })
 
   storageStore = (new MockStorageStore() as StorageStore) as TestStore<StorageStore, StorageState>
-  storageLogic = new MockStorageLogic()
+  storageLogic = new MockStorageLogic() as any
 })
 
 beforeEach(async () => {})
@@ -321,7 +292,7 @@ describe('pullDescendants', () => {
       dir: '',
       path: 'f1.txt',
     })
-    td.when(api.getHierarchicalStorageDescendants(undefined)).thenResolve([d1, d11, f112, f1, d2])
+    td.when(storageLogic.getDirDescendantsAPI(undefined)).thenResolve([d1, d11, f112, f1, d2])
 
     const actual = await storageLogic.pullDescendants()
 
@@ -351,11 +322,7 @@ describe('pullDescendants', () => {
     // ・'d1/d11/f111.txt'が'f1.txt'へ移動+リネームされた
     // ・'d1/d11/f112.txt'が追加された
     // ・'d1/d12'が削除された
-    const f1: StorageNode = Object.assign(cloneDeep(f111), {
-      dir: '',
-      path: 'f1.txt',
-    })
-    td.when(api.getHierarchicalStorageDescendants(d1.path)).thenResolve([d1, d11, f112, f1])
+    td.when(storageLogic.getDirDescendantsAPI(d1.path)).thenResolve([d1, d11, f112])
 
     const actual = await storageLogic.pullDescendants(d1.path)
 
@@ -364,12 +331,12 @@ describe('pullDescendants', () => {
     // │└d11
     // │  └f112.txt
     // ├d2
-    // └f1.txt
-    expect(storageLogic.nodes).toEqual([d1, d11, f112, d2, f1])
+    // └f1.txt ← 移動+リネームされても、今回の検索範囲外なのでロジックストアに反映されない
+    expect(storageLogic.nodes).toEqual([d1, d11, f112, d2])
 
     expect(storageLogic.sortNodes(actual.added)).toEqual([f112])
-    expect(storageLogic.sortNodes(actual.updated)).toEqual([d1, d11, f1])
-    expect(storageLogic.sortNodes(actual.removed)).toEqual([d12])
+    expect(storageLogic.sortNodes(actual.updated)).toEqual([d1, d11])
+    expect(storageLogic.sortNodes(actual.removed)).toEqual([f111, d12])
   })
 
   it('dirPathを指定した場合 - dirPathのノードが削除されていた', async () => {
@@ -383,7 +350,7 @@ describe('pullDescendants', () => {
 
     // APIから以下の状態のノードリストが取得される
     // ・'d1/d11'が削除され存在しない
-    td.when(api.getHierarchicalStorageDescendants(d11.path)).thenResolve([d1])
+    td.when(storageLogic.getDirDescendantsAPI(d11.path)).thenResolve([])
 
     const actual = await storageLogic.pullDescendants(d11.path)
 
@@ -394,39 +361,15 @@ describe('pullDescendants', () => {
     expect(storageLogic.nodes).toEqual([d1, d12, d2])
 
     expect(storageLogic.sortNodes(actual.added)).toEqual([])
-    expect(storageLogic.sortNodes(actual.updated)).toEqual([d1])
-    expect(storageLogic.sortNodes(actual.removed)).toEqual([d11, f111])
-  })
-
-  it('dirPathを指定した場合 - dirPathの上位ノードが削除されていた', async () => {
-    // root
-    // ├d1
-    // │├d11
-    // ││└f111.txt
-    // │└d12
-    // └d2
-    storageStore.initState({ all: cloneDeep([d1, d11, f111, d12, d2]) })
-
-    // APIから以下の状態のノードリストが取得される
-    // ・'d1/d11'の上位である'd1'が削除され存在しない
-    td.when(api.getHierarchicalStorageDescendants(d11.path)).thenResolve([])
-
-    const actual = await storageLogic.pullDescendants(d11.path)
-
-    // root
-    // └d2
-    expect(storageLogic.nodes).toEqual([d2])
-
-    expect(storageLogic.sortNodes(actual.added)).toEqual([])
     expect(storageLogic.sortNodes(actual.updated)).toEqual([])
-    expect(storageLogic.sortNodes(actual.removed)).toEqual([d1, d11, f111, d12])
+    expect(storageLogic.sortNodes(actual.removed)).toEqual([d11, f111])
   })
 })
 
 describe('pullChildren', () => {
   it('dirPathを指定しなかった場合', async () => {
     storageStore.initState({ all: [] })
-    td.when(api.getStorageChildren(undefined)).thenResolve([d1, d2, f1])
+    td.when(storageLogic.getChildrenAPI(undefined)).thenResolve([d1, d2, f1])
 
     await storageLogic.pullChildren()
 
@@ -459,7 +402,7 @@ describe('pullChildren', () => {
       created: dayjs(),
       updated: dayjs(),
     }
-    td.when(api.getStorageChildren(d1.path)).thenResolve([d11, f11, f12])
+    td.when(storageLogic.getChildrenAPI(d1.path)).thenResolve([d11, f11, f12])
 
     const actual = await storageLogic.pullChildren(d1.path)
 
@@ -481,7 +424,7 @@ describe('pullChildren', () => {
 describe('createDirs', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1]) })
-    td.when(api.createStorageDirs([d11.path, d12.path])).thenResolve([d11, d12])
+    td.when(storageLogic.createDirsAPI([d11.path, d12.path])).thenResolve([d11, d12])
 
     const actual = await storageLogic.createDirs([d11.path, d12.path])
 
@@ -491,7 +434,7 @@ describe('createDirs', () => {
 
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1]) })
-    td.when(api.createStorageDirs([d11.path])).thenThrow(new Error())
+    td.when(storageLogic.createDirsAPI([d11.path])).thenThrow(new Error())
 
     try {
       await storageLogic.createDirs([d11.path, d12.path])
@@ -505,33 +448,35 @@ describe('createDirs', () => {
 describe('removeDirs', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111, d12]) })
-    td.when(api.removeStorageDirs([d11.path, d12.path])).thenResolve([d11, f111, d12])
 
-    const actual = await storageLogic.removeDirs([d11.path, d12.path])
+    await storageLogic.removeDirs([d11.path, d12.path])
 
-    expect(actual).toEqual([d11, f111, d12])
     expect(storageLogic.nodes).toEqual([d1])
+
+    const exp = td.explain(storageLogic.removeDirsAPI)
+    expect(exp.calls[0].args[0]).toEqual([d11.path, d12.path])
   })
 
   it('存在しないディレクトリパスを指定した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1]) })
-    td.when(api.removeStorageDirs([d11.path])).thenResolve([])
 
-    const actual = await storageLogic.removeDirs([d11.path])
+    await storageLogic.removeDirs([d11.path])
 
-    expect(actual).toEqual([])
     expect(storageLogic.nodes).toEqual([d1])
+
+    const exp = td.explain(storageLogic.removeDirsAPI)
+    expect(exp.calls[0].args[0]).toEqual([d11.path])
   })
 
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11]) })
-    td.when(api.removeStorageDirs([d11.path])).thenThrow(new Error())
+    td.when(storageLogic.removeDirsAPI([d11.path])).thenThrow(new Error())
 
     try {
       await storageLogic.removeDirs([d11.path])
     } catch (err) {}
 
-    // ノード一覧に変化がないことを検証
+    // ノードリストに変化がないことを検証
     expect(storageLogic.nodes).toEqual([d1, d11])
   })
 })
@@ -539,27 +484,29 @@ describe('removeDirs', () => {
 describe('removeFiles', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111, f1]) })
-    td.when(api.removeStorageFiles([f111.path, f1.path])).thenResolve([f111, f1])
 
-    const actual = await storageLogic.removeFiles([f111.path, f1.path])
+    await storageLogic.removeFiles([f111.path, f1.path])
 
-    expect(actual).toEqual([f111, f1])
     expect(storageLogic.nodes).toEqual([d1, d11])
+
+    const exp = td.explain(storageLogic.removeFilesAPI)
+    expect(exp.calls[0].args[0]).toEqual([f111.path, f1.path])
   })
 
   it('存在しないファイルパスを指定した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11]) })
-    td.when(api.removeStorageFiles([f111.path])).thenResolve([])
 
-    const actual = await storageLogic.removeFiles([f111.path])
+    await storageLogic.removeFiles([f111.path])
 
-    expect(actual).toEqual([])
     expect(storageLogic.nodes).toEqual([d1, d11])
+
+    const exp = td.explain(storageLogic.removeFilesAPI)
+    expect(exp.calls[0].args[0]).toEqual([f111.path])
   })
 
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([f1]) })
-    td.when(api.removeStorageFiles([f1.path])).thenThrow(new Error())
+    td.when(storageLogic.removeFilesAPI([f1.path])).thenThrow(new Error())
 
     try {
       await storageLogic.removeFiles([f1.path])
@@ -572,71 +519,80 @@ describe('removeFiles', () => {
 
 describe('moveDir', () => {
   it('ベーシックケース', async () => {
-    storageStore.initState({ all: cloneDeep([d1, d11, f111]) })
+    storageStore.initState({ all: cloneDeep([d1, d11, f111, d2]) })
 
-    const movedD12 = deepmerge(cloneDeep(d11), {
-      name: 'd12',
-      dir: 'd1',
-      path: 'd1/d12',
+    // 'd1/d11'を'd2/d11'へ移動
+    const movedD11 = deepmerge(cloneDeep(d11), {
+      name: 'd11',
+      dir: 'd2',
+      path: 'd2/d11',
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    const movedFileA = deepmerge(cloneDeep(f111), {
-      dir: 'd1/d12',
-      path: 'd1/d12/f111.txt',
+    const movedF111 = deepmerge(cloneDeep(f111), {
+      dir: 'd2/d11',
+      path: 'd2/d11/f111.txt',
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    td.when(api.moveStorageDir(d11.path, movedD12.path)).thenResolve([movedD12, movedFileA])
+    td.when(storageLogic.getDirDescendantsAPI(movedD11.path)).thenResolve([movedD11, movedF111])
 
-    const actual = await storageLogic.moveDir(d11.path, movedD12.path)
+    await storageLogic.moveDir(d11.path, movedD11.path)
 
-    expect(actual).toEqual([movedD12, movedFileA])
-    expect(storageLogic.nodes).toEqual([d1, movedD12, movedFileA])
+    expect(storageLogic.nodes).toEqual([d1, d2, movedD11, movedF111])
+
+    const exp = td.explain(storageLogic.moveDirAPI)
+    expect(exp.calls[0].args[0]).toBe(d11.path)
+    expect(exp.calls[0].args[1]).toBe(movedD11.path)
   })
 
   it('移動ノードの配下がストアに読み込まれていない場合', async () => {
     // 移動ノード'd1/d11'の配下ノードがストアに読み込まれていない状態にする
-    storageStore.initState({ all: cloneDeep([d1, d11]) })
+    storageStore.initState({ all: cloneDeep([d1, d11, d2]) })
 
-    const movedD12 = deepmerge(cloneDeep(d11), {
-      name: 'd12',
-      dir: 'd1',
-      path: 'd1/d12',
+    // 'd1/d11'を'd2/d11'へ移動
+    const movedD11 = deepmerge(cloneDeep(d11), {
+      name: 'd11',
+      dir: 'd2',
+      path: 'd2/d11',
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    const movedFileA = deepmerge(cloneDeep(f111), {
-      dir: 'd1/d12',
-      path: 'd1/d12/f111.txt',
+    const movedF111 = deepmerge(cloneDeep(f111), {
+      dir: 'd2/d11',
+      path: 'd2/d11/f111.txt',
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    td.when(api.moveStorageDir(d11.path, movedD12.path)).thenResolve([movedD12, movedFileA])
+    td.when(storageLogic.getDirDescendantsAPI(movedD11.path)).thenResolve([movedD11, movedF111])
 
-    const actual = await storageLogic.moveDir(d11.path, movedD12.path)
+    await storageLogic.moveDir(d11.path, movedD11.path)
 
-    expect(actual).toEqual([movedD12, movedFileA])
-    expect(storageLogic.nodes).toEqual([d1, movedD12, movedFileA])
+    expect(storageLogic.nodes).toEqual([d1, d2, movedD11, movedF111])
+
+    const exp = td.explain(storageLogic.moveDirAPI)
+    expect(exp.calls[0].args[0]).toBe(d11.path)
+    expect(exp.calls[0].args[1]).toBe(movedD11.path)
   })
 
   it('APIでエラーが発生した場合', async () => {
-    storageStore.initState({ all: cloneDeep([d1, d11]) })
+    storageStore.initState({ all: cloneDeep([d1, d11, d2]) })
 
-    const movedD12 = deepmerge(cloneDeep(d11), {
-      dir: 'd1',
-      path: 'd1/d12',
+    const movedD11 = deepmerge(cloneDeep(d11), {
+      name: 'd11',
+      dir: 'd2',
+      path: 'd2/d11',
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    td.when(api.moveStorageDir(d11.path, movedD12.path)).thenThrow(new Error())
+    td.when(storageLogic.moveDirAPI(d11.path, movedD11.path)).thenThrow(new Error())
 
     try {
-      await storageLogic.moveDir(d11.path, movedD12.path)
+      await storageLogic.moveDir(d11.path, movedD11.path)
     } catch (err) {}
 
     // ノード一覧に変化がないことを検証
-    expect(storageLogic.nodes).toEqual([d1, d11])
+    expect(storageLogic.nodes).toEqual([d1, d11, d2])
   })
 })
 
@@ -644,33 +600,37 @@ describe('moveFile', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111, d12]) })
 
-    const movedFileA = deepmerge(cloneDeep(f111), {
+    // 'd1/d11/f111.txt'を'd1/d12/f111.txt'へ移動
+    const movedF111 = deepmerge(cloneDeep(f111), {
       dir: 'd1/d12',
       path: 'd1/d12/f111.txt',
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    td.when(api.moveStorageFile(f111.path, movedFileA.path)).thenResolve(movedFileA)
+    td.when(storageLogic.getNodeAPI(movedF111.path)).thenResolve(movedF111)
 
-    const actual = await storageLogic.moveFile(f111.path, movedFileA.path)
+    await storageLogic.moveFile(f111.path, movedF111.path)
 
-    expect(actual).toEqual(movedFileA)
-    expect(storageLogic.nodes).toEqual([d1, d11, d12, movedFileA])
+    expect(storageLogic.nodes).toEqual([d1, d11, d12, movedF111])
+
+    const exp = td.explain(storageLogic.moveFileAPI)
+    expect(exp.calls[0].args[0]).toBe(f111.path)
+    expect(exp.calls[0].args[1]).toBe(movedF111.path)
   })
 
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111, d12]) })
 
-    const movedFileA = deepmerge(cloneDeep(f111), {
+    const movedF111 = deepmerge(cloneDeep(f111), {
       dir: 'd1/d12',
       path: 'd1/d12/f111.txt',
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    td.when(api.moveStorageFile(f111.path, movedFileA.path)).thenThrow(new Error())
+    td.when(storageLogic.moveFileAPI(f111.path, movedF111.path)).thenThrow(new Error())
 
     try {
-      await storageLogic.moveFile(f111.path, movedFileA.path)
+      await storageLogic.moveFile(f111.path, movedF111.path)
     } catch (err) {}
 
     // ノード一覧に変化がないことを検証
@@ -682,48 +642,56 @@ describe('renameDir', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111]) })
 
+    // 'd1/d11'を'd1/x11'へリネーム
     const renamedX11 = deepmerge(cloneDeep(d11), {
       name: 'x11',
       path: 'd1/x11',
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    const renamedFileA = deepmerge(cloneDeep(f111), {
+    const renamedF111 = deepmerge(cloneDeep(f111), {
       dir: 'd1/x11',
       path: 'd1/x11/f111.txt',
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    td.when(api.renameStorageDir(d11.path, renamedX11.name)).thenResolve([renamedX11, renamedFileA])
+    td.when(storageLogic.getDirDescendantsAPI(renamedX11.path)).thenResolve([renamedX11, renamedF111])
 
-    const actual = await storageLogic.renameDir(d11.path, renamedX11.name)
+    await storageLogic.renameDir(d11.path, renamedX11.name)
 
-    expect(actual).toEqual([renamedX11, renamedFileA])
-    expect(storageLogic.nodes).toEqual([d1, renamedX11, renamedFileA])
+    expect(storageLogic.nodes).toEqual([d1, renamedX11, renamedF111])
+
+    const exp = td.explain(storageLogic.renameDirAPI)
+    expect(exp.calls[0].args[0]).toBe(d11.path)
+    expect(exp.calls[0].args[1]).toBe(renamedX11.name)
   })
 
   it('リネームノードの配下がストアに読み込まれていない場合', async () => {
     // リネームノード'd1/d11'の配下ノードがストアに読み込まれていない状態にする
     storageStore.initState({ all: cloneDeep([d1, d11]) })
 
+    // 'd1/d11'を'd1/x11'へリネーム
     const renamedX11 = deepmerge(cloneDeep(d11), {
       name: 'x11',
       path: 'd1/x11',
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    const renamedFileA = deepmerge(cloneDeep(f111), {
+    const renamedF111 = deepmerge(cloneDeep(f111), {
       dir: 'd1/x11',
       path: 'd1/x11/f111.txt',
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    td.when(api.renameStorageDir(d11.path, renamedX11.name)).thenResolve([renamedX11, renamedFileA])
+    td.when(storageLogic.getDirDescendantsAPI(renamedX11.path)).thenResolve([renamedX11, renamedF111])
 
-    const actual = await storageLogic.renameDir(d11.path, renamedX11.name)
+    await storageLogic.renameDir(d11.path, renamedX11.name)
 
-    expect(actual).toEqual([renamedX11, renamedFileA])
-    expect(storageLogic.nodes).toEqual([d1, renamedX11, renamedFileA])
+    expect(storageLogic.nodes).toEqual([d1, renamedX11, renamedF111])
+
+    const exp = td.explain(storageLogic.renameDirAPI)
+    expect(exp.calls[0].args[0]).toBe(d11.path)
+    expect(exp.calls[0].args[1]).toBe(renamedX11.name)
   })
 
   it('APIでエラーが発生した場合', async () => {
@@ -735,7 +703,7 @@ describe('renameDir', () => {
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    td.when(api.renameStorageDir(d11.path, renamedX11.name)).thenThrow(new Error())
+    td.when(storageLogic.renameDirAPI(d11.path, renamedX11.name)).thenThrow(new Error())
 
     try {
       await storageLogic.renameDir(d11.path, renamedX11.name)
@@ -750,33 +718,37 @@ describe('renameFile', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111]) })
 
-    const renamedFileX = deepmerge(cloneDeep(f111), {
-      name: 'fileX.txt',
-      path: 'd1/d11/fileX.txt',
+    // 'd1/d11/f111.txt'を'd1/d11/f11X.txt'へリネーム
+    const renamedF11X = deepmerge(cloneDeep(f111), {
+      name: 'f11X.txt',
+      path: 'd1/d11/f11X.txt',
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    td.when(api.renameStorageFile(f111.path, renamedFileX.name)).thenResolve(renamedFileX)
+    td.when(storageLogic.getNodeAPI(renamedF11X.path)).thenResolve(renamedF11X)
 
-    const actual = await storageLogic.renameFile(f111.path, renamedFileX.name)
+    await storageLogic.renameFile(f111.path, renamedF11X.name)
 
-    expect(actual).toEqual(renamedFileX)
-    expect(storageLogic.nodes).toEqual([d1, d11, renamedFileX])
+    expect(storageLogic.nodes).toEqual([d1, d11, renamedF11X])
+
+    const exp = td.explain(storageLogic.renameFileAPI)
+    expect(exp.calls[0].args[0]).toBe(f111.path)
+    expect(exp.calls[0].args[1]).toBe(renamedF11X.name)
   })
 
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111]) })
 
-    const renamedFileX = deepmerge(cloneDeep(f111), {
+    const renamedF11X = deepmerge(cloneDeep(f111), {
       name: 'fileX.txt',
       path: 'd1/d11/fileX.txt',
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    td.when(api.renameStorageFile(f111.path, renamedFileX.name)).thenThrow(new Error())
+    td.when(storageLogic.renameFileAPI(f111.path, renamedF11X.name)).thenThrow(new Error())
 
     try {
-      await storageLogic.renameFile(f111.path, renamedFileX.name)
+      await storageLogic.renameFile(f111.path, renamedF11X.name)
     } catch (err) {}
 
     // ノード一覧に変化がないことを検証
@@ -793,23 +765,23 @@ describe('setDirShareSettings', () => {
   it('ベーシックケース', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111]) })
 
-    const updatedX11 = deepmerge(cloneDeep(d11), {
+    const updatedD11 = deepmerge(cloneDeep(d11), {
       share: NEW_SHARE_SETTINGS,
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    td.when(api.setStorageDirShareSettings(d11.path, NEW_SHARE_SETTINGS)).thenResolve(updatedX11)
+    td.when(storageLogic.setDirShareSettingsAPI(d11.path, NEW_SHARE_SETTINGS)).thenResolve(updatedD11)
 
     const actual = await storageLogic.setDirShareSettings(d11.path, NEW_SHARE_SETTINGS)
 
-    expect(actual).toEqual(updatedX11)
-    expect(storageLogic.nodes).toEqual([d1, updatedX11, f111])
+    expect(actual).toEqual(updatedD11)
+    expect(storageLogic.nodes).toEqual([d1, updatedD11, f111])
   })
 
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11]) })
 
-    td.when(api.setStorageDirShareSettings(d11.path, NEW_SHARE_SETTINGS)).thenThrow(new Error())
+    td.when(storageLogic.setDirShareSettingsAPI(d11.path, NEW_SHARE_SETTINGS)).thenThrow(new Error())
 
     try {
       await storageLogic.setDirShareSettings(d11.path, NEW_SHARE_SETTINGS)
@@ -834,7 +806,7 @@ describe('setFileShareSettings', () => {
       created: dayjs(),
       updated: dayjs(),
     }) as StorageNode
-    td.when(api.setStorageFileShareSettings(f111.path, NEW_SHARE_SETTINGS)).thenResolve(updatedFileA)
+    td.when(storageLogic.setFileShareSettingsAPI(f111.path, NEW_SHARE_SETTINGS)).thenResolve(updatedFileA)
 
     const actual = await storageLogic.setFileShareSettings(f111.path, NEW_SHARE_SETTINGS)
 
@@ -845,7 +817,7 @@ describe('setFileShareSettings', () => {
   it('APIでエラーが発生した場合', async () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111]) })
 
-    td.when(api.setStorageFileShareSettings(f111.path, NEW_SHARE_SETTINGS)).thenThrow(new Error())
+    td.when(storageLogic.setFileShareSettingsAPI(f111.path, NEW_SHARE_SETTINGS)).thenThrow(new Error())
 
     try {
       await storageLogic.setFileShareSettings(f111.path, NEW_SHARE_SETTINGS)
@@ -853,5 +825,124 @@ describe('setFileShareSettings', () => {
 
     // ノード一覧に変化がないことを検証
     expect(storageLogic.nodes).toEqual([d1, d11, f111])
+  })
+})
+
+describe('getPaginationNodesAPI', () => {
+  const [file01, file02, file03, file04, file05, file06, file07] = (() => {
+    const result: StorageNode[] = []
+    for (let i = 1; i <= 10; i++) {
+      result.push({
+        id: shortid.generate(),
+        nodeType: StorageNodeType.Dir,
+        name: `file${i.toString().padStart(2, '0')}.txt`,
+        dir: 'd1',
+        path: `d1/file${i.toString().padStart(2, '0')}.txt`,
+        contentType: '',
+        size: 0,
+        share: cloneDeep(EMPTY_SHARE_SETTINGS),
+        created: dayjs(),
+        updated: dayjs(),
+      })
+    }
+    return result
+  })()
+
+  it('ベーシックケース', async () => {
+    const getStorageChildren = td.replace(api, 'getStorageChildren')
+    td.when(
+      getStorageChildren(
+        {
+          maxResults: 3,
+          pageToken: undefined,
+        },
+        `d1`
+      )
+    ).thenResolve({ list: [file01, file02, file03], nextPageToken: 'next-token-1' })
+    td.when(
+      getStorageChildren(
+        {
+          maxResults: 3,
+          pageToken: 'next-token-1',
+        },
+        `d1`
+      )
+    ).thenResolve({ list: [file04, file05, file06], nextPageToken: 'next-token-2' })
+    td.when(
+      getStorageChildren(
+        {
+          maxResults: 3,
+          pageToken: 'next-token-2',
+        },
+        `d1`
+      )
+    ).thenResolve({ list: [file07] })
+
+    const actual = await storageLogic.getPaginationNodesAPI(api, getStorageChildren, { maxResults: 3 }, `d1`)
+
+    expect(actual).toEqual([file01, file02, file03, file04, file05, file06, file07])
+  })
+
+  it('optionsを指定しない場合', async () => {
+    const getStorageChildren = td.replace(api, 'getStorageChildren')
+    td.when(
+      getStorageChildren(
+        {
+          maxResults: undefined,
+          pageToken: undefined,
+        },
+        `d1`
+      )
+    ).thenResolve({ list: [file01, file02, file03], nextPageToken: 'next-token-1' })
+    td.when(
+      getStorageChildren(
+        {
+          maxResults: undefined,
+          pageToken: 'next-token-1',
+        },
+        `d1`
+      )
+    ).thenResolve({ list: [file04, file05, file06], nextPageToken: 'next-token-2' })
+    td.when(
+      getStorageChildren(
+        {
+          maxResults: undefined,
+          pageToken: 'next-token-2',
+        },
+        `d1`
+      )
+    ).thenResolve({ list: [file07] })
+
+    // optionsを指定せずに実行
+    const actual = await storageLogic.getPaginationNodesAPI(api, getStorageChildren, null, `d1`)
+
+    expect(actual).toEqual([file01, file02, file03, file04, file05, file06, file07])
+  })
+
+  it('引数を全て指定しない場合', async () => {
+    const getStorageChildren = td.replace(api, 'getStorageChildren')
+    td.when(
+      getStorageChildren({
+        maxResults: undefined,
+        pageToken: undefined,
+      })
+    ).thenResolve({ list: [file01, file02, file03], nextPageToken: 'next-token-1' })
+    td.when(
+      getStorageChildren({
+        maxResults: undefined,
+        pageToken: 'next-token-1',
+      })
+    ).thenResolve({ list: [file04, file05, file06], nextPageToken: 'next-token-2' })
+    td.when(
+      getStorageChildren({
+        maxResults: undefined,
+        pageToken: 'next-token-2',
+      })
+    ).thenResolve({ list: [file07] })
+
+    // 引数を全て指定せずに実行
+    const actual = await storageLogic.getPaginationNodesAPI(api, getStorageChildren, null)
+
+    expect(actual).toEqual([file01, file02, file03, file04, file05, file06, file07])
   })
 })

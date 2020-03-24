@@ -350,10 +350,10 @@ describe('pullInitialNodes', () => {
     expect(actual[2].lazyLoadStatus).toBe('loaded')
     expect(actual[3].lazyLoadStatus).toBe('none')
     // pullChildren()が正常に呼び出されたか検証
-    const pullChildren_exp = td.explain(storageLogic.pullChildren)
-    expect(pullChildren_exp.calls[0].args[0]).toBe(treeStore.rootNode.value)
-    expect(pullChildren_exp.calls[1].args[0]).toBe('d1')
-    expect(pullChildren_exp.calls[2].args[0]).toBe('d1/d11')
+    const exp = td.explain(storageLogic.pullChildren)
+    expect(exp.calls[0].args[0]).toBe(treeStore.rootNode.value)
+    expect(exp.calls[1].args[0]).toBe('d1')
+    expect(exp.calls[2].args[0]).toBe('d1/d11')
   })
 })
 
@@ -409,8 +409,8 @@ describe('pullDescendants', () => {
     expect(_d2.lazyLoadStatus).toBe('loaded')
     expect(_f1.lazyLoadStatus).toBe('none')
     // pullChildren()が正常に呼び出されたか検証
-    const pullChildren_exp = td.explain(storageLogic.pullChildren)
-    expect(pullChildren_exp.calls.length).toBe(0)
+    const exp = td.explain(storageLogic.pullChildren)
+    expect(exp.calls.length).toBe(0)
     // pullDescendants()が正常に呼び出されたか検証
     const pullDescendants_exp = td.explain(storageLogic.pullDescendants)
     expect(pullDescendants_exp.calls[0].args[0]).toBe(treeStore.rootNode.value)
@@ -471,8 +471,8 @@ describe('pullDescendants', () => {
     expect(_d2.lazyLoadStatus).toBe('none')
     expect(_f1.lazyLoadStatus).toBe('none')
     // pullChildren()が正常に呼び出されたか検証
-    const pullChildren_exp = td.explain(storageLogic.pullChildren)
-    expect(pullChildren_exp.calls[0].args[0]).toBe(treeStore.rootNode.value)
+    const exp = td.explain(storageLogic.pullChildren)
+    expect(exp.calls[0].args[0]).toBe(treeStore.rootNode.value)
     // pullDescendants()が正常に呼び出されたか検証
     const pullDescendants_exp = td.explain(storageLogic.pullDescendants)
     expect(pullDescendants_exp.calls[0].args[0]).toBe('d1')
@@ -530,8 +530,8 @@ describe('pullChildren', () => {
     expect(actual[1].value).toBe('d1')
     expect(actual[2].value).toBe('d2')
     // pullChildren()が正常に呼び出されたか検証
-    const pullChildren_exp = td.explain(storageLogic.pullChildren)
-    expect(pullChildren_exp.calls[0].args[0]).toBe(treeStore.rootNode.value)
+    const exp = td.explain(storageLogic.pullChildren)
+    expect(exp.calls[0].args[0]).toBe(treeStore.rootNode.value)
   })
 
   it('dirPathを指定した場合 - ルートノード配下のディレクトリを指定', async () => {
@@ -554,8 +554,8 @@ describe('pullChildren', () => {
     expect(actual[2].value).toBe('d1/d11')
     expect(actual[3].value).toBe('d1/d12')
     // pullChildren()が正常に呼び出されたか検証
-    const pullChildren_exp = td.explain(storageLogic.pullChildren)
-    expect(pullChildren_exp.calls[0].args[0]).toBe('d1')
+    const exp = td.explain(storageLogic.pullChildren)
+    expect(exp.calls[0].args[0]).toBe('d1')
   })
 })
 

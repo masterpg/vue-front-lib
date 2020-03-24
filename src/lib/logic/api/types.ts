@@ -11,59 +11,75 @@ export interface LibAPIContainer {
 
   getCustomToken(): Promise<string>
 
-  getHierarchicalUserStorageDescendants(dirPath?: string): Promise<StorageNode[]>
+  //--------------------------------------------------
+  //  User storage
+  //--------------------------------------------------
 
-  getHierarchicalUserStorageChildren(dirPath?: string): Promise<StorageNode[]>
+  getUserStorageNode(nodePath: string): Promise<StorageNode | undefined>
 
-  getUserStorageChildren(dirPath?: string): Promise<StorageNode[]>
+  getUserStorageDirDescendants(options: GetStorageOptionsInput | null, dirPath?: string): Promise<GetStorageResult>
 
-  handleUploadedUserFiles(filePaths: string[]): Promise<StorageNode[]>
+  getUserStorageDescendants(options: GetStorageOptionsInput | null, dirPath?: string): Promise<GetStorageResult>
+
+  getUserStorageDirChildren(options: GetStorageOptionsInput | null, dirPath?: string): Promise<GetStorageResult>
+
+  getUserStorageChildren(options: GetStorageOptionsInput | null, dirPath?: string): Promise<GetStorageResult>
+
+  handleUploadedUserFiles(filePaths: string[]): Promise<void>
 
   createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 
-  removeUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
+  removeUserStorageDirs(dirPaths: string[]): Promise<void>
 
-  removeUserStorageFiles(filePaths: string[]): Promise<StorageNode[]>
+  removeUserStorageFiles(filePaths: string[]): Promise<void>
 
-  moveUserStorageDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]>
+  moveUserStorageDir(fromDirPath: string, toDirPath: string): Promise<void>
 
-  moveUserStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode>
+  moveUserStorageFile(fromFilePath: string, toFilePath: string): Promise<void>
 
-  renameUserStorageDir(dirPath: string, newName: string): Promise<StorageNode[]>
+  renameUserStorageDir(dirPath: string, newName: string): Promise<void>
 
-  renameUserStorageFile(filePath: string, newName: string): Promise<StorageNode>
+  renameUserStorageFile(filePath: string, newName: string): Promise<void>
 
   setUserStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
   setUserStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
-  getHierarchicalStorageDescendants(dirPath?: string): Promise<StorageNode[]>
+  //--------------------------------------------------
+  //  Application storage
+  //--------------------------------------------------
 
-  getHierarchicalStorageChildren(dirPath?: string): Promise<StorageNode[]>
+  getStorageNode(nodePath: string): Promise<StorageNode | undefined>
 
-  getStorageChildren(dirPath?: string): Promise<StorageNode[]>
+  getStorageDirDescendants(options: GetStorageOptionsInput | null, dirPath?: string): Promise<GetStorageResult>
 
-  handleUploadedFiles(filePaths: string[]): Promise<StorageNode[]>
+  getStorageDescendants(options: GetStorageOptionsInput | null, dirPath?: string): Promise<GetStorageResult>
+
+  getStorageDirChildren(options: GetStorageOptionsInput | null, dirPath?: string): Promise<GetStorageResult>
+
+  getStorageChildren(options: GetStorageOptionsInput | null, dirPath?: string): Promise<GetStorageResult>
+
+  handleUploadedFiles(filePaths: string[]): Promise<void>
 
   createStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 
-  removeStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
+  removeStorageDirs(dirPaths: string[]): Promise<void>
 
-  removeStorageFiles(filePaths: string[]): Promise<StorageNode[]>
+  removeStorageFiles(filePaths: string[]): Promise<void>
 
-  moveStorageDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]>
+  moveStorageDir(fromDirPath: string, toDirPath: string): Promise<void>
 
-  moveStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode>
+  moveStorageFile(fromFilePath: string, toFilePath: string): Promise<void>
 
-  renameStorageDir(dirPath: string, newName: string): Promise<StorageNode[]>
+  renameStorageDir(dirPath: string, newName: string): Promise<void>
 
-  renameStorageFile(filePath: string, newName: string): Promise<StorageNode>
-
-  getSignedUploadUrls(params: { filePath: string; contentType?: string }[]): Promise<string[]>
+  renameStorageFile(filePath: string, newName: string): Promise<void>
 
   setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
   setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
+
+  getSignedUploadUrls(params: { filePath: string; contentType?: string }[]): Promise<string[]>
 }
 
 //========================================================================
@@ -105,3 +121,18 @@ export interface StorageNodeShareSettings {
 }
 
 export interface StorageNodeShareSettingsInput extends StorageNodeShareSettings {}
+
+export interface GetStorageOptionsInput {
+  maxResults?: number
+  pageToken?: string
+}
+
+export interface APIResponseGetStorageResult {
+  list: APIResponseStorageNode[]
+  nextPageToken?: string
+}
+
+export interface GetStorageResult {
+  list: StorageNode[]
+  nextPageToken?: string
+}
