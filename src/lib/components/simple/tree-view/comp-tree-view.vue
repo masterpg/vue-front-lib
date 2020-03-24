@@ -105,7 +105,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
    * ツリービューが管理する全ノードのマップです。
    * key: ノードを特定するための値, value: ノード
    */
-  private m_allNodeMap: { [key: string]: CompTreeNode } = {}
+  private m_allNodeDict: { [key: string]: CompTreeNode } = {}
 
   /**
    * ツリービューの最小幅です。
@@ -219,7 +219,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
    * 全てのノードを削除します。
    */
   removeAllNodes(): void {
-    for (const node of Object.values(this.m_allNodeMap)) {
+    for (const node of Object.values(this.m_allNodeDict)) {
       this.removeNode(node.value)
     }
   }
@@ -229,7 +229,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
    * @param value ノードを特定するための値
    */
   getNode<Node extends CompTreeNode = CompTreeNode>(value: string): Node | undefined {
-    return this.m_allNodeMap[value] as Node | undefined
+    return this.m_allNodeDict[value] as Node | undefined
   }
 
   /**
@@ -419,7 +419,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
     e.stopImmediatePropagation()
 
     const node = e.target.__vue__ as CompTreeNode
-    this.m_allNodeMap[node.value] = node
+    this.m_allNodeDict[node.value] = node
 
     // ノードが発火する独自イベントの設定
     for (const eventName of node.extraEventNames) {
@@ -458,9 +458,9 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
 
     const node = e.detail.node as CompTreeNode
     for (const descendant of CompTreeViewUtils.getDescendants(node)) {
-      delete this.m_allNodeMap[descendant.value]
+      delete this.m_allNodeDict[descendant.value]
     }
-    delete this.m_allNodeMap[node.value]
+    delete this.m_allNodeDict[node.value]
   }
 
   /**
@@ -474,8 +474,8 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
     const detail = e.detail as CompTreeViewUtils.NodePropertyChangeDetail
 
     if (detail.property === 'value') {
-      delete this.m_allNodeMap[detail.oldValue]
-      this.m_allNodeMap[detail.newValue] = node
+      delete this.m_allNodeDict[detail.oldValue]
+      this.m_allNodeDict[detail.newValue] = node
     }
   }
 

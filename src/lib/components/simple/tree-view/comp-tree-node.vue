@@ -615,8 +615,8 @@ export default class CompTreeNode extends BaseComponent {
     options = options || {}
 
     // 追加ノードの子に自ノードが含まれないことを検証
-    const descendantMap = CompTreeViewUtils.getDescendantMap(childNode)
-    if (descendantMap[this.value]) {
+    const descendantDict = CompTreeViewUtils.getDescendantDict(childNode)
+    if (descendantDict[this.value]) {
       throw new Error(`The specified node "${childNode.value}" contains the new parent "${this.value}".`)
     }
 

@@ -155,19 +155,19 @@ export class StorageTreeStore extends Vue {
     )
 
     // サーバーから取得された最新のストレージノードを取得
-    const nodeMap = this.storageLogic.getNodeMap()
+    const nodeDict = this.storageLogic.getNodeDict()
 
     // 引数ディレクトリのパスを構成するディレクトリは展開した状態にする
     // ※初期表示時は指定されたディレクトリを表示しておきたいので
     for (const dirPath of dirPaths) {
-      const dirNode = nodeMap[dirPath]
+      const dirNode = nodeDict[dirPath]
       if (dirNode) {
         ;(dirNode as StorageNodeForTree).opened = true
       }
     }
 
     // 最新のストレージノードをツリービューに設定
-    this.setAllNodes(Object.values(nodeMap))
+    this.setAllNodes(Object.values(nodeDict))
 
     // 引数ディレクトリのパスを構成する各ディレクトリは子ノードが取得済みなので、
     // 各ディレクトリの遅延ロードは完了状態にする
@@ -300,7 +300,7 @@ export class StorageTreeStore extends Vue {
   mergeAllNodes(nodes: StorageNodeForTree[]): void {
     nodes = this.storageLogic.sortNodes([...nodes])
 
-    const nodeMap = nodes.reduce(
+    const nodeDict = nodes.reduce(
       (result, node) => {
         result[node.path] = node
         return result
@@ -314,7 +314,7 @@ export class StorageTreeStore extends Vue {
       // ツリーのルートノードは新ノードリストには存在しないので無視
       if (treeNode === this.rootNode) continue
 
-      const node = nodeMap[treeNode.value]
+      const node = nodeDict[treeNode.value]
       !node && this.removeNode(treeNode.value)
     }
 
@@ -330,7 +330,7 @@ export class StorageTreeStore extends Vue {
    */
   mergeDirDescendants(dirPath: string): void {
     // ロジックストアから引数ディレクトリと配下のノードを取得
-    const storeDirDescendantMap = this.storageLogic.getDirDescendants(dirPath).reduce(
+    const storeDirDescendantDict = this.storageLogic.getDirDescendants(dirPath).reduce(
       (result, node) => {
         result[node.path] = node
         return result
@@ -352,12 +352,12 @@ export class StorageTreeStore extends Vue {
       // ツリーのルートノードはロジックストアには存在しないので無視
       if (treeNode === this.rootNode) continue
 
-      const storeNode = storeDirDescendantMap[treeNode.value]
+      const storeNode = storeDirDescendantDict[treeNode.value]
       !storeNode && this.removeNode(treeNode.value)
     }
 
     // ロジックストアのノードリストをツリービューへ反映
-    this.setNodes(Object.values(storeDirDescendantMap))
+    this.setNodes(Object.values(storeDirDescendantDict))
   }
 
   /**
@@ -366,7 +366,7 @@ export class StorageTreeStore extends Vue {
    */
   mergeDirChildren(dirPath: string): void {
     // ロジックストアから引数ディレクトリと直下のノードを取得
-    const storeDirChildMap = this.storageLogic.getDirChildren(dirPath).reduce(
+    const storeDirChildDict = this.storageLogic.getDirChildren(dirPath).reduce(
       (result, node) => {
         result[node.path] = node
         return result
@@ -388,12 +388,12 @@ export class StorageTreeStore extends Vue {
       // ツリーのルートノードはロジックストアには存在しないので無視
       if (treeNode === this.rootNode) continue
 
-      const storeNode = storeDirChildMap[treeNode.value]
+      const storeNode = storeDirChildDict[treeNode.value]
       !storeNode && this.removeNode(treeNode.value)
     }
 
     // ロジックストアのノードリストをツリービューへ反映
-    this.setNodes(Object.values(storeDirChildMap))
+    this.setNodes(Object.values(storeDirChildDict))
   }
 
   /**
@@ -512,7 +512,7 @@ export class StorageTreeStore extends Vue {
       existsNode.opened && target.open()
       this.m_treeView!.removeNode(existsNode.value)
       // 既存ノードの子孫ノードを移動対象ノードへ付け替え
-      const targetChildMap = (target.children as StorageTreeNode[]).reduce(
+      const targetChildDict = (target.children as StorageTreeNode[]).reduce(
         (result, node) => {
           result[node.label] = node
           return result
@@ -522,7 +522,7 @@ export class StorageTreeStore extends Vue {
       for (const existsChild of [...existsNode.children]) {
         // 移動先と移動対象に同名の子ノードが存在する場合はスルー
         // (同名の子ノードがあった場合、移動対象の子ノードが優先される)
-        if (targetChildMap[existsChild.label]) {
+        if (targetChildDict[existsChild.label]) {
           continue
         }
         // 移動先の子ノードを移動対象ノードへ付け替え

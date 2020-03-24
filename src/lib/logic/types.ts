@@ -15,7 +15,7 @@ export interface StorageLogic {
 
   getNode(path: string): StorageNode | undefined
 
-  getNodeMap(): { [path: string]: StorageNode }
+  getNodeDict(): { [path: string]: StorageNode }
 
   getChildren(dirPath?: string): StorageNode[]
 

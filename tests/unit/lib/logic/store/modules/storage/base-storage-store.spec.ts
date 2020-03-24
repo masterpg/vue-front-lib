@@ -368,13 +368,13 @@ describe('getDirDescendants', () => {
   })
 })
 
-describe('getMap', () => {
+describe('getDict', () => {
   it('ベーシックケース', () => {
     storageStore.initState({
       all: storageStore.sort(cloneDeep([d1, d11, fileA, d12, d2, d21, fileB, fileC])),
     })
 
-    const actual = storageStore.getMap()
+    const actual = storageStore.getDict()
 
     expect(Object.keys(actual).length).toBe(8)
     expect(actual['d1']).toBeDefined()

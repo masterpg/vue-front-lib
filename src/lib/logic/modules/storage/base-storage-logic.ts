@@ -51,8 +51,8 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
     return this.storageStore.get(path)
   }
 
-  getNodeMap(): { [path: string]: StorageNode } {
-    return this.storageStore.getMap()
+  getNodeDict(): { [path: string]: StorageNode } {
+    return this.storageStore.getDict()
   }
 
   getChildren(dirPath?: string): StorageNode[] {
@@ -196,7 +196,7 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   //----------------------------------------------------------------------
 
   protected setNodesToStore(nodes: StorageNode[]): { added: StorageNode[]; updated: StorageNode[] } {
-    const stateNodeMap = this.storageStore.all.reduce(
+    const stateNodeDict = this.storageStore.all.reduce(
       (result, node) => {
         result[node.id] = node
         return result
@@ -207,7 +207,7 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
     const updatingNodes: StorageNode[] = []
     const addingNodes: StorageNode[] = []
     for (const node of nodes) {
-      const exists = Boolean(stateNodeMap[node.id])
+      const exists = Boolean(stateNodeDict[node.id])
       if (exists) {
         updatingNodes.push(node)
       } else {

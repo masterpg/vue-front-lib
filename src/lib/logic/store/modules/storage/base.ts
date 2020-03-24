@@ -88,7 +88,7 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
     }
   }
 
-  getMap(): { [path: string]: StorageNode } {
+  getDict(): { [path: string]: StorageNode } {
     const result: { [path: string]: StorageNode } = {}
     for (const node of this.state.all) {
       result[node.path] = this.clone(node)
@@ -205,7 +205,7 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
       // 既存ノードを削除
       this.state.all.splice(this.state.all.indexOf(existsNode), 1)
       // 移動先と移動対象の同名の子ノードを検索
-      const existsChildMap = this.getStateChildren(existsNode.path).reduce(
+      const existsChildDict = this.getStateChildren(existsNode.path).reduce(
         (result, node) => {
           result[node.path] = node
           return result
@@ -216,7 +216,7 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
       for (const targetChild of this.getStateChildren(fromPath)) {
         const reg = new RegExp(`^${fromPath}`)
         const existsChildPath = targetChild.path.replace(reg, toPath)
-        if (existsChildMap[existsChildPath]) {
+        if (existsChildDict[existsChildPath]) {
           removingChildPaths.push(existsChildPath)
         }
       }

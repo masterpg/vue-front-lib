@@ -222,7 +222,7 @@ export default class MarkdownItPage extends mixins(BaseComponent, Resizable) {
 
   private mdSrc: MarkdownIt = {} as any
 
-  private scrollMap: number[] | null = null
+  private scrollDict: number[] | null = null
 
   private defaults: MarkdownItOptions = {} as any
 
@@ -379,13 +379,13 @@ export default class MarkdownItPage extends mixins(BaseComponent, Resizable) {
     }
 
     // reset lines mapping cache on content update
-    this.scrollMap = null
+    this.scrollDict = null
   }
 
   // Build offsets for each line (lines can be wrapped)
   // That's a bit dirty to process each line everytime, but ok for demo.
   // Optimizations are required only for big texts.
-  private buildScrollMap(): number[] {
+  private buildScrollDict(): number[] {
     const textareaStyle = window.getComputedStyle(this.m_textarea)
     const sourceLikeDiv = document.createElement('div')
     sourceLikeDiv.style.position = 'absolute'
@@ -398,15 +398,15 @@ export default class MarkdownItPage extends mixins(BaseComponent, Resizable) {
     sourceLikeDiv.style.whiteSpace = textareaStyle.whiteSpace
     document.body.appendChild(sourceLikeDiv)
 
-    // lineHeightMap:
+    // lineHeightDict:
     //   エディタの行インデックスと折返しを加味した表示行インデックスのマップ
     //   index: エディタの行インデックス
     //   value: エディタの表示行インデックス(折返しを加味した行インデックス)
-    const lineHeightMap: number[] = []
+    const lineHeightDict: number[] = []
 
     let acc = 0
     this.m_textarea.value.split('\n').forEach((str, index) => {
-      lineHeightMap.push(acc)
+      lineHeightDict.push(acc)
 
       if (str.length === 0) {
         acc++
@@ -420,24 +420,24 @@ export default class MarkdownItPage extends mixins(BaseComponent, Resizable) {
       acc += Math.round(h / lh)
     })
     sourceLikeDiv.remove()
-    lineHeightMap.push(acc)
+    lineHeightDict.push(acc)
 
     // エディタの表示行インデックスの最大値
     const linesCount = acc
 
-    // _scrollMap:
+    // _scrollDict:
     //   index: エディタの表示行インデックス(折返しを加味した行インデックス)
     //   value: レンダリングエリアのスクロールトップ位置
     //   maxIndex: エディタの表示行インデックスの最大値
-    const _scrollMap: number[] = []
+    const _scrollDict: number[] = []
 
     for (let i = 0; i < linesCount; i++) {
-      _scrollMap.push(-1)
+      _scrollDict.push(-1)
     }
-    _scrollMap[0] = 0
+    _scrollDict[0] = 0
 
     // nonEmptyList:
-    //   lineHeightMapにエディタの表示行インデックスが設定されているものを抽出した配列
+    //   lineHeightDictにエディタの表示行インデックスが設定されているものを抽出した配列
     //   index: 連番インデックス
     //   value: エディタの表示行インデックス(折返しを加味した行インデックス)
     const nonEmptyList = [0]
@@ -447,40 +447,40 @@ export default class MarkdownItPage extends mixins(BaseComponent, Resizable) {
       const srcLineIndex = lineEl.getAttribute('data-line')
       if (!srcLineIndex) return
 
-      const displayLineIndex = lineHeightMap[parseInt(srcLineIndex)]
+      const displayLineIndex = lineHeightDict[parseInt(srcLineIndex)]
       if (displayLineIndex !== 0) {
         nonEmptyList.push(displayLineIndex)
       }
 
-      _scrollMap[displayLineIndex] = Math.round(lineEl.offsetTop - this.m_resultHTML.offsetTop)
+      _scrollDict[displayLineIndex] = Math.round(lineEl.offsetTop - this.m_resultHTML.offsetTop)
     })
 
     nonEmptyList.push(linesCount)
-    _scrollMap[linesCount] = this.m_resultHTML.scrollHeight
+    _scrollDict[linesCount] = this.m_resultHTML.scrollHeight
 
     let pos = 0
     for (let i = 1; i < linesCount; i++) {
-      if (_scrollMap[i] !== -1) {
-        // console.log(`_scrollMap[${i}]: ${_scrollMap[i]}, pos: ${pos}`)
+      if (_scrollDict[i] !== -1) {
+        // console.log(`_scrollDict[${i}]: ${_scrollDict[i]}, pos: ${pos}`)
         pos++
         continue
       }
 
-      const _scrollMap_indexA = nonEmptyList[pos]
-      const _scrollMap_indexB = nonEmptyList[pos + 1]
-      const valueA = _scrollMap[_scrollMap_indexB] * (i - _scrollMap_indexA)
-      const valueB = _scrollMap[_scrollMap_indexA] * (_scrollMap_indexB - i)
-      const valueC = _scrollMap_indexB - _scrollMap_indexA
-      const scrollMapNewValue = Math.round((valueA + valueB) / valueC)
+      const _scrollDict_indexA = nonEmptyList[pos]
+      const _scrollDict_indexB = nonEmptyList[pos + 1]
+      const valueA = _scrollDict[_scrollDict_indexB] * (i - _scrollDict_indexA)
+      const valueB = _scrollDict[_scrollDict_indexA] * (_scrollDict_indexB - i)
+      const valueC = _scrollDict_indexB - _scrollDict_indexA
+      const scrollDictNewValue = Math.round((valueA + valueB) / valueC)
 
       // console.log(
-      //   `_scrollMap[${i}]: ${_scrollMap[i]} -> ${scrollMapNewValue}, pos: ${pos}, _scrollMap_indexA: ${_scrollMap_indexA}, _scrollMap_indexB: ${_scrollMap_indexB}`
+      //   `_scrollDict[${i}]: ${_scrollDict[i]} -> ${scrollDictNewValue}, pos: ${pos}, _scrollDict_indexA: ${_scrollDict_indexA}, _scrollDict_indexB: ${_scrollDict_indexB}`
       // )
 
-      _scrollMap[i] = scrollMapNewValue
+      _scrollDict[i] = scrollDictNewValue
     }
 
-    return _scrollMap
+    return _scrollDict
   }
 
   private syncResultScroll!: () => void
@@ -490,10 +490,10 @@ export default class MarkdownItPage extends mixins(BaseComponent, Resizable) {
     const lineHeight = parseFloat(textareaStyle.lineHeight || '0')
 
     const lineNo = Math.floor(this.m_textarea.scrollTop / lineHeight)
-    if (!this.scrollMap) {
-      this.scrollMap = this.buildScrollMap()
+    if (!this.scrollDict) {
+      this.scrollDict = this.buildScrollDict()
     }
-    const posTo = this.scrollMap[lineNo]
+    const posTo = this.scrollDict[lineNo]
 
     this.m_resultHTML.scrollTop = posTo
     // this.m_resultHTMLAnime && this.m_resultHTMLAnime.pause()
@@ -512,11 +512,11 @@ export default class MarkdownItPage extends mixins(BaseComponent, Resizable) {
     const scrollTop = this.m_resultHTML.scrollTop
     const lineHeight = parseFloat(textareaStyle.lineHeight || '0')
 
-    if (!this.scrollMap) {
-      this.scrollMap = this.buildScrollMap()
+    if (!this.scrollDict) {
+      this.scrollDict = this.buildScrollDict()
     }
 
-    const lines = Object.keys(this.scrollMap)
+    const lines = Object.keys(this.scrollDict)
 
     if (lines.length < 1) {
       return
@@ -525,7 +525,7 @@ export default class MarkdownItPage extends mixins(BaseComponent, Resizable) {
     let line = lines[0]
 
     for (let i = 1; i < lines.length; i++) {
-      if (this.scrollMap[i] < scrollTop) {
+      if (this.scrollDict[i] < scrollTop) {
         line = lines[i]
         continue
       }

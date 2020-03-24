@@ -32,7 +32,7 @@ export interface StorageStore {
 
   getDirDescendants(dirPath?: string): StorageNode[]
 
-  getMap(): { [path: string]: StorageNode }
+  getDict(): { [path: string]: StorageNode }
 
   addList(nodes: StorageNode[]): StorageNode[]
 

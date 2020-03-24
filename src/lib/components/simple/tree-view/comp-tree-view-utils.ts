@@ -44,7 +44,7 @@ export namespace CompTreeViewUtils {
    * 指定されたノードの子孫をマップで取得します。
    * @param node
    */
-  export function getDescendantMap(node: CompTreeNode): { [value: string]: CompTreeNode } {
+  export function getDescendantDict(node: CompTreeNode): { [value: string]: CompTreeNode } {
     const getChildren = (node: CompTreeNode, result: { [value: string]: CompTreeNode }) => {
       for (const child of (node as any).children) {
         result[child.value] = child

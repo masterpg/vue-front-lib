@@ -264,11 +264,11 @@ beforeAll(async () => {
 
 beforeEach(async () => {})
 
-describe('getNodeMap', () => {
+describe('getNodeDict', () => {
   it('ベーシックケース', () => {
     storageStore.initState({ all: cloneDeep(STORAGE_NODES) })
 
-    const actual = storageLogic.getNodeMap()
+    const actual = storageLogic.getNodeDict()
 
     expect(actual).toEqual(STORAGE_NODE_MAP)
   })

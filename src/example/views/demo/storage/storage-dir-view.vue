@@ -264,7 +264,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
 
   private m_children: TableRow[] = []
 
-  private m_childMap: { [value: string]: TableRow } = {}
+  private m_childDict: { [value: string]: TableRow } = {}
 
   private m_pagination = {
     rowsPerPage: 0,
@@ -305,7 +305,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
   setDirPath(dirPath: string | null): void {
     const clear = () => {
       this.m_children = []
-      this.m_childMap = {}
+      this.m_childDict = {}
       this.m_table.selected && this.m_table.selected.splice(0)
       this.m_detailViewNode = null
     }
@@ -359,21 +359,21 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     }
 
     const latestChildren: TableRow[] = []
-    const latestChildMap: { [value: string]: TableRow } = {}
+    const latestChildDict: { [value: string]: TableRow } = {}
     for (const child of dirNode.children as StorageTreeNode[]) {
       const row = this.m_toTableRow(child)
       latestChildren.push(row)
-      latestChildMap[row.value] = row
+      latestChildDict[row.value] = row
     }
 
     // 最新データにはないがビューには存在するノードを削除
     for (let i = 0; i < this.m_children.length; i++) {
       const child = this.m_children[i]
-      const latestChild = latestChildMap[child.value]
+      const latestChild = latestChildDict[child.value]
       if (!latestChild) {
         // 最新データにはないノードを削除
         this.m_children.splice(i--, 1)
-        delete this.m_childMap[child.value]
+        delete this.m_childDict[child.value]
         // 選択ノードを格納している配列から最新データにないノードを削除
         if (this.m_table.selected) {
           const selectedIndex = this.m_table.selected.findIndex((row: TableRow) => {
@@ -386,12 +386,12 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
 
     // 最新データをビューに反映
     for (const latestChild of latestChildren) {
-      const child = this.m_childMap[latestChild.value]
+      const child = this.m_childDict[latestChild.value]
       if (child) {
         this.m_populateTableRow(latestChild, child)
       } else {
         this.m_children.push(latestChild)
-        this.m_childMap[latestChild.value] = latestChild
+        this.m_childDict[latestChild.value] = latestChild
       }
     }
 

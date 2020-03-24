@@ -314,8 +314,8 @@ describe('pullInitialNodes', () => {
   it('ベーシックケース', async () => {
     // StorageLogic.pullChildren()をモック化
     td.when(storageLogic.pullChildren(td.matchers.anything())).thenReturn()
-    // StorageLogic.getNodeMap()をモック化
-    td.when(storageLogic.getNodeMap()).thenReturn(
+    // StorageLogic.getNodeDict()をモック化
+    td.when(storageLogic.getNodeDict()).thenReturn(
       [d1, d11, f111].reduce(
         (result, node) => {
           result[node.path] = node
