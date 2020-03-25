@@ -1,10 +1,10 @@
-import { StorageFileUploader, StorageUploadManager } from './base-upload'
+import { BaseStorageUploadManager, StorageFileUploader } from '../base/base-upload'
 import { Dialog } from 'quasar'
-import { api } from '../../api'
-import { i18n } from '../../../i18n'
-import { store } from '../../store'
+import { api } from '../../../api'
+import { i18n } from '../../../../i18n'
+import { store } from '../../../store'
 
-export class AppStorageUploadManager extends StorageUploadManager {
+export class AppStorageUploadManager extends BaseStorageUploadManager {
   protected async verifyExecutable(): Promise<void> {
     const isAppAdmin = await store.user.getIsAppAdmin()
     if (!isAppAdmin) {

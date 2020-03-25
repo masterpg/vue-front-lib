@@ -75,8 +75,7 @@
 <script lang="ts">
 import { BaseComponent, Resizable } from '../../../base/component'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import { StorageFileUploader } from '@/lib/logic/modules/storage/base-upload'
-import { StorageUploadManager } from '../../../logic'
+import { StorageFileUploader, StorageUploadManager } from '../../../logic'
 import { mixins } from 'vue-class-component'
 
 @Component

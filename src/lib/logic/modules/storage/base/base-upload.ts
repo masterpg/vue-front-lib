@@ -1,4 +1,6 @@
 import * as path from 'path'
+import { BaseStorageLogic } from './base-storage-logic'
+import { StorageUploadManager } from '../types'
 import { removeEndSlash } from 'web-base-lib'
 
 /**
@@ -15,14 +17,14 @@ export interface UploadFileParam {
 /**
  * アップロードの管理を行うマネージャクラスです。
  */
-export abstract class StorageUploadManager {
+export abstract class BaseStorageUploadManager implements StorageUploadManager {
   //----------------------------------------------------------------------
   //
   //  Constructor
   //
   //----------------------------------------------------------------------
 
-  constructor(owner: Element) {
+  constructor(owner: Element, protected storageLogic: BaseStorageLogic) {
     this.m_uploadFileInput = document.createElement('input')
     this.m_uploadFileInput.style.display = 'none'
     this.m_uploadFileInput.setAttribute('type', 'file')
@@ -201,7 +203,7 @@ export abstract class StorageUploadManager {
   //----------------------------------------------------------------------
 
   /**
-   * OSのファイルまたはフォルダ選択ダイアログで変更があった際のリスなです。
+   * OSのファイルまたはフォルダ選択ダイアログで変更があった際のリスナです。
    * @param e
    */
   private async m_uploadFileInputOnChange(e) {

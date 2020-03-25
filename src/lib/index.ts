@@ -43,9 +43,7 @@ export {
 
 export {
   AppStorageLogic,
-  AppStorageLogicImpl,
   AuthLogic,
-  AuthLogicImpl,
   AuthProviderType,
   BaseLogic,
   BaseLogicContainer,
@@ -53,7 +51,6 @@ export {
   StorageLogic,
   StorageUploadManager,
   UserStorageLogic,
-  UserStorageLogicImpl,
   setLogic,
 } from './logic'
 

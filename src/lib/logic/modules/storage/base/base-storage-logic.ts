@@ -1,10 +1,11 @@
 import * as _path from 'path'
-import { GetStorageOptionsInput, GetStorageResult, LibAPIContainer, StorageNode, StorageNodeShareSettingsInput } from '../../api'
-import { StorageStore, User } from '../../store'
-import { BaseLogic } from '../../base'
+import { GetStorageOptionsInput, GetStorageResult, LibAPIContainer, StorageNode, StorageNodeShareSettingsInput } from '../../../api'
+import { StorageStore, User } from '../../../store'
+import { BaseLogic } from '../../../base'
 import { Component } from 'vue-property-decorator'
-import { StorageLogic } from '../../types'
-import { StorageUploadManager } from './base-upload'
+import { StorageLogic } from '../../../types'
+import { StorageUploadManager } from '../types'
+import { arrayToDict } from 'web-base-lib'
 
 // @ts-ignore: Vueを継承した抽象クラスに@Componentを付与するとでるエラーの回避
 @Component
@@ -191,11 +192,11 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
 
   //----------------------------------------------------------------------
   //
-  //  Internal methods
+  //  Storage internal methods
   //
   //----------------------------------------------------------------------
 
-  protected setNodesToStore(nodes: StorageNode[]): { added: StorageNode[]; updated: StorageNode[] } {
+  setNodesToStore(nodes: StorageNode[]): { added: StorageNode[]; updated: StorageNode[] } {
     const stateNodeDict = this.storageStore.all.reduce(
       (result, node) => {
         result[node.id] = node
@@ -226,6 +227,40 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   //--------------------------------------------------
   //  API
   //--------------------------------------------------
+
+  abstract getNodeAPI(nodePath: string): Promise<StorageNode | undefined>
+
+  abstract getDirDescendantsAPI(dirPath?: string): Promise<StorageNode[]>
+
+  abstract getDescendantsAPI(dirPath?: string): Promise<StorageNode[]>
+
+  abstract getDirChildrenAPI(dirPath?: string): Promise<StorageNode[]>
+
+  abstract getChildrenAPI(dirPath?: string): Promise<StorageNode[]>
+
+  abstract createDirsAPI(dirPaths: string[]): Promise<StorageNode[]>
+
+  abstract removeDirsAPI(dirPaths: string[]): Promise<void>
+
+  abstract removeFilesAPI(filePaths: string[]): Promise<void>
+
+  abstract moveDirAPI(fromDirPath: string, toDirPath: string): Promise<void>
+
+  abstract moveFileAPI(fromFilePath: string, toFilePath: string): Promise<void>
+
+  abstract renameDirAPI(dirPath: string, newName: string): Promise<void>
+
+  abstract renameFileAPI(filePath: string, newName: string): Promise<void>
+
+  abstract setDirShareSettingsAPI(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
+
+  abstract setFileShareSettingsAPI(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
+
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
 
   /**
    * ページングが必要なノード検索APIをページングがなくなるまで実行し結果を取得します。
@@ -270,34 +305,6 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
 
     return this.sortNodes(Object.values(nodeDict))
   }
-
-  protected abstract getNodeAPI(nodePath: string): Promise<StorageNode | undefined>
-
-  protected abstract getDirDescendantsAPI(dirPath?: string): Promise<StorageNode[]>
-
-  protected abstract getDescendantsAPI(dirPath?: string): Promise<StorageNode[]>
-
-  protected abstract getDirChildrenAPI(dirPath?: string): Promise<StorageNode[]>
-
-  protected abstract getChildrenAPI(dirPath?: string): Promise<StorageNode[]>
-
-  protected abstract createDirsAPI(dirPaths: string[]): Promise<StorageNode[]>
-
-  protected abstract removeDirsAPI(dirPaths: string[]): Promise<void>
-
-  protected abstract removeFilesAPI(filePaths: string[]): Promise<void>
-
-  protected abstract moveDirAPI(fromDirPath: string, toDirPath: string): Promise<void>
-
-  protected abstract moveFileAPI(fromFilePath: string, toFilePath: string): Promise<void>
-
-  protected abstract renameDirAPI(dirPath: string, newName: string): Promise<void>
-
-  protected abstract renameFileAPI(filePath: string, newName: string): Promise<void>
-
-  protected abstract setDirShareSettingsAPI(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
-
-  protected abstract setFileShareSettingsAPI(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
   //----------------------------------------------------------------------
   //

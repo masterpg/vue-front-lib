@@ -1,12 +1,12 @@
 import * as _path from 'path'
-import { StorageFileUploader, StorageUploadManager } from './base-upload'
-import { StorageNode, api } from '../../api'
+import { BaseStorageUploadManager, StorageFileUploader } from '../base/base-upload'
 import { Dialog } from 'quasar'
-import { config } from '../../../config'
-import { i18n } from '../../../i18n'
-import { store } from '../../store'
+import { api } from '../../../api'
+import { config } from '../../../../config'
+import { i18n } from '../../../../i18n'
+import { store } from '../../../store'
 
-export class UserStorageUploadManager extends StorageUploadManager {
+export class UserStorageUploadManager extends BaseStorageUploadManager {
   protected async verifyExecutable(): Promise<void> {
     if (!store.user.myDirName) {
       Dialog.create({

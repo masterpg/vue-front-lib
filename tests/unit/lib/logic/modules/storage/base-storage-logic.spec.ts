@@ -1,7 +1,7 @@
 import * as shortid from 'shortid'
 import * as td from 'testdouble'
 import { LibAPIContainer, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageState } from '@/lib'
-import { BaseStorageLogic } from '@/lib/logic/modules/storage/base-storage-logic'
+import { BaseStorageLogic } from '@/lib/logic/modules/storage/base/base-storage-logic'
 import { BaseStorageStore } from '@/lib/logic/store/modules/storage/base'
 import { Component } from 'vue-property-decorator'
 import { StorageStore } from '@/lib/logic/store'
@@ -210,20 +210,20 @@ class MockStorageLogic extends BaseStorageLogic {
   }
 
   newUploadManager = td.func() as any
-  protected getNodeAPI = td.func() as any
-  protected getDirDescendantsAPI = td.func() as any
-  protected getDescendantsAPI = td.func() as any
-  protected getDirChildrenAPI = td.func() as any
-  protected getChildrenAPI = td.func() as any
-  protected createDirsAPI = td.func() as any
-  protected removeDirsAPI = td.func() as any
-  protected removeFilesAPI = td.func() as any
-  protected moveDirAPI = td.func() as any
-  protected moveFileAPI = td.func() as any
-  protected renameDirAPI = td.func() as any
-  protected renameFileAPI = td.func() as any
-  protected setDirShareSettingsAPI = td.func() as any
-  protected setFileShareSettingsAPI = td.func() as any
+  getNodeAPI = td.func() as any
+  getDirDescendantsAPI = td.func() as any
+  getDescendantsAPI = td.func() as any
+  getDirChildrenAPI = td.func() as any
+  getChildrenAPI = td.func() as any
+  createDirsAPI = td.func() as any
+  removeDirsAPI = td.func() as any
+  removeFilesAPI = td.func() as any
+  moveDirAPI = td.func() as any
+  moveFileAPI = td.func() as any
+  renameDirAPI = td.func() as any
+  renameFileAPI = td.func() as any
+  setDirShareSettingsAPI = td.func() as any
+  setFileShareSettingsAPI = td.func() as any
 }
 
 let api!: LibAPIContainer
@@ -231,20 +231,6 @@ let api!: LibAPIContainer
 let storageStore!: TestStore<StorageStore, StorageState>
 
 let storageLogic!: BaseStorageLogic & {
-  getNodeAPI: BaseStorageLogic['getNodeAPI']
-  getDirDescendantsAPI: BaseStorageLogic['getDirDescendantsAPI']
-  getDescendantsAPI: BaseStorageLogic['getDescendantsAPI']
-  getDirChildrenAPI: BaseStorageLogic['getDirChildrenAPI']
-  getChildrenAPI: BaseStorageLogic['getChildrenAPI']
-  createDirsAPI: BaseStorageLogic['createDirsAPI']
-  removeDirsAPI: BaseStorageLogic['removeDirsAPI']
-  removeFilesAPI: BaseStorageLogic['removeFilesAPI']
-  moveDirAPI: BaseStorageLogic['moveDirAPI']
-  moveFileAPI: BaseStorageLogic['moveFileAPI']
-  renameDirAPI: BaseStorageLogic['renameDirAPI']
-  renameFileAPI: BaseStorageLogic['renameFileAPI']
-  setDirShareSettingsAPI: BaseStorageLogic['setDirShareSettingsAPI']
-  setFileShareSettingsAPI: BaseStorageLogic['setFileShareSettingsAPI']
   getPaginationNodesAPI: BaseStorageLogic['getPaginationNodesAPI']
 }
 

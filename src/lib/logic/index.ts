@@ -47,8 +47,6 @@ export function setLogic(value: LibLogicContainer): void {
   logic = value
 }
 
-export { AppStorageLogic, AuthLogic, AuthProviderType, StorageLogic, UserStorageLogic } from './types'
-
 export { BaseLogic } from './base'
-
-export { StorageUploadManager, UserStorageLogicImpl, AppStorageLogicImpl, AuthLogicImpl }
+export { AppStorageLogic, AuthLogic, AuthProviderType, StorageLogic, UserStorageLogic } from './types'
+export { StorageFileUploader, StorageUploadManager } from './modules/storage/index'

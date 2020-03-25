@@ -1,13 +1,13 @@
 import * as _path from 'path'
-import { StorageFileUploader, StorageUploadManager, UploadFileParam } from './base-upload'
-import { StorageNode, api } from '../../api'
+import { BaseStorageUploadManager, StorageFileUploader, UploadFileParam } from '../base/base-upload'
 import axios, { Canceler } from 'axios'
 import { Dialog } from 'quasar'
-import { config } from '../../../config'
-import { i18n } from '../../../i18n'
-import { store } from '../../store'
+import { api } from '../../../api'
+import { config } from '../../../../config'
+import { i18n } from '../../../../i18n'
+import { store } from '../../../store'
 
-export class UserStorageUrlUploadManager extends StorageUploadManager {
+export class UserStorageUrlUploadManager extends BaseStorageUploadManager {
   protected async verifyExecutable(): Promise<void> {
     if (!store.user.myDirName) {
       Dialog.create({
