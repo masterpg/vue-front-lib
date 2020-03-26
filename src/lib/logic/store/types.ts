@@ -20,9 +20,7 @@ export interface UserStore extends User {
 export interface StorageStore {
   readonly all: StorageNode[]
 
-  get(path: string): StorageNode | undefined
-
-  getById(id: string): StorageNode | undefined
+  get(key: { id?: string; path?: string }): StorageNode | undefined
 
   getChildren(dirPath?: string): StorageNode[]
 
@@ -44,11 +42,11 @@ export interface StorageStore {
 
   set(node: StorageNodeForSet): StorageNode
 
-  removeList(paths: string[]): StorageNode[]
+  removeList(key: { ids?: string[]; paths?: string[] }): StorageNode[]
 
-  remove(path: string): StorageNode[]
+  remove(key: { id?: string; path?: string }): StorageNode[]
 
-  move(fromPath, toPath: string): StorageNode[]
+  move(fromPath: string, toPath: string): StorageNode[]
 
   rename(path: string, newName: string): StorageNode[]
 
@@ -103,6 +101,9 @@ export interface User {
 
 export type StorageNodeForSet = Partial<Omit<StorageNode, 'nodeType'>> & {
   id: string
+  name: string
+  dir: string
+  path: string
 }
 
 //========================================================================

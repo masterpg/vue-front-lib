@@ -1,8 +1,17 @@
 import * as _path from 'path'
-import { CompTreeView, CompTreeViewLazyLoadStatus, CompTreeViewUtils, StorageLogic, StorageNode, StorageNodeType, User } from '@/lib'
+import {
+  CompTreeView,
+  CompTreeViewLazyLoadStatus,
+  CompTreeViewUtils,
+  StorageLogic,
+  StorageNode,
+  StorageNodeShareSettings,
+  StorageNodeType,
+  User,
+} from '@/lib'
 import { Component, Prop } from 'vue-property-decorator'
 import { StorageTreeNodeData, StorageType, treeSortFunc } from '@/example/views/demo/storage/base'
-import { removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
+import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import Vue from 'vue'
 import dayjs from 'dayjs'
@@ -149,8 +158,8 @@ export class StorageTreeStore extends Vue {
     // 引数ディレクトリのパスを構成する各ディレクトリの子ノードをサーバーから取得
     const dirPaths = splitHierarchicalPaths(dirPath)
     await Promise.all(
-      ['', ...dirPaths].map(async iDirPath => {
-        await this.storageLogic.pullChildren(iDirPath)
+      [this.rootNode.value, ...dirPaths].map(async iDirPath => {
+        await this.storageLogic.fetchChildren(iDirPath)
       })
     )
 
@@ -170,63 +179,74 @@ export class StorageTreeStore extends Vue {
     this.setAllNodes(Object.values(nodeDict))
 
     // 引数ディレクトリのパスを構成する各ディレクトリは子ノードが取得済みなので、
-    // 各ディレクトリの遅延ロードは完了状態にする
+    // 各ディレクトリの遅延ロードは済みにする
     for (const dirPath of dirPaths) {
-      const dirNode = this.getNode(dirPath)
-      if (dirNode) {
-        dirNode.lazyLoadStatus = 'loaded'
+      const dirTreeNode = this.getNode(dirPath)
+      if (dirTreeNode) {
+        dirTreeNode.lazyLoadStatus = 'loaded'
       }
     }
 
-    // ルートノードを遅延ロード完了に設定
+    // ルートノードを遅延ロード済みに設定
     this.rootNode.lazyLoadStatus = 'loaded'
   }
 
   /**
-   * 指定されたディレクトリ配下の子ノードをサーバーから取得します。
+   * 指定されたディレクトリ直下の子ノードをサーバーから取得します。
    * @param dirPath
    */
-  async pullDescendants(dirPath: string): Promise<void> {
+  async pullChildren(dirPath: string): Promise<void> {
+    const storeChildNodes = await this.storageLogic.fetchChildren(dirPath)
+
+    // ロジックストアのノードをツリービューに反映
+    this.setNodes(storeChildNodes)
+
+    const dirTreeNode = this.getNode(dirPath)
+    if (!dirTreeNode) {
+      throw new Error(`The specified node was not found: '${dirPath}'`)
+    }
+
+    // ロジックストアにないがツリーには存在するノードをツリーから削除
+    // ※他の端末で削除、移動、リネームされたノードが削除される
+    this.m_removeNotExistsTreeNodes(storeChildNodes, dirTreeNode.children as StorageTreeNode[])
+
+    // 引数ディレクトリを遅延ロード済みに設定
+    dirTreeNode.lazyLoadStatus = 'loaded'
+  }
+
+  /**
+   * 指定されたディレクトリの再読み込みを行います。
+   * @param dirPath
+   */
+  async reloadDir(dirPath: string): Promise<void> {
     dirPath = removeBothEndsSlash(dirPath)
 
     // 引数ディレクトリを遅延ロード中に設定
     const dirTreeNode = this.getNode(dirPath)!
     dirTreeNode.lazyLoadStatus = 'loading'
 
-    // 引数ディレクトリのパスを構成する各ディレクトリの子ノードをサーバーから取得
-    // ※引数ディレクトリは除く
-    const dirPaths = splitHierarchicalPaths(dirPath)
-    const promises: Promise<any>[] = []
-    for (const iDirPath of [this.rootNode.value, ...dirPaths]) {
-      if (iDirPath === dirPath) continue
-      promises.push(this.storageLogic.pullChildren(iDirPath))
-    }
-    // 引数ディレクトリ配下のノードをサーバーから取得
-    promises.push(
-      (async () => {
-        await this.storageLogic.pullDescendants(dirPath)
-      })()
-    )
-    await Promise.all(promises)
+    // 引数ディレクトリのパスを構成する各ディレクトリと配下ノードをサーバーから取得
+    await this.storageLogic.fetchHierarchicalDescendants(dirPath)
 
     // ロジックストアのノードをツリービューに反映
-    // ※引数ディレクトリのパスを構成する各ディレクトリ(引数ディレクトリは除く)が対象
-    for (const iDirPath of [this.rootNode.value, ...dirPaths]) {
-      if (iDirPath === dirPath) continue
-      // ロジックストアのディレクトリと直下の子ノードをツリービューにマージ
-      this.mergeDirChildren(iDirPath)
-      // ディレクトリの遅延ロード状態を完了に設定
-      const dirTreeNode = this.m_treeView!.getNode(iDirPath)
-      if (dirTreeNode) {
-        dirTreeNode.lazyLoadStatus = 'loaded'
+    // ※引数ディレクトリの祖先ディレクトリが対象
+    splitHierarchicalPaths(dirPath).map(ancestorDirPath => {
+      // 引数ディレクトリは以降で処理するためここでは無視
+      if (ancestorDirPath === dirPath) return
+      // 祖先ディレクトリをツリービューに反映
+      const storeDirNode = this.storageLogic.getNode({ path: ancestorDirPath })
+      if (storeDirNode) {
+        this.setNode(storeDirNode)
+      } else {
+        this.removeNode(ancestorDirPath)
       }
-    }
+    })
 
     // ロジックストアのノードをツリービューに反映
-    // ※引数ディレクトリが対象
+    // ※引数ディレクトリと配下ノードが対象
     this.mergeDirDescendants(dirPath)
 
-    // 引数ディレクトリ配下にあるディレクトリの遅延ロード状態を完了に設定
+    // 引数ディレクトリ配下にあるディレクトリの遅延ロード状態を済みに設定
     let treeDescendants: StorageTreeNode[] = []
     if (dirPath === this.rootNode.value) {
       treeDescendants = this.getAllNodes()
@@ -247,18 +267,8 @@ export class StorageTreeStore extends Vue {
       this.selectedNode = this.rootNode
     }
 
-    // 引数ディレクトリを遅延ロード完了に設定
+    // 引数ディレクトリを遅延ロード済みに設定
     dirTreeNode.lazyLoadStatus = 'loaded'
-  }
-
-  /**
-   * 指定されたディレクトリ直下の子ノードをサーバーから取得します。
-   * @param dirPath
-   */
-  async pullChildren(dirPath: string): Promise<void> {
-    const pulled = await this.storageLogic.pullChildren(dirPath)
-    this.setNodes([...pulled.added, ...pulled.updated])
-    this.removeNodes(pulled.removed.map(node => node.path))
   }
 
   /**
@@ -325,18 +335,17 @@ export class StorageTreeStore extends Vue {
   }
 
   /**
-   * ツリービューのノードと指定されたノード＋配下ノードをロジックストアから取得し、ツリービューにマージします。
+   * 指定されたノード＋配下ノードをロジックストアから取得し、ツリービューにマージします。
    * @param dirPath
    */
   mergeDirDescendants(dirPath: string): void {
     // ロジックストアから引数ディレクトリと配下のノードを取得
-    const storeDirDescendantDict = this.storageLogic.getDirDescendants(dirPath).reduce(
-      (result, node) => {
-        result[node.path] = node
-        return result
-      },
-      {} as { [path: string]: StorageNode }
-    )
+    const storeDirDescendants = this.storageLogic.getDirDescendants(dirPath)
+    const storeDirDescendantIdDict = arrayToDict(storeDirDescendants, 'id')
+    const storeDirDescendantPathDict = arrayToDict(storeDirDescendants, 'path')
+
+    // ロジックストアのノードリストをツリービューへ反映
+    this.setNodes(storeDirDescendants)
 
     // ツリービューから引数ディレクトリと配下のノードを取得
     const dirTreeNode = this.getNode(dirPath)
@@ -352,12 +361,9 @@ export class StorageTreeStore extends Vue {
       // ツリーのルートノードはロジックストアには存在しないので無視
       if (treeNode === this.rootNode) continue
 
-      const storeNode = storeDirDescendantDict[treeNode.value]
-      !storeNode && this.removeNode(treeNode.value)
+      const exists = Boolean(storeDirDescendantIdDict[treeNode.id] || storeDirDescendantPathDict[treeNode.value])
+      !exists && this.removeNode(treeNode.value)
     }
-
-    // ロジックストアのノードリストをツリービューへ反映
-    this.setNodes(Object.values(storeDirDescendantDict))
   }
 
   /**
@@ -366,13 +372,12 @@ export class StorageTreeStore extends Vue {
    */
   mergeDirChildren(dirPath: string): void {
     // ロジックストアから引数ディレクトリと直下のノードを取得
-    const storeDirChildDict = this.storageLogic.getDirChildren(dirPath).reduce(
-      (result, node) => {
-        result[node.path] = node
-        return result
-      },
-      {} as { [path: string]: StorageNode }
-    )
+    const storeDirChildren = this.storageLogic.getDirChildren(dirPath)
+    const storeDirChildrenIdDict = arrayToDict(storeDirChildren, 'id')
+    const storeDirChildrenPathDict = arrayToDict(storeDirChildren, 'path')
+
+    // ロジックストアのノードリストをツリービューへ反映
+    this.setNodes(storeDirChildren)
 
     // ツリービューから引数ディレクトリと直下のノードを取得
     const dirTreeNode = this.getNode(dirPath)
@@ -388,12 +393,9 @@ export class StorageTreeStore extends Vue {
       // ツリーのルートノードはロジックストアには存在しないので無視
       if (treeNode === this.rootNode) continue
 
-      const storeNode = storeDirChildDict[treeNode.value]
-      !storeNode && this.removeNode(treeNode.value)
+      const exists = Boolean(storeDirChildrenIdDict[treeNode.id] || storeDirChildrenPathDict[treeNode.value])
+      !exists && this.removeNode(treeNode.value)
     }
-
-    // ロジックストアのノードリストをツリービューへ反映
-    this.setNodes(Object.values(storeDirChildDict))
   }
 
   /**
@@ -415,8 +417,14 @@ export class StorageTreeStore extends Vue {
    * @param node
    */
   setNode(node: StorageNodeForTree): void {
-    // 引数ノードが移動またはリネームされている可能性があるのでIDで検索
-    const treeNode = this.m_getNodeById(node.id)
+    // id検索が必要な理由:
+    //   他端末でノード移動するとidは変わらないがpathは変化する。
+    //   この状況でpath検索を行うと、対象のノードを見つけられないためid検索する必要がある。
+    // path検索が必要な理由:
+    //   他端末で'd1/d11'を削除してからまた同じパスの'd1/d11'が作成された場合、
+    //   元のidと再作成されたidが異なり、パスは同じでもidが異なる状況が発生する。
+    //   この場合id検索しても対象ノードが見つからないため、path検索する必要がある。
+    const treeNode = this.m_getNodeById(node.id) || this.getNode(node.path)
 
     // ツリービューに引数ノードが既に存在する場合
     if (treeNode) {
@@ -424,21 +432,79 @@ export class StorageTreeStore extends Vue {
       if (treeNode.value === node.path) {
         treeNode.setNodeData(this.m_toTreeNodeData(node))
       }
-      // 移動またはリネームされていた場合
+      // パスに変更がある場合(移動またはリネームされていた場合)
       else {
-        treeNode.setNodeData(this.m_toTreeNodeData(node))
-        this.m_treeView!.addNode(treeNode, {
-          parent: node.dir || this.rootNode.value,
-          sortFunc: treeSortFunc,
-        })
+        this.moveNode(treeNode.value, node.path)
       }
     }
     // ツリービューに引数ノードがまだ存在しない場合
     else {
       this.m_treeView!.addNode(this.m_toTreeNodeData(node), {
         parent: node.dir || this.rootNode.value,
-        sortFunc: treeSortFunc,
       })
+    }
+  }
+
+  /**
+   * ノードの移動を行います。
+   * @param fromNodePath 移動するノードパス。例: 'home/development'
+   * @param toNodePath 移動後のノードパス。例: 'work/dev'
+   */
+  moveNode(fromNodePath: string, toNodePath: string): void {
+    fromNodePath = removeBothEndsSlash(fromNodePath)
+    toNodePath = removeBothEndsSlash(toNodePath)
+
+    // ツリービューから移動するノードとその配下のノードを取得
+    const targetTreeTopNode = this.getNode(fromNodePath)!
+    const targetTreeNodes = [targetTreeTopNode, ...targetTreeTopNode.getDescendants<StorageTreeNode>()]
+
+    // ツリービューから移動先のノードを取得
+    const existsTreeTopNode = this.getNode(toNodePath)
+
+    // 移動ノード＋配下ノードのパスを移動先パスへ書き換え
+    for (const targetTreeNode of targetTreeNodes) {
+      const reg = new RegExp(`^${fromNodePath}`)
+      const newTargetNodePath = targetTreeNode.value.replace(reg, toNodePath)
+      targetTreeNode.setNodeData({
+        value: newTargetNodePath,
+        label: _path.basename(newTargetNodePath),
+      })
+    }
+
+    // 移動ノードと同名のノードが移動先に存在しない場合
+    if (!existsTreeTopNode) {
+      const parentPath = removeStartDirChars(_path.dirname(toNodePath))
+      const parentTreeNode = this.getNode(parentPath)!
+      parentTreeNode.addChild(targetTreeTopNode)
+    }
+    // 移動ノードと同名のノードが移動先に存在する場合
+    else {
+      // 移動ノードをツリーから削除
+      // ※この後の処理で移動ノードを移動先の同名ノードへ上書きすることにより、
+      //   移動ノードは必要なくなるためツリービューから削除
+      this.m_treeView!.removeNode(targetTreeTopNode.value)
+
+      // 移動ノード＋配下ノードを既存ノードへ付け替え
+      const existsTreeNodes = [existsTreeTopNode, ...existsTreeTopNode.getDescendants<StorageTreeNode>()]
+      const existsTreeNodeDict = arrayToDict(existsTreeNodes, 'value')
+      for (const targetTreeNode of targetTreeNodes) {
+        const existsTreeNode = existsTreeNodeDict[targetTreeNode.value]
+        // 移動先に同名ノードが存在する場合
+        if (existsTreeNode) {
+          // 移動ノードを移動先の同名ノードへ上書き
+          const toTreeNodeData = this.m_toTreeNodeData(targetTreeNode)
+          delete toTreeNodeData.opened
+          delete toTreeNodeData.lazyLoadStatus
+          existsTreeNode.setNodeData(toTreeNodeData)
+        }
+        // 移動先に同名ノードが存在しない場合
+        else {
+          // 移動先のディレクトリを検索し、そのディレクトリに移動ノードを追加
+          const parentPath = removeStartDirChars(_path.dirname(targetTreeNode.value))
+          const parentTreeNode = existsTreeNodeDict[parentPath]
+          existsTreeNodeDict[targetTreeNode.value] = parentTreeNode.addChild(targetTreeNode) as StorageTreeNode
+        }
+      }
     }
   }
 
@@ -466,108 +532,299 @@ export class StorageTreeStore extends Vue {
   }
 
   /**
-   * ツリーノードの移動を行います。
-   * また対象のツリーノードとその子孫のパスも変更されます。
-   *
-   * ディレクトリの移動例:
-   *   + fromDirPath: 'photos'
-   *   + toDirPath: 'archives/photos'
-   *
-   * ファイルの移動例:
-   *   + fromPath: 'photos/family.png'
-   *   + toPath: 'archives/family.png'
-   *
-   * @param fromPath
-   * @param toPath
+   * ディレクトリの作成を行います。
+   * @param dirPath 作成するディレクトリのパス
    */
-  moveNode(fromPath, toPath: string): void {
-    fromPath = removeBothEndsSlash(fromPath)
-    toPath = removeBothEndsSlash(toPath)
+  async createStorageDir(dirPath: string): Promise<void> {
+    dirPath = removeBothEndsSlash(dirPath)
 
-    if (fromPath === this.rootNode.value) {
-      throw new Error(`The root node cannot be renamed.`)
+    // APIによるディレクトリ作成処理を実行
+    let dirNode: StorageNode
+    try {
+      dirNode = (await this.storageLogic.createDirs([dirPath]))[0]
+    } catch (err) {
+      console.error(err)
+      this.m_showNotification('error', String(this.$t('storage.create.creatingDirError', { nodeName: _path.basename(dirPath) })))
+      return
     }
 
-    const target = this.getNode(fromPath)
-    if (!target) {
-      throw new Error(`The specified node was not found: '${fromPath}'`)
-    }
+    // ツリービューに作成したディレクトリノードを追加
+    this.setNode(dirNode)
+    const dirTreeNode = this.getNode(dirPath)!
+    // 作成したディレクトリの遅延ロード状態を済みに設定
+    dirTreeNode.lazyLoadStatus = 'loaded'
+  }
 
-    if (target.nodeType === StorageNodeType.Dir) {
-      // 移動先ディレクトリが移動対象のサブディレクトリでないことを確認
-      // from: aaa/bbb → to: aaa/bbb/ccc/bbb [NG]
-      //               → to: aaa/zzz/ccc/bbb [OK]
-      if (toPath.startsWith(_path.join(fromPath, '/'))) {
-        throw new Error(`The destination directory is its own subdirectory: '${fromPath}' -> '${toPath}'`)
+  /**
+   * ノードの削除を行います。
+   * @param nodePaths 削除するノードのパス
+   */
+  async removeStorageNodes(nodePaths: string[]): Promise<void> {
+    nodePaths = nodePaths.map(fromNodePath => removeBothEndsSlash(fromNodePath))
+
+    const treeNodes: StorageTreeNode[] = []
+
+    // 引数チェック
+    for (const nodePath of nodePaths) {
+      if (nodePath === this.rootNode.value) {
+        throw new Error(`The root node cannot be renamed.`)
       }
+
+      const treeNode = this.getNode(nodePath)
+      if (!treeNode) {
+        throw new Error(`The specified node was not found: '${nodePath}'`)
+      }
+
+      treeNodes.push(treeNode)
     }
 
-    // 移動先ノードを取得
-    // (移動先ディレクトリに移動対象と同名のノードが既に存在することがあるので)
-    const existsNode = this.getNode(toPath)
-
-    // 移動先ディレクトリに移動対象と同名のノードが既に存在する場合
-    if (existsNode) {
-      // 既存ノードをツリーから削除
-      existsNode.opened && target.open()
-      this.m_treeView!.removeNode(existsNode.value)
-      // 既存ノードの子孫ノードを移動対象ノードへ付け替え
-      const targetChildDict = (target.children as StorageTreeNode[]).reduce(
-        (result, node) => {
-          result[node.label] = node
-          return result
-        },
-        {} as { [label: string]: StorageTreeNode }
-      )
-      for (const existsChild of [...existsNode.children]) {
-        // 移動先と移動対象に同名の子ノードが存在する場合はスルー
-        // (同名の子ノードがあった場合、移動対象の子ノードが優先される)
-        if (targetChildDict[existsChild.label]) {
-          continue
+    // APIによる削除処理を実行
+    const removeStorageNode = async (treeNode: StorageTreeNode) => {
+      try {
+        switch (treeNode.nodeType) {
+          case StorageNodeType.Dir:
+            await this.storageLogic.removeDirs([treeNode.value])
+            break
+          case StorageNodeType.File:
+            await this.storageLogic.removeFiles([treeNode.value])
+            break
         }
-        // 移動先の子ノードを移動対象ノードへ付け替え
-        target.addChild(existsChild, { sortFunc: treeSortFunc })
+      } catch (err) {
+        console.error(err)
+        this.m_showNotification('error', String(this.$t('storage.delete.deletingError', { nodeName: treeNode.label })))
+        return undefined
       }
+      return treeNode.value
     }
-
-    // 移動対象ノードのパスを移動先パスへ書き換え
-    target.label = _path.basename(toPath)
-    target.value = toPath
-
-    // ノードの名前が変わった場合、兄弟ノードの並び順も変える必要がある。
-    // ここでは名前変更があったノードを再度addChildしてソートし直している。
-    this.m_treeView!.addNode(target, {
-      parent: removeStartDirChars(_path.dirname(target.value)),
-      sortFunc: treeSortFunc,
+    const removedNodePaths = await Promise.all(treeNodes.map(treeNode => removeStorageNode(treeNode))).then(result => {
+      return result.filter(nodePath => Boolean(nodePath)) as string[]
     })
 
-    // 移動対象ノードの子孫のパスを移動先パスへ書き換え
-    if (target.nodeType === StorageNodeType.Dir) {
-      const descendants = target.getDescendants<StorageTreeNode>()
-      for (const descendant of descendants) {
-        const reg = new RegExp(`^${fromPath}`)
-        descendant.value = descendant.value.replace(reg, target.value)
+    // ツリービューから引数ノードを削除
+    this.removeNodes(removedNodePaths)
+  }
+
+  /**
+   * ノードの移動を行います。
+   * @param fromNodePaths 移動するノードのパス。例: ['home/dev', 'home/photos']
+   * @param toDirPath 移動先のディレクトリパス。例: 'tmp'
+   */
+  async moveStorageNodes(fromNodePaths: string[], toDirPath: string): Promise<void> {
+    fromNodePaths = fromNodePaths.map(fromNodePath => removeBothEndsSlash(fromNodePath))
+    toDirPath = removeBothEndsSlash(toDirPath)
+
+    const moveNodeDataList: { treeNode: StorageTreeNode; toNodePath: string }[] = []
+
+    // 引数チェック
+    for (const fromNodePath of fromNodePaths) {
+      // 移動ノードがルートノードでないことを確認
+      if (fromNodePath === this.rootNode.value) {
+        throw new Error(`The root node cannot be moved.`)
+      }
+
+      // 移動ノードが存在することを確認
+      const fromTreeNode = this.getNode(fromNodePath)
+      if (!fromTreeNode) {
+        throw new Error(`The specified node was not found: '${fromNodePath}'`)
+      }
+
+      if (fromTreeNode.nodeType === StorageNodeType.Dir) {
+        // 移動先ディレクトリが移動対象のサブディレクトリでないことを確認
+        // from: aaa/bbb → to: aaa/bbb/ccc/bbb [NG]
+        //               → to: aaa/zzz/ccc/bbb [OK]
+        if (toDirPath.startsWith(_path.join(fromNodePath, '/'))) {
+          throw new Error(`The destination directory is its own subdirectory: '${fromNodePath}' -> '${toDirPath}'`)
+        }
+      }
+
+      moveNodeDataList.push({
+        treeNode: fromTreeNode,
+        toNodePath: _path.join(toDirPath, fromTreeNode.label),
+      })
+    }
+
+    //
+    // 1. APIによる移動処理を実行
+    //
+    const moveStorageNode = async (moveNodeData: { treeNode: StorageTreeNode; toNodePath: string }) => {
+      const fromTreeNode = moveNodeData.treeNode
+      const toNodePath = moveNodeData.toNodePath
+      try {
+        switch (fromTreeNode.nodeType) {
+          case StorageNodeType.Dir:
+            await this.storageLogic.moveDir(fromTreeNode.value, toNodePath)
+            break
+          case StorageNodeType.File:
+            await this.storageLogic.moveFile(fromTreeNode.value, toNodePath)
+            break
+        }
+      } catch (err) {
+        console.error(err)
+        this.m_showNotification('error', String(this.$t('storage.move.movingError', { nodeName: fromTreeNode.label })))
+        return undefined
+      }
+      return moveNodeData
+    }
+    const movedNodeDataList = await Promise.all(moveNodeDataList.map(moveNodeData => moveStorageNode(moveNodeData))).then(result => {
+      return result.filter(moveNodeData => Boolean(moveNodeData)) as { treeNode: StorageTreeNode; toNodePath: string }[]
+    })
+
+    //
+    // 2. 移動先ディレクトリとその上位ディレクトリ階層の作成
+    //
+    const hierarchicalNode = await this.storageLogic.fetchHierarchicalNode(toDirPath)
+    this.setNodes(hierarchicalNode)
+
+    // 3. 移動先ディレクトリに移動されたノードをツリービューへ反映
+    for (const moveNodeData of movedNodeDataList) {
+      // 移動されたノードをロジックストアから取得
+      const toNodePath = moveNodeData.toNodePath
+      const toNode = this.storageLogic.getNode({ path: toNodePath })!
+      // 移動ノードがディレクトリの場合
+      if (toNode.nodeType === StorageNodeType.Dir) {
+        this.mergeDirDescendants(toNode.path)
+      }
+      // 移動ノードがファイルの場合
+      else {
+        this.setNode(toNode)
+      }
+    }
+
+    //
+    // 4. ディレクトリの子ノード読み込み
+    //
+    // 移動先ディレクトリとその上位ディレクトリの読み込み状態の設定
+    for (const dirPath of [this.rootNode.value, ...splitHierarchicalPaths(toDirPath)]) {
+      const dirTreeNode = this.getNode(dirPath)
+      // ディレクトリがまだ子ノードを読み込んでいない場合
+      // ※移動が行われた際はツリービューで上位を展開する仕様なので、
+      //   子ノードが読み込まれていない場合は読み込んでおく必要がある。
+      if (dirTreeNode && dirTreeNode.lazyLoadStatus === 'none') {
+        await this.pullChildren(dirPath)
+      }
+    }
+    // 移動ディレクトリの子ノード読み込み
+    for (const moveNodeData of movedNodeDataList) {
+      const toNodePath = moveNodeData.toNodePath
+      const toTreeDirNode = this.getNode(toNodePath)!
+      for (const treeNode of [toTreeDirNode, ...toTreeDirNode.getDescendants<StorageTreeNode>()]) {
+        if (treeNode.nodeType !== StorageNodeType.Dir) continue
+        // ディレクトリが既に子ノードを読み込んでいる場合
+        if (treeNode.lazyLoadStatus === 'loaded') {
+          await this.pullChildren(treeNode.value)
+        }
       }
     }
   }
 
   /**
-   * ツリーノードをリネームします。
+   * ノードをリネームします。
    * また対象のツリーノードとその子孫のパスも変更されます。
-   * @param path
-   * @param newName
+   * @param nodePath リネームするノードのパス
+   * @param newName ノードの新しい名前
    */
-  renameNode(path: string, newName: string): void {
-    path = removeBothEndsSlash(path)
+  async renameStorageNode(nodePath: string, newName: string): Promise<void> {
+    nodePath = removeBothEndsSlash(nodePath)
 
-    if (path === this.rootNode.value) {
+    if (nodePath === this.rootNode.value) {
       throw new Error(`The root node cannot be renamed.`)
     }
 
-    const dirPath = removeStartDirChars(_path.dirname(path))
-    const toPath = _path.join(dirPath, newName)
+    const treeNode = this.getNode(nodePath)
+    if (!treeNode) {
+      throw new Error(`The specified node was not found: '${nodePath}'`)
+    }
 
-    this.moveNode(path, toPath)
+    // APIによるリネーム処理を実行
+    try {
+      if (treeNode.nodeType === StorageNodeType.Dir) {
+        await this.storageLogic.renameDir(treeNode.value, newName)
+      } else if (treeNode.nodeType === StorageNodeType.File) {
+        await this.storageLogic.renameFile(treeNode.value, newName)
+      }
+    } catch (err) {
+      console.error(err)
+      this.m_showNotification('error', String(this.$t('storage.rename.renamingError', { nodeName: treeNode.label })))
+      return
+    }
+
+    // リネームされたノードを取得
+    const dirPath = removeStartDirChars(_path.dirname(nodePath))
+    const toNodePath = _path.join(dirPath, newName)
+    const toNode = this.storageLogic.getNode({ path: toNodePath })!
+
+    // リネームノードがディレクトリの場合
+    if (toNode.nodeType === StorageNodeType.Dir) {
+      this.mergeDirDescendants(toNodePath)
+    }
+    // リネームノードノードがファイルの場合
+    else {
+      this.setNode(toNode)
+    }
+
+    // ディレクトリの子ノード読み込み
+    const toTreeNode = this.getNode(toNodePath)!
+    for (const treeNode of [toTreeNode, ...toTreeNode.getDescendants<StorageTreeNode>()]) {
+      if (treeNode.nodeType !== StorageNodeType.Dir) continue
+      // ディレクトリが既に子ノードを読み込んでいる場合
+      if (treeNode.lazyLoadStatus === 'loaded') {
+        await this.pullChildren(treeNode.value)
+      }
+    }
+  }
+
+  /**
+   * ノードの共有設定を行います。
+   * @param nodePaths 共有設定するノードのパス
+   * @param settings 共有設定の内容
+   */
+  async setShareSettings(nodePaths: string[], settings: StorageNodeShareSettings): Promise<void> {
+    nodePaths = nodePaths.map(fromNodePath => removeBothEndsSlash(fromNodePath))
+
+    const treeNodes: StorageTreeNode[] = []
+
+    // 引数チェック
+    for (const nodePath of nodePaths) {
+      if (nodePath === this.rootNode.value) {
+        throw new Error(`The root node cannot be set share settings.`)
+      }
+
+      const treeNode = this.getNode(nodePath)
+      if (!treeNode) {
+        throw new Error(`The specified node was not found: '${nodePath}'`)
+      }
+
+      treeNodes.push(treeNode)
+    }
+
+    const setShare = async (treeNode: StorageTreeNode, settings: StorageNodeShareSettings) => {
+      try {
+        if (treeNode.nodeType === StorageNodeType.Dir) {
+          return await this.storageLogic.setDirShareSettings(treeNode.value, settings)
+        } else if (treeNode.nodeType === StorageNodeType.File) {
+          return await this.storageLogic.setFileShareSettings(treeNode.value, settings)
+        }
+      } catch (err) {
+        console.error(err)
+        this.m_showNotification('error', String(this.$t('storage.share.sharingError', { nodeName: treeNode.label })))
+        return undefined
+      }
+    }
+    const processedNodes = await Promise.all(treeNodes.map(treeNode => setShare(treeNode, settings))).then(result => {
+      return result.filter(nodePath => Boolean(nodePath)) as StorageNode[]
+    })
+
+    // ツリービューに処理内容を反映
+    for (const node of processedNodes) {
+      // 対象ノードがディレクトリの場合
+      if (node.nodeType === StorageNodeType.Dir) {
+        this.mergeDirDescendants(node.path)
+      }
+      // 対象ノードがファイルの場合
+      else {
+        this.setNode(node)
+      }
+    }
   }
 
   //----------------------------------------------------------------------
@@ -608,6 +865,7 @@ export class StorageTreeStore extends Vue {
       icon: 'storage',
       opened: false,
       lazy: false,
+      sortFunc: treeSortFunc,
       selected: true,
       id: '',
       nodeType: StorageNodeType.Dir,
@@ -631,7 +889,7 @@ export class StorageTreeStore extends Vue {
    * @param source
    */
   private m_toTreeNodeData(source: StorageNodeForTree | StorageTreeNode): StorageTreeNodeData {
-    if ((source as any).__vue__) {
+    if ((source as any).__vue__ || (source as any)._isVue) {
       source = source as StorageTreeNode
       const result: StorageTreeNodeData = {
         value: source.value,
@@ -641,6 +899,7 @@ export class StorageTreeStore extends Vue {
         nodeClass: StorageTreeNode,
         lazy: source.nodeType === StorageNodeType.Dir,
         lazyLoadStatus: source.lazyLoadStatus,
+        sortFunc: treeSortFunc,
         id: source.id,
         nodeType: source.nodeType,
         contentType: source.contentType,
@@ -663,6 +922,7 @@ export class StorageTreeStore extends Vue {
         nodeClass: StorageTreeNode,
         lazy: source.nodeType === StorageNodeType.Dir,
         lazyLoadStatus: source.lazyLoadStatus,
+        sortFunc: treeSortFunc,
         id: source.id,
         nodeType: source.nodeType,
         contentType: source.contentType,
@@ -680,6 +940,35 @@ export class StorageTreeStore extends Vue {
       }
       return result
     }
+  }
+
+  /**
+   * ロジックストアにないツリーノードを削除します。
+   * @param storeNodes
+   * @param treeNodes
+   */
+  private m_removeNotExistsTreeNodes(storeNodes: StorageNode[], treeNodes: StorageTreeNode[]): void {
+    const apiNodeIdDict = arrayToDict(storeNodes, 'id')
+    const apiNodePathDict = arrayToDict(storeNodes, 'path')
+
+    const removingNodes: string[] = []
+    for (const treeNode of treeNodes) {
+      const exists = Boolean(apiNodeIdDict[treeNode.id] || apiNodePathDict[treeNode.value])
+      !exists && removingNodes.push(treeNode.value)
+    }
+
+    this.removeNodes(removingNodes)
+  }
+
+  private m_showNotification(type: 'error' | 'warning', message: string): void {
+    this.$q.notify({
+      icon: type === 'error' ? 'error' : 'warning',
+      position: 'bottom-left',
+      message,
+      timeout: 0,
+      color: 'red',
+      actions: [{ icon: 'close', color: 'white' }],
+    })
   }
 
   //----------------------------------------------------------------------

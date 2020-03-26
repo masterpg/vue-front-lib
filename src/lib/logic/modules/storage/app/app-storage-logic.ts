@@ -43,6 +43,18 @@ export class AppStorageLogicImpl extends BaseStorageLogic implements AppStorageL
     return this.getPaginationNodesAPI(api, api.getStorageChildren, null, dirPath)
   }
 
+  getHierarchicalNodeAPI(nodePath: string): Promise<StorageNode[]> {
+    return api.getStorageHierarchicalNode(nodePath)
+  }
+
+  getAncestorDirsAPI(nodePath: string): Promise<StorageNode[]> {
+    return api.getStorageAncestorDirs(nodePath)
+  }
+
+  handleUploadedFilesAPI(filePaths: string[]): Promise<void> {
+    return api.handleUploadedFiles(filePaths)
+  }
+
   createDirsAPI(dirPaths: string[]): Promise<StorageNode[]> {
     return api.createStorageDirs(dirPaths)
   }

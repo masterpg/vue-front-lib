@@ -208,6 +208,60 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     }
   }
 
+  async getUserStorageHierarchicalNode(nodePath: string): Promise<StorageNode[]> {
+    const response = await this.query<{ userStorageHierarchicalNode: APIResponseStorageNode[] }>({
+      query: gql`
+        query GetUserStorageHierarchicalNode($nodePath: String!) {
+          userStorageHierarchicalNode(nodePath: $nodePath) {
+            id
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              uids
+            }
+            created
+            updated
+          }
+        }
+      `,
+      variables: { nodePath },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data!.userStorageHierarchicalNode)
+  }
+
+  async getUserStorageAncestorDirs(nodePath: string): Promise<StorageNode[]> {
+    const response = await this.query<{ userStorageAncestorDirs: APIResponseStorageNode[] }>({
+      query: gql`
+        query GetUserStorageAncestorDirs($nodePath: String!) {
+          userStorageAncestorDirs(nodePath: $nodePath) {
+            id
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              uids
+            }
+            created
+            updated
+          }
+        }
+      `,
+      variables: { nodePath },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data!.userStorageAncestorDirs)
+  }
+
   async handleUploadedUserFiles(filePaths: string[]): Promise<void> {
     await this.mutate<{ handleUploadedUserFiles: boolean }>({
       mutation: gql`
@@ -535,6 +589,60 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
       list: this.toAPIStorageNodes(response.data.storageChildren.list),
       nextPageToken: response.data.storageChildren.nextPageToken || undefined,
     }
+  }
+
+  async getStorageHierarchicalNode(nodePath: string): Promise<StorageNode[]> {
+    const response = await this.query<{ storageHierarchicalNode: APIResponseStorageNode[] }>({
+      query: gql`
+        query GetStorageHierarchicalNode($nodePath: String!) {
+          storageHierarchicalNode(nodePath: $nodePath) {
+            id
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              uids
+            }
+            created
+            updated
+          }
+        }
+      `,
+      variables: { nodePath },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data!.storageHierarchicalNode)
+  }
+
+  async getStorageAncestorDirs(nodePath: string): Promise<StorageNode[]> {
+    const response = await this.query<{ storageAncestorDirs: APIResponseStorageNode[] }>({
+      query: gql`
+        query GetStorageAncestorDirs($nodePath: String!) {
+          storageAncestorDirs(nodePath: $nodePath) {
+            id
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              uids
+            }
+            created
+            updated
+          }
+        }
+      `,
+      variables: { nodePath },
+      isAuth: true,
+    })
+    return this.toAPIStorageNodes(response.data!.storageAncestorDirs)
   }
 
   async handleUploadedFiles(filePaths: string[]): Promise<void> {

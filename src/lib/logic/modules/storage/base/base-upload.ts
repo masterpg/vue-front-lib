@@ -1,7 +1,7 @@
 import * as path from 'path'
+import { removeBothEndsSlash, removeEndSlash } from 'web-base-lib'
 import { BaseStorageLogic } from './base-storage-logic'
 import { StorageUploadManager } from '../types'
-import { removeEndSlash } from 'web-base-lib'
 
 /**
  * アップロードファイルの情報です。
@@ -9,7 +9,7 @@ import { removeEndSlash } from 'web-base-lib'
 export interface UploadFileParam {
   data: Blob | Uint8Array | ArrayBuffer | File
   name: string
-  dirPath: string
+  dir: string
   type?: string
   basePath?: string
 }
@@ -116,7 +116,7 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
   //
   //----------------------------------------------------------------------
 
-  protected uploadBasePath: string = ''
+  protected uploadDirPath: string = ''
 
   private m_uploadFileInput!: HTMLInputElement
 
@@ -132,25 +132,25 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
   clear(): void {
     this.m_uploadFileInput.value = ''
     this.m_uploadingFiles.splice(0)
-    this.uploadBasePath = ''
+    this.uploadDirPath = ''
     this.m_uploading = false
     this.m_ended = false
   }
 
   /**
    * OSのファイル選択ダイアログを表示します。
-   * @param uploadBasePath
+   * @param uploadDirPath
    */
-  openFilesSelectDialog(uploadBasePath: string): void {
-    this.m_openFileSelectDialog(uploadBasePath, false)
+  openFilesSelectDialog(uploadDirPath: string): void {
+    this.m_openFileSelectDialog(uploadDirPath, false)
   }
 
   /**
    * OSのフォルダ選択ダイアログを表示します。
-   * @param uploadBasePath
+   * @param uploadDirPath
    */
-  openDirSelectDialog(uploadBasePath: string): void {
-    this.m_openFileSelectDialog(uploadBasePath, true)
+  openDirSelectDialog(uploadDirPath: string): void {
+    this.m_openFileSelectDialog(uploadDirPath, true)
   }
 
   //----------------------------------------------------------------------
@@ -163,14 +163,12 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
 
   protected abstract createUploadingFiles(files: File[]): StorageFileUploader[]
 
-  protected abstract handleUploadedFiles(filePaths: string[]): Promise<void>
-
   /**
    * 指定されたファイルのディレクトリ構造をもとにアップロード先のディレクトリを取得します。
    * @param file
    */
   protected getUploadDirPath(file: File): string {
-    let result = this.uploadBasePath
+    let result = this.uploadDirPath
     if ((file as any).webkitRelativePath) {
       const relativePathSegments = (file as any).webkitRelativePath.split('/')
       const relativePath = relativePathSegments.slice(0, relativePathSegments.length - 1).join('/')
@@ -179,9 +177,9 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
     return result
   }
 
-  private m_openFileSelectDialog(uploadBasePath: string, isDir: boolean): void {
+  private m_openFileSelectDialog(uploadDirPath: string, isDir: boolean): void {
     this.m_uploadFileInput.value = ''
-    this.uploadBasePath = removeEndSlash(uploadBasePath)
+    this.uploadDirPath = removeEndSlash(uploadDirPath)
 
     if (isDir) {
       this.m_uploadFileInput.setAttribute('webkitdirectory', '')
@@ -256,8 +254,11 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
     }
 
     // ファイルアップロードの後に必要な処理を実行
-    const filePaths = this.m_uploadingFiles.map(uploadingFile => uploadingFile.path)
-    await this.handleUploadedFiles(filePaths)
+    const filePaths = this.m_uploadingFiles.map(uploadingFile => removeBothEndsSlash(uploadingFile.path))
+    await this.storageLogic.handleUploadedFilesAPI(filePaths)
+
+    // ファイルアップロードに関連するノードをサーバーから取得しストアに反映
+    await this.storageLogic.fetchHierarchicalChildren(this.uploadDirPath)
 
     this.m_ended = true
   }
@@ -341,12 +342,12 @@ export class StorageFileUploader {
     return this.uploadParam.name
   }
 
-  get dirPath(): string {
-    return this.uploadParam.dirPath
+  get dir(): string {
+    return this.uploadParam.dir
   }
 
   get path(): string {
-    return `${removeEndSlash(this.uploadParam.dirPath)}/${this.name}`
+    return `${removeEndSlash(this.uploadParam.dir)}/${this.name}`
   }
 
   get size(): number {
@@ -385,7 +386,7 @@ export class StorageFileUploader {
     }
 
     // アップロード先の参照を取得
-    const uploadPath = path.join(this.uploadParam.basePath || '', this.uploadParam.dirPath, this.name)
+    const uploadPath = path.join(this.uploadParam.basePath || '', this.uploadParam.dir, this.name)
     this.m_fileRef = firebase.storage().ref(uploadPath)
     // アップロード実行
     this.m_uploadTask = this.m_fileRef.put(this.uploadParam.data)

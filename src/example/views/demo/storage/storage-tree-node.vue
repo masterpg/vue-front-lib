@@ -286,9 +286,10 @@ export default class StorageTreeNode extends CompTreeNode {
   //
   //----------------------------------------------------------------------
 
-  setNodeData(editData: CompTreeNodeEditData<StorageTreeNodeData>): void {
-    this.setBaseNodeData(editData)
-
+  protected setNodeDataPlaceholder(editData: CompTreeNodeEditData<StorageTreeNodeData>): void {
+    if (typeof editData.id === 'string') {
+      this.nodeData.id = editData.id
+    }
     if (typeof editData.contentType === 'string') {
       this.nodeData.contentType = editData.contentType
     }

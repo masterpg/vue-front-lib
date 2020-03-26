@@ -25,6 +25,10 @@ export interface LibAPIContainer {
 
   getUserStorageChildren(options: GetStorageOptionsInput | null, dirPath?: string): Promise<GetStorageResult>
 
+  getUserStorageHierarchicalNode(nodePath: string): Promise<StorageNode[]>
+
+  getUserStorageAncestorDirs(nodePath: string): Promise<StorageNode[]>
+
   handleUploadedUserFiles(filePaths: string[]): Promise<void>
 
   createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
@@ -58,6 +62,10 @@ export interface LibAPIContainer {
   getStorageDirChildren(options: GetStorageOptionsInput | null, dirPath?: string): Promise<GetStorageResult>
 
   getStorageChildren(options: GetStorageOptionsInput | null, dirPath?: string): Promise<GetStorageResult>
+
+  getStorageHierarchicalNode(nodePath: string): Promise<StorageNode[]>
+
+  getStorageAncestorDirs(nodePath: string): Promise<StorageNode[]>
 
   handleUploadedFiles(filePaths: string[]): Promise<void>
 

@@ -34,6 +34,14 @@ export abstract class BaseRESTAPIContainer extends BaseRESTClient implements Lib
     throw new Error(`This method 'getUserStorageChildren' is not implemented.`)
   }
 
+  getUserStorageHierarchicalNode(nodePath: string): Promise<StorageNode[]> {
+    throw new Error(`This method 'getUserStorageHierarchicalNode' is not implemented.`)
+  }
+
+  getUserStorageAncestorDirs(nodePath: string): Promise<StorageNode[]> {
+    throw new Error(`This method 'getUserStorageAncestorDirs' is not implemented.`)
+  }
+
   async handleUploadedUserFiles(filePaths: string[]): Promise<void> {
     throw new Error(`This method 'handleUploadedUserFiles' is not implemented.`)
   }
@@ -96,6 +104,14 @@ export abstract class BaseRESTAPIContainer extends BaseRESTClient implements Lib
 
   getStorageChildren(options: GetStorageOptionsInput | null, dirPath?: string): Promise<GetStorageResult> {
     throw new Error(`This method 'getStorageChildren' is not implemented.`)
+  }
+
+  getStorageHierarchicalNode(nodePath: string): Promise<StorageNode[]> {
+    throw new Error(`This method 'getStorageHierarchicalNode' is not implemented.`)
+  }
+
+  getStorageAncestorDirs(nodePath: string): Promise<StorageNode[]> {
+    throw new Error(`This method 'getStorageAncestorDirs' is not implemented.`)
   }
 
   async handleUploadedFiles(filePaths: string[]): Promise<void> {

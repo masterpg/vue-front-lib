@@ -49,6 +49,18 @@ export class UserStorageLogicImpl extends BaseStorageLogic implements UserStorag
     return this.getPaginationNodesAPI(api, api.getUserStorageChildren, null, dirPath)
   }
 
+  getHierarchicalNodeAPI(nodePath: string): Promise<StorageNode[]> {
+    return api.getUserStorageHierarchicalNode(nodePath)
+  }
+
+  getAncestorDirsAPI(nodePath: string): Promise<StorageNode[]> {
+    return api.getUserStorageAncestorDirs(nodePath)
+  }
+
+  handleUploadedFilesAPI(filePaths: string[]): Promise<void> {
+    return api.handleUploadedUserFiles(filePaths)
+  }
+
   createDirsAPI(dirPaths: string[]): Promise<StorageNode[]> {
     return api.createUserStorageDirs(dirPaths)
   }

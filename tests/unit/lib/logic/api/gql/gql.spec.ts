@@ -226,6 +226,41 @@ describe('Storage API', () => {
     })
   })
 
+  describe('getUserStorageHierarchicalNode', () => {
+    beforeEach(async () => {
+      await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+    })
+
+    it('疎通確認', async () => {
+      api.setTestAuthUser(GENERAL_USER)
+
+      const actual = await api.getUserStorageHierarchicalNode(`d1/d11/d111/fileA.txt`)
+
+      expect(actual.length).toBe(4)
+      expect(actual[0].path).toBe(`d1`)
+      expect(actual[1].path).toBe(`d1/d11`)
+      expect(actual[2].path).toBe(`d1/d11/d111`)
+      expect(actual[3].path).toBe(`d1/d11/d111/fileA.txt`)
+    })
+  })
+
+  describe('getUserStorageAncestorDirs', () => {
+    beforeEach(async () => {
+      await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+    })
+
+    it('疎通確認', async () => {
+      api.setTestAuthUser(GENERAL_USER)
+
+      const actual = await api.getUserStorageAncestorDirs(`d1/d11/d111/fileA.txt`)
+
+      expect(actual.length).toBe(3)
+      expect(actual[0].path).toBe(`d1`)
+      expect(actual[1].path).toBe(`d1/d11`)
+      expect(actual[2].path).toBe(`d1/d11/d111`)
+    })
+  })
+
   describe('handleUploadedUserFiles', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
@@ -527,6 +562,43 @@ describe('Storage API', () => {
 
       expect(actual.nextPageToken!.length).toBeGreaterThan(0)
       expect(actual.list.length).toBeLessThanOrEqual(2)
+    })
+  })
+
+  describe('getStorageHierarchicalNode', () => {
+    beforeEach(async () => {
+      await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+    })
+
+    it('疎通確認', async () => {
+      api.setTestAuthUser(APP_ADMIN_USER)
+
+      const actual = await api.getStorageHierarchicalNode(`${TEST_FILES_DIR}/d1/d11/d111/fileA.txt`)
+
+      expect(actual.length).toBe(5)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d1`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/d1/d11`)
+      expect(actual[3].path).toBe(`${TEST_FILES_DIR}/d1/d11/d111`)
+      expect(actual[4].path).toBe(`${TEST_FILES_DIR}/d1/d11/d111/fileA.txt`)
+    })
+  })
+
+  describe('getStorageAncestorDirs', () => {
+    beforeEach(async () => {
+      await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+    })
+
+    it('疎通確認', async () => {
+      api.setTestAuthUser(APP_ADMIN_USER)
+
+      const actual = await api.getStorageAncestorDirs(`${TEST_FILES_DIR}/d1/d11/d111/fileA.txt`)
+
+      expect(actual.length).toBe(4)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d1`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/d1/d11`)
+      expect(actual[3].path).toBe(`${TEST_FILES_DIR}/d1/d11/d111`)
     })
   })
 

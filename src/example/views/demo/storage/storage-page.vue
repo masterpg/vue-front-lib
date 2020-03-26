@@ -337,34 +337,15 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   private async m_createDir(dirPath: string): Promise<void> {
     this.$q.loading.show()
 
-    let dirNode: StorageNode
-    try {
-      dirNode = (await this.storageLogic.createDirs([dirPath]))[0]
-    } catch (err) {
-      this.$q.loading.hide()
-      console.error(err)
-      this.$q.notify({
-        icon: 'report',
-        position: 'bottom-left',
-        message: String(this.$t('storage.create.creatingDirError', { nodeName: path.basename(dirPath) })),
-        timeout: 0,
-        actions: [{ icon: 'close', color: 'white' }],
-      })
-      return
-    }
-
-    // ツリービューに作成したディレクトリノードを追加
-    this.treeStore.setNode(dirNode)
-    const dirTreeNode = this.treeStore.getNode(dirPath)!
-
-    // 作成したディレクトリの遅延ロード状態を完了に設定
-    dirTreeNode.lazyLoadStatus = 'loaded'
+    // ディレクトリの作成を実行
+    await this.treeStore.createStorageDir(dirPath)
+    const treeNode = this.treeStore.getNode(dirPath)!
 
     // 作成したディレクトリの祖先を展開
-    this.m_openParentNode(dirTreeNode.value, true)
+    this.m_openParentNode(treeNode.value, true)
 
-    // 作成したディレクトリの親ノードでページを更新
-    this.m_updatePage(dirTreeNode.parent!.value)
+    // ページの選択ノードを作成したディレクトリの親ノードに設定
+    this.m_selectNodeOnPage(treeNode.parent!.value)
 
     this.$q.loading.hide()
   }
@@ -374,38 +355,14 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param treeNodes 削除するツリーノード
    */
   private async m_removeNodes(treeNodes: StorageTreeNode[]): Promise<void> {
-    const showNotification = (treeNode: StorageTreeNode) => {
-      this.$q.notify({
-        icon: 'report',
-        position: 'bottom-left',
-        message: String(this.$t('storage.delete.deletingError', { nodeName: treeNode.label })),
-        timeout: 0,
-        actions: [{ icon: 'close', color: 'white' }],
-      })
-    }
-
     this.$q.loading.show()
 
-    const promises: Promise<void>[] = []
-    for (const treeNode of treeNodes) {
-      if (treeNode.nodeType === StorageNodeType.Dir) {
-        const promise = this.storageLogic.removeDirs([treeNode.value]).catch(err => {
-          console.error(err)
-          showNotification(treeNode)
-        }) as Promise<void>
-        promises.push(promise)
-      } else if (treeNode.nodeType === StorageNodeType.File) {
-        const promise = this.storageLogic.removeFiles([treeNode.value]).catch(err => {
-          console.error(err)
-          showNotification(treeNode)
-        }) as Promise<void>
-        promises.push(promise)
-      }
-    }
-    await Promise.all(promises)
+    const parentDirPath = treeNodes[0].parent!.value
 
-    // 削除ノードの親でページを更新
-    this.m_updatePage(treeNodes[0].parent!.value)
+    // ノードの移動を実行
+    await this.treeStore.removeStorageNodes(treeNodes.map(node => node.value))
+    // ページの選択ノードを削除対象の親ノードのに設定
+    this.m_selectNodeOnPage(parentDirPath)
 
     this.$q.loading.hide()
   }
@@ -413,57 +370,17 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   /**
    * ノードの移動を行います。
    * @param treeNodes 移動するツリーノード
-   * @param toDir 移動先のディレクトリパス
+   * @param toDirPath 移動先のディレクトリパス
    */
-  private async m_moveNodes(treeNodes: StorageTreeNode[], toDir: string): Promise<void> {
-    const showNotification = (treeNode: StorageTreeNode) => {
-      this.$q.notify({
-        icon: 'report',
-        position: 'bottom-left',
-        message: String(this.$t('storage.move.movingError', { nodeName: treeNode.label })),
-        timeout: 0,
-        actions: [{ icon: 'close', color: 'white' }],
-      })
-    }
-
-    /**
-     * 移動先パスを生成
-     * 'home/photos' → 'home/archives/photos'
-     * 'photos/family.png' → 'home/archives/family.png'
-     */
-    const toPath = (treeNode: StorageTreeNode) => {
-      return path.join(toDir, treeNode.label)
-    }
-
+  private async m_moveNodes(treeNodes: StorageTreeNode[], toDirPath: string): Promise<void> {
     this.$q.loading.show()
 
-    const promises: Promise<void>[] = []
-    for (const treeNode of treeNodes) {
-      if (treeNode.nodeType === StorageNodeType.Dir) {
-        const promise = this.storageLogic.moveDir(treeNode.value, toPath(treeNode)).catch(err => {
-          console.error(err)
-          showNotification(treeNode)
-        }) as Promise<void>
-        promises.push(promise)
-      } else if (treeNode.nodeType === StorageNodeType.File) {
-        const promise = this.storageLogic.moveFile(treeNode.value, toPath(treeNode)).catch(err => {
-          console.error(err)
-          showNotification(treeNode)
-        }) as Promise<void>
-        promises.push(promise)
-      }
-    }
-    await Promise.all(promises)
-
-    // ツリービューでノードの移動を実施
-    for (const treeNode of treeNodes) {
-      this.treeStore.moveNode(treeNode.value, toPath(treeNode))
-    }
-
+    // ノードの移動を実行
+    await this.treeStore.moveStorageNodes(treeNodes.map(node => node.value), toDirPath)
     // 移動対象ノードの祖先を展開
     this.m_openParentNode(treeNodes[0].value, true)
-    // 移動対象の親ノードでページを更新
-    this.m_updatePage(treeNodes[0].parent!.value)
+    // ページの選択ノードを現在選択されているノードに設定
+    this.m_selectNodeOnPage(this.treeStore.selectedNode.value)
 
     this.$q.loading.hide()
   }
@@ -476,30 +393,10 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   private async m_renameNode(treeNode: StorageTreeNode, newName: string): Promise<void> {
     this.$q.loading.show()
 
-    try {
-      if (treeNode.nodeType === StorageNodeType.Dir) {
-        await this.storageLogic.renameDir(treeNode.value, newName)
-      } else if (treeNode.nodeType === StorageNodeType.File) {
-        await this.storageLogic.renameFile(treeNode.value, newName)
-      }
-    } catch (err) {
-      this.$q.loading.hide()
-      console.error(err)
-      this.$q.notify({
-        icon: 'report',
-        position: 'bottom-left',
-        message: String(this.$t('storage.rename.renamingError', { nodeName: treeNode.label })),
-        timeout: 0,
-        actions: [{ icon: 'close', color: 'white' }],
-      })
-      return
-    }
-
-    // ツリービューでノードのリネームを実施
-    this.treeStore.renameNode(treeNode.value, newName)
-
-    // 選択ノードでページを更新
-    this.m_updatePage(this.treeStore.selectedNode.value)
+    // ノードのリネームを実行
+    await this.treeStore.renameStorageNode(treeNode.value, newName)
+    // ページの選択ノードを現在選択されているノードに設定
+    this.m_selectNodeOnPage(this.treeStore.selectedNode.value)
 
     this.$q.loading.hide()
   }
@@ -510,38 +407,12 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param settings 共有設定の内容
    */
   private async m_setShareSettings(treeNodes: StorageTreeNode[], settings: StorageNodeShareSettings): Promise<void> {
-    const showNotification = (treeNode: StorageTreeNode) => {
-      this.$q.notify({
-        icon: 'report',
-        position: 'bottom-left',
-        message: String(this.$t('storage.share.sharingError', { nodeName: treeNode.label })),
-        timeout: 0,
-        actions: [{ icon: 'close', color: 'white' }],
-      })
-    }
-
     this.$q.loading.show()
 
-    const promises: Promise<void>[] = []
-    for (const treeNode of treeNodes) {
-      if (treeNode.nodeType === StorageNodeType.Dir) {
-        const promise = this.storageLogic.setDirShareSettings(treeNode.value, settings).catch(err => {
-          console.error(err)
-          showNotification(treeNode)
-        }) as Promise<void>
-        promises.push(promise)
-      } else if (treeNode.nodeType === StorageNodeType.File) {
-        const promise = this.storageLogic.setFileShareSettings(treeNode.value, settings).catch(err => {
-          console.error(err)
-          showNotification(treeNode)
-        }) as Promise<void>
-        promises.push(promise)
-      }
-    }
-    await Promise.all(promises)
-
-    // 現在の選択ノードでページを更新
-    this.m_updatePage(this.treeStore.selectedNode.value)
+    // ノードの共有設定を実行
+    await this.treeStore.setShareSettings(treeNodes.map(node => node.value), settings)
+    // ページの選択ノードを現在選択されているノードに設定
+    this.m_selectNodeOnPage(this.treeStore.selectedNode.value)
 
     this.$q.loading.hide()
   }
@@ -722,7 +593,6 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param uploadDirPath アップロード先のディレクトリパス
    */
   private async m_uploadProgressFloatOnUploadEnded(uploadDirPath: string) {
-    await this.treeStore.pullDescendants(uploadDirPath)
     this.m_updatePage(uploadDirPath)
 
     // アップロード先のディレクトリとその祖先を展開
@@ -781,7 +651,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * @param dirPath
    */
   private async m_treeViewOnReloadSelected(dirPath: string) {
-    await this.treeStore.pullDescendants(dirPath)
+    await this.treeStore.reloadDir(dirPath)
     // ページの選択ノードを設定
     // ※ディレクトリビューの更新
     this.m_selectNodeOnPage(this.treeStore.selectedNode.value)

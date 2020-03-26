@@ -1,7 +1,7 @@
 import * as _path from 'path'
 import { StorageNode, StorageNodeType } from '../../../api'
 import { StorageNodeForSet, StorageState, StorageStore } from '../../types'
-import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
+import { arrayToDict, removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { BaseStore } from '../../base'
 import { NoCache } from '../../../../base/decorators'
 
@@ -36,16 +36,8 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
   //
   //----------------------------------------------------------------------
 
-  get(path: string): StorageNode | undefined {
-    const stateNode = this.getStateNode(path)
-    if (stateNode) {
-      return this.clone(stateNode)
-    }
-    return undefined
-  }
-
-  getById(id: string): StorageNode | undefined {
-    const stateNode = this.getStateNodeById(id)
+  get(key: { id?: string; path?: string }): StorageNode | undefined {
+    const stateNode = this.getStateNode(key)
     if (stateNode) {
       return this.clone(stateNode)
     }
@@ -61,7 +53,7 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
     if (!dirPath) {
       return this.getChildren()
     } else {
-      const dirNode = this.get(dirPath)
+      const dirNode = this.get({ path: dirPath })
       let result: StorageNode[] = []
       if (dirNode) {
         result = [dirNode, ...this.getChildren(dirPath)]
@@ -79,7 +71,7 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
     if (!dirPath) {
       return this.getDescendants()
     } else {
-      const dirNode = this.get(dirPath)
+      const dirNode = this.get({ path: dirPath })
       let result: StorageNode[] = []
       if (dirNode) {
         result = [dirNode, ...this.getDescendants(dirPath)]
@@ -107,14 +99,22 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
     const result: StorageNode[] = []
 
     for (const node of nodes) {
-      const stateNode = this.getStateNodeById(node.id)
+      // id検索が必要な理由:
+      //   他端末でノード移動するとidは変わらないがpathは変化する。
+      //   この状況でpath検索を行うと、対象のノードを見つけられないためid検索する必要がある。
+      // path検索が必要な理由:
+      //   他端末で'd1/d11'を削除してからまた同じパスの'd1/d11'が作成された場合、
+      //   元のidと再作成されたidが異なり、パスは同じでもidが異なる状況が発生する。
+      //   この場合id検索しても対象ノードが見つからないため、path検索する必要がある。
+      const stateNode = this.getStateNode({ id: node.id, path: node.path })
       if (!stateNode) {
         throw new Error(`The specified node was not found: '${node.id}'`)
       }
 
-      if (typeof node.name === 'string') stateNode.name = node.name
-      if (typeof node.dir === 'string') stateNode.dir = node.dir
-      if (typeof node.path === 'string') stateNode.path = node.path
+      stateNode.id = node.id
+      stateNode.name = node.name
+      stateNode.dir = node.dir
+      stateNode.path = node.path
       if (typeof node.contentType === 'string') stateNode.contentType = node.contentType
       if (typeof node.size === 'number') stateNode.size = node.size
       if (node.share) {
@@ -151,25 +151,33 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
     return this.addList([value])[0]
   }
 
-  removeList(paths: string[]): StorageNode[] {
+  removeList(key: { ids?: string[]; paths?: string[] }): StorageNode[] {
+    if (!key.ids && !key.paths) {
+      throw new Error(`Either the 'ids' or the 'paths' must be specified.`)
+    }
+
     const result: StorageNode[] = []
-    for (const path of paths) {
-      for (let i = 0; i < this.state.all.length; i++) {
-        const node = this.state.all[i]
-        if (node.path === path || node.dir.startsWith(path)) {
-          this.state.all.splice(i--, 1)
-          result.push(node)
-        }
+    if (key.ids) {
+      for (const id of key.ids) {
+        result.push(...this.remove({ id }))
+      }
+    } else if (key.paths) {
+      for (const path of key.paths) {
+        result.push(...this.remove({ path }))
       }
     }
+
     return result
   }
 
-  remove(path: string): StorageNode[] {
+  remove(key: { id?: string; path?: string }): StorageNode[] {
+    const stateNode = this.getStateNode(key)
+    if (!stateNode) return []
+
     const result: StorageNode[] = []
     for (let i = 0; i < this.state.all.length; i++) {
       const node = this.state.all[i]
-      if (node.path === path || node.dir.startsWith(path)) {
+      if (node.path === stateNode.path || node.dir === stateNode.path || node.dir.startsWith(`${stateNode.path}/`)) {
         this.state.all.splice(i--, 1)
         result.push(node)
       }
@@ -177,69 +185,50 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
     return result
   }
 
-  move(fromPath, toPath: string): StorageNode[] {
-    fromPath = removeBothEndsSlash(fromPath)
-    toPath = removeBothEndsSlash(toPath)
-    const stateTarget = this.getStateNode(fromPath)
-    if (!stateTarget) {
-      throw new Error(`The specified node was not found: '${fromPath}'`)
+  move(fromNodePath: string, toNodePath: string): StorageNode[] {
+    fromNodePath = removeBothEndsSlash(fromNodePath)
+    toNodePath = removeBothEndsSlash(toNodePath)
+
+    const targetTopNode = this.getStateNode({ path: fromNodePath })
+
+    if (!targetTopNode) {
+      throw new Error(`The specified node was not found: '${fromNodePath}'`)
     }
 
-    if (stateTarget.nodeType === StorageNodeType.Dir) {
+    if (targetTopNode.nodeType === StorageNodeType.Dir) {
       // 移動先ディレクトリが移動対象のサブディレクトリでないことを確認
       // from: aaa/bbb → to: aaa/bbb/ccc/bbb [NG]
       //               → to: aaa/zzz/ccc/bbb [OK]
-      if (toPath.startsWith(_path.join(fromPath, '/'))) {
-        throw new Error(`The destination directory is its own subdirectory: '${fromPath}' -> '${toPath}'`)
+      if (toNodePath.startsWith(_path.join(fromNodePath, '/'))) {
+        throw new Error(`The destination directory is its own subdirectory: '${fromNodePath}' -> '${toNodePath}'`)
       }
     }
 
     const result: StorageNode[] = []
+    const targetNodes = [targetTopNode, ...this.getStateDescendants(targetTopNode.path)]
 
-    // 移動先ノードを取得
-    // (移動先ディレクトリに移動対象と同名のノードが既に存在することがあるので)
-    const existsNode = this.getStateNode(toPath)
-
-    // 移動先ディレクトリに移動対象と同名のノードが既に存在する場合
-    if (existsNode) {
-      // 既存ノードを削除
-      this.state.all.splice(this.state.all.indexOf(existsNode), 1)
-      // 移動先と移動対象の同名の子ノードを検索
-      const existsChildDict = this.getStateChildren(existsNode.path).reduce(
-        (result, node) => {
-          result[node.path] = node
-          return result
-        },
-        {} as { [path: string]: StorageNode }
-      )
-      const removingChildPaths: string[] = []
-      for (const targetChild of this.getStateChildren(fromPath)) {
-        const reg = new RegExp(`^${fromPath}`)
-        const existsChildPath = targetChild.path.replace(reg, toPath)
-        if (existsChildDict[existsChildPath]) {
-          removingChildPaths.push(existsChildPath)
-        }
-      }
-      // 検索された子ノードを削除
-      // (同名の子ノードがあった場合、移動対象の子ノードを優先し、移動先の子ノードは削除)
-      this.removeList(removingChildPaths)
+    // 移動先の同名ノード＋配下ノードを取得(ない場合もある)
+    const existsTopNode = this.getStateNode({ path: toNodePath })
+    const existsNodeDict: { [path: string]: StorageNode } = {}
+    if (existsTopNode) {
+      const existsNodes = [existsTopNode, ...this.getStateDescendants(existsTopNode.path)]
+      Object.assign(existsNodeDict, arrayToDict(existsNodes, 'path'))
     }
 
-    // 移動対象ノードのパスを移動先パスへ書き換え
-    stateTarget.name = _path.basename(toPath)
-    stateTarget.dir = removeStartDirChars(_path.dirname(toPath))
-    stateTarget.path = toPath
-    result.push(this.clone(stateTarget))
+    // 移動ノード＋配下ノードのパスを移動先パスへ書き換え
+    for (const targetNode of targetNodes) {
+      const reg = new RegExp(`^${fromNodePath}`)
+      const newTargetNodePath = targetNode.path.replace(reg, toNodePath)
+      targetNode.name = _path.basename(newTargetNodePath)
+      targetNode.dir = removeStartDirChars(_path.dirname(newTargetNodePath))
+      targetNode.path = newTargetNodePath
+      result.push(this.clone(targetNode))
+    }
 
-    // 移動対象ノードの子孫のパスを移動先パスへ書き換え
-    if (stateTarget.nodeType === StorageNodeType.Dir) {
-      const stateTargetDescendants = this.getStateDescendants(fromPath)
-      for (const stateDescendant of stateTargetDescendants) {
-        const reg = new RegExp(`^${fromPath}`)
-        stateDescendant.dir = stateDescendant.dir.replace(reg, stateTarget.path)
-        stateDescendant.path = _path.join(stateDescendant.dir, stateDescendant.name)
-        result.push(this.clone(stateDescendant))
-      }
+    // 移動先に同名ノードが存在する場合、そのノードを削除
+    for (const targetNode of targetNodes) {
+      const existsNode = existsNodeDict[targetNode.path]
+      existsNode && this.removeSpecifiedNode({ id: existsNode.id })
     }
 
     this.sort(this.state.all)
@@ -306,17 +295,15 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
   //
   //----------------------------------------------------------------------
 
-  protected getStateNode(path: string): StorageNode | undefined {
-    path = removeBothEndsSlash(path)
-    for (const node of this.state.all) {
-      if (node.path === path) return node
+  protected getStateNode(key: { id?: string; path?: string }): StorageNode | undefined {
+    if (!key.id && !key.path) {
+      throw new Error(`Either the 'id' or the 'path' must be specified.`)
     }
-    return undefined
-  }
 
-  protected getStateNodeById(id: string): StorageNode | undefined {
+    key.path = removeBothEndsSlash(key.path)
     for (const node of this.state.all) {
-      if (node.id === id) return node
+      if (node.id === key.id) return node
+      if (node.path === key.path) return node
     }
     return undefined
   }
@@ -341,5 +328,28 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
       }
     }
     return result
+  }
+
+  protected removeSpecifiedNode(key: { id?: string; path?: string }): StorageNode | undefined {
+    if (!key.id && !key.path) {
+      throw new Error(`Either the 'id' or the 'path' must be specified.`)
+    }
+
+    for (let i = 0; i < this.state.all.length; i++) {
+      const node = this.state.all[i]
+      if (typeof key.id === 'string') {
+        if (node.id === key.id) {
+          this.state.all.splice(i--, 1)
+          return node
+        }
+      } else if (typeof key.path === 'string') {
+        if (node.path === key.path) {
+          this.state.all.splice(i--, 1)
+          return node
+        }
+      }
+    }
+
+    return undefined
   }
 }

@@ -1,6 +1,5 @@
 import { BaseStorageUploadManager, StorageFileUploader } from '../base/base-upload'
 import { Dialog } from 'quasar'
-import { api } from '../../../api'
 import { i18n } from '../../../../i18n'
 import { store } from '../../../store'
 
@@ -22,15 +21,11 @@ export class AppStorageUploadManager extends BaseStorageUploadManager {
       const fileUploader = new StorageFileUploader({
         data: file,
         name: file.name,
-        dirPath: this.getUploadDirPath(file),
+        dir: this.getUploadDirPath(file),
         type: file.type,
       })
       result.push(fileUploader)
     }
     return result
-  }
-
-  protected async handleUploadedFiles(filePaths: string[]): Promise<void> {
-    await api.handleUploadedFiles(filePaths)
   }
 }

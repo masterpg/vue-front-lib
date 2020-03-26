@@ -27,17 +27,13 @@ export class UserStorageUrlUploadManager extends BaseStorageUploadManager {
       const fileUploader = new UserStorageUrlFileUploader({
         data: file,
         name: file.name,
-        dirPath: this.getUploadDirPath(file),
+        dir: this.getUploadDirPath(file),
         type: file.type,
         basePath,
       })
       result.push(fileUploader)
     }
     return result
-  }
-
-  protected async handleUploadedFiles(filePaths: string[]): Promise<void> {
-    await api.handleUploadedUserFiles(filePaths)
   }
 }
 

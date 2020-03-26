@@ -57,7 +57,7 @@ export interface StorageLogic {
 
   readonly baseURL: string
 
-  getNode(path: string): StorageNode | undefined
+  getNode(key: { id?: string; path?: string }): StorageNode | undefined
 
   getNodeDict(): { [path: string]: StorageNode }
 
@@ -65,13 +65,25 @@ export interface StorageLogic {
 
   getDirChildren(dirPath?: string): StorageNode[]
 
-  getDescendants(dirPath: string): StorageNode[]
+  getDescendants(dirPath?: string): StorageNode[]
 
   getDirDescendants(dirPath: string): StorageNode[]
 
-  pullDescendants(dirPath?: string): Promise<{ added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] }>
+  getHierarchicalNode(nodePath: string): StorageNode[]
 
-  pullChildren(dirPath?: string): Promise<{ added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] }>
+  fetchHierarchicalNode(nodePath: string): Promise<StorageNode[]>
+
+  fetchAncestorDirs(nodePath: string): Promise<StorageNode[]>
+
+  fetchDirDescendants(dirPath?: string): Promise<StorageNode[]>
+
+  fetchDescendants(dirPath?: string): Promise<StorageNode[]>
+
+  fetchDirChildren(dirPath?: string): Promise<StorageNode[]>
+
+  fetchChildren(dirPath?: string): Promise<StorageNode[]>
+
+  fetchHierarchicalDescendants(dirPath?: string): Promise<StorageNode[]>
 
   createDirs(dirPaths: string[]): Promise<StorageNode[]>
 

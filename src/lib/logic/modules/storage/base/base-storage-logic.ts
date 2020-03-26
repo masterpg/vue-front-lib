@@ -1,11 +1,11 @@
 import * as _path from 'path'
 import { GetStorageOptionsInput, GetStorageResult, LibAPIContainer, StorageNode, StorageNodeShareSettingsInput } from '../../../api'
 import { StorageStore, User } from '../../../store'
+import { arrayToDict, splitHierarchicalPaths } from 'web-base-lib'
 import { BaseLogic } from '../../../base'
 import { Component } from 'vue-property-decorator'
 import { StorageLogic } from '../../../types'
 import { StorageUploadManager } from '../types'
-import { arrayToDict } from 'web-base-lib'
 
 // @ts-ignore: Vueを継承した抽象クラスに@Componentを付与するとでるエラーの回避
 @Component
@@ -48,8 +48,8 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
 
   abstract newUploadManager(owner: Element): StorageUploadManager
 
-  getNode(path: string): StorageNode | undefined {
-    return this.storageStore.get(path)
+  getNode(key: { id?: string; path?: string }): StorageNode | undefined {
+    return this.storageStore.get(key)
   }
 
   getNodeDict(): { [path: string]: StorageNode } {
@@ -64,7 +64,7 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
     return this.storageStore.getDirChildren(dirPath)
   }
 
-  getDescendants(dirPath: string): StorageNode[] {
+  getDescendants(dirPath?: string): StorageNode[] {
     return this.storageStore.getDescendants(dirPath)
   }
 
@@ -72,58 +72,142 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
     return this.storageStore.getDirDescendants(dirPath)
   }
 
-  async pullDescendants(dirPath?: string): Promise<{ added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] }> {
-    const result: { added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] } = { added: [], updated: [], removed: [] }
-
-    const apiNodes = await this.getDirDescendantsAPI(dirPath)
-
-    // 取得したノードリストをストアへ反映
-    Object.assign(result, this.setNodesToStore(apiNodes))
-
-    // 取得ノードリストをマップ化
-    const apiNodeDict = apiNodes.reduce(
-      (result, node) => {
-        result[node.id] = node
+  getHierarchicalNode(nodePath: string): StorageNode[] {
+    return splitHierarchicalPaths(nodePath).reduce(
+      (result, iDirPath) => {
+        const iDirNode = this.getNode({ path: iDirPath })
+        iDirNode && result.push(iDirNode)
         return result
       },
-      {} as { [id: string]: StorageNode }
+      [] as StorageNode[]
     )
-    // ストアから対象ノードを取得
-    const storeNodes = this.storageStore.getDirDescendants(dirPath)
-    // ストアにあって取得ノードリストにないノードをストアから削除
-    const removingNodes: string[] = []
-    for (const storeNode of storeNodes) {
-      const exists = Boolean(apiNodeDict[storeNode.id])
-      !exists && removingNodes.push(storeNode.path)
-    }
-    result.removed = this.storageStore.removeList(removingNodes)
+  }
+
+  async fetchHierarchicalNode(nodePath: string): Promise<StorageNode[]> {
+    // APIノードをストアへ反映
+    const apiNodes = await this.getHierarchicalNodeAPI(nodePath)
+    const result = this.setAPINodesToStore(apiNodes)
+
+    // APIノードにないストアノードを削除
+    const storeNodes = (() => {
+      const result: StorageNode[] = []
+      for (const ancestorDirPath of splitHierarchicalPaths(nodePath)) {
+        const storeNode = this.getNode({ path: ancestorDirPath })
+        storeNode && result.push(storeNode)
+      }
+      return result
+    })()
+    this.m_removeNotExistsStoreNodes(apiNodes, storeNodes)
 
     return result
   }
 
-  async pullChildren(dirPath?: string): Promise<{ added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] }> {
-    const result: { added: StorageNode[]; updated: StorageNode[]; removed: StorageNode[] } = { added: [], updated: [], removed: [] }
+  async fetchAncestorDirs(nodePath: string): Promise<StorageNode[]> {
+    // APIノードをストアへ反映
+    const apiNodes = await this.getAncestorDirsAPI(nodePath)
+    const result = this.setAPINodesToStore(apiNodes)
 
-    const apiNodes = await this.getChildrenAPI(dirPath)
-
-    // 取得したノードリストをストアへ反映
-    Object.assign(result, this.setNodesToStore(apiNodes))
-    // ストアにあって取得ノードリストにないノードをストアから削除
-    const apiNodeDict = apiNodes.reduce(
-      (result, node) => {
-        result[node.id] = node
-        return result
-      },
-      {} as { [id: string]: StorageNode }
-    )
-    const removingNodes: string[] = []
-    for (const storeNode of this.storageStore.getChildren(dirPath)) {
-      const exists = Boolean(apiNodeDict[storeNode.id])
-      !exists && removingNodes.push(storeNode.path)
-    }
-    result.removed = this.storageStore.removeList(removingNodes)
+    // APIノードにないストアノードを削除
+    const storeNodes = (() => {
+      const result: StorageNode[] = []
+      for (const ancestorDirPath of splitHierarchicalPaths(nodePath)) {
+        if (ancestorDirPath === nodePath) continue
+        const storeNode = this.getNode({ path: ancestorDirPath })
+        storeNode && result.push(storeNode)
+      }
+      return result
+    })()
+    this.m_removeNotExistsStoreNodes(apiNodes, storeNodes)
 
     return result
+  }
+
+  async fetchDirDescendants(dirPath?: string): Promise<StorageNode[]> {
+    // APIノードをストアへ反映
+    const apiNodes = await this.getDirDescendantsAPI(dirPath)
+    const result = this.sortNodes(this.setAPINodesToStore(apiNodes))
+    // APIノードにないストアノードを削除
+    this.m_removeNotExistsStoreNodes(apiNodes, this.storageStore.getDirDescendants(dirPath))
+    return result
+  }
+
+  async fetchDescendants(dirPath?: string): Promise<StorageNode[]> {
+    // APIノードをストアへ反映
+    const apiNodes = await this.getDescendantsAPI(dirPath)
+    const result = this.sortNodes(this.setAPINodesToStore(apiNodes))
+    // APIノードにないストアノードを削除
+    this.m_removeNotExistsStoreNodes(apiNodes, this.storageStore.getDescendants(dirPath))
+    return result
+  }
+
+  async fetchDirChildren(dirPath?: string): Promise<StorageNode[]> {
+    // APIノードをストアへ反映
+    const apiNodes = await this.getDirChildrenAPI(dirPath)
+    const result = this.sortNodes(this.setAPINodesToStore(apiNodes))
+    // APIノードにないストアノードを削除
+    this.m_removeNotExistsStoreNodes(apiNodes, this.storageStore.getDirChildren(dirPath))
+    return result
+  }
+
+  async fetchChildren(dirPath?: string): Promise<StorageNode[]> {
+    // APIノードをストアへ反映
+    const apiNodes = await this.getChildrenAPI(dirPath)
+    const result = this.sortNodes(this.setAPINodesToStore(apiNodes))
+    // APIノードにないストアノードを削除
+    this.m_removeNotExistsStoreNodes(apiNodes, this.storageStore.getChildren(dirPath))
+    return result
+  }
+
+  async fetchHierarchicalDescendants(dirPath?: string): Promise<StorageNode[]> {
+    const result: StorageNode[] = []
+
+    // 引数ディレクトリが指定されなかった場合
+    if (!dirPath) {
+      await Promise.all([
+        (async () => {
+          result.push(...(await this.fetchDirDescendants(dirPath)))
+        })(),
+      ])
+    }
+    // 引数ディレクトリが指定された場合
+    else {
+      await Promise.all([
+        (async () => {
+          result.push(...(await this.fetchAncestorDirs(dirPath)))
+        })(),
+        (async () => {
+          result.push(...(await this.fetchDirDescendants(dirPath)))
+        })(),
+      ])
+    }
+
+    return this.sortNodes(result)
+  }
+
+  async fetchHierarchicalChildren(dirPath?: string): Promise<StorageNode[]> {
+    const result: StorageNode[] = []
+
+    // 引数ディレクトリが指定されなかった場合
+    if (!dirPath) {
+      await Promise.all([
+        (async () => {
+          result.push(...(await this.fetchDirChildren(dirPath)))
+        })(),
+      ])
+    }
+    // 引数ディレクトリが指定された場合
+    else {
+      await Promise.all([
+        (async () => {
+          result.push(...(await this.getAncestorDirsAPI(dirPath)))
+        })(),
+        (async () => {
+          result.push(...(await this.fetchDirChildren(dirPath)))
+        })(),
+      ])
+    }
+
+    return this.sortNodes(result)
   }
 
   async createDirs(dirPaths: string[]): Promise<StorageNode[]> {
@@ -133,19 +217,23 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
 
   async removeDirs(dirPaths: string[]): Promise<void> {
     await this.removeDirsAPI(dirPaths)
-    this.storageStore.removeList(dirPaths)
+    this.storageStore.removeList({ paths: dirPaths })
   }
 
   async removeFiles(filePaths: string[]): Promise<void> {
     await this.removeFilesAPI(filePaths)
-    this.storageStore.removeList(filePaths)
+    this.storageStore.removeList({ paths: filePaths })
   }
 
   async moveDir(fromDirPath: string, toDirPath: string): Promise<void> {
     await this.moveDirAPI(fromDirPath, toDirPath)
     this.storageStore.move(fromDirPath, toDirPath)
 
-    this.setNodesToStore(await this.getDirDescendantsAPI(toDirPath))
+    const apiNode = await this.getNodeAPI(toDirPath)
+    if (!apiNode) {
+      throw new Error(`The specified node was not found: '${toDirPath}'`)
+    }
+    this.setAPINodesToStore([apiNode])
   }
 
   async moveFile(fromFilePath: string, toFilePath: string): Promise<void> {
@@ -153,7 +241,10 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
     this.storageStore.move(fromFilePath, toFilePath)
 
     const apiNode = await this.getNodeAPI(toFilePath)
-    apiNode && this.storageStore.set(apiNode)
+    if (!apiNode) {
+      throw new Error(`The specified node was not found: '${toFilePath}'`)
+    }
+    this.setAPINodesToStore([apiNode])
   }
 
   async renameDir(dirPath: string, newName: string): Promise<void> {
@@ -162,7 +253,11 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
 
     const reg = new RegExp(`${_path.basename(dirPath)}$`)
     const toDirPath = dirPath.replace(reg, newName)
-    this.setNodesToStore(await this.getDirDescendantsAPI(toDirPath))
+    const apiNode = await this.getNodeAPI(toDirPath)
+    if (!apiNode) {
+      throw new Error(`The specified node was not found: '${toDirPath}'`)
+    }
+    this.setAPINodesToStore([apiNode])
   }
 
   async renameFile(filePath: string, newName: string): Promise<void> {
@@ -172,17 +267,20 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
     const reg = new RegExp(`${_path.basename(filePath)}$`)
     const toFilePath = filePath.replace(reg, newName)
     const apiNode = await this.getNodeAPI(toFilePath)
-    apiNode && this.storageStore.set(apiNode)
+    if (!apiNode) {
+      throw new Error(`The specified node was not found: '${toFilePath}'`)
+    }
+    this.setAPINodesToStore([apiNode])
   }
 
   async setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
     const apiNode = await this.setDirShareSettingsAPI(dirPath, settings)
-    return this.storageStore.set(apiNode)
+    return this.setAPINodesToStore([apiNode])[0]
   }
 
   async setFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
     const apiNode = await this.setFileShareSettingsAPI(filePath, settings)
-    return this.storageStore.set(apiNode)
+    return this.setAPINodesToStore([apiNode])[0]
   }
 
   sortNodes(nodes: StorageNode[]): StorageNode[] {
@@ -196,29 +294,21 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   //
   //----------------------------------------------------------------------
 
-  setNodesToStore(nodes: StorageNode[]): { added: StorageNode[]; updated: StorageNode[] } {
-    const stateNodeDict = this.storageStore.all.reduce(
-      (result, node) => {
-        result[node.id] = node
-        return result
-      },
-      {} as { [id: string]: StorageNode }
-    )
+  setAPINodesToStore(apiNodes: StorageNode[]): StorageNode[] {
+    const result: StorageNode[] = []
 
-    const updatingNodes: StorageNode[] = []
-    const addingNodes: StorageNode[] = []
-    for (const node of nodes) {
-      const exists = Boolean(stateNodeDict[node.id])
-      if (exists) {
-        updatingNodes.push(node)
+    for (const apiNode of apiNodes) {
+      const storeNode = this.storageStore.get({ id: apiNode.id, path: apiNode.path })
+      if (!storeNode) {
+        result.push(this.storageStore.add(apiNode))
       } else {
-        addingNodes.push(node)
+        // ストアノードとAPIノードのパスが異なる場合
+        // ※ノード移動が行われていた場合
+        if (storeNode.path !== apiNode.path) {
+          this.storageStore.move(storeNode.path, apiNode.path)
+        }
+        result.push(this.storageStore.set(apiNode))
       }
-    }
-
-    const result = {
-      added: this.storageStore.addList(addingNodes),
-      updated: this.storageStore.setList(updatingNodes),
     }
 
     return result
@@ -237,6 +327,12 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   abstract getDirChildrenAPI(dirPath?: string): Promise<StorageNode[]>
 
   abstract getChildrenAPI(dirPath?: string): Promise<StorageNode[]>
+
+  abstract getHierarchicalNodeAPI(nodePath: string): Promise<StorageNode[]>
+
+  abstract getAncestorDirsAPI(nodePath: string): Promise<StorageNode[]>
+
+  abstract handleUploadedFilesAPI(filePaths: string[]): Promise<void>
 
   abstract createDirsAPI(dirPaths: string[]): Promise<StorageNode[]>
 
@@ -304,6 +400,24 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
     }
 
     return this.sortNodes(Object.values(nodeDict))
+  }
+
+  /**
+   * APIノードにないストアノードを削除します。
+   * @param apiNodes
+   * @param storeNodes
+   */
+  private m_removeNotExistsStoreNodes(apiNodes: StorageNode[], storeNodes: StorageNode[]): StorageNode[] {
+    const apiNodeIdDict = arrayToDict(apiNodes, 'id')
+    const apiNodePathDict = arrayToDict(apiNodes, 'path')
+
+    const removingNodes: string[] = []
+    for (const storeNode of storeNodes) {
+      const exists = Boolean(apiNodeIdDict[storeNode.id] || apiNodePathDict[storeNode.path])
+      !exists && removingNodes.push(storeNode.path)
+    }
+
+    return this.storageStore.removeList({ paths: removingNodes })
   }
 
   //----------------------------------------------------------------------

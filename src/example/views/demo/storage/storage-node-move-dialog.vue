@@ -233,6 +233,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
       opened: true,
       // 現在の親ディレクトリがルートノードの場合、ルートノードを選択できないよう設定
       unselectable: this.m_movingNodesParentPath === srcRootTreeNode.value,
+      sortFunc: treeSortFunc,
     })
 
     rootTreeNode.lazyLoadStatus = 'loading'
@@ -251,7 +252,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
     dirPath = removeBothEndsSlash(dirPath)
 
     // 引数ディレクトリ直下の子ノードをサーバーから取得
-    await this.storageLogic.pullChildren(dirPath)
+    await this.storageLogic.fetchChildren(dirPath)
 
     // 取得した子ノードをツリービューに追加
     const childNodes = this.storageLogic.getChildren(dirPath)
@@ -270,10 +271,10 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
           icon: 'folder',
           lazy: true,
           unselectable,
+          sortFunc: treeSortFunc,
         },
         {
           parent: node.dir,
-          sortFunc: treeSortFunc,
         }
       )
     }
