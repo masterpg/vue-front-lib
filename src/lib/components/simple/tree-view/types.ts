@@ -50,6 +50,10 @@ export interface CompTreeNodeData {
    * 子ノード読み込みの遅延ロード状態を指定します。
    */
   lazyLoadStatus?: CompTreeViewLazyLoadStatus
+  /**
+   * 子ノードの並びを決めるソート関数を指定します。
+   */
+  sortFunc?: ChildrenSortFunc
 }
 
 export type CompTreeNodeEditData<T> = Partial<Omit<T, 'nodeClass' | 'children'>>
@@ -67,4 +71,11 @@ export type CompTreeViewLazyLoadDoneFunc = () => void
 export interface CompTreeViewLazyLoadEvent<NODE extends CompTreeNode = any> {
   node: NODE
   done: CompTreeViewLazyLoadDoneFunc
+}
+
+export interface CompTreeNodeParent {
+  readonly children: CompTreeNode[]
+  readonly sortFunc: ChildrenSortFunc | null
+  readonly m_childContainer: HTMLElement
+  m_getInsertIndex(newNode: CompTreeNode, options?: { insertIndex?: number | null }): number
 }

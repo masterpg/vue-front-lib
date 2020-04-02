@@ -24,7 +24,7 @@
 </template>
 
 <script lang="ts">
-import { ChildrenSortFunc, CompTreeNodeData, CompTreeViewLazyLoadDoneFunc, CompTreeViewLazyLoadEvent } from './types'
+import { ChildrenSortFunc, CompTreeNodeData, CompTreeNodeParent, CompTreeViewLazyLoadDoneFunc, CompTreeViewLazyLoadEvent } from './types'
 import { BaseComponent } from '../../../base/component'
 import CompTreeNode from './comp-tree-node.vue'
 import { CompTreeViewUtils } from './comp-tree-view-utils'
@@ -48,7 +48,7 @@ import Vue from 'vue'
  * `--comp-tree-padding` | ツリービューのpaddingです | `10px`
  */
 @Component
-export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> extends BaseComponent {
+export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> extends BaseComponent implements CompTreeNodeParent {
   //----------------------------------------------------------------------
   //
   //  Properties
@@ -87,6 +87,15 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
       }
       this.m_selectedNode = null
     }
+  }
+
+  private m_sortFunc: ChildrenSortFunc | null = null
+
+  /**
+   * 子ノードの並びを決めるソート関数です。
+   */
+  get sortFunc(): ChildrenSortFunc | null {
+    return this.m_sortFunc
   }
 
   /**
@@ -138,9 +147,16 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
   /**
    * 指定されたノードデータからノードツリーを構築します。
    * @param nodeDataList ノードツリーを構築するためのデータ
-   * @param insertIndex ノード挿入位置
+   * @param options
+   * <ul>
+   *   <li>sortFunc: 子ノードの並びを決めるソート関数</li>
+   *   <li>insertIndex: ノード挿入位置。ノードに`sortFunc`が設定されている場合、この値は無視されます。</li>
+   * </ul>
    */
-  buildTree(nodeDataList: NODE_DATA[], insertIndex?: number): void {
+  buildTree(nodeDataList: NODE_DATA[], options?: { sortFunc?: ChildrenSortFunc; insertIndex?: number | null }): void {
+    let { sortFunc, insertIndex } = options || { sortFunc: undefined, insertIndex: undefined }
+    this.m_sortFunc = sortFunc || null
+
     nodeDataList.forEach(nodeData => {
       this.m_addNodeByData(nodeData, { insertIndex })
       if (!(insertIndex === undefined || insertIndex === null)) {
@@ -155,16 +171,11 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
    * @param options
    * <ul>
    *   <li>parent: 親ノードを特定するための値。指定されない場合、ツリービューの子として追加されます。</li>
-   *   <li>insertIndex: ノード挿入位置。sortFuncと同時に指定することはできません。</li>
-   *   <li>sortFunc: ノードをソートする関数。insertIndexと同時に指定することはできません。</li>
+   *   <li>insertIndex: ノード挿入位置。ノードに`sortFunc`が設定されている場合、この値は無視されます。</li>
    * </ul>
    */
-  addNode(node: NODE_DATA | CompTreeNode, options?: { parent?: string; insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
+  addNode(node: NODE_DATA | CompTreeNode, options?: { parent?: string; insertIndex?: number | null }): CompTreeNode {
     options = options || {}
-
-    if (typeof options.insertIndex === 'number' && options.insertIndex >= 0 && options.sortFunc) {
-      throw new Error('You cannot specify both "insertIndex" and "sortFunc".')
-    }
 
     let result!: CompTreeNode
     const childType = node instanceof Vue ? 'Node' : 'Data'
@@ -174,7 +185,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
     if (typeof options.parent === 'string') {
       const parentNode = this.getNode(options.parent)
       if (!parentNode) {
-        throw new Error(`The parent node "${options.parent}" does not exist.`)
+        throw new Error(`The parent node '${options.parent}' does not exist.`)
       }
       result = parentNode.addChild(node, options)
     }
@@ -250,11 +261,11 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
   //
   //----------------------------------------------------------------------
 
-  private m_addNodeByData(nodeData: NODE_DATA, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
+  private m_addNodeByData(nodeData: NODE_DATA, options?: { insertIndex?: number | null }): CompTreeNode {
     options = options || {}
 
     if (this.getNode(nodeData.value)) {
-      throw new Error(`The node "${nodeData.value}" already exists.`)
+      throw new Error(`The node '${nodeData.value}' already exists.`)
     }
 
     // ノードの作成
@@ -278,15 +289,16 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
     return node
   }
 
-  private m_addNodeByNode(node: CompTreeNode, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
+  private m_addNodeByNode(node: CompTreeNode, options?: { insertIndex?: number | null }): CompTreeNode {
     options = options || {}
 
     // 追加ノードの親が自身のツリービューの場合
     // ※自身のツリービューの子として追加ノードが既に存在する場合
     if (!node.parent && node.treeView === this) {
+      const newInsertIndex = this.m_getInsertIndex(node, options)
       const currentIndex = this.children.indexOf(node)
-      // 挿入位置が指定されていて、かつ現在の位置と挿入位置が同じ場合
-      if (typeof options.insertIndex === 'number' && options.insertIndex === currentIndex) {
+      // 現在の位置と新しい挿入位置が同じ場合
+      if (currentIndex === newInsertIndex) {
         CompTreeViewUtils.dispatchNodeAdded(node)
         for (const descendant of CompTreeViewUtils.getDescendants(node)) {
           CompTreeViewUtils.dispatchNodeAdded(descendant)
@@ -324,23 +336,27 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
     return node
   }
 
-  private m_getInsertIndex(newNode: CompTreeNode, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): number {
+  m_getInsertIndex(newNode: CompTreeNode, options?: { insertIndex?: number | null }): number {
     options = options || {}
 
-    // 挿入位置が指定された場合
-    if (typeof options.insertIndex === 'number') {
-      return options.insertIndex
+    // ソート関数が指定されている場合
+    if (typeof this.sortFunc === 'function') {
+      const children: CompTreeNode[] = []
+      if (this.children.includes(newNode)) {
+        children.push(...this.children)
+      } else {
+        children.push(...this.children, newNode)
+      }
+      children.sort(this.sortFunc)
+      return children.indexOf(newNode)
     }
-    // ソート関数が指定された場合
-    else if (typeof options.sortFunc === 'function') {
-      const children = [...this.children, newNode]
-      children.sort(options.sortFunc)
-      const index = children.indexOf(newNode)
-      return index === -1 ? this.children.length : index
+    // 挿入位置が指定された場合
+    else if (typeof options.insertIndex === 'number') {
+      return options.insertIndex
     }
     // 何も指定されていなかった場合
     else {
-      return this.m_children.length
+      return this.children.length
     }
   }
 

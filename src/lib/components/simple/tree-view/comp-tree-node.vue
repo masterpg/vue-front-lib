@@ -86,7 +86,7 @@
 </template>
 
 <script lang="ts">
-import { ChildrenSortFunc, CompTreeNodeData, CompTreeNodeEditData, CompTreeViewLazyLoadStatus } from './types'
+import { ChildrenSortFunc, CompTreeNodeData, CompTreeNodeEditData, CompTreeNodeParent, CompTreeViewLazyLoadStatus } from './types'
 import { BaseComponent } from '../../../base/component'
 import CompLoadingSpinner from '@/lib/components/simple/loading-spinner/comp-loading-spinner.vue'
 import CompTreeView from './comp-tree-view.vue'
@@ -95,16 +95,21 @@ import { Component } from 'vue-property-decorator'
 import { NoCache } from '../../../base/decorators'
 import Vue from 'vue'
 import anime from 'animejs'
+const debounce = require('lodash/debounce')
 
 @Component({
   components: { CompLoadingSpinner },
 })
-export default class CompTreeNode extends BaseComponent {
+export default class CompTreeNode extends BaseComponent implements CompTreeNodeParent {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
   //
   //----------------------------------------------------------------------
+
+  created() {
+    this.resetOwnPositionInParentDebounce = debounce(this.resetOwnPositionInParent, 0)
+  }
 
   mounted() {
     // this.childContainerObserver = new MutationObserver(records => {
@@ -163,6 +168,8 @@ export default class CompTreeNode extends BaseComponent {
 
   set icon(value: string) {
     this.nodeData.icon = value
+
+    this.resetOwnPositionInParentDebounce()
   }
 
   /**
@@ -175,6 +182,8 @@ export default class CompTreeNode extends BaseComponent {
 
   set iconColor(value: string) {
     this.nodeData.iconColor = value
+
+    this.resetOwnPositionInParentDebounce()
   }
 
   /**
@@ -196,6 +205,8 @@ export default class CompTreeNode extends BaseComponent {
     this.nodeData.label = value
     CompTreeViewUtils.dispatchNodePropertyChanged(this, { property: 'label', newValue: value, oldValue })
 
+    this.resetOwnPositionInParentDebounce()
+
     this.$nextTick(() => {
       this.m_setMinWidth()
     })
@@ -212,6 +223,8 @@ export default class CompTreeNode extends BaseComponent {
     const oldValue = this.nodeData.value
     this.nodeData.value = value
     CompTreeViewUtils.dispatchNodePropertyChanged(this, { property: 'value', newValue: value, oldValue })
+
+    this.resetOwnPositionInParentDebounce()
   }
 
   /**
@@ -227,6 +240,8 @@ export default class CompTreeNode extends BaseComponent {
     if (value) {
       this.selected = false
     }
+
+    this.resetOwnPositionInParentDebounce()
   }
 
   /**
@@ -238,6 +253,8 @@ export default class CompTreeNode extends BaseComponent {
 
   set selected(value: boolean) {
     this.m_setSelected(value, false)
+
+    this.resetOwnPositionInParentDebounce()
   }
 
   private m_parent: CompTreeNode | null = null
@@ -267,6 +284,8 @@ export default class CompTreeNode extends BaseComponent {
 
   set lazy(value: boolean) {
     this.nodeData.lazy = value
+
+    this.resetOwnPositionInParentDebounce()
   }
 
   /**
@@ -278,6 +297,15 @@ export default class CompTreeNode extends BaseComponent {
 
   set lazyLoadStatus(value: CompTreeViewLazyLoadStatus) {
     this.nodeData.lazyLoadStatus = value
+
+    this.resetOwnPositionInParentDebounce()
+  }
+
+  /**
+   * 子ノードの並びを決めるソート関数です。
+   */
+  get sortFunc(): ChildrenSortFunc | null {
+    return this.nodeData.sortFunc || null
   }
 
   private m_minWidth: number = 0
@@ -402,10 +430,6 @@ export default class CompTreeNode extends BaseComponent {
    * @param editData
    */
   setNodeData(editData: CompTreeNodeEditData<CompTreeNodeData>): void {
-    this.setBaseNodeData(editData)
-  }
-
-  protected setBaseNodeData(editData: CompTreeNodeEditData<CompTreeNodeData>): void {
     if (typeof editData.label === 'string') {
       this.label = editData.label!
     }
@@ -445,6 +469,12 @@ export default class CompTreeNode extends BaseComponent {
     if (typeof editData.lazyLoadStatus === 'string') {
       this.lazyLoadStatus = editData.lazyLoadStatus
     }
+
+    // このコンポーネントの継承側で必要な処理を実行
+    this.setNodeDataPlaceholder(editData)
+
+    // 自身の配置位置を再設定
+    this.resetOwnPositionInParent()
   }
 
   /**
@@ -452,16 +482,11 @@ export default class CompTreeNode extends BaseComponent {
    * @param child ノード、またはノードを構築するためのデータ
    * @param options
    * <ul>
-   *   <li>insertIndex: ノード挿入位置。sortFuncと同時に指定することはできません。</li>
-   *   <li>sortFunc: ノードをソートする関数。insertIndexと同時に指定することはできません。</li>
+   *   <li>insertIndex: ノード挿入位置。ノードに`sortFunc`が設定されている場合、この値は無視されます。</li>
    * </ul>
    */
-  addChild(child: CompTreeNodeData | CompTreeNode, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
+  addChild(child: CompTreeNodeData | CompTreeNode, options?: { insertIndex?: number | null }): CompTreeNode {
     options = options || {}
-
-    if (typeof options.insertIndex === 'number' && options.insertIndex >= 0 && options.sortFunc) {
-      throw new Error('You cannot specify both "insertIndex" and "sortFunc".')
-    }
 
     let childNode: CompTreeNode
     const childType = child instanceof Vue ? 'Node' : 'Data'
@@ -545,6 +570,39 @@ export default class CompTreeNode extends BaseComponent {
   //----------------------------------------------------------------------
 
   /**
+   * このコンポーネントを継承した際に`setNodeData()`で追加処理が必要な場合、
+   * その追加処理を記述するためのプレースホルダー関数になります。
+   */
+  protected setNodeDataPlaceholder(editData: CompTreeNodeEditData<CompTreeNodeData>): void {}
+
+  /**
+   * 親ノードのコンテナ内における自身の配置位置を再設定します。
+   * この関数は以下の条件に一致する場合に呼び出す必要があります。
+   * + 親ノードがソート関数によって子ノードの並びを決定している場合
+   * + 自ノードのプロパティ変更が自身の配置位置に影響を及ぼす場合
+   */
+  protected resetOwnPositionInParent(): void {
+    // 親が存在しないまたは親にソート関数が設定されていない場合、何もせず終了
+    const parent: CompTreeNodeParent | null = this.parent || this.treeView
+    if (!parent || !parent.sortFunc) return
+
+    const insertIndex = parent.m_getInsertIndex(this)
+    const currentIndex = parent.children.indexOf(this)
+    if (insertIndex === currentIndex) return
+
+    if (insertIndex < currentIndex) {
+      const afterNode = parent.m_childContainer.children[insertIndex]
+      parent.m_childContainer.insertBefore(this.$el, afterNode)
+    } else if (insertIndex > currentIndex) {
+      const refNode = parent.m_childContainer.children[insertIndex]
+      parent.m_childContainer.insertBefore(this.$el, refNode.nextSibling)
+    }
+    parent.children.sort(parent.sortFunc)
+  }
+
+  protected resetOwnPositionInParentDebounce!: () => void
+
+  /**
    * ノードが発火する標準のイベントとは別な独自イベントを発火します。
    * @param extraEventName
    * @param detail
@@ -560,14 +618,14 @@ export default class CompTreeNode extends BaseComponent {
     )
   }
 
-  private m_addChildByData(childNodeData: CompTreeNodeData, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
+  private m_addChildByData(childNodeData: CompTreeNodeData, options?: { insertIndex?: number | null }): CompTreeNode {
     options = options || {}
     if (!this.treeView) {
       throw new Error(`'treeView' not found.`)
     }
 
     if (this.treeView.getNode(childNodeData.value)) {
-      throw new Error(`The node "${childNodeData.value}" already exists.`)
+      throw new Error(`The node '${childNodeData.value}' already exists.`)
     }
 
     this.m_ascendSetBlockForDisplay()
@@ -611,21 +669,22 @@ export default class CompTreeNode extends BaseComponent {
     return childNode
   }
 
-  private m_addChildByNode(childNode: CompTreeNode, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): CompTreeNode {
+  private m_addChildByNode(childNode: CompTreeNode, options?: { insertIndex?: number | null }): CompTreeNode {
     options = options || {}
 
     // 追加ノードの子に自ノードが含まれないことを検証
     const descendantDict = CompTreeViewUtils.getDescendantDict(childNode)
     if (descendantDict[this.value]) {
-      throw new Error(`The specified node "${childNode.value}" contains the new parent "${this.value}".`)
+      throw new Error(`The specified node '${childNode.value}' contains the new parent '${this.value}'.`)
     }
 
     // 追加ノードの親が自ノードの場合
     // ※自ノードの子として追加ノードが既に存在する場合
     if (childNode.parent === this) {
+      const newInsertIndex = this.m_getInsertIndex(childNode, options)
       const currentIndex = this.children.indexOf(childNode)
-      // 挿入位置が指定されていて、かつ現在の位置と挿入位置が同じ場合
-      if (typeof options.insertIndex === 'number' && options.insertIndex === currentIndex) {
+      // 現在の位置と新しい挿入位置が同じ場合
+      if (currentIndex === newInsertIndex) {
         CompTreeViewUtils.dispatchNodeAdded(childNode)
         for (const descendant of CompTreeViewUtils.getDescendants(childNode)) {
           CompTreeViewUtils.dispatchNodeAdded(descendant)
@@ -683,19 +742,23 @@ export default class CompTreeNode extends BaseComponent {
     return childNode
   }
 
-  private m_getInsertIndex(newNode: CompTreeNode, options?: { insertIndex?: number | null; sortFunc?: ChildrenSortFunc }): number {
+  m_getInsertIndex(newNode: CompTreeNode, options?: { insertIndex?: number | null }): number {
     options = options || {}
 
-    // 挿入位置が指定された場合
-    if (typeof options.insertIndex === 'number') {
-      return options.insertIndex
+    // ソート関数が指定されている場合
+    if (typeof this.sortFunc === 'function') {
+      const children: CompTreeNode[] = []
+      if (this.children.includes(newNode)) {
+        children.push(...this.children)
+      } else {
+        children.push(...this.children, newNode)
+      }
+      children.sort(this.sortFunc)
+      return children.indexOf(newNode)
     }
-    // ソート関数が指定された場合
-    else if (typeof options.sortFunc === 'function') {
-      const children = [...this.children, newNode]
-      children.sort(options.sortFunc)
-      const index = children.indexOf(newNode)
-      return index === -1 ? this.children.length : index
+    // 挿入位置が指定された場合
+    else if (typeof options.insertIndex === 'number') {
+      return options.insertIndex
     }
     // 何も指定されていなかった場合
     else {
