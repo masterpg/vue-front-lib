@@ -136,6 +136,7 @@ import { StorageTypeMixin } from '@/example/views/demo/storage/base'
 import Vue from 'vue'
 import anime from 'animejs'
 import { mixins } from 'vue-class-component'
+import { removeBothEndsSlash } from 'web-base-lib'
 const debounce = require('lodash/debounce')
 
 @Component({
@@ -290,8 +291,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   private m_updatePage(dirPath: string): void {
     // ロジックストアに格納されているストレージノードをツリービューへマージ
     this.treeStore.mergeAllNodes(this.storageLogic.nodes)
-    // ページの選択ノードを設定
-    this.m_selectNodeOnPage(dirPath)
+    // 選択ノードへURL遷移
+    this.m_movePageToNode(dirPath)
   }
 
   /**
@@ -344,8 +345,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     // 作成したディレクトリの祖先を展開
     this.m_openParentNode(treeNode.value, true)
 
-    // ページの選択ノードを作成したディレクトリの親ノードに設定
-    this.m_selectNodeOnPage(treeNode.parent!.value)
+    // 作成したディレクトリの親ノードへURL遷移
+    this.m_movePageToNode(treeNode.parent!.value)
 
     this.$q.loading.hide()
   }
@@ -361,8 +362,9 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
 
     // ノードの移動を実行
     await this.treeStore.removeStorageNodes(treeNodes.map(node => node.value))
-    // ページの選択ノードを削除対象の親ノードのに設定
-    this.m_selectNodeOnPage(parentDirPath)
+
+    // 削除対象の親ノードへURL遷移
+    this.m_movePageToNode(parentDirPath)
 
     this.$q.loading.hide()
   }
@@ -379,8 +381,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     await this.treeStore.moveStorageNodes(treeNodes.map(node => node.value), toDirPath)
     // 移動対象ノードの祖先を展開
     this.m_openParentNode(treeNodes[0].value, true)
-    // ページの選択ノードを現在選択されているノードに設定
-    this.m_selectNodeOnPage(this.treeStore.selectedNode.value)
+    // 現在選択されているノードへURL遷移
+    this.m_movePageToNode(this.treeStore.selectedNode.value)
 
     this.$q.loading.hide()
   }
@@ -395,8 +397,8 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
 
     // ノードのリネームを実行
     await this.treeStore.renameStorageNode(treeNode.value, newName)
-    // ページの選択ノードを現在選択されているノードに設定
-    this.m_selectNodeOnPage(this.treeStore.selectedNode.value)
+    // 現在選択されているノードへURL遷移
+    this.m_movePageToNode(this.treeStore.selectedNode.value)
 
     this.$q.loading.hide()
   }
@@ -411,23 +413,33 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
 
     // ノードの共有設定を実行
     await this.treeStore.setShareSettings(treeNodes.map(node => node.value), settings)
-    // ページの選択ノードを現在選択されているノードに設定
-    this.m_selectNodeOnPage(this.treeStore.selectedNode.value)
+    // 現在選択されているノードへURL遷移
+    this.m_movePageToNode(this.treeStore.selectedNode.value)
 
     this.$q.loading.hide()
   }
 
   /**
    * 指定ノードのパスをURLへ付与して移動します。
-   * このメソッドを実行すると、URLの選択ノードパスと引数で指定されたパスが異なる場合のみ
-   * `beforeRouteUpdate()`が実行されます。
-   * @param nodePath ノードパス
+   * @param dirPath ディレクトリパス
    */
-  private m_movePageToNode!: (nodePath: string) => void
+  private m_movePageToNode!: (dirPath: string) => void
 
-  private async m_movePageToNodeFunc(nodePath: string) {
-    // 選択ノードのパスをURLに付与
-    this.storageRoute.move(nodePath)
+  private async m_movePageToNodeFunc(dirPath: string) {
+    dirPath = removeBothEndsSlash(dirPath)
+    const urlDirPath = removeBothEndsSlash(this.storageRoute.getNodePath())
+    // 移動先が変わらない場合
+    // ※URLから取得したディレクトリと移動先のディレクトリが同じ場合
+    if (urlDirPath === dirPath) {
+      // 指定されたディレクトリをページの選択ノードとして設定
+      this.m_selectNodeOnPage(dirPath)
+    }
+    // 移動先が変わる場合
+    else {
+      // 選択ディレクトリのパスをURLに付与
+      // ※ルーターによってbeforeRouteUpdate()が実行される
+      this.storageRoute.move(dirPath)
+    }
   }
 
   /**
