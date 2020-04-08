@@ -1406,23 +1406,25 @@ describe('removeStorageNodes', () => {
 
     // root
     // ├dev
-    // │└projects
-    // │  └blog
-    // │    └src
-    // │      └index.html
+    // │├projects
+    // ││└blog
+    // ││  └src
+    // ││    └index.html
+    // │└memo.txt
     // └work
     const _root_children = treeStore.rootNode.children
     expect(_root_children[0].value).toBe('dev')
     expect(_root_children[1].value).toBe('work')
 
-    // 'dev/projects'は削除されていないことを検証
+    // 何も削除されていないことを検証
     const _dev = treeStore.getNode('dev')!
     const _dev_descendants = _dev.getDescendants()
-    expect(_dev_descendants.length).toBe(4)
+    expect(_dev_descendants.length).toBe(5)
     expect(_dev_descendants[0].value).toBe('dev/projects')
     expect(_dev_descendants[1].value).toBe('dev/projects/blog')
     expect(_dev_descendants[2].value).toBe('dev/projects/blog/src')
     expect(_dev_descendants[3].value).toBe('dev/projects/blog/src/index.html')
+    expect(_dev_descendants[4].value).toBe('dev/memo.txt')
 
     verifyParentChildRelationForTree(treeView)
   })

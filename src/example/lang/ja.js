@@ -24,7 +24,7 @@ export default merge(require('@/lib/lang/ja').default, {
       deleteTargetQ: '「{target}」を削除してよろしいですか？',
       deleteNodeQ: '{nodeNum}個の{nodeType}を削除してよろしいですか？',
       deleteFileAndFolderQ: '{fileNum}個の{fileType}と{folderNum}個の{folderType}を削除してよろしいですか？',
-      deletingError: '「{nodeName}」の削除でエラーが発生しました。',
+      deletingError: '削除でエラーが発生しました。削除対象のノードをリロードして状況を確認してください。',
     },
     move: {
       movingNode: '移動{nodeType}',

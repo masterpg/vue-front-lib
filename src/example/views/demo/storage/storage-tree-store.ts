@@ -562,7 +562,8 @@ export class StorageTreeStore extends Vue {
   async removeStorageNodes(nodePaths: string[]): Promise<void> {
     nodePaths = nodePaths.map(fromNodePath => removeBothEndsSlash(fromNodePath))
 
-    const treeNodes: StorageTreeNode[] = []
+    const dirPaths: string[] = []
+    const filePaths: string[] = []
 
     // 引数チェック
     for (const nodePath of nodePaths) {
@@ -572,36 +573,31 @@ export class StorageTreeStore extends Vue {
 
       const treeNode = this.getNode(nodePath)
       if (!treeNode) {
-        throw new Error(`The specified node was not found: '${nodePath}'`)
+        throw new Error(`The specified node could not be found: '${nodePath}'`)
       }
 
-      treeNodes.push(treeNode)
+      switch (treeNode.nodeType) {
+        case StorageNodeType.Dir:
+          dirPaths.push(treeNode.value)
+          break
+        case StorageNodeType.File:
+          filePaths.push(treeNode.value)
+          break
+      }
     }
 
     // APIによる削除処理を実行
-    const removeStorageNode = async (treeNode: StorageTreeNode) => {
-      try {
-        switch (treeNode.nodeType) {
-          case StorageNodeType.Dir:
-            await this.storageLogic.removeDirs([treeNode.value])
-            break
-          case StorageNodeType.File:
-            await this.storageLogic.removeFiles([treeNode.value])
-            break
-        }
-      } catch (err) {
-        console.error(err)
-        this.m_showNotification('error', String(this.$t('storage.delete.deletingError', { nodeName: treeNode.label })))
-        return undefined
-      }
-      return treeNode.value
+    try {
+      if (dirPaths.length) await this.storageLogic.removeDirs(dirPaths)
+      if (filePaths.length) await this.storageLogic.removeFiles(filePaths)
+    } catch (err) {
+      console.error(err)
+      this.m_showNotification('error', String(this.$t('storage.delete.deletingError')))
+      return
     }
-    const removedNodePaths = await Promise.all(treeNodes.map(treeNode => removeStorageNode(treeNode))).then(result => {
-      return result.filter(nodePath => Boolean(nodePath)) as string[]
-    })
 
     // ツリービューから引数ノードを削除
-    this.removeNodes(removedNodePaths)
+    this.removeNodes([...dirPaths, ...filePaths])
   }
 
   /**
