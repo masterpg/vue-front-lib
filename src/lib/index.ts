@@ -72,4 +72,5 @@ export {
   CompTreeViewLazyLoadEvent,
   CompTreeViewLazyLoadStatus,
   CompTreeViewUtils,
+  UploadEndedEvent,
 } from './components'

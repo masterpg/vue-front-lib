@@ -110,7 +110,6 @@ import { StorageNodeType } from '@/lib'
 </template>
 
 <script lang="ts">
-import * as path from 'path'
 import {
   BaseComponent,
   CompStorageUploadProgressFloat,
@@ -118,9 +117,8 @@ import {
   CompTreeViewLazyLoadEvent,
   NoCache,
   Resizable,
-  StorageNode,
   StorageNodeShareSettings,
-  StorageNodeType,
+  UploadEndedEvent,
   User,
 } from '@/lib'
 import { RawLocation, Route } from 'vue-router'
@@ -602,13 +600,16 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
 
   /**
    * アップロード進捗フロートでアップロードが終了した際のハンドラです。
-   * @param uploadDirPath アップロード先のディレクトリパス
+   * @param e
    */
-  private async m_uploadProgressFloatOnUploadEnded(uploadDirPath: string) {
-    this.m_updatePage(uploadDirPath)
+  private async m_uploadProgressFloatOnUploadEnded(e: UploadEndedEvent) {
+    // アップロードが行われた後のツリーの更新処理
+    await this.treeStore.onUploaded(e)
+    // アップロード先のディレクトリへURL遷移
+    this.m_movePageToNode(e.uploadDirPath)
 
     // アップロード先のディレクトリとその祖先を展開
-    const uploadDirNode = this.treeStore.getNode(uploadDirPath)!
+    const uploadDirNode = this.treeStore.getNode(e.uploadDirPath)!
     uploadDirNode.open()
     this.m_openParentNode(uploadDirNode.value, true)
   }

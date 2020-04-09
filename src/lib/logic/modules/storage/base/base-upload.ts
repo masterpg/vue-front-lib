@@ -257,9 +257,6 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
     const filePaths = this.m_uploadingFiles.map(uploadingFile => removeBothEndsSlash(uploadingFile.path))
     await this.storageLogic.handleUploadedFilesAPI(filePaths)
 
-    // ファイルアップロードに関連するノードをサーバーから取得しストアに反映
-    await this.storageLogic.fetchHierarchicalChildren(this.uploadDirPath)
-
     this.m_ended = true
   }
 }

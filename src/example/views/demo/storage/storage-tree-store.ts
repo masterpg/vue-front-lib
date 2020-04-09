@@ -7,6 +7,7 @@ import {
   StorageNode,
   StorageNodeShareSettings,
   StorageNodeType,
+  UploadEndedEvent,
   User,
 } from '@/lib'
 import { Component, Prop } from 'vue-property-decorator'
@@ -269,6 +270,68 @@ export class StorageTreeStore extends Vue {
 
     // 引数ディレクトリを遅延ロード済みに設定
     dirTreeNode.lazyLoadStatus = 'loaded'
+  }
+
+  /**
+   * アップロードが行われた後のツリーの更新処理を行います。
+   * @param e
+   */
+  async onUploaded(e: UploadEndedEvent): Promise<void> {
+    const uploadDirTreeNode = this.getNode(e.uploadDirPath)
+    if (!uploadDirTreeNode) {
+      throw new Error(`The specified node could not be found: '${e.uploadDirPath}'`)
+    }
+
+    // アップロードディレクトリ直下のアップロードノードを取得
+    // 引数イベントが次のような場合:
+    //   e: {
+    //     uploadDirPath: 'd1',
+    //     uploadFiles: [
+    //       { path: 'd1/d11/d111/fileA.txt', … },
+    //       { path: 'd1/d11/fileB.txt', … },
+    //       { path: 'd1/d12/fileC.txt', … },
+    //       { path: 'd1/fileD.txt', … },
+    //     ]
+    //   }
+    // 次のようなパスが取得される:
+    //   ['d1/d11', 'd1/d12', 'd1/fileD.txt']
+    const childNodePaths = e.uploadedFiles.reduce<string[]>((result, item) => {
+      const childNodePath = (() => {
+        const uploadDirPath = e.uploadDirPath ? _path.join(e.uploadDirPath, '/') : ''
+        const workPath = item.path.replace(uploadDirPath, '')
+        const childNodeName = workPath.split('/')[0]
+        return _path.join(e.uploadDirPath, childNodeName)
+      })()
+      if (!result.includes(childNodePath)) {
+        result.push(childNodePath)
+      }
+      return result
+    }, [])
+
+    // ロジックストア(サーバー)からアップロードディレクトリ直下のノードを取得
+    const storeChildNodes = await this.storageLogic.fetchChildren(e.uploadDirPath)
+
+    // ロジックストアのノードで、アップロードされたノードをツリービューに反映
+    for (const storeNode of storeChildNodes) {
+      const treeNode = this.getNode(storeNode.path)
+      // 次の場合リロードが必要
+      // ・ツリービューに対象ノードが存在
+      // ・対象ノードがディレクトリ
+      // ・対象ディレクトリが子ノードを読み込み済み
+      // ・対象ディレクトリがアップロードディレクトリ直下に存在する
+      const needReload = treeNode && treeNode.nodeType === 'Dir' && treeNode.lazyLoadStatus === 'loaded' && childNodePaths.includes(treeNode.value)
+      // リロードが必要な場合
+      if (needReload) {
+        await this.reloadDir(treeNode!.value)
+      }
+      // リロードが必要ない場合
+      else {
+        this.setNode(storeNode)
+      }
+    }
+
+    // 引数ディレクトリを遅延ロード済みに設定
+    uploadDirTreeNode.lazyLoadStatus = 'loaded'
   }
 
   /**
@@ -621,7 +684,7 @@ export class StorageTreeStore extends Vue {
       // 移動ノードが存在することを確認
       const fromTreeNode = this.getNode(fromNodePath)
       if (!fromTreeNode) {
-        throw new Error(`The specified node was not found: '${fromNodePath}'`)
+        throw new Error(`The specified node could not be found: '${fromNodePath}'`)
       }
 
       if (fromTreeNode.nodeType === StorageNodeType.Dir) {
@@ -728,7 +791,7 @@ export class StorageTreeStore extends Vue {
 
     const treeNode = this.getNode(nodePath)
     if (!treeNode) {
-      throw new Error(`The specified node was not found: '${nodePath}'`)
+      throw new Error(`The specified node could not be found: '${nodePath}'`)
     }
 
     // APIによるリネーム処理を実行
@@ -787,7 +850,7 @@ export class StorageTreeStore extends Vue {
 
       const treeNode = this.getNode(nodePath)
       if (!treeNode) {
-        throw new Error(`The specified node was not found: '${nodePath}'`)
+        throw new Error(`The specified node could not be found: '${nodePath}'`)
       }
 
       treeNodes.push(treeNode)

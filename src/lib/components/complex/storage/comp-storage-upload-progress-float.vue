@@ -78,6 +78,11 @@ import { Component, Prop, Watch } from 'vue-property-decorator'
 import { StorageFileUploader, StorageUploadManager } from '../../../logic'
 import { mixins } from 'vue-class-component'
 
+export interface UploadEndedEvent {
+  uploadDirPath: string
+  uploadedFiles: { name: string; dir: string; path: string; size: number }[]
+}
+
 @Component
 export default class CompStorageUploadProgressFloat extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
@@ -193,7 +198,10 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
   @Watch('m_uploadManager.ended')
   private m_uploadManagerOnEnded(newValue: boolean, oldValue: boolean) {
     if (!newValue) return
-    this.$emit(CompStorageUploadProgressFloat.UPLOAD_ENDED, this.m_uploadDirPath)
+    this.$emit(CompStorageUploadProgressFloat.UPLOAD_ENDED, {
+      uploadDirPath: this.m_uploadDirPath,
+      uploadedFiles: this.m_uploadManager.uploadingFiles,
+    } as UploadEndedEvent)
   }
 }
 </script>

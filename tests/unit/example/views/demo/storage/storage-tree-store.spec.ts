@@ -1,6 +1,6 @@
 import * as shortid from 'shortid'
 import * as td from 'testdouble'
-import { CompTreeNode, CompTreeView, StorageLogic } from '@/lib'
+import { CompTreeNode, CompTreeView, StorageLogic, UploadEndedEvent } from '@/lib'
 import { EMPTY_SHARE_SETTINGS, cloneTestStorageNode, newTestStorageDirNode, newTestStorageFileNode } from '../../../../../helpers/common/storage'
 import { StorageTreeStore, newStorageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
 import { StorageNodeShareSettings } from '@/lib'
@@ -477,6 +477,128 @@ describe('reloadDir', () => {
     expect(exp.calls[0].args[0]).toBe(d111.path)
 
     verifyParentChildRelationForTree(treeView)
+  })
+})
+
+describe('onUploaded', () => {
+  it('ベーシックケース', async () => {
+    // root
+    // └d1 ← アップロードディレクトリ
+    //   ├d11 ← 今回アップロード、子ノード読み込み済み(アップロード前は子ノードが存在しなかった)
+    //   │├d111 ← 今回アップロード
+    //   ││└fileA.txt ← 今回アップロード
+    //   │└fileB.txt ← 今回アップロード
+    //   ├d12 ← 今回アップロード、子ノード未読み込み
+    //   │└fileC.txt ← 今回アップロード
+    //   ├d13 ← 以前アップロード、ツリーにまだ存在しない
+    //   │├…
+    //   └fileD.txt ← 今回アップロード
+    const d1 = newTestStorageDirNode('d1')
+    const d11 = newTestStorageDirNode('d1/d11')
+    const d111 = newTestStorageDirNode('d1/d11/d111')
+    const fileA = newTestStorageFileNode('d1/d11/d111/fileA.txt')
+    const fileB = newTestStorageFileNode('d1/d11/fileB.txt')
+    const d12 = newTestStorageDirNode('d1/d12')
+    const fileC = newTestStorageFileNode('d1/d12/fileC.txt')
+    const d13 = newTestStorageDirNode('d1/d13')
+    const fileD = newTestStorageFileNode('d1/fileD.txt')
+    treeStore.setAllNodes([d1, d11, d12])
+    treeStore.getNode(d1.path)!.lazyLoadStatus = 'none'
+    treeStore.getNode(d11.path)!.lazyLoadStatus = 'loaded'
+    treeStore.getNode(d12.path)!.lazyLoadStatus = 'none'
+
+    const e: UploadEndedEvent = {
+      uploadDirPath: d1.path,
+      uploadedFiles: [fileA, fileB, fileC, fileD],
+    }
+
+    //
+    // モック設定
+    //
+    // ロジックストア(サーバー)からアップロードディレクトリ直下のノードを取得
+    td.when(storageLogic.fetchChildren(e.uploadDirPath)).thenResolve([d11, d12, d13, fileD])
+    // リロード時の挙動をモック化
+    const reloadDir = td.replace(treeStore, 'reloadDir')
+    td.when(reloadDir(d11.path)).thenDo(() => {
+      treeStore.setNodes([d11, d111, fileA, fileB])
+    })
+
+    // アップロードが行われた後のツリーの更新処理を実行
+    await treeStore.onUploaded(e)
+
+    // root
+    // └d1
+    //   ├d11 ← リロードにより配下ノードも読み込まれた
+    //   │├d111
+    //   ││└fileA.txt
+    //   │└fileB.txt
+    //   ├d12 ← 子ノードが未読み込みだったので、リロードされず配下ノードも読み込まれない
+    //   ├d13 ← ツリーに存在しなかったが追加された(配下ノードは読み込まれない)
+    //   └fileD.txt
+    const actual = treeStore.getAllNodes()
+    const [_root, _d1, _d11, _d111, _fileA, _fileB, _d12, _d13, _fileD] = actual
+    expect(actual.length).toBe(9)
+    expect(_root.value).toBe('')
+    expect(_d1.value).toBe('d1')
+    expect(_d11.value).toBe('d1/d11')
+    expect(_d111.value).toBe('d1/d11/d111')
+    expect(_fileA.value).toBe('d1/d11/d111/fileA.txt')
+    expect(_fileB.value).toBe('d1/d11/fileB.txt')
+    expect(_d12.value).toBe('d1/d12')
+    expect(_d13.value).toBe('d1/d13')
+    expect(_fileD.value).toBe('d1/fileD.txt')
+    // アップロードディレクトリの遅延ロード状態の検証
+    expect(_d1.lazyLoadStatus).toBe('loaded')
+  })
+
+  it('ルートディレクトリへアップロードした場合', async () => {
+    // root ← アップロードディレクトリ
+    // ├d1 ← 今回アップロード、子ノード読み込み済み(アップロード前は子ノードが存在しなかった)
+    // │└d11 ← 今回アップロード
+    // │  └fileA.txt ← 今回アップロード
+    // └fileB.txt ← 今回アップロード
+    const d1 = newTestStorageDirNode('d1')
+    const d11 = newTestStorageDirNode('d1/d11')
+    const fileA = newTestStorageFileNode('d1/d11/fileA.txt')
+    const fileB = newTestStorageFileNode('fileB.txt')
+    treeStore.setAllNodes([d1])
+    treeStore.getNode('')!.lazyLoadStatus = 'none'
+    treeStore.getNode(d1.path)!.lazyLoadStatus = 'loaded'
+
+    const e: UploadEndedEvent = {
+      uploadDirPath: '',
+      uploadedFiles: [fileA, fileB],
+    }
+
+    //
+    // モック設定
+    //
+    // ロジックストア(サーバー)からアップロードディレクトリ直下のノードを取得
+    td.when(storageLogic.fetchChildren(e.uploadDirPath)).thenResolve([d1, fileB])
+    // リロード時の挙動をモック化
+    const reloadDir = td.replace(treeStore, 'reloadDir')
+    td.when(reloadDir(d1.path)).thenDo(() => {
+      treeStore.setNodes([d11, fileA])
+    })
+
+    // アップロードが行われた後のツリーの更新処理を実行
+    await treeStore.onUploaded(e)
+
+    // root
+    // └d1 ← リロードにより配下ノードも読み込まれた
+    // │└d11
+    // │  └fileA.txt
+    // └fileB.txt
+    const actual = treeStore.getAllNodes()
+    const [_root, _d1, _d11, _fileA, _fileB] = actual
+    expect(actual.length).toBe(5)
+    expect(_root.value).toBe('')
+    expect(_d1.value).toBe('d1')
+    expect(_d11.value).toBe('d1/d11')
+    expect(_fileA.value).toBe('d1/d11/fileA.txt')
+    expect(_fileB.value).toBe('fileB.txt')
+    // アップロードディレクトリの遅延ロード状態の検証
+    expect(_root.lazyLoadStatus).toBe('loaded')
   })
 })
 
@@ -1845,7 +1967,7 @@ describe('moveStorageNodes', () => {
       actual = err
     }
 
-    expect(actual.message).toBe(`The specified node was not found: 'dXXX'`)
+    expect(actual.message).toBe(`The specified node could not be found: 'dXXX'`)
   })
 
   it('移動先ディレクトリが移動元のサブディレクトリの場合', async () => {
@@ -2104,7 +2226,7 @@ describe('renameStorageNode', () => {
       actual = err
     }
 
-    expect(actual.message).toBe(`The specified node was not found: 'dXXX'`)
+    expect(actual.message).toBe(`The specified node could not be found: 'dXXX'`)
   })
 })
 
@@ -2185,6 +2307,6 @@ describe('setShareSettings', () => {
       actual = err
     }
 
-    expect(actual.message).toBe(`The specified node was not found: 'dXXX'`)
+    expect(actual.message).toBe(`The specified node could not be found: 'dXXX'`)
   })
 })
