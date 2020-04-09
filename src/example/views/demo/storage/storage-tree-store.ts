@@ -856,6 +856,7 @@ export class StorageTreeStore extends Vue {
       treeNodes.push(treeNode)
     }
 
+    // APIによる共有設定処理を実行
     const setShare = async (treeNode: StorageTreeNode, settings: StorageNodeShareSettings) => {
       try {
         if (treeNode.nodeType === StorageNodeType.Dir) {
@@ -869,9 +870,11 @@ export class StorageTreeStore extends Vue {
         return undefined
       }
     }
-    const processedNodes = await Promise.all(treeNodes.map(treeNode => setShare(treeNode, settings))).then(result => {
-      return result.filter(nodePath => Boolean(nodePath)) as StorageNode[]
-    })
+    const processedNodes: StorageNode[] = []
+    for (const treeNode of treeNodes) {
+      const processedNode = await setShare(treeNode, settings)
+      processedNode && processedNodes.push(processedNode)
+    }
 
     // ツリービューに処理内容を反映
     for (const node of processedNodes) {
