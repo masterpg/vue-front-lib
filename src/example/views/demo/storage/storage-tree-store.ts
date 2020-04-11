@@ -491,14 +491,11 @@ export class StorageTreeStore extends Vue {
 
     // ツリービューに引数ノードが既に存在する場合
     if (treeNode) {
-      // パスに変更がない場合(移動またはリネームされていない)
-      if (treeNode.value === node.path) {
-        treeNode.setNodeData(this.m_toTreeNodeData(node))
-      }
       // パスに変更がある場合(移動またはリネームされていた場合)
-      else {
+      if (treeNode.value !== node.path) {
         this.moveNode(treeNode.value, node.path)
       }
+      treeNode.setNodeData(this.m_toTreeNodeData(node))
     }
     // ツリービューに引数ノードがまだ存在しない場合
     else {

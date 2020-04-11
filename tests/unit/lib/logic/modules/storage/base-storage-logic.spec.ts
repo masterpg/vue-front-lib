@@ -2,7 +2,6 @@ import * as shortid from 'shortid'
 import * as td from 'testdouble'
 import { EMPTY_SHARE_SETTINGS, cloneTestStorageNode, newTestStorageDirNode, newTestStorageFileNode } from '../../../../../helpers/common/storage'
 import { LibAPIContainer, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageState } from '@/lib'
-import { arrayToDict, removeEndSlash } from 'web-base-lib'
 import { BaseStorageLogic } from '@/lib/logic/modules/storage/base/base-storage-logic'
 import { BaseStorageStore } from '@/lib/logic/store/modules/storage/base'
 import { Component } from 'vue-property-decorator'
@@ -11,6 +10,7 @@ import { TestStore } from '../../../../../helpers/common/store'
 import { config } from '@/lib/config'
 import dayjs from 'dayjs'
 import { initLibTest } from '../../../../../helpers/lib/init'
+import { removeEndSlash } from 'web-base-lib'
 const cloneDeep = require('lodash/cloneDeep')
 
 //========================================================================
@@ -106,8 +106,32 @@ describe('getHierarchicalNode', () => {
     expect(actual[2].path).toBe('d1/d11/d111')
   })
 
-  it('存在しないノードパスを指定した場合', () => {
+  it('dirPathのノードは存在しないが上位は存在する場合', () => {
+    // root
+    // └d1
+    //   └d11
+    //     └d111 ← dirPathに指定するが存在しない
+    const d1 = newTestStorageDirNode('d1')
+    const d11 = newTestStorageDirNode('d1/d11')
+    storageStore.initState({ all: [d1, d11] })
+
     const actual = storageLogic.getHierarchicalNode('d1/d11/d111')
+
+    expect(actual.length).toBe(2)
+    expect(actual[0].path).toBe('d1')
+    expect(actual[1].path).toBe('d1/d11')
+  })
+
+  it('dirPathのノードも上位のノードも存在しない場合', () => {
+    // root
+    // └d1
+    //   └d11
+    //     └d111
+    const d1 = newTestStorageDirNode('d1')
+    const d11 = newTestStorageDirNode('d1/d11')
+    storageStore.initState({ all: [d1, d11] })
+
+    const actual = storageLogic.getHierarchicalNode('d2/d21/211')
 
     expect(actual.length).toBe(0)
   })

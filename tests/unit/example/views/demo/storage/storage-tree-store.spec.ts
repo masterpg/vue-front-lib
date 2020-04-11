@@ -4,6 +4,7 @@ import { CompTreeNode, CompTreeView, StorageLogic, UploadEndedEvent } from '@/li
 import { EMPTY_SHARE_SETTINGS, cloneTestStorageNode, newTestStorageDirNode, newTestStorageFileNode } from '../../../../../helpers/common/storage'
 import { StorageTreeStore, newStorageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
 import { StorageNodeShareSettings } from '@/lib'
+import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import { arrayToDict } from 'web-base-lib'
 import dayjs from 'dayjs'
 import { i18n } from '@/example/i18n'
@@ -925,14 +926,17 @@ describe('setNode + setNodes', () => {
     treeStore.setAllNodes([d1, d11, f111, d2])
 
     // 'd1/d11'が移動+リネームで'd2/d21'となった
-    const d21_from_d11 = cloneTestStorageNode(d11, { name: 'd21', dir: 'd2', path: 'd2/d21', updated: dayjs() })
-    const f211_from_f111 = cloneTestStorageNode(f111, { name: 'f211.txt', dir: 'd2/d21', path: 'd2/d21/f211.txt', updated: dayjs() })
+    const updated = dayjs()
+    const d21_from_d11 = cloneTestStorageNode(d11, { name: 'd21', dir: 'd2', path: 'd2/d21', updated: updated })
+    const f211_from_f111 = cloneTestStorageNode(f111, { name: 'f211.txt', dir: 'd2/d21', path: 'd2/d21/f211.txt', updated: updated })
     treeStore.setNodes([d21_from_d11, f211_from_f111])
 
     const _d21 = treeStore.getNode('d2/d21')!
     expect(_d21.parent!.value).toBe('d2')
+    expect(_d21.updatedDate).toEqual(updated)
     const _f211 = treeStore.getNode('d2/d21/f211.txt')!
     expect(_f211.parent!.value).toBe('d2/d21')
+    expect(_f211.updatedDate).toEqual(updated)
 
     verifyParentChildRelationForTree(treeView)
   })
@@ -945,13 +949,15 @@ describe('setNode + setNodes', () => {
     treeStore.setAllNodes([d1, d11, f111, f112])
 
     // 'd1/d11/f112.txt'がリネームされて'd1/d11/f110.txt'となった
-    const f110_from_f112 = cloneTestStorageNode(f112, { name: 'f110.txt', dir: 'd1/d11', path: 'd1/d11/f110.txt', updated: dayjs() })
+    const updated = dayjs()
+    const f110_from_f112 = cloneTestStorageNode(f112, { name: 'f110.txt', dir: 'd1/d11', path: 'd1/d11/f110.txt', updated: updated })
     treeStore.setNodes([f110_from_f112])
 
     const _d11 = treeStore.getNode('d1/d11')!
-    const [_f110, _f111] = _d11.children
+    const [_f110, _f111] = _d11.children as StorageTreeNode[]
     expect(_f110.value).toBe('d1/d11/f110.txt')
     expect(_f110.label).toBe('f110.txt')
+    expect(_f110.updatedDate).toEqual(updated)
     expect(_f111.value).toBe('d1/d11/f111.txt')
     expect(_f111.label).toBe('f111.txt')
 
