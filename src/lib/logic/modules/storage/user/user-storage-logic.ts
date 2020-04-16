@@ -34,58 +34,58 @@ export class UserStorageLogicImpl extends BaseStorageLogic implements UserStorag
   }
 
   getDirDescendantsAPI(dirPath?: string): Promise<StorageNode[]> {
-    return this.getPaginationNodesAPI(api, api.getUserStorageDirDescendants, null, dirPath)
+    return api.callStoragePaginationAPI(api.getUserStorageDirDescendants, null, dirPath)
   }
 
   getDescendantsAPI(dirPath?: string): Promise<StorageNode[]> {
-    return this.getPaginationNodesAPI(api, api.getUserStorageDescendants, null, dirPath)
+    return api.callStoragePaginationAPI(api.getUserStorageDescendants, null, dirPath)
   }
 
   getDirChildrenAPI(dirPath?: string): Promise<StorageNode[]> {
-    return this.getPaginationNodesAPI(api, api.getUserStorageDirChildren, null, dirPath)
+    return api.callStoragePaginationAPI(api.getUserStorageDirChildren, null, dirPath)
   }
 
   getChildrenAPI(dirPath?: string): Promise<StorageNode[]> {
-    return this.getPaginationNodesAPI(api, api.getUserStorageChildren, null, dirPath)
+    return api.callStoragePaginationAPI(api.getUserStorageChildren, null, dirPath)
   }
 
-  getHierarchicalNodeAPI(nodePath: string): Promise<StorageNode[]> {
-    return api.getUserStorageHierarchicalNode(nodePath)
+  getHierarchicalNodesAPI(nodePath: string): Promise<StorageNode[]> {
+    return api.getUserStorageHierarchicalNodes(nodePath)
   }
 
   getAncestorDirsAPI(nodePath: string): Promise<StorageNode[]> {
     return api.getUserStorageAncestorDirs(nodePath)
   }
 
-  handleUploadedFilesAPI(filePaths: string[]): Promise<void> {
-    return api.handleUploadedUserFiles(filePaths)
+  handleUploadedFileAPI(filePath: string): Promise<StorageNode> {
+    return api.handleUploadedUserFile(filePath)
   }
 
   createDirsAPI(dirPaths: string[]): Promise<StorageNode[]> {
     return api.createUserStorageDirs(dirPaths)
   }
 
-  removeDirsAPI(dirPaths: string[]): Promise<void> {
-    return api.removeUserStorageDirs(dirPaths)
+  removeDirAPI(dirPath: string): Promise<StorageNode[]> {
+    return api.callStoragePaginationAPI(api.removeUserStorageDir, null, dirPath)
   }
 
-  removeFilesAPI(filePaths: string[]): Promise<void> {
-    return api.removeUserStorageFiles(filePaths)
+  removeFileAPI(filePath: string): Promise<StorageNode | undefined> {
+    return api.removeUserStorageFile(filePath)
   }
 
-  moveDirAPI(fromDirPath: string, toDirPath: string): Promise<void> {
-    return api.moveUserStorageDir(fromDirPath, toDirPath)
+  moveDirAPI(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
+    return api.callStoragePaginationAPI(api.moveUserStorageDir, null, fromDirPath, toDirPath)
   }
 
-  moveFileAPI(fromFilePath: string, toFilePath: string): Promise<void> {
+  moveFileAPI(fromFilePath: string, toFilePath: string): Promise<StorageNode> {
     return api.moveUserStorageFile(fromFilePath, toFilePath)
   }
 
-  renameDirAPI(dirPath: string, newName: string): Promise<void> {
-    return api.renameUserStorageDir(dirPath, newName)
+  renameDirAPI(dirPath: string, newName: string): Promise<StorageNode[]> {
+    return api.callStoragePaginationAPI(api.renameUserStorageDir, null, dirPath, newName)
   }
 
-  renameFileAPI(filePath: string, newName: string): Promise<void> {
+  renameFileAPI(filePath: string, newName: string): Promise<StorageNode> {
     return api.renameUserStorageFile(filePath, newName)
   }
 

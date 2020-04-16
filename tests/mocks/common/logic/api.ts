@@ -110,21 +110,18 @@ export function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIConta
         _uploadList[index].signedUploadUrl = url
       })
 
-      await Promise.all(
-        _uploadList.map(async uploadItem => {
-          const data = await this.m_readAsArrayBuffer(uploadItem.fileData)
-          await axios.request({
-            url: uploadItem.signedUploadUrl,
-            method: 'put',
-            data,
-            headers: {
-              'content-type': 'application/octet-stream',
-            },
-          })
+      for (const uploadItem of _uploadList) {
+        const data = await this.m_readAsArrayBuffer(uploadItem.fileData)
+        await axios.request({
+          url: uploadItem.signedUploadUrl,
+          method: 'put',
+          data,
+          headers: {
+            'content-type': 'application/octet-stream',
+          },
         })
-      )
-
-      await this.handleUploadedFiles(_uploadList.map(uploadItem => uploadItem.filePath))
+        await this.handleUploadedFile(uploadItem.filePath)
+      }
 
       this.m_user = userBackup
     }
@@ -153,7 +150,9 @@ export function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIConta
       const userBackup = this.m_user
       this.m_user = TEMP_ADMIN_USER
 
-      await this.removeStorageDirs(dirPaths)
+      for (const dirPath of dirPaths) {
+        await this.callStoragePaginationAPI(this.removeStorageDir, null, dirPath)
+      }
 
       this.m_user = userBackup
     }
@@ -162,7 +161,9 @@ export function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIConta
       const userBackup = this.m_user
       this.m_user = TEMP_ADMIN_USER
 
-      await this.removeStorageFiles(filePaths)
+      for (const filePath of filePaths) {
+        await this.removeStorageFile(filePath)
+      }
 
       this.m_user = userBackup
     }

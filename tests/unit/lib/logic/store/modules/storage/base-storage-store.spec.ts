@@ -996,44 +996,6 @@ describe('move', () => {
     toBeCopy(actual)
   })
 
-  it('aaa', async () => {
-    // root
-    // ├dA
-    // │└d1 ← 移動するノード
-    // │  ├d11
-    // │  │└d111
-    // │  │  ├fileA.txt
-    // │  │  └fileB.txt
-    // │  ├d12
-    // │  ├fileX.txt
-    // │  └fileY.txt
-    // └dB
-    //   └d1 ← ここへ上書き移動
-    //     ├d11
-    //     │└d111
-    //     │  ├fileA.txt
-    //     │  └fileC.txt
-    //     ├d13
-    //     ├fileX.txt
-    //     └fileZ.txt
-    const dA = newTestStorageDirNode('dA')
-    const dA_d1 = newTestStorageDirNode('dA/d1')
-    const dA_d11 = newTestStorageDirNode('dA/d1/d11')
-    const dA_fileA = newTestStorageFileNode('dA/d1/d11/fileA.txt')
-    const dA_fileB = newTestStorageFileNode('dA/d1/d11/fileB.txt')
-    const dB = newTestStorageDirNode('dB')
-    const dB_d1 = newTestStorageDirNode('dB/d1')
-    const dB_d11 = newTestStorageDirNode('dB/d1/d11')
-    const dB_fileA = newTestStorageFileNode('dB/d1/d11/fileA.txt')
-    const dB_fileC = newTestStorageFileNode('dB/d1/d11/fileC.txt')
-    storageStore.initState({
-      all: storageStore.sort([dA, dA_d1, dA_d11, dA_fileA, dA_fileB, dB, dB_d1, dB_d11, dB_fileA, dB_fileC]),
-    })
-
-    // 'dA/d1'を'dB'へ移動
-    const actual = storageStore.move('dA/d1', 'dB/d1')
-  })
-
   it('存在しないパスを指定した場合', () => {
     const d1 = newTestStorageDirNode('d1')
     const d2 = newTestStorageDirNode('d2')

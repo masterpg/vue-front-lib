@@ -24,7 +24,7 @@ export default merge(require('@/lib/lang/en').default, {
       deleteTargetQ: 'Delete "{target}"?',
       deleteNodeQ: 'Delete {nodeNum} {nodeType}?',
       deleteFileAndFolderQ: 'Delete {fileNum} {fileType} and {folderNum} {folderType}?',
-      deletingError: 'An error occurred in the deletion. Reload the node you want to delete to check its status.',
+      deletingError: 'An error occurred while deleting "{nodeName}".',
     },
     move: {
       movingNode: 'Move {nodeType}',

@@ -71,7 +71,7 @@ export interface StorageLogic {
 
   getHierarchicalNode(nodePath: string): StorageNode[]
 
-  fetchHierarchicalNode(nodePath: string): Promise<StorageNode[]>
+  fetchHierarchicalNodes(nodePath: string): Promise<StorageNode[]>
 
   fetchAncestorDirs(nodePath: string): Promise<StorageNode[]>
 
@@ -87,17 +87,17 @@ export interface StorageLogic {
 
   createDirs(dirPaths: string[]): Promise<StorageNode[]>
 
-  removeDirs(dirPaths: string[]): Promise<void>
+  removeDir(dirPath: string): Promise<void>
 
-  removeFiles(filePaths: string[]): Promise<void>
+  removeFile(filePath: string): Promise<void>
 
-  moveDir(fromDirPath: string, toDirPath: string): Promise<void>
+  moveDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]>
 
-  moveFile(fromFilePath: string, toFilePath: string): Promise<void>
+  moveFile(fromFilePath: string, toFilePath: string): Promise<StorageNode>
 
-  renameDir(dirPath: string, newName: string): Promise<void>
+  renameDir(dirPath: string, newName: string): Promise<StorageNode[]>
 
-  renameFile(filePath: string, newName: string): Promise<void>
+  renameFile(filePath: string, newName: string): Promise<StorageNode>
 
   setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 

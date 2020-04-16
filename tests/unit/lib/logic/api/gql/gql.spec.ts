@@ -123,10 +123,15 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthUser(GENERAL_USER)
 
-      const actual = await api.getUserStorageDirDescendants({ maxResults: 2 }, `d1`)
+      const actual = await api.callStoragePaginationAPI(api.getUserStorageDirDescendants, { maxChunk: 2 }, `d1`)
 
-      expect(actual.nextPageToken!.length).toBeGreaterThan(0)
-      expect(actual.list.length).toBeLessThanOrEqual(2)
+      expect(actual.length).toBe(6)
+      expect(actual[0].path).toBe(`d1`)
+      expect(actual[1].path).toBe(`d1/d11`)
+      expect(actual[2].path).toBe(`d1/d11/d111`)
+      expect(actual[3].path).toBe(`d1/d11/d111/fileC.txt`)
+      expect(actual[4].path).toBe(`d1/d11/fileB.txt`)
+      expect(actual[5].path).toBe(`d1/fileA.txt`)
     })
   })
 
@@ -156,10 +161,14 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthUser(GENERAL_USER)
 
-      const actual = await api.getUserStorageDescendants({ maxResults: 2 }, `d1`)
+      const actual = await api.callStoragePaginationAPI(api.getUserStorageDescendants, { maxChunk: 2 }, `d1`)
 
-      expect(actual.nextPageToken!.length).toBeGreaterThan(0)
-      expect(actual.list.length).toBeLessThanOrEqual(2)
+      expect(actual.length).toBe(5)
+      expect(actual[0].path).toBe(`d1/d11`)
+      expect(actual[1].path).toBe(`d1/d11/d111`)
+      expect(actual[2].path).toBe(`d1/d11/d111/fileC.txt`)
+      expect(actual[3].path).toBe(`d1/d11/fileB.txt`)
+      expect(actual[4].path).toBe(`d1/fileA.txt`)
     })
   })
 
@@ -188,10 +197,13 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthUser(GENERAL_USER)
 
-      const actual = await api.getUserStorageDirChildren({ maxResults: 2 }, `d1`)
+      const actual = await api.callStoragePaginationAPI(api.getUserStorageDirChildren, { maxChunk: 2 }, `d1`)
 
-      expect(actual.nextPageToken!.length).toBeGreaterThan(0)
-      expect(actual.list.length).toBeLessThanOrEqual(2)
+      expect(actual.length).toBe(4)
+      expect(actual[0].path).toBe(`d1`)
+      expect(actual[1].path).toBe(`d1/d11`)
+      expect(actual[2].path).toBe(`d1/fileA.txt`)
+      expect(actual[3].path).toBe(`d1/fileB.txt`)
     })
   })
 
@@ -219,14 +231,16 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthUser(GENERAL_USER)
 
-      const actual = await api.getUserStorageChildren({ maxResults: 2 }, `d1`)
+      const actual = await api.callStoragePaginationAPI(api.getUserStorageChildren, { maxChunk: 2 }, `d1`)
 
-      expect(actual.nextPageToken!.length).toBeGreaterThan(0)
-      expect(actual.list.length).toBeLessThanOrEqual(2)
+      expect(actual.length).toBe(3)
+      expect(actual[0].path).toBe(`d1/d11`)
+      expect(actual[1].path).toBe(`d1/fileA.txt`)
+      expect(actual[2].path).toBe(`d1/fileB.txt`)
     })
   })
 
-  describe('getUserStorageHierarchicalNode', () => {
+  describe('getUserStorageHierarchicalNodes', () => {
     beforeEach(async () => {
       await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
     })
@@ -234,7 +248,7 @@ describe('Storage API', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
 
-      const actual = await api.getUserStorageHierarchicalNode(`d1/d11/d111/fileA.txt`)
+      const actual = await api.getUserStorageHierarchicalNodes(`d1/d11/d111/fileA.txt`)
 
       expect(actual.length).toBe(4)
       expect(actual[0].path).toBe(`d1`)
@@ -261,14 +275,16 @@ describe('Storage API', () => {
     })
   })
 
-  describe('handleUploadedUserFiles', () => {
+  describe('handleUploadedUserFile', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
 
       await api.createUserStorageDirs([`docs`])
       await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      await api.handleUploadedUserFiles([`docs/fileA.txt`])
+      const actual = await api.handleUploadedUserFile(`docs/fileA.txt`)
+
+      expect(actual.path).toBe(`docs/fileA.txt`)
     })
   })
 
@@ -284,52 +300,95 @@ describe('Storage API', () => {
     })
   })
 
-  describe('removeUserStorageDirs', () => {
-    it('疎通確認', async () => {
+  describe('removeUserStorageDir', () => {
+    it('疎通確認 - ページングなし', async () => {
       api.setTestAuthUser(GENERAL_USER)
 
       await api.uploadUserTestFiles(GENERAL_USER, [
-        { filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `d1/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `d1/file1.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `d1/file2.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `d1/file3.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `d1/file4.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `d1/file5.txt`, fileData: 'test', contentType: 'text/plain' },
       ])
 
-      await api.removeUserStorageDirs([`d1`])
-      const actual = (await api.getUserStorageDirChildren(null, `d1`)).list
+      const actual = (await api.removeUserStorageDir(null, `d1`)).list
 
-      expect(actual.length).toBe(0)
+      expect(actual.length).toBe(6)
+      expect(actual[0].path).toBe(`d1`)
+      expect(actual[1].path).toBe(`d1/file1.txt`)
+      expect(actual[2].path).toBe(`d1/file2.txt`)
+      expect(actual[3].path).toBe(`d1/file3.txt`)
+      expect(actual[4].path).toBe(`d1/file4.txt`)
+      expect(actual[5].path).toBe(`d1/file5.txt`)
+    })
+
+    it('疎通確認 - ページングあり', async () => {
+      api.setTestAuthUser(GENERAL_USER)
+
+      await api.uploadUserTestFiles(GENERAL_USER, [
+        { filePath: `d1/file1.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `d1/file2.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `d1/file3.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `d1/file4.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `d1/file5.txt`, fileData: 'test', contentType: 'text/plain' },
+      ])
+
+      const actual = await api.callStoragePaginationAPI(api.removeUserStorageDir, { maxChunk: 2 }, `d1`)
+
+      expect(actual.length).toBe(6)
+      expect(actual[0].path).toBe(`d1`)
+      expect(actual[1].path).toBe(`d1/file1.txt`)
+      expect(actual[2].path).toBe(`d1/file2.txt`)
+      expect(actual[3].path).toBe(`d1/file3.txt`)
+      expect(actual[4].path).toBe(`d1/file4.txt`)
+      expect(actual[5].path).toBe(`d1/file5.txt`)
     })
   })
 
-  describe('removeUserStorageFiles', () => {
+  describe('removeUserStorageFile', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
 
-      await api.uploadUserTestFiles(GENERAL_USER, [
-        { filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `d1/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
-      ])
+      await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      await api.removeUserStorageFiles([`d1/fileA.txt`])
-      const actual = (await api.getUserStorageDirChildren(null, `d1`)).list
+      const actual = (await api.removeUserStorageFile(`d1/fileA.txt`))!
 
-      expect(actual.length).toBe(2)
-      expect(actual[0].path).toBe(`d1`)
-      expect(actual[1].path).toBe(`d1/fileB.txt`)
+      expect(actual.path).toBe(`d1/fileA.txt`)
     })
   })
 
   describe('moveUserStorageDir', () => {
-    it('疎通確認', async () => {
+    it('疎通確認 - ページングなし', async () => {
       api.setTestAuthUser(GENERAL_USER)
 
-      await api.createUserStorageDirs([`d1`, `d2`])
+      await api.createUserStorageDirs([`d1/d11`, `d1/d12`, `d1/d13`, `d1/d14`, `d1/d15`, `d2`])
 
-      await api.moveUserStorageDir(`d1`, `d2/d1`)
-      const actual = (await api.getUserStorageDescendants(null)).list
+      const actual = (await api.moveUserStorageDir(null, `d1`, `d2/d1`)).list
 
-      expect(actual.length).toBe(2)
-      expect(actual[0].path).toBe(`d2`)
-      expect(actual[1].path).toBe(`d2/d1`)
+      expect(actual.length).toBe(6)
+      expect(actual[0].path).toBe(`d2/d1`)
+      expect(actual[1].path).toBe(`d2/d1/d11`)
+      expect(actual[2].path).toBe(`d2/d1/d12`)
+      expect(actual[3].path).toBe(`d2/d1/d13`)
+      expect(actual[4].path).toBe(`d2/d1/d14`)
+      expect(actual[5].path).toBe(`d2/d1/d15`)
+    })
+
+    it('疎通確認 - ページングあり', async () => {
+      api.setTestAuthUser(GENERAL_USER)
+
+      await api.createUserStorageDirs([`d1/d11`, `d1/d12`, `d1/d13`, `d1/d14`, `d1/d15`, `d2`])
+
+      const actual = await api.callStoragePaginationAPI(api.moveUserStorageDir, { maxChunk: 2 }, `d1`, `d2/d1`)
+
+      expect(actual.length).toBe(6)
+      expect(actual[0].path).toBe(`d2/d1`)
+      expect(actual[1].path).toBe(`d2/d1/d11`)
+      expect(actual[2].path).toBe(`d2/d1/d12`)
+      expect(actual[3].path).toBe(`d2/d1/d13`)
+      expect(actual[4].path).toBe(`d2/d1/d14`)
+      expect(actual[5].path).toBe(`d2/d1/d15`)
     })
   })
 
@@ -340,27 +399,43 @@ describe('Storage API', () => {
       await api.createUserStorageDirs([`d1`, `d2`])
       await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      await api.moveUserStorageFile(`d1/fileA.txt`, `d2/fileA.txt`)
-      const actual = (await api.getUserStorageDescendants(null)).list
+      const actual = await api.moveUserStorageFile(`d1/fileA.txt`, `d2/fileA.txt`)
 
-      expect(actual.length).toBe(3)
-      expect(actual[0].path).toBe(`d1`)
-      expect(actual[1].path).toBe(`d2`)
-      expect(actual[2].path).toBe(`d2/fileA.txt`)
+      expect(actual.path).toBe(`d2/fileA.txt`)
     })
   })
 
   describe('renameUserStorageDir', () => {
-    it('疎通確認', async () => {
+    it('疎通確認 - ページングなし', async () => {
       api.setTestAuthUser(GENERAL_USER)
 
-      await api.createUserStorageDirs([`d1`])
+      await api.createUserStorageDirs([`d1/d11`, `d1/d12`, `d1/d13`, `d1/d14`, `d1/d15`])
 
-      await api.renameUserStorageDir(`d1`, `d2`)
-      const actual = (await api.getUserStorageDescendants(null)).list
+      const actual = (await api.renameUserStorageDir(null, `d1`, `d2`)).list
 
-      expect(actual.length).toBe(1)
+      expect(actual.length).toBe(6)
       expect(actual[0].path).toBe(`d2`)
+      expect(actual[1].path).toBe(`d2/d11`)
+      expect(actual[2].path).toBe(`d2/d12`)
+      expect(actual[3].path).toBe(`d2/d13`)
+      expect(actual[4].path).toBe(`d2/d14`)
+      expect(actual[5].path).toBe(`d2/d15`)
+    })
+
+    it('疎通確認 - ページングあり', async () => {
+      api.setTestAuthUser(GENERAL_USER)
+
+      await api.createUserStorageDirs([`d1/d11`, `d1/d12`, `d1/d13`, `d1/d14`, `d1/d15`])
+
+      const actual = await api.callStoragePaginationAPI(api.renameUserStorageDir, { maxChunk: 2 }, `d1`, `d2`)
+
+      expect(actual.length).toBe(6)
+      expect(actual[0].path).toBe(`d2`)
+      expect(actual[1].path).toBe(`d2/d11`)
+      expect(actual[2].path).toBe(`d2/d12`)
+      expect(actual[3].path).toBe(`d2/d13`)
+      expect(actual[4].path).toBe(`d2/d14`)
+      expect(actual[5].path).toBe(`d2/d15`)
     })
   })
 
@@ -371,12 +446,9 @@ describe('Storage API', () => {
       await api.createUserStorageDirs([`d1`])
       await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      await api.renameUserStorageFile(`d1/fileA.txt`, `fileB.txt`)
-      const actual = (await api.getUserStorageDescendants(null)).list
+      const actual = await api.renameUserStorageFile(`d1/fileA.txt`, `fileB.txt`)
 
-      expect(actual.length).toBe(2)
-      expect(actual[0].path).toBe(`d1`)
-      expect(actual[1].path).toBe(`d1/fileB.txt`)
+      expect(actual.path).toBe(`d1/fileB.txt`)
     })
   })
 
@@ -462,10 +534,15 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
 
-      const actual = await api.getStorageDirDescendants({ maxResults: 2 }, `${TEST_FILES_DIR}/d1`)
+      const actual = await api.callStoragePaginationAPI(api.getStorageDirDescendants, { maxChunk: 2 }, `${TEST_FILES_DIR}/d1`)
 
-      expect(actual.nextPageToken!.length).toBeGreaterThan(0)
-      expect(actual.list.length).toBeLessThanOrEqual(2)
+      expect(actual.length).toBe(6)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/d1`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d1/d11`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/d1/d11/d111`)
+      expect(actual[3].path).toBe(`${TEST_FILES_DIR}/d1/d11/d111/fileC.txt`)
+      expect(actual[4].path).toBe(`${TEST_FILES_DIR}/d1/d11/fileB.txt`)
+      expect(actual[5].path).toBe(`${TEST_FILES_DIR}/d1/fileA.txt`)
     })
   })
 
@@ -495,10 +572,14 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
 
-      const actual = await api.getStorageDescendants({ maxResults: 2 }, `${TEST_FILES_DIR}/d1`)
+      const actual = await api.callStoragePaginationAPI(api.getStorageDescendants, { maxChunk: 2 }, `${TEST_FILES_DIR}/d1`)
 
-      expect(actual.nextPageToken!.length).toBeGreaterThan(0)
-      expect(actual.list.length).toBeLessThanOrEqual(2)
+      expect(actual.length).toBe(5)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/d1/d11`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d1/d11/d111`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/d1/d11/d111/fileC.txt`)
+      expect(actual[3].path).toBe(`${TEST_FILES_DIR}/d1/d11/fileB.txt`)
+      expect(actual[4].path).toBe(`${TEST_FILES_DIR}/d1/fileA.txt`)
     })
   })
 
@@ -527,10 +608,13 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
 
-      const actual = await api.getStorageDirChildren({ maxResults: 2 }, `${TEST_FILES_DIR}/d1`)
+      const actual = await api.callStoragePaginationAPI(api.getStorageDirChildren, { maxChunk: 2 }, `${TEST_FILES_DIR}/d1`)
 
-      expect(actual.nextPageToken!.length).toBeGreaterThan(0)
-      expect(actual.list.length).toBeLessThanOrEqual(2)
+      expect(actual.length).toBe(4)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/d1`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d1/d11`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/d1/fileA.txt`)
+      expect(actual[3].path).toBe(`${TEST_FILES_DIR}/d1/fileB.txt`)
     })
   })
 
@@ -558,14 +642,16 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
 
-      const actual = await api.getStorageChildren({ maxResults: 2 }, `${TEST_FILES_DIR}/d1`)
+      const actual = await api.callStoragePaginationAPI(api.getStorageChildren, { maxChunk: 2 }, `${TEST_FILES_DIR}/d1`)
 
-      expect(actual.nextPageToken!.length).toBeGreaterThan(0)
-      expect(actual.list.length).toBeLessThanOrEqual(2)
+      expect(actual.length).toBe(3)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/d1/d11`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d1/fileA.txt`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/d1/fileB.txt`)
     })
   })
 
-  describe('getStorageHierarchicalNode', () => {
+  describe('getStorageHierarchicalNodes', () => {
     beforeEach(async () => {
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
     })
@@ -573,7 +659,7 @@ describe('Storage API', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
 
-      const actual = await api.getStorageHierarchicalNode(`${TEST_FILES_DIR}/d1/d11/d111/fileA.txt`)
+      const actual = await api.getStorageHierarchicalNodes(`${TEST_FILES_DIR}/d1/d11/d111/fileA.txt`)
 
       expect(actual.length).toBe(5)
       expect(actual[0].path).toBe(`${TEST_FILES_DIR}`)
@@ -602,13 +688,15 @@ describe('Storage API', () => {
     })
   })
 
-  describe('handleUploadedFiles', () => {
+  describe('handleUploadedFile', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
       await api.createStorageDirs([`${TEST_FILES_DIR}/docs`])
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      await api.handleUploadedFiles([`${TEST_FILES_DIR}/docs/fileA.txt`])
+      const actual = await api.handleUploadedFile(`${TEST_FILES_DIR}/docs/fileA.txt`)
+
+      expect(actual.path).toBe(`${TEST_FILES_DIR}/docs/fileA.txt`)
     })
   })
 
@@ -625,52 +713,109 @@ describe('Storage API', () => {
     })
   })
 
-  describe('removeStorageDirs', () => {
-    it('疎通確認', async () => {
+  describe('removeStorageDir', () => {
+    it('疎通確認 - ページングなし', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
 
       await api.uploadTestFiles([
-        { filePath: `${TEST_FILES_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_FILES_DIR}/d1/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `${TEST_FILES_DIR}/d1/file1.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `${TEST_FILES_DIR}/d1/file2.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `${TEST_FILES_DIR}/d1/file3.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `${TEST_FILES_DIR}/d1/file4.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `${TEST_FILES_DIR}/d1/file5.txt`, fileData: 'test', contentType: 'text/plain' },
       ])
 
-      await api.removeStorageDirs([`${TEST_FILES_DIR}/d1`])
-      const actual = (await api.getStorageDirChildren(null, `${TEST_FILES_DIR}/d1`)).list
+      const actual = (await api.removeStorageDir(null, `${TEST_FILES_DIR}/d1`)).list
 
-      expect(actual.length).toBe(0)
+      expect(actual.length).toBe(6)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/d1`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d1/file1.txt`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/d1/file2.txt`)
+      expect(actual[3].path).toBe(`${TEST_FILES_DIR}/d1/file3.txt`)
+      expect(actual[4].path).toBe(`${TEST_FILES_DIR}/d1/file4.txt`)
+      expect(actual[5].path).toBe(`${TEST_FILES_DIR}/d1/file5.txt`)
+    })
+
+    it('疎通確認 - ページングあり', async () => {
+      api.setTestAuthUser(APP_ADMIN_USER)
+
+      await api.uploadTestFiles([
+        { filePath: `${TEST_FILES_DIR}/d1/file1.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `${TEST_FILES_DIR}/d1/file2.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `${TEST_FILES_DIR}/d1/file3.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `${TEST_FILES_DIR}/d1/file4.txt`, fileData: 'test', contentType: 'text/plain' },
+        { filePath: `${TEST_FILES_DIR}/d1/file5.txt`, fileData: 'test', contentType: 'text/plain' },
+      ])
+
+      const actual = await api.callStoragePaginationAPI(api.removeStorageDir, { maxChunk: 2 }, `${TEST_FILES_DIR}/d1`)
+
+      expect(actual.length).toBe(6)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/d1`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d1/file1.txt`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/d1/file2.txt`)
+      expect(actual[3].path).toBe(`${TEST_FILES_DIR}/d1/file3.txt`)
+      expect(actual[4].path).toBe(`${TEST_FILES_DIR}/d1/file4.txt`)
+      expect(actual[5].path).toBe(`${TEST_FILES_DIR}/d1/file5.txt`)
     })
   })
 
-  describe('removeStorageFiles', () => {
+  describe('removeStorageFile', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
 
-      await api.uploadTestFiles([
-        { filePath: `${TEST_FILES_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_FILES_DIR}/d1/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
-      ])
+      await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      await api.removeStorageFiles([`${TEST_FILES_DIR}/d1/fileA.txt`])
-      const actual = (await api.getStorageDirChildren(null, `${TEST_FILES_DIR}/d1`)).list
+      const actual = (await api.removeStorageFile(`${TEST_FILES_DIR}/d1/fileA.txt`))!
 
-      expect(actual.length).toBe(2)
-      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/d1`)
-      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d1/fileB.txt`)
+      expect(actual.path).toBe(`${TEST_FILES_DIR}/d1/fileA.txt`)
     })
   })
 
   describe('moveStorageDir', () => {
-    it('疎通確認', async () => {
+    it('疎通確認 - ページングなし', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
 
-      await api.createStorageDirs([`${TEST_FILES_DIR}/d1`, `${TEST_FILES_DIR}/d2`])
+      await api.createStorageDirs([
+        `${TEST_FILES_DIR}/d1/d11`,
+        `${TEST_FILES_DIR}/d1/d12`,
+        `${TEST_FILES_DIR}/d1/d13`,
+        `${TEST_FILES_DIR}/d1/d14`,
+        `${TEST_FILES_DIR}/d1/d15`,
+        `${TEST_FILES_DIR}/d2`,
+      ])
 
-      await api.moveStorageDir(`${TEST_FILES_DIR}/d1`, `${TEST_FILES_DIR}/d2/d1`)
-      const actual = (await api.getStorageDescendants(null, `${TEST_FILES_DIR}`)).list
+      const actual = (await api.moveStorageDir(null, `${TEST_FILES_DIR}/d1`, `${TEST_FILES_DIR}/d2/d1`)).list
 
-      expect(actual.length).toBe(2)
-      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/d2`)
-      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d2/d1`)
+      expect(actual.length).toBe(6)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/d2/d1`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d2/d1/d11`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/d2/d1/d12`)
+      expect(actual[3].path).toBe(`${TEST_FILES_DIR}/d2/d1/d13`)
+      expect(actual[4].path).toBe(`${TEST_FILES_DIR}/d2/d1/d14`)
+      expect(actual[5].path).toBe(`${TEST_FILES_DIR}/d2/d1/d15`)
+    })
+
+    it('疎通確認 - ページングあり', async () => {
+      api.setTestAuthUser(APP_ADMIN_USER)
+
+      await api.createStorageDirs([
+        `${TEST_FILES_DIR}/d1/d11`,
+        `${TEST_FILES_DIR}/d1/d12`,
+        `${TEST_FILES_DIR}/d1/d13`,
+        `${TEST_FILES_DIR}/d1/d14`,
+        `${TEST_FILES_DIR}/d1/d15`,
+        `${TEST_FILES_DIR}/d2`,
+      ])
+
+      const actual = await api.callStoragePaginationAPI(api.moveStorageDir, { maxChunk: 2 }, `${TEST_FILES_DIR}/d1`, `${TEST_FILES_DIR}/d2/d1`)
+
+      expect(actual.length).toBe(6)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/d2/d1`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d2/d1/d11`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/d2/d1/d12`)
+      expect(actual[3].path).toBe(`${TEST_FILES_DIR}/d2/d1/d13`)
+      expect(actual[4].path).toBe(`${TEST_FILES_DIR}/d2/d1/d14`)
+      expect(actual[5].path).toBe(`${TEST_FILES_DIR}/d2/d1/d15`)
     })
   })
 
@@ -681,27 +826,55 @@ describe('Storage API', () => {
       await api.createStorageDirs([`${TEST_FILES_DIR}/d1`, `${TEST_FILES_DIR}/d2`])
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      await api.moveStorageFile(`${TEST_FILES_DIR}/d1/fileA.txt`, `${TEST_FILES_DIR}/d2/fileA.txt`)
-      const actual = (await api.getStorageDescendants(null, `${TEST_FILES_DIR}`)).list
+      const actual = await api.moveStorageFile(`${TEST_FILES_DIR}/d1/fileA.txt`, `${TEST_FILES_DIR}/d2/fileA.txt`)
 
-      expect(actual.length).toBe(3)
-      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/d1`)
-      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d2`)
-      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/d2/fileA.txt`)
+      expect(actual.path).toBe(`${TEST_FILES_DIR}/d2/fileA.txt`)
     })
   })
 
   describe('renameStorageDir', () => {
-    it('疎通確認', async () => {
+    it('疎通確認 - ページングなし', async () => {
       api.setTestAuthUser(APP_ADMIN_USER)
 
-      await api.createStorageDirs([`${TEST_FILES_DIR}/d1`])
+      await api.createStorageDirs([
+        `${TEST_FILES_DIR}/d1/d11`,
+        `${TEST_FILES_DIR}/d1/d12`,
+        `${TEST_FILES_DIR}/d1/d13`,
+        `${TEST_FILES_DIR}/d1/d14`,
+        `${TEST_FILES_DIR}/d1/d15`,
+      ])
 
-      await api.renameStorageDir(`${TEST_FILES_DIR}/d1`, `d2`)
-      const actual = (await api.getStorageDescendants(null, `${TEST_FILES_DIR}`)).list
+      const actual = (await api.renameStorageDir(null, `${TEST_FILES_DIR}/d1`, `d2`)).list
 
-      expect(actual.length).toBe(1)
+      expect(actual.length).toBe(6)
       expect(actual[0].path).toBe(`${TEST_FILES_DIR}/d2`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d2/d11`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/d2/d12`)
+      expect(actual[3].path).toBe(`${TEST_FILES_DIR}/d2/d13`)
+      expect(actual[4].path).toBe(`${TEST_FILES_DIR}/d2/d14`)
+      expect(actual[5].path).toBe(`${TEST_FILES_DIR}/d2/d15`)
+    })
+
+    it('疎通確認 - ページングあり', async () => {
+      api.setTestAuthUser(APP_ADMIN_USER)
+
+      await api.createStorageDirs([
+        `${TEST_FILES_DIR}/d1/d11`,
+        `${TEST_FILES_DIR}/d1/d12`,
+        `${TEST_FILES_DIR}/d1/d13`,
+        `${TEST_FILES_DIR}/d1/d14`,
+        `${TEST_FILES_DIR}/d1/d15`,
+      ])
+
+      const actual = await api.callStoragePaginationAPI(api.renameStorageDir, { maxChunk: 2 }, `${TEST_FILES_DIR}/d1`, `d2`)
+
+      expect(actual.length).toBe(6)
+      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/d2`)
+      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d2/d11`)
+      expect(actual[2].path).toBe(`${TEST_FILES_DIR}/d2/d12`)
+      expect(actual[3].path).toBe(`${TEST_FILES_DIR}/d2/d13`)
+      expect(actual[4].path).toBe(`${TEST_FILES_DIR}/d2/d14`)
+      expect(actual[5].path).toBe(`${TEST_FILES_DIR}/d2/d15`)
     })
   })
 
@@ -712,12 +885,9 @@ describe('Storage API', () => {
       await api.createStorageDirs([`${TEST_FILES_DIR}/d1`])
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      await api.renameStorageFile(`${TEST_FILES_DIR}/d1/fileA.txt`, `fileB.txt`)
-      const actual = (await api.getStorageDescendants(null, `${TEST_FILES_DIR}`)).list
+      const actual = await api.renameStorageFile(`${TEST_FILES_DIR}/d1/fileA.txt`, `fileB.txt`)
 
-      expect(actual.length).toBe(2)
-      expect(actual[0].path).toBe(`${TEST_FILES_DIR}/d1`)
-      expect(actual[1].path).toBe(`${TEST_FILES_DIR}/d1/fileB.txt`)
+      expect(actual.path).toBe(`${TEST_FILES_DIR}/d1/fileB.txt`)
     })
   })
 

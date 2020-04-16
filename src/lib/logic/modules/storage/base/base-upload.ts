@@ -247,15 +247,14 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
     for (const uploadingFile of this.m_uploadingFiles) {
       if (uploadingFile.completed) continue
       try {
+        // ファイルアップロード
         await uploadingFile.execute()
+        // ファイルアップロード後に必要な処理を実行
+        await this.storageLogic.handleUploadedFileAPI(removeBothEndsSlash(uploadingFile.path))
       } catch (err) {
         console.error(err)
       }
     }
-
-    // ファイルアップロードの後に必要な処理を実行
-    const filePaths = this.m_uploadingFiles.map(uploadingFile => removeBothEndsSlash(uploadingFile.path))
-    await this.storageLogic.handleUploadedFilesAPI(filePaths)
 
     this.m_ended = true
   }
