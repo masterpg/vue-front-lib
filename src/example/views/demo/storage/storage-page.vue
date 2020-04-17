@@ -103,7 +103,7 @@ import { StorageNodeType } from '@/lib'
     <comp-storage-upload-progress-float
       ref="uploadProgressFloat"
       class="fixed-bottom-right"
-      storage-type="user"
+      :storage-type="storageType"
       @upload-ended="m_uploadProgressFloatOnUploadEnded($event)"
     />
   </div>

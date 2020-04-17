@@ -100,13 +100,15 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
   //----------------------------------------------------------------------
 
   async mounted() {
-    if (this.storageType === 'user') {
-      this.m_uploadManager = this.$logic.userStorage.newUploadManager(this.$el)
-      // this.m_uploadManager = this.$logic.userStorage.newUserUrlUploadManager(this.$el)
-    } else if (this.storageType === 'app') {
-      this.m_uploadManager = this.$logic.appStorage.newUploadManager(this.$el)
-    } else {
-      throw new Error(`No value is set for 'storageType'.`)
+    switch (this.storageType) {
+      case 'user':
+        this.m_uploadManager = this.$logic.userStorage.newUploadManager(this.$el)
+        // this.m_uploadManager = this.$logic.userStorage.newUserUrlUploadManager(this.$el)
+        break
+      case 'app':
+        debugger
+        this.m_uploadManager = this.$logic.appStorage.newUploadManager(this.$el)
+        break
     }
   }
 
