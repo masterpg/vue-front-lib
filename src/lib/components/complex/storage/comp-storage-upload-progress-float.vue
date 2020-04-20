@@ -106,7 +106,6 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
         // this.m_uploadManager = this.$logic.userStorage.newUserUrlUploadManager(this.$el)
         break
       case 'app':
-        debugger
         this.m_uploadManager = this.$logic.appStorage.newUploadManager(this.$el)
         break
     }

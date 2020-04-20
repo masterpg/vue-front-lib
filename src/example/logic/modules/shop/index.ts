@@ -1,4 +1,4 @@
-import { APICartItem, APIEditCartItemResponse, APIProduct, api } from '@/example/logic/api'
+import { APICartItem, APICartItemEditResponse, APIProduct, api } from '@/example/logic/api'
 import { BaseLogic, User } from '@/lib'
 import { CartItem, CheckoutStatus, Product, ShopLogic } from '@/example/logic/types'
 import { Component } from 'vue-property-decorator'
@@ -92,7 +92,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
 
     const cartItem = store.cart.getByProductId(productId)
 
-    let response: APIEditCartItemResponse
+    let response: APICartItemEditResponse
     try {
       if (!cartItem) {
         response = await this.m_addCartItem(productId)
@@ -113,7 +113,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
 
     const cartItem = this.m_getCartItemByProductId(productId)
 
-    let response: APIEditCartItemResponse
+    let response: APICartItemEditResponse
     try {
       if (cartItem.quantity > 1) {
         response = await this.m_updateCartItem(productId, -1)
@@ -150,7 +150,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
   //
   //----------------------------------------------------------------------
 
-  private async m_addCartItem(productId: string): Promise<APIEditCartItemResponse> {
+  private async m_addCartItem(productId: string): Promise<APICartItemEditResponse> {
     const product = store.product.getById(productId)!
     const newCartItem = {
       productId,
@@ -163,7 +163,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
     return response
   }
 
-  private async m_updateCartItem(productId: string, quantity: number): Promise<APIEditCartItemResponse> {
+  private async m_updateCartItem(productId: string, quantity: number): Promise<APICartItemEditResponse> {
     const cartItem = this.m_getCartItemByProductId(productId)
     const newCartItem = {
       id: cartItem.id,
@@ -174,7 +174,7 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
     return response
   }
 
-  private async m_removeCartItem(productId: string): Promise<APIEditCartItemResponse> {
+  private async m_removeCartItem(productId: string): Promise<APICartItemEditResponse> {
     const cartItem = this.m_getCartItemByProductId(productId)
     const response = (await api.removeCartItems([cartItem.id]))[0]
     store.cart.remove(response.id)

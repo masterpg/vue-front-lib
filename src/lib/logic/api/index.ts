@@ -13,7 +13,9 @@ export function setAPI(value: LibAPIContainer): void {
 }
 
 export {
-  APIResponseStorageNode,
+  APIDocumentData,
+  APIStorageNode,
+  DocumentData,
   LibAPIContainer,
   StorageNode,
   StorageNodeShareSettings,

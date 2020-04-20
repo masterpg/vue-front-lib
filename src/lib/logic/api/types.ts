@@ -113,16 +113,23 @@ export interface LibAPIContainer {
 //
 //========================================================================
 
-export enum StorageNodeType {
-  File = 'File',
-  Dir = 'Dir',
+export interface APIDocumentData {
+  id: string
+}
+
+export interface DocumentData {
+  id: string
 }
 
 export interface AppConfigResponse {
   usersDir: string
 }
 
-export interface APIResponseStorageNode {
+//--------------------------------------------------
+//  Storage
+//--------------------------------------------------
+
+export interface APIStorageNode {
   id: string
   nodeType: StorageNodeType
   name: string
@@ -135,7 +142,12 @@ export interface APIResponseStorageNode {
   updated: string
 }
 
-export interface StorageNode extends Omit<APIResponseStorageNode, 'created' | 'updated'> {
+export interface APIStoragePaginationResult {
+  list: APIStorageNode[]
+  nextPageToken?: string
+}
+
+export interface StorageNode extends Omit<APIStorageNode, 'created' | 'updated'> {
   created: Dayjs
   updated: Dayjs
 }
@@ -152,12 +164,12 @@ export interface StoragePaginationOptionsInput {
   pageToken?: string
 }
 
-export interface APIResponseStoragePaginationResult {
-  list: APIResponseStorageNode[]
-  nextPageToken?: string
-}
-
 export interface StoragePaginationResult {
   list: StorageNode[]
   nextPageToken?: string
+}
+
+export enum StorageNodeType {
+  File = 'File',
+  Dir = 'Dir',
 }

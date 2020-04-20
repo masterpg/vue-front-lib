@@ -1,9 +1,9 @@
 import {
-  APIAddCartItemInput,
   APICartItem,
-  APIEditCartItemResponse,
+  APICartItemAddInput,
+  APICartItemEditResponse,
+  APICartItemUpdateInput,
   APIProduct,
-  APIUpdateCartItemInput,
   AppAPIContainer,
 } from '@/example/logic/api/types'
 import { BaseGQLAPIContainer } from '@/lib'
@@ -57,10 +57,10 @@ export class AppGQLAPIContainer extends BaseGQLAPIContainer implements AppAPICon
     return response.data.cartItems
   }
 
-  async addCartItems(inputs: APIAddCartItemInput[]): Promise<APIEditCartItemResponse[]> {
-    const response = await this.mutate<{ addCartItems: APIEditCartItemResponse[] }>({
+  async addCartItems(inputs: APICartItemAddInput[]): Promise<APICartItemEditResponse[]> {
+    const response = await this.mutate<{ addCartItems: APICartItemEditResponse[] }>({
       mutation: gql`
-        mutation AddCartItems($inputs: [AddCartItemInput!]!) {
+        mutation AddCartItems($inputs: [CartItemAddInput!]!) {
           addCartItems(inputs: $inputs) {
             id
             uid
@@ -82,7 +82,7 @@ export class AppGQLAPIContainer extends BaseGQLAPIContainer implements AppAPICon
             title: item.title,
             price: item.price,
             quantity: item.quantity,
-          } as APIAddCartItemInput
+          } as APICartItemAddInput
         }),
       },
       isAuth: true,
@@ -90,10 +90,10 @@ export class AppGQLAPIContainer extends BaseGQLAPIContainer implements AppAPICon
     return response.data!.addCartItems
   }
 
-  async updateCartItems(inputs: APIUpdateCartItemInput[]): Promise<APIEditCartItemResponse[]> {
-    const response = await this.mutate<{ updateCartItems: APIEditCartItemResponse[] }>({
+  async updateCartItems(inputs: APICartItemUpdateInput[]): Promise<APICartItemEditResponse[]> {
+    const response = await this.mutate<{ updateCartItems: APICartItemEditResponse[] }>({
       mutation: gql`
-        mutation UpdateCartItems($inputs: [UpdateCartItemInput!]!) {
+        mutation UpdateCartItems($inputs: [CartItemUpdateInput!]!) {
           updateCartItems(inputs: $inputs) {
             id
             uid
@@ -113,7 +113,7 @@ export class AppGQLAPIContainer extends BaseGQLAPIContainer implements AppAPICon
           return {
             id: item.id,
             quantity: item.quantity,
-          } as APIUpdateCartItemInput
+          } as APICartItemUpdateInput
         }),
       },
       isAuth: true,
@@ -121,8 +121,8 @@ export class AppGQLAPIContainer extends BaseGQLAPIContainer implements AppAPICon
     return response.data!.updateCartItems
   }
 
-  async removeCartItems(ids: string[]): Promise<APIEditCartItemResponse[]> {
-    const response = await this.mutate<{ removeCartItems: APIEditCartItemResponse[] }>({
+  async removeCartItems(ids: string[]): Promise<APICartItemEditResponse[]> {
+    const response = await this.mutate<{ removeCartItems: APICartItemEditResponse[] }>({
       mutation: gql`
         mutation RemoveCartItems($ids: [ID!]!) {
           removeCartItems(ids: $ids) {

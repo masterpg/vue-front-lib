@@ -1,5 +1,5 @@
 import * as td from 'testdouble'
-import { APIEditCartItemResponse, APIProduct, AppAPIContainer, api } from '@/example/logic/api'
+import { APICartItemEditResponse, APIProduct, AppAPIContainer, api } from '@/example/logic/api'
 import { CartItem, CartState, CartStore, CheckoutStatus, ProductState, ProductStore, store } from '@/example/logic/store'
 import { TestLogic, TestStore } from '../../../../../helpers/common/store'
 import { User, UserStore } from '@/lib'
@@ -211,7 +211,7 @@ describe('addItemToCart()', () => {
         id: product3.id,
         stock: 10 - 1,
       },
-    } as APIEditCartItemResponse
+    } as APICartItemEditResponse
     // モック設定
     td.when(api.addCartItems(td.matchers.anything())).thenResolve([response])
     // 現在の商品の在庫数を設定
@@ -254,7 +254,7 @@ describe('addItemToCart()', () => {
         id: cartStore.all[0].productId,
         stock: 10 - 1,
       },
-    } as APIEditCartItemResponse
+    } as APICartItemEditResponse
     // モック設定
     td.when(api.updateCartItems(td.matchers.anything())).thenResolve([response])
     // 現在の商品の在庫数を設定
@@ -333,7 +333,7 @@ describe('removeItemFromCart()', () => {
         id: cartStore.all[0].productId,
         stock: 9 + 1,
       },
-    } as APIEditCartItemResponse
+    } as APICartItemEditResponse
     // モック設定
     td.when(api.updateCartItems(td.matchers.anything())).thenResolve([response])
     // 現在のカートアイテムの個数を設定
@@ -381,7 +381,7 @@ describe('removeItemFromCart()', () => {
         id: cartStore.all[0].productId,
         stock: 9 + 1,
       },
-    } as APIEditCartItemResponse
+    } as APICartItemEditResponse
     // モック設定
     td.when(api.removeCartItems(td.matchers.anything())).thenResolve([response])
     // 現在のカートアイテムの個数を設定

@@ -1,9 +1,9 @@
 import {
-  APIAddCartItemInput,
   APICartItem,
-  APIEditCartItemResponse,
+  APICartItemAddInput,
+  APICartItemEditResponse,
+  APICartItemUpdateInput,
   APIProduct,
-  APIUpdateCartItemInput,
   AppAPIContainer,
 } from '@/example/logic/api/types'
 import { BaseRESTAPIContainer } from '@/lib'
@@ -29,18 +29,18 @@ export class AppRESTAPIContainer extends BaseRESTAPIContainer implements AppAPIC
     return response.data
   }
 
-  async addCartItems(items: APIAddCartItemInput[]): Promise<APIEditCartItemResponse[]> {
-    const response = await this.post<APIEditCartItemResponse[]>('cartItems', items, { isAuth: true })
+  async addCartItems(items: APICartItemAddInput[]): Promise<APICartItemEditResponse[]> {
+    const response = await this.post<APICartItemEditResponse[]>('cartItems', items, { isAuth: true })
     return response.data
   }
 
-  async updateCartItems(items: APIUpdateCartItemInput[]): Promise<APIEditCartItemResponse[]> {
-    const response = await this.put<APIEditCartItemResponse[]>('cartItems', items, { isAuth: true })
+  async updateCartItems(items: APICartItemUpdateInput[]): Promise<APICartItemEditResponse[]> {
+    const response = await this.put<APICartItemEditResponse[]>('cartItems', items, { isAuth: true })
     return response.data
   }
 
-  async removeCartItems(cartItemIds: string[]): Promise<APIEditCartItemResponse[]> {
-    const response = await this.delete<APIEditCartItemResponse[]>('cartItems', {
+  async removeCartItems(cartItemIds: string[]): Promise<APICartItemEditResponse[]> {
+    const response = await this.delete<APICartItemEditResponse[]>('cartItems', {
       isAuth: true,
       params: { ids: cartItemIds },
     })

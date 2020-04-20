@@ -1,4 +1,4 @@
-import { LibStoreContainer, StatePartial } from '@/lib'
+import { DocumentData, LibStoreContainer, StatePartial } from '@/lib'
 
 //========================================================================
 //
@@ -58,15 +58,13 @@ export interface CartStore {
 //
 //========================================================================
 
-export interface Product {
-  id: string
+export interface Product extends DocumentData {
   title: string
   price: number
   stock: number
 }
 
-export interface CartItem {
-  id: string
+export interface CartItem extends DocumentData {
   uid: string
   productId: string
   title: string

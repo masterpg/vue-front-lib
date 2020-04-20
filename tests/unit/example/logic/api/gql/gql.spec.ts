@@ -1,4 +1,4 @@
-import { APIAddCartItemInput, APICartItem, APIEditCartItemResponse, APIProduct } from '@/example/logic/api'
+import { APICartItem, APICartItemAddInput, APICartItemEditResponse, APIProduct } from '@/example/logic/api'
 import { TestAppAPIContainer } from '../../../../../mocks/example/logic/api'
 import { initExampleTest } from '../../../../../helpers/example/init'
 const cloneDeep = require('lodash/cloneDeep')
@@ -177,12 +177,12 @@ describe('Cart API', () => {
       delete item.id
       delete item.uid
       return item
-    }) as APIAddCartItemInput[]
+    }) as APICartItemAddInput[]
 
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: [] }])
-      const addItems = cloneDeep(ADD_CART_ITEMS) as APIAddCartItemInput[]
+      const addItems = cloneDeep(ADD_CART_ITEMS) as APICartItemAddInput[]
       const expectedItems = addItems.map(addItem => {
         const product = PRODUCTS.find(product => product.id === addItem.productId)!
         return {
@@ -192,7 +192,7 @@ describe('Cart API', () => {
             stock: product.stock - addItem.quantity,
           },
         }
-      }) as APIEditCartItemResponse[]
+      }) as APICartItemEditResponse[]
 
       const actual = await api.addCartItems(addItems)
 
@@ -206,7 +206,7 @@ describe('Cart API', () => {
     })
 
     it('サインインしていない場合', async () => {
-      const addItems = cloneDeep(ADD_CART_ITEMS) as APIAddCartItemInput[]
+      const addItems = cloneDeep(ADD_CART_ITEMS) as APICartItemAddInput[]
 
       let actual!: Error
       try {

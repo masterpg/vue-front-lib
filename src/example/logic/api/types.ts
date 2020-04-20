@@ -1,4 +1,4 @@
-import { LibAPIContainer } from '@/lib'
+import { APIDocumentData, LibAPIContainer } from '@/lib'
 
 //========================================================================
 //
@@ -15,11 +15,11 @@ export interface AppAPIContainer extends LibAPIContainer {
 
   getCartItems(ids?: string[]): Promise<APICartItem[]>
 
-  addCartItems(items: APIAddCartItemInput[]): Promise<APIEditCartItemResponse[]>
+  addCartItems(items: APICartItemAddInput[]): Promise<APICartItemEditResponse[]>
 
-  updateCartItems(items: { id: string; quantity: number }[]): Promise<APIEditCartItemResponse[]>
+  updateCartItems(items: { id: string; quantity: number }[]): Promise<APICartItemEditResponse[]>
 
-  removeCartItems(cartItemIds: string[]): Promise<APIEditCartItemResponse[]>
+  removeCartItems(cartItemIds: string[]): Promise<APICartItemEditResponse[]>
 
   checkoutCart(): Promise<boolean>
 }
@@ -30,15 +30,13 @@ export interface AppAPIContainer extends LibAPIContainer {
 //
 //========================================================================
 
-export interface APIProduct {
-  id: string
+export interface APIProduct extends APIDocumentData {
   title: string
   price: number
   stock: number
 }
 
-export interface APICartItem {
-  id: string
+export interface APICartItem extends APIDocumentData {
   uid: string
   productId: string
   title: string
@@ -46,18 +44,18 @@ export interface APICartItem {
   quantity: number
 }
 
-export interface APIAddCartItemInput {
+export interface APICartItemAddInput {
   productId: string
   title: string
   price: number
   quantity: number
 }
 
-export interface APIUpdateCartItemInput {
+export interface APICartItemUpdateInput {
   id: string
   quantity: number
 }
 
-export interface APIEditCartItemResponse extends APICartItem {
+export interface APICartItemEditResponse extends APICartItem {
   product: Pick<APIProduct, 'id' | 'stock'>
 }

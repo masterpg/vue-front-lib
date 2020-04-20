@@ -13,9 +13,11 @@ export { setRouter, BaseRouter, ViewRoute } from './router'
 export { BaseSWManager, SWChangeState, SWStateChangeInfo, StateChangeLister, setSW } from './sw'
 
 export {
-  APIResponseStorageNode,
+  APIDocumentData,
+  APIStorageNode,
   BaseGQLAPIContainer,
   BaseRESTAPIContainer,
+  DocumentData,
   LibAPIContainer,
   StorageNode,
   StorageNodeShareSettings,
