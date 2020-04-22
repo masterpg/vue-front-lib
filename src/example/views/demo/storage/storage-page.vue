@@ -133,9 +133,9 @@ import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import { StorageTypeMixin } from '@/example/views/demo/storage/base'
 import Vue from 'vue'
 import anime from 'animejs'
+import debounce from 'lodash/debounce'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
-const debounce = require('lodash/debounce')
 
 @Component({
   components: {

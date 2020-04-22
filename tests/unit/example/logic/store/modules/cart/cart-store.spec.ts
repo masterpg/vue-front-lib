@@ -1,7 +1,7 @@
 import { CartItem, CartState, CartStore, CheckoutStatus, store } from '@/example/logic/store'
 import { TestStore } from '../../../../../../helpers/common/store'
+import { cloneDeep } from 'lodash'
 import { initExampleTest } from '../../../../../../helpers/example/init'
-const cloneDeep = require('lodash/cloneDeep')
 
 //========================================================================
 //

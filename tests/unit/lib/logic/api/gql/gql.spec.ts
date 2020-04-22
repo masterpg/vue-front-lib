@@ -1,6 +1,6 @@
 import { TestLibAPIContainer } from '../../../../../mocks/lib/logic/api'
 import { initLibTest } from '../../../../../helpers/lib/init'
-const isEmpty = require('lodash/isEmpty')
+import { isEmpty } from 'lodash'
 
 //========================================================================
 //

@@ -1,4 +1,4 @@
-const merge = require('lodash/merge')
+import merge from 'lodash/merge'
 
 export default merge(require('@/lib/lang/ja').default, {
   common: {},

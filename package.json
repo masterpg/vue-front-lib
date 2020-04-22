@@ -60,6 +60,7 @@
     "@kazupon/vue-i18n-loader": "^0.4.1",
     "@types/animejs": "^3.1.0",
     "@types/jest": "^24.0.19",
+    "@types/lodash": "^4.14.150",
     "@types/markdown-it": "^0.0.9",
     "@types/node": "^12.11.5",
     "@types/shortid": "^0.0.29",

@@ -1,8 +1,8 @@
 import { User, UserStore } from '../../types'
 import { BaseStore } from '../../base'
 import { Component } from 'vue-property-decorator'
-const isBoolean = require('lodash/isBoolean')
-const isString = require('lodash/isString')
+import isBoolean from 'lodash/isBoolean'
+import isString from 'lodash/isString'
 
 @Component
 export class UserStoreImpl extends BaseStore<void> implements UserStore {

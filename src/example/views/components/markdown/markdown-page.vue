@@ -85,9 +85,9 @@ import MarkdownItSub from 'markdown-it-sub'
 import MarkdownItSup from 'markdown-it-sup'
 import MarkdownItVueComponent from '@/lib/markdown-it/plugins/vue-component'
 import cheatSheet from './cheat-sheet.md'
+import debounce from 'lodash/debounce'
 import hljs from 'highlight.js'
 import { mixins } from 'vue-class-component'
-const debounce = require('lodash/debounce')
 
 /**
  * エディタエリアと結果エリアのスクロール情報を格納するデータクラスです。

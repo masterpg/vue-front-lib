@@ -1,8 +1,8 @@
 import { Product, ProductState, ProductStore, ProductsErrorType, store } from '@/example/logic/store'
 import { StoreError } from '@/lib'
 import { TestStore } from '../../../../../../helpers/common/store'
+import { cloneDeep } from 'lodash'
 import { initExampleTest } from '../../../../../../helpers/example/init'
-const cloneDeep = require('lodash/cloneDeep')
 
 //========================================================================
 //
@@ -81,7 +81,7 @@ describe('set', () => {
 
   it('余分なプロパティを含んだ場合', () => {
     const product = cloneDeep(productStore.state.all[0])
-    product.zzz = 'zzz'
+    ;(product as any).zzz = 'zzz'
 
     const actual = productStore.set(product)!
 

@@ -2,8 +2,8 @@ import * as path from 'path'
 import * as shortid from 'shortid'
 import { StorageNode, StorageNodeShareSettings, StorageNodeType } from '@/lib'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
+import { cloneDeep } from 'lodash'
 import dayjs from 'dayjs'
-const cloneDeep = require('lodash/cloneDeep')
 
 export const EMPTY_SHARE_SETTINGS: StorageNodeShareSettings = {
   isPublic: false,

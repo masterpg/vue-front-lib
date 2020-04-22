@@ -7,11 +7,11 @@ import { BaseStorageStore } from '@/lib/logic/store/modules/storage/base'
 import { Component } from 'vue-property-decorator'
 import { StorageStore } from '@/lib/logic/store'
 import { TestStore } from '../../../../../helpers/common/store'
+import { cloneDeep } from 'lodash'
 import { config } from '@/lib/config'
 import dayjs from 'dayjs'
 import { initLibTest } from '../../../../../helpers/lib/init'
 import { removeEndSlash } from 'web-base-lib'
-const cloneDeep = require('lodash/cloneDeep')
 
 //========================================================================
 //

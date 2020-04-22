@@ -1,7 +1,6 @@
 import { BaseStore, NoCache, StatePartial } from '@/lib'
 import { CartItem, CartState, CartStore, CheckoutStatus } from '@/example/logic/store/types'
 import { Component } from 'vue-property-decorator'
-const assign = require('lodash/assign')
 
 @Component
 export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
@@ -62,8 +61,8 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
     const stateItem = this.m_getById(item.id)
     if (stateItem) {
       const tmp = this.clone(stateItem)
-      assign(tmp, item)
-      assign(stateItem, tmp)
+      Object.assign(tmp, item)
+      Object.assign(stateItem, tmp)
     }
     return stateItem ? this.clone(stateItem) : undefined
   }

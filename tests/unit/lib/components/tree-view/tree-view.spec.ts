@@ -9,10 +9,9 @@ import {
   CompTreeViewUtils,
 } from '@/lib'
 import { Wrapper, mount } from '@vue/test-utils'
+import { cloneDeep, merge } from 'lodash'
 import { Explanation } from 'testdouble'
 import { initLibTest } from '../../../../helpers/lib/init'
-const merge = require('lodash/merge')
-const cloneDeep = require('lodash/cloneDeep')
 
 //========================================================================
 //

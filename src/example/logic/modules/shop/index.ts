@@ -2,9 +2,8 @@ import { APICartItem, APICartItemEditResponse, APIProduct, api } from '@/example
 import { BaseLogic, User } from '@/lib'
 import { CartItem, CheckoutStatus, Product, ShopLogic } from '@/example/logic/types'
 import { Component } from 'vue-property-decorator'
+import cloneDeep from 'lodash/cloneDeep'
 import { store } from '@/example/logic/store'
-const assign = require('lodash/assign')
-const cloneDeep = require('lodash/cloneDeep')
 
 @Component
 export class ShopLogicImpl extends BaseLogic implements ShopLogic {
@@ -25,10 +24,10 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
     //     // 取得した商品をStateへ書き込み
     //     let product = cloneDeep(store.product.getById(doc.id))
     //     if (product) {
-    //       assign(product, doc.data())
+    //       Object.assign(product, doc.data())
     //       store.product.set(product)
     //     } else {
-    //       product = assign({ id: doc.id }, doc.data()) as Product
+    //       product = Object.assign({ id: doc.id }, doc.data()) as Product
     //       store.product.add(product)
     //     }
     //   })

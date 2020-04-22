@@ -95,7 +95,7 @@ import { Component } from 'vue-property-decorator'
 import { NoCache } from '../../../base/decorators'
 import Vue from 'vue'
 import anime from 'animejs'
-const debounce = require('lodash/debounce')
+import debounce from 'lodash/debounce'
 
 @Component({
   components: { CompLoadingSpinner },

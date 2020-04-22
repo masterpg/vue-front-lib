@@ -1,7 +1,7 @@
 import { APICartItem, APICartItemAddInput, APICartItemEditResponse, APIProduct } from '@/example/logic/api'
 import { TestAppAPIContainer } from '../../../../../mocks/example/logic/api'
+import { cloneDeep } from 'lodash'
 import { initExampleTest } from '../../../../../helpers/example/init'
-const cloneDeep = require('lodash/cloneDeep')
 
 //========================================================================
 //
@@ -182,7 +182,7 @@ describe('Cart API', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: [] }])
-      const addItems = cloneDeep(ADD_CART_ITEMS) as APICartItemAddInput[]
+      const addItems = cloneDeep(ADD_CART_ITEMS)
       const expectedItems = addItems.map(addItem => {
         const product = PRODUCTS.find(product => product.id === addItem.productId)!
         return {

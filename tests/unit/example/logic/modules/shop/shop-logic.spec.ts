@@ -4,9 +4,9 @@ import { CartItem, CartState, CartStore, CheckoutStatus, ProductState, ProductSt
 import { TestLogic, TestStore } from '../../../../../helpers/common/store'
 import { User, UserStore } from '@/lib'
 import { ShopLogicImpl } from '@/example/logic/modules/shop'
+import { cloneDeep } from 'lodash'
 import { initExampleTest } from '../../../../../helpers/example/init'
 import { logic } from '@/example/logic'
-const cloneDeep = require('lodash/cloneDeep')
 
 //========================================================================
 //
