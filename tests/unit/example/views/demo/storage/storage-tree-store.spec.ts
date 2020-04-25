@@ -22,7 +22,9 @@ let treeStore!: StorageTreeStore
 
 let treeView!: CompTreeView
 
-let storageLogic!: StorageLogic
+let storageLogic!: Omit<StorageLogic, 'baseURL'> & {
+  baseURL: StorageLogic['baseURL']
+}
 
 function verifyParentChildRelationForTree(treeView: CompTreeView | any) {
   for (let i = 0; i < treeView.children.length; i++) {
@@ -72,7 +74,7 @@ beforeEach(async () => {
   treeView = wrapper.vm as CompTreeView
 
   storageLogic = td.object<StorageLogic>()
-  td.replace<StorageLogic>(storageLogic, 'baseURL', logic.userStorage.baseURL)
+  storageLogic.baseURL = logic.userStorage.baseURL
   td.replace<StorageLogic>(storageLogic, 'sortNodes', logic.userStorage.sortNodes)
 
   treeStore = newStorageTreeStore('user', storageLogic)
