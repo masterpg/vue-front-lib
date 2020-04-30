@@ -392,6 +392,9 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
 
     this.m_children.splice(insertIndex, 0, node)
 
+    // ルートノードにツリービューを設定
+    node.treeView = this
+
     // 最年長ノードフラグを再設定
     this.m_restIsEldest()
   }
@@ -401,12 +404,18 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
    * @node 削除するノード
    */
   private m_removeChildFromContainer(node: CompTreeNode): void {
-    this.m_childContainer.removeChild(node.$el)
+    // ツリービューまたはツリービューの親がアンマウントされると、
+    // ツリービュー内の要素を取得できない場合がある。このような状況を考慮し、
+    // 要素の存在チェックをしてから指定されたノードの削除を行っている。
+    this.m_childContainer && this.m_childContainer.removeChild(node.$el)
 
     const index = this.m_children.indexOf(node)
     if (index >= 0) {
       this.m_children.splice(index, 1)
     }
+
+    // ルートノードのツリービューをクリア
+    node.treeView = null
 
     // 最年長ノードフラグを再設定
     this.m_restIsEldest()

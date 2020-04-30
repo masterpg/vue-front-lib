@@ -133,24 +133,29 @@ export default class CompTreeNode extends BaseComponent implements CompTreeNodeP
     return []
   }
 
+  private m_treeView: CompTreeView | null = null
+
   /**
    * 本ノードが所属するツリービューです。
    */
   @NoCache
   get treeView(): CompTreeView | null {
     const rootNode = this.getRootNode()
+    return rootNode.m_treeView
+  }
 
-    if (!rootNode.$el) return null
-
-    const parentElement = rootNode.$el.parentElement
-    if (!parentElement) return null
-
-    const treeView = (parentElement as any).__vue__ as CompTreeView | undefined
-    if (!treeView || !treeView.isTreeView) {
-      return null
+  /**
+   * このセッターはツリービューが内部的に使用するものであり、
+   * ツリービューの利用者が使用することを想定していません。
+   */
+  set treeView(value: CompTreeView | null) {
+    // 自身がルートノードではない場合にツリービューが設定されようとした場合
+    // ※ツリービューの設定はルートノードのみに行われます。
+    if (this.parent) {
+      throw new Error(`A 'treeView' has been set even though it is not the root node.`)
     }
 
-    return treeView
+    this.m_treeView = value
   }
 
   /**
