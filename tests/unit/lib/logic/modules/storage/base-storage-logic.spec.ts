@@ -1156,7 +1156,8 @@ describe('renameFile', () => {
 describe('setDirShareSettings', () => {
   const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
     isPublic: true,
-    uids: ['ichiro'],
+    readUIds: ['ichiro'],
+    writeUIds: ['ichiro'],
   }
 
   it('ベーシックケース', async () => {
@@ -1193,7 +1194,8 @@ describe('setDirShareSettings', () => {
 describe('setFileShareSettings', () => {
   const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
     isPublic: true,
-    uids: ['ichiro'],
+    readUIds: ['ichiro'],
+    writeUIds: ['ichiro'],
   }
 
   it('ベーシックケース', async () => {

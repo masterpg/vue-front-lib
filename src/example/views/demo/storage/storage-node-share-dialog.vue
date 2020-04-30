@@ -52,12 +52,12 @@
           </q-input>
           <div class="app-mb-10">{{ m_selectPublicPrompt }}</div>
           <q-btn-toggle
-            v-model="m_publicType"
+            v-model="m_isPublic"
             toggle-color="primary"
             :options="[
-              { label: $t('storage.share.notSet'), value: 'notSet' },
-              { label: $t('storage.share.private'), value: 'private' },
-              { label: $t('storage.share.public'), value: 'public' },
+              { label: $t('storage.share.notSet'), value: null },
+              { label: $t('storage.share.private'), value: false },
+              { label: $t('storage.share.public'), value: true },
             ]"
           />
         </q-card-section>
@@ -145,7 +145,7 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
     return ''
   }
 
-  private m_publicType: 'notSet' | 'private' | 'public' = 'notSet'
+  private m_isPublic: boolean | null = null
 
   private m_errorMessage: string = ''
 
@@ -170,22 +170,14 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
 
     // 全てのノードの公開タイプが同じ場合、公開フラグのトグルボタンに反映する
     // 一つでも公開タイプが違う場合、公開フラグのトグルボタンは未設定にする
-    const toPublicType: (node: StorageTreeNode) => 'notSet' | 'private' | 'public' = node => {
-      if (typeof node.share.isPublic === 'boolean') {
-        return node.share.isPublic ? 'public' : 'private'
-      } else {
-        return 'notSet'
-      }
-    }
-
-    let publicType = toPublicType(sharingNodes[0])
+    let isPublic = sharingNodes[0].share.isPublic
     for (const sharingNode of sharingNodes) {
-      if (publicType !== toPublicType(sharingNode)) {
-        publicType = 'notSet'
+      if (isPublic !== sharingNode.share.isPublic) {
+        isPublic = sharingNode.share.isPublic
         break
       }
     }
-    this.m_publicType = publicType
+    this.m_isPublic = isPublic
 
     return this.openProcess(sharingNodes, {
       opened: () => {},
@@ -204,16 +196,10 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
   //----------------------------------------------------------------------
 
   private m_setShareSettings(): void {
-    let isPublic: boolean | undefined = undefined
-    if (this.m_publicType === 'public') {
-      isPublic = true
-    } else if (this.m_publicType === 'private') {
-      isPublic = false
-    }
-
     const settings: StorageNodeShareSettings = {
-      isPublic,
-      uids: undefined,
+      isPublic: this.m_isPublic,
+      readUIds: null,
+      writeUIds: null,
     }
     this.close(settings)
   }

@@ -176,6 +176,12 @@ import { Component } from 'vue-property-decorator'
 import { Dayjs } from 'dayjs'
 import { StorageTreeNodeData } from '@/example/views/demo/storage/base'
 
+interface RequiredStorageNodeShareSettings {
+  isPublic: boolean
+  readUIds: string[]
+  writeUIds: string[]
+}
+
 @Component
 export default class StorageTreeNode extends CompTreeNode {
   //----------------------------------------------------------------------
@@ -241,11 +247,11 @@ export default class StorageTreeNode extends CompTreeNode {
     return this.nodeData.updated
   }
 
-  private m_inheritedShare: StorageNodeShareSettings = { isPublic: undefined, uids: undefined }
+  private m_inheritedShare: RequiredStorageNodeShareSettings = { isPublic: false, readUIds: [], writeUIds: [] }
 
-  get inheritedShare(): StorageNodeShareSettings {
+  get inheritedShare(): RequiredStorageNodeShareSettings {
     this.m_inheritedShare.isPublic = this.m_getIsPublic()
-    this.m_inheritedShare.uids = this.m_getUIds()
+    this.m_inheritedShare.readUIds = this.m_getReadUIds()
     return this.m_inheritedShare
   }
 
@@ -298,7 +304,8 @@ export default class StorageTreeNode extends CompTreeNode {
     }
     if (editData.share) {
       this.nodeData.share.isPublic = editData.share.isPublic
-      this.nodeData.share.uids = editData.share.uids
+      this.nodeData.share.readUIds = editData.share.readUIds
+      this.nodeData.share.writeUIds = editData.share.writeUIds
     }
     if (typeof editData.baseURL === 'string') {
       this.nodeData.baseURL = editData.baseURL
@@ -332,18 +339,18 @@ export default class StorageTreeNode extends CompTreeNode {
   }
 
   /**
-   * 上位ディレクトリの共有設定を加味した共有ユーザーIDを取得します。
+   * 上位ディレクトリの共有設定を加味した読み込み権限を取得します。
    */
-  private m_getUIds(): string[] {
-    if (this.share.uids) {
-      return this.share.uids
+  private m_getReadUIds(): string[] {
+    if (this.share.readUIds) {
+      return this.share.readUIds
     } else {
       if (this.parent) {
         const parent = this.parent as StorageTreeNode
-        if (parent.share.uids) {
-          return parent.share.uids
+        if (parent.share.readUIds) {
+          return parent.share.readUIds
         } else {
-          return parent.m_getUIds()
+          return parent.m_getReadUIds()
         }
       } else {
         return []

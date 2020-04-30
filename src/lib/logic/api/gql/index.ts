@@ -62,7 +62,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -91,7 +92,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
               size
               share {
                 isPublic
-                uids
+                readUIds
+                writeUIds
               }
               created
               updated
@@ -124,7 +126,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
               size
               share {
                 isPublic
-                uids
+                readUIds
+                writeUIds
               }
               created
               updated
@@ -157,7 +160,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
               size
               share {
                 isPublic
-                uids
+                readUIds
+                writeUIds
               }
               created
               updated
@@ -190,7 +194,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
               size
               share {
                 isPublic
-                uids
+                readUIds
+                writeUIds
               }
               created
               updated
@@ -222,7 +227,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -249,7 +255,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -276,7 +283,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -303,7 +311,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -331,7 +340,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
               size
               share {
                 isPublic
-                uids
+                readUIds
+                writeUIds
               }
               created
               updated
@@ -363,7 +373,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -392,7 +403,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
               size
               share {
                 isPublic
-                uids
+                readUIds
+                writeUIds
               }
               created
               updated
@@ -424,7 +436,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -452,7 +465,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
               size
               share {
                 isPublic
-                uids
+                readUIds
+                writeUIds
               }
               created
               updated
@@ -484,7 +498,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -511,7 +526,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -538,7 +554,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -569,7 +586,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -598,7 +616,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
               size
               share {
                 isPublic
-                uids
+                readUIds
+                writeUIds
               }
               created
               updated
@@ -631,7 +650,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
               size
               share {
                 isPublic
-                uids
+                readUIds
+                writeUIds
               }
               created
               updated
@@ -664,7 +684,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
               size
               share {
                 isPublic
-                uids
+                readUIds
+                writeUIds
               }
               created
               updated
@@ -697,7 +718,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
               size
               share {
                 isPublic
-                uids
+                readUIds
+                writeUIds
               }
               created
               updated
@@ -729,7 +751,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -756,7 +779,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -783,7 +807,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -810,7 +835,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -838,7 +864,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
               size
               share {
                 isPublic
-                uids
+                readUIds
+                writeUIds
               }
               created
               updated
@@ -870,7 +897,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -899,7 +927,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
               size
               share {
                 isPublic
-                uids
+                readUIds
+                writeUIds
               }
               created
               updated
@@ -931,7 +960,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -959,7 +989,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
               size
               share {
                 isPublic
-                uids
+                readUIds
+                writeUIds
               }
               created
               updated
@@ -991,7 +1022,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -1018,7 +1050,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated
@@ -1045,7 +1078,8 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
             size
             share {
               isPublic
-              uids
+              readUIds
+              writeUIds
             }
             created
             updated

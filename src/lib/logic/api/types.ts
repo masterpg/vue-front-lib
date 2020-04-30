@@ -153,11 +153,16 @@ export interface StorageNode extends Omit<APIStorageNode, 'created' | 'updated'>
 }
 
 export interface StorageNodeShareSettings {
-  isPublic?: boolean
-  uids?: string[]
+  isPublic: boolean | null
+  readUIds: string[] | null
+  writeUIds: string[] | null
 }
 
-export interface StorageNodeShareSettingsInput extends StorageNodeShareSettings {}
+export interface StorageNodeShareSettingsInput {
+  isPublic: boolean | null
+  readUIds: string[] | null
+  writeUIds: string[] | null
+}
 
 export interface StoragePaginationOptionsInput {
   maxChunk?: number

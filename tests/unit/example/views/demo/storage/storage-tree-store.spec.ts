@@ -16,7 +16,7 @@ import { mount } from '@vue/test-utils'
 //
 //  Test helpers
 //
-//========================================================================
+//=======================================================================
 
 let treeStore!: StorageTreeStore
 
@@ -2180,7 +2180,8 @@ describe('renameStorageNode', () => {
 describe('setShareSettings', () => {
   const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
     isPublic: true,
-    uids: ['ichiro'],
+    readUIds: ['ichiro'],
+    writeUIds: ['ichiro'],
   }
 
   it('ベーシックケース', async () => {
@@ -2212,7 +2213,7 @@ describe('setShareSettings', () => {
     await treeStore.setShareSettings(['dA/d1', 'dA/fileB.txt'], NEW_SHARE_SETTINGS)
 
     const _dA = treeStore.getNode('dA')!
-    const [_d1, _d11, _fileA, _fileB, _fileC] = _dA.getDescendants()
+    const [_d1, _d11, _fileA, _fileB, _fileC] = _dA.getDescendants<StorageTreeNode>()
     expect(_d1.share).toEqual(NEW_SHARE_SETTINGS)
     expect(_d11.share).toEqual(EMPTY_SHARE_SETTINGS)
     expect(_fileA.share).toEqual(EMPTY_SHARE_SETTINGS)
@@ -2289,7 +2290,7 @@ describe('setShareSettings', () => {
     //   ├fileB.txt ← 設定された
     //   └fileC.txt
     const _dA = treeStore.getNode('dA')!
-    const [_d1, _d11, _fileA, _fileB, _fileC] = _dA.getDescendants()
+    const [_d1, _d11, _fileA, _fileB, _fileC] = _dA.getDescendants<StorageTreeNode>()
     expect(_d1.share).toEqual(EMPTY_SHARE_SETTINGS)
     expect(_d11.share).toEqual(EMPTY_SHARE_SETTINGS)
     expect(_fileA.share).toEqual(EMPTY_SHARE_SETTINGS)

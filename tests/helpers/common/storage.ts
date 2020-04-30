@@ -6,8 +6,9 @@ import { cloneDeep } from 'lodash'
 import dayjs from 'dayjs'
 
 export const EMPTY_SHARE_SETTINGS: StorageNodeShareSettings = {
-  isPublic: false,
-  uids: [],
+  isPublic: null,
+  readUIds: null,
+  writeUIds: null,
 }
 
 export function newTestStorageDirNode(dirPath: string, data?: Partial<Omit<StorageNode, 'name' | 'dir' | 'path' | 'nodeType'>>): StorageNode {

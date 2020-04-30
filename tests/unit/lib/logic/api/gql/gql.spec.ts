@@ -1,3 +1,4 @@
+import { StorageNodeShareSettings } from '@/lib'
 import { TestLibAPIContainer } from '../../../../../mocks/lib/logic/api'
 import { initLibTest } from '../../../../../helpers/lib/init'
 import { isEmpty } from 'lodash'
@@ -459,10 +460,10 @@ describe('Storage API', () => {
       await api.createUserStorageDirs([`d1`])
       await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.setUserStorageDirShareSettings(`d1`, { isPublic: true, uids: ['ichiro'] })
+      const actual = await api.setUserStorageDirShareSettings(`d1`, { isPublic: true, readUIds: ['ichiro'], writeUIds: ['ichiro'] })
 
       expect(actual.path).toBe(`d1`)
-      expect(actual.share).toMatchObject({ isPublic: true, uids: ['ichiro'] })
+      expect(actual.share).toMatchObject<StorageNodeShareSettings>({ isPublic: true, readUIds: ['ichiro'], writeUIds: ['ichiro'] })
     })
   })
 
@@ -473,7 +474,7 @@ describe('Storage API', () => {
       await api.createUserStorageDirs([`d1`])
       await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.setUserStorageFileShareSettings(`d1/fileA.txt`, { isPublic: true, uids: ['ichiro'] })
+      const actual = await api.setUserStorageFileShareSettings(`d1/fileA.txt`, { isPublic: true, readUIds: ['ichiro'], writeUIds: ['ichiro'] })
 
       expect(actual.path).toBe(`d1/fileA.txt`)
     })
@@ -897,10 +898,10 @@ describe('Storage API', () => {
       await api.createStorageDirs([`${TEST_FILES_DIR}/dir1`])
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/dir1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.setStorageDirShareSettings(`${TEST_FILES_DIR}/dir1`, { isPublic: true, uids: ['ichiro'] })
+      const actual = await api.setStorageDirShareSettings(`${TEST_FILES_DIR}/dir1`, { isPublic: true, readUIds: ['ichiro'], writeUIds: ['ichiro'] })
 
       expect(actual.path).toBe(`${TEST_FILES_DIR}/dir1`)
-      expect(actual.share).toMatchObject({ isPublic: true, uids: ['ichiro'] })
+      expect(actual.share).toMatchObject<StorageNodeShareSettings>({ isPublic: true, readUIds: ['ichiro'], writeUIds: ['ichiro'] })
     })
   })
 
@@ -910,7 +911,11 @@ describe('Storage API', () => {
       await api.createStorageDirs([`${TEST_FILES_DIR}/dir1`])
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/dir1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
-      const actual = await api.setStorageFileShareSettings(`${TEST_FILES_DIR}/dir1/fileA.txt`, { isPublic: true, uids: ['ichiro'] })
+      const actual = await api.setStorageFileShareSettings(`${TEST_FILES_DIR}/dir1/fileA.txt`, {
+        isPublic: true,
+        readUIds: ['ichiro'],
+        writeUIds: ['ichiro'],
+      })
 
       expect(actual.path).toBe(`${TEST_FILES_DIR}/dir1/fileA.txt`)
     })

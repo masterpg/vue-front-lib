@@ -891,7 +891,8 @@ export class StorageTreeStore extends Vue {
       size: 0,
       share: {
         isPublic: false,
-        uids: [],
+        readUIds: [],
+        writeUIds: [],
       },
       baseURL: this.storageLogic.baseURL,
       created: dayjs(0),
@@ -924,7 +925,8 @@ export class StorageTreeStore extends Vue {
         size: source.size,
         share: {
           isPublic: source.share.isPublic,
-          uids: source.share.uids ? [...source.share.uids] : undefined,
+          readUIds: source.share.readUIds ? [...source.share.readUIds] : null,
+          writeUIds: source.share.writeUIds ? [...source.share.writeUIds] : null,
         },
         baseURL: source.baseURL,
         created: source.createdDate,
@@ -947,7 +949,8 @@ export class StorageTreeStore extends Vue {
         size: source.size,
         share: {
           isPublic: source.share.isPublic,
-          uids: source.share.uids ? [...source.share.uids] : undefined,
+          readUIds: source.share.readUIds ? [...source.share.readUIds] : null,
+          writeUIds: source.share.writeUIds ? [...source.share.writeUIds] : null,
         },
         baseURL: this.storageLogic.baseURL,
         created: source.created,

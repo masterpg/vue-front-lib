@@ -119,7 +119,8 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
       if (typeof node.size === 'number') stateNode.size = node.size
       if (node.share) {
         stateNode.share.isPublic = node.share.isPublic
-        stateNode.share.uids = node.share.uids
+        stateNode.share.readUIds = node.share.readUIds ? [...node.share.readUIds] : null
+        stateNode.share.writeUIds = node.share.writeUIds ? [...node.share.writeUIds] : null
       }
       if (node.created) stateNode.created = node.created
       if (node.updated) stateNode.updated = node.updated
@@ -258,7 +259,8 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
       size: value.size,
       share: {
         isPublic: value.share.isPublic,
-        uids: value.share.uids ? [...value.share.uids] : undefined,
+        readUIds: value.share.readUIds ? [...value.share.readUIds] : null,
+        writeUIds: value.share.writeUIds ? [...value.share.writeUIds] : null,
       },
       created: value.created,
       updated: value.updated,

@@ -377,7 +377,8 @@ describe('setList', () => {
     const UPDATED = dayjs('2019-01-01')
     const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
       isPublic: true,
-      uids: ['ichiro'],
+      readUIds: ['ichiro'],
+      writeUIds: ['ichiro'],
     }
     const actual = storageStore.setList([
       cloneTestStorageNode(d11, { share: NEW_SHARE_SETTINGS, created: UPDATED, updated: UPDATED }),
@@ -412,7 +413,8 @@ describe('setList', () => {
     const UPDATED = dayjs('2019-01-01')
     const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
       isPublic: true,
-      uids: ['ichiro'],
+      readUIds: ['ichiro'],
+      writeUIds: ['ichiro'],
     }
     const actual = storageStore.setList([
       cloneTestStorageNode(f111, {
@@ -439,7 +441,8 @@ describe('setList', () => {
     expect(actual[0].updated).toEqual(UPDATED)
     // ---> コピーが設定されていることを検証
     expect(actual[0].share).not.toBe(NEW_SHARE_SETTINGS)
-    expect(actual[0].share.uids).not.toBe(NEW_SHARE_SETTINGS.uids)
+    expect(actual[0].share.readUIds).not.toBe(NEW_SHARE_SETTINGS.readUIds)
+    expect(actual[0].share.writeUIds).not.toBe(NEW_SHARE_SETTINGS.writeUIds)
     // <---
 
     verifyStateNodes()
@@ -1133,13 +1136,14 @@ describe('clear', () => {
 
 describe('clone', () => {
   it('ベーシックケース', () => {
-    const d1 = newTestStorageDirNode('d1')
+    const d1 = newTestStorageDirNode('d1', { share: { isPublic: true, writeUIds: ['ichiro'], readUIds: ['ichiro'] } })
 
     const actual = storageStore.clone(d1)
 
     expect(actual).not.toBe(d1)
     expect(actual.share).not.toBe(d1.share)
-    expect(actual.share.uids).not.toBe(d1.share.uids)
+    expect(actual.share.readUIds).not.toBe(d1.share.readUIds)
+    expect(actual.share.writeUIds).not.toBe(d1.share.writeUIds)
     expect(actual).toEqual(d1)
   })
 })
