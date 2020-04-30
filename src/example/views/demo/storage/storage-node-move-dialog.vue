@@ -139,7 +139,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
     return this.m_movingNodes[0].parent!.value
   }
 
-  private m_errorMessage: string = ''
+  private m_errorMessage = ''
 
   private m_toDirNode: CompTreeNode | null = null
 
@@ -165,7 +165,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
 
   open(movingNodes: StorageTreeNode[]): Promise<string | undefined> {
     // ノードが複数指定された場合、親が同じであることを検証
-    let movingNodeParentPath = movingNodes[0].parent!.value
+    const movingNodeParentPath = movingNodes[0].parent!.value
     for (const movingNode of movingNodes) {
       if (movingNode.parent!.value !== movingNodeParentPath) {
         throw new Error('All nodes must have the same parent.')

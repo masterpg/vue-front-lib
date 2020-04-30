@@ -31,7 +31,11 @@
         <q-btn-toggle
           v-model="m_hAlign"
           toggle-color="primary"
-          :options="[{ label: 'start', value: 'start' }, { label: 'center', value: 'center' }, { label: 'end', value: 'end' }]"
+          :options="[
+            { label: 'start', value: 'start' },
+            { label: 'center', value: 'center' },
+            { label: 'end', value: 'end' },
+          ]"
         />
       </div>
       <div class="layout horizontal center app-mt-10">
@@ -39,7 +43,11 @@
         <q-btn-toggle
           v-model="m_vAlign"
           toggle-color="primary"
-          :options="[{ label: 'start', value: 'start' }, { label: 'center', value: 'center' }, { label: 'end', value: 'end' }]"
+          :options="[
+            { label: 'start', value: 'start' },
+            { label: 'center', value: 'center' },
+            { label: 'end', value: 'end' },
+          ]"
         />
       </div>
       <div class="layout horizontal">
@@ -89,13 +97,13 @@ export default class ImgDemoPage extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
-  private m_imgSrc: string = ''
+  private m_imgSrc = ''
 
-  private m_imgAlt: string = 'Dummy Image'
+  private m_imgAlt = 'Dummy Image'
 
-  private m_hAlign: string = 'center'
+  private m_hAlign = 'center'
 
-  private m_vAlign: string = 'center'
+  private m_vAlign = 'center'
 
   private m_imgSize: { width: number; height: number } = {
     width: 300,
@@ -130,13 +138,13 @@ export default class ImgDemoPage extends mixins(BaseComponent, Resizable) {
   }
 
   private m_setMaxSize(): void {
-    let maxWidth: string = '100%'
+    let maxWidth = '100%'
     if (this.m_imgMaxSize.width > 0) {
       maxWidth = `${this.m_imgMaxSize.width}px`
     }
     ;(this.m_img.$el as HTMLElement).style.setProperty('--comp-img-max-width', maxWidth)
 
-    let maxHeight: string = '100%'
+    let maxHeight = '100%'
     if (this.m_imgMaxSize.height > 0) {
       maxHeight = `${this.m_imgMaxSize.height}px`
     }

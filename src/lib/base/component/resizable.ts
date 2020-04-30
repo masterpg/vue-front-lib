@@ -42,12 +42,12 @@ export class Resizable extends Breakpoint {
   /**
    * 自身のコンポーネントがアタッチされているかを示すフラグ
    */
-  private Resizable_isAttached: boolean = false
+  private Resizable_isAttached = false
 
   /**
    * 子孫へのリサイズ通知が実行されているかを示すフラグ
    */
-  private Resizable_notifyingDescendant: boolean = false
+  private Resizable_notifyingDescendant = false
 
   /**
    * 自身からみて子孫となるResizableのリスト

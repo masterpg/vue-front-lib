@@ -76,7 +76,7 @@ export default class PasswordResetView extends mixins(BaseComponent, Resizable) 
 
   private m_viewType: 'confirm' | 'sent' = 'confirm'
 
-  private m_errorMessage: string = ''
+  private m_errorMessage = ''
 
   //----------------------------------------------------------------------
   //

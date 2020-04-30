@@ -126,7 +126,7 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
   //
   //----------------------------------------------------------------------
 
-  private m_opened: boolean = false
+  private m_opened = false
 
   private m_uploadManager: StorageUploadManager = {} as any
 
@@ -136,7 +136,7 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
     this.m_opened = newValue
   }
 
-  private m_minimize: boolean = false
+  private m_minimize = false
 
   /**
    * アップロード先のディレクトリパスです。

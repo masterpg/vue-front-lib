@@ -72,14 +72,11 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   }
 
   getHierarchicalNode(nodePath: string): StorageNode[] {
-    return splitHierarchicalPaths(nodePath).reduce(
-      (result, iDirPath) => {
-        const iDirNode = this.getNode({ path: iDirPath })
-        iDirNode && result.push(iDirNode)
-        return result
-      },
-      [] as StorageNode[]
-    )
+    return splitHierarchicalPaths(nodePath).reduce((result, iDirPath) => {
+      const iDirNode = this.getNode({ path: iDirPath })
+      iDirNode && result.push(iDirNode)
+      return result
+    }, [] as StorageNode[])
   }
 
   async fetchHierarchicalNodes(nodePath: string): Promise<StorageNode[]> {

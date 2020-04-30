@@ -1060,7 +1060,10 @@ describe('CompTreeNode', () => {
               {
                 label: 'Node1_1',
                 value: 'node1_1',
-                children: [{ label: 'Node1_1_1', value: 'node1_1_1' }, { label: 'Node1_1_2', value: 'node1_1_2' }],
+                children: [
+                  { label: 'Node1_1_1', value: 'node1_1_1' },
+                  { label: 'Node1_1_2', value: 'node1_1_2' },
+                ],
               },
               {
                 label: 'Node1_2',
@@ -1415,7 +1418,10 @@ describe('CompTreeNode', () => {
     it('閉じている中のノード選択時にイベントが発火する事を検証', done => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
-      const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1', opened: false }, { value: 'node1_1_1', selected: false }])
+      const nodeDataList = editNodeDataList(baseNodeDataList, [
+        { value: 'node1_1', opened: false },
+        { value: 'node1_1_1', selected: false },
+      ])
       treeView.buildTree(nodeDataList)
 
       // 子ノードは閉じている

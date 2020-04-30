@@ -90,7 +90,7 @@ export default class AccountDeleteDialog extends BaseDialog<void, void> {
 
   private m_viewType = new ViewType()
 
-  private m_errorMessage: string = ''
+  private m_errorMessage = ''
 
   private m_visibleProviders: AuthProviderType[] = []
 

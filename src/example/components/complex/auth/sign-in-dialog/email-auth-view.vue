@@ -138,13 +138,13 @@ export default class EmailAuthView extends mixins(BaseComponent, Resizable) {
 
   private m_viewType: 'first' | 'create' | 'signIn' | 'inVerification' | 'passwordReset' = 'first'
 
-  private m_inputEmail: string = ''
+  private m_inputEmail = ''
 
-  private m_inputDisplayName: string = ''
+  private m_inputDisplayName = ''
 
-  private m_inputPassword: string = ''
+  private m_inputPassword = ''
 
-  private m_errorMessage: string = ''
+  private m_errorMessage = ''
 
   private m_emailRules = [val => !!val || 'Email is a required.', val => (!!val && isEmail(val)) || 'Email is invalid.']
 

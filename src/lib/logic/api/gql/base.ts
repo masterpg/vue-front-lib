@@ -29,7 +29,7 @@ export abstract class BaseGQLClient {
   //
   //----------------------------------------------------------------------
 
-  private async m_getClient(isAuth: boolean = false): Promise<ApolloClient<NormalizedCacheObject>> {
+  private async m_getClient(isAuth = false): Promise<ApolloClient<NormalizedCacheObject>> {
     let link: ApolloLink = createHttpLink({
       uri: this.getRequestURL,
     })

@@ -80,11 +80,11 @@ export default class CompAlertDialog extends BaseDialog<CompAlertDialogParams | 
 
   private m_type: 'alert' | 'confirm' = 'alert'
 
-  private m_title: string = ''
+  private m_title = ''
 
-  private m_message: string = ''
+  private m_message = ''
 
-  private m_persistent: boolean = true
+  private m_persistent = true
 
   //--------------------------------------------------
   //  Elements

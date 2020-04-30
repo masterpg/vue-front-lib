@@ -107,7 +107,10 @@ describe('Cart API', () => {
   describe('getCartItem', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
-      await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
+      await api.putTestData([
+        { collectionName: 'products', collectionRecords: PRODUCTS },
+        { collectionName: 'cart', collectionRecords: CART_ITEMS },
+      ])
       const cartItem = CART_ITEMS[0]
 
       const actual = await api.getCartItem(cartItem.id)
@@ -117,7 +120,10 @@ describe('Cart API', () => {
 
     it('存在しないカートアイテムIDを指定した場合', async () => {
       api.setTestAuthUser(GENERAL_USER)
-      await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
+      await api.putTestData([
+        { collectionName: 'products', collectionRecords: PRODUCTS },
+        { collectionName: 'cart', collectionRecords: CART_ITEMS },
+      ])
       const actual = await api.getCartItem('cartItemXXX')
 
       expect(actual).toBeUndefined()
@@ -140,7 +146,10 @@ describe('Cart API', () => {
   describe('getCartItems', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
-      await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
+      await api.putTestData([
+        { collectionName: 'products', collectionRecords: PRODUCTS },
+        { collectionName: 'cart', collectionRecords: CART_ITEMS },
+      ])
       const ids = [CART_ITEMS[0].id, CART_ITEMS[1].id]
 
       const actual = await api.getCartItems(ids)
@@ -150,7 +159,10 @@ describe('Cart API', () => {
 
     it('存在しない商品IDを指定した場合', async () => {
       api.setTestAuthUser(GENERAL_USER)
-      await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
+      await api.putTestData([
+        { collectionName: 'products', collectionRecords: PRODUCTS },
+        { collectionName: 'cart', collectionRecords: CART_ITEMS },
+      ])
       const ids = ['cartItemXXX', 'cartItemYYY']
 
       const actual = await api.getCartItems(ids)
@@ -181,7 +193,10 @@ describe('Cart API', () => {
 
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
-      await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: [] }])
+      await api.putTestData([
+        { collectionName: 'products', collectionRecords: PRODUCTS },
+        { collectionName: 'cart', collectionRecords: [] },
+      ])
       const addItems = cloneDeep(ADD_CART_ITEMS)
       const expectedItems = addItems.map(addItem => {
         const product = PRODUCTS.find(product => product.id === addItem.productId)!
@@ -222,7 +237,10 @@ describe('Cart API', () => {
   describe('updateCartItems', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
-      await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
+      await api.putTestData([
+        { collectionName: 'products', collectionRecords: PRODUCTS },
+        { collectionName: 'cart', collectionRecords: CART_ITEMS },
+      ])
       const updateItems = CART_ITEMS.map(item => {
         return { ...item, quantity: item.quantity + 1 }
       })
@@ -256,7 +274,10 @@ describe('Cart API', () => {
   describe('removeCartItems', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
-      await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
+      await api.putTestData([
+        { collectionName: 'products', collectionRecords: PRODUCTS },
+        { collectionName: 'cart', collectionRecords: CART_ITEMS },
+      ])
       const removeIds = CART_ITEMS.map(item => item.id) as string[]
       const expectedItems = removeIds.map(id => {
         const cartItem = CART_ITEMS.find(item => item.id === id)!
@@ -296,7 +317,10 @@ describe('Cart API', () => {
   describe('checkout', () => {
     it('ベーシックケース', async () => {
       api.setTestAuthUser(GENERAL_USER)
-      await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }, { collectionName: 'cart', collectionRecords: CART_ITEMS }])
+      await api.putTestData([
+        { collectionName: 'products', collectionRecords: PRODUCTS },
+        { collectionName: 'cart', collectionRecords: CART_ITEMS },
+      ])
 
       const actual = await api.checkoutCart()
 

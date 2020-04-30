@@ -123,7 +123,7 @@ export class Breakpoint extends Vue {
 
   Breakpoint_clientWidth: number = this.Breakpoint_getClientDimensionsWidth()
   Breakpoint_clientHeight: number = this.Breakpoint_getClientDimensionsHeight()
-  Breakpoint_resizeTimeout: number = 0
+  Breakpoint_resizeTimeout = 0
 
   //----------------------------------------------------------------------
   //

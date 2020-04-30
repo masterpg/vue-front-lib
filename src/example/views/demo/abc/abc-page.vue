@@ -98,11 +98,11 @@ export default class AbcPage extends mixins(BaseComponent, Resizable) {
 
   // dataは初期化が必要！
 
-  private m_message: string = ''
+  private m_message = ''
 
-  private m_customInputValue: string = 'hoge'
+  private m_customInputValue = 'hoge'
 
-  private m_customChecked: boolean = false
+  private m_customChecked = false
 
   // propの値を初期化に利用できる
   private m_customPropA: string = 'custom ' + this.propA

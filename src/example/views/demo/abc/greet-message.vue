@@ -28,7 +28,7 @@ export default class GreetMessage extends mixins(BaseComponent, Resizable) {
   @Prop({ default: '' })
   message!: string
 
-  private m_greetTimes: number = 0
+  private m_greetTimes = 0
 
   greet(): void {
     alert('greeting: ' + this.message)

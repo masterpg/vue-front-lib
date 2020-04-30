@@ -82,7 +82,7 @@ export class StorageTreeStore extends Vue {
     this.m_treeView!.selectedNode = value
   }
 
-  private m_isInitialPulled: boolean = false
+  private m_isInitialPulled = false
 
   /**
    * 初期ストレージノードの読み込みが行われたかを示すフラグです。
@@ -354,13 +354,10 @@ export class StorageTreeStore extends Vue {
    * @param nodes
    */
   setAllNodes(nodes: StorageNodeForTree[]): void {
-    const targetNodePaths = this.getAllNodes().reduce(
-      (result, node) => {
-        node !== this.rootNode && result.push(node.value)
-        return result
-      },
-      [] as string[]
-    )
+    const targetNodePaths = this.getAllNodes().reduce((result, node) => {
+      node !== this.rootNode && result.push(node.value)
+      return result
+    }, [] as string[])
     this.removeNodes(targetNodePaths)
 
     this.setNodes(nodes)
@@ -373,13 +370,10 @@ export class StorageTreeStore extends Vue {
   mergeAllNodes(nodes: StorageNodeForTree[]): void {
     nodes = this.storageLogic.sortNodes([...nodes])
 
-    const nodeDict = nodes.reduce(
-      (result, node) => {
-        result[node.path] = node
-        return result
-      },
-      {} as { [path: string]: StorageNode }
-    )
+    const nodeDict = nodes.reduce((result, node) => {
+      result[node.path] = node
+      return result
+    }, {} as { [path: string]: StorageNode })
 
     // 新ノードリストにないのにツリーには存在するノードを削除
     // ※他の端末で削除、移動、リネームされたノードが削除される
@@ -710,14 +704,16 @@ export class StorageTreeStore extends Vue {
         const result: StorageNode[] = []
         try {
           switch (fromTreeNode.nodeType) {
-            case StorageNodeType.Dir:
+            case StorageNodeType.Dir: {
               const movedNodes = await this.storageLogic.moveDir(fromTreeNode.value, toNodePath)
               result.push(...movedNodes)
               break
-            case StorageNodeType.File:
+            }
+            case StorageNodeType.File: {
               const movedNode = await this.storageLogic.moveFile(fromTreeNode.value, toNodePath)
               result.push(movedNode)
               break
+            }
           }
         } catch (err) {
           console.error(err)

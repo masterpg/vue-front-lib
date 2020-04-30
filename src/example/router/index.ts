@@ -54,7 +54,7 @@ abstract class StorageRoute extends ViewRoute<DemoRoute> {
    * 現在ルートが本ルートか否かを示します。
    */
   get isCurrentRoute(): boolean {
-    const reg = new RegExp(`^${this.basePath}\/?`)
+    const reg = new RegExp(`^${this.basePath}/?`)
     return reg.test(router.currentRoute.path)
   }
 }

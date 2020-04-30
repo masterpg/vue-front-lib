@@ -242,7 +242,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
   //
   //----------------------------------------------------------------------
 
-  loading: boolean = false
+  loading = false
 
   //----------------------------------------------------------------------
   //
@@ -473,7 +473,10 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
   }
 
   private m_dispatchMoveSelected(rows: TableRow[]): void {
-    this.$emit('move-selected', rows.map(node => node.value))
+    this.$emit(
+      'move-selected',
+      rows.map(node => node.value)
+    )
   }
 
   private m_dispatchRenameSelected(row: TableRow): void {
@@ -481,11 +484,17 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
   }
 
   private m_dispatchDeleteSelected(rows: TableRow[]): void {
-    this.$emit('delete-selected', rows.map(node => node.value))
+    this.$emit(
+      'delete-selected',
+      rows.map(node => node.value)
+    )
   }
 
   private m_dispatchShareSelected(rows: TableRow[]): void {
-    this.$emit('share-selected', rows.map(node => node.value))
+    this.$emit(
+      'share-selected',
+      rows.map(node => node.value)
+    )
   }
 
   private m_dispatchReloadSelected(row: TableRow): void {

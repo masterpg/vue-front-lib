@@ -85,7 +85,7 @@ export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, 
     return !this.m_validate()
   }
 
-  private m_errorMessage: string = ''
+  private m_errorMessage = ''
 
   //--------------------------------------------------
   //  Elements

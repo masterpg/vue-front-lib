@@ -116,7 +116,7 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
   //
   //----------------------------------------------------------------------
 
-  protected uploadDirPath: string = ''
+  protected uploadDirPath = ''
 
   private m_uploadFileInput!: HTMLInputElement
 
@@ -280,7 +280,7 @@ export class StorageFileUploader {
   //
   //----------------------------------------------------------------------
 
-  private m_uploadedSize: number = 0
+  private m_uploadedSize = 0
 
   get uploadedSize(): number {
     return this.m_uploadedSize
@@ -290,7 +290,7 @@ export class StorageFileUploader {
     this.m_uploadedSize = value
   }
 
-  private m_progress: number = 0
+  private m_progress = 0
 
   get progress(): number {
     return this.m_progress
@@ -300,7 +300,7 @@ export class StorageFileUploader {
     this.m_progress = value
   }
 
-  private m_completed: boolean = false
+  private m_completed = false
 
   get completed(): boolean {
     return this.m_completed
@@ -310,7 +310,7 @@ export class StorageFileUploader {
     this.m_completed = value
   }
 
-  private m_failed: boolean = false
+  private m_failed = false
 
   get failed(): boolean {
     return this.m_failed
@@ -320,7 +320,7 @@ export class StorageFileUploader {
     this.m_failed = value
   }
 
-  private m_canceled: boolean = false
+  private m_canceled = false
 
   get canceled(): boolean {
     return this.m_canceled

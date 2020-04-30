@@ -178,7 +178,7 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
-  private m_demoExpanded: boolean = true
+  private m_demoExpanded = true
 
   private get m_demoItems(): Array<{ title: string; path: string; icon?: string; hidden: boolean }> {
     return [
@@ -205,7 +205,7 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
     ]
   }
 
-  private m_componentsExpanded: boolean = true
+  private m_componentsExpanded = true
 
   private m_componentsItems: Array<{ title: string; path: string }> = [
     {
@@ -226,9 +226,9 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
     },
   ]
 
-  private m_leftDrawerOpen: boolean = false
+  private m_leftDrawerOpen = false
 
-  private m_swUpdateIsRequired: boolean = false
+  private m_swUpdateIsRequired = false
 
   private get m_user(): User {
     return this.$logic.auth.user

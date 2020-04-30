@@ -14,12 +14,13 @@ module.exports = {
   globals: {
     'ts-jest': {
       diagnostics: {
-        // error TS2315: Type 'Vue' is not generic.
+        // TS2315: Type 'Vue' is not generic.
         // TS2339: Property 'xxx' does not exist on type 'Vue'.
-        // error TS2551: Property 'xxx' does not exist on type 'Vue'. Did you mean '$xxx'?
+        // TS2551: Property 'xxx' does not exist on type 'Vue'. Did you mean '$xxx'?
         // TS2347: Untyped function calls may not accept type arguments.
         // TS2305: Module '"*.vue"' has no exported member 'xxx'.
-        ignoreCodes: [2315, 2339, 2551, 2347, 2305],
+        // TS2614: Module '"*.vue"' has no exported member 'xxx'. Did you mean to use 'import xxx from "*.vue"' instead?
+        ignoreCodes: [2315, 2339, 2551, 2347, 2305, 2614],
       },
     },
   },

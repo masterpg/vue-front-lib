@@ -57,7 +57,7 @@ export class BaseDialog<PARAMS = void, RESULT = void> extends mixins(BaseCompone
   //
   //----------------------------------------------------------------------
 
-  protected opened: boolean = false
+  protected opened = false
 
   protected params: PARAMS | null = null
 

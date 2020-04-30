@@ -161,7 +161,7 @@ export default class CompTreeNode extends BaseComponent implements CompTreeNodeP
   /**
    * 自身が最年長のノードかを示すフラグです。
    */
-  isEldest: boolean = false
+  isEldest = false
 
   /**
    * アイコン名です。
@@ -313,7 +313,7 @@ export default class CompTreeNode extends BaseComponent implements CompTreeNodeP
     return this.nodeData.sortFunc || null
   }
 
-  private m_minWidth: number = 0
+  private m_minWidth = 0
 
   /**
    * ノードの最小幅です。
@@ -529,7 +529,7 @@ export default class CompTreeNode extends BaseComponent implements CompTreeNodeP
    * 子ノードの開閉をトグルします。
    * @param animated
    */
-  toggle(animated: boolean = true): void {
+  toggle(animated = true): void {
     this.m_toggle(!this.opened, animated)
   }
 
@@ -537,7 +537,7 @@ export default class CompTreeNode extends BaseComponent implements CompTreeNodeP
    * 子ノードを展開します。
    * @param animated
    */
-  open(animated: boolean = true): void {
+  open(animated = true): void {
     if (this.nodeData.opened) return
     this.m_toggle(true, animated)
   }
@@ -546,7 +546,7 @@ export default class CompTreeNode extends BaseComponent implements CompTreeNodeP
    * 子ノードを閉じます。
    * @param animated
    */
-  close(animated: boolean = true): void {
+  close(animated = true): void {
     if (!this.nodeData.opened) return
     this.m_toggle(false, animated)
   }

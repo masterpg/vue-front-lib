@@ -56,14 +56,11 @@ function newVueComponent(token: Token, components: { [name: string]: Constructor
 
   // Vueコンポーネントの要素にCSSクラスを付与
   if (typeof classes === 'string' && classes) {
-    const classList = classes.split(' ').reduce(
-      (result, clazz) => {
-        clazz = clazz.trim()
-        if (clazz) result.push(clazz)
-        return result
-      },
-      [] as string[]
-    )
+    const classList = classes.split(' ').reduce((result, clazz) => {
+      clazz = clazz.trim()
+      if (clazz) result.push(clazz)
+      return result
+    }, [] as string[])
     compInstance.$el.classList.add(...classList)
   }
 

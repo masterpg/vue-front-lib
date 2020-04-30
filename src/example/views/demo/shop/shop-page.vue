@@ -35,7 +35,10 @@
         toggle-color="primary"
         color="white"
         text-color="primary"
-        :options="[{ label: 'GQL', value: 'gql' }, { label: 'REST', value: 'rest' }]"
+        :options="[
+          { label: 'GQL', value: 'gql' },
+          { label: 'REST', value: 'rest' },
+        ]"
       />
     </div>
     <div>

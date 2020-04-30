@@ -376,7 +376,10 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     this.$q.loading.show()
 
     // ノードの移動を実行
-    await this.treeStore.moveStorageNodes(treeNodes.map(node => node.value), toDirPath)
+    await this.treeStore.moveStorageNodes(
+      treeNodes.map(node => node.value),
+      toDirPath
+    )
     // 移動対象ノードの祖先を展開
     this.m_openParentNode(treeNodes[0].value, true)
     // 現在選択されているノードへURL遷移
@@ -410,7 +413,10 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     this.$q.loading.show()
 
     // ノードの共有設定を実行
-    await this.treeStore.setShareSettings(treeNodes.map(node => node.value), settings)
+    await this.treeStore.setShareSettings(
+      treeNodes.map(node => node.value),
+      settings
+    )
     // 現在選択されているノードへURL遷移
     this.m_movePageToNode(this.treeStore.selectedNode.value)
 

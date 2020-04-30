@@ -7,7 +7,7 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
 >
   <div>
     <div
-      class="node-container layout horizontal center eldest"
+      class="node-container layout horizontal center"
     >
       <div
         class="icon-container"
@@ -51,12 +51,10 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
       >
         <i
           aria-hidden="true"
-          class="toggle-icon material-icons q-icon notranslate text-grey-6 rotate-90"
+          class="q-icon notranslate"
           role="presentation"
           style="font-size: 26px;"
-        >
-          arrow_right
-        </i>
+        />
       </div>
        
       <div
@@ -142,12 +140,10 @@ exports[`CompTreeView buildTree() ベーシックケース 1`] = `
           >
             <i
               aria-hidden="true"
-              class="toggle-icon material-icons q-icon notranslate text-grey-6 rotate-90"
+              class="q-icon notranslate"
               role="presentation"
               style="font-size: 26px;"
-            >
-              arrow_right
-            </i>
+            />
           </div>
            
           <div

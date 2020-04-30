@@ -154,12 +154,13 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
    * </ul>
    */
   buildTree(nodeDataList: NODE_DATA[], options?: { sortFunc?: ChildrenSortFunc; insertIndex?: number | null }): void {
-    let { sortFunc, insertIndex } = options || { sortFunc: undefined, insertIndex: undefined }
+    const sortFunc = options?.sortFunc
+    let insertIndex = options?.insertIndex
     this.m_sortFunc = sortFunc || null
 
     nodeDataList.forEach(nodeData => {
       this.m_addNodeByData(nodeData, { insertIndex })
-      if (!(insertIndex === undefined || insertIndex === null)) {
+      if (!(typeof insertIndex === 'undefined' || insertIndex === null)) {
         insertIndex++
       }
     })

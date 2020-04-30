@@ -112,9 +112,9 @@ export default class EmailChangeDialog extends BaseDialog<void, void> {
 
   private m_viewType: 'signIn' | 'emailChange' | 'inVerification' = 'signIn'
 
-  private m_inputEmail: string = ''
+  private m_inputEmail = ''
 
-  private m_errorMessage: string = ''
+  private m_errorMessage = ''
 
   private m_emailRules = [val => !!val || 'Email is a required.', val => (!!val && isEmail(val)) || 'Email is invalid.']
 

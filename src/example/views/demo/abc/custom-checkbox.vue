@@ -12,7 +12,7 @@ import { mixins } from 'vue-class-component'
 @Component
 export default class CustomCheckbox extends mixins(BaseComponent) {
   @Model('change')
-  checked: boolean = false
+  checked = false
 
   private m_checkboxOnChange(event: Event) {
     // ■ v-modelを使ったコンポーネントのカスタマイズ

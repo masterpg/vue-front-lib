@@ -98,12 +98,12 @@ export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode,
     return !this.m_validate()
   }
 
-  private m_errorMessage: string = ''
+  private m_errorMessage = ''
 
   /**
    * 新しいノード名のインプットに変更があったか否かです。
    */
-  private m_newNameInputChanged: boolean = false
+  private m_newNameInputChanged = false
 
   //--------------------------------------------------
   //  Elements

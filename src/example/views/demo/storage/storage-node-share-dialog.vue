@@ -147,7 +147,7 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
 
   private m_isPublic: boolean | null = null
 
-  private m_errorMessage: string = ''
+  private m_errorMessage = ''
 
   //--------------------------------------------------
   //  Elements
@@ -161,7 +161,7 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
 
   open(sharingNodes: StorageTreeNode[]): Promise<StorageNodeShareSettings | undefined> {
     // ノードが複数指定された場合、親が同じであることを検証
-    let sharingNodeParentPath = sharingNodes[0].parent!.value
+    const sharingNodeParentPath = sharingNodes[0].parent!.value
     for (const sharingNode of sharingNodes) {
       if (sharingNode.parent!.value !== sharingNodeParentPath) {
         throw new Error('All nodes must have the same parent.')
