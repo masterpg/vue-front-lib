@@ -1,6 +1,7 @@
 {
   "name": "vue-front-lib",
   "scripts": {
+    "dev:storage": "gsutil cors set firebase.storage.cors.json gs://vue-base-project-7295.appspot.com",
     "build:dev": "vue-cli-service build --mode development",
     "build:stg": "vue-cli-service build --mode staging",
     "build": "vue-cli-service build --mode production",
@@ -9,7 +10,7 @@
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "testcafe chrome:headless tests/e2e/**/*.test.ts -S -s screenshots --hostname localhost",
     "lint": "./node_modules/web-base-lib/tools/lint.sh",
-    "deploy": "firebase deploy --only hosting"
+    "deploy": "firebase deploy --only hosting,storage"
   },
   "dependencies": {
     "@quasar/extras": "^1.7.0",

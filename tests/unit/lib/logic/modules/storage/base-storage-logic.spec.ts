@@ -2,16 +2,14 @@ import * as shortid from 'shortid'
 import * as td from 'testdouble'
 import { EMPTY_SHARE_SETTINGS, cloneTestStorageNode, newTestStorageDirNode, newTestStorageFileNode } from '../../../../../helpers/common/storage'
 import { LibAPIContainer, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageState } from '@/lib'
-import { BaseStorageLogic } from '@/lib/logic/modules/storage/base/base-storage-logic'
+import { BaseStorageLogic } from '@/lib/logic/modules/storage/logic'
 import { BaseStorageStore } from '@/lib/logic/store/modules/storage/base'
 import { Component } from 'vue-property-decorator'
 import { StorageStore } from '@/lib/logic/store'
 import { TestStore } from '../../../../../helpers/common/store'
 import { cloneDeep } from 'lodash'
-import { config } from '@/lib/config'
 import dayjs from 'dayjs'
 import { initLibTest } from '../../../../../helpers/lib/init'
-import { removeEndSlash } from 'web-base-lib'
 
 //========================================================================
 //
@@ -28,11 +26,14 @@ class MockStorageLogic extends BaseStorageLogic {
     return storageStore
   }
 
-  get baseURL(): string {
-    return `${removeEndSlash(config.api.baseURL)}/storage`
+  get basePath(): string {
+    return 'storage'
   }
 
-  newUploadManager = td.func() as any
+  get baseURL(): string {
+    return `${this.basePath}/storage`
+  }
+
   getNodeAPI = td.func() as any
   getDirDescendantsAPI = td.func() as any
   getDescendantsAPI = td.func() as any
@@ -50,6 +51,8 @@ class MockStorageLogic extends BaseStorageLogic {
   renameFileAPI = td.func() as any
   setDirShareSettingsAPI = td.func() as any
   setFileShareSettingsAPI = td.func() as any
+  newUploader = td.func() as any
+  newDownloader = td.func() as any
 }
 
 let api!: LibAPIContainer

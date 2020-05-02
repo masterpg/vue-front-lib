@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://vue-base-project-7295.web.app", "http://localhost:5000"],
+    "responseHeader": ["Content-Type"],
+    "method": ["GET", "HEAD", "DELETE"],
+    "maxAgeSeconds": 3600
+  }
+]

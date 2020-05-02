@@ -1,5 +1,14 @@
-import { AppStorageLogic, AuthLogic, StorageLogic, UserStorageLogic } from './types'
-import { AppStorageLogicImpl, StorageUploadManager, UserStorageLogicImpl } from './modules/storage'
+import {
+  AppStorageLogic,
+  AppStorageLogicImpl,
+  StorageDownloader,
+  StorageFileUploader,
+  StorageLogic,
+  StorageUploader,
+  UserStorageLogic,
+  UserStorageLogicImpl,
+} from './modules/storage'
+import { AuthLogic, AuthProviderType } from './types'
 import { AuthLogicImpl } from './modules/auth'
 import Vue from 'vue'
 
@@ -48,5 +57,4 @@ export function setLogic(value: LibLogicContainer): void {
 }
 
 export { BaseLogic } from './base'
-export { AppStorageLogic, AuthLogic, AuthProviderType, StorageLogic, UserStorageLogic } from './types'
-export { StorageFileUploader, StorageUploadManager } from './modules/storage/index'
+export { AppStorageLogic, AuthLogic, AuthProviderType, StorageFileUploader, StorageLogic, StorageDownloader, StorageUploader, UserStorageLogic }

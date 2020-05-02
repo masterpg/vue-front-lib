@@ -104,7 +104,7 @@ import { StorageNodeType } from '@/lib'
       ref="uploadProgressFloat"
       class="fixed-bottom-right"
       :storage-type="storageType"
-      @upload-ended="m_uploadProgressFloatOnUploadEnded($event)"
+      @upload-ends="m_uploadProgressFloatOnUploadEnds($event)"
     />
   </div>
 </template>
@@ -608,7 +608,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
    * アップロード進捗フロートでアップロードが終了した際のハンドラです。
    * @param e
    */
-  private async m_uploadProgressFloatOnUploadEnded(e: UploadEndedEvent) {
+  private async m_uploadProgressFloatOnUploadEnds(e: UploadEndedEvent) {
     // アップロードが行われた後のツリーの更新処理
     await this.treeStore.onUploaded(e)
     // アップロード先のディレクトリへURL遷移

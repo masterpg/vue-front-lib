@@ -1,7 +1,12 @@
 import * as path from 'path'
 import { removeBothEndsSlash, removeEndSlash } from 'web-base-lib'
-import { BaseStorageLogic } from './base-storage-logic'
-import { StorageUploadManager } from '../types'
+import { BaseStorageLogic } from './logic'
+
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
 
 /**
  * アップロードファイルの情報です。
@@ -14,10 +19,16 @@ export interface UploadFileParam {
   basePath?: string
 }
 
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
 /**
- * アップロードの管理を行うマネージャクラスです。
+ * ファイルまたディレクトリのアップロード管理を行うアップローダーです。
  */
-export abstract class BaseStorageUploadManager implements StorageUploadManager {
+export abstract class StorageUploader {
   //----------------------------------------------------------------------
   //
   //  Constructor
@@ -38,27 +49,27 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
   //
   //----------------------------------------------------------------------
 
-  private m_uploadingFiles: StorageFileUploader[] = []
+  private m_fileUploaders: StorageFileUploader[] = []
 
   /**
    * アップロード中のファイルです。
    */
-  get uploadingFiles(): StorageFileUploader[] {
-    return this.m_uploadingFiles
+  get fileUploaders(): StorageFileUploader[] {
+    return this.m_fileUploaders
   }
 
   /**
-   * アップロード対象のファイル数です。
+   * アップロードするファイルの総数です
    */
-  get totalUploadCount(): number {
-    return this.uploadingFiles.length
+  get uploadNum(): number {
+    return this.fileUploaders.length
   }
 
   /**
    * アップロードされたファイル数です。
    */
-  get uploadedCount(): number {
-    return this.uploadingFiles.reduce((result, file) => {
+  get uploadedNum(): number {
+    return this.fileUploaders.reduce((result, file) => {
       result += file.completed ? 1 : 0
       return result
     }, 0)
@@ -67,8 +78,8 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
   /**
    * アップロード対象となる全ファイルのバイト数です。
    */
-  get totalUploadSize(): number {
-    return this.uploadingFiles.reduce((result, file) => {
+  get totalSize(): number {
+    return this.fileUploaders.reduce((result, file) => {
       result += file.size
       return result
     }, 0)
@@ -78,7 +89,7 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
    * アップロード対象となる全ファイルでアップロードされたバイト数です。
    */
   get uploadedSize(): number {
-    return this.uploadingFiles.reduce((result, file) => {
+    return this.fileUploaders.reduce((result, file) => {
       result += file.uploadedSize
       return result
     }, 0)
@@ -89,25 +100,21 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
    */
   get progress(): number {
     if (this.uploadedSize === 0) return 0
-    return this.uploadedSize / this.totalUploadSize
+    return this.uploadedSize / this.totalSize
   }
-
-  private m_uploading = false
 
   /**
    * アップロード中を表すフラグです。
    */
-  get uploading(): boolean {
-    return this.m_uploading
+  get running(): boolean {
+    return this.m_status === 'running'
   }
 
-  private m_ended = false
-
   /**
-   * アップロードの終了を表すフラグです。
+   * アップロード終了を表すフラグです。
    */
-  get ended(): boolean {
-    return this.m_ended
+  get ends(): boolean {
+    return this.m_status === 'ends'
   }
 
   //----------------------------------------------------------------------
@@ -120,6 +127,8 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
 
   private m_uploadFileInput!: HTMLInputElement
 
+  private m_status: 'none' | 'running' | 'ends' = 'none'
+
   //----------------------------------------------------------------------
   //
   //  Methods
@@ -131,10 +140,9 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
    */
   clear(): void {
     this.m_uploadFileInput.value = ''
-    this.m_uploadingFiles.splice(0)
+    this.m_fileUploaders.splice(0)
     this.uploadDirPath = ''
-    this.m_uploading = false
-    this.m_ended = false
+    this.m_status = 'none'
   }
 
   /**
@@ -216,18 +224,16 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
       return
     }
 
-    // 変数の初期化
-    this.m_uploading = false
-    this.m_ended = false
+    this.m_status = 'none'
 
     // ファイルアップローダーを作成(まだアップロードは実行しない)
-    this.m_uploadingFiles.push(...this.createUploadingFiles(files))
+    this.m_fileUploaders.push(...this.createUploadingFiles(files))
 
     // ファイルアップローダー配列をソート
-    this.m_uploadingFiles.sort((a, b) => {
-      if (a.ended && !b.ended) {
+    this.m_fileUploaders.sort((a, b) => {
+      if (a.ends && !b.ends) {
         return 1
-      } else if (!a.ended && b.ended) {
+      } else if (!a.ends && b.ends) {
         return -1
       }
 
@@ -241,10 +247,10 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
     })
 
     // 状態をアップロード中に設定
-    this.m_uploading = files.length > 0
+    this.m_status = 'running'
 
     // 実際にアップロードを実行
-    for (const uploadingFile of this.m_uploadingFiles) {
+    for (const uploadingFile of this.m_fileUploaders) {
       if (uploadingFile.completed) continue
       try {
         // ファイルアップロード
@@ -256,12 +262,13 @@ export abstract class BaseStorageUploadManager implements StorageUploadManager {
       }
     }
 
-    this.m_ended = true
+    // 状態をアップロード終了に設定
+    this.m_status = 'ends'
   }
 }
 
 /**
- * ファイルアップローダーの基底クラスです。
+ * 単一ファイルのアップロード管理を行うアップローダーです。
  */
 export class StorageFileUploader {
   //----------------------------------------------------------------------
@@ -280,8 +287,67 @@ export class StorageFileUploader {
   //
   //----------------------------------------------------------------------
 
+  private m_completed = false
+
+  /**
+   * アップロードが完了（成功）したかを示すフラグです。
+   */
+  get completed(): boolean {
+    return this.m_completed
+  }
+
+  protected setCompleted(value: boolean): void {
+    this.m_completed = value
+    this.m_status = 'ends'
+  }
+
+  private m_failed = false
+
+  /**
+   * アップロードが失敗したかを示すフラグです。
+   */
+  get failed(): boolean {
+    return this.m_failed
+  }
+
+  protected setFailed(value: boolean): void {
+    this.m_failed = value
+    this.m_status = 'ends'
+  }
+
+  private m_canceled = false
+
+  /**
+   * アップロードがキャンセルされたかを示すフラグです。
+   */
+  get canceled(): boolean {
+    return this.m_canceled
+  }
+
+  protected setCanceled(value: boolean): void {
+    this.m_canceled = value
+    this.m_status = 'ends'
+  }
+
+  /**
+   * ダウンロード中を示すフラグです。
+   */
+  get running(): boolean {
+    return this.m_status === 'running'
+  }
+
+  /**
+   * ダウンロード終了を示すフラグです。
+   */
+  get ends(): boolean {
+    return this.m_status === 'ends'
+  }
+
   private m_uploadedSize = 0
 
+  /**
+   * アップロードされたバイト数です。
+   */
   get uploadedSize(): number {
     return this.m_uploadedSize
   }
@@ -292,6 +358,9 @@ export class StorageFileUploader {
 
   private m_progress = 0
 
+  /**
+   * アップロードの進捗率です。
+   */
   get progress(): number {
     return this.m_progress
   }
@@ -300,52 +369,30 @@ export class StorageFileUploader {
     this.m_progress = value
   }
 
-  private m_completed = false
-
-  get completed(): boolean {
-    return this.m_completed
-  }
-
-  protected setCompleted(value: boolean): void {
-    this.m_completed = value
-  }
-
-  private m_failed = false
-
-  get failed(): boolean {
-    return this.m_failed
-  }
-
-  protected setFailed(value: boolean): void {
-    this.m_failed = value
-  }
-
-  private m_canceled = false
-
-  get canceled(): boolean {
-    return this.m_canceled
-  }
-
-  protected setCanceled(value: boolean): void {
-    this.m_canceled = value
-  }
-
-  get ended(): boolean {
-    return this.completed || this.failed || this.canceled
-  }
-
+  /**
+   * アップロードファイルのファイル名です。
+   */
   get name(): string {
     return this.uploadParam.name
   }
 
+  /**
+   * アップロードファイルが格納されるディレクトリです。
+   */
   get dir(): string {
     return this.uploadParam.dir
   }
 
+  /**
+   * アップロードファイルのパスです。
+   */
   get path(): string {
     return `${removeEndSlash(this.uploadParam.dir)}/${this.name}`
   }
 
+  /**
+   * アップロードファイルのファイルサイズ（バイト）です。
+   */
   get size(): number {
     if (this.uploadParam.data instanceof File || this.uploadParam.data instanceof Blob) {
       return this.uploadParam.data.size
@@ -370,6 +417,8 @@ export class StorageFileUploader {
 
   private m_fileRef!: firebase.storage.Reference
 
+  private m_status: 'none' | 'running' | 'ends' = 'none'
+
   //----------------------------------------------------------------------
   //
   //  Methods
@@ -380,6 +429,8 @@ export class StorageFileUploader {
     if (this.canceled) {
       return Promise.resolve()
     }
+
+    this.m_status = 'running'
 
     // アップロード先の参照を取得
     const uploadPath = path.join(this.uploadParam.basePath || '', this.uploadParam.dir, this.name)

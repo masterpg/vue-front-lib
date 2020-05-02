@@ -1,10 +1,9 @@
+import { AppStorageLogic, BaseStorageLogic } from '../logic'
 import { AppStorageStore, store } from '../../../store'
 import { StorageNode, StorageNodeShareSettingsInput, api } from '../../../api'
-import { AppStorageLogic } from '../../../types'
-import { AppStorageUploadManager } from './app-upload'
-import { BaseStorageLogic } from '../base/base-storage-logic'
+import { AppStorageUploader } from './app-upload'
 import { Component } from 'vue-property-decorator'
-import { StorageUploadManager } from '../types'
+import { StorageUploader } from '../upload'
 import { config } from '../../../../config'
 import { removeEndSlash } from 'web-base-lib'
 
@@ -14,13 +13,17 @@ export class AppStorageLogicImpl extends BaseStorageLogic implements AppStorageL
     return store.appStorage
   }
 
+  get basePath(): string {
+    return ''
+  }
+
   get baseURL(): string {
     const baseStorageURL = `${removeEndSlash(config.api.baseURL)}/storage`
     return `${baseStorageURL}`
   }
 
-  newUploadManager(owner: Element): StorageUploadManager {
-    return new AppStorageUploadManager(owner, this)
+  newUploader(owner: Element): StorageUploader {
+    return new AppStorageUploader(owner, this)
   }
 
   getNodeAPI(nodePath: string): Promise<StorageNode | undefined> {

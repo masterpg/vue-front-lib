@@ -1,5 +1,3 @@
-import { StorageNode, StorageNodeShareSettingsInput } from './api'
-import { StorageUploadManager } from './modules/storage'
 import { User } from './store'
 
 //========================================================================
@@ -47,72 +45,6 @@ export interface AuthLogic {
 
   removeSignedOutListener(listener: (user: User) => any): void
 }
-
-//--------------------------------------------------
-//  Storage
-//--------------------------------------------------
-
-export interface StorageLogic {
-  readonly nodes: StorageNode[]
-
-  readonly baseURL: string
-
-  getNode(key: { id?: string; path?: string }): StorageNode | undefined
-
-  getNodeDict(): { [path: string]: StorageNode }
-
-  getChildren(dirPath?: string): StorageNode[]
-
-  getDirChildren(dirPath?: string): StorageNode[]
-
-  getDescendants(dirPath?: string): StorageNode[]
-
-  getDirDescendants(dirPath: string): StorageNode[]
-
-  getHierarchicalNode(nodePath: string): StorageNode[]
-
-  fetchHierarchicalNodes(nodePath: string): Promise<StorageNode[]>
-
-  fetchAncestorDirs(nodePath: string): Promise<StorageNode[]>
-
-  fetchDirDescendants(dirPath?: string): Promise<StorageNode[]>
-
-  fetchDescendants(dirPath?: string): Promise<StorageNode[]>
-
-  fetchDirChildren(dirPath?: string): Promise<StorageNode[]>
-
-  fetchChildren(dirPath?: string): Promise<StorageNode[]>
-
-  fetchHierarchicalDescendants(dirPath?: string): Promise<StorageNode[]>
-
-  createDirs(dirPaths: string[]): Promise<StorageNode[]>
-
-  removeDir(dirPath: string): Promise<void>
-
-  removeFile(filePath: string): Promise<void>
-
-  moveDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]>
-
-  moveFile(fromFilePath: string, toFilePath: string): Promise<StorageNode>
-
-  renameDir(dirPath: string, newName: string): Promise<StorageNode[]>
-
-  renameFile(filePath: string, newName: string): Promise<StorageNode>
-
-  setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
-
-  setFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
-
-  newUploadManager(owner: Element): StorageUploadManager
-
-  sortNodes(nodes: StorageNode[]): StorageNode[]
-}
-
-export interface UserStorageLogic extends StorageLogic {
-  newUrlUploadManager(owner: Element): StorageUploadManager
-}
-
-export interface AppStorageLogic extends StorageLogic {}
 
 //========================================================================
 //

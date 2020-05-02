@@ -1,11 +1,10 @@
 import * as _path from 'path'
+import { BaseStorageLogic, UserStorageLogic } from '../logic'
 import { StorageNode, StorageNodeShareSettingsInput, api } from '../../../api'
 import { UserStorageStore, store } from '../../../store'
-import { BaseStorageLogic } from '../base/base-storage-logic'
 import { Component } from 'vue-property-decorator'
-import { StorageUploadManager } from '../types'
-import { UserStorageLogic } from '../../../types'
-import { UserStorageUploadManager } from './user-upload'
+import { StorageUploader } from '../upload'
+import { UserStorageUploader } from './user-upload'
 import { UserStorageUrlUploadManager } from './user-upload-by-url'
 import { config } from '../../../../config'
 import { removeEndSlash } from 'web-base-lib'
@@ -16,16 +15,19 @@ export class UserStorageLogicImpl extends BaseStorageLogic implements UserStorag
     return store.userStorage
   }
 
+  get basePath(): string {
+    return `${_path.join(config.storage.usersDir, store.user.myDirName)}`
+  }
+
   get baseURL(): string {
-    const baseStorageURL = `${removeEndSlash(config.api.baseURL)}/storage`
-    return `${baseStorageURL}/${_path.join(config.storage.usersDir, store.user.myDirName)}`
+    return `${removeEndSlash(config.api.baseURL)}/storage/${this.basePath}`
   }
 
-  newUploadManager(owner: Element): StorageUploadManager {
-    return new UserStorageUploadManager(owner, this)
+  newUploader(owner: Element): StorageUploader {
+    return new UserStorageUploader(owner, this)
   }
 
-  newUrlUploadManager(owner: Element): StorageUploadManager {
+  newUrlUploader(owner: Element): StorageUploader {
     return new UserStorageUrlUploadManager(owner, this)
   }
 

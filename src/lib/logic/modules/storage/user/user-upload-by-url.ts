@@ -1,5 +1,5 @@
 import * as _path from 'path'
-import { BaseStorageUploadManager, StorageFileUploader, UploadFileParam } from '../base/base-upload'
+import { StorageFileUploader, StorageUploader, UploadFileParam } from '../upload'
 import axios, { Canceler } from 'axios'
 import { Dialog } from 'quasar'
 import { api } from '../../../api'
@@ -7,7 +7,7 @@ import { config } from '../../../../config'
 import { i18n } from '../../../../i18n'
 import { store } from '../../../store'
 
-export class UserStorageUrlUploadManager extends BaseStorageUploadManager {
+export class UserStorageUrlUploadManager extends StorageUploader {
   protected async verifyExecutable(): Promise<void> {
     if (!store.user.myDirName) {
       Dialog.create({

@@ -50,8 +50,9 @@ export {
   BaseLogic,
   BaseLogicContainer,
   LibLogicContainer,
+  StorageDownloader,
   StorageLogic,
-  StorageUploadManager,
+  StorageUploader,
   UserStorageLogic,
   setLogic,
 } from './logic'

@@ -31,7 +31,7 @@
     &.link
       @extend %app-link
 
-.download-btn
+.btn
   @extend %app-link
   &[disabled]
     pointer-events: none
@@ -54,14 +54,11 @@
       <q-input v-show="m_isText" v-model="m_textData" type="textarea" readonly filled />
       <!-- ダウンロード -->
       <div class="layout horizontal center end-justified app-mt-10">
-        <q-linear-progress
-          ref="downloadLinear"
-          :value="m_downloadProgress.progress"
-          :stripe="m_downloadProgress.downloading"
-          size="md"
-          class="flex-1"
-        />
-        <div class="download-btn app-ml-10" :disabled="m_downloadProgress.downloading" @click="m_download()">{{ $t('common.download') }}</div>
+        <q-linear-progress ref="downloadLinear" :value="m_downloader.progress" :stripe="m_downloader.running" size="md" class="flex-1" />
+        <!-- ダウンロードボタン -->
+        <div v-if="!m_downloader.running" class="btn app-ml-10" @click="m_download()">{{ $t('common.download') }}</div>
+        <!-- キャンセルボタン -->
+        <div v-else class="btn app-ml-10" @click="m_cancel()">{{ $t('common.cancel') }}</div>
       </div>
       <!-- ノード詳細 -->
       <div class="layout vertical">
@@ -97,22 +94,29 @@
 <script lang="ts">
 import * as anime from 'animejs/lib/anime'
 import { BaseComponent, Resizable } from '../../../../lib/base/component'
-import { CompStorageImg, NoCache } from '@/lib'
+import { CompStorageImg, NoCache, StorageDownloader } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QLinearProgress } from 'quasar'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
 import { StorageTypeMixin } from '@/example/views/demo/storage/base'
-import axios from 'axios'
 import bytes from 'bytes'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
-
-const EMPTY_DOWNLOAD_PROGRESS = { progress: 0, downloading: false }
 
 @Component({
   components: { CompStorageImg },
 })
 export default class StorageNodeDetailView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
+  //----------------------------------------------------------------------
+  //
+  //  Lifecycle hooks
+  //
+  //----------------------------------------------------------------------
+
+  created() {
+    this.m_downloader = this.storageLogic.newDownloader()
+  }
+
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -179,7 +183,7 @@ export default class StorageNodeDetailView extends mixins(BaseComponent, Resizab
 
   private m_textData: string | null = null
 
-  private m_downloadProgress: { progress: number; downloading: boolean } = Object.assign({}, EMPTY_DOWNLOAD_PROGRESS)
+  private m_downloader: StorageDownloader = {} as any
 
   //--------------------------------------------------
   //  Elements
@@ -204,7 +208,6 @@ export default class StorageNodeDetailView extends mixins(BaseComponent, Resizab
     const clear = () => {
       this.m_fileNode = null
       this.m_textData = ''
-      this.m_downloadProgress = Object.assign({}, EMPTY_DOWNLOAD_PROGRESS)
       ;(this.m_downloadLinear.$el as HTMLElement).style.opacity = '0'
     }
 
@@ -228,30 +231,9 @@ export default class StorageNodeDetailView extends mixins(BaseComponent, Resizab
   //----------------------------------------------------------------------
 
   private async m_loadTextFile(): Promise<void> {
-    const authHeader = await this.m_getAuthHeader()
-
-    const response = await axios.request({
-      url: this.m_url,
-      method: 'get',
-      responseType: 'text',
-      headers: { ...authHeader },
-    })
-    this.m_textData = response.data
-  }
-
-  /**
-   * リクエスト用の認証ヘッダを取得します。
-   */
-  private async m_getAuthHeader(): Promise<{ Authorization?: string }> {
-    const currentUser = firebase.auth().currentUser
-    if (!currentUser) return {}
-
-    const idToken = await currentUser.getIdToken()
-    if (!idToken) return {}
-
-    return {
-      Authorization: `Bearer ${idToken}`,
-    }
+    const downloader = this.storageLogic.newFileDownloader('http', this.m_fileNode!.value)
+    const text = await downloader.execute('text')
+    this.m_textData = text ?? ''
   }
 
   /**
@@ -280,38 +262,46 @@ export default class StorageNodeDetailView extends mixins(BaseComponent, Resizab
   }
 
   private async m_download() {
-    this.m_downloadProgress.downloading = true
-
-    // 認証ヘッダの取得
-    const authHeader = await this.m_getAuthHeader()
-
     // ダウンロード進捗バーを表示
     this.m_showDownloadProgress(true, async () => {
-      // ダウンロード開始
-      const response = await axios({
-        url: this.m_url,
-        method: 'GET',
-        responseType: 'blob',
-        headers: { ...authHeader },
-        onDownloadProgress: e => {
-          const total = this.m_fileNode!.size
-          this.m_downloadProgress.progress = e.loaded / total
-          if (e.loaded === total) {
-            this.m_downloadProgress.downloading = false
-          }
-        },
-      })
-
-      // ダウンロードされたファイルをブラウザ経由でダウンロード
-      const anchor = document.createElement('a')
-      anchor.href = window.URL.createObjectURL(response.data)
-      anchor.download = this.m_fileName
-      anchor.click()
-
+      // ダウンロード実行
+      const iterator = this.m_downloader.download('firebase', this.m_fileNode!.value)
+      for (const downloader of iterator) {
+        const responseData = await downloader.execute('blob')
+        if (downloader.canceled) continue
+        if (downloader.failed) {
+          const message = String(this.$t('storage.download.downloadFailure', { nodeName: downloader.name }))
+          this.m_showNotification('warning', message)
+          continue
+        }
+        // ダウンロードされたファイルをブラウザ経由でダウンロード
+        const anchor = document.createElement('a')
+        anchor.href = window.URL.createObjectURL(responseData)
+        anchor.download = downloader.name
+        anchor.click()
+      }
       // ダウンロード進捗バーの非表示後にダウンロード進捗をクリア
       this.m_showDownloadProgress(false, () => {
-        this.m_downloadProgress = Object.assign({}, EMPTY_DOWNLOAD_PROGRESS)
+        this.m_downloader.clear()
       })
+    })
+  }
+
+  private m_cancel() {
+    this.m_downloader.cancel()
+    this.m_showDownloadProgress(false, () => {
+      this.m_downloader.clear()
+    })
+  }
+
+  private m_showNotification(type: 'error' | 'warning', message: string): void {
+    this.$q.notify({
+      icon: type === 'error' ? 'error' : 'warning',
+      position: 'bottom-left',
+      message,
+      timeout: 0,
+      color: type === 'error' ? 'red-9' : 'grey-9',
+      actions: [{ icon: 'close', color: 'white' }],
     })
   }
 }

@@ -54,5 +54,8 @@ export default merge(require('@/lib/lang/en').default, {
       url: 'URL',
       updated: 'Updated',
     },
+    download: {
+      downloadFailure: 'Failed to download "{nodeName}".',
+    },
   },
 })

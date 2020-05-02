@@ -1,11 +1,11 @@
 import * as _path from 'path'
-import { BaseStorageUploadManager, StorageFileUploader } from '../base/base-upload'
+import { StorageFileUploader, StorageUploader } from '../upload'
 import { Dialog } from 'quasar'
 import { config } from '../../../../config'
 import { i18n } from '../../../../i18n'
 import { store } from '../../../store'
 
-export class UserStorageUploadManager extends BaseStorageUploadManager {
+export class UserStorageUploader extends StorageUploader {
   protected async verifyExecutable(): Promise<void> {
     if (!store.user.myDirName) {
       Dialog.create({

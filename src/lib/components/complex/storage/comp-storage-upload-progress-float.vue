@@ -54,19 +54,19 @@
     :class="{ fadeOutDown: !m_opened, pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }"
   >
     <q-bar class="bar">
-      <div class="title">{{ $t('storage.uploadTotalRatio', [m_uploadManager.uploadedCount, m_uploadManager.totalUploadCount]) }}</div>
+      <div class="title">{{ $t('storage.uploadTotalRatio', [m_uploader.uploadedNum, m_uploader.uploadNum]) }}</div>
       <q-space />
-      <q-btn :invisible="!m_uploadManager.ended" dense flat icon="close" @click="m_closeButtonOnClick()"></q-btn>
+      <q-btn :invisible="m_uploader.running" dense flat icon="close" @click="m_closeButtonOnClick()"></q-btn>
       <q-btn v-if="m_minimize" dense flat icon="maximize" size="xs" @click="m_maximizeButtonOnClick()"> </q-btn>
       <q-btn v-else dense flat icon="minimize" size="xs" @click="m_minimizeButtonOnClick()"> </q-btn>
     </q-bar>
     <div class="content" :class="{ minimize: m_minimize }">
-      <div v-for="(item, index) in m_uploadManager.uploadingFiles" :key="index" class="layout horizontal center item">
+      <div v-for="(item, index) in m_uploader.fileUploaders" :key="index" class="layout horizontal center item">
         <div class="name flex-8">{{ item.name }}</div>
         <div v-if="item.failed" class="error flex-4">{{ $t('storage.uploadFileFailed') }}</div>
         <div v-else-if="item.canceled" class="error flex-4">{{ $t('storage.uploadFileCanceled') }}</div>
         <q-linear-progress v-else :value="item.progress" :stripe="!item.completed" size="md" class="flex-4" />
-        <q-btn :disable="item.ended" class="cancel" dense flat round icon="clear" @click="m_uploadingFileOnCancel(item)"></q-btn>
+        <q-btn :disable="item.ends" class="cancel" dense flat round icon="clear" @click="m_uploadingFileOnCancel(item)"></q-btn>
       </div>
     </div>
   </div>
@@ -75,7 +75,7 @@
 <script lang="ts">
 import { BaseComponent, Resizable } from '../../../base/component'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import { StorageFileUploader, StorageUploadManager } from '../../../logic'
+import { StorageFileUploader, StorageUploader } from '../../../logic'
 import { mixins } from 'vue-class-component'
 
 export interface UploadEndedEvent {
@@ -91,7 +91,7 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
   //
   //----------------------------------------------------------------------
 
-  static UPLOAD_ENDED = 'upload-ended'
+  static UPLOAD_ENDS = 'upload-ends'
 
   //----------------------------------------------------------------------
   //
@@ -102,11 +102,11 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
   async mounted() {
     switch (this.storageType) {
       case 'user':
-        this.m_uploadManager = this.$logic.userStorage.newUploadManager(this.$el)
-        // this.m_uploadManager = this.$logic.userStorage.newUserUrlUploadManager(this.$el)
+        this.m_uploader = this.$logic.userStorage.newUploader(this.$el)
+        // this.m_uploader = this.$logic.userStorage.newUserUrlUploadManager(this.$el)
         break
       case 'app':
-        this.m_uploadManager = this.$logic.appStorage.newUploadManager(this.$el)
+        this.m_uploader = this.$logic.appStorage.newUploader(this.$el)
         break
     }
   }
@@ -128,12 +128,14 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
 
   private m_opened = false
 
-  private m_uploadManager: StorageUploadManager = {} as any
+  private m_uploader: StorageUploader = {} as any
 
-  @Watch('m_uploadManager.uploading')
-  private m_m_uploadManagerUploadingOnChange(newValue: boolean, oldValue: boolean): void {
+  @Watch('m_uploader.running')
+  private m_m_uploaderUploadingOnChange(newValue: boolean, oldValue: boolean): void {
     // アップロードマネージャの状態がアップロード中になったら自コンポーネントを開く
-    this.m_opened = newValue
+    if (this.m_uploader.running) {
+      this.m_opened = true
+    }
   }
 
   private m_minimize = false
@@ -155,7 +157,7 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
    */
   openFilesSelectDialog(uploadDirPath: string): void {
     this.m_uploadDirPath = uploadDirPath
-    this.m_uploadManager.openFilesSelectDialog(uploadDirPath)
+    this.m_uploader.openFilesSelectDialog(uploadDirPath)
     this.m_minimize = false
   }
 
@@ -165,7 +167,7 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
    */
   openDirSelectDialog(uploadDirPath: string): void {
     this.m_uploadDirPath = uploadDirPath
-    this.m_uploadManager.openDirSelectDialog(uploadDirPath)
+    this.m_uploader.openDirSelectDialog(uploadDirPath)
     this.m_minimize = false
   }
 
@@ -188,7 +190,7 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
     // 閉じるアニメショーンと同時にアップロードマネージャをクリアすると、アニメショーンが
     // ガタつくので、アニメショーンが終わってからアップロードマネージャをクリアしている
     setTimeout(() => {
-      this.m_uploadManager.clear()
+      this.m_uploader.clear()
     }, 500)
   }
 
@@ -196,12 +198,12 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
     uploadFile.cancel()
   }
 
-  @Watch('m_uploadManager.ended')
-  private m_uploadManagerOnEnded(newValue: boolean, oldValue: boolean) {
+  @Watch('m_uploader.ends')
+  private m_uploaderOnEnds(newValue: boolean, oldValue: boolean) {
     if (!newValue) return
-    this.$emit(CompStorageUploadProgressFloat.UPLOAD_ENDED, {
+    this.$emit(CompStorageUploadProgressFloat.UPLOAD_ENDS, {
       uploadDirPath: this.m_uploadDirPath,
-      uploadedFiles: this.m_uploadManager.uploadingFiles,
+      uploadedFiles: this.m_uploader.fileUploaders,
     } as UploadEndedEvent)
   }
 }

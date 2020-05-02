@@ -1,29 +1,34 @@
-# vue-front-lib2
+# vue-front-lib
 
-## Project setup
-```
-yarn install
-```
+## プロジェクトセットアップ
 
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
+### Google Cloud SDK
 
-### Compiles and minifies for production
+#### インストール
+
+コマンドプロンプトで次のコマンドを入力します。
+
 ```
-yarn build
+$ brew cask install google-cloud-sdk
 ```
 
-### Run your unit tests
+`gcloud init`を実行して`gcloud`環境を初期化します。
+
 ```
-yarn test:unit
+gcloud init
 ```
 
-### Lints and fixes files
+> [gsutil をインストールする](https://cloud.google.com/storage/docs/gsutil_install?hl=ja)  
+> [Google Cloud SDK を Homebrew で macOS にインストールする](https://qiita.com/niwasawa/items/40845748659892231e04)
+
+### Firebae
+
+#### Storage
+
+次のコマンドで Cloud Storage の環境設定を行います。
+
 ```
-yarn lint
+$ yarn env:storage
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+> [クロスオリジン リソース シェアリング（CORS）の構成](https://cloud.google.com/storage/docs/configuring-cors?hl=ja)

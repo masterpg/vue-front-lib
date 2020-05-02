@@ -1,10 +1,90 @@
-import { LibAPIContainer, StorageNode, StorageNodeShareSettingsInput, StoragePaginationOptionsInput, StoragePaginationResult } from '../../../api'
-import { StorageStore, User } from '../../../store'
+import { LibAPIContainer, StorageNode, StorageNodeShareSettingsInput, StoragePaginationOptionsInput, StoragePaginationResult } from '../../api'
+import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from './download'
+import { StorageStore, User } from '../../store'
 import { arrayToDict, splitHierarchicalPaths } from 'web-base-lib'
-import { BaseLogic } from '../../../base'
+import { BaseLogic } from '../../base'
 import { Component } from 'vue-property-decorator'
-import { StorageLogic } from '../../../types'
-import { StorageUploadManager } from '../types'
+import { StorageUploader } from './upload'
+
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
+
+export interface StorageLogic {
+  readonly nodes: StorageNode[]
+
+  readonly basePath: string
+
+  readonly baseURL: string
+
+  getNode(key: { id?: string; path?: string }): StorageNode | undefined
+
+  getNodeDict(): { [path: string]: StorageNode }
+
+  getChildren(dirPath?: string): StorageNode[]
+
+  getDirChildren(dirPath?: string): StorageNode[]
+
+  getDescendants(dirPath?: string): StorageNode[]
+
+  getDirDescendants(dirPath: string): StorageNode[]
+
+  getHierarchicalNode(nodePath: string): StorageNode[]
+
+  fetchHierarchicalNodes(nodePath: string): Promise<StorageNode[]>
+
+  fetchAncestorDirs(nodePath: string): Promise<StorageNode[]>
+
+  fetchDirDescendants(dirPath?: string): Promise<StorageNode[]>
+
+  fetchDescendants(dirPath?: string): Promise<StorageNode[]>
+
+  fetchDirChildren(dirPath?: string): Promise<StorageNode[]>
+
+  fetchChildren(dirPath?: string): Promise<StorageNode[]>
+
+  fetchHierarchicalDescendants(dirPath?: string): Promise<StorageNode[]>
+
+  createDirs(dirPaths: string[]): Promise<StorageNode[]>
+
+  removeDir(dirPath: string): Promise<void>
+
+  removeFile(filePath: string): Promise<void>
+
+  moveDir(fromDirPath: string, toDirPath: string): Promise<StorageNode[]>
+
+  moveFile(fromFilePath: string, toFilePath: string): Promise<StorageNode>
+
+  renameDir(dirPath: string, newName: string): Promise<StorageNode[]>
+
+  renameFile(filePath: string, newName: string): Promise<StorageNode>
+
+  setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
+
+  setFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
+
+  newUploader(owner: Element): StorageUploader
+
+  newDownloader(): StorageDownloader
+
+  newFileDownloader(type: StorageFileDownloaderType, filePath: string): StorageFileDownloader
+
+  sortNodes(nodes: StorageNode[]): StorageNode[]
+}
+
+export interface UserStorageLogic extends StorageLogic {
+  newUrlUploader(owner: Element): StorageUploader
+}
+
+export interface AppStorageLogic extends StorageLogic {}
+
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
 
 // @ts-ignore: Vueを継承した抽象クラスに@Componentを付与するとでるエラーの回避
 @Component
@@ -29,6 +109,8 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
     return this.storageStore.all
   }
 
+  abstract readonly basePath: string
+
   abstract readonly baseURL: string
 
   //----------------------------------------------------------------------
@@ -45,7 +127,7 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   //
   //----------------------------------------------------------------------
 
-  abstract newUploadManager(owner: Element): StorageUploadManager
+  abstract newUploader(owner: Element): StorageUploader
 
   getNode(key: { id?: string; path?: string }): StorageNode | undefined {
     return this.storageStore.get(key)
@@ -253,6 +335,14 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   async setFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
     const apiNode = await this.setFileShareSettingsAPI(filePath, settings)
     return this.setAPINodesToStore([apiNode])[0]
+  }
+
+  newDownloader(): StorageDownloader {
+    return new StorageDownloader(this)
+  }
+
+  newFileDownloader(type: StorageFileDownloaderType, filePath: string): StorageFileDownloader {
+    return StorageFileDownloader.newInstance({ logic: this, type, filePath })
   }
 
   sortNodes(nodes: StorageNode[]): StorageNode[] {
