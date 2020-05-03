@@ -7,12 +7,18 @@ import {
   StorageNodeShareSettingsInput,
   StoragePaginationOptionsInput,
   StoragePaginationResult,
-} from '../types'
+} from '../base'
 import { BaseGQLClient } from './base'
 import dayjs from 'dayjs'
 import gql from 'graphql-tag'
 
-export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContainer {
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContainer {
   //----------------------------------------------------------------------
   //
   //  Methods
@@ -1157,3 +1163,11 @@ export abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAP
     return responseNodes.map(node => this.toAPIStorageNode(node))
   }
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { BaseGQLAPIContainer }

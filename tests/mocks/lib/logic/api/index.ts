@@ -4,11 +4,17 @@ import { mix } from 'web-base-lib'
 
 //========================================================================
 //
-//  Internal
+//  Implementation
 //
 //========================================================================
 
 class MockGQLAPIContainer extends BaseGQLAPIContainer {}
+
+class TestLibAPIContainer extends mix(MockGQLAPIContainer).with(TestGQLAPIContainerMixin) {}
+
+function initLibTestAPI(api?: LibAPIContainer): void {
+  setAPI(api ? api : new MockGQLAPIContainer())
+}
 
 //========================================================================
 //
@@ -16,8 +22,4 @@ class MockGQLAPIContainer extends BaseGQLAPIContainer {}
 //
 //========================================================================
 
-export class TestLibAPIContainer extends mix(MockGQLAPIContainer).with(TestGQLAPIContainerMixin) {}
-
-export function initLibTestAPI(api?: LibAPIContainer): void {
-  setAPI(api ? api : new MockGQLAPIContainer())
-}
+export { TestLibAPIContainer, initLibTestAPI }

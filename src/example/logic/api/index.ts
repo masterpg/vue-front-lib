@@ -1,11 +1,11 @@
-import { AppAPIContainer } from '@/example/logic/api/types'
-import { AppGQLAPIContainer } from '@/example/logic/api/gql'
-import { AppRESTAPIContainer } from '@/example/logic/api/rest'
+import { AppAPIContainer } from './base'
+import { AppGQLAPIContainer } from './gql'
+import { AppRESTAPIContainer } from './rest'
 import { setAPI } from '@/lib'
 
 //========================================================================
 //
-//  Internal
+//  Implementation
 //
 //========================================================================
 
@@ -15,15 +15,9 @@ let gqlAPI: AppGQLAPIContainer
 
 let restAPI: AppRESTAPIContainer
 
-//========================================================================
-//
-//  Exports
-//
-//========================================================================
+let api: AppAPIContainer
 
-export let api: AppAPIContainer
-
-export function initAPI(params?: { apiType: 'gql' | 'rest'; api: AppAPIContainer }): void {
+function initAPI(params?: { apiType: 'gql' | 'rest'; api: AppAPIContainer }): void {
   if (!params) {
     setAPIType(apiType)
     return
@@ -34,11 +28,11 @@ export function initAPI(params?: { apiType: 'gql' | 'rest'; api: AppAPIContainer
   setAPI(api)
 }
 
-export function getAPIType() {
+function getAPIType() {
   return apiType
 }
 
-export function setAPIType(value: 'gql' | 'rest') {
+function setAPIType(value: 'gql' | 'rest') {
   apiType = value
   if (apiType === 'gql') {
     api = gqlAPI ? gqlAPI : new AppGQLAPIContainer()
@@ -48,4 +42,11 @@ export function setAPIType(value: 'gql' | 'rest') {
   setAPI(api)
 }
 
-export * from '@/example/logic/api/types'
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export * from './base'
+export { api, initAPI, getAPIType, setAPIType }

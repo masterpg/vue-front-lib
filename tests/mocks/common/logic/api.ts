@@ -7,29 +7,29 @@ import gql from 'graphql-tag'
 
 //========================================================================
 //
-//  TestGQLAPIContainerMixin
+//  Interfaces
 //
 //========================================================================
 
-export interface AuthUser {
+interface AuthUser {
   uid: string
   myDirName: string
   email?: string
   isAppAdmin?: boolean
 }
 
-export interface CollectionData {
+interface CollectionData {
   collectionName: string
   collectionRecords: any[]
 }
 
-export interface UploadFileItem {
+interface UploadFileItem {
   fileData: string | Blob | Uint8Array | ArrayBuffer | File
   filePath: string
   contentType: string
 }
 
-export interface TestAPIContainer extends LibAPIContainer {
+interface TestAPIContainer extends LibAPIContainer {
   setTestAuthUser(user: AuthUser): void
   clearTestAuthUser(): void
   putTestData(inputs: CollectionData[]): Promise<void>
@@ -42,9 +42,15 @@ export interface TestAPIContainer extends LibAPIContainer {
   removeTestFiles(filePaths: string[]): Promise<void>
 }
 
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
 const TEMP_ADMIN_USER = { uid: 'temp.admin.user', myDirName: 'temp.admin.user', isAppAdmin: true }
 
-export function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>): Constructor<TestAPIContainer> {
+function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>): Constructor<TestAPIContainer> {
   return class extends superclass implements TestAPIContainer {
     //----------------------------------------------------------------------
     //
@@ -199,3 +205,11 @@ export function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIConta
     }
   }
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { AuthUser, CollectionData, UploadFileItem, TestAPIContainer, TestGQLAPIContainerMixin }

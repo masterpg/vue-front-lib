@@ -2,7 +2,7 @@ import { APIDocumentData, LibAPIContainer } from '@/lib'
 
 //========================================================================
 //
-//  API
+//  Interfaces
 //
 //========================================================================
 
@@ -23,12 +23,6 @@ export interface AppAPIContainer extends LibAPIContainer {
 
   checkoutCart(): Promise<boolean>
 }
-
-//========================================================================
-//
-//  Value objects
-//
-//========================================================================
 
 export interface APIProduct extends APIDocumentData {
   title: string

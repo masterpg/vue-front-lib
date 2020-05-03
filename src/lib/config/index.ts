@@ -2,17 +2,11 @@ import URI from 'urijs'
 
 //========================================================================
 //
-//  Exports
+//  Interfaces
 //
 //========================================================================
 
-export let config: BaseConfig
-
-export function setConfig(value: BaseConfig): void {
-  config = value
-}
-
-export interface FirebaseConfig {
+interface FirebaseConfig {
   apiKey: string
   authDomain: string
   databaseURL?: string
@@ -22,7 +16,7 @@ export interface FirebaseConfig {
   appId: string
 }
 
-export interface APIConfig {
+interface APIConfig {
   protocol: string
   host: string
   port: number
@@ -30,11 +24,17 @@ export interface APIConfig {
   baseURL: string
 }
 
-export interface StorageConfig {
+interface StorageConfig {
   usersDir: string
 }
 
-export abstract class BaseConfig {
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+abstract class BaseConfig {
   protected constructor(params: { firebase: FirebaseConfig; api: Omit<APIConfig, 'baseURL'>; storage: StorageConfig }) {
     this.m_firebase = params.firebase
     this.m_api = this.getAPIConfig(params.api)
@@ -86,3 +86,17 @@ export abstract class BaseConfig {
     }
   }
 }
+
+let config: BaseConfig
+
+function setConfig(value: BaseConfig): void {
+  config = value
+}
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { FirebaseConfig, APIConfig, StorageConfig, BaseConfig, config, setConfig }

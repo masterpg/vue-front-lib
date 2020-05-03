@@ -3,11 +3,11 @@ import firebaseConfig from '../../../firebase.config'
 
 //========================================================================
 //
-//  Exports
+//  Implementation
 //
 //========================================================================
 
-export class AppConfig extends BaseConfig {
+class AppConfig extends BaseConfig {
   constructor() {
     super({
       firebase: firebaseConfig,
@@ -24,9 +24,9 @@ export class AppConfig extends BaseConfig {
   }
 }
 
-export let config: AppConfig
+let config: AppConfig
 
-export function initConfig(value?: AppConfig): void {
+function initConfig(value?: AppConfig): void {
   if (value) {
     config = value
   } else {
@@ -34,3 +34,11 @@ export function initConfig(value?: AppConfig): void {
   }
   setConfig(config)
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { AppConfig, config, initConfig }

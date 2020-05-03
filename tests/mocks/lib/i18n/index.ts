@@ -2,7 +2,7 @@ import { BaseI18n, LocaleData, setI18n } from '@/lib'
 
 //========================================================================
 //
-//  Internal
+//  Implementation
 //
 //========================================================================
 
@@ -21,16 +21,18 @@ class MockI18n extends BaseI18n {
   }
 }
 
+let i18n: MockI18n
+
+async function initLibTestI18n(): Promise<void> {
+  i18n = new MockI18n()
+  await i18n.load()
+  setI18n(i18n)
+}
+
 //========================================================================
 //
 //  Exports
 //
 //========================================================================
 
-export let i18n: MockI18n
-
-export async function initLibTestI18n(): Promise<void> {
-  i18n = new MockI18n()
-  await i18n.load()
-  setI18n(i18n)
-}
+export { i18n, initLibTestI18n }

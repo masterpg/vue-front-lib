@@ -5,6 +5,12 @@ import { dateTimeFormats } from './date-time-formats'
 
 Vue.use(VueI18n)
 
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
 //
 // 以下のソースコードをコピーして一部改変:
 // node_modules/vue-i18n/dist/vue-i18n.esm.js
@@ -36,19 +42,7 @@ Vue.prototype.$tc = function(key, choice) {
 }
 /* eslint-disable */
 
-//========================================================================
-//
-//  Exports
-//
-//========================================================================
-
-export let i18n: BaseI18n
-
-export function setI18n(value: BaseI18n): void {
-  i18n = value
-}
-
-export class LocaleData {
+class LocaleData {
   constructor(locale: VueI18n.Locale)
 
   constructor(language: string, country: string)
@@ -75,7 +69,7 @@ export class LocaleData {
 /**
  * 本プロジェクト用にVueI18nを拡張したクラスです。
  */
-export abstract class BaseI18n extends VueI18n {
+abstract class BaseI18n extends VueI18n {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -267,3 +261,17 @@ export abstract class BaseI18n extends VueI18n {
     return undefined
   }
 }
+
+let i18n: BaseI18n
+
+function setI18n(value: BaseI18n): void {
+  i18n = value
+}
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { LocaleData, BaseI18n, i18n, setI18n }

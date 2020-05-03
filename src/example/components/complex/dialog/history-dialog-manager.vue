@@ -7,39 +7,35 @@
 </template>
 
 <script lang="ts">
+import { AccountDeleteDialog, EmailChangeDialog, SignInDialog } from '@/example/components/complex/auth'
 import { BaseHistoryDialogManager, Dialog } from '@/lib'
-import {
-  AccountDeleteDialog as _AccountDeleteDialog,
-  EmailChangeDialog as _EmailChangeDialog,
-  SignInDialog as _SignInDialog,
-} from '@/example/components/complex/auth'
 import { Component } from 'vue-property-decorator'
 
-export namespace SignInDialog {
-  export const name = 'SignInDialog'
+export namespace SignIn {
+  export const name = 'signIn'
 }
 
-export namespace EmailChangeDialog {
-  export const name = 'EmailChangeDialog'
+export namespace EmailChange {
+  export const name = 'emailChange'
 }
 
-export namespace AccountDeleteDialog {
-  export const name = 'AccountDeleteDialog'
+export namespace AccountDelete {
+  export const name = 'accountDelete'
 }
 
 @Component({
   components: {
-    SignInDialog: _SignInDialog,
-    EmailChangeDialog: _EmailChangeDialog,
-    AccountDeleteDialog: _AccountDeleteDialog,
+    SignInDialog,
+    EmailChangeDialog,
+    AccountDeleteDialog,
   },
 })
 export default class HistoryDialogManager extends BaseHistoryDialogManager {
   protected get dialogs(): { [dialogName: string]: Dialog } {
     return {
-      [SignInDialog.name]: this.$refs.signInDialog as Dialog,
-      [EmailChangeDialog.name]: this.$refs.emailChangeDialog as Dialog,
-      [AccountDeleteDialog.name]: this.$refs.accountDeleteDialog as Dialog,
+      [SignIn.name]: this.$refs.signInDialog as Dialog,
+      [EmailChange.name]: this.$refs.emailChangeDialog as Dialog,
+      [AccountDelete.name]: this.$refs.accountDeleteDialog as Dialog,
     }
   }
 }

@@ -5,9 +5,23 @@ import { initLibTestConfig } from '../../mocks/lib/config'
 import { initLibTestI18n } from '../../mocks/lib/i18n'
 import { initLibTestStore } from '../../mocks/lib/logic/store'
 
-export async function initLibTest(params: { api?: LibAPIContainer } = {}): Promise<void> {
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+async function initLibTest(params: { api?: LibAPIContainer } = {}): Promise<void> {
   initLibTestConfig()
   initLibTestAPI(params.api)
   initLibTestStore()
   await initLibTestI18n()
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { initLibTest }

@@ -5,13 +5,19 @@ import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { cloneDeep } from 'lodash'
 import dayjs from 'dayjs'
 
-export const EMPTY_SHARE_SETTINGS: StorageNodeShareSettings = {
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+const EMPTY_SHARE_SETTINGS: StorageNodeShareSettings = {
   isPublic: null,
   readUIds: null,
   writeUIds: null,
 }
 
-export function newTestStorageDirNode(dirPath: string, data?: Partial<Omit<StorageNode, 'name' | 'dir' | 'path' | 'nodeType'>>): StorageNode {
+function newTestStorageDirNode(dirPath: string, data?: Partial<Omit<StorageNode, 'name' | 'dir' | 'path' | 'nodeType'>>): StorageNode {
   dirPath = removeBothEndsSlash(dirPath)
   data = data || {}
   const name = path.basename(dirPath)
@@ -31,7 +37,7 @@ export function newTestStorageDirNode(dirPath: string, data?: Partial<Omit<Stora
   return result
 }
 
-export function newTestStorageFileNode(filePath: string, data?: Partial<Omit<StorageNode, 'name' | 'dir' | 'path' | 'nodeType'>>): StorageNode {
+function newTestStorageFileNode(filePath: string, data?: Partial<Omit<StorageNode, 'name' | 'dir' | 'path' | 'nodeType'>>): StorageNode {
   filePath = removeBothEndsSlash(filePath)
   data = data || {}
   const name = path.basename(filePath)
@@ -51,6 +57,14 @@ export function newTestStorageFileNode(filePath: string, data?: Partial<Omit<Sto
   return result
 }
 
-export function cloneTestStorageNode(target: StorageNode, source: Partial<StorageNode>): StorageNode {
+function cloneTestStorageNode(target: StorageNode, source: Partial<StorageNode>): StorageNode {
   return Object.assign({}, cloneDeep(target), cloneDeep(source))
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { EMPTY_SHARE_SETTINGS, newTestStorageDirNode, newTestStorageFileNode, cloneTestStorageNode }

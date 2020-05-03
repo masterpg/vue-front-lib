@@ -1,7 +1,20 @@
-import { AppConfigResponse, LibAPIContainer, StorageNode, StoragePaginationOptionsInput, StoragePaginationResult } from '../types'
+import {
+  AppConfigResponse,
+  LibAPIContainer,
+  StorageNode,
+  StorageNodeShareSettingsInput,
+  StoragePaginationOptionsInput,
+  StoragePaginationResult,
+} from '../base'
 import { BaseRESTClient } from './base'
 
-export abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPIContainer {
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPIContainer {
   async getAppConfig(): Promise<AppConfigResponse> {
     throw new Error(`This method 'getAppConfig' is not implemented.`)
   }
@@ -74,11 +87,11 @@ export abstract class BaseRESTAPIContainer extends BaseRESTClient implements Lib
     throw new Error(`This method 'renameUserStorageFile' is not implemented.`)
   }
 
-  setUserStorageDirShareSettings(dirPath: string, settings: import('../types').StorageNodeShareSettingsInput): Promise<StorageNode> {
+  setUserStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
     throw new Error(`This method 'setUserStorageDirShareSettings' is not implemented.`)
   }
 
-  setUserStorageFileShareSettings(filePath: string, settings: import('../types').StorageNodeShareSettingsInput): Promise<StorageNode> {
+  setUserStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
     throw new Error(`This method 'setUserStorageFileShareSettings' is not implemented.`)
   }
 
@@ -146,11 +159,11 @@ export abstract class BaseRESTAPIContainer extends BaseRESTClient implements Lib
     throw new Error(`This method 'renameStorageFile' is not implemented.`)
   }
 
-  setStorageDirShareSettings(dirPath: string, settings: import('../types').StorageNodeShareSettingsInput): Promise<StorageNode> {
+  setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
     throw new Error(`This method 'setStorageDirShareSettings' is not implemented.`)
   }
 
-  setStorageFileShareSettings(filePath: string, settings: import('../types').StorageNodeShareSettingsInput): Promise<StorageNode> {
+  setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
     throw new Error(`This method 'setStorageFileShareSettings' is not implemented.`)
   }
 
@@ -170,3 +183,11 @@ export abstract class BaseRESTAPIContainer extends BaseRESTClient implements Lib
     throw new Error(`This method 'callStoragePaginationAPI' is not implemented.`)
   }
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { BaseRESTAPIContainer }

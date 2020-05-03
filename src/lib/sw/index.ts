@@ -2,17 +2,11 @@ import { i18n } from '../i18n'
 
 //========================================================================
 //
-//  Exports
+//  Interfaces
 //
 //========================================================================
 
-export let sw: BaseSWManager
-
-export function setSW(value: BaseSWManager): void {
-  sw = value
-}
-
-export enum SWChangeState {
+enum SWChangeState {
   ready = 'ready',
   registered = 'registered',
   cached = 'cached',
@@ -22,14 +16,20 @@ export enum SWChangeState {
   error = 'error',
 }
 
-export interface SWStateChangeInfo {
+interface SWStateChangeInfo {
   state: SWChangeState
   message: string
 }
 
-export type StateChangeLister = (info: SWStateChangeInfo) => void
+type StateChangeLister = (info: SWStateChangeInfo) => void
 
-export abstract class BaseSWManager {
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+abstract class BaseSWManager {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -107,3 +107,17 @@ export abstract class BaseSWManager {
     }
   }
 }
+
+let sw: BaseSWManager
+
+function setSW(value: BaseSWManager): void {
+  sw = value
+}
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { sw, setSW, SWChangeState, SWStateChangeInfo, StateChangeLister, BaseSWManager }

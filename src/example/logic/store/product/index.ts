@@ -1,9 +1,50 @@
-import { BaseStore, NoCache, StatePartial, StoreError } from '@/lib'
-import { Product, ProductState, ProductStore, ProductsErrorType } from '@/example/logic/store/types'
+import { BaseStore, DocumentData, NoCache, StatePartial, StoreError } from '@/lib'
 import { Component } from 'vue-property-decorator'
 
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
+
+interface ProductStore {
+  readonly all: Product[]
+
+  getById(productId: string): Product | undefined
+
+  set(product: StatePartial<Product>): Product | undefined
+
+  setAll(products: Product[]): void
+
+  add(product: Product): Product
+
+  decrementStock(productId: string): void
+
+  incrementStock(productId: string): void
+}
+
+interface ProductState {
+  all: Product[]
+}
+
+interface Product extends DocumentData {
+  title: string
+  price: number
+  stock: number
+}
+
+enum ProductsErrorType {
+  ItemNotFound = 'itemNotFound',
+}
+
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
 @Component
-export class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
+class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
   //----------------------------------------------------------------------
   //
   //  Constructors
@@ -100,3 +141,11 @@ export class ProductStoreImpl extends BaseStore<ProductState> implements Product
     return this.state.all.find(item => item.id === id)
   }
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { ProductStore, ProductState, Product, ProductStoreImpl, ProductsErrorType }

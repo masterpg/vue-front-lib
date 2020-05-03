@@ -8,7 +8,13 @@ import { initLogic } from '@/example/logic'
 import { initRouter } from '@/example/router'
 import { initStore } from '@/example/logic/store'
 
-export async function initExampleTest(params: { api?: AppAPIContainer } = {}): Promise<void> {
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+async function initExampleTest(params: { api?: AppAPIContainer } = {}): Promise<void> {
   initConfig()
   initRouter()
   initExampleTestAPI(params.api)
@@ -16,3 +22,11 @@ export async function initExampleTest(params: { api?: AppAPIContainer } = {}): P
   initLogic(new MockLogicContainer())
   await initI18n()
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { initExampleTest }

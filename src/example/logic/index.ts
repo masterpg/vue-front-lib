@@ -1,18 +1,29 @@
-import { BaseLogicContainer, setLogic } from '@/lib'
-import { LogicContainer, ShopLogic } from '@/example/logic/types'
-import { getAPIType, setAPIType } from '@/example/logic/api'
+import { BaseLogicContainer, LibLogicContainer, setLogic } from '@/lib'
+import { ShopLogic, ShopLogicImpl } from './modules/shop'
+import { getAPIType, setAPIType } from './api'
 import { Component } from 'vue-property-decorator'
-import { ShopLogicImpl } from '@/example/logic/modules/shop'
 import Vue from 'vue'
 
 //========================================================================
 //
-//  Internal
+//  Interfaces
+//
+//========================================================================
+
+export interface LogicContainer extends LibLogicContainer {
+  apiType: 'gql' | 'rest'
+
+  readonly shop: ShopLogic
+}
+
+//========================================================================
+//
+//  Implementation
 //
 //========================================================================
 
 @Component
-export class LogicContainerImpl extends BaseLogicContainer implements LogicContainer {
+class LogicContainerImpl extends BaseLogicContainer implements LogicContainer {
   private m_apiType = getAPIType()
 
   get apiType(): 'gql' | 'rest' {
@@ -27,15 +38,9 @@ export class LogicContainerImpl extends BaseLogicContainer implements LogicConta
   readonly shop: ShopLogic = new ShopLogicImpl()
 }
 
-//========================================================================
-//
-//  Exports
-//
-//========================================================================
+let logic: LogicContainer
 
-export let logic: LogicContainer
-
-export function initLogic(logicContainer?: LogicContainer): void {
+function initLogic(logicContainer?: LogicContainer): void {
   logic = logicContainer ? logicContainer : new LogicContainerImpl()
   setLogic(logic)
 
@@ -46,4 +51,12 @@ export function initLogic(logicContainer?: LogicContainer): void {
   })
 }
 
-export * from '@/example/logic/types'
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export * from './store'
+export * from './modules/shop'
+export { LogicContainerImpl, logic, initLogic }

@@ -1,15 +1,14 @@
-import {
-  APICartItem,
-  APICartItemAddInput,
-  APICartItemEditResponse,
-  APICartItemUpdateInput,
-  APIProduct,
-  AppAPIContainer,
-} from '@/example/logic/api/types'
+import { APICartItem, APICartItemAddInput, APICartItemEditResponse, APICartItemUpdateInput, APIProduct, AppAPIContainer } from '../base'
 import { BaseGQLAPIContainer } from '@/lib'
 import gql from 'graphql-tag'
 
-export class AppGQLAPIContainer extends BaseGQLAPIContainer implements AppAPIContainer {
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+class AppGQLAPIContainer extends BaseGQLAPIContainer implements AppAPIContainer {
   async getProduct(id: string): Promise<APIProduct | undefined> {
     const products = await this.getProducts([id])
     return products.length === 1 ? products[0] : undefined
@@ -157,3 +156,11 @@ export class AppGQLAPIContainer extends BaseGQLAPIContainer implements AppAPICon
     return response.data!.checkoutCart
   }
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { AppGQLAPIContainer }

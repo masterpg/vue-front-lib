@@ -2,7 +2,7 @@ import { BaseI18n, LocaleData, setI18n } from '@/lib'
 
 //========================================================================
 //
-//  Internal
+//  Implementation
 //
 //========================================================================
 
@@ -21,16 +21,18 @@ class AppI18n extends BaseI18n {
   }
 }
 
+let i18n: AppI18n
+
+async function initI18n(): Promise<void> {
+  i18n = new AppI18n()
+  await i18n.load()
+  setI18n(i18n)
+}
+
 //========================================================================
 //
 //  Exports
 //
 //========================================================================
 
-export let i18n: AppI18n
-
-export async function initI18n(): Promise<void> {
-  i18n = new AppI18n()
-  await i18n.load()
-  setI18n(i18n)
-}
+export { i18n, initI18n }

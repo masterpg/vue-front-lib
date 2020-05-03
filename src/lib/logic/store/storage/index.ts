@@ -1,11 +1,89 @@
 import * as _path from 'path'
-import { StorageNode, StorageNodeType } from '../../../api'
-import { StorageNodeForSet, StorageState, StorageStore } from '../../types'
+import { StorageNode, StorageNodeType } from '../../api'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
-import { BaseStore } from '../../base'
-import { NoCache } from '../../../../base/decorators'
+import { BaseStore } from '../base'
+import { Component } from 'vue-property-decorator'
+import { NoCache } from '../../../base/decorators'
 
-export abstract class BaseStorageStore extends BaseStore<StorageState> implements StorageStore {
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
+
+interface StorageStore {
+  readonly all: StorageNode[]
+
+  get(key: { id?: string; path?: string }): StorageNode | undefined
+
+  getChildren(dirPath?: string): StorageNode[]
+
+  getDirChildren(dirPath?: string): StorageNode[]
+
+  getDescendants(dirPath?: string): StorageNode[]
+
+  getDirDescendants(dirPath?: string): StorageNode[]
+
+  getDict(): { [path: string]: StorageNode }
+
+  addList(nodes: StorageNode[]): StorageNode[]
+
+  add(value: StorageNode): StorageNode
+
+  setAll(values: StorageNode[]): void
+
+  setList(nodes: StorageNodeForSet[]): StorageNode[]
+
+  set(node: StorageNodeForSet): StorageNode
+
+  removeList(key: { ids?: string[]; paths?: string[] }): StorageNode[]
+
+  remove(key: { id?: string; path?: string }): StorageNode[]
+
+  move(fromPath: string, toPath: string): StorageNode[]
+
+  rename(path: string, newName: string): StorageNode[]
+
+  clone(value: StorageNode): StorageNode
+
+  clear(): void
+
+  /**
+   * ノード配列をディレクトリ階層に従ってソートします。
+   * @param values
+   */
+  sort(values: StorageNode[]): StorageNode[]
+
+  /**
+   * ノード配列をディレクトリ階層に従ってソートするための関数です。
+   * @param a
+   * @param b
+   */
+  sortFunc(a: StorageNode, b: StorageNode): number
+}
+
+interface UserStorageStore extends StorageStore {}
+
+interface AppStorageStore extends StorageStore {}
+
+type StorageNodeForSet = Partial<Omit<StorageNode, 'nodeType'>> & {
+  id: string
+  name: string
+  dir: string
+  path: string
+}
+
+interface StorageState {
+  all: StorageNode[]
+}
+
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+abstract class BaseStorageStore extends BaseStore<StorageState> implements StorageStore {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -354,4 +432,27 @@ export abstract class BaseStorageStore extends BaseStore<StorageState> implement
 
     return undefined
   }
+}
+
+@Component
+class UserStorageStoreImpl extends BaseStorageStore implements UserStorageStore {}
+
+@Component
+class AppStorageStoreImpl extends BaseStorageStore implements AppStorageStore {}
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export {
+  StorageStore,
+  UserStorageStore,
+  AppStorageStore,
+  StorageNodeForSet,
+  StorageState,
+  BaseStorageStore,
+  UserStorageStoreImpl,
+  AppStorageStoreImpl,
 }

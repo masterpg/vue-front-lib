@@ -1,1 +1,1 @@
-export * from '@/example/components/complex'
+export * from './complex/dialog'

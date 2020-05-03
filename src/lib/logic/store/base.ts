@@ -27,3 +27,14 @@ export abstract class BaseStore<S> extends Vue {
     this.m_state = state
   }
 }
+
+export type StatePartial<T> = Partial<Omit<T, 'id'>> & { id: string }
+
+export class StoreError<T> extends Error {
+  constructor(type: T) {
+    super()
+    this.errorType = type
+  }
+
+  errorType: T
+}

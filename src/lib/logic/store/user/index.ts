@@ -1,11 +1,51 @@
-import { User, UserStore } from '../../types'
-import { BaseStore } from '../../base'
+import { BaseStore } from '../base'
 import { Component } from 'vue-property-decorator'
 import isBoolean from 'lodash/isBoolean'
 import isString from 'lodash/isString'
 
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
+
+interface UserStore extends User {
+  set(user: Partial<User>): void
+
+  clear(): void
+
+  clone(): User
+
+  reflectCustomToken(): Promise<void>
+}
+
+interface User {
+  id: string
+  isSignedIn: boolean
+  displayName: string
+  photoURL: string
+  email: string
+  emailVerified: boolean
+  isAppAdmin: boolean
+  myDirName: string
+  /**
+   * セキュリティ安全なアプリケーション管理者フラグを取得します。
+   * `isAppAdmin`でも同様の値を取得できますが、このプロパティは
+   * ブラウザの開発ツールなどで設定値を変更できてしまいます。
+   * このメソッドは暗号化されたトークンから値を取得しなおすため、
+   * 改ざんの心配がない安全な値を取得できます。
+   */
+  getIsAppAdmin(): Promise<boolean>
+}
+
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
 @Component
-export class UserStoreImpl extends BaseStore<void> implements UserStore {
+class UserStoreImpl extends BaseStore<void> implements UserStore {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -143,3 +183,11 @@ export class UserStoreImpl extends BaseStore<void> implements UserStore {
     }
   }
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { UserStore, User, UserStoreImpl }

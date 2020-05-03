@@ -1,9 +1,67 @@
-import { BaseStore, NoCache, StatePartial } from '@/lib'
-import { CartItem, CartState, CartStore, CheckoutStatus } from '@/example/logic/store/types'
+import { BaseStore, DocumentData, NoCache, StatePartial } from '@/lib'
 import { Component } from 'vue-property-decorator'
 
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
+
+interface CartStore {
+  readonly all: CartItem[]
+
+  readonly totalPrice: number
+
+  readonly checkoutStatus: CheckoutStatus
+
+  getById(id: string): CartItem | undefined
+
+  getByProductId(productId: string): CartItem | undefined
+
+  set(item: StatePartial<Omit<CartItem, 'uid' | 'productId'>>): CartItem | undefined
+
+  setAll(items: CartItem[]): void
+
+  setCheckoutStatus(status: CheckoutStatus): void
+
+  add(item: CartItem): CartItem
+
+  remove(id: string): CartItem | undefined
+
+  clear(): void
+}
+
+interface CartItem extends DocumentData {
+  uid: string
+  productId: string
+  title: string
+  price: number
+  quantity: number
+}
+
+interface CartState {
+  all: CartItem[]
+  checkoutStatus: CheckoutStatus
+}
+
+enum CheckoutStatus {
+  None = 'none',
+  Failed = 'failed',
+  Successful = 'successful',
+}
+
+enum CartModuleErrorType {
+  ItemNotFound = 'itemNotFound',
+}
+
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
 @Component
-export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
+class CartStoreImpl extends BaseStore<CartState> implements CartStore {
   //----------------------------------------------------------------------
   //
   //  Constructors
@@ -126,3 +184,11 @@ export class CartStoreImpl extends BaseStore<CartState> implements CartStore {
     return this.state.all.find(item => item.id === cartId)
   }
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { CartStore, CartItem, CartState, CheckoutStatus, CartModuleErrorType, CartStoreImpl }

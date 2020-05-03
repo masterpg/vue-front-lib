@@ -5,13 +5,21 @@ import { mix } from 'web-base-lib'
 
 //========================================================================
 //
+//  Implementation
+//
+//========================================================================
+
+class TestAppAPIContainer extends mix(AppGQLAPIContainer).with(TestGQLAPIContainerMixin) {}
+
+function initExampleTestAPI(api?: AppAPIContainer): void {
+  api = api ? api : new AppGQLAPIContainer()
+  initAPI({ apiType: 'gql', api })
+}
+
+//========================================================================
+//
 //  Exports
 //
 //========================================================================
 
-export class TestAppAPIContainer extends mix(AppGQLAPIContainer).with(TestGQLAPIContainerMixin) {}
-
-export function initExampleTestAPI(api?: AppAPIContainer): void {
-  api = api ? api : new AppGQLAPIContainer()
-  initAPI({ apiType: 'gql', api })
-}
+export { TestAppAPIContainer, initExampleTestAPI }

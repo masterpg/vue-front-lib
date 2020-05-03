@@ -76,7 +76,7 @@ import { QDialog } from 'quasar'
     EmailSignInView,
   },
 })
-export default class AccountDeleteDialog extends BaseDialog<void, void> {
+export default class AccountDeleteHistoryDialog extends BaseDialog<void, void> {
   //----------------------------------------------------------------------
   //
   //  Variables

@@ -1,5 +1,11 @@
 import { AppConfig, initConfig } from '@/example/config'
 
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
 class MockAppConfig extends AppConfig {
   constructor() {
     super()
@@ -12,9 +18,17 @@ class MockAppConfig extends AppConfig {
   }
 }
 
-export let config: MockAppConfig
+let config: MockAppConfig
 
-export function initLibTestConfig(): void {
+function initLibTestConfig(): void {
   config = new MockAppConfig()
   initConfig(config)
 }
+
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+export { config, initLibTestConfig }

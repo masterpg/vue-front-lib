@@ -98,7 +98,7 @@ const isEmail = require('validator/lib/isEmail')
     EmailSignInView,
   },
 })
-export default class EmailChangeDialog extends BaseDialog<void, void> {
+export default class EmailChangeHistoryDialog extends BaseDialog<void, void> {
   //----------------------------------------------------------------------
   //
   //  Variables

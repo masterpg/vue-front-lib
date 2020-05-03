@@ -1,7 +1,3 @@
-import HistoryDialogManager, {
-  AccountDeleteDialog,
-  EmailChangeDialog,
-  SignInDialog,
-} from '@/example/components/complex/dialog/history-dialog-manager.vue'
+import HistoryDialogManager, { AccountDelete, EmailChange, SignIn } from './history-dialog-manager.vue'
 
-export { HistoryDialogManager, AccountDeleteDialog, EmailChangeDialog, SignInDialog }
+export { HistoryDialogManager, AccountDelete, EmailChange, SignIn }

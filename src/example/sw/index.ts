@@ -2,11 +2,18 @@ import { BaseSWManager, setSW } from '@/lib'
 
 //========================================================================
 //
-//  Internal
+//  Implementation
 //
 //========================================================================
 
 class AppSWManager extends BaseSWManager {}
+
+let sw: AppSWManager
+
+async function initSW(): Promise<void> {
+  sw = new AppSWManager()
+  setSW(sw)
+}
 
 //========================================================================
 //
@@ -14,9 +21,4 @@ class AppSWManager extends BaseSWManager {}
 //
 //========================================================================
 
-export let sw: AppSWManager
-
-export async function initSW(): Promise<void> {
-  sw = new AppSWManager()
-  setSW(sw)
-}
+export { sw, initSW }

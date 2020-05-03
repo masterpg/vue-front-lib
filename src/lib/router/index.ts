@@ -7,30 +7,13 @@ Vue.use(VueRouter)
 
 //========================================================================
 //
-//  Internal
+//  Implementation
 //
 //========================================================================
 
 let isBeforeEachSet = false
 
-//========================================================================
-//
-//  Exports
-//
-//========================================================================
-
-export let router: BaseRouter
-
-export function setRouter(value: BaseRouter): void {
-  router = value
-  if (!isBeforeEachSet) {
-    router.beforeEach((to, from, next) => {
-      next()
-    })
-  }
-}
-
-export abstract class ViewRoute<PARENT extends ViewRoute = any> {
+abstract class ViewRoute<PARENT extends ViewRoute = any> {
   constructor(public readonly parent?: PARENT) {}
 
   abstract readonly path: string
@@ -49,7 +32,7 @@ export abstract class ViewRoute<PARENT extends ViewRoute = any> {
   }
 }
 
-export abstract class BaseRouter extends VueRouter {
+abstract class BaseRouter extends VueRouter {
   beforeEach(guard: NavigationGuard): Function {
     isBeforeEachSet = true
     return super.beforeEach((to, from, next) => {
@@ -107,3 +90,22 @@ export abstract class BaseRouter extends VueRouter {
     return { dialogName, dialogParams }
   }
 }
+
+let router: BaseRouter
+
+function setRouter(value: BaseRouter): void {
+  router = value
+  if (!isBeforeEachSet) {
+    router.beforeEach((to, from, next) => {
+      next()
+    })
+  }
+}
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { ViewRoute, BaseRouter, router, setRouter }

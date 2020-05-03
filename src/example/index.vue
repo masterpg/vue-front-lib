@@ -145,7 +145,7 @@
 </template>
 
 <script lang="ts">
-import { AccountDeleteDialog, EmailChangeDialog, HistoryDialogManager, SignInDialog } from '@/example/components'
+import { AccountDelete, EmailChange, HistoryDialogManager, SignIn } from '@/example/components'
 import { BaseComponent, NoCache, Resizable, SWChangeState, SWStateChangeInfo, User } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
@@ -306,15 +306,15 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
   }
 
   private m_signInMenuItemOnClick() {
-    this.m_historyDialogManager.open(SignInDialog.name)
+    this.m_historyDialogManager.open(SignIn.name)
   }
 
   private m_changeEmailMenuItemOnClick() {
-    this.m_historyDialogManager.open(EmailChangeDialog.name)
+    this.m_historyDialogManager.open(EmailChange.name)
   }
 
   private async m_deleteAccountMenuItemOnClick() {
-    this.m_historyDialogManager.open(AccountDeleteDialog.name)
+    this.m_historyDialogManager.open(AccountDelete.name)
   }
 }
 </script>

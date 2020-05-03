@@ -1,7 +1,36 @@
-import { AppStorageStore, StorageStore, UserStorageStore, UserStore } from './types'
-import { AppStorageStoreImpl, UserStorageStoreImpl } from './modules/storage'
-import { UserStoreImpl } from './modules/user'
+import { AppStorageStore, AppStorageStoreImpl, UserStorageStore, UserStorageStoreImpl } from './storage'
+import { UserStore, UserStoreImpl } from './user'
 import Vue from 'vue'
+
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
+
+interface LibStoreContainer {
+  readonly user: UserStore
+  readonly userStorage: UserStorageStore
+  readonly appStorage: AppStorageStore
+}
+
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+abstract class LibStoreContainerImpl extends Vue implements LibStoreContainer {
+  readonly user: UserStore = new UserStoreImpl()
+  readonly userStorage: UserStorageStore = new UserStorageStoreImpl()
+  readonly appStorage: AppStorageStore = new AppStorageStoreImpl()
+}
+
+let store: LibStoreContainer
+
+function setStore(value: LibStoreContainer): void {
+  store = value
+}
 
 //========================================================================
 //
@@ -9,26 +38,8 @@ import Vue from 'vue'
 //
 //========================================================================
 
-export interface LibStoreContainer {
-  readonly user: UserStore
-  readonly userStorage: UserStorageStore
-  readonly appStorage: AppStorageStore
-}
+export { BaseStore, StatePartial, StoreError } from './base'
+export { User, UserStore, UserStoreImpl } from './user'
+export { AppStorageStore, AppStorageStoreImpl, StorageState, StorageStore, UserStorageStore, UserStorageStoreImpl } from './storage'
 
-export abstract class BaseStoreContainer extends Vue implements LibStoreContainer {
-  readonly user: UserStore = new UserStoreImpl()
-  readonly userStorage: UserStorageStore = new UserStorageStoreImpl()
-  readonly appStorage: AppStorageStore = new AppStorageStoreImpl()
-}
-
-export let store: LibStoreContainer
-
-export function setStore(value: LibStoreContainer): void {
-  store = value
-}
-
-export { AppStorageStore, StatePartial, StorageState, StorageStore, StoreError, User, UserStorageStore, UserStore } from './types'
-
-export { BaseStore } from './base'
-
-export { UserStoreImpl, UserStorageStoreImpl, AppStorageStoreImpl }
+export { LibStoreContainer, LibStoreContainerImpl, store, setStore }

@@ -1,4 +1,16 @@
-import { LibAPIContainer } from './types'
+import { LibAPIContainer } from './base'
+
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+let api: LibAPIContainer
+
+function setAPI(value: LibAPIContainer): void {
+  api = value
+}
 
 //========================================================================
 //
@@ -6,15 +18,11 @@ import { LibAPIContainer } from './types'
 //
 //========================================================================
 
-export let api: LibAPIContainer
-
-export function setAPI(value: LibAPIContainer): void {
-  api = value
-}
-
 export {
   APIDocumentData,
   APIStorageNode,
+  APIStoragePaginationResult,
+  AppConfigResponse,
   DocumentData,
   LibAPIContainer,
   StorageNode,
@@ -23,8 +31,8 @@ export {
   StorageNodeType,
   StoragePaginationOptionsInput,
   StoragePaginationResult,
-} from './types'
-
+} from './base'
 export { BaseGQLAPIContainer } from './gql'
-
 export { BaseRESTAPIContainer } from './rest'
+
+export { api, setAPI }

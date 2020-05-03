@@ -4,9 +4,29 @@ import { removeEndSlash } from 'web-base-lib'
 
 //========================================================================
 //
-//  Internal
+//  Implementation
 //
 //========================================================================
+
+let router: AppRouter
+
+function initRouter() {
+  router = new AppRouter({
+    mode: 'history',
+    routes: [
+      error404Route,
+      demoRoute.abc,
+      demoRoute.shop,
+      demoRoute.userStorage,
+      demoRoute.appStorage,
+      componentsRoute.treeView,
+      componentsRoute.img,
+      componentsRoute.markdown,
+      componentsRoute.markdownIt,
+    ],
+  })
+  setRouter(router)
+}
 
 //--------------------------------------------------
 //  Error404Route
@@ -212,24 +232,4 @@ class AppRouter extends BaseRouter {
 //
 //========================================================================
 
-export let router: AppRouter
-
-export function initRouter() {
-  router = new AppRouter({
-    mode: 'history',
-    routes: [
-      error404Route,
-      demoRoute.abc,
-      demoRoute.shop,
-      demoRoute.userStorage,
-      demoRoute.appStorage,
-      componentsRoute.treeView,
-      componentsRoute.img,
-      componentsRoute.markdown,
-      componentsRoute.markdownIt,
-    ],
-  })
-  setRouter(router)
-}
-
-export { StorageRoute }
+export { router, initRouter, StorageRoute }

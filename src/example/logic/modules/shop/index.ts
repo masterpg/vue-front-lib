@@ -1,12 +1,43 @@
-import { APICartItem, APICartItemEditResponse, APIProduct, api } from '@/example/logic/api'
+import { APICartItem, APICartItemEditResponse, APIProduct, api } from '../../api'
 import { BaseLogic, User } from '@/lib'
-import { CartItem, CheckoutStatus, Product, ShopLogic } from '@/example/logic/types'
+import { CartItem, CheckoutStatus, Product, store } from '../../store'
 import { Component } from 'vue-property-decorator'
 import cloneDeep from 'lodash/cloneDeep'
-import { store } from '@/example/logic/store'
+
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
+
+interface ShopLogic {
+  products: Product[]
+
+  pullProducts(): Promise<void>
+
+  cartItems: CartItem[]
+
+  pullCartItems(): Promise<void>
+
+  cartTotalPrice: number
+
+  checkoutStatus: CheckoutStatus
+
+  addItemToCart(productId: string): Promise<void>
+
+  removeItemFromCart(productId: string): Promise<void>
+
+  checkout(): Promise<void>
+}
+
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
 
 @Component
-export class ShopLogicImpl extends BaseLogic implements ShopLogic {
+class ShopLogicImpl extends BaseLogic implements ShopLogic {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -212,3 +243,11 @@ export class ShopLogicImpl extends BaseLogic implements ShopLogic {
     store.cart.clear()
   }
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { ShopLogic, ShopLogicImpl }

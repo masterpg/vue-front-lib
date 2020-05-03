@@ -1,14 +1,21 @@
-import { BaseStoreContainer, setStore } from '@/lib'
+import { LibStoreContainerImpl, setStore } from '@/lib'
 import { Component } from 'vue-property-decorator'
 
 //========================================================================
 //
-//  Internal
+//  Implementation
 //
 //========================================================================
 
 @Component
-class MockStoreContainer extends BaseStoreContainer {}
+class MockStoreContainer extends LibStoreContainerImpl {}
+
+let store: MockStoreContainer
+
+function initLibTestStore(): void {
+  store = new MockStoreContainer()
+  setStore(store)
+}
 
 //========================================================================
 //
@@ -16,9 +23,4 @@ class MockStoreContainer extends BaseStoreContainer {}
 //
 //========================================================================
 
-export let store: MockStoreContainer
-
-export function initLibTestStore(): void {
-  store = new MockStoreContainer()
-  setStore(store)
-}
+export { store, initLibTestStore }

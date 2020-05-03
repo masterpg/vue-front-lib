@@ -1,14 +1,13 @@
-import {
-  APICartItem,
-  APICartItemAddInput,
-  APICartItemEditResponse,
-  APICartItemUpdateInput,
-  APIProduct,
-  AppAPIContainer,
-} from '@/example/logic/api/types'
+import { APICartItem, APICartItemAddInput, APICartItemEditResponse, APICartItemUpdateInput, APIProduct, AppAPIContainer } from '../base'
 import { BaseRESTAPIContainer } from '@/lib'
 
-export class AppRESTAPIContainer extends BaseRESTAPIContainer implements AppAPIContainer {
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+class AppRESTAPIContainer extends BaseRESTAPIContainer implements AppAPIContainer {
   async getProduct(id: string): Promise<APIProduct | undefined> {
     const response = await this.get<APIProduct>(`products/${id}`)
     return response.data
@@ -52,3 +51,11 @@ export class AppRESTAPIContainer extends BaseRESTAPIContainer implements AppAPIC
     return response.data
   }
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { AppRESTAPIContainer }
