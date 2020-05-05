@@ -36,11 +36,12 @@
         <q-input
           v-show="m_viewType === 'emailChange'"
           ref="emailInput"
-          v-model="m_inputEmail"
+          v-model="m_email"
           type="email"
           name="email"
-          label="Email"
-          :rules="m_emailRules"
+          :label="$t('common.email')"
+          :error="m_emailError"
+          :error-message="m_emailErrorMessage"
           @input="m_clearErrorMessage()"
         >
           <template v-slot:prepend>
@@ -50,16 +51,16 @@
       </q-card-section>
 
       <!-- エラーメッセージ -->
-      <q-card-section v-show="!!m_errorMessage">
+      <q-card-section v-show="Boolean(m_errorMessage)">
         <span class="error-message">{{ m_errorMessage }}</span>
       </q-card-section>
 
       <!-- ボタンエリア -->
       <q-card-section align="right">
         <!-- CANCELボタン -->
-        <q-btn v-show="m_viewType === 'emailChange'" flat rounded color="primary" label="Cancel" @click="close()" />
+        <q-btn v-show="m_viewType === 'emailChange'" flat rounded color="primary" :label="$t('common.cancel')" @click="close()" />
         <!-- NEXTボタン -->
-        <q-btn v-show="m_viewType === 'emailChange'" flat rounded color="primary" label="Next" @click="m_changeEmail()" />
+        <q-btn v-show="m_viewType === 'emailChange'" flat rounded color="primary" :label="$t('common.next')" @click="m_changeEmail()" />
       </q-card-section>
     </q-card>
 
@@ -73,14 +74,14 @@
       <!-- コンテンツエリア -->
       <q-card-section>
         <div>
-          Follow the instructions sent to <span class="emphasis">{{ m_inputEmail }}</span> to verify your email.
+          Follow the instructions sent to <span class="emphasis">{{ m_email }}</span> to verify your email.
         </div>
       </q-card-section>
 
       <!-- ボタンエリア -->
       <q-card-section align="right">
         <!-- CLOSEボタン -->
-        <q-btn flat rounded color="primary" label="Close" @click="close()" />
+        <q-btn flat rounded color="primary" :label="$t('common.close')" @click="close()" />
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -112,11 +113,15 @@ export default class EmailChangeHistoryDialog extends BaseDialog<void, void> {
 
   private m_viewType: 'signIn' | 'emailChange' | 'inVerification' = 'signIn'
 
-  private m_inputEmail = ''
+  private m_email: string | null = null
+
+  private get m_emailError(): boolean {
+    return this.m_validateEmail(this.m_email)
+  }
+
+  private m_emailErrorMessage = ''
 
   private m_errorMessage = ''
-
-  private m_emailRules = [val => !!val || 'Email is a required.', val => (!!val && isEmail(val)) || 'Email is invalid.']
 
   //--------------------------------------------------
   //  Elements
@@ -134,13 +139,12 @@ export default class EmailChangeHistoryDialog extends BaseDialog<void, void> {
   //----------------------------------------------------------------------
 
   open(): Promise<void> {
-    this.m_inputEmail = ''
-    this.m_clearErrorMessage()
     this.m_viewType = 'signIn'
     return this.openProcess()
   }
 
   close(): void {
+    this.m_clear()
     this.closeProcess()
   }
 
@@ -149,6 +153,14 @@ export default class EmailChangeHistoryDialog extends BaseDialog<void, void> {
   //  Internal methods
   //
   //----------------------------------------------------------------------
+
+  /**
+   *  ビューをクリアします。
+   */
+  private m_clear(): void {
+    this.m_email = null
+    this.m_errorMessage = ''
+  }
 
   /**
    * エラーメッセージをクリアします。
@@ -161,14 +173,44 @@ export default class EmailChangeHistoryDialog extends BaseDialog<void, void> {
    * メールアドレスの変更を実行します。
    */
   private async m_changeEmail(): Promise<void> {
-    if (this.m_emailInput.hasError) return
+    this.m_email = this.m_email ?? ''
+    if (this.m_validateEmail(this.m_email)) return
+
     // メールアドレスを変更
     // (変更前のメールアドレスに変更通知のメールが送られる)
-    await this.$logic.auth.updateEmail(this.m_inputEmail)
+    await this.$logic.auth.updateEmail(this.m_email)
     // 変更されたメールアドレスに確認メールを送信
     await this.$logic.auth.sendEmailVerification('http://localhost:5000')
     // 画面をメールアドレス検証中へ変更
     this.m_viewType = 'inVerification'
+  }
+
+  //--------------------------------------------------
+  //  Validation
+  //--------------------------------------------------
+
+  /**
+   * メールアドレスの検証を行います。
+   * @param value
+   */
+  private m_validateEmail(value: string | null): boolean {
+    if (value === null) {
+      return false
+    }
+
+    if (value === '') {
+      const target = String(this.$t('common.email'))
+      this.m_emailErrorMessage = String(this.$t('error.required', { target }))
+      return true
+    }
+
+    if (!isEmail(value)) {
+      const target = String(this.$t('common.email'))
+      this.m_emailErrorMessage = String(this.$t('error.invalid', { target }))
+      return true
+    }
+
+    return false
   }
 
   //----------------------------------------------------------------------

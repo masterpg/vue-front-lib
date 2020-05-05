@@ -12,6 +12,11 @@ export default merge(require('@/lib/lang/en').default, {
     offline: 'No internet connection found. App is running in offline mode.',
     error: 'Error during service worker registration: {error}',
   },
+  auth: {
+    accountCreationFailed: 'Account creation failed.',
+    signInFailed: 'Sign in failed.',
+    troubleSigningIn: 'Trouble signing in?',
+  },
   storage: {
     userRootName: 'Home',
     appRootName: 'Storage',

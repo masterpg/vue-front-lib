@@ -12,6 +12,11 @@ export default merge(require('@/lib/lang/ja').default, {
     offline: 'インターネットの接続がみつかりません。アプリケーションはオフラインモードで実行しています。',
     error: 'Service Worker の登録でエラーが発生しました: {error}',
   },
+  auth: {
+    accountCreationFailed: 'アカウント作成に失敗しました。',
+    signInFailed: 'サインインに失敗しました。',
+    troubleSigningIn: 'サインインできませんか？',
+  },
   storage: {
     userRootName: 'Home',
     appRootName: 'Storage',
