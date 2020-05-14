@@ -19,11 +19,12 @@ function setAPI(value: LibAPIContainer): void {
 //========================================================================
 
 export {
-  APIDocumentData,
+  APIEntity,
   APIStorageNode,
   APIStoragePaginationResult,
+  APITimestampEntity,
   AppConfigResponse,
-  DocumentData,
+  OmitEntityTimestamp,
   LibAPIContainer,
   StorageNode,
   StorageNodeShareSettings,
@@ -31,6 +32,7 @@ export {
   StorageNodeType,
   StoragePaginationOptionsInput,
   StoragePaginationResult,
+  TimestampEntity,
 } from './base'
 export { BaseGQLAPIContainer } from './gql'
 export { BaseRESTAPIContainer } from './rest'

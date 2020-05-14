@@ -1,5 +1,15 @@
-import { APICartItem, APICartItemAddInput, APICartItemEditResponse, APICartItemUpdateInput, APIProduct, AppAPIContainer } from '../base'
-import { BaseRESTAPIContainer } from '@/lib'
+import { APITimestampEntity, BaseRESTAPIContainer, OmitEntityTimestamp } from '@/lib'
+import { AppAPIContainer, CartItem, CartItemAddInput, CartItemEditResponse, CartItemUpdateInput, Product } from '../base'
+
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
+
+interface APIProduct extends OmitEntityTimestamp<Product>, APITimestampEntity {}
+
+interface APICartItem extends OmitEntityTimestamp<CartItem>, APITimestampEntity {}
 
 //========================================================================
 //
@@ -8,38 +18,38 @@ import { BaseRESTAPIContainer } from '@/lib'
 //========================================================================
 
 class AppRESTAPIContainer extends BaseRESTAPIContainer implements AppAPIContainer {
-  async getProduct(id: string): Promise<APIProduct | undefined> {
+  async getProduct(id: string): Promise<Product | undefined> {
     const response = await this.get<APIProduct>(`products/${id}`)
-    return response.data
+    return this.toTimestampEntity(response.data)
   }
 
-  async getProducts(ids?: string[]): Promise<APIProduct[]> {
+  async getProducts(ids?: string[]): Promise<Product[]> {
     const response = await this.get<APIProduct[]>('products')
-    return response.data
+    return this.toTimestampEntities(response.data)
   }
 
-  async getCartItem(id: string): Promise<APICartItem | undefined> {
+  async getCartItem(id: string): Promise<CartItem | undefined> {
     const response = await this.get<APICartItem>(`cartItems/${id}`, { isAuth: true })
-    return response.data
+    return this.toTimestampEntity(response.data)
   }
 
-  async getCartItems(ids?: string[]): Promise<APICartItem[]> {
+  async getCartItems(ids?: string[]): Promise<CartItem[]> {
     const response = await this.get<APICartItem[]>('cartItems', { isAuth: true })
+    return this.toTimestampEntities(response.data)
+  }
+
+  async addCartItems(items: CartItemAddInput[]): Promise<CartItemEditResponse[]> {
+    const response = await this.post<CartItemEditResponse[]>('cartItems', items, { isAuth: true })
     return response.data
   }
 
-  async addCartItems(items: APICartItemAddInput[]): Promise<APICartItemEditResponse[]> {
-    const response = await this.post<APICartItemEditResponse[]>('cartItems', items, { isAuth: true })
+  async updateCartItems(items: CartItemUpdateInput[]): Promise<CartItemEditResponse[]> {
+    const response = await this.put<CartItemEditResponse[]>('cartItems', items, { isAuth: true })
     return response.data
   }
 
-  async updateCartItems(items: APICartItemUpdateInput[]): Promise<APICartItemEditResponse[]> {
-    const response = await this.put<APICartItemEditResponse[]>('cartItems', items, { isAuth: true })
-    return response.data
-  }
-
-  async removeCartItems(cartItemIds: string[]): Promise<APICartItemEditResponse[]> {
-    const response = await this.delete<APICartItemEditResponse[]>('cartItems', {
+  async removeCartItems(cartItemIds: string[]): Promise<CartItemEditResponse[]> {
+    const response = await this.delete<CartItemEditResponse[]>('cartItems', {
       isAuth: true,
       params: { ids: cartItemIds },
     })

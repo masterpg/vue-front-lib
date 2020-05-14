@@ -1,4 +1,4 @@
-import { APIDocumentData, LibAPIContainer } from '@/lib'
+import { LibAPIContainer, TimestampEntity } from '@/lib'
 
 //========================================================================
 //
@@ -7,30 +7,30 @@ import { APIDocumentData, LibAPIContainer } from '@/lib'
 //========================================================================
 
 export interface AppAPIContainer extends LibAPIContainer {
-  getProduct(id: string): Promise<APIProduct | undefined>
+  getProduct(id: string): Promise<Product | undefined>
 
-  getProducts(ids?: string[]): Promise<APIProduct[]>
+  getProducts(ids?: string[]): Promise<Product[]>
 
-  getCartItem(id: string): Promise<APICartItem | undefined>
+  getCartItem(id: string): Promise<CartItem | undefined>
 
-  getCartItems(ids?: string[]): Promise<APICartItem[]>
+  getCartItems(ids?: string[]): Promise<CartItem[]>
 
-  addCartItems(items: APICartItemAddInput[]): Promise<APICartItemEditResponse[]>
+  addCartItems(items: CartItemAddInput[]): Promise<CartItemEditResponse[]>
 
-  updateCartItems(items: { id: string; quantity: number }[]): Promise<APICartItemEditResponse[]>
+  updateCartItems(items: { id: string; quantity: number }[]): Promise<CartItemEditResponse[]>
 
-  removeCartItems(cartItemIds: string[]): Promise<APICartItemEditResponse[]>
+  removeCartItems(cartItemIds: string[]): Promise<CartItemEditResponse[]>
 
   checkoutCart(): Promise<boolean>
 }
 
-export interface APIProduct extends APIDocumentData {
+export interface Product extends TimestampEntity {
   title: string
   price: number
   stock: number
 }
 
-export interface APICartItem extends APIDocumentData {
+export interface CartItem extends TimestampEntity {
   uid: string
   productId: string
   title: string
@@ -38,18 +38,18 @@ export interface APICartItem extends APIDocumentData {
   quantity: number
 }
 
-export interface APICartItemAddInput {
+export interface CartItemAddInput {
   productId: string
   title: string
   price: number
   quantity: number
 }
 
-export interface APICartItemUpdateInput {
+export interface CartItemUpdateInput {
   id: string
   quantity: number
 }
 
-export interface APICartItemEditResponse extends APICartItem {
-  product: Pick<APIProduct, 'id' | 'stock'>
+export interface CartItemEditResponse extends CartItem {
+  product: Pick<Product, 'id' | 'stock'>
 }

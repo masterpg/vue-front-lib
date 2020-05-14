@@ -57,6 +57,5 @@ function initLogic(logicContainer?: LogicContainer): void {
 //
 //========================================================================
 
-export * from './store'
 export * from './modules/shop'
 export { LogicContainerImpl, logic, initLogic }

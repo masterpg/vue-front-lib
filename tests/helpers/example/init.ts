@@ -1,5 +1,5 @@
 import '@/example/quasar'
-import { AppAPIContainer } from '@/example/logic/api'
+import { AppAPIContainer } from '@/example/logic/api/base'
 import { MockLogicContainer } from '../../mocks/example/logic'
 import { initConfig } from '@/example/config'
 import { initExampleTestAPI } from '../../mocks/example/logic/api'

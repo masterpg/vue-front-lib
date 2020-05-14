@@ -1,6 +1,7 @@
-import { AppAPIContainer, initAPI } from '@/example/logic/api'
+import { AppAPIContainer } from '@/example/logic/api/base'
 import { AppGQLAPIContainer } from '@/example/logic/api/gql'
 import { TestGQLAPIContainerMixin } from '../../../common/logic/api'
+import { initAPI } from '@/example/logic/api'
 import { mix } from 'web-base-lib'
 
 //========================================================================

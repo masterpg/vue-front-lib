@@ -1,8 +1,8 @@
-import { Dayjs } from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 
 //========================================================================
 //
-//  API
+//  Interfaces
 //
 //========================================================================
 
@@ -107,19 +107,27 @@ export interface LibAPIContainer {
   ): Promise<StorageNode[]>
 }
 
-//========================================================================
-//
-//  Value objects
-//
-//========================================================================
-
-export interface APIDocumentData {
+export interface APIEntity {
   id: string
 }
 
-export interface DocumentData {
+export interface APITimestampEntity {
+  id: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Entity {
   id: string
 }
+
+export interface TimestampEntity {
+  id: string
+  createdAt: Dayjs
+  updatedAt: Dayjs
+}
+
+export type OmitEntityTimestamp<T> = Omit<T, 'createdAt' | 'updatedAt'>
 
 export interface AppConfigResponse {
   usersDir: string
@@ -177,4 +185,23 @@ export interface StoragePaginationResult {
 export enum StorageNodeType {
   File = 'File',
   Dir = 'Dir',
+}
+
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+export function toTimestampEntity<T extends APITimestampEntity>(entity: T): OmitEntityTimestamp<T> & TimestampEntity {
+  const { createdAt, updatedAt, ...otherEntity } = entity
+  return {
+    ...otherEntity,
+    createdAt: dayjs(createdAt),
+    updatedAt: dayjs(updatedAt),
+  }
+}
+
+export function toTimestampEntities<T extends APITimestampEntity>(entities: T[]): (OmitEntityTimestamp<T> & TimestampEntity)[] {
+  return entities.map(entity => toTimestampEntity(entity))
 }

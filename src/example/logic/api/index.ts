@@ -48,5 +48,5 @@ function setAPIType(value: 'gql' | 'rest') {
 //
 //========================================================================
 
-export * from './base'
 export { api, initAPI, getAPIType, setAPIType }
+export { CartItem, CartItemAddInput, CartItemEditResponse, CartItemUpdateInput, Product } from './base'

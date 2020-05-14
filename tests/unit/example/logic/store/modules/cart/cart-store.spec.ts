@@ -1,6 +1,8 @@
-import { CartItem, CartState, CartStore, CheckoutStatus, store } from '@/example/logic/store'
+import { CartItem, CheckoutStatus } from '@/example/logic'
+import { CartState, CartStore, store } from '@/example/logic/store'
 import { TestStore } from '../../../../../../helpers/common/store'
 import { cloneDeep } from 'lodash'
+import dayjs from 'dayjs'
 import { initExampleTest } from '../../../../../../helpers/example/init'
 
 //========================================================================
@@ -17,6 +19,8 @@ const CART_ITEMS: CartItem[] = [
     title: 'iPad 4 Mini',
     price: 500.01,
     quantity: 1,
+    createdAt: dayjs('2020-01-10'),
+    updatedAt: dayjs('2020-01-02'),
   },
   {
     id: 'cartItem2',
@@ -25,6 +29,8 @@ const CART_ITEMS: CartItem[] = [
     title: 'Fire HD 8 Tablet',
     price: 80.99,
     quantity: 2,
+    createdAt: dayjs('2020-01-10'),
+    updatedAt: dayjs('2020-01-02'),
   },
 ]
 

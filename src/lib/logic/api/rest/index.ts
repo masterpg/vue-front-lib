@@ -5,6 +5,8 @@ import {
   StorageNodeShareSettingsInput,
   StoragePaginationOptionsInput,
   StoragePaginationResult,
+  toTimestampEntities as _toTimestampEntities,
+  toTimestampEntity as _toTimestampEntity,
 } from '../base'
 import { BaseRESTClient } from './base'
 
@@ -15,6 +17,12 @@ import { BaseRESTClient } from './base'
 //========================================================================
 
 abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPIContainer {
+  //----------------------------------------------------------------------
+  //
+  //  Methods
+  //
+  //----------------------------------------------------------------------
+
   async getAppConfig(): Promise<AppConfigResponse> {
     throw new Error(`This method 'getAppConfig' is not implemented.`)
   }
@@ -182,6 +190,16 @@ abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPICont
   ): Promise<StorageNode[]> {
     throw new Error(`This method 'callStoragePaginationAPI' is not implemented.`)
   }
+
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
+
+  protected readonly toTimestampEntity = _toTimestampEntity
+
+  protected readonly toTimestampEntities = _toTimestampEntities
 }
 
 //========================================================================

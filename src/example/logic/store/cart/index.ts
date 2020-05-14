@@ -1,5 +1,7 @@
-import { BaseStore, DocumentData, NoCache, StatePartial } from '@/lib'
+import { BaseStore, NoCache, StatePartial } from '@/lib'
+import { CartItem } from '../../api'
 import { Component } from 'vue-property-decorator'
+import dayjs from 'dayjs'
 
 //========================================================================
 //
@@ -29,14 +31,6 @@ interface CartStore {
   remove(id: string): CartItem | undefined
 
   clear(): void
-}
-
-interface CartItem extends DocumentData {
-  uid: string
-  productId: string
-  title: string
-  price: number
-  quantity: number
 }
 
 interface CartState {
@@ -171,6 +165,8 @@ class CartStoreImpl extends BaseStore<CartState> implements CartStore {
       title: value.title,
       price: value.price,
       quantity: value.quantity,
+      createdAt: dayjs(value.createdAt),
+      updatedAt: dayjs(value.updatedAt),
     }
   }
 
@@ -191,4 +187,4 @@ class CartStoreImpl extends BaseStore<CartState> implements CartStore {
 //
 //========================================================================
 
-export { CartStore, CartItem, CartState, CheckoutStatus, CartModuleErrorType, CartStoreImpl }
+export { CartStore, CartState, CheckoutStatus, CartModuleErrorType, CartStoreImpl }

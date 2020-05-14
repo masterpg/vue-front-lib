@@ -1,7 +1,9 @@
-import { Product, ProductState, ProductStore, ProductsErrorType, store } from '@/example/logic/store'
+import { ProductState, ProductStore, ProductsErrorType, store } from '@/example/logic/store'
+import { Product } from '@/example/logic'
 import { StoreError } from '@/lib'
 import { TestStore } from '../../../../../../helpers/common/store'
 import { cloneDeep } from 'lodash'
+import dayjs from 'dayjs'
 import { initExampleTest } from '../../../../../../helpers/example/init'
 
 //========================================================================
@@ -11,9 +13,9 @@ import { initExampleTest } from '../../../../../../helpers/example/init'
 //========================================================================
 
 const PRODUCTS: Product[] = [
-  { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 1 },
-  { id: 'product2', title: 'Fire HD 8 Tablet', price: 80.99, stock: 5 },
-  { id: 'product3', title: 'MediaPad T5 10', price: 150.8, stock: 10 },
+  { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 1, createdAt: dayjs('2020-01-10'), updatedAt: dayjs('2020-01-02') },
+  { id: 'product2', title: 'Fire HD 8 Tablet', price: 80.99, stock: 5, createdAt: dayjs('2020-01-10'), updatedAt: dayjs('2020-01-02') },
+  { id: 'product3', title: 'MediaPad T5 10', price: 150.8, stock: 10, createdAt: dayjs('2020-01-10'), updatedAt: dayjs('2020-01-02') },
 ]
 
 //========================================================================

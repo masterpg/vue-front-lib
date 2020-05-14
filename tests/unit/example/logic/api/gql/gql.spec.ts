@@ -1,6 +1,9 @@
-import { APICartItem, APICartItemAddInput, APICartItemEditResponse, APIProduct } from '@/example/logic/api'
+import { APICartItem, APIProduct } from '@/example/logic/api/gql'
+import { CartItem, Product } from '@/example/logic'
+import { CartItemAddInput, CartItemEditResponse, CartItemUpdateInput } from '@/example/logic/api'
 import { TestAppAPIContainer } from '../../../../../mocks/example/logic/api'
 import { cloneDeep } from 'lodash'
+import dayjs from 'dayjs'
 import { initExampleTest } from '../../../../../helpers/example/init'
 
 //========================================================================
@@ -11,13 +14,22 @@ import { initExampleTest } from '../../../../../helpers/example/init'
 
 const GENERAL_USER = { uid: 'general.user', myDirName: 'general.user' }
 
-const PRODUCTS: APIProduct[] = [
-  { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 3 },
-  { id: 'product2', title: 'Fire HD 8 Tablet', price: 80.99, stock: 5 },
-  { id: 'product3', title: 'MediaPad T5 10', price: 150.8, stock: 10 },
+const API_PRODUCTS: APIProduct[] = [
+  { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 3, createdAt: '2020-01-01', updatedAt: '2020-01-02' },
+  { id: 'product2', title: 'Fire HD 8 Tablet', price: 80.99, stock: 5, createdAt: '2020-01-01', updatedAt: '2020-01-02' },
+  { id: 'product3', title: 'MediaPad T5 10', price: 150.8, stock: 10, createdAt: '2020-01-01', updatedAt: '2020-01-02' },
 ]
 
-const CART_ITEMS: APICartItem[] = [
+const PRODUCTS: Product[] = API_PRODUCTS.map(apiProduct => {
+  const { createdAt, updatedAt, ...body } = apiProduct
+  return {
+    ...body,
+    createdAt: dayjs(createdAt),
+    updatedAt: dayjs(updatedAt),
+  }
+})
+
+const API_CART_ITEMS: APICartItem[] = [
   {
     id: 'cartItem1',
     uid: GENERAL_USER.uid,
@@ -25,6 +37,8 @@ const CART_ITEMS: APICartItem[] = [
     title: 'iPad 4 Mini',
     price: 500.01,
     quantity: 1,
+    createdAt: '2020-01-01',
+    updatedAt: '2020-01-02',
   },
   {
     id: 'cartItem2',
@@ -33,8 +47,19 @@ const CART_ITEMS: APICartItem[] = [
     title: 'Fire HD 8 Tablet',
     price: 80.99,
     quantity: 2,
+    createdAt: '2020-01-01',
+    updatedAt: '2020-01-02',
   },
 ]
+
+const CART_ITEMS: CartItem[] = API_CART_ITEMS.map(apiCartItem => {
+  const { createdAt, updatedAt, ...body } = apiCartItem
+  return {
+    ...body,
+    createdAt: dayjs(createdAt),
+    updatedAt: dayjs(updatedAt),
+  }
+})
 
 //========================================================================
 //
@@ -66,7 +91,7 @@ beforeEach(async () => {
 describe('Product API', () => {
   describe('getProduct', () => {
     it('疎通確認', async () => {
-      await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }])
+      await api.putTestData([{ collectionName: 'products', collectionRecords: API_PRODUCTS }])
       const product = PRODUCTS[0]
 
       const actual = await api.getProduct(product.id)
@@ -75,7 +100,7 @@ describe('Product API', () => {
     })
 
     it('存在しない商品IDを指定した場合', async () => {
-      await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }])
+      await api.putTestData([{ collectionName: 'products', collectionRecords: API_PRODUCTS }])
       const actual = await api.getProduct('productXXX')
 
       expect(actual).toBeUndefined()
@@ -84,7 +109,7 @@ describe('Product API', () => {
 
   describe('getProducts', () => {
     it('疎通確認', async () => {
-      await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }])
+      await api.putTestData([{ collectionName: 'products', collectionRecords: API_PRODUCTS }])
       const ids = [PRODUCTS[0].id, PRODUCTS[1].id]
 
       const actual = await api.getProducts(ids)
@@ -93,7 +118,7 @@ describe('Product API', () => {
     })
 
     it('存在しない商品IDを指定した場合', async () => {
-      await api.putTestData([{ collectionName: 'products', collectionRecords: PRODUCTS }])
+      await api.putTestData([{ collectionName: 'products', collectionRecords: API_PRODUCTS }])
       const ids = ['productXXX', 'productYYY']
 
       const actual = await api.getProducts(ids)
@@ -108,8 +133,8 @@ describe('Cart API', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.putTestData([
-        { collectionName: 'products', collectionRecords: PRODUCTS },
-        { collectionName: 'cart', collectionRecords: CART_ITEMS },
+        { collectionName: 'products', collectionRecords: API_PRODUCTS },
+        { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
       ])
       const cartItem = CART_ITEMS[0]
 
@@ -121,8 +146,8 @@ describe('Cart API', () => {
     it('存在しないカートアイテムIDを指定した場合', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.putTestData([
-        { collectionName: 'products', collectionRecords: PRODUCTS },
-        { collectionName: 'cart', collectionRecords: CART_ITEMS },
+        { collectionName: 'products', collectionRecords: API_PRODUCTS },
+        { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
       ])
       const actual = await api.getCartItem('cartItemXXX')
 
@@ -147,8 +172,8 @@ describe('Cart API', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.putTestData([
-        { collectionName: 'products', collectionRecords: PRODUCTS },
-        { collectionName: 'cart', collectionRecords: CART_ITEMS },
+        { collectionName: 'products', collectionRecords: API_PRODUCTS },
+        { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
       ])
       const ids = [CART_ITEMS[0].id, CART_ITEMS[1].id]
 
@@ -160,8 +185,8 @@ describe('Cart API', () => {
     it('存在しない商品IDを指定した場合', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.putTestData([
-        { collectionName: 'products', collectionRecords: PRODUCTS },
-        { collectionName: 'cart', collectionRecords: CART_ITEMS },
+        { collectionName: 'products', collectionRecords: API_PRODUCTS },
+        { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
       ])
       const ids = ['cartItemXXX', 'cartItemYYY']
 
@@ -186,15 +211,14 @@ describe('Cart API', () => {
 
   describe('addCartItems', () => {
     const ADD_CART_ITEMS = cloneDeep(CART_ITEMS).map(item => {
-      delete item.id
-      delete item.uid
-      return item
-    }) as APICartItemAddInput[]
+      const { id, uid, createdAt, updatedAt, ...body } = item
+      return body
+    }) as CartItemAddInput[]
 
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.putTestData([
-        { collectionName: 'products', collectionRecords: PRODUCTS },
+        { collectionName: 'products', collectionRecords: API_PRODUCTS },
         { collectionName: 'cart', collectionRecords: [] },
       ])
       const addItems = cloneDeep(ADD_CART_ITEMS)
@@ -207,7 +231,7 @@ describe('Cart API', () => {
             stock: product.stock - addItem.quantity,
           },
         }
-      }) as APICartItemEditResponse[]
+      }) as CartItemEditResponse[]
 
       const actual = await api.addCartItems(addItems)
 
@@ -221,7 +245,7 @@ describe('Cart API', () => {
     })
 
     it('サインインしていない場合', async () => {
-      const addItems = cloneDeep(ADD_CART_ITEMS) as APICartItemAddInput[]
+      const addItems = cloneDeep(ADD_CART_ITEMS) as CartItemAddInput[]
 
       let actual!: Error
       try {
@@ -238,15 +262,16 @@ describe('Cart API', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.putTestData([
-        { collectionName: 'products', collectionRecords: PRODUCTS },
-        { collectionName: 'cart', collectionRecords: CART_ITEMS },
+        { collectionName: 'products', collectionRecords: API_PRODUCTS },
+        { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
       ])
       const updateItems = CART_ITEMS.map(item => {
         return { ...item, quantity: item.quantity + 1 }
       })
       const expectedItems = updateItems.map(item => {
         const product = PRODUCTS.find(product => product.id === item.productId)!
-        return { ...item, product: { id: product.id, stock: product.stock - 1 } }
+        const { createdAt, updatedAt, ...itemBody } = item
+        return { ...itemBody, product: { id: product.id, stock: product.stock - 1 } }
       })
 
       const actual = await api.updateCartItems(updateItems)
@@ -258,7 +283,7 @@ describe('Cart API', () => {
     })
 
     it('サインインしていない場合', async () => {
-      const updateItems = cloneDeep(CART_ITEMS) as APICartItem[]
+      const updateItems = cloneDeep(CART_ITEMS) as CartItemUpdateInput[]
 
       let actual!: Error
       try {
@@ -275,15 +300,16 @@ describe('Cart API', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.putTestData([
-        { collectionName: 'products', collectionRecords: PRODUCTS },
-        { collectionName: 'cart', collectionRecords: CART_ITEMS },
+        { collectionName: 'products', collectionRecords: API_PRODUCTS },
+        { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
       ])
       const removeIds = CART_ITEMS.map(item => item.id) as string[]
       const expectedItems = removeIds.map(id => {
         const cartItem = CART_ITEMS.find(item => item.id === id)!
         const product = PRODUCTS.find(product => product.id === cartItem.productId)!
+        const { createdAt, updatedAt, ...cartItemBody } = cartItem
         return {
-          ...cartItem,
+          ...cartItemBody,
           quantity: 0,
           product: {
             id: product.id,
@@ -318,8 +344,8 @@ describe('Cart API', () => {
     it('ベーシックケース', async () => {
       api.setTestAuthUser(GENERAL_USER)
       await api.putTestData([
-        { collectionName: 'products', collectionRecords: PRODUCTS },
-        { collectionName: 'cart', collectionRecords: CART_ITEMS },
+        { collectionName: 'products', collectionRecords: API_PRODUCTS },
+        { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
       ])
 
       const actual = await api.checkoutCart()

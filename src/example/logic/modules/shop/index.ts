@@ -1,6 +1,6 @@
-import { APICartItem, APICartItemEditResponse, APIProduct, api } from '../../api'
 import { BaseLogic, User } from '@/lib'
-import { CartItem, CheckoutStatus, Product, store } from '../../store'
+import { CartItem, CartItemEditResponse, Product, api } from '../../api'
+import { CheckoutStatus, store } from '../../store'
 import { Component } from 'vue-property-decorator'
 import cloneDeep from 'lodash/cloneDeep'
 
@@ -94,7 +94,7 @@ class ShopLogicImpl extends BaseLogic implements ShopLogic {
   //----------------------------------------------------------------------
 
   async pullProducts(): Promise<void> {
-    let products: APIProduct[]
+    let products: Product[]
     try {
       products = await api.getProducts()
     } catch (err) {
@@ -107,7 +107,7 @@ class ShopLogicImpl extends BaseLogic implements ShopLogic {
   async pullCartItems(): Promise<void> {
     this.m_checkSignedIn()
 
-    let items: APICartItem[]
+    let items: CartItem[]
     try {
       items = await api.getCartItems()
     } catch (err) {
@@ -122,7 +122,7 @@ class ShopLogicImpl extends BaseLogic implements ShopLogic {
 
     const cartItem = store.cart.getByProductId(productId)
 
-    let response: APICartItemEditResponse
+    let response: CartItemEditResponse
     try {
       if (!cartItem) {
         response = await this.m_addCartItem(productId)
@@ -143,7 +143,7 @@ class ShopLogicImpl extends BaseLogic implements ShopLogic {
 
     const cartItem = this.m_getCartItemByProductId(productId)
 
-    let response: APICartItemEditResponse
+    let response: CartItemEditResponse
     try {
       if (cartItem.quantity > 1) {
         response = await this.m_updateCartItem(productId, -1)
@@ -180,7 +180,7 @@ class ShopLogicImpl extends BaseLogic implements ShopLogic {
   //
   //----------------------------------------------------------------------
 
-  private async m_addCartItem(productId: string): Promise<APICartItemEditResponse> {
+  private async m_addCartItem(productId: string): Promise<CartItemEditResponse> {
     const product = store.product.getById(productId)!
     const newCartItem = {
       productId,
@@ -193,7 +193,7 @@ class ShopLogicImpl extends BaseLogic implements ShopLogic {
     return response
   }
 
-  private async m_updateCartItem(productId: string, quantity: number): Promise<APICartItemEditResponse> {
+  private async m_updateCartItem(productId: string, quantity: number): Promise<CartItemEditResponse> {
     const cartItem = this.m_getCartItemByProductId(productId)
     const newCartItem = {
       id: cartItem.id,
@@ -204,7 +204,7 @@ class ShopLogicImpl extends BaseLogic implements ShopLogic {
     return response
   }
 
-  private async m_removeCartItem(productId: string): Promise<APICartItemEditResponse> {
+  private async m_removeCartItem(productId: string): Promise<CartItemEditResponse> {
     const cartItem = this.m_getCartItemByProductId(productId)
     const response = (await api.removeCartItems([cartItem.id]))[0]
     store.cart.remove(response.id)
@@ -251,3 +251,5 @@ class ShopLogicImpl extends BaseLogic implements ShopLogic {
 //========================================================================
 
 export { ShopLogic, ShopLogicImpl }
+export { CartItem, Product } from '../../api'
+export { CheckoutStatus } from '../../store'

@@ -1,5 +1,7 @@
-import { BaseStore, DocumentData, NoCache, StatePartial, StoreError } from '@/lib'
+import { BaseStore, NoCache, StatePartial, StoreError } from '@/lib'
 import { Component } from 'vue-property-decorator'
+import { Product } from '../../api'
+import dayjs from 'dayjs'
 
 //========================================================================
 //
@@ -25,12 +27,6 @@ interface ProductStore {
 
 interface ProductState {
   all: Product[]
-}
-
-interface Product extends DocumentData {
-  title: string
-  price: number
-  stock: number
 }
 
 enum ProductsErrorType {
@@ -83,6 +79,8 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
       title: value.title,
       price: value.price,
       stock: value.stock,
+      createdAt: dayjs(value.createdAt),
+      updatedAt: dayjs(value.updatedAt),
     }
   }
 
@@ -148,4 +146,4 @@ class ProductStoreImpl extends BaseStore<ProductState> implements ProductStore {
 //
 //========================================================================
 
-export { ProductStore, ProductState, Product, ProductStoreImpl, ProductsErrorType }
+export { ProductStore, ProductState, ProductStoreImpl, ProductsErrorType }
