@@ -7,10 +7,11 @@
     "build": "vue-cli-service build --mode production",
     "serve": "vue-cli-service serve --mode development",
     "serve:stg": "vue-cli-service serve --mode staging",
-    "test:unit": "vue-cli-service test:unit",
+    "test:unit": "export FIRESTORE_EMULATOR_HOST=localhost:5020 && vue-cli-service test:unit",
     "test:e2e": "testcafe chrome:headless tests/e2e/**/*.test.ts -S -s screenshots --hostname localhost",
     "lint": "./node_modules/web-base-lib/tools/lint.sh",
-    "deploy": "firebase deploy --only hosting,storage"
+    "deploy": "firebase deploy --only hosting,storage",
+    "emulators:firestore": "firebase emulators:start --only firestore"
   },
   "dependencies": {
     "@quasar/extras": "^1.7.0",
@@ -58,6 +59,7 @@
     "web-base-lib": "https://github.com/masterpg/web-base-lib.git"
   },
   "devDependencies": {
+    "@firebase/testing": "^0.19.3",
     "@kazupon/vue-i18n-loader": "^0.4.1",
     "@types/animejs": "^3.1.0",
     "@types/jest": "^24.0.19",
