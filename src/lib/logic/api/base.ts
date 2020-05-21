@@ -1,4 +1,5 @@
 import dayjs, { Dayjs } from 'dayjs'
+import { OmitEntityTimestamp } from '@/firestore-ex'
 
 //========================================================================
 //
@@ -127,7 +128,20 @@ export interface TimestampEntity {
   updatedAt: Dayjs
 }
 
-export type OmitEntityTimestamp<T> = Omit<T, 'createdAt' | 'updatedAt'>
+export interface UserClaims {
+  isAppAdmin?: boolean
+  myDirName?: string
+}
+
+export interface UserIdClaims extends UserClaims {
+  uid: string
+}
+
+export interface IdToken extends firebase.auth.IdTokenResult, UserClaims {}
+
+//--------------------------------------------------
+//  Foundation
+//--------------------------------------------------
 
 export interface AppConfigResponse {
   usersDir: string

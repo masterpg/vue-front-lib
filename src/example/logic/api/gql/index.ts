@@ -1,5 +1,6 @@
-import { APITimestampEntity, BaseGQLAPIContainer, OmitEntityTimestamp } from '@/lib'
+import { APITimestampEntity, BaseGQLAPIContainer } from '@/lib'
 import { AppAPIContainer, CartItem, CartItemAddInput, CartItemEditResponse, CartItemUpdateInput, Product } from '../base'
+import { OmitEntityTimestamp } from '@/firestore-ex'
 import gql from 'graphql-tag'
 
 //========================================================================

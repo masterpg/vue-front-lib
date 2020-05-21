@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { BaseGQLAPIContainer, LibAPIContainer } from '@/lib'
+import { BaseGQLAPIContainer, LibAPIContainer, UserClaims } from '@/lib'
 import { Constructor } from 'web-base-lib'
 import axios from 'axios'
 import { config } from '@/lib/config'
@@ -11,10 +11,9 @@ import gql from 'graphql-tag'
 //
 //========================================================================
 
-interface AuthUser {
+interface TestAuthUser {
   uid: string
   myDirName: string
-  email?: string
   isAppAdmin?: boolean
 }
 
@@ -29,17 +28,28 @@ interface UploadFileItem {
   contentType: string
 }
 
+interface TestFirebaseUserInput {
+  uid: string
+  email?: string
+  emailVerified?: boolean
+  password?: string
+  displayName?: string
+  disabled?: boolean
+  customClaims?: UserClaims
+}
+
 interface TestAPIContainer extends LibAPIContainer {
-  setTestAuthUser(user: AuthUser): void
+  setTestAuthUser(user: TestAuthUser): void
   clearTestAuthUser(): void
-  putTestData(inputs: CollectionData[]): Promise<void>
-  uploadUserTestFiles(user: AuthUser, uploadList: UploadFileItem[])
+  putTestStoreData(inputs: CollectionData[]): Promise<void>
+  uploadTestUserFiles(user: TestAuthUser, uploadList: UploadFileItem[])
   uploadTestFiles(uploadList: UploadFileItem[])
-  removeUserBaseTestDir(user: AuthUser): Promise<void>
-  removeUserTestDir(user: AuthUser, dirPaths: string[]): Promise<void>
-  removeUserTestFiles(user: AuthUser, filePaths: string[]): Promise<void>
+  removeUserBaseTestDir(user: TestAuthUser): Promise<void>
+  removeUserTestDir(user: TestAuthUser, dirPaths: string[]): Promise<void>
+  removeUserTestFiles(user: TestAuthUser, filePaths: string[]): Promise<void>
   removeTestDir(dirPaths: string[]): Promise<void>
   removeTestFiles(filePaths: string[]): Promise<void>
+  setTestFirebaseUsers(...users: TestFirebaseUserInput[]): Promise<void>
 }
 
 //========================================================================
@@ -65,7 +75,7 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
       return ''
     }
 
-    private m_user?: AuthUser
+    private m_user?: TestAuthUser
 
     //----------------------------------------------------------------------
     //
@@ -73,7 +83,7 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
     //
     //----------------------------------------------------------------------
 
-    setTestAuthUser(user: AuthUser): void {
+    setTestAuthUser(user: TestAuthUser): void {
       this.m_user = user
     }
 
@@ -81,18 +91,18 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
       this.m_user = undefined
     }
 
-    async putTestData(inputs: CollectionData[]): Promise<void> {
-      await this.mutate<{ data: boolean }>({
+    async putTestStoreData(inputs: CollectionData[]): Promise<void> {
+      await this.mutate<{ putTestStoreData: boolean }>({
         mutation: gql`
-          mutation PutTestData($inputs: [PutTestDataInput!]!) {
-            putTestData(inputs: $inputs)
+          mutation PutTestStoreData($inputs: [PutTestStoreDataInput!]!) {
+            putTestStoreData(inputs: $inputs)
           }
         `,
         variables: { inputs },
       })
     }
 
-    async uploadUserTestFiles(user: AuthUser, uploadList: UploadFileItem[]): Promise<void> {
+    async uploadTestUserFiles(user: TestAuthUser, uploadList: UploadFileItem[]): Promise<void> {
       await this.uploadTestFiles(
         uploadList.map(uploadItem => {
           uploadItem.filePath = path.join(this.m_toUserStorageBasePath(user), uploadItem.filePath)
@@ -132,11 +142,11 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
       this.m_user = userBackup
     }
 
-    async removeUserBaseTestDir(user: AuthUser): Promise<void> {
+    async removeUserBaseTestDir(user: TestAuthUser): Promise<void> {
       await this.removeTestDir([this.m_toUserStorageBasePath(user)])
     }
 
-    async removeUserTestDir(user: AuthUser, dirPaths: string[]): Promise<void> {
+    async removeUserTestDir(user: TestAuthUser, dirPaths: string[]): Promise<void> {
       await this.removeTestDir(
         dirPaths.map(dirPath => {
           return path.join(this.m_toUserStorageBasePath(user), dirPath)
@@ -144,7 +154,7 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
       )
     }
 
-    async removeUserTestFiles(user: AuthUser, filePaths: string[]): Promise<void> {
+    async removeUserTestFiles(user: TestAuthUser, filePaths: string[]): Promise<void> {
       await this.removeTestFiles(
         filePaths.map(filePath => {
           return path.join(this.m_toUserStorageBasePath(user), filePath)
@@ -174,13 +184,24 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
       this.m_user = userBackup
     }
 
+    async setTestFirebaseUsers(...users: TestFirebaseUserInput[]): Promise<void> {
+      await this.mutate<{ setTestFirebaseUsers: boolean }>({
+        mutation: gql`
+          mutation SetTestFirebaseUsers($users: [TestFirebaseUserInput!]!) {
+            setTestFirebaseUsers(users: $users)
+          }
+        `,
+        variables: { users },
+      })
+    }
+
     //----------------------------------------------------------------------
     //
     //  Internal methods
     //
     //----------------------------------------------------------------------
 
-    private m_toUserStorageBasePath(user: AuthUser): string {
+    private m_toUserStorageBasePath(user: TestAuthUser): string {
       return path.join(config.storage.usersDir, user.myDirName)
     }
 
@@ -212,4 +233,4 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
 //
 //========================================================================
 
-export { AuthUser, CollectionData, UploadFileItem, TestAPIContainer, TestGQLAPIContainerMixin }
+export { TestAuthUser, CollectionData, TestAPIContainer, TestFirebaseUserInput, TestGQLAPIContainerMixin, UploadFileItem }

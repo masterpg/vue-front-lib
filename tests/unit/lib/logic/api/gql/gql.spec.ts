@@ -1,3 +1,4 @@
+import { APP_ADMIN_USER, GENERAL_USER } from '../../../../../helpers/common/data'
 import { StorageNodeShareSettings } from '@/lib'
 import { TestLibAPIContainer } from '../../../../../mocks/lib/logic/api'
 import { initLibTest } from '../../../../../helpers/lib/init'
@@ -8,10 +9,6 @@ import { isEmpty } from 'lodash'
 //  Test data
 //
 //========================================================================
-
-const GENERAL_USER = { uid: 'general.user', myDirName: 'general.user' }
-
-const APP_ADMIN_USER = { uid: 'app.admin.user', myDirName: 'app.admin.user', isAppAdmin: true }
 
 const TEST_FILES_DIR = 'test-files'
 
@@ -61,8 +58,6 @@ describe('App API', () => {
 })
 
 describe('Storage API', () => {
-  let userStorageBasePath!: string
-
   beforeEach(async () => {
     await api.removeUserBaseTestDir(GENERAL_USER)
     await api.removeTestDir([TEST_FILES_DIR])
@@ -77,7 +72,7 @@ describe('Storage API', () => {
 
   describe('getUserStorageNode', () => {
     beforeEach(async () => {
-      await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/d11/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/d11/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
     })
 
     it('疎通確認 - 対象ノードあり', async () => {
@@ -99,7 +94,7 @@ describe('Storage API', () => {
 
   describe('getUserStorageDirDescendants', () => {
     beforeEach(async () => {
-      await api.uploadUserTestFiles(GENERAL_USER, [
+      await api.uploadTestUserFiles(GENERAL_USER, [
         { filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/d11/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/d11/d111/fileC.txt`, fileData: 'test', contentType: 'text/plain' },
@@ -138,7 +133,7 @@ describe('Storage API', () => {
 
   describe('getUserStorageDescendants', () => {
     beforeEach(async () => {
-      await api.uploadUserTestFiles(GENERAL_USER, [
+      await api.uploadTestUserFiles(GENERAL_USER, [
         { filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/d11/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/d11/d111/fileC.txt`, fileData: 'test', contentType: 'text/plain' },
@@ -175,7 +170,7 @@ describe('Storage API', () => {
 
   describe('getUserStorageDirChildren', () => {
     beforeEach(async () => {
-      await api.uploadUserTestFiles(GENERAL_USER, [
+      await api.uploadTestUserFiles(GENERAL_USER, [
         { filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/d11/fileC.txt`, fileData: 'test', contentType: 'text/plain' },
@@ -210,7 +205,7 @@ describe('Storage API', () => {
 
   describe('getUserStorageChildren', () => {
     beforeEach(async () => {
-      await api.uploadUserTestFiles(GENERAL_USER, [
+      await api.uploadTestUserFiles(GENERAL_USER, [
         { filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/d11/fileC.txt`, fileData: 'test', contentType: 'text/plain' },
@@ -243,7 +238,7 @@ describe('Storage API', () => {
 
   describe('getUserStorageHierarchicalNodes', () => {
     beforeEach(async () => {
-      await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
     })
 
     it('疎通確認', async () => {
@@ -261,7 +256,7 @@ describe('Storage API', () => {
 
   describe('getUserStorageAncestorDirs', () => {
     beforeEach(async () => {
-      await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
     })
 
     it('疎通確認', async () => {
@@ -281,7 +276,7 @@ describe('Storage API', () => {
       api.setTestAuthUser(GENERAL_USER)
 
       await api.createUserStorageDirs([`docs`])
-      await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.handleUploadedUserFile(`docs/fileA.txt`)
 
@@ -305,7 +300,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングなし', async () => {
       api.setTestAuthUser(GENERAL_USER)
 
-      await api.uploadUserTestFiles(GENERAL_USER, [
+      await api.uploadTestUserFiles(GENERAL_USER, [
         { filePath: `d1/file1.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/file2.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/file3.txt`, fileData: 'test', contentType: 'text/plain' },
@@ -327,7 +322,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthUser(GENERAL_USER)
 
-      await api.uploadUserTestFiles(GENERAL_USER, [
+      await api.uploadTestUserFiles(GENERAL_USER, [
         { filePath: `d1/file1.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/file2.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/file3.txt`, fileData: 'test', contentType: 'text/plain' },
@@ -351,7 +346,7 @@ describe('Storage API', () => {
     it('疎通確認', async () => {
       api.setTestAuthUser(GENERAL_USER)
 
-      await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = (await api.removeUserStorageFile(`d1/fileA.txt`))!
 
@@ -398,7 +393,7 @@ describe('Storage API', () => {
       api.setTestAuthUser(GENERAL_USER)
 
       await api.createUserStorageDirs([`d1`, `d2`])
-      await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.moveUserStorageFile(`d1/fileA.txt`, `d2/fileA.txt`)
 
@@ -445,7 +440,7 @@ describe('Storage API', () => {
       api.setTestAuthUser(GENERAL_USER)
 
       await api.createUserStorageDirs([`d1`])
-      await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.renameUserStorageFile(`d1/fileA.txt`, `fileB.txt`)
 
@@ -458,7 +453,7 @@ describe('Storage API', () => {
       api.setTestAuthUser(GENERAL_USER)
 
       await api.createUserStorageDirs([`d1`])
-      await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.setUserStorageDirShareSettings(`d1`, { isPublic: true, readUIds: ['ichiro'], writeUIds: ['ichiro'] })
 
@@ -472,7 +467,7 @@ describe('Storage API', () => {
       api.setTestAuthUser(GENERAL_USER)
 
       await api.createUserStorageDirs([`d1`])
-      await api.uploadUserTestFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.setUserStorageFileShareSettings(`d1/fileA.txt`, { isPublic: true, readUIds: ['ichiro'], writeUIds: ['ichiro'] })
 

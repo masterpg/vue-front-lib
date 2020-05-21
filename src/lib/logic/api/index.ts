@@ -24,7 +24,7 @@ export {
   APIStoragePaginationResult,
   APITimestampEntity,
   AppConfigResponse,
-  OmitEntityTimestamp,
+  IdToken,
   LibAPIContainer,
   StorageNode,
   StorageNodeShareSettings,
@@ -33,6 +33,8 @@ export {
   StoragePaginationOptionsInput,
   StoragePaginationResult,
   TimestampEntity,
+  UserClaims,
+  UserIdClaims,
 } from './base'
 export { BaseGQLAPIContainer } from './gql'
 export { BaseRESTAPIContainer } from './rest'

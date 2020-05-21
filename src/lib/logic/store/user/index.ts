@@ -1,5 +1,6 @@
 import { BaseStore } from '../base'
 import { Component } from 'vue-property-decorator'
+import { UserClaims } from '../../api'
 import isBoolean from 'lodash/isBoolean'
 import isString from 'lodash/isString'
 
@@ -19,15 +20,13 @@ interface UserStore extends User {
   reflectCustomToken(): Promise<void>
 }
 
-interface User {
+interface User extends Required<UserClaims> {
   id: string
   isSignedIn: boolean
   displayName: string
   photoURL: string
   email: string
   emailVerified: boolean
-  isAppAdmin: boolean
-  myDirName: string
   /**
    * セキュリティ安全なアプリケーション管理者フラグを取得します。
    * `isAppAdmin`でも同様の値を取得できますが、このプロパティは
@@ -147,7 +146,7 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
 
   async reflectCustomToken(): Promise<void> {
     const idToken = await firebase.auth().currentUser!.getIdTokenResult()
-    const { isAppAdmin, myDirName } = idToken.claims as Partial<User>
+    const { isAppAdmin, myDirName } = idToken.claims as UserClaims
     this.set({ isAppAdmin, myDirName })
   }
 
@@ -155,7 +154,7 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
     const currentUser = firebase.auth().currentUser
     if (!currentUser) return false
     const idToken = await currentUser.getIdTokenResult()
-    const { isAppAdmin } = idToken.claims as Partial<User>
+    const { isAppAdmin } = idToken.claims as UserClaims
     return Boolean(isAppAdmin)
   }
 
