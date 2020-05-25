@@ -11,56 +11,19 @@ export class Context {
 
   //----------------------------------------------------------------------
   //
-  //  Properties
-  //
-  //----------------------------------------------------------------------
-
-  private _tx?: Transaction = undefined
-
-  get tx(): Transaction | undefined {
-    return this._tx
-  }
-
-  private _batch?: WriteBatch = undefined
-
-  get batch(): WriteBatch | undefined {
-    return this._batch
-  }
-
-  //----------------------------------------------------------------------
-  //
   //  Methods
   //
   //----------------------------------------------------------------------
 
   async runTransaction(updateFunction: (tx: Transaction) => Promise<void>): Promise<void> {
-    if (this._tx || this._batch) throw new Error('Disallow nesting transaction or batch')
-
-    try {
-      await this.db.runTransaction(async tx => {
-        this._tx = tx
-        await updateFunction(tx)
-      })
-    } catch (err) {
-      this._tx = undefined
-      throw err
-    }
-    this._tx = undefined
+    await this.db.runTransaction(async tx => {
+      await updateFunction(tx)
+    })
   }
 
   async runBatch(updateFunction: (batch: WriteBatch) => Promise<void>): Promise<void> {
-    if (this._tx || this._batch) throw new Error('Disallow nesting transaction or batch')
-
-    this._batch = this.db.batch()
-
-    try {
-      await updateFunction(this._batch)
-      await this._batch.commit()
-    } catch (err) {
-      this._batch = undefined
-      throw err
-    }
-
-    this._batch = undefined
+    const batch = this.db.batch()
+    await updateFunction(batch)
+    await batch.commit()
   }
 }

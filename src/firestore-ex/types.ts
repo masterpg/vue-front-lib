@@ -2,7 +2,7 @@
 //   This is workaround for avoid error which occur using firestore.FieldValue.increment() with
 //   update() or set(). FieldValue which from `import { firestore } from 'firebase'` maybe can
 //   not use when using local emulator. FieldValue which from @firebase/testing is OK.
-// import * as firebase from '@firebase/testing'
+import * as firebase from '@firebase/testing'
 
 import FieldValue = firebase.firestore.FieldValue
 import Timestamp = firebase.firestore.Timestamp
@@ -22,6 +22,7 @@ export type DecodedObject<T> = OmitEntityFields<T>
 export type EncodeFunc<T, S = DocumentData> = (obj: EntityOptionalInput<T>) => EncodedObject<S>
 export type DecodeFunc<T, S = T> = (doc: StoreDoc<S>) => DecodedObject<T>
 export type QueryKey<T> = keyof T | FieldPath
+export type AtomicOperation = Transaction | WriteBatch
 
 export type TimeStampToDate = (timestamp: Timestamp) => any
 
