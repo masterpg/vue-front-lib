@@ -2,17 +2,38 @@ import {
   APIStorageNode,
   APIStoragePaginationResult,
   AppConfigResponse,
+  AuthDataResult,
   LibAPIContainer,
+  PublicProfile,
   StorageNode,
   StorageNodeShareSettingsInput,
   StoragePaginationOptionsInput,
   StoragePaginationResult,
+  ToAPITimestampEntity,
+  User,
+  UserInfoInput,
   toTimestampEntities as _toTimestampEntities,
   toTimestampEntity as _toTimestampEntity,
 } from '../base'
 import { BaseGQLClient } from './base'
 import dayjs from 'dayjs'
 import gql from 'graphql-tag'
+
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
+
+interface APIAuthDataResult extends Omit<AuthDataResult, 'user'> {
+  user: APIUser
+}
+
+interface APIUser extends ToAPITimestampEntity<Omit<User, 'publicProfile'>> {
+  publicProfile: APIPublicProfile
+}
+
+interface APIPublicProfile extends ToAPITimestampEntity<PublicProfile> {}
 
 //========================================================================
 //
@@ -53,7 +74,101 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
   }
 
   //--------------------------------------------------
-  //  User storage
+  //  User
+  //--------------------------------------------------
+
+  async getAuthData(): Promise<AuthDataResult> {
+    const response = await this.query<{ authData: APIAuthDataResult }>({
+      query: gql`
+        query AuthData {
+          authData {
+            status
+            token
+            user {
+              id
+              fullName
+              email
+              emailVerified
+              isAppAdmin
+              myDirName
+              createdAt
+              updatedAt
+              publicProfile {
+                id
+                displayName
+                photoURL
+                createdAt
+                updatedAt
+              }
+            }
+          }
+        }
+      `,
+      isAuth: true,
+    })
+
+    const { user, ...others } = response.data.authData
+    if (!user) {
+      return { ...others, user: undefined }
+    }
+
+    return {
+      ...others,
+      user: {
+        ...this.toTimestampEntity(user),
+        publicProfile: this.toTimestampEntity(user.publicProfile),
+      },
+    }
+  }
+
+  async setOwnUserInfo(input: UserInfoInput): Promise<User> {
+    const response = await this.mutate<{ setOwnUserInfo: APIUser }>({
+      mutation: gql`
+        mutation SetOwnUserInfo($input: UserInfoInput!) {
+          setOwnUserInfo(input: $input) {
+            id
+            fullName
+            email
+            emailVerified
+            isAppAdmin
+            myDirName
+            createdAt
+            updatedAt
+            publicProfile {
+              id
+              displayName
+              photoURL
+              createdAt
+              updatedAt
+            }
+          }
+        }
+      `,
+      variables: { input },
+      isAuth: true,
+    })
+
+    const user = response.data!.setOwnUserInfo
+    return {
+      ...this.toTimestampEntity(user),
+      publicProfile: this.toTimestampEntity(user.publicProfile),
+    }
+  }
+
+  async deleteOwnUser(): Promise<boolean> {
+    const response = await this.mutate<{ deleteOwnUser: boolean }>({
+      mutation: gql`
+        mutation DeleteOwnUser {
+          deleteOwnUser
+        }
+      `,
+      isAuth: true,
+    })
+    return response.data!.deleteOwnUser
+  }
+
+  //--------------------------------------------------
+  //  Storage (User)
   //--------------------------------------------------
 
   async getUserStorageNode(nodePath: string): Promise<StorageNode | undefined> {
@@ -577,7 +692,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
   }
 
   //--------------------------------------------------
-  //  Application storage
+  //  Storage (Admin)
   //--------------------------------------------------
 
   async getStorageNode(nodePath: string): Promise<StorageNode | undefined> {
@@ -1176,4 +1291,4 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
 //
 //========================================================================
 
-export { BaseGQLAPIContainer }
+export { BaseGQLAPIContainer, APIAuthDataResult, APIPublicProfile, APIUser }

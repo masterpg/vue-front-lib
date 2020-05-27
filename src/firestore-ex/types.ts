@@ -1,7 +1,7 @@
 // TODO If you want to run a unit test, please uncomment the next line.
-//   This is workaround for avoid error which occur using firestore.FieldValue.increment() with
-//   update() or set(). FieldValue which from `import { firestore } from 'firebase'` maybe can
-//   not use when using local emulator. FieldValue which from @firebase/testing is OK.
+//  This is workaround for avoid error which occur using `firestore.FieldValue.increment()` with
+//  update() or set(). FieldValue which from `import { firestore } from 'firebase'` maybe can
+//  not use when using local emulator. FieldValue which from @firebase/testing is OK.
 import * as firebase from '@firebase/testing'
 
 import FieldValue = firebase.firestore.FieldValue

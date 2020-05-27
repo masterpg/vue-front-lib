@@ -86,27 +86,11 @@
 <script lang="ts">
 import { BaseComponent, Resizable, User } from '@/lib'
 import { CartItem, CheckoutStatus, Product } from '@/example/logic'
-import { Component } from 'vue-property-decorator'
+import { Component, Watch } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 
 @Component
 export default class ShopPage extends mixins(BaseComponent, Resizable) {
-  //----------------------------------------------------------------------
-  //
-  //  Lifecycle hooks
-  //
-  //----------------------------------------------------------------------
-
-  async created() {
-    this.$logic.auth.addSignedInListener(this.m_userOnSignedIn)
-    this.$logic.auth.addSignedOutListener(this.m_userOnSignedOut)
-  }
-
-  destroyed() {
-    this.$logic.auth.removeSignedInListener(this.m_userOnSignedIn)
-    this.$logic.auth.removeSignedOutListener(this.m_userOnSignedOut)
-  }
-
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -140,6 +124,13 @@ export default class ShopPage extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
+  @Watch('$logic.auth.isSignedIn')
+  private async m_isSignedInOnChange(newValue: boolean, oldValue: boolean) {
+    if (this.$logic.auth.isSignedIn) {
+      await this.$logic.shop.pullCartItems()
+    }
+  }
+
   private async m_addButtonOnClick(product: Product) {
     this.$q.loading.show()
     await this.$logic.shop.addItemToCart(product.id)
@@ -157,20 +148,6 @@ export default class ShopPage extends mixins(BaseComponent, Resizable) {
     await this.$logic.shop.checkout()
     this.$q.loading.hide()
   }
-
-  /**
-   * ユーザーがサインインした際のリスナです。
-   * @param user
-   */
-  private async m_userOnSignedIn(user: User) {
-    await this.$logic.shop.pullCartItems()
-  }
-
-  /**
-   * ユーザーがサインアウトした際のリスナです。
-   * @param user
-   */
-  private async m_userOnSignedOut(user: User) {}
 }
 </script>
 

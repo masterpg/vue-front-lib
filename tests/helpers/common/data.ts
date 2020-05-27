@@ -1,27 +1,50 @@
-import { TestAuthUser, TestFirebaseUserInput } from '../../mocks/common/logic/api'
+import { TestAuthUser, TestFirebaseUserInput, TestUserInput } from '../../mocks/common/logic/api'
 
-export const GENERAL_USER_INPUT: TestFirebaseUserInput = {
+export const GENERAL_TOKEN: TestAuthUser = {
   uid: 'test.general',
+  myDirName: 'test.general',
+}
+
+export const GENERAL_FIREBASE_USER: Required<TestFirebaseUserInput> = {
+  uid: GENERAL_TOKEN.uid,
+  email: 'test.general@example.com',
+  emailVerified: true,
+  password: 'passpass',
+  displayName: '一般ユーザー',
+  disabled: false,
+  photoURL: 'https://example.com/test.general/user.png',
   customClaims: {
-    myDirName: 'test.general',
+    myDirName: GENERAL_TOKEN.myDirName,
+    isAppAdmin: false,
   },
 }
 
-export const GENERAL_USER: TestAuthUser = {
-  uid: GENERAL_USER_INPUT.uid,
-  myDirName: GENERAL_USER_INPUT.customClaims!.myDirName!,
+export const GENERAL_USER: TestUserInput = {
+  ...GENERAL_FIREBASE_USER,
+  fullName: '一般 太郎',
 }
 
-export const APP_ADMIN_USER_INPUT: TestFirebaseUserInput = {
+export const APP_ADMIN_TOKEN: TestAuthUser = {
   uid: 'test.app.admin',
+  myDirName: 'test.app.admin',
+  isAppAdmin: true,
+}
+
+export const APP_ADMIN_FIREBASE_USER: Required<TestFirebaseUserInput> = {
+  uid: APP_ADMIN_TOKEN.uid,
+  email: 'test.app.admin@example.com',
+  emailVerified: true,
+  password: 'passpass',
+  displayName: 'アプリケーション管理ユーザー',
+  disabled: false,
+  photoURL: 'https://example.com/test.app.admin/user.png',
   customClaims: {
-    myDirName: 'test.app.admin',
-    isAppAdmin: true,
+    myDirName: APP_ADMIN_TOKEN.myDirName,
+    isAppAdmin: APP_ADMIN_TOKEN.isAppAdmin,
   },
 }
 
-export const APP_ADMIN_USER: TestAuthUser = {
-  uid: APP_ADMIN_USER_INPUT.uid,
-  myDirName: APP_ADMIN_USER_INPUT.customClaims!.myDirName!,
-  isAppAdmin: APP_ADMIN_USER_INPUT.customClaims!.isAppAdmin,
+export const APP_ADMIN_USER: TestUserInput = {
+  ...APP_ADMIN_FIREBASE_USER,
+  fullName: '管理 太郎',
 }

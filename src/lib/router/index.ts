@@ -75,6 +75,23 @@ abstract class BaseRouter extends VueRouter {
   }
 
   /**
+   * ダイアログを開くためのクエリを生成します。
+   *
+   * ダイアログを開くためのクエリの例:
+   *   dialogName=signIn&dialogParams=%257B%2522account%2522%253A%2522taro%2522%257D
+   *
+   * @param dialogName ダイアログの名前
+   * @param dialogParams ダイアログに渡すパラメータ
+   */
+  getDialogInfoQuery(dialogName: string, dialogParams?: any): string {
+    let result = `dialogName=${dialogName}`
+    if (dialogParams) {
+      result += `&dialogParams=${encodeURIComponent(JSON.stringify(dialogParams))}`
+    }
+    return result
+  }
+
+  /**
    * URLに付与されているダイアログの情報を取得します。
    * @params route
    */

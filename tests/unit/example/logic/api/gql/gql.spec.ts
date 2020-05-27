@@ -1,7 +1,7 @@
 import { APICartItem, APIProduct } from '@/example/logic/api/gql'
 import { CartItem, Product } from '@/example/logic'
 import { CartItemAddInput, CartItemEditResponse, CartItemUpdateInput } from '@/example/logic/api'
-import { GENERAL_USER } from '../../../../../helpers/common/data'
+import { GENERAL_TOKEN } from '../../../../../helpers/common/data'
 import { TestAppAPIContainer } from '../../../../../mocks/example/logic/api'
 import { cloneDeep } from 'lodash'
 import dayjs from 'dayjs'
@@ -31,7 +31,7 @@ const PRODUCTS: Product[] = API_PRODUCTS.map(apiProduct => {
 const API_CART_ITEMS: APICartItem[] = [
   {
     id: 'cartItem1',
-    uid: GENERAL_USER.uid,
+    uid: GENERAL_TOKEN.uid,
     productId: 'product1',
     title: 'iPad 4 Mini',
     price: 500.01,
@@ -41,7 +41,7 @@ const API_CART_ITEMS: APICartItem[] = [
   },
   {
     id: 'cartItem2',
-    uid: GENERAL_USER.uid,
+    uid: GENERAL_TOKEN.uid,
     productId: 'product2',
     title: 'Fire HD 8 Tablet',
     price: 80.99,
@@ -130,7 +130,7 @@ describe('Product API', () => {
 describe('Cart API', () => {
   describe('getCartItem', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
         { collectionName: 'products', collectionRecords: API_PRODUCTS },
         { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
@@ -143,7 +143,7 @@ describe('Cart API', () => {
     })
 
     it('存在しないカートアイテムIDを指定した場合', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
         { collectionName: 'products', collectionRecords: API_PRODUCTS },
         { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
@@ -169,7 +169,7 @@ describe('Cart API', () => {
 
   describe('getCartItems', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
         { collectionName: 'products', collectionRecords: API_PRODUCTS },
         { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
@@ -182,7 +182,7 @@ describe('Cart API', () => {
     })
 
     it('存在しない商品IDを指定した場合', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
         { collectionName: 'products', collectionRecords: API_PRODUCTS },
         { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
@@ -215,7 +215,7 @@ describe('Cart API', () => {
     }) as CartItemAddInput[]
 
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
         { collectionName: 'products', collectionRecords: API_PRODUCTS },
         { collectionName: 'cart', collectionRecords: [] },
@@ -238,7 +238,7 @@ describe('Cart API', () => {
       for (let i = 0; i < actual.length; i++) {
         const actualItem = actual[i]
         expect(actualItem.id).toEqual(expect.anything())
-        expect(actualItem.uid).toBe(GENERAL_USER.uid)
+        expect(actualItem.uid).toBe(GENERAL_TOKEN.uid)
         expect(actualItem).toMatchObject(expectedItems[i])
       }
     })
@@ -259,7 +259,7 @@ describe('Cart API', () => {
 
   describe('updateCartItems', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
         { collectionName: 'products', collectionRecords: API_PRODUCTS },
         { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
@@ -297,7 +297,7 @@ describe('Cart API', () => {
 
   describe('removeCartItems', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
         { collectionName: 'products', collectionRecords: API_PRODUCTS },
         { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
@@ -341,7 +341,7 @@ describe('Cart API', () => {
 
   describe('checkout', () => {
     it('ベーシックケース', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
         { collectionName: 'products', collectionRecords: API_PRODUCTS },
         { collectionName: 'cart', collectionRecords: API_CART_ITEMS },

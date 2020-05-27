@@ -17,40 +17,55 @@
 
 <template>
   <q-dialog ref="dialog" v-model="opened" persistent>
-    <!-- アカウント削除ビュー -->
-    <q-card v-if="m_viewType.accountDelete.visible" class="container" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
+    <!--
+      アカウント削除ビュー
+    -->
+    <q-card
+      v-if="m_viewType === 'userDelete' || m_viewType === 'userDelete.signIn'"
+      class="container"
+      :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }"
+    >
       <!-- タイトル -->
       <q-card-section>
-        <div class="title">Delete account</div>
+        <div class="title">{{ $t('auth.deleteUser') }}</div>
       </q-card-section>
 
       <!-- コンテンツエリア -->
       <q-card-section>
-        <div>
-          Deleted account can not be recovered.<br />
-          Are you sure you want to delete your account?
-        </div>
+        <div v-if="m_viewType === 'userDelete'">{{ $t('auth.deleteUserMsg') }}</div>
+        <div v-else-if="m_viewType === 'userDelete.signIn'">{{ $t('auth.deleteUserSignInMsg') }}</div>
       </q-card-section>
 
       <!-- エラーメッセージ -->
-      <q-card-section v-show="!!m_errorMessage">
+      <q-card-section v-show="Boolean(m_errorMessage)">
         <span class="error-message">{{ m_errorMessage }}</span>
       </q-card-section>
 
       <!-- ボタンエリア -->
       <q-card-section class="layout horizontal center end-justified">
         <!-- CANCELボタン -->
-        <q-btn flat rounded color="primary" label="Cancel" @click="close()" />
+        <q-btn flat rounded color="primary" :label="$t('common.cancel')" @click="close()" />
         <!-- OKボタン -->
-        <q-btn v-show="m_viewType.accountDelete.default.visible" flat rounded color="primary" label="OK" @click="m_delete()" />
+        <q-btn v-show="m_viewType === 'userDelete'" flat rounded color="primary" :label="$t('common.ok')" @click="m_delete()" />
         <!-- SIGN INボタン -->
-        <q-btn v-show="m_viewType.accountDelete.signIn.visible" flat rounded color="primary" label="Sign in" @click="m_visibleProviderList()" />
+        <q-btn
+          v-show="m_viewType === 'userDelete.signIn'"
+          flat
+          rounded
+          color="primary"
+          :label="$t('common.signIn')"
+          @click="m_visibleProviderList()"
+        />
       </q-card-section>
     </q-card>
 
-    <!-- プロバイダリストビュー -->
+    <!--
+      プロバイダリストビュー
+    -->
     <provider-list-view
-      v-if="m_viewType.providerList.visible"
+      v-if="m_viewType === 'providerList'"
+      :title="$t('common.signIn')"
+      type="signIn"
       :visible-providers="m_visibleProviders"
       @select-google="m_selectGoogle()"
       @select-facebook="m_selectFacebook()"
@@ -59,16 +74,25 @@
       @closed="close()"
     />
 
-    <!-- サインインビュー -->
-    <email-sign-in-view v-else-if="m_viewType.emailSignIn.visible" @signed-in="m_visibleAccountDelete()" @closed="close()" />
+    <!--
+      サインインビュー
+    -->
+    <email-sign-in-view
+      v-else-if="m_viewType === 'emailSignIn'"
+      :title="$t('common.signIn')"
+      :email="m_currentEmail"
+      readonly-email
+      @closed="m_emailSignInViewOnClose"
+    />
   </q-dialog>
 </template>
 
 <script lang="ts">
-import { AuthProviderType, BaseDialog, NoCache } from '@/lib'
-import { EmailSignInView, ProviderListView } from '@/example/components/complex/auth/base'
+import { AuthProviderType, AuthStatus, BaseDialog, NoCache } from '@/lib'
+import { EmailSignInView, EmailSignInViewResult, ProviderListView } from './base'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
+import { router } from '@/example/router'
 
 @Component({
   components: {
@@ -76,7 +100,7 @@ import { QDialog } from 'quasar'
     EmailSignInView,
   },
 })
-export default class AccountDeleteHistoryDialog extends BaseDialog<void, void> {
+export default class UserDeleteDialog extends BaseDialog<void, void> {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -88,7 +112,13 @@ export default class AccountDeleteHistoryDialog extends BaseDialog<void, void> {
     return this.$refs.dialog as QDialog
   }
 
-  private m_viewType = new ViewType()
+  private m_viewType: 'userDelete' | 'userDelete.signIn' | 'providerList' | 'emailSignIn' = 'userDelete'
+
+  private get m_title(): string {
+    return String(this.$t('auth.deleteUser'))
+  }
+
+  private m_currentEmail: string | null = null
 
   private m_errorMessage = ''
 
@@ -100,8 +130,13 @@ export default class AccountDeleteHistoryDialog extends BaseDialog<void, void> {
   //
   //----------------------------------------------------------------------
 
-  open(): Promise<void> {
-    this.m_visibleAccountDelete()
+  async open(): Promise<void> {
+    if (!this.$logic.auth.isSignedIn) {
+      router.removeDialogInfoFromURL()
+      return
+    }
+    this.m_currentEmail = this.$logic.auth.user.email
+    this.m_visibleUserDelete()
     return this.openProcess()
   }
 
@@ -116,15 +151,21 @@ export default class AccountDeleteHistoryDialog extends BaseDialog<void, void> {
   //----------------------------------------------------------------------
 
   private async m_delete(): Promise<void> {
-    const deleteResult = await this.$logic.auth.deleteAccount()
+    this.$q.loading.show()
+
+    const deleteResult = await this.$logic.auth.deleteUser()
     if (!deleteResult.result) {
       this.m_errorMessage = deleteResult.errorMessage
       // ユーザーの認証情報が古すぎる場合、再度サインインが必要
       if (deleteResult.code === 'auth/requires-recent-login') {
-        this.m_viewType.set('accountDelete.signIn')
+        this.m_viewType = 'userDelete.signIn'
       }
+      this.$q.loading.hide()
       return
     }
+
+    this.$q.loading.hide()
+
     this.close()
   }
 
@@ -137,57 +178,42 @@ export default class AccountDeleteHistoryDialog extends BaseDialog<void, void> {
   }
 
   private m_selectEmail(): void {
-    this.m_viewType.set('emailSignIn')
+    this.m_viewType = 'emailSignIn'
   }
 
   private async m_selectAnonymous(): Promise<void> {
     await this.$logic.auth.signInAnonymously()
   }
 
-  private m_visibleAccountDelete() {
+  private m_visibleUserDelete() {
     this.m_errorMessage = ''
-    this.m_viewType.set('accountDelete.default')
+    this.m_viewType = 'userDelete'
   }
 
   private async m_visibleProviderList(): Promise<void> {
     const user = this.$logic.auth.user
     this.m_visibleProviders = await this.$logic.auth.fetchSignInMethodsForEmail(user.email)
-    this.m_viewType.set('providerList')
+    this.m_viewType = 'providerList'
   }
-}
 
-class ViewType {
-  set(value: 'accountDelete.default' | 'accountDelete.signIn' | 'providerList' | 'emailSignIn'): void {
-    this.accountDelete.visible = false
-    this.accountDelete.default.visible = false
-    this.accountDelete.signIn.visible = false
-    this.providerList.visible = false
-    this.emailSignIn.visible = false
+  //----------------------------------------------------------------------
+  //
+  //  Event listeners
+  //
+  //----------------------------------------------------------------------
 
-    switch (value) {
-      case 'accountDelete.default':
-        this.accountDelete.visible = true
-        this.accountDelete.default.visible = true
+  private async m_emailSignInViewOnClose(closeResult: EmailSignInViewResult) {
+    switch (closeResult.status) {
+      case AuthStatus.WaitForEmailVerified:
+      case AuthStatus.WaitForEntry:
+      case AuthStatus.Available: {
+        this.m_visibleUserDelete()
         break
-      case 'accountDelete.signIn':
-        this.accountDelete.visible = true
-        this.accountDelete.signIn.visible = true
-        break
-      case 'providerList':
-        this.providerList.visible = true
-        break
-      case 'emailSignIn':
-        this.emailSignIn.visible = true
-        break
+      }
+      case 'cancel': {
+        this.close()
+      }
     }
   }
-
-  accountDelete = {
-    visible: false,
-    default: { visible: false },
-    signIn: { visible: false },
-  }
-  providerList = { visible: false }
-  emailSignIn = { visible: false }
 }
 </script>

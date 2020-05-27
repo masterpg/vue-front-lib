@@ -2,10 +2,10 @@ import {AuthProviderType} from '../../logic'
 <style lang="sass" scoped>
 @import '../../../../styles/app.variables'
 
-.container
+.provider-list-view-main
 
 .sign-in-button
-  width: 220px
+  width: 280px
   height: 40px
   border: none
   padding: 0 20px
@@ -51,58 +51,43 @@ import {AuthProviderType} from '../../logic'
 </style>
 
 <template>
-  <q-card class="container">
+  <q-card class="provider-list-view-main">
     <!-- タイトル -->
     <q-card-section>
-      <div class="title">Sign in</div>
+      <div class="title">{{ title }}</div>
     </q-card-section>
 
     <!-- プロバイダリスト -->
     <q-card-section>
-      <div
-        v-show="m_visibleGoogleProvider"
-        ref="googleSignInButton"
-        class="layout horizontal center sign-in-button google"
-        @click="m_signInWithGoogle()"
-      >
+      <div v-show="m_visibleGoogle" ref="googleSignInButton" class="layout horizontal center sign-in-button google" @click="m_withGoogle()">
         <img class="icon" src="@/example/assets/icons/google.svg" />
-        <div class="label">Sign in with Google</div>
+        <div class="label">{{ $t('auth.providerList.withGoogle', { type: $t('common.signIn') }) }}</div>
       </div>
 
-      <div
-        v-show="m_visibleFacebookProvider"
-        ref="facebookSignInButton"
-        class="layout horizontal center sign-in-button facebook"
-        @click="m_signInWithFacebook()"
-      >
+      <div v-show="m_visibleFacebook" ref="facebookSignInButton" class="layout horizontal center sign-in-button facebook" @click="m_withFacebook()">
         <img class="icon" src="@/example/assets/icons/facebook.svg" />
-        <div class="label">Sign in with Facebook</div>
+        <div class="label">{{ $t('auth.providerList.withFacebook', { type: $t('common.signIn') }) }}</div>
       </div>
 
-      <div
-        v-show="m_visiblePasswordProvider"
-        ref="emailSignInButton"
-        class="layout horizontal center sign-in-button email"
-        @click="m_signInWithEmail()"
-      >
+      <div v-show="m_visiblePassword" ref="emailSignInButton" class="layout horizontal center sign-in-button email" @click="m_withEmail()">
         <img class="icon" src="@/example/assets/icons/mail.svg" />
-        <div class="label">Sign in with Email</div>
+        <div class="label">{{ $t('auth.providerList.withEmail', { type: m_typeName }) }}</div>
       </div>
 
       <div
-        v-show="m_visibleAnonymousProvider"
+        v-show="m_visibleAnonymous"
         ref="anonymousSignInButton"
         class="layout horizontal center sign-in-button anonymous"
-        @click="m_signInWithAnonymous()"
+        @click="m_withAnonymous()"
       >
         <q-icon name="person_outline" size="18px" />
-        <div class="label">Continue as guest</div>
+        <div class="label">{{ $t('auth.providerList.withAnonymous', { type: $t('common.signIn') }) }}</div>
       </div>
     </q-card-section>
 
     <!-- ボタンエリア -->
     <q-card-actions align="right">
-      <q-btn flat rounded color="primary" label="Cancel" @click="m_close()" />
+      <q-btn flat rounded color="primary" :label="$t('common.cancel')" @click="m_close()" />
     </q-card-actions>
   </q-card>
 </template>
@@ -122,6 +107,12 @@ export default class ProviderListView extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
+  @Prop({ required: true })
+  title!: string
+
+  @Prop({ required: true })
+  type!: 'signIn' | 'signUp'
+
   @Prop({ default: () => [AuthProviderType.Google, AuthProviderType.Facebook, AuthProviderType.Password, AuthProviderType.Anonymous] })
   visibleProviders!: AuthProviderType[]
 
@@ -131,20 +122,24 @@ export default class ProviderListView extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
-  private get m_visibleGoogleProvider() {
-    return this.visibleProviders.indexOf(AuthProviderType.Google) >= 0
+  private get m_typeName(): string {
+    return this.type === 'signIn' ? String(this.$t('common.signIn')) : String(this.$t('common.signUp'))
   }
 
-  private get m_visibleFacebookProvider() {
-    return this.visibleProviders.indexOf(AuthProviderType.Facebook) >= 0
+  private get m_visibleGoogle() {
+    return this.visibleProviders.includes(AuthProviderType.Google)
   }
 
-  private get m_visiblePasswordProvider() {
-    return this.visibleProviders.indexOf(AuthProviderType.Password) >= 0
+  private get m_visibleFacebook() {
+    return this.visibleProviders.includes(AuthProviderType.Facebook)
   }
 
-  private get m_visibleAnonymousProvider() {
-    return this.visibleProviders.indexOf(AuthProviderType.Anonymous) >= 0
+  private get m_visiblePassword() {
+    return this.visibleProviders.includes(AuthProviderType.Password)
+  }
+
+  private get m_visibleAnonymous() {
+    return this.visibleProviders.includes(AuthProviderType.Anonymous) && this.type === 'signIn'
   }
 
   //----------------------------------------------------------------------
@@ -153,19 +148,19 @@ export default class ProviderListView extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
-  private async m_signInWithGoogle() {
+  private async m_withGoogle() {
     this.$emit('select-google')
   }
 
-  private async m_signInWithFacebook() {
+  private async m_withFacebook() {
     this.$emit('select-facebook')
   }
 
-  private async m_signInWithEmail() {
+  private async m_withEmail() {
     this.$emit('select-email')
   }
 
-  private async m_signInWithAnonymous() {
+  private async m_withAnonymous() {
     this.$emit('select-anonymous')
   }
 

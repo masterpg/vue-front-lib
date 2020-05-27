@@ -77,22 +77,30 @@
 
         <div class="app-mr-16">Quasar v{{ $q.version }}</div>
 
-        <q-img v-show="m_user.isSignedIn && !!m_user.photoURL" :src="m_user.photoURL" contain class="photo app-mr-6"></q-img>
-        <q-icon v-show="m_user.isSignedIn && !m_user.photoURL" name="person" size="26px" class=" app-mr-6"></q-icon>
+        <q-img
+          v-if="m_isSignedIn && Boolean(m_user.publicProfile.photoURL)"
+          :src="m_user.publicProfile.photoURL"
+          contain
+          class="photo app-mr-6"
+        ></q-img>
+        <q-icon v-else-if="m_isSignedIn" name="person" size="26px" class="app-mr-6"></q-icon>
         <q-btn flat round dense color="white" icon="more_vert">
           <q-menu>
             <q-list class="menu-list">
-              <q-item v-show="!m_user.isSignedIn" v-close-popup clickable>
-                <q-item-section @click="m_signInMenuItemOnClick">Sign in</q-item-section>
+              <q-item v-show="!m_isSignedIn" v-close-popup clickable>
+                <q-item-section @click="m_signInMenuItemOnClick">{{ $t('common.signIn') }}</q-item-section>
               </q-item>
-              <q-item v-show="m_user.isSignedIn" v-close-popup clickable>
-                <q-item-section @click="m_signOutMenuItemOnClick">Sign out</q-item-section>
+              <q-item v-show="!m_isSignedIn" v-close-popup clickable>
+                <q-item-section @click="m_signUpMenuItemOnClick">{{ $t('common.signUp') }}</q-item-section>
               </q-item>
-              <q-item v-show="m_user.isSignedIn" v-close-popup clickable>
-                <q-item-section @click="m_changeEmailMenuItemOnClick">Change email</q-item-section>
+              <q-item v-show="m_isSignedIn" v-close-popup clickable>
+                <q-item-section @click="m_signOutMenuItemOnClick">{{ $t('common.signOut') }}</q-item-section>
               </q-item>
-              <q-item v-show="m_user.isSignedIn" v-close-popup clickable>
-                <q-item-section @click="m_deleteAccountMenuItemOnClick">Delete account</q-item-section>
+              <q-item v-show="m_isSignedIn" v-close-popup clickable>
+                <q-item-section @click="m_emailChangeMenuItemOnClick">{{ $t('auth.changeEmail') }}</q-item-section>
+              </q-item>
+              <q-item v-show="m_isSignedIn" v-close-popup clickable>
+                <q-item-section @click="m_userDeleteMenuItemOnClick">{{ $t('auth.deleteUser') }}</q-item-section>
               </q-item>
             </q-list>
           </q-menu>
@@ -145,9 +153,9 @@
 </template>
 
 <script lang="ts">
-import { AccountDelete, EmailChange, HistoryDialogManager, SignIn } from '@/example/components'
-import { BaseComponent, NoCache, Resizable, SWChangeState, SWStateChangeInfo, User } from '@/lib'
-import { Component } from 'vue-property-decorator'
+import { AuthStatus, BaseComponent, NoCache, Resizable, SWChangeState, SWStateChangeInfo, User } from '@/lib'
+import { Component, Watch } from 'vue-property-decorator'
+import { EmailChange, HistoryDialogManager, SignIn, SignUp, UserDelete, UserEntry, dialog, initDialog } from '@/example/components'
 import { mixins } from 'vue-class-component'
 import { router } from '@/example/router'
 import { sw } from '@/example/sw'
@@ -170,6 +178,10 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
     this.m_leftDrawerOpen = this.$q.platform.is.desktop
 
     await this.$logic.shop.pullProducts()
+  }
+
+  mounted() {
+    initDialog(this.m_historyDialogManager)
   }
 
   //----------------------------------------------------------------------
@@ -229,6 +241,10 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
   private m_leftDrawerOpen = false
 
   private m_swUpdateIsRequired = false
+
+  private get m_isSignedIn(): boolean {
+    return this.$logic.auth.isSignedIn
+  }
 
   private get m_user(): User {
     return this.$logic.auth.user
@@ -305,16 +321,27 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
     await this.m_signOut()
   }
 
+  private m_signUpMenuItemOnClick() {
+    dialog.open(SignUp.name)
+  }
+
   private m_signInMenuItemOnClick() {
-    this.m_historyDialogManager.open(SignIn.name)
+    dialog.open(SignIn.name)
   }
 
-  private m_changeEmailMenuItemOnClick() {
-    this.m_historyDialogManager.open(EmailChange.name)
+  private m_emailChangeMenuItemOnClick() {
+    dialog.open(EmailChange.name)
   }
 
-  private async m_deleteAccountMenuItemOnClick() {
-    this.m_historyDialogManager.open(AccountDelete.name)
+  private async m_userDeleteMenuItemOnClick() {
+    dialog.open(UserDelete.name)
+  }
+
+  @Watch('$logic.auth.status')
+  private async m_authStatusOnChange(newValue: AuthStatus, oldValue: AuthStatus) {
+    if (this.$logic.auth.status === AuthStatus.WaitForEntry) {
+      dialog.open(UserEntry.name)
+    }
   }
 }
 </script>

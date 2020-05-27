@@ -39,7 +39,7 @@ function setStore(value: LibStoreContainer): void {
 //========================================================================
 
 export { BaseStore, StatePartial, StoreError } from './base'
-export { User, UserStore, UserStoreImpl } from './user'
+export { UserStore, UserStoreImpl } from './user'
 export { AppStorageStore, AppStorageStoreImpl, StorageState, StorageStore, UserStorageStore, UserStorageStoreImpl } from './storage'
 
 export { LibStoreContainer, LibStoreContainerImpl, store, setStore }

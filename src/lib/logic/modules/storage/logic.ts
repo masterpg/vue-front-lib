@@ -1,9 +1,9 @@
+import { Component, Watch } from 'vue-property-decorator'
 import { LibAPIContainer, StorageNode, StorageNodeShareSettingsInput, StoragePaginationOptionsInput, StoragePaginationResult } from '../../api'
 import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from './download'
-import { StorageStore, User } from '../../store'
 import { arrayToDict, splitHierarchicalPaths } from 'web-base-lib'
 import { BaseLogic } from '../../base'
-import { Component } from 'vue-property-decorator'
+import { StorageStore } from '../../store'
 import { StorageUploader } from './upload'
 
 //========================================================================
@@ -86,19 +86,9 @@ export interface AppStorageLogic extends StorageLogic {}
 //
 //========================================================================
 
-// @ts-ignore: Vueを継承した抽象クラスに@Componentを付与するとでるエラーの回避
+// @ts-ignore: Vueを継承した抽象クラスに@Componentを付与すると出るエラーの回避
 @Component
 export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic {
-  //----------------------------------------------------------------------
-  //
-  //  Lifecycle hooks
-  //
-  //----------------------------------------------------------------------
-
-  created() {
-    this.addSignedOutListener(this.m_userOnSignedOut)
-  }
-
   //----------------------------------------------------------------------
   //
   //  Properties
@@ -478,7 +468,10 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
   //
   //----------------------------------------------------------------------
 
-  private m_userOnSignedOut(user: User) {
-    this.storageStore.clear()
+  @Watch('isSignedIn')
+  private async m_isSignedInOnChange(newValue: boolean, oldValue: boolean) {
+    if (!this.isSignedIn) {
+      this.storageStore.clear()
+    }
   }
 }

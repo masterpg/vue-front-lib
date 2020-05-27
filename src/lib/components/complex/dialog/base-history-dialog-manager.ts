@@ -23,8 +23,8 @@ export abstract class BaseHistoryDialogManager extends Vue {
    * ```
    * protected get dialogs(): { [dialogName: string]: Dialog } {
    *   return {
-   *     SampleOneDialog: this.$refs.sampleOneDialog as Dialog,
-   *     SampleTwoDialog: this.$refs.sampleTwoDialog as Dialog,
+   *     sampleOne: this.$refs.sampleOneDialog as Dialog,
+   *     sampleTwo: this.$refs.sampleTwoDialog as Dialog,
    *   }
    * }
    * ```

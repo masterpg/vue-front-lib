@@ -1,10 +1,13 @@
 import {
   AppConfigResponse,
+  AuthDataResult,
   LibAPIContainer,
   StorageNode,
   StorageNodeShareSettingsInput,
   StoragePaginationOptionsInput,
   StoragePaginationResult,
+  User,
+  UserInfoInput,
   toTimestampEntities as _toTimestampEntities,
   toTimestampEntity as _toTimestampEntity,
 } from '../base'
@@ -32,7 +35,23 @@ abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPICont
   }
 
   //--------------------------------------------------
-  //  User storage
+  //  User
+  //--------------------------------------------------
+
+  getAuthData(): Promise<AuthDataResult> {
+    throw new Error(`This method 'getAuthData' is not implemented.`)
+  }
+
+  setOwnUserInfo(input: UserInfoInput): Promise<User> {
+    throw new Error(`This method 'setOwnUserInfo' is not implemented.`)
+  }
+
+  deleteOwnUser(): Promise<boolean> {
+    throw new Error(`This method 'deleteOwnUser' is not implemented.`)
+  }
+
+  //--------------------------------------------------
+  //  Storage (User)
   //--------------------------------------------------
 
   getUserStorageNode(nodePath: string): Promise<StorageNode | undefined> {
@@ -104,7 +123,7 @@ abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPICont
   }
 
   //--------------------------------------------------
-  //  Application storage
+  //  Storage (Admin)
   //--------------------------------------------------
 
   getStorageNode(nodePath: string): Promise<StorageNode | undefined> {

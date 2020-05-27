@@ -79,6 +79,7 @@ abstract class BaseI18n extends VueI18n {
   constructor() {
     // スーパークラスのコンスタント呼び出し
     super({
+      silentFallbackWarn: true,
       dateTimeFormats,
     })
 

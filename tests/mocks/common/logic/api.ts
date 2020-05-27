@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { BaseGQLAPIContainer, LibAPIContainer, UserClaims } from '@/lib'
+import { APIUser, BaseGQLAPIContainer, LibAPIContainer, User, UserClaims, UserInfoInput } from '@/lib'
 import { Constructor } from 'web-base-lib'
 import axios from 'axios'
 import { config } from '@/lib/config'
@@ -35,11 +35,14 @@ interface TestFirebaseUserInput {
   password?: string
   displayName?: string
   disabled?: boolean
+  photoURL?: string
   customClaims?: UserClaims
 }
 
+type TestUserInput = TestFirebaseUserInput & UserInfoInput
+
 interface TestAPIContainer extends LibAPIContainer {
-  setTestAuthUser(user: TestAuthUser): void
+  setTestAuthToken(token: TestAuthUser): void
   clearTestAuthUser(): void
   putTestStoreData(inputs: CollectionData[]): Promise<void>
   uploadTestUserFiles(user: TestAuthUser, uploadList: UploadFileItem[])
@@ -50,6 +53,9 @@ interface TestAPIContainer extends LibAPIContainer {
   removeTestDir(dirPaths: string[]): Promise<void>
   removeTestFiles(filePaths: string[]): Promise<void>
   setTestFirebaseUsers(...users: TestFirebaseUserInput[]): Promise<void>
+  deleteTestFirebaseUsers(...uids: string[]): Promise<void>
+  setTestUsers(...users: TestUserInput[]): Promise<User[]>
+  deleteTestUsers(...uids: string[]): Promise<void>
 }
 
 //========================================================================
@@ -69,13 +75,13 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
     //----------------------------------------------------------------------
 
     protected async getIdToken(): Promise<string> {
-      if (this.m_user) {
-        return JSON.stringify(this.m_user)
+      if (this.m_token) {
+        return JSON.stringify(this.m_token)
       }
       return ''
     }
 
-    private m_user?: TestAuthUser
+    private m_token?: TestAuthUser
 
     //----------------------------------------------------------------------
     //
@@ -83,12 +89,12 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
     //
     //----------------------------------------------------------------------
 
-    setTestAuthUser(user: TestAuthUser): void {
-      this.m_user = user
+    setTestAuthToken(token: TestAuthUser): void {
+      this.m_token = token
     }
 
     clearTestAuthUser(): void {
-      this.m_user = undefined
+      this.m_token = undefined
     }
 
     async putTestStoreData(inputs: CollectionData[]): Promise<void> {
@@ -112,8 +118,8 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
     }
 
     async uploadTestFiles(uploadList: UploadFileItem[]): Promise<void> {
-      const userBackup = this.m_user
-      this.m_user = TEMP_ADMIN_USER
+      const userBackup = this.m_token
+      this.m_token = TEMP_ADMIN_USER
 
       const _uploadList = uploadList as (UploadFileItem & { signedUploadUrl: string })[]
 
@@ -139,7 +145,7 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
         await this.handleUploadedFile(uploadItem.filePath)
       }
 
-      this.m_user = userBackup
+      this.m_token = userBackup
     }
 
     async removeUserBaseTestDir(user: TestAuthUser): Promise<void> {
@@ -163,25 +169,25 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
     }
 
     async removeTestDir(dirPaths: string[]): Promise<void> {
-      const userBackup = this.m_user
-      this.m_user = TEMP_ADMIN_USER
+      const userBackup = this.m_token
+      this.m_token = TEMP_ADMIN_USER
 
       for (const dirPath of dirPaths) {
         await this.callStoragePaginationAPI(this.removeStorageDir, null, dirPath)
       }
 
-      this.m_user = userBackup
+      this.m_token = userBackup
     }
 
     async removeTestFiles(filePaths: string[]): Promise<void> {
-      const userBackup = this.m_user
-      this.m_user = TEMP_ADMIN_USER
+      const userBackup = this.m_token
+      this.m_token = TEMP_ADMIN_USER
 
       for (const filePath of filePaths) {
         await this.removeStorageFile(filePath)
       }
 
-      this.m_user = userBackup
+      this.m_token = userBackup
     }
 
     async setTestFirebaseUsers(...users: TestFirebaseUserInput[]): Promise<void> {
@@ -192,6 +198,63 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
           }
         `,
         variables: { users },
+      })
+    }
+
+    async deleteTestFirebaseUsers(...uids: string[]): Promise<void> {
+      await this.mutate<{ deleteTestFirebaseUsers: boolean }>({
+        mutation: gql`
+          mutation DeleteTestFirebaseUsers($uids: [String!]!) {
+            deleteTestFirebaseUsers(uids: $uids)
+          }
+        `,
+        variables: { uids },
+      })
+    }
+
+    async setTestUsers(...users: TestUserInput[]): Promise<User[]> {
+      const response = await this.mutate<{ setTestUsers: APIUser[] }>({
+        mutation: gql`
+          mutation SetTestUsers($users: [TestUserInput!]!) {
+            setTestUsers(users: $users) {
+              id
+              fullName
+              email
+              emailVerified
+              isAppAdmin
+              myDirName
+              createdAt
+              updatedAt
+              publicProfile {
+                id
+                displayName
+                photoURL
+                createdAt
+                updatedAt
+              }
+            }
+          }
+        `,
+        variables: { users },
+      })
+
+      const testUsers = response.data!.setTestUsers
+      return testUsers.map(user => {
+        return {
+          ...this.toTimestampEntity(user),
+          publicProfile: this.toTimestampEntity(user.publicProfile),
+        }
+      })
+    }
+
+    async deleteTestUsers(...uids: string[]): Promise<void> {
+      await this.mutate<{ deleteTestUsers: boolean }>({
+        mutation: gql`
+          mutation DeleteTestUsers($uids: [String!]!) {
+            deleteTestUsers(uids: $uids)
+          }
+        `,
+        variables: { uids },
       })
     }
 
@@ -233,4 +296,4 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
 //
 //========================================================================
 
-export { TestAuthUser, CollectionData, TestAPIContainer, TestFirebaseUserInput, TestGQLAPIContainerMixin, UploadFileItem }
+export { TestAuthUser, CollectionData, TestAPIContainer, TestFirebaseUserInput, TestUserInput, TestGQLAPIContainerMixin, UploadFileItem }

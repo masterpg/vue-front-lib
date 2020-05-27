@@ -8,9 +8,8 @@ import {
   StorageNodeShareSettings,
   StorageNodeType,
   UploadEndedEvent,
-  User,
 } from '@/lib'
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop, Watch } from 'vue-property-decorator'
 import { StorageTreeNodeData, StorageType, treeSortFunc } from '@/example/views/demo/storage/base'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitArrayChunk, splitHierarchicalPaths } from 'web-base-lib'
 import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
@@ -42,8 +41,6 @@ export class StorageTreeStore extends Vue {
 
   created() {
     this.m_rootNode = this.m_createRootNode()
-
-    this.$logic.auth.addSignedOutListener(this.m_userOnSignedOut)
   }
 
   //----------------------------------------------------------------------
@@ -847,6 +844,13 @@ export class StorageTreeStore extends Vue {
   //
   //----------------------------------------------------------------------
 
+  @Watch('$logic.auth.isSignedIn')
+  private async m_isSignedInOnChange(newValue: boolean, oldValue: boolean) {
+    if (!this.$logic.auth.isSignedIn) {
+      this.clear()
+    }
+  }
+
   /**
    * 指定されたIDと一致するツリーノードを取得します。
    * @param id
@@ -986,19 +990,5 @@ export class StorageTreeStore extends Vue {
       color: 'red',
       actions: [{ icon: 'close', color: 'white' }],
     })
-  }
-
-  //----------------------------------------------------------------------
-  //
-  //  Event listeners
-  //
-  //----------------------------------------------------------------------
-
-  /**
-   * ユーザーがサインアウトした際のリスナです。
-   * @param user
-   */
-  private async m_userOnSignedOut(user: User) {
-    this.clear()
   }
 }

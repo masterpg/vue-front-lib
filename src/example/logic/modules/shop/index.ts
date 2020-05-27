@@ -1,7 +1,7 @@
-import { BaseLogic, User } from '@/lib'
 import { CartItem, CartItemEditResponse, Product, api } from '../../api'
 import { CheckoutStatus, store } from '../../store'
-import { Component } from 'vue-property-decorator'
+import { Component, Watch } from 'vue-property-decorator'
+import { BaseLogic } from '@/lib'
 import cloneDeep from 'lodash/cloneDeep'
 
 //========================================================================
@@ -45,8 +45,6 @@ class ShopLogicImpl extends BaseLogic implements ShopLogic {
   //----------------------------------------------------------------------
 
   async created() {
-    this.addSignedOutListener(this.m_userOnSignedOut)
-
     // // `products`の変更をリッスン
     // this.db.collection('products').onSnapshot(snapshot => {
     //   snapshot.forEach(doc => {
@@ -228,7 +226,7 @@ class ShopLogicImpl extends BaseLogic implements ShopLogic {
   }
 
   private m_checkSignedIn(): void {
-    if (!store.user.isSignedIn) {
+    if (!this.isSignedIn) {
       throw new Error('Not signed in.')
     }
   }
@@ -239,8 +237,11 @@ class ShopLogicImpl extends BaseLogic implements ShopLogic {
   //
   //----------------------------------------------------------------------
 
-  private m_userOnSignedOut(user: User) {
-    store.cart.clear()
+  @Watch('isSignedIn')
+  private async m_isSignedInOnChange(newValue: boolean, oldValue: boolean) {
+    if (!this.isSignedIn) {
+      store.cart.clear()
+    }
   }
 }
 

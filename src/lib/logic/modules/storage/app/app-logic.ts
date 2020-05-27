@@ -79,7 +79,7 @@ export class AppStorageLogicImpl extends BaseStorageLogic implements AppStorageL
   }
 
   renameDirAPI(dirPath: string, newName: string): Promise<StorageNode[]> {
-    return api.callStoragePaginationAPI(api.renameUserStorageDir, null, dirPath, newName)
+    return api.callStoragePaginationAPI(api.renameStorageDir, null, dirPath, newName)
   }
 
   renameFileAPI(filePath: string, newName: string): Promise<StorageNode> {

@@ -1,15 +1,14 @@
 import * as td from 'testdouble'
-import { CartItem, CheckoutStatus, Product } from '@/example/logic'
+import { AuthStatus, UserStore } from '@/lib'
+import { CartItem, CheckoutStatus, Product, logic } from '@/example/logic'
 import { CartItemEditResponse, api } from '@/example/logic/api'
 import { CartState, CartStore, ProductState, ProductStore, store } from '@/example/logic/store'
 import { TestLogic, TestStore } from '../../../../../helpers/common/store'
-import { User, UserStore } from '@/lib'
 import { AppAPIContainer } from '@/example/logic/api/base'
 import { ShopLogicImpl } from '@/example/logic/modules/shop'
 import { cloneDeep } from 'lodash'
 import dayjs from 'dayjs'
 import { initExampleTest } from '../../../../../helpers/example/init'
-import { logic } from '@/example/logic'
 
 //========================================================================
 //
@@ -47,20 +46,6 @@ const CART_ITEMS: CartItem[] = [
   },
 ]
 
-const GENERAL_USER: User = {
-  id: 'general.user',
-  displayName: '一般ユーザー',
-  email: 'general.user@example.com',
-  emailVerified: true,
-  isSignedIn: true,
-  photoURL: '',
-  isAppAdmin: false,
-  myDirName: 'general.user',
-  getIsAppAdmin(): Promise<boolean> {
-    return Promise.resolve(false)
-  },
-}
-
 //========================================================================
 //
 //  Test helpers
@@ -97,7 +82,6 @@ beforeEach(async () => {
   productStore.initState({
     all: cloneDeep(PRODUCTS),
   })
-  userStore.set(GENERAL_USER)
 })
 
 afterEach(() => {})
@@ -162,7 +146,7 @@ describe('pullProducts()', () => {
 describe('pullCartItems()', () => {
   it('ベーシックケース', async () => {
     // ユーザーがサインインしている状態へ変更
-    userStore.set({ isSignedIn: true })
+    shopLogic.setAuthStatus(AuthStatus.Available)
 
     td.when(api.getCartItems()).thenResolve(CART_ITEMS)
 
@@ -174,7 +158,7 @@ describe('pullCartItems()', () => {
 
   it('APIでエラーが発生した場合', async () => {
     // ユーザーがサインインしている状態へ変更
-    userStore.set({ isSignedIn: true })
+    shopLogic.setAuthStatus(AuthStatus.Available)
 
     td.when(api.getCartItems()).thenThrow(new Error())
     cartStore.state.all = []
@@ -187,7 +171,7 @@ describe('pullCartItems()', () => {
 
   it('ユーザーがサインインしていない場合', async () => {
     // ユーザーがサインインしていない状態へ変更
-    userStore.set({ isSignedIn: false })
+    shopLogic.setAuthStatus(AuthStatus.None)
 
     let actual!: Error
     try {
@@ -204,7 +188,7 @@ describe('pullCartItems()', () => {
 describe('addItemToCart()', () => {
   it('追加しようとする商品がカートに存在しない場合', async () => {
     // ユーザーがサインインしている状態へ変更
-    userStore.set({ isSignedIn: true })
+    shopLogic.setAuthStatus(AuthStatus.Available)
     // API実行後のレスポンスの設定
     const product3 = PRODUCTS[2]
     const response = {
@@ -252,7 +236,7 @@ describe('addItemToCart()', () => {
 
   it('追加しようとする商品がカートに存在する場合', async () => {
     // ユーザーがサインインしている状態へ変更
-    userStore.set({ isSignedIn: true })
+    shopLogic.setAuthStatus(AuthStatus.Available)
     // API実行後のレスポンスの設定
     const response = {
       ...cartStore.all[0],
@@ -293,7 +277,7 @@ describe('addItemToCart()', () => {
 
   it('ユーザーがサインインしていない場合', async () => {
     // ユーザーがサインインしていない状態へ変更
-    userStore.set({ isSignedIn: false })
+    shopLogic.setAuthStatus(AuthStatus.None)
     // チェックアウトステータスに成功を設定
     cartStore.setCheckoutStatus(CheckoutStatus.Successful)
 
@@ -309,7 +293,7 @@ describe('addItemToCart()', () => {
   })
 
   it('APIでエラーが発生した場合', async () => {
-    userStore.set({ isSignedIn: true })
+    shopLogic.setAuthStatus(AuthStatus.Available)
     const prevCartItem = cartStore.all[0]
     const prevProduct = productStore.getById(prevCartItem.productId)!
     td.when(api.updateCartItems(td.matchers.anything())).thenThrow(new Error())
@@ -331,7 +315,7 @@ describe('addItemToCart()', () => {
 describe('removeItemFromCart()', () => {
   it('カートアイテムの数が2個以上の場合', async () => {
     // ユーザーがサインインしている状態へ変更
-    userStore.set({ isSignedIn: true })
+    shopLogic.setAuthStatus(AuthStatus.Available)
     // API実行後のレスポンスの設定
     const response = {
       ...cartStore.all[0],
@@ -379,7 +363,7 @@ describe('removeItemFromCart()', () => {
 
   it('カートアイテムの数が1個の場合', async () => {
     // ユーザーがサインインしている状態へ変更
-    userStore.set({ isSignedIn: true })
+    shopLogic.setAuthStatus(AuthStatus.Available)
     // API実行後のレスポンスの設定
     const response = {
       ...cartStore.all[0],
@@ -417,7 +401,7 @@ describe('removeItemFromCart()', () => {
 
   it('ユーザーがサインインしていない場合', async () => {
     // ユーザーがサインインしていない状態へ変更
-    userStore.set({ isSignedIn: false })
+    shopLogic.setAuthStatus(AuthStatus.None)
     // チェックアウトステータスに成功を設定
     cartStore.setCheckoutStatus(CheckoutStatus.Successful)
 
@@ -433,7 +417,7 @@ describe('removeItemFromCart()', () => {
   })
 
   it('APIでエラーが発生した場合', async () => {
-    userStore.set({ isSignedIn: true })
+    shopLogic.setAuthStatus(AuthStatus.Available)
     const prevCartItem = cartStore.all[0]
     const prevProduct = productStore.getById(prevCartItem.productId)!
     td.when(api.updateCartItems(td.matchers.anything())).thenThrow(new Error())
@@ -454,7 +438,7 @@ describe('removeItemFromCart()', () => {
 
 describe('checkout()', () => {
   it('ベーシックケース', async () => {
-    userStore.set({ isSignedIn: true })
+    shopLogic.setAuthStatus(AuthStatus.Available)
 
     await shopLogic.checkout()
 

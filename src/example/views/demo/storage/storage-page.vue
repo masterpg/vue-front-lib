@@ -111,6 +111,7 @@ import { StorageNodeType } from '@/lib'
 
 <script lang="ts">
 import {
+  AuthStatus,
   BaseComponent,
   CompStorageUploadProgressFloat,
   CompTreeView,
@@ -121,8 +122,8 @@ import {
   UploadEndedEvent,
   User,
 } from '@/lib'
+import { Component, Watch } from 'vue-property-decorator'
 import { RawLocation, Route } from 'vue-router'
-import { Component } from 'vue-property-decorator'
 import StorageDirCreateDialog from '@/example/views/demo/storage/storage-dir-create-dialog.vue'
 import StorageDirView from '@/example/views/demo/storage/storage-dir-view.vue'
 import StorageNodeMoveDialog from '@/example/views/demo/storage/storage-node-move-dialog.vue'
@@ -158,15 +159,9 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
 
   created() {
     this.m_movePageToNode = debounce(this.m_movePageToNodeFunc, 100)
-
-    this.$logic.auth.addSignedInListener(this.m_userOnSignedIn)
-    this.$logic.auth.addSignedOutListener(this.m_userOnSignedOut)
   }
 
   destroyed() {
-    this.$logic.auth.removeSignedInListener(this.m_userOnSignedIn)
-    this.$logic.auth.removeSignedOutListener(this.m_userOnSignedOut)
-
     this.treeStore.teardown()
   }
 
@@ -188,7 +183,7 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
       this.m_scrollToSelectedNode(dirPath, false)
     }
     // 初期ストレージノードの読み込みが行われていなく、かつユーザーがサインインしてる場合
-    else if (this.$logic.auth.user.isSignedIn) {
+    else if (this.$logic.auth.isSignedIn) {
       await this.m_pullInitialNodes()
     }
   }
@@ -560,6 +555,16 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   //
   //----------------------------------------------------------------------
 
+  @Watch('$logic.auth.isSignedIn')
+  private async m_isSignedInOnChange(newValue: AuthStatus, oldValue: AuthStatus) {
+    if (this.$logic.auth.isSignedIn) {
+      await this.m_pullInitialNodes()
+    } else {
+      this.m_dirView.setDirPath(null)
+      this.m_setupPathBlocks()
+    }
+  }
+
   private async m_loadFileButtonOnClick(e) {
     /*
     // 画像パス(例: images/space.png)から参照を取得
@@ -618,23 +623,6 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
     const uploadDirNode = this.treeStore.getNode(e.uploadDirPath)!
     uploadDirNode.open()
     this.m_openParentNode(uploadDirNode.value, true)
-  }
-
-  /**
-   * ユーザーがサインインした際のリスナです。
-   * @param user
-   */
-  private async m_userOnSignedIn(user: User) {
-    await this.m_pullInitialNodes()
-  }
-
-  /**
-   * ユーザーがサインアウトした際のリスナです。
-   * @param user
-   */
-  private async m_userOnSignedOut(user: User) {
-    this.m_dirView.setDirPath(null)
-    this.m_setupPathBlocks()
   }
 
   //--------------------------------------------------

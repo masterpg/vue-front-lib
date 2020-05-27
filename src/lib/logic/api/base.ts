@@ -13,7 +13,17 @@ export interface LibAPIContainer {
   getCustomToken(): Promise<string>
 
   //--------------------------------------------------
-  //  User storage
+  //  User
+  //--------------------------------------------------
+
+  getAuthData(): Promise<AuthDataResult>
+
+  setOwnUserInfo(input: UserInfoInput): Promise<User>
+
+  deleteOwnUser(): Promise<boolean>
+
+  //--------------------------------------------------
+  //  Storage (User)
   //--------------------------------------------------
 
   getUserStorageNode(nodePath: string): Promise<StorageNode | undefined>
@@ -51,7 +61,7 @@ export interface LibAPIContainer {
   setUserStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
   //--------------------------------------------------
-  //  Application storage
+  //  Storage (Admin)
   //--------------------------------------------------
 
   getStorageNode(nodePath: string): Promise<StorageNode | undefined>
@@ -118,6 +128,8 @@ export interface APITimestampEntity {
   updatedAt: string
 }
 
+export type ToAPITimestampEntity<T> = OmitEntityTimestamp<T> & APITimestampEntity
+
 export interface Entity {
   id: string
 }
@@ -145,6 +157,41 @@ export interface IdToken extends firebase.auth.IdTokenResult, UserClaims {}
 
 export interface AppConfigResponse {
   usersDir: string
+}
+
+//--------------------------------------------------
+//  User
+//--------------------------------------------------
+
+export enum AuthStatus {
+  None = 'None',
+  WaitForEmailVerified = 'WaitForEmailVerified',
+  WaitForEntry = 'WaitForEntry',
+  Available = 'Available',
+}
+
+export interface AuthDataResult {
+  status: AuthStatus
+  token: string
+  user?: User
+}
+
+export interface User extends TimestampEntity {
+  email: string
+  emailVerified: boolean
+  isAppAdmin: boolean
+  myDirName: string
+  publicProfile: PublicProfile
+}
+
+export interface PublicProfile extends TimestampEntity {
+  displayName: string
+  photoURL?: string
+}
+
+export interface UserInfoInput {
+  fullName: string
+  displayName: string
 }
 
 //--------------------------------------------------

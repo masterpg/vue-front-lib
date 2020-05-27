@@ -1,15 +1,20 @@
-import { User } from './store'
+import { AuthStatus } from './api'
+import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
 
-export type SignedInListenerFunc = (user: User) => any
+@Component
+class BaseLogicStore extends Vue {
+  m_db: firebase.firestore.Firestore | null = null
 
-export type SignedOutListenerFunc = (user: User) => any
+  get db(): firebase.firestore.Firestore {
+    if (!this.m_db) this.m_db = firebase.firestore()
+    return this.m_db
+  }
 
-let db: firebase.firestore.Firestore
+  authStatus: AuthStatus = AuthStatus.None
+}
 
-const signedInListeners: SignedInListenerFunc[] = []
-
-const signedOutListeners: SignedOutListenerFunc[] = []
+const logicStore = new BaseLogicStore()
 
 export abstract class BaseLogic extends Vue {
   //----------------------------------------------------------------------
@@ -20,7 +25,6 @@ export abstract class BaseLogic extends Vue {
 
   constructor() {
     super()
-    this.m_initFirestore()
   }
 
   //----------------------------------------------------------------------
@@ -30,55 +34,18 @@ export abstract class BaseLogic extends Vue {
   //----------------------------------------------------------------------
 
   protected get db(): firebase.firestore.Firestore {
-    return db
+    return logicStore.db
   }
 
-  protected get signedInListeners(): SignedInListenerFunc[] {
-    return [...signedInListeners]
+  protected get authStatus(): AuthStatus {
+    return logicStore.authStatus
   }
 
-  protected get signedOutListeners(): SignedOutListenerFunc[] {
-    return [...signedOutListeners]
+  protected setAuthStatus(value: AuthStatus): void {
+    logicStore.authStatus = value
   }
 
-  //----------------------------------------------------------------------
-  //
-  //  Internal methods
-  //
-  //----------------------------------------------------------------------
-
-  protected addSignedInListener(listener: SignedInListenerFunc): void {
-    if (this.signedInListeners.includes(listener)) return
-    signedInListeners.push(listener)
-  }
-
-  protected removeSignedInListener(listener: SignedInListenerFunc): void {
-    const index = this.signedInListeners.indexOf(listener)
-    if (index >= 0) {
-      signedInListeners.splice(index, 1)
-    }
-  }
-
-  protected addSignedOutListener(listener: SignedOutListenerFunc): void {
-    if (signedOutListeners.includes(listener)) return
-    signedOutListeners.push(listener)
-  }
-
-  protected removeSignedOutListener(listener: SignedOutListenerFunc): void {
-    const index = signedOutListeners.indexOf(listener)
-    if (index >= 0) {
-      signedOutListeners.splice(index, 1)
-    }
-  }
-
-  /**
-   * Firestoreを初期化します。
-   */
-  private m_initFirestore(): void {
-    // Firestoreのインスタンスが既に初期化されている場合、処理を抜ける
-    if (db) return
-
-    // Firestoreインスタンスを初期化
-    db = firebase.firestore()
+  protected get isSignedIn(): boolean {
+    return this.authStatus === AuthStatus.Available
   }
 }

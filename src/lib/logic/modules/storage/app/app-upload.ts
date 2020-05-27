@@ -5,8 +5,7 @@ import { store } from '../../../store'
 
 export class AppStorageUploader extends StorageUploader {
   protected async verifyExecutable(): Promise<void> {
-    const isAppAdmin = await store.user.getIsAppAdmin()
-    if (!isAppAdmin) {
+    if (!store.user.isAppAdmin) {
       Dialog.create({
         title: String(i18n.t('common.systemError')),
         message: String(i18n.t('error.unexpected')),

@@ -1,5 +1,6 @@
-import { APP_ADMIN_USER, GENERAL_USER } from '../../../../../helpers/common/data'
-import { StorageNodeShareSettings } from '@/lib'
+import { APP_ADMIN_TOKEN, GENERAL_FIREBASE_USER, GENERAL_TOKEN, GENERAL_USER } from '../../../../../helpers/common/data'
+import { AuthStatus, PublicProfile, StorageNodeShareSettings, User, UserInfoInput } from '@/lib'
+import { OmitEntityTimestamp } from '@/firestore-ex'
 import { TestLibAPIContainer } from '../../../../../mocks/lib/logic/api'
 import { initLibTest } from '../../../../../helpers/lib/init'
 import { isEmpty } from 'lodash'
@@ -9,6 +10,10 @@ import { isEmpty } from 'lodash'
 //  Test data
 //
 //========================================================================
+
+interface TestAuthData extends OmitEntityTimestamp<Omit<User, 'publicProfile'>> {
+  publicProfile: OmitEntityTimestamp<PublicProfile>
+}
 
 const TEST_FILES_DIR = 'test-files'
 
@@ -48,7 +53,7 @@ beforeEach(async () => {
 describe('App API', () => {
   describe('getCustomToken', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       const actual = await api.getCustomToken()
 
@@ -57,9 +62,124 @@ describe('App API', () => {
   })
 })
 
+describe('User API', () => {
+  describe('getAuthData', () => {
+    it('疎通確認', async () => {
+      // テストユーザーを登録
+      await api.setTestUsers(GENERAL_USER)
+
+      api.setTestAuthToken(GENERAL_TOKEN)
+
+      // 認証データの取得
+      const actual = await api.getAuthData()
+
+      expect(actual.status).toBe(AuthStatus.Available)
+      expect(actual.token).toBeDefined()
+      expect(actual.user).toMatchObject({
+        id: GENERAL_USER.uid,
+        fullName: GENERAL_USER.fullName,
+        email: GENERAL_USER.email,
+        emailVerified: GENERAL_USER.emailVerified,
+        isAppAdmin: GENERAL_USER.customClaims!.isAppAdmin,
+        myDirName: GENERAL_USER.customClaims!.myDirName,
+        publicProfile: {
+          id: GENERAL_USER.uid,
+          displayName: GENERAL_USER.displayName,
+          photoURL: GENERAL_USER.photoURL,
+        },
+      } as TestAuthData)
+      expect(actual.user!.createdAt.isValid()).toBeTruthy()
+      expect(actual.user!.updatedAt.isValid()).toBeTruthy()
+      expect(actual.user!.publicProfile.createdAt.isValid()).toBeTruthy()
+      expect(actual.user!.publicProfile.updatedAt.isValid()).toBeTruthy()
+    })
+
+    it('サインインしていない場合', async () => {
+      let actual!: Error
+      try {
+        await api.getAuthData()
+      } catch (err) {
+        actual = err
+      }
+
+      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
+    })
+  })
+
+  describe('setOwnUserInfo', () => {
+    it('疎通確認', async () => {
+      // テストユーザーを登録
+      const [user] = (await api.setTestUsers(GENERAL_USER))!
+
+      api.setTestAuthToken(GENERAL_TOKEN)
+
+      // ユーザー情報設定
+      const userInfoInput: UserInfoInput = { displayName: 'john', fullName: 'John Doe' }
+      const actual = (await api.setOwnUserInfo(userInfoInput))!
+
+      expect(actual).toMatchObject({
+        id: GENERAL_USER.uid,
+        fullName: userInfoInput.fullName,
+        email: GENERAL_USER.email,
+        emailVerified: GENERAL_USER.emailVerified,
+        isAppAdmin: GENERAL_USER.customClaims!.isAppAdmin,
+        myDirName: GENERAL_USER.customClaims!.myDirName,
+        publicProfile: {
+          id: GENERAL_USER.uid,
+          displayName: userInfoInput.displayName,
+          photoURL: GENERAL_USER.photoURL,
+        },
+      } as TestAuthData)
+      expect(actual.createdAt).toEqual(user.createdAt)
+      expect(actual.updatedAt.isAfter(user.updatedAt)).toBeTruthy()
+      expect(actual.publicProfile.createdAt).toEqual(user.publicProfile.createdAt)
+      expect(actual.publicProfile.updatedAt.isAfter(user.publicProfile.updatedAt)).toBeTruthy()
+    })
+
+    it('サインインしていない場合', async () => {
+      let actual!: Error
+      try {
+        await api.setOwnUserInfo({
+          displayName: GENERAL_USER.displayName,
+          fullName: GENERAL_USER.fullName,
+        })
+      } catch (err) {
+        actual = err
+      }
+
+      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
+    })
+  })
+
+  describe('deleteOwnUser', () => {
+    it('疎通確認', async () => {
+      // テストユーザーを登録
+      await api.setTestUsers(GENERAL_USER)
+
+      api.setTestAuthToken(GENERAL_TOKEN)
+
+      // ユーザー削除
+      const actual = await api.deleteOwnUser()
+
+      expect(actual).toBeTruthy()
+    })
+
+    it('サインインしていない場合', async () => {
+      let actual!: Error
+      try {
+        await api.deleteOwnUser()
+      } catch (err) {
+        actual = err
+      }
+
+      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
+    })
+  })
+})
+
 describe('Storage API', () => {
   beforeEach(async () => {
-    await api.removeUserBaseTestDir(GENERAL_USER)
+    await api.removeUserBaseTestDir(GENERAL_TOKEN)
     await api.removeTestDir([TEST_FILES_DIR])
 
     // Cloud Storageで短い間隔のノード追加・削除を行うとエラーが発生するので間隔調整している
@@ -67,16 +187,16 @@ describe('Storage API', () => {
   })
 
   //--------------------------------------------------
-  //  User
+  //  Storage (User)
   //--------------------------------------------------
 
   describe('getUserStorageNode', () => {
     beforeEach(async () => {
-      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/d11/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [{ filePath: `d1/d11/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
     })
 
     it('疎通確認 - 対象ノードあり', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       const actual = (await api.getUserStorageNode(`d1/d11`))!
 
@@ -84,7 +204,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - 対象ノードなし', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       const actual = (await api.getUserStorageNode(`d1/dXX`))!
 
@@ -94,7 +214,7 @@ describe('Storage API', () => {
 
   describe('getUserStorageDirDescendants', () => {
     beforeEach(async () => {
-      await api.uploadTestUserFiles(GENERAL_USER, [
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [
         { filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/d11/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/d11/d111/fileC.txt`, fileData: 'test', contentType: 'text/plain' },
@@ -102,7 +222,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングなし', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       const actual = await api.getUserStorageDirDescendants(null, `d1`)
 
@@ -117,7 +237,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングあり', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       const actual = await api.callStoragePaginationAPI(api.getUserStorageDirDescendants, { maxChunk: 2 }, `d1`)
 
@@ -133,7 +253,7 @@ describe('Storage API', () => {
 
   describe('getUserStorageDescendants', () => {
     beforeEach(async () => {
-      await api.uploadTestUserFiles(GENERAL_USER, [
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [
         { filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/d11/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/d11/d111/fileC.txt`, fileData: 'test', contentType: 'text/plain' },
@@ -141,7 +261,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングなし', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       const actual = await api.getUserStorageDescendants(null, `d1`)
 
@@ -155,7 +275,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングあり', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       const actual = await api.callStoragePaginationAPI(api.getUserStorageDescendants, { maxChunk: 2 }, `d1`)
 
@@ -170,7 +290,7 @@ describe('Storage API', () => {
 
   describe('getUserStorageDirChildren', () => {
     beforeEach(async () => {
-      await api.uploadTestUserFiles(GENERAL_USER, [
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [
         { filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/d11/fileC.txt`, fileData: 'test', contentType: 'text/plain' },
@@ -178,7 +298,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングなし', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       const actual = await api.getUserStorageDirChildren(null, `d1`)
 
@@ -191,7 +311,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングあり', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       const actual = await api.callStoragePaginationAPI(api.getUserStorageDirChildren, { maxChunk: 2 }, `d1`)
 
@@ -205,7 +325,7 @@ describe('Storage API', () => {
 
   describe('getUserStorageChildren', () => {
     beforeEach(async () => {
-      await api.uploadTestUserFiles(GENERAL_USER, [
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [
         { filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/d11/fileC.txt`, fileData: 'test', contentType: 'text/plain' },
@@ -213,7 +333,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングなし', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       const actual = await api.getUserStorageChildren(null, `d1`)
 
@@ -225,7 +345,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングあり', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       const actual = await api.callStoragePaginationAPI(api.getUserStorageChildren, { maxChunk: 2 }, `d1`)
 
@@ -238,11 +358,11 @@ describe('Storage API', () => {
 
   describe('getUserStorageHierarchicalNodes', () => {
     beforeEach(async () => {
-      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [{ filePath: `d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
     })
 
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       const actual = await api.getUserStorageHierarchicalNodes(`d1/d11/d111/fileA.txt`)
 
@@ -256,11 +376,11 @@ describe('Storage API', () => {
 
   describe('getUserStorageAncestorDirs', () => {
     beforeEach(async () => {
-      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [{ filePath: `d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
     })
 
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       const actual = await api.getUserStorageAncestorDirs(`d1/d11/d111/fileA.txt`)
 
@@ -273,10 +393,10 @@ describe('Storage API', () => {
 
   describe('handleUploadedUserFile', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       await api.createUserStorageDirs([`docs`])
-      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [{ filePath: `docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.handleUploadedUserFile(`docs/fileA.txt`)
 
@@ -286,7 +406,7 @@ describe('Storage API', () => {
 
   describe('createUserStorageDirs', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       const actual = await api.createUserStorageDirs([`d1/d11`])
 
@@ -298,9 +418,9 @@ describe('Storage API', () => {
 
   describe('removeUserStorageDir', () => {
     it('疎通確認 - ページングなし', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
-      await api.uploadTestUserFiles(GENERAL_USER, [
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [
         { filePath: `d1/file1.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/file2.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/file3.txt`, fileData: 'test', contentType: 'text/plain' },
@@ -320,9 +440,9 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングあり', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
-      await api.uploadTestUserFiles(GENERAL_USER, [
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [
         { filePath: `d1/file1.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/file2.txt`, fileData: 'test', contentType: 'text/plain' },
         { filePath: `d1/file3.txt`, fileData: 'test', contentType: 'text/plain' },
@@ -344,9 +464,9 @@ describe('Storage API', () => {
 
   describe('removeUserStorageFile', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
-      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = (await api.removeUserStorageFile(`d1/fileA.txt`))!
 
@@ -356,7 +476,7 @@ describe('Storage API', () => {
 
   describe('moveUserStorageDir', () => {
     it('疎通確認 - ページングなし', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       await api.createUserStorageDirs([`d1/d11`, `d1/d12`, `d1/d13`, `d1/d14`, `d1/d15`, `d2`])
 
@@ -372,7 +492,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングあり', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       await api.createUserStorageDirs([`d1/d11`, `d1/d12`, `d1/d13`, `d1/d14`, `d1/d15`, `d2`])
 
@@ -390,10 +510,10 @@ describe('Storage API', () => {
 
   describe('moveUserStorageFile', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       await api.createUserStorageDirs([`d1`, `d2`])
-      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.moveUserStorageFile(`d1/fileA.txt`, `d2/fileA.txt`)
 
@@ -403,7 +523,7 @@ describe('Storage API', () => {
 
   describe('renameUserStorageDir', () => {
     it('疎通確認 - ページングなし', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       await api.createUserStorageDirs([`d1/d11`, `d1/d12`, `d1/d13`, `d1/d14`, `d1/d15`])
 
@@ -419,7 +539,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングあり', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       await api.createUserStorageDirs([`d1/d11`, `d1/d12`, `d1/d13`, `d1/d14`, `d1/d15`])
 
@@ -437,10 +557,10 @@ describe('Storage API', () => {
 
   describe('renameUserStorageFile', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       await api.createUserStorageDirs([`d1`])
-      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.renameUserStorageFile(`d1/fileA.txt`, `fileB.txt`)
 
@@ -450,10 +570,10 @@ describe('Storage API', () => {
 
   describe('setUserStorageDirShareSettings', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       await api.createUserStorageDirs([`d1`])
-      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.setUserStorageDirShareSettings(`d1`, { isPublic: true, readUIds: ['ichiro'], writeUIds: ['ichiro'] })
 
@@ -464,10 +584,10 @@ describe('Storage API', () => {
 
   describe('setUserStorageFileShareSettings', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(GENERAL_USER)
+      api.setTestAuthToken(GENERAL_TOKEN)
 
       await api.createUserStorageDirs([`d1`])
-      await api.uploadTestUserFiles(GENERAL_USER, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestUserFiles(GENERAL_TOKEN, [{ filePath: `d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.setUserStorageFileShareSettings(`d1/fileA.txt`, { isPublic: true, readUIds: ['ichiro'], writeUIds: ['ichiro'] })
 
@@ -476,7 +596,7 @@ describe('Storage API', () => {
   })
 
   //--------------------------------------------------
-  //  Application
+  //  Storage (Application)
   //--------------------------------------------------
 
   describe('getStorageNode', () => {
@@ -485,7 +605,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - 対象ノードあり', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       const actual = (await api.getStorageNode(`${TEST_FILES_DIR}/d1/d11`))!
 
@@ -493,7 +613,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - 対象ノードなし', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       const actual = (await api.getStorageNode(`${TEST_FILES_DIR}/d1/dXX`))!
 
@@ -513,7 +633,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングなし', async () => {
       expect(true).toBe(true)
 
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       const actual = await api.getStorageDirDescendants(null, `${TEST_FILES_DIR}/d1`)
 
@@ -528,7 +648,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングあり', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       const actual = await api.callStoragePaginationAPI(api.getStorageDirDescendants, { maxChunk: 2 }, `${TEST_FILES_DIR}/d1`)
 
@@ -552,7 +672,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングなし', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       const actual = await api.getStorageDescendants(null, `${TEST_FILES_DIR}/d1`)
 
@@ -566,7 +686,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングあり', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       const actual = await api.callStoragePaginationAPI(api.getStorageDescendants, { maxChunk: 2 }, `${TEST_FILES_DIR}/d1`)
 
@@ -589,7 +709,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングなし', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       const actual = await api.getStorageDirChildren(null, `${TEST_FILES_DIR}/d1`)
 
@@ -602,7 +722,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングあり', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       const actual = await api.callStoragePaginationAPI(api.getStorageDirChildren, { maxChunk: 2 }, `${TEST_FILES_DIR}/d1`)
 
@@ -624,7 +744,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングなし', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       const actual = await api.getStorageChildren(null, `${TEST_FILES_DIR}/d1`)
 
@@ -636,7 +756,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングあり', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       const actual = await api.callStoragePaginationAPI(api.getStorageChildren, { maxChunk: 2 }, `${TEST_FILES_DIR}/d1`)
 
@@ -653,7 +773,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       const actual = await api.getStorageHierarchicalNodes(`${TEST_FILES_DIR}/d1/d11/d111/fileA.txt`)
 
@@ -672,7 +792,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       const actual = await api.getStorageAncestorDirs(`${TEST_FILES_DIR}/d1/d11/d111/fileA.txt`)
 
@@ -686,7 +806,7 @@ describe('Storage API', () => {
 
   describe('handleUploadedFile', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
       await api.createStorageDirs([`${TEST_FILES_DIR}/docs`])
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
@@ -698,7 +818,7 @@ describe('Storage API', () => {
 
   describe('createStorageDirs', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       const actual = await api.createStorageDirs([`${TEST_FILES_DIR}/d1/d11`])
 
@@ -711,7 +831,7 @@ describe('Storage API', () => {
 
   describe('removeStorageDir', () => {
     it('疎通確認 - ページングなし', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       await api.uploadTestFiles([
         { filePath: `${TEST_FILES_DIR}/d1/file1.txt`, fileData: 'test', contentType: 'text/plain' },
@@ -733,7 +853,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングあり', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       await api.uploadTestFiles([
         { filePath: `${TEST_FILES_DIR}/d1/file1.txt`, fileData: 'test', contentType: 'text/plain' },
@@ -757,7 +877,7 @@ describe('Storage API', () => {
 
   describe('removeStorageFile', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
@@ -769,7 +889,7 @@ describe('Storage API', () => {
 
   describe('moveStorageDir', () => {
     it('疎通確認 - ページングなし', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       await api.createStorageDirs([
         `${TEST_FILES_DIR}/d1/d11`,
@@ -792,7 +912,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングあり', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       await api.createStorageDirs([
         `${TEST_FILES_DIR}/d1/d11`,
@@ -817,7 +937,7 @@ describe('Storage API', () => {
 
   describe('moveStorageFile', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       await api.createStorageDirs([`${TEST_FILES_DIR}/d1`, `${TEST_FILES_DIR}/d2`])
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
@@ -830,7 +950,7 @@ describe('Storage API', () => {
 
   describe('renameStorageDir', () => {
     it('疎通確認 - ページングなし', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       await api.createStorageDirs([
         `${TEST_FILES_DIR}/d1/d11`,
@@ -852,7 +972,7 @@ describe('Storage API', () => {
     })
 
     it('疎通確認 - ページングあり', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       await api.createStorageDirs([
         `${TEST_FILES_DIR}/d1/d11`,
@@ -876,7 +996,7 @@ describe('Storage API', () => {
 
   describe('renameStorageFile', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       await api.createStorageDirs([`${TEST_FILES_DIR}/d1`])
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
@@ -889,7 +1009,7 @@ describe('Storage API', () => {
 
   describe('setStorageDirShareSettings', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
       await api.createStorageDirs([`${TEST_FILES_DIR}/dir1`])
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/dir1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
@@ -902,7 +1022,7 @@ describe('Storage API', () => {
 
   describe('setStorageFileShareSettings', () => {
     it('疎通確認', async () => {
-      api.setTestAuthUser(APP_ADMIN_USER)
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
       await api.createStorageDirs([`${TEST_FILES_DIR}/dir1`])
       await api.uploadTestFiles([{ filePath: `${TEST_FILES_DIR}/dir1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 

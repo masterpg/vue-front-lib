@@ -1,5 +1,4 @@
-import * as firebase from 'firebase/app'
-import { BaseStore } from '@/lib'
+import { BaseLogic, BaseStore } from '@/lib'
 import { Constructor } from 'web-base-lib'
 
 //========================================================================
@@ -13,8 +12,11 @@ type TestStore<Store, State> = Omit<Store, 'state' | 'initState'> & {
   initState: BaseStore<State>['initState']
 }
 
-type TestLogic<L> = { [P in keyof L]: L[P] } & {
-  db: firebase.firestore.Firestore
+type TestLogic<L extends BaseLogic> = { [P in keyof L]: L[P] } & {
+  db: BaseLogic['db']
+  authStatus: BaseLogic['authStatus']
+  setAuthStatus: BaseLogic['setAuthStatus']
+  isSignedIn: BaseLogic['isSignedIn']
 }
 
 function newTestStore<Store, State>(storeModuleClass: Constructor<Store>): TestStore<Store, State> {

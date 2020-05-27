@@ -1,8 +1,7 @@
+import { PublicProfile, User, UserClaims } from '../../api'
+import dayjs, { Dayjs } from 'dayjs'
 import { BaseStore } from '../base'
 import { Component } from 'vue-property-decorator'
-import { UserClaims } from '../../api'
-import isBoolean from 'lodash/isBoolean'
-import isString from 'lodash/isString'
 
 //========================================================================
 //
@@ -11,7 +10,7 @@ import isString from 'lodash/isString'
 //========================================================================
 
 interface UserStore extends User {
-  set(user: Partial<User>): void
+  set(user: EditedUser): void
 
   clear(): void
 
@@ -20,21 +19,12 @@ interface UserStore extends User {
   reflectCustomToken(): Promise<void>
 }
 
-interface User extends Required<UserClaims> {
-  id: string
-  isSignedIn: boolean
-  displayName: string
-  photoURL: string
-  email: string
-  emailVerified: boolean
-  /**
-   * セキュリティ安全なアプリケーション管理者フラグを取得します。
-   * `isAppAdmin`でも同様の値を取得できますが、このプロパティは
-   * ブラウザの開発ツールなどで設定値を変更できてしまいます。
-   * このメソッドは暗号化されたトークンから値を取得しなおすため、
-   * 改ざんの心配がない安全な値を取得できます。
-   */
-  getIsAppAdmin(): Promise<boolean>
+interface ReadonlyUser extends Readonly<Omit<User, 'publicProfile'>> {
+  publicProfile: Readonly<PublicProfile>
+}
+
+interface EditedUser extends Partial<Omit<User, 'publicProfile'>> {
+  publicProfile?: Partial<PublicProfile>
 }
 
 //========================================================================
@@ -61,52 +51,38 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
   //
   //----------------------------------------------------------------------
 
-  private m_id = ''
+  private m_user: User = this.m_createEmptyState()
 
   get id(): string {
-    return this.m_id
+    return this.m_user.id
   }
-
-  private m_isSignedIn = false
-
-  get isSignedIn(): boolean {
-    return this.m_isSignedIn
-  }
-
-  private m_displayName = ''
-
-  get displayName(): string {
-    return this.m_displayName
-  }
-
-  private m_photoURL = ''
-
-  get photoURL(): string {
-    return this.m_photoURL
-  }
-
-  private m_email = ''
 
   get email(): string {
-    return this.m_email
+    return this.m_user.email
   }
-
-  private m_emailVerified = false
 
   get emailVerified(): boolean {
-    return this.m_emailVerified
+    return this.m_user.emailVerified
   }
-
-  private m_isAppAdmin = false
 
   get isAppAdmin(): boolean {
-    return this.m_isAppAdmin
+    return this.m_user.isAppAdmin
   }
 
-  private m_myDirName = ''
-
   get myDirName(): string {
-    return this.m_myDirName
+    return this.m_user.myDirName
+  }
+
+  get createdAt(): Dayjs {
+    return this.m_user.createdAt
+  }
+
+  get updatedAt(): Dayjs {
+    return this.m_user.updatedAt
+  }
+
+  get publicProfile(): Readonly<PublicProfile> {
+    return this.m_user.publicProfile
   }
 
   //----------------------------------------------------------------------
@@ -115,15 +91,21 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
   //
   //----------------------------------------------------------------------
 
-  set(value: Partial<User>): void {
-    if (isString(value.id)) this.m_id = value.id!
-    if (isBoolean(value.isSignedIn)) this.m_isSignedIn = value.isSignedIn!
-    if (isString(value.displayName)) this.m_displayName = value.displayName!
-    if (isString(value.photoURL)) this.m_photoURL = value.photoURL!
-    if (isString(value.email)) this.m_email = value.email!
-    if (isBoolean(value.emailVerified)) this.m_emailVerified = value.emailVerified!
-    if (isBoolean(value.isAppAdmin)) this.m_isAppAdmin = value.isAppAdmin!
-    if (isString(value.myDirName)) this.m_myDirName = value.myDirName!
+  set(value: EditedUser): void {
+    if (typeof value.id === 'string') this.m_user.id = value.id
+    if (typeof value.email === 'string') this.m_user.email = value.email
+    if (typeof value.emailVerified === 'boolean') this.m_user.emailVerified = value.emailVerified
+    if (typeof value.isAppAdmin === 'boolean') this.m_user.isAppAdmin = value.isAppAdmin
+    if (typeof value.myDirName === 'string') this.m_user.myDirName = value.myDirName
+    if (value.createdAt) this.m_user.createdAt = value.createdAt
+    if (value.updatedAt) this.m_user.updatedAt = value.updatedAt
+    if (value.publicProfile) {
+      if (typeof value.publicProfile.id === 'string') this.m_user.publicProfile.id = value.publicProfile.id
+      if (typeof value.publicProfile.displayName === 'string') this.m_user.publicProfile.displayName = value.publicProfile.displayName
+      if (typeof value.publicProfile.photoURL === 'string') this.m_user.publicProfile.photoURL = value.publicProfile.photoURL
+      if (value.publicProfile.createdAt) this.m_user.publicProfile.createdAt = value.createdAt as Dayjs
+      if (value.publicProfile.updatedAt) this.m_user.publicProfile.updatedAt = value.updatedAt as Dayjs
+    }
   }
 
   clear(): void {
@@ -132,15 +114,20 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
 
   clone(): User {
     return {
-      id: this.id,
-      isSignedIn: this.isSignedIn,
-      displayName: this.displayName,
-      photoURL: this.photoURL,
+      id: this.m_user.id,
       email: this.email,
       emailVerified: this.emailVerified,
       isAppAdmin: this.isAppAdmin,
       myDirName: this.myDirName,
-      getIsAppAdmin: this.getIsAppAdmin,
+      createdAt: this.m_user.createdAt,
+      updatedAt: this.m_user.updatedAt,
+      publicProfile: {
+        id: this.m_user.publicProfile.id,
+        displayName: this.m_user.publicProfile.displayName,
+        photoURL: this.m_user.publicProfile.photoURL,
+        createdAt: this.m_user.publicProfile.createdAt,
+        updatedAt: this.m_user.publicProfile.updatedAt,
+      },
     }
   }
 
@@ -171,14 +158,19 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
   private m_createEmptyState(): User {
     return {
       id: '',
-      isSignedIn: false,
-      displayName: '',
-      photoURL: '',
       email: '',
       emailVerified: false,
       isAppAdmin: false,
       myDirName: '',
-      getIsAppAdmin: this.getIsAppAdmin,
+      createdAt: dayjs(0),
+      updatedAt: dayjs(0),
+      publicProfile: {
+        id: '',
+        displayName: '',
+        photoURL: '',
+        createdAt: dayjs(0),
+        updatedAt: dayjs(0),
+      },
     }
   }
 }
@@ -189,4 +181,4 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
 //
 //========================================================================
 
-export { UserStore, User, UserStoreImpl }
+export { EditedUser, UserStore, UserStoreImpl }

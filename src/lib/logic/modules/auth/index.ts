@@ -1,10 +1,10 @@
-import { BaseLogic, SignedInListenerFunc, SignedOutListenerFunc } from '../../base'
-import { Component, Watch } from 'vue-property-decorator'
-import { User, store } from '../../store'
+import { AuthStatus, User, UserInfoInput, api } from '../../api'
+import { BaseLogic } from '../../base'
+import { Component } from 'vue-property-decorator'
 import { Dialog } from 'quasar'
-import { NoCache } from '../../../base/decorators'
-import { api } from '../../api'
-import { i18n } from '../../../i18n'
+import { NoCache } from '@/lib/base/decorators'
+import { i18n } from '@/lib/i18n'
+import { store } from '../../store'
 
 //========================================================================
 //
@@ -14,6 +14,10 @@ import { i18n } from '../../../i18n'
 
 interface AuthLogic {
   readonly user: User
+
+  readonly status: AuthStatus
+
+  readonly isSignedIn: boolean
 
   checkSingedIn(): Promise<void>
 
@@ -25,31 +29,25 @@ interface AuthLogic {
 
   signInAnonymously(): Promise<{ result: boolean; code: string; errorMessage: string }>
 
-  sendEmailVerification(continueURL: string): Promise<void>
+  sendEmailVerification(continueURL: string): Promise<{ result: boolean; code: string; errorMessage: string }>
 
   sendPasswordResetEmail(email: string, continueURL: string): Promise<{ result: boolean; code: string; errorMessage: string }>
 
   createUserWithEmailAndPassword(
     email: string,
     password,
-    profile: { displayName: string; photoURL: string | null }
+    profile: { photoURL: string | null }
   ): Promise<{ result: boolean; code: string; errorMessage: string }>
 
   signOut(): Promise<void>
 
-  deleteAccount(): Promise<{ result: boolean; code: string; errorMessage: string }>
+  deleteUser(): Promise<{ result: boolean; code: string; errorMessage: string }>
 
   updateEmail(newEmail: string): Promise<{ result: boolean; code: string; errorMessage: string }>
 
   fetchSignInMethodsForEmail(email: string): Promise<AuthProviderType[]>
 
-  addSignedInListener(listener: (user: User) => any): void
-
-  removeSignedInListener(listener: (user: User) => any): void
-
-  addSignedOutListener(listener: (user: User) => any): void
-
-  removeSignedOutListener(listener: (user: User) => any): void
+  setUser(input: UserInfoInput): Promise<void>
 }
 
 enum AuthProviderType {
@@ -94,6 +92,14 @@ class AuthLogicImpl extends BaseLogic implements AuthLogic {
     return store.user.clone()
   }
 
+  get status(): AuthStatus {
+    return this.authStatus
+  }
+
+  get isSignedIn(): boolean {
+    return this.authStatus === AuthStatus.Available
+  }
+
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -132,10 +138,21 @@ class AuthLogicImpl extends BaseLogic implements AuthLogic {
   async signInWithEmailAndPassword(email: string, password: string): Promise<{ result: boolean; code: string; errorMessage: string }> {
     try {
       await firebase.auth().signInWithEmailAndPassword(email, password)
-      await this.m_refreshUser()
     } catch (err) {
-      return { result: false, code: err.code || '', errorMessage: err.message || '' }
+      console.error(err)
+      let errorMessage: string | undefined
+      if (err.code === 'auth/wrong-password') {
+        errorMessage = String(this.$t('auth.authFailedCode.wrongPassword'))
+      } else if (err.code === 'auth/user-not-found') {
+        errorMessage = String(this.$t('auth.authFailedCode.userNotFound'))
+      } else if (err.code === 'auth/too-many-requests') {
+        errorMessage = String(this.$t('auth.authFailedCode.tooManyRequests'))
+      }
+      return { result: false, code: err.code || '', errorMessage: errorMessage || err.message || '' }
     }
+
+    await this.m_refreshUser()
+
     return { result: true, code: '', errorMessage: '' }
   }
 
@@ -151,7 +168,7 @@ class AuthLogicImpl extends BaseLogic implements AuthLogic {
   async createUserWithEmailAndPassword(
     email: string,
     password,
-    profile: { displayName: string; photoURL: string | null }
+    profile: { photoURL: string | null }
   ): Promise<{ result: boolean; code: string; errorMessage: string }> {
     try {
       // メールアドレス＋パスワードでアカウント作成
@@ -159,7 +176,12 @@ class AuthLogicImpl extends BaseLogic implements AuthLogic {
       // 作成されたアカウントに表示名を設定
       await firebase.auth().currentUser!.updateProfile(profile)
     } catch (err) {
-      return { result: false, code: err.code || '', errorMessage: err.message || '' }
+      console.error(err)
+      let errorMessage: string | undefined
+      if (err.code === 'auth/email-already-in-use') {
+        errorMessage = String(this.$t('auth.authFailedCode.emailAlreadyInUse'))
+      }
+      return { result: false, code: err.code || '', errorMessage: errorMessage || err.message || '' }
     }
 
     await this.m_refreshUser()
@@ -167,7 +189,7 @@ class AuthLogicImpl extends BaseLogic implements AuthLogic {
     return { result: true, code: '', errorMessage: '' }
   }
 
-  async sendEmailVerification(continueURL: string): Promise<void> {
+  async sendEmailVerification(continueURL: string): Promise<{ result: boolean; code: string; errorMessage: string }> {
     const user = firebase.auth().currentUser
     if (!user) {
       const err = new Error('There is not user signed-in.')
@@ -175,10 +197,21 @@ class AuthLogicImpl extends BaseLogic implements AuthLogic {
     }
 
     firebase.auth().languageCode = 'ja'
-    await firebase.auth().currentUser!.sendEmailVerification({
-      url: continueURL,
-      handleCodeInApp: false,
-    })
+    try {
+      await firebase.auth().currentUser!.sendEmailVerification({
+        url: continueURL,
+        handleCodeInApp: false,
+      })
+    } catch (err) {
+      console.error(err)
+      let errorMessage: string | undefined
+      if (err.code === 'auth/too-many-requests') {
+        errorMessage = String(this.$t('auth.authFailedCode.tooManyRequests'))
+      }
+      return { result: false, code: err.code || '', errorMessage: errorMessage || err.message || '' }
+    }
+
+    return { result: true, code: '', errorMessage: '' }
   }
 
   async sendPasswordResetEmail(email: string, continueURL: string): Promise<{ result: boolean; code: string; errorMessage: string }> {
@@ -200,18 +233,21 @@ class AuthLogicImpl extends BaseLogic implements AuthLogic {
     await this.m_refreshUser()
   }
 
-  async deleteAccount(): Promise<{ result: boolean; code: string; errorMessage: string }> {
+  async deleteUser(): Promise<{ result: boolean; code: string; errorMessage: string }> {
     const user = firebase.auth().currentUser
     if (!user) {
       return { result: false, code: '', errorMessage: 'There is not user signed-in.' }
     }
 
     try {
-      await user.delete()
-      await this.m_refreshUser()
+      await api.deleteOwnUser()
+      await firebase.auth().signOut()
     } catch (err) {
+      console.error(err)
       return { result: false, code: err.code || '', errorMessage: err.message || '' }
     }
+
+    await this.m_refreshUser()
 
     return { result: true, code: '', errorMessage: '' }
   }
@@ -225,10 +261,11 @@ class AuthLogicImpl extends BaseLogic implements AuthLogic {
     try {
       firebase.auth().languageCode = 'ja'
       await user.updateEmail(newEmail)
-      await this.m_refreshUser()
     } catch (err) {
       return { result: false, code: err.code || '', errorMessage: err.message || '' }
     }
+
+    await this.m_refreshUser()
 
     return { result: true, code: '', errorMessage: '' }
   }
@@ -237,20 +274,13 @@ class AuthLogicImpl extends BaseLogic implements AuthLogic {
     return (await firebase.auth().fetchSignInMethodsForEmail(email)) as AuthProviderType[]
   }
 
-  addSignedInListener(listener: SignedInListenerFunc): void {
-    super.addSignedInListener(listener)
-  }
-
-  removeSignedInListener(listener: SignedInListenerFunc): void {
-    super.removeSignedInListener(listener)
-  }
-
-  addSignedOutListener(listener: SignedOutListenerFunc): void {
-    super.addSignedOutListener(listener)
-  }
-
-  removeSignedOutListener(listener: SignedOutListenerFunc): void {
-    super.removeSignedOutListener(listener)
+  async setUser(input: UserInfoInput): Promise<void> {
+    const user = await api.setOwnUserInfo(input)
+    if (this.authStatus === AuthStatus.WaitForEntry) {
+      await this.m_refreshUser()
+    } else {
+      store.user.set(user)
+    }
   }
 
   //----------------------------------------------------------------------
@@ -261,61 +291,36 @@ class AuthLogicImpl extends BaseLogic implements AuthLogic {
 
   private async m_refreshUser(): Promise<void> {
     const user = firebase.auth().currentUser
+    // ローカルに認証ユーザーがある場合
     if (user) {
-      // サインインしたかどうかを判定
-      let isSignedIn = true
-      if (user.email) {
-        // アカウントがメールアドレスを持っている場合、
-        // アカウントが持つ認証プロバイダの中にパスワード認証があるか調べる
-        const providers = await this.fetchSignInMethodsForEmail(user.email)
-        const passwordProviderExists = providers.some(provider => provider === AuthProviderType.Password)
-        // アカウントが持つ認証プロバイダがパスワード認証のみでかつ、
-        // メールアドレス確認が行われていない場合
-        if (passwordProviderExists && providers.length === 1 && !user.emailVerified) {
-          isSignedIn = false
+      // 認証データをサーバーから取得
+      const authData = await api.getAuthData()
+      if (authData.status === AuthStatus.Available) {
+        // ストアにユーザーデータを設定
+        store.user.set(authData.user!)
+        // カスタムトークンを認証トークンに設定
+        try {
+          await firebase.auth().signInWithCustomToken(authData.token)
+        } catch (err) {
+          Dialog.create({
+            title: String(i18n.t('common.systemError')),
+            message: String(i18n.t('error.unexpected')),
+          })
+          console.error(err)
         }
+        // カスタムトークンをストアへ反映
+        await store.user.reflectCustomToken()
       }
-      // ストアのユーザー設定
-      store.user.set({
-        id: user.uid,
-        isSignedIn: isSignedIn,
-        displayName: user.displayName || '',
-        photoURL: user.photoURL || '',
-        email: user.email || '',
-        emailVerified: user.emailVerified,
-      })
-    } else {
+      // 認証ステータスを設定
+      this.setAuthStatus(authData.status)
+    }
+    // ローカルに認証ユーザーがない場合
+    else {
+      // ストアをクリア
       store.user.clear()
+      // 認証ステータスをクリア
+      this.setAuthStatus(AuthStatus.None)
     }
-  }
-
-  /**
-   * サインインした際に必要な処理を行います。
-   */
-  private async m_signedInProcess(): Promise<void> {
-    // カスタムトークンをサーバーから取得
-    try {
-      const customToken = await api.getCustomToken()
-      await firebase.auth().signInWithCustomToken(customToken)
-    } catch (err) {
-      Dialog.create({
-        title: String(i18n.t('common.systemError')),
-        message: String(i18n.t('error.unexpected')),
-      })
-      console.error(err)
-    }
-    // 取得したカスタムトークンをストアへ反映
-    await store.user.reflectCustomToken()
-    // 登録されているサインインリスナの実行
-    this.signedInListeners.forEach(listener => listener(this.user))
-  }
-
-  /**
-   * サインアウトした際に必要な処理を行います。
-   */
-  private async m_signedOutProcess(): Promise<void> {
-    // 登録されているサインアウトリスナの実行
-    this.signedOutListeners.forEach(listener => listener(this.user))
   }
 
   //----------------------------------------------------------------------
@@ -330,20 +335,6 @@ class AuthLogicImpl extends BaseLogic implements AuthLogic {
    */
   private async m_firebaseOnAuthStateChanged(user: firebase.User | null) {
     await this.m_refreshUser()
-  }
-
-  /**
-   * サインイン/アウトの状態が変化した際のリスナです。
-   * @param newValue
-   * @param oldValue
-   */
-  @Watch('user.isSignedIn')
-  private async m_userIsSignedInOnChanged(newValue: boolean, oldValue: boolean) {
-    if (newValue) {
-      await this.m_signedInProcess()
-    } else {
-      await this.m_signedOutProcess()
-    }
   }
 }
 

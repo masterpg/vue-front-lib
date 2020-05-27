@@ -20,14 +20,29 @@
 
 <template>
   <q-dialog ref="dialog" v-model="opened" persistent>
-    <!-- サインインビュー -->
-    <email-sign-in-view v-if="m_viewType === 'signIn'" @signed-in="m_signInViewOnSignedIn()" @closed="close()" />
+    <!--
+      サインインビュー
+    -->
+    <email-sign-in-view
+      v-if="m_viewType === 'emailSignIn'"
+      :title="m_title"
+      :email="m_currentEmail"
+      readonly-email
+      @closed="m_emailSignInViewOnClose"
+    />
 
-    <!-- メールアドレス変更ビュー -->
+    <!--
+      メールアドレス未検証ビュー
+    -->
+    <auth-message-view v-else-if="m_viewType === 'emailUnverified'" :title="m_title">{{ $t('auth.emailUnverifiedMsg') }}</auth-message-view>
+
+    <!--
+      メールアドレス変更ビュー
+    -->
     <q-card v-else-if="m_viewType === 'emailChange'" class="container" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
       <!-- タイトル -->
       <q-card-section>
-        <div class="title">Change email</div>
+        <div class="title">{{ m_title }}</div>
       </q-card-section>
 
       <!-- コンテンツエリア -->
@@ -64,42 +79,30 @@
       </q-card-section>
     </q-card>
 
-    <!-- メールアドレス検証中ビュー -->
-    <q-card v-else-if="m_viewType === 'inVerification'" class="container" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
-      <!-- タイトル -->
-      <q-card-section>
-        <div class="title">Change email</div>
-      </q-card-section>
-
-      <!-- コンテンツエリア -->
-      <q-card-section>
-        <div>
-          Follow the instructions sent to <span class="emphasis">{{ m_email }}</span> to verify your email.
-        </div>
-      </q-card-section>
-
-      <!-- ボタンエリア -->
-      <q-card-section align="right">
-        <!-- CLOSEボタン -->
-        <q-btn flat rounded color="primary" :label="$t('common.close')" @click="close()" />
-      </q-card-section>
-    </q-card>
+    <!--
+      メールアドレス検証中ビュー
+    -->
+    <auth-message-view v-else-if="m_viewType === 'emailVerifying'" :title="m_title">
+      <template v-slot:message>{{ $t('auth.emailVerifyingMsg', { email: m_email }) }}</template>
+    </auth-message-view>
   </q-dialog>
 </template>
 
 <script lang="ts">
-import { BaseDialog, NoCache } from '@/lib'
+import { AuthMessageView, EmailSignInView, EmailSignInViewResult } from './base'
+import { AuthStatus, BaseDialog, NoCache } from '@/lib'
 import { QDialog, QInput } from 'quasar'
 import { Component } from 'vue-property-decorator'
-import { EmailSignInView } from '@/example/components/complex/auth/base'
+import { router } from '@/example/router'
 const isEmail = require('validator/lib/isEmail')
 
 @Component({
   components: {
+    AuthMessageView,
     EmailSignInView,
   },
 })
-export default class EmailChangeHistoryDialog extends BaseDialog<void, void> {
+export default class EmailChangeDialog extends BaseDialog<void, void> {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -111,7 +114,13 @@ export default class EmailChangeHistoryDialog extends BaseDialog<void, void> {
     return this.$refs.dialog as QDialog
   }
 
-  private m_viewType: 'signIn' | 'emailChange' | 'inVerification' = 'signIn'
+  private m_viewType: 'emailSignIn' | 'emailChange' | 'emailUnverified' | 'emailVerifying' = 'emailSignIn'
+
+  private get m_title(): string {
+    return String(this.$t('auth.changeEmail'))
+  }
+
+  private m_currentEmail: string | null = null
 
   private m_email: string | null = null
 
@@ -138,8 +147,13 @@ export default class EmailChangeHistoryDialog extends BaseDialog<void, void> {
   //
   //----------------------------------------------------------------------
 
-  open(): Promise<void> {
-    this.m_viewType = 'signIn'
+  async open(): Promise<void> {
+    if (!this.$logic.auth.isSignedIn) {
+      router.removeDialogInfoFromURL()
+      return
+    }
+    this.m_currentEmail = this.$logic.auth.user.email
+    this.m_viewType = 'emailSignIn'
     return this.openProcess()
   }
 
@@ -173,6 +187,8 @@ export default class EmailChangeHistoryDialog extends BaseDialog<void, void> {
    * メールアドレスの変更を実行します。
    */
   private async m_changeEmail(): Promise<void> {
+    this.$q.loading.show()
+
     this.m_email = this.m_email ?? ''
     if (this.m_validateEmail(this.m_email)) return
 
@@ -180,9 +196,11 @@ export default class EmailChangeHistoryDialog extends BaseDialog<void, void> {
     // (変更前のメールアドレスに変更通知のメールが送られる)
     await this.$logic.auth.updateEmail(this.m_email)
     // 変更されたメールアドレスに確認メールを送信
-    await this.$logic.auth.sendEmailVerification('http://localhost:5000')
+    await this.$logic.auth.sendEmailVerification(window.location.origin)
     // 画面をメールアドレス検証中へ変更
-    this.m_viewType = 'inVerification'
+    this.m_viewType = 'emailVerifying'
+
+    this.$q.loading.hide()
   }
 
   //--------------------------------------------------
@@ -219,9 +237,22 @@ export default class EmailChangeHistoryDialog extends BaseDialog<void, void> {
   //
   //----------------------------------------------------------------------
 
-  private m_signInViewOnSignedIn() {
-    this.m_viewType = 'emailChange'
-    this.$nextTick(() => this.m_emailInput.focus())
+  private async m_emailSignInViewOnClose(closeResult: EmailSignInViewResult) {
+    switch (closeResult.status) {
+      case AuthStatus.WaitForEmailVerified:
+      case AuthStatus.WaitForEntry: {
+        this.m_viewType = 'emailUnverified'
+        break
+      }
+      case AuthStatus.Available: {
+        this.m_viewType = 'emailChange'
+        this.$nextTick(() => this.m_emailInput.focus())
+        break
+      }
+      case 'cancel': {
+        this.close()
+      }
+    }
   }
 }
 </script>

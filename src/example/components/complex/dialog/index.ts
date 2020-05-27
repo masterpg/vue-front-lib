@@ -1,3 +1,21 @@
-import HistoryDialogManager, { AccountDelete, EmailChange, SignIn } from './history-dialog-manager.vue'
+import HistoryDialogManager, { EmailChange, SignIn, SignUp, UserDelete, UserEntry } from './history-dialog-manager.vue'
 
-export { HistoryDialogManager, AccountDelete, EmailChange, SignIn }
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+let dialog: HistoryDialogManager
+
+function initDialog(d: HistoryDialogManager) {
+  dialog = d
+}
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { HistoryDialogManager, EmailChange, SignIn, SignUp, UserDelete, UserEntry, dialog, initDialog }

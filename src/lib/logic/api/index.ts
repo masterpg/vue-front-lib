@@ -24,8 +24,11 @@ export {
   APIStoragePaginationResult,
   APITimestampEntity,
   AppConfigResponse,
+  AuthDataResult,
+  AuthStatus,
   IdToken,
   LibAPIContainer,
+  PublicProfile,
   StorageNode,
   StorageNodeShareSettings,
   StorageNodeShareSettingsInput,
@@ -33,10 +36,12 @@ export {
   StoragePaginationOptionsInput,
   StoragePaginationResult,
   TimestampEntity,
+  ToAPITimestampEntity,
+  User,
   UserClaims,
   UserIdClaims,
+  UserInfoInput,
 } from './base'
-export { BaseGQLAPIContainer } from './gql'
+export { BaseGQLAPIContainer, APIAuthDataResult, APIPublicProfile, APIUser } from './gql'
 export { BaseRESTAPIContainer } from './rest'
-
 export { api, setAPI }
