@@ -1,5 +1,5 @@
-import { APP_ADMIN_TOKEN, GENERAL_FIREBASE_USER, GENERAL_TOKEN, GENERAL_USER } from '../../../../../helpers/common/data'
-import { AuthStatus, PublicProfile, StorageNodeShareSettings, User, UserInfoInput } from '@/lib'
+import { APP_ADMIN_TOKEN, GENERAL_TOKEN, GENERAL_USER } from '../../../../../helpers/common/data'
+import { AuthStatus, PublicProfile, StorageNodeShareSettings, UserInfo, UserInfoInput } from '@/lib'
 import { OmitEntityTimestamp } from '@/firestore-ex'
 import { TestLibAPIContainer } from '../../../../../mocks/lib/logic/api'
 import { initLibTest } from '../../../../../helpers/lib/init'
@@ -11,7 +11,7 @@ import { isEmpty } from 'lodash'
 //
 //========================================================================
 
-interface TestAuthData extends OmitEntityTimestamp<Omit<User, 'publicProfile'>> {
+interface TestAuthData extends OmitEntityTimestamp<Omit<UserInfo, 'publicProfile'>> {
   publicProfile: OmitEntityTimestamp<PublicProfile>
 }
 

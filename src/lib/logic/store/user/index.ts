@@ -1,4 +1,4 @@
-import { PublicProfile, User, UserClaims } from '../../api'
+import { PublicProfile, UserClaims, UserInfo } from '../../api'
 import dayjs, { Dayjs } from 'dayjs'
 import { BaseStore } from '../base'
 import { Component } from 'vue-property-decorator'
@@ -9,21 +9,21 @@ import { Component } from 'vue-property-decorator'
 //
 //========================================================================
 
-interface UserStore extends User {
+interface UserStore extends UserInfo {
   set(user: EditedUser): void
 
   clear(): void
 
-  clone(): User
+  clone(): UserInfo
 
   reflectCustomToken(): Promise<void>
 }
 
-interface ReadonlyUser extends Readonly<Omit<User, 'publicProfile'>> {
+interface ReadonlyUser extends Readonly<Omit<UserInfo, 'publicProfile'>> {
   publicProfile: Readonly<PublicProfile>
 }
 
-interface EditedUser extends Partial<Omit<User, 'publicProfile'>> {
+interface EditedUser extends Partial<Omit<UserInfo, 'publicProfile'>> {
   publicProfile?: Partial<PublicProfile>
 }
 
@@ -51,7 +51,7 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
   //
   //----------------------------------------------------------------------
 
-  private m_user: User = this.m_createEmptyState()
+  private m_user: UserInfo = this.m_createEmptyState()
 
   get id(): string {
     return this.m_user.id
@@ -112,7 +112,7 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
     this.set(this.m_createEmptyState())
   }
 
-  clone(): User {
+  clone(): UserInfo {
     return {
       id: this.m_user.id,
       email: this.email,
@@ -137,14 +137,6 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
     this.set({ isAppAdmin, myDirName })
   }
 
-  async getIsAppAdmin(): Promise<boolean> {
-    const currentUser = firebase.auth().currentUser
-    if (!currentUser) return false
-    const idToken = await currentUser.getIdTokenResult()
-    const { isAppAdmin } = idToken.claims as UserClaims
-    return Boolean(isAppAdmin)
-  }
-
   //----------------------------------------------------------------------
   //
   //  Internal methods
@@ -155,7 +147,7 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
     throw new Error(`Use 'set()' instead of 'initState()'.`)
   }
 
-  private m_createEmptyState(): User {
+  private m_createEmptyState(): UserInfo {
     return {
       id: '',
       email: '',

@@ -1,7 +1,9 @@
 import { TestAuthUser, TestFirebaseUserInput, TestUserInput } from '../../mocks/common/logic/api'
+import { AuthStatus } from '@/lib'
 
 export const GENERAL_TOKEN: TestAuthUser = {
   uid: 'test.general',
+  authStatus: AuthStatus.Available,
   myDirName: 'test.general',
 }
 
@@ -26,6 +28,7 @@ export const GENERAL_USER: TestUserInput = {
 
 export const APP_ADMIN_TOKEN: TestAuthUser = {
   uid: 'test.app.admin',
+  authStatus: AuthStatus.Available,
   myDirName: 'test.app.admin',
   isAppAdmin: true,
 }

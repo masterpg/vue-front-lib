@@ -37,7 +37,7 @@ export {
   StoragePaginationResult,
   TimestampEntity,
   ToAPITimestampEntity,
-  User,
+  UserInfo,
   UserClaims,
   UserIdClaims,
   UserInfoInput,

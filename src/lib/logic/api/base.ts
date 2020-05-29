@@ -18,7 +18,7 @@ export interface LibAPIContainer {
 
   getAuthData(): Promise<AuthDataResult>
 
-  setOwnUserInfo(input: UserInfoInput): Promise<User>
+  setOwnUserInfo(input: UserInfoInput): Promise<UserInfo>
 
   deleteOwnUser(): Promise<boolean>
 
@@ -173,10 +173,10 @@ export enum AuthStatus {
 export interface AuthDataResult {
   status: AuthStatus
   token: string
-  user?: User
+  user?: UserInfo
 }
 
-export interface User extends TimestampEntity {
+export interface UserInfo extends TimestampEntity {
   email: string
   emailVerified: boolean
   isAppAdmin: boolean

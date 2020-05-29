@@ -120,7 +120,6 @@ import {
   Resizable,
   StorageNodeShareSettings,
   UploadEndedEvent,
-  User,
 } from '@/lib'
 import { Component, Watch } from 'vue-property-decorator'
 import { RawLocation, Route } from 'vue-router'

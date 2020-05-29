@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { APIUser, BaseGQLAPIContainer, LibAPIContainer, User, UserClaims, UserInfoInput } from '@/lib'
+import { APIUser, AuthStatus, BaseGQLAPIContainer, LibAPIContainer, UserClaims, UserInfo, UserInfoInput } from '@/lib'
 import { Constructor } from 'web-base-lib'
 import axios from 'axios'
 import { config } from '@/lib/config'
@@ -13,6 +13,7 @@ import gql from 'graphql-tag'
 
 interface TestAuthUser {
   uid: string
+  authStatus: AuthStatus
   myDirName: string
   isAppAdmin?: boolean
 }
@@ -54,7 +55,7 @@ interface TestAPIContainer extends LibAPIContainer {
   removeTestFiles(filePaths: string[]): Promise<void>
   setTestFirebaseUsers(...users: TestFirebaseUserInput[]): Promise<void>
   deleteTestFirebaseUsers(...uids: string[]): Promise<void>
-  setTestUsers(...users: TestUserInput[]): Promise<User[]>
+  setTestUsers(...users: TestUserInput[]): Promise<UserInfo[]>
   deleteTestUsers(...uids: string[]): Promise<void>
 }
 
@@ -64,7 +65,12 @@ interface TestAPIContainer extends LibAPIContainer {
 //
 //========================================================================
 
-const TEMP_ADMIN_USER = { uid: 'temp.admin.user', myDirName: 'temp.admin.user', isAppAdmin: true }
+const TEMP_ADMIN_USER: TestAuthUser = {
+  uid: 'temp.admin.user',
+  authStatus: AuthStatus.Available,
+  myDirName: 'temp.admin.user',
+  isAppAdmin: true,
+}
 
 function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>): Constructor<TestAPIContainer> {
   return class extends superclass implements TestAPIContainer {
@@ -212,7 +218,7 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
       })
     }
 
-    async setTestUsers(...users: TestUserInput[]): Promise<User[]> {
+    async setTestUsers(...users: TestUserInput[]): Promise<UserInfo[]> {
       const response = await this.mutate<{ setTestUsers: APIUser[] }>({
         mutation: gql`
           mutation SetTestUsers($users: [TestUserInput!]!) {

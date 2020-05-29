@@ -1,4 +1,4 @@
-import { AuthStatus, User, UserInfoInput, api } from '../../api'
+import { AuthStatus, UserInfo, UserInfoInput, api } from '../../api'
 import { BaseLogic } from '../../base'
 import { Component } from 'vue-property-decorator'
 import { Dialog } from 'quasar'
@@ -13,7 +13,7 @@ import { store } from '../../store'
 //========================================================================
 
 interface AuthLogic {
-  readonly user: User
+  readonly user: UserInfo
 
   readonly status: AuthStatus
 
@@ -88,7 +88,7 @@ class AuthLogicImpl extends BaseLogic implements AuthLogic {
   //----------------------------------------------------------------------
 
   @NoCache
-  get user(): User {
+  get user(): UserInfo {
     return store.user.clone()
   }
 

@@ -153,7 +153,7 @@
 </template>
 
 <script lang="ts">
-import { AuthStatus, BaseComponent, NoCache, Resizable, SWChangeState, SWStateChangeInfo, User } from '@/lib'
+import { AuthStatus, BaseComponent, NoCache, Resizable, SWChangeState, SWStateChangeInfo, UserInfo } from '@/lib'
 import { Component, Watch } from 'vue-property-decorator'
 import { EmailChange, HistoryDialogManager, SignIn, SignUp, UserDelete, UserEntry, dialog, initDialog } from '@/example/components'
 import { mixins } from 'vue-class-component'
@@ -246,7 +246,7 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
     return this.$logic.auth.isSignedIn
   }
 
-  private get m_user(): User {
+  private get m_user(): UserInfo {
     return this.$logic.auth.user
   }
 

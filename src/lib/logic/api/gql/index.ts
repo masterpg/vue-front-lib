@@ -10,7 +10,7 @@ import {
   StoragePaginationOptionsInput,
   StoragePaginationResult,
   ToAPITimestampEntity,
-  User,
+  UserInfo,
   UserInfoInput,
   toTimestampEntities as _toTimestampEntities,
   toTimestampEntity as _toTimestampEntity,
@@ -29,7 +29,7 @@ interface APIAuthDataResult extends Omit<AuthDataResult, 'user'> {
   user: APIUser
 }
 
-interface APIUser extends ToAPITimestampEntity<Omit<User, 'publicProfile'>> {
+interface APIUser extends ToAPITimestampEntity<Omit<UserInfo, 'publicProfile'>> {
   publicProfile: APIPublicProfile
 }
 
@@ -121,7 +121,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     }
   }
 
-  async setOwnUserInfo(input: UserInfoInput): Promise<User> {
+  async setOwnUserInfo(input: UserInfoInput): Promise<UserInfo> {
     const response = await this.mutate<{ setOwnUserInfo: APIUser }>({
       mutation: gql`
         mutation SetOwnUserInfo($input: UserInfoInput!) {

@@ -6,7 +6,7 @@ import {
   StorageNodeShareSettingsInput,
   StoragePaginationOptionsInput,
   StoragePaginationResult,
-  User,
+  UserInfo,
   UserInfoInput,
   toTimestampEntities as _toTimestampEntities,
   toTimestampEntity as _toTimestampEntity,
@@ -42,7 +42,7 @@ abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPICont
     throw new Error(`This method 'getAuthData' is not implemented.`)
   }
 
-  setOwnUserInfo(input: UserInfoInput): Promise<User> {
+  setOwnUserInfo(input: UserInfoInput): Promise<UserInfo> {
     throw new Error(`This method 'setOwnUserInfo' is not implemented.`)
   }
 
