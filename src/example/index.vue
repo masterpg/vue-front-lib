@@ -155,7 +155,7 @@
 <script lang="ts">
 import { AuthStatus, BaseComponent, NoCache, Resizable, SWChangeState, SWStateChangeInfo, UserInfo } from '@/lib'
 import { Component, Watch } from 'vue-property-decorator'
-import { EmailChange, HistoryDialogManager, SignIn, SignUp, UserDelete, UserEntry, dialog, initDialog } from '@/example/components'
+import { EmailChange, HistoryDialogManager, SignIn, SignUp, UserDelete, UserEntry, dialogManager, initDialog } from '@/example/dialog'
 import { mixins } from 'vue-class-component'
 import { router } from '@/example/router'
 import { sw } from '@/example/sw'
@@ -322,25 +322,25 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
   }
 
   private m_signUpMenuItemOnClick() {
-    dialog.open(SignUp.name)
+    dialogManager.open(SignUp.name)
   }
 
   private m_signInMenuItemOnClick() {
-    dialog.open(SignIn.name)
+    dialogManager.open(SignIn.name)
   }
 
   private m_emailChangeMenuItemOnClick() {
-    dialog.open(EmailChange.name)
+    dialogManager.open(EmailChange.name)
   }
 
   private async m_userDeleteMenuItemOnClick() {
-    dialog.open(UserDelete.name)
+    dialogManager.open(UserDelete.name)
   }
 
   @Watch('$logic.auth.status')
   private async m_authStatusOnChange(newValue: AuthStatus, oldValue: AuthStatus) {
     if (this.$logic.auth.status === AuthStatus.WaitForEntry) {
-      dialog.open(UserEntry.name)
+      dialogManager.open(UserEntry.name)
     }
   }
 }

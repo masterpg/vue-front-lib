@@ -1,6 +1,5 @@
-import { StorageNodeType } from '@/lib'
 <style lang="sass" scoped>
-@import '../../../styles/app.variables'
+@import 'src/example/styles/app.variables'
 
 .storage-page-main
   height: 100%

@@ -1,5 +1,5 @@
 <style lang="sass" scoped>
-@import '../../../styles/lib.variables'
+@import 'src/lib/styles/lib.variables'
 
 .child-container
   color: var(--comp-tree-view-color, $app-link-color)
@@ -24,12 +24,11 @@
 </template>
 
 <script lang="ts">
+import { BaseComponent, NoCache } from '@/lib/base'
 import { ChildrenSortFunc, CompTreeNodeData, CompTreeNodeParent, CompTreeViewLazyLoadDoneFunc, CompTreeViewLazyLoadEvent } from './types'
-import { BaseComponent } from '../../../base/component'
 import CompTreeNode from './comp-tree-node.vue'
 import { CompTreeViewUtils } from './comp-tree-view-utils'
 import { Component } from 'vue-property-decorator'
-import { NoCache } from '../../../base/decorators'
 import Vue from 'vue'
 
 /**

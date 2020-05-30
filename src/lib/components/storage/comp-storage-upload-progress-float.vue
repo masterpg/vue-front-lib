@@ -1,5 +1,5 @@
 <style lang="sass" scoped>
-@import '../../../styles/lib.variables'
+@import 'src/lib/styles/lib.variables'
 
 .comp-storage-upload-progress-float-main
   margin: 10px
@@ -73,9 +73,9 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, Resizable } from '../../../base/component'
+import { BaseComponent, Resizable } from '@/lib/base'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import { StorageFileUploader, StorageUploader } from '../../../logic'
+import { StorageFileUploader, StorageUploader } from '@/lib/logic'
 import { mixins } from 'vue-class-component'
 
 export interface UploadEndedEvent {

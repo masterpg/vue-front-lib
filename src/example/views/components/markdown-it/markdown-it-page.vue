@@ -7,7 +7,7 @@
 </style>
 
 <style lang="sass" scoped>
-@import '../../../styles/app.variables'
+@import 'src/example/styles/app.variables'
 
 .markdown-it-page-main
   height: 100%

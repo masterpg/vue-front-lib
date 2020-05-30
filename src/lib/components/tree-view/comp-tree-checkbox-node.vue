@@ -1,5 +1,5 @@
 <style lang="sass" scoped>
-@import '../../../styles/lib.variables'
+@import 'src/lib/styles/lib.variables'
 
 .node-container
   padding-top: var(--comp-tree-distance, 6px)
@@ -88,7 +88,7 @@
 
 <script lang="ts">
 import { CompTreeCheckboxNodeData } from './types'
-import CompTreeNode from '@/lib/components/simple/tree-view/comp-tree-node.vue'
+import CompTreeNode from './comp-tree-node.vue'
 import { Component } from 'vue-property-decorator'
 
 @Component

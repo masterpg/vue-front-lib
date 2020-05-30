@@ -22,6 +22,7 @@
       "@/example/assets/*": ["src/example/assets/*"],
       "@/example/components": ["src/example/components"],
       "@/example/config": ["src/example/config"],
+      "@/example/dialog": ["src/example/dialog"],
       "@/example/i18n": ["src/example/i18n"],
       "@/example/lang/*": ["src/example/lang/*"],
       "@/example/logic": ["src/example/logic"],

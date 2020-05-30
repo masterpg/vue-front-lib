@@ -1,5 +1,5 @@
 <style lang="sass" scoped>
-@import '../../../styles/lib.variables'
+@import 'src/lib/styles/lib.variables'
 
 .com-img-main
   box-sizing: border-box
@@ -64,9 +64,8 @@
 
 <script lang="ts">
 import * as anime from 'animejs/lib/anime'
-import { BaseComponent, Resizable } from '../../../base/component'
+import { BaseComponent, NoCache, Resizable } from '@/lib/base'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import { NoCache } from '../../../base/decorators'
 import { mixins } from 'vue-class-component'
 
 export type AlignType = 'start' | 'center' | 'end'

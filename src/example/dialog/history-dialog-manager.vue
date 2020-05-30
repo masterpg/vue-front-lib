@@ -10,7 +10,7 @@
 
 <script lang="ts">
 import { BaseHistoryDialogManager, Dialog } from '@/lib'
-import { EmailChangeDialog, SignInDialog, SignUpDialog, UserDeleteDialog, UserEntryDialog } from '../auth'
+import { EmailChangeDialog, SignInDialog, SignUpDialog, UserDeleteDialog, UserEntryDialog } from './auth'
 import { Component } from 'vue-property-decorator'
 
 export namespace SignIn {

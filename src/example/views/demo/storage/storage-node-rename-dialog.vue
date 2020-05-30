@@ -1,5 +1,5 @@
 <style lang="sass" scoped>
-@import '../../../styles/app.variables'
+@import 'src/example/styles/app.variables'
 
 .container
   &.pc, &.tab

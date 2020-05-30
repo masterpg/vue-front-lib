@@ -6,10 +6,10 @@ import HistoryDialogManager, { EmailChange, SignIn, SignUp, UserDelete, UserEntr
 //
 //========================================================================
 
-let dialog: HistoryDialogManager
+let dialogManager: HistoryDialogManager
 
 function initDialog(d: HistoryDialogManager) {
-  dialog = d
+  dialogManager = d
 }
 
 //========================================================================
@@ -18,4 +18,4 @@ function initDialog(d: HistoryDialogManager) {
 //
 //========================================================================
 
-export { HistoryDialogManager, EmailChange, SignIn, SignUp, UserDelete, UserEntry, dialog, initDialog }
+export { HistoryDialogManager, EmailChange, SignIn, SignUp, UserDelete, UserEntry, dialogManager, initDialog }

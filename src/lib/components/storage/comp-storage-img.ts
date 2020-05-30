@@ -1,6 +1,6 @@
 import { Component, Prop } from 'vue-property-decorator'
 import axios, { Canceler } from 'axios'
-import CompImg from '../../simple/img/comp-img.vue'
+import CompImg from '../img/comp-img.vue'
 
 @Component
 export default class CompStorageImg extends CompImg {

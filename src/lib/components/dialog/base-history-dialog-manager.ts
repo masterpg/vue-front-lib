@@ -1,8 +1,8 @@
-import { Dialog } from '../../../base/component'
+import { Dialog } from '@/lib/base'
 import { Route } from 'vue-router'
 import Vue from 'vue'
 import { Watch } from 'vue-property-decorator'
-import { router } from '../../../router'
+import { router } from '@/lib/router'
 
 /**
  * URLで表示するタイプのダイアログを管理するクラスです。

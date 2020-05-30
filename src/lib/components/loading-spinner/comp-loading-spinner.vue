@@ -1,5 +1,5 @@
 <style lang="sass" scoped>
-@import '../../../styles/lib.variables'
+@import 'src/lib/styles/lib.variables'
 </style>
 
 <template>
@@ -33,7 +33,7 @@
 
 <script lang="ts">
 import { Component, Prop } from 'vue-property-decorator'
-import { BaseComponent } from '../../../base/component'
+import { BaseComponent } from '@/lib/base'
 
 @Component
 export default class CompLoadingSpinner extends BaseComponent {

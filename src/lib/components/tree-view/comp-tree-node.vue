@@ -1,5 +1,5 @@
 <style lang="sass" scoped>
-@import '../../../styles/lib.variables'
+@import 'src/lib/styles/lib.variables'
 
 .node-container
   padding-top: var(--comp-tree-distance, 6px)
@@ -86,13 +86,12 @@
 </template>
 
 <script lang="ts">
+import { BaseComponent, NoCache } from '@/lib/base'
 import { ChildrenSortFunc, CompTreeNodeData, CompTreeNodeEditData, CompTreeNodeParent, CompTreeViewLazyLoadStatus } from './types'
-import { BaseComponent } from '../../../base/component'
-import CompLoadingSpinner from '@/lib/components/simple/loading-spinner/comp-loading-spinner.vue'
+import CompLoadingSpinner from '../loading-spinner/comp-loading-spinner.vue'
 import CompTreeView from './comp-tree-view.vue'
 import { CompTreeViewUtils } from './comp-tree-view-utils'
 import { Component } from 'vue-property-decorator'
-import { NoCache } from '../../../base/decorators'
 import Vue from 'vue'
 import anime from 'animejs'
 import debounce from 'lodash/debounce'

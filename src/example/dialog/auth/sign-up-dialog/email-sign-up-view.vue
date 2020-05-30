@@ -1,7 +1,7 @@
 <style lang="sass" scoped>
-@import '../../../../styles/app.variables'
+@import 'src/example/styles/app.variables'
 
-.email-sign-in-view-main
+.email-sign-up-view-main
   &.pc, &.tab
     width: 340px
   &.sp
@@ -10,13 +10,16 @@
 .title
   @extend %text-h6
 
+.emphasis
+  font-weight: map_get($text-weights, "medium")
+
 .error-message
   @extend %text-caption
   color: $text-error-color
 </style>
 
 <template>
-  <q-card class="email-sign-in-view-main" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
+  <q-card class="email-sign-up-view-main" :class="{ pc: screenSize.pc, tab: screenSize.tab, sp: screenSize.sp }">
     <q-form>
       <!-- タイトル -->
       <q-card-section>
@@ -34,7 +37,6 @@
           :label="$t('common.email')"
           :error="m_emailError"
           :error-message="m_emailErrorMessage"
-          :readonly="readonlyEmail"
           @input="m_clearErrorMessage()"
           class="app-pb-20"
         >
@@ -61,18 +63,13 @@
         <span class="error-message">{{ m_errorMessage }}</span>
       </q-card-section>
 
-      <!-- メールアドレスリセットリンク -->
-      <q-card-section v-show="passwordReset">
-        <span class="app-link" @click="m_resetPassword()">{{ $t('auth.forgotPassword') }}</span>
-      </q-card-section>
-
       <!-- ボタンエリア -->
       <q-card-section class="layout vertical">
         <div class="layout horizontal center end-justified">
           <!-- CANCELボタン -->
           <q-btn flat rounded color="primary" :label="$t('common.cancel')" @click="m_close()" />
-          <!-- SIGN INボタン -->
-          <q-btn flat rounded color="primary" :label="$t('common.signIn')" @click="m_signIn()" />
+          <!-- ENTRYボタン -->
+          <q-btn flat rounded color="primary" :label="$t('common.entry')" @click="m_entry()" />
         </div>
       </q-card-section>
     </q-form>
@@ -83,20 +80,20 @@
 import { AuthStatus, BaseComponent, NoCache, Resizable } from '@/lib'
 import { Component, Prop } from 'vue-property-decorator'
 import { QInput } from 'quasar'
-import { UserEntry } from '@/example/components'
+import { UserEntry } from '../..'
 import isEmail from 'validator/lib/isEmail'
 import { mixins } from 'vue-class-component'
 import { router } from '@/example/router'
 
-export type EmailSignInViewResult = {
-  status: EmailSignInViewStatus
+export type EmailSignUpViewResult = {
+  status: EmailSignUpViewStatus
   email: string
 }
 
-export type EmailSignInViewStatus = AuthStatus.WaitForEmailVerified | AuthStatus.WaitForEntry | AuthStatus.Available | 'passwordReset' | 'cancel'
+export type EmailSignUpViewStatus = AuthStatus.WaitForEmailVerified | 'cancel'
 
 @Component
-export default class EmailSignInView extends mixins(BaseComponent, Resizable) {
+export default class EmailSignUpView extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -104,7 +101,7 @@ export default class EmailSignInView extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
 
   mounted() {
-    this.m_email = this.email
+    this.m_clear()
     this.m_emailInput.focus()
   }
 
@@ -114,25 +111,16 @@ export default class EmailSignInView extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
-  @Prop({ required: true })
+  @Prop()
   title!: string
-
-  @Prop({ default: null })
-  email!: string | null
-
-  private m_email: string | null = null
-
-  @Prop({ type: Boolean, default: false })
-  passwordReset!: boolean
-
-  @Prop({ type: Boolean, default: false })
-  readonlyEmail!: boolean
 
   //----------------------------------------------------------------------
   //
   //  Variables
   //
   //----------------------------------------------------------------------
+
+  private m_email: string | null = null
 
   private get m_emailError(): boolean {
     return this.m_validateEmail(this.m_email)
@@ -173,10 +161,9 @@ export default class EmailSignInView extends mixins(BaseComponent, Resizable) {
   /**
    * ビューを閉じます。
    */
-  private m_close(closeResult?: EmailSignInViewResult) {
+  private m_close(closeResult?: EmailSignUpViewResult) {
     closeResult = closeResult ?? { status: 'cancel', email: '' }
     this.$emit('closed', closeResult)
-    this.m_clear()
   }
 
   /**
@@ -196,9 +183,9 @@ export default class EmailSignInView extends mixins(BaseComponent, Resizable) {
   }
 
   /**
-   * サインインを行います。
+   * 登録を行います。
    */
-  private async m_signIn(): Promise<void> {
+  private async m_entry(): Promise<void> {
     this.$q.loading.show()
 
     if (!this.m_validate()) {
@@ -206,56 +193,46 @@ export default class EmailSignInView extends mixins(BaseComponent, Resizable) {
       return
     }
 
-    // メールアドレス＋パスワードでサインイン
-    const signInResult = await this.$logic.auth.signInWithEmailAndPassword(this.m_email!, this.m_password!)
-    if (!signInResult.result) {
-      if (signInResult.code) {
-        this.m_errorMessage = signInResult.errorMessage
+    // メールアドレス＋パスワードでアカウントを作成
+    const signUpResult = await this.$logic.auth.createUserWithEmailAndPassword(this.m_email!, this.m_password, {
+      photoURL: null,
+    })
+    if (!signUpResult.result) {
+      if (signUpResult.code) {
+        this.m_errorMessage = signUpResult.errorMessage
       } else {
-        console.error(signInResult.errorMessage)
-        this.m_errorMessage = String(this.$t('auth.signInFailed'))
+        console.error(signUpResult.errorMessage)
+        this.m_errorMessage = String(this.$t('auth.signUpFailed'))
       }
       this.$q.loading.hide()
       return
     }
 
-    if (this.$logic.auth.status === AuthStatus.None) {
+    if (this.$logic.auth.status !== AuthStatus.WaitForEmailVerified) {
       this.$q.loading.hide()
-      throw new Error(`This is a auth status not assumed: ${this.$logic.auth.status}`)
+      throw new Error(`This is a asuth status not assumed: ${this.$logic.auth.status}`)
     }
 
-    // メールアドレス検証中の場合、再度検証用メールを送信
-    if (this.$logic.auth.status === AuthStatus.WaitForEmailVerified) {
-      const continueURL = `${window.location.origin}/?${router.getDialogInfoQuery(UserEntry.name)}`
-      const authResult = await this.$logic.auth.sendEmailVerification(continueURL)
-      if (!authResult.result) {
-        if (authResult.code) {
-          this.m_errorMessage = authResult.errorMessage
-        } else {
-          console.error(authResult.errorMessage)
-          this.m_errorMessage = String(this.$t('auth.signUpFailed'))
-        }
-        this.$q.loading.hide()
-        return
+    // メールアドレスに検証用メールを送信
+    const continueURL = `${window.location.origin}/?${router.getDialogInfoQuery(UserEntry.name)}`
+    const authResult = await this.$logic.auth.sendEmailVerification(continueURL)
+    if (!authResult.result) {
+      if (authResult.code) {
+        this.m_errorMessage = authResult.errorMessage
+      } else {
+        console.error(authResult.errorMessage)
+        this.m_errorMessage = String(this.$t('auth.signUpFailed'))
       }
+      this.$q.loading.hide()
+      return
     }
 
     this.m_close({
-      status: this.$logic.auth.status,
+      status: AuthStatus.WaitForEmailVerified,
       email: this.m_email!,
     })
 
     this.$q.loading.hide()
-  }
-
-  /**
-   * パスワードリセット画面へ遷移します。
-   */
-  private m_resetPassword(): void {
-    this.m_close({
-      status: 'passwordReset',
-      email: this.m_email ?? '',
-    })
   }
 
   //--------------------------------------------------

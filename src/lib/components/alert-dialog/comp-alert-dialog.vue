@@ -1,5 +1,5 @@
 <style lang="sass" scoped>
-@import '../../../styles/lib.variables'
+@import 'src/lib/styles/lib.variables'
 
 .container
   min-width: 300px
@@ -40,9 +40,8 @@
 </template>
 
 <script lang="ts">
+import { BaseDialog, NoCache } from '@/lib/base'
 import { Component, Prop } from 'vue-property-decorator'
-import { BaseDialog } from '../../../base/component'
-import { NoCache } from '../../../base/decorators'
 import { QDialog } from 'quasar'
 
 interface CompAlertDialogParams {

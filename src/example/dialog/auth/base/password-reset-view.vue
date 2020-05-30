@@ -67,7 +67,7 @@
 import { BaseComponent, NoCache, Resizable } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QInput } from 'quasar'
-import { SignIn } from '@/example/components'
+import { SignIn } from '../..'
 import isEmail from 'validator/lib/isEmail'
 import { mixins } from 'vue-class-component'
 import { router } from '@/example/router'
