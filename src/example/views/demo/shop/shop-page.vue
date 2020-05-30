@@ -93,6 +93,18 @@ import { mixins } from 'vue-class-component'
 export default class ShopPage extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
   //
+  //  Lifecycle hooks
+  //
+  //----------------------------------------------------------------------
+
+  async created() {
+    if (this.$logic.auth.isSignedIn) {
+      await this.$logic.shop.pullCartItems()
+    }
+  }
+
+  //----------------------------------------------------------------------
+  //
   //  Variables
   //
   //----------------------------------------------------------------------
