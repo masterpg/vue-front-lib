@@ -56,7 +56,7 @@ import * as path from 'path'
 import { BaseDialog, CompAlertDialog, NoCache } from '@/lib'
 import { QDialog, QInput } from 'quasar'
 import { Component } from 'vue-property-decorator'
-import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
+import StorageTreeNode from './storage-tree-node.vue'
 
 @Component({ components: { CompAlertDialog } })
 export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode, string> {

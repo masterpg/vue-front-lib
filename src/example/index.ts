@@ -4,15 +4,13 @@ import '@/example/styles/app.sass'
 import '@/example/quasar'
 import '@/example/quasar.extras'
 import { i18n, initI18n } from '@/example/i18n'
+import { initAPI, initLogic, initStore } from '@/example/logic'
 import { initRouter, router } from '@/example/router'
 import AppPage from '@/example/index.vue'
 import Component from 'vue-class-component'
 import Vue from 'vue'
-import { initAPI } from '@/example/logic/api'
 import { initConfig } from '@/example/config'
-import { initLogic } from '@/example/logic'
 import { initSW } from '@/example/sw'
-import { initStore } from '@/example/logic/store'
 
 Component.registerHooks(['beforeRouteEnter', 'beforeRouteLeave', 'beforeRouteUpdate'])
 

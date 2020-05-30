@@ -6,7 +6,7 @@ import { Component, Prop } from 'vue-property-decorator'
 //
 //========================================================================
 
-import MarkdownItVueComponent, { getVueBodyData, getVuePropsData } from '@/lib/markdown-it/plugins/vue-component'
+import { MarkdownItVueComponent, getMarkdownItVueComponentBodyData, getMarkdownItVueComponentPropsData } from '@/lib'
 import MarkdownIt from 'markdown-it'
 import Vue from 'vue'
 import { join } from 'path'
@@ -106,12 +106,12 @@ describe('インライン/ブロック - ｢breaks: true｣の場合', () => {
   testgen(join(__dirname, 'fixtures/block-breaks-true.txt'), { header: true }, md)
 })
 
-describe('getVueBodyData', () => {
+describe('getMarkdownItVueComponentBodyData', () => {
   it('ベーシックケース', () => {
     const vueSrc = `@vue.TestCompCommon({ person: "{ "name": "Taro", "age": 18 }", flag: true })`
     const src = `${vueSrc}`
 
-    const actual = getVueBodyData(src)!
+    const actual = getMarkdownItVueComponentBodyData(src)!
 
     expect(actual.fullMatch).toBe(vueSrc)
     expect(actual.component).toBe(`TestCompCommon`)
@@ -123,7 +123,7 @@ describe('getVueBodyData', () => {
     const vueSrc = `@vue.TestCompCommon({flag:true})`
     const src = `${vueSrc}`
 
-    const actual = getVueBodyData(src)!
+    const actual = getMarkdownItVueComponentBodyData(src)!
 
     expect(actual.fullMatch).toBe(vueSrc)
     expect(actual.component).toBe(`TestCompCommon`)
@@ -135,7 +135,7 @@ describe('getVueBodyData', () => {
     const vueSrc = `@vue.TestCompCommon({ flag : true })`
     const src = `   ${vueSrc}   `
 
-    const actual = getVueBodyData(src)!
+    const actual = getMarkdownItVueComponentBodyData(src)!
 
     expect(actual.fullMatch).toBe(vueSrc)
     expect(actual.component).toBe(`TestCompCommon`)
@@ -147,7 +147,7 @@ describe('getVueBodyData', () => {
     const vueSrc = `@vue.TestCompCommon({ flag: true })`
     const src = `AAA${vueSrc}BBB`
 
-    const actual = getVueBodyData(src)!
+    const actual = getMarkdownItVueComponentBodyData(src)!
 
     expect(actual.fullMatch).toBe(vueSrc)
     expect(actual.component).toBe(`TestCompCommon`)
@@ -160,19 +160,19 @@ describe('getVueBodyData', () => {
     const vueSrc = `@vue.TestCompCommon( { flag: true } )`
     const src = `${vueSrc}`
 
-    const actual = getVueBodyData(src)
+    const actual = getMarkdownItVueComponentBodyData(src)
 
     expect(actual).toBeUndefined()
   })
 })
 
-describe('getVuePropsData', () => {
+describe('getMarkdownItVueComponentPropsData', () => {
   describe('共通', () => {
     it('共通フォーマット誤り - 1', () => {
       // プロパティ名のみの場合
       const rawProps = `aaa`
 
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
 
       expect(actual).toEqual({})
     })
@@ -181,7 +181,7 @@ describe('getVuePropsData', () => {
       // コロンをつけ忘れた場合
       const rawProps = `flag true`
 
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
 
       expect(actual).toEqual({})
     })
@@ -190,7 +190,7 @@ describe('getVuePropsData', () => {
       // person右に｢:｣をつけ忘れた場合
       const rawProps = `person "{ "name": "Taro" }"`
 
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
 
       expect(actual).toEqual({})
     })
@@ -198,7 +198,7 @@ describe('getVuePropsData', () => {
     it('JSONフォーマット誤り - 2', () => {
       // プロパティ名に｢"｣をつけ忘れた場合
       const rawProps = `person: "{ name: "Taro" }"`
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
 
       expect(Object.keys(actual)[0]).toBe('person')
 
@@ -209,7 +209,7 @@ describe('getVuePropsData', () => {
       // プロパティの値に｢"｣をつけ忘れた場合
       const rawProps = `person: "{ "name": Taro }"`
 
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
 
       expect(Object.keys(actual)[0]).toBe('person')
       expect(actual.person).toBeUndefined()
@@ -219,49 +219,49 @@ describe('getVuePropsData', () => {
   describe('JSON', () => {
     it('オブジェクト1 - ベーシックケース', () => {
       const rawProps = `person: "{ "name": "Taro", "age": 18 }"`
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.person).toEqual({ name: 'Taro', age: 18 })
     })
 
     it('オブジェクト2 - 空オブジェクトを指定した', () => {
       const rawProps = `person: "{}"`
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.person).toEqual({})
     })
 
     it('オブジェクト3 - できるだけスペースを詰めた場合', () => {
       const rawProps = `person:"{"name":"Taro","age":18}"`
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.person).toEqual({ name: 'Taro', age: 18 })
     })
 
     it('オブジェクト4 - できるだけスペースをあけた場合', () => {
       const rawProps = ` person : " { "name" : "Taro" , "age" : 18 } " `
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.person).toEqual({ name: 'Taro', age: 18 })
     })
 
     it('配列1 - ベーシックケース', () => {
       const rawProps = `arr: "["aaa", "bbb"]"`
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.arr).toEqual(['aaa', 'bbb'])
     })
 
     it('配列2 - 空配列を指定した場合', () => {
       const rawProps = `arr: "[]"`
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.arr).toEqual([])
     })
 
     it('配列3 - できるだけスペースを詰めた場合', () => {
       const rawProps = `arr:"["aaa","bbb"]"`
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.arr).toEqual(['aaa', 'bbb'])
     })
 
     it('配列4 - できるだけスペースをあけた場合', () => {
       const rawProps = ` arr : " [ "aaa" , "bbb" ] " `
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.arr).toEqual(['aaa', 'bbb'])
     })
 
@@ -277,7 +277,7 @@ describe('getVuePropsData', () => {
 
       const rawProps = `${person1}, prop1: "one", ${person2}, prop2: "two", ${person3}, prop3: "three", ${person4}, prop4: "four", ${arr1}, prop5: "five", ${arr2}, prop6: "six", ${arr3}, prop7: "seven", ${arr4}, prop8: "eight"`
 
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
 
       expect(actual.person1).toEqual({ name: 'Taro', age: 18 })
       expect(actual.person2).toEqual({})
@@ -301,50 +301,50 @@ describe('getVuePropsData', () => {
   describe('プリミティブ', () => {
     it('String - ベーシックケース', () => {
       const rawProps = `str1: "aaa"`
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.str1).toEqual(`aaa`)
     })
 
     it('String - ｢"｣を含んだ場合', () => {
       const rawProps = `str2: "a"b"c"`
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.str2).toEqual(`a"b"c`)
     })
 
     it('Boolean - trueの場合', () => {
       const rawProps = `bool1: true`
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.bool1).toBeTruthy()
     })
 
     it('Boolean - falseの場合', () => {
       const rawProps = `bool2: false`
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.bool2).toBeFalsy()
     })
 
     it('Number - 整数の場合', () => {
       const rawProps = `num1: 99`
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.num1).toBe(99)
     })
 
     it('Number - 少数の場合', () => {
       const rawProps = `num2: 99.99`
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.num2).toBe(99.99)
     })
 
     it('できるだけスペースをあけた場合', () => {
       const rawProps = ` oth1 : "aaa" , oth2 : "bbb" `
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.oth1).toEqual(`aaa`)
       expect(actual.oth2).toEqual(`bbb`)
     })
 
     it('できるだけスペースを詰めた場合', () => {
       const rawProps = `oth3:"aaa",oth4:"bbb"`
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
       expect(actual.oth3).toEqual(`aaa`)
       expect(actual.oth4).toEqual(`bbb`)
     })
@@ -361,7 +361,7 @@ describe('getVuePropsData', () => {
 
       const rawProps = `${str1}, ${str2}, ${bool1}, ${bool2}, ${num1}, ${num2}, ${oth1_2}, ${oth3_4}`
 
-      const actual = getVuePropsData(rawProps)
+      const actual = getMarkdownItVueComponentPropsData(rawProps)
 
       expect(actual.str1).toEqual(`aaa`)
       expect(actual.str2).toEqual(`a"b"c`)

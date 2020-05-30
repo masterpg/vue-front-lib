@@ -1,3 +1,3 @@
-import MarkdownPage from '@/example/views/components/markdown/markdown-page.vue'
+import MarkdownPage from './markdown-page.vue'
 
 export default MarkdownPage

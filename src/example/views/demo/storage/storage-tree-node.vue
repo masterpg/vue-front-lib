@@ -174,7 +174,7 @@
 import { CompTreeNode, CompTreeNodeEditData, NoCache, StorageNodeShareSettings, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { Dayjs } from 'dayjs'
-import { StorageTreeNodeData } from '@/example/views/demo/storage/base'
+import { StorageTreeNodeData } from './base'
 
 interface RequiredStorageNodeShareSettings {
   isPublic: boolean

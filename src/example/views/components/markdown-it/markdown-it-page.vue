@@ -137,9 +137,8 @@
 // https://github.com/markdown-it/markdown-it/tree/master/support/demo_template
 //
 
-import { BaseComponent, NoCache, Resizable } from '@/lib'
+import { BaseComponent, CompImg, NoCache, Resizable } from '@/lib'
 import { Component, Watch } from 'vue-property-decorator'
-import CompImg from '@/lib/components/simple/img/comp-img.vue'
 import MarkdownIt from 'markdown-it'
 import anime from 'animejs'
 import cheatSheet from './cheat-sheet.md'

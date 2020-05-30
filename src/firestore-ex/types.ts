@@ -2,7 +2,7 @@
 //  This is workaround for avoid error which occur using `firestore.FieldValue.increment()` with
 //  update() or set(). FieldValue which from `import { firestore } from 'firebase'` maybe can
 //  not use when using local emulator. FieldValue which from @firebase/testing is OK.
-import * as firebase from '@firebase/testing'
+// import * as firebase from '@firebase/testing'
 
 import FieldValue = firebase.firestore.FieldValue
 import Timestamp = firebase.firestore.Timestamp

@@ -8,7 +8,7 @@ import merge from 'deepmerge'
 
 //========================================================================
 //
-//  Internal
+//  Interfaces
 //
 //========================================================================
 
@@ -28,6 +28,12 @@ type JSONType = { [name: string]: PropValueType }
 type PrimitiveType = string | boolean | number | undefined
 
 type PropValueType = PrimitiveType | JSONType
+
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
 
 /**
  * Vueコンポーネントのインスタンスを生成します。
@@ -90,7 +96,7 @@ function getVueBlockComponentData(state: StateBlock, startLine: number, endLine:
   }
 
   // 入力値から @Vue.MyComp({ … }) のボディレベルの構造を取得
-  const bodyData = getVueBodyData(block)
+  const bodyData = getMarkdownItVueComponentBodyData(block)
   if (!bodyData) return undefined
 
   // Vueコンポーネント指定の他にまだ入力がある場合はインラインと判断するため無視
@@ -107,7 +113,7 @@ function getVueBlockComponentData(state: StateBlock, startLine: number, endLine:
   }
 
   // @Vue.MyComp({ … }) のプロパティ部分のデータを取得
-  const propsData = getVuePropsData(bodyData.props)
+  const propsData = getMarkdownItVueComponentPropsData(bodyData.props)
 
   return {
     component: bodyData.component,
@@ -125,11 +131,11 @@ function getVueInlineComponentData(state: StateInline): VueInlineComponentData |
   const block = state.src.substring(state.pos, state.posMax)
 
   // 入力値から @Vue.MyComp({ … }) のボディレベルの構造を取得
-  const bodyData = getVueBodyData(block)
+  const bodyData = getMarkdownItVueComponentBodyData(block)
   if (!bodyData) return undefined
 
   // @Vue.MyComp({…}) のプロパティ部分のデータを取得
-  const propsData = getVuePropsData(bodyData.props)
+  const propsData = getMarkdownItVueComponentPropsData(bodyData.props)
 
   // Vueコンポーネントの後にある次の入力値の開始/終了位置を取得
   const nextPos = state.pos + bodyData.index + bodyData.fullMatch.length
@@ -149,7 +155,7 @@ function getVueInlineComponentData(state: StateInline): VueInlineComponentData |
  * NOTE: 単体テストのためexportしています。
  * @param block
  */
-export function getVueBodyData(block: string): { fullMatch: string; component: string; props: string; index: number } | undefined {
+function getMarkdownItVueComponentBodyData(block: string): { fullMatch: string; component: string; props: string; index: number } | undefined {
   const re = /@vue.(\w+)\((?:{\s*(.*?)\s*})?\)/
 
   const execArr = re.exec(block)
@@ -169,7 +175,7 @@ export function getVueBodyData(block: string): { fullMatch: string; component: s
  * @param rawProps
  *   例: `person: "{ "name": "Taro", "age": 18 }", flag: true`
  */
-export function getVuePropsData(rawProps: string): { [name: string]: PropValueType } {
+function getMarkdownItVueComponentPropsData(rawProps: string): { [name: string]: PropValueType } {
   let result: { [name: string]: PropValueType } = {}
 
   // 以下でJSONとプリミティブのプロパティを取得
@@ -339,13 +345,7 @@ function isInlineElement(el: HTMLElement): boolean {
   return false
 }
 
-//========================================================================
-//
-//  Exports
-//
-//========================================================================
-
-export default function(md: MarkdownIt, options: MarkdownIt.Options) {
+function MarkdownItVueComponent(md: MarkdownIt, options: MarkdownIt.Options) {
   //--------------------------------------------------
   //  Block
   //--------------------------------------------------
@@ -424,3 +424,11 @@ export default function(md: MarkdownIt, options: MarkdownIt.Options) {
     }
   }
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { MarkdownItVueComponent, getMarkdownItVueComponentBodyData, getMarkdownItVueComponentPropsData }

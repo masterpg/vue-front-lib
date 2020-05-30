@@ -1,12 +1,11 @@
 import '@/example/quasar'
-import { AppAPIContainer } from '@/example/logic/api/base'
+import { initLogic, initStore } from '@/example/logic'
+import { AppAPIContainer } from '../../../src/example/logic/api/base'
 import { MockLogicContainer } from '../../mocks/example/logic'
 import { initConfig } from '@/example/config'
 import { initExampleTestAPI } from '../../mocks/example/logic/api'
 import { initI18n } from '@/example/i18n'
-import { initLogic } from '@/example/logic'
 import { initRouter } from '@/example/router'
-import { initStore } from '@/example/logic/store'
 
 //========================================================================
 //

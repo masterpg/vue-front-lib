@@ -10,9 +10,9 @@ import {
   UploadEndedEvent,
 } from '@/lib'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import { StorageTreeNodeData, StorageType, treeSortFunc } from '@/example/views/demo/storage/base'
+import { StorageTreeNodeData, StorageType, treeSortFunc } from './base'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitArrayChunk, splitHierarchicalPaths } from 'web-base-lib'
-import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
+import StorageTreeNode from './storage-tree-node.vue'
 import Vue from 'vue'
 import dayjs from 'dayjs'
 import { i18n } from '@/example/i18n'

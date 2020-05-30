@@ -1,4 +1,4 @@
-import { Collection, Entity, FirestoreEx } from '../../../src/firestore-ex'
+import { Collection, Entity, FirestoreEx } from '@/firestore-ex'
 import { WebFirestoreTestUtil } from './util'
 
 const util = new WebFirestoreTestUtil()

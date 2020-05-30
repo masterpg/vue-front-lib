@@ -44,7 +44,7 @@ import * as path from 'path'
 import { BaseDialog, NoCache } from '@/lib'
 import { QDialog, QInput } from 'quasar'
 import { Component } from 'vue-property-decorator'
-import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
+import StorageTreeNode from './storage-tree-node.vue'
 
 @Component
 export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, string> {

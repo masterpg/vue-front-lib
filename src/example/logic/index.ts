@@ -58,4 +58,6 @@ function initLogic(logicContainer?: LogicContainer): void {
 //========================================================================
 
 export * from './modules/shop'
-export { LogicContainerImpl, logic, initLogic }
+export { initAPI } from './api'
+export { initStore } from './store'
+export { logic, initLogic, LogicContainerImpl }

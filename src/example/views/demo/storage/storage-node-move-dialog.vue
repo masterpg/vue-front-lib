@@ -76,10 +76,10 @@ import { StorageNodeType } from '@/lib'
 
 <script lang="ts">
 import { BaseDialog, CompAlertDialog, CompTreeNode, CompTreeView, CompTreeViewLazyLoadEvent, NoCache, StorageNodeType } from '@/lib'
-import { StorageTypeMixin, treeSortFunc } from '@/example/views/demo/storage/base'
+import { StorageTypeMixin, treeSortFunc } from './base'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
+import StorageTreeNode from './storage-tree-node.vue'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
 

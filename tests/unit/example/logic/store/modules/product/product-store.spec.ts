@@ -1,10 +1,11 @@
-import { ProductState, ProductStore, ProductsErrorType, store } from '@/example/logic/store'
+import { ProductState, ProductStore, ProductsErrorType } from '../../../../../../../src/example/logic/store/product'
 import { Product } from '@/example/logic'
 import { StoreError } from '@/lib'
 import { TestStore } from '../../../../../../helpers/common/store'
 import { cloneDeep } from 'lodash'
 import dayjs from 'dayjs'
 import { initExampleTest } from '../../../../../../helpers/example/init'
+import { store } from '../../../../../../../src/example/logic/store'
 
 //========================================================================
 //

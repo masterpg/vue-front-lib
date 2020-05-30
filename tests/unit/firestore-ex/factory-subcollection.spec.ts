@@ -1,4 +1,4 @@
-import { Collection, DecodeFunc, EncodeFunc, EncodedObject, Entity, FirestoreEx, Timestamp } from '../../../src/firestore-ex'
+import { Collection, DecodeFunc, EncodeFunc, EncodedObject, Entity, FirestoreEx, Timestamp } from '@/firestore-ex'
 import { Dayjs } from 'dayjs'
 import { WebFirestoreTestUtil } from './util'
 import dayjs from 'dayjs'

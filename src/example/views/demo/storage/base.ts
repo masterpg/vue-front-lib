@@ -1,9 +1,9 @@
 import { ChildrenSortFunc, CompTreeNodeData, StorageLogic, StorageNodeShareSettings, StorageNodeType } from '@/lib'
 import { Component, Prop } from 'vue-property-decorator'
 import { StorageRoute, router } from '@/example/router'
-import { StorageTreeStore, newStorageTreeStore } from '@/example/views/demo/storage/storage-tree-store'
+import { StorageTreeStore, newStorageTreeStore } from './storage-tree-store'
 import { Dayjs } from 'dayjs'
-import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
+import StorageTreeNode from './storage-tree-node.vue'
 import Vue from 'vue'
 
 export type StorageType = 'user' | 'app'

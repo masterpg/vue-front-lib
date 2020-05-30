@@ -1,6 +1,6 @@
-import { APICartItem, APIProduct } from '@/example/logic/api/gql'
+import { APICartItem, APIProduct } from '../../../../../../src/example/logic/api/gql'
 import { CartItem, Product } from '@/example/logic'
-import { CartItemAddInput, CartItemEditResponse, CartItemUpdateInput } from '@/example/logic/api'
+import { CartItemAddInput, CartItemEditResponse, CartItemUpdateInput } from '../../../../../../src/example/logic/api'
 import { GENERAL_TOKEN } from '../../../../../helpers/common/data'
 import { TestAppAPIContainer } from '../../../../../mocks/example/logic/api'
 import { cloneDeep } from 'lodash'

@@ -2,7 +2,7 @@ import { AuthStatus, UserInfo, UserInfoInput, api } from '../../api'
 import { BaseLogic } from '../../base'
 import { Component } from 'vue-property-decorator'
 import { Dialog } from 'quasar'
-import { NoCache } from '@/lib/base/decorators'
+import { NoCache } from '@/lib/base'
 import { i18n } from '@/lib/i18n'
 import { store } from '../../store'
 

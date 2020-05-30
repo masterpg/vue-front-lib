@@ -39,7 +39,7 @@
 import { BaseDialog, NoCache, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
+import StorageTreeNode from './storage-tree-node.vue'
 
 @Component
 export default class StorageNodeRemoveDialog extends BaseDialog<StorageTreeNode[], boolean> {

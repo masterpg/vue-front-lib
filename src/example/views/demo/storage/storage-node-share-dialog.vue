@@ -80,12 +80,10 @@
 </template>
 
 <script lang="ts">
-import { BaseDialog, NoCache, StorageNodeShareSettings, StorageNodeType } from '@/lib'
-import { StorageTypeMixin, treeSortFunc } from '@/example/views/demo/storage/base'
+import { BaseDialog, NoCache, StorageNodeShareSettings } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
-import { mixins } from 'vue-class-component'
+import StorageTreeNode from './storage-tree-node.vue'
 
 @Component({ components: {} })
 export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[], StorageNodeShareSettings | undefined> {

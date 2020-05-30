@@ -166,13 +166,12 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, Resizable } from '../../../../lib/base/component'
-import { NoCache, StorageNodeType } from '@/lib'
+import { BaseComponent, NoCache, Resizable, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QTable } from 'quasar'
-import StorageNodeDetailView from '@/example/views/demo/storage/storage-node-detail-view.vue'
-import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
-import { StorageTypeMixin } from '@/example/views/demo/storage/base'
+import StorageNodeDetailView from './storage-node-detail-view.vue'
+import StorageTreeNode from './storage-tree-node.vue'
+import { StorageTypeMixin } from './base'
 import bytes from 'bytes'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'

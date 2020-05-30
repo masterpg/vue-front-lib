@@ -93,12 +93,11 @@
 
 <script lang="ts">
 import * as anime from 'animejs/lib/anime'
-import { BaseComponent, Resizable } from '../../../../lib/base/component'
-import { CompStorageImg, NoCache, StorageDownloader } from '@/lib'
+import { BaseComponent, CompStorageImg, NoCache, Resizable, StorageDownloader } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QLinearProgress } from 'quasar'
-import StorageTreeNode from '@/example/views/demo/storage/storage-tree-node.vue'
-import { StorageTypeMixin } from '@/example/views/demo/storage/base'
+import StorageTreeNode from './storage-tree-node.vue'
+import { StorageTypeMixin } from './base'
 import bytes from 'bytes'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'

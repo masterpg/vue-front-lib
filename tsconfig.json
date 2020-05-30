@@ -19,9 +19,29 @@
       "jest"
     ],
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/example/assets/*": ["src/example/assets/*"],
+      "@/example/components": ["src/example/components"],
+      "@/example/config": ["src/example/config"],
+      "@/example/i18n": ["src/example/i18n"],
+      "@/example/lang/*": ["src/example/lang/*"],
+      "@/example/logic": ["src/example/logic"],
+      "@/example/router": ["src/example/router"],
+      "@/example/styles/*": ["src/example/styles/*"],
+      "@/example/sw": ["src/example/sw"],
+      "@/example/views/*": ["src/example/views/*"],
+      "@/lib": ["src/lib"],
+      "@/lib/assets/*": ["src/lib/assets/*"],
+      "@/lib/base": ["src/lib/base"],
+      "@/lib/components": ["src/lib/components"],
+      "@/lib/config": ["src/lib/config"],
+      "@/lib/i18n": ["src/lib/i18n"],
+      "@/lib/lang/*": ["src/lib/lang/*"],
+      "@/lib/logic": ["src/lib/logic"],
+      "@/lib/markdown-it": ["src/lib/markdown-it"],
+      "@/lib/router": ["src/lib/router"],
+      "@/lib/styles/*": ["src/lib/styles/*"],
+      "@/lib/sw": ["src/lib/sw"],
+      "@/firestore-ex": ["src/firestore-ex"]
     },
     "lib": [
       "esnext",
