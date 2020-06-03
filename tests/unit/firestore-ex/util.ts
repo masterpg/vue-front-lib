@@ -1,5 +1,5 @@
 import * as firebase from '@firebase/testing'
-import { FirestoreExOptions, TimestampEntity } from '@/firestore-ex'
+import { FirestoreExOptions, Timestamp, TimestampEntity } from '@/firestore-ex'
 import dayjs, { Dayjs } from 'dayjs'
 import crypto from 'crypto'
 
@@ -24,8 +24,11 @@ export class WebFirestoreTestUtil {
       .firestore()
 
     this.options = {
-      useTimestampInAll: true,
-      timestampToDate: timestamp => dayjs(timestamp.toDate()),
+      timestamp: {
+        useInAll: true,
+        toAppDate: timestamp => dayjs(timestamp.toDate()),
+        toStoreDate: (date: Dayjs) => Timestamp.fromDate(date.toDate()),
+      },
     }
   }
 
