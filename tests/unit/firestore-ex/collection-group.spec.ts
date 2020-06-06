@@ -1,5 +1,5 @@
-import { Entity, FirestoreEx, Timestamp } from '@/firestore-ex'
-import { TestTimestampEntity, WebFirestoreTestUtil } from './util'
+import { Entity, FirestoreEx, Timestamp, TimestampEntity } from '@/firestore-ex'
+import { WebFirestoreTestUtil } from './util'
 import dayjs from 'dayjs'
 
 const util = new WebFirestoreTestUtil()
@@ -54,9 +54,9 @@ describe('collectionGroup', () => {
 })
 
 describe('collectionGroup - use timestamp', () => {
-  const firestoreEx = new FirestoreEx(db, util.options)
+  const firestoreEx = new FirestoreEx(db)
 
-  interface TestDoc extends TestTimestampEntity {
+  interface TestDoc extends TimestampEntity {
     title: string
   }
 

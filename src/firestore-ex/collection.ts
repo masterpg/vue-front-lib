@@ -5,16 +5,15 @@ import {
   DocumentReference,
   DocumentSnapshot,
   EncodeFunc,
-  EntityId,
-  EntityInput,
-  EntityOptionalInput,
+  EntityAddInput,
+  EntitySetInput,
+  EntityUpdateInput,
   FieldPath,
   FieldValue,
-  OmitEntityId,
   OrderByDirection,
   QueryKey,
   QuerySnapshot,
-  TimestampSettings,
+  Timestamp,
   Transaction,
   WhereFilterOp,
   WriteBatch,
@@ -22,6 +21,7 @@ import {
 import { Context } from './context'
 import { Converter } from './converter'
 import { Query } from './query'
+import dayjs from 'dayjs'
 
 export class Collection<T, S = T> {
   //----------------------------------------------------------------------
@@ -30,11 +30,11 @@ export class Collection<T, S = T> {
   //
   //----------------------------------------------------------------------
 
-  constructor(params: { context: Context; path: string; encode?: EncodeFunc<T, S>; decode?: DecodeFunc<T, S>; timestamp?: TimestampSettings }) {
+  constructor(params: { context: Context; path: string; encode?: EncodeFunc<T, S>; decode?: DecodeFunc<T, S>; useTimestamp?: boolean }) {
     this.context = params.context
     this.collectionRef = params.context.db.collection(params.path)
-    this._converter = new Converter<T, S>({ encode: params.encode, decode: params.decode, timestamp: params.timestamp })
-    this._timestamp = params.timestamp
+    this._converter = new Converter<T, S>({ encode: params.encode, decode: params.decode, useTimestamp: params.useTimestamp })
+    this._useTimestamp = Boolean(params.useTimestamp)
   }
 
   //----------------------------------------------------------------------
@@ -55,7 +55,7 @@ export class Collection<T, S = T> {
 
   private _converter: Converter<T, S>
 
-  private _timestamp?: TimestampSettings
+  private _useTimestamp: boolean
 
   //----------------------------------------------------------------------
   //
@@ -87,11 +87,11 @@ export class Collection<T, S = T> {
     return snap.docs.map(snap => this.toObject(snap))
   }
 
-  async add(obj: OmitEntityId<EntityInput<T>>, atomic?: AtomicOperation): Promise<string> {
+  async add(obj: EntityAddInput<T>, atomic?: AtomicOperation): Promise<string> {
     let docRef: DocumentReference
     const doc = this._converter.encode(obj)
 
-    if (this._timestamp) {
+    if (this._useTimestamp) {
       ;(doc as any).createdAt = FieldValue.serverTimestamp()
     }
 
@@ -107,16 +107,16 @@ export class Collection<T, S = T> {
     return docRef.id
   }
 
-  async set(obj: EntityInput<T> & { createdAt?: any }, atomic?: AtomicOperation): Promise<string> {
+  async set(obj: EntitySetInput<T>, atomic?: AtomicOperation): Promise<string> {
     if (!obj.id) throw new Error('Argument object must have "id" property')
 
     const docRef = this.docRef(obj.id)
     const doc = this._converter.encode(obj)
 
-    if (this._timestamp) {
+    if (this._useTimestamp) {
       const createdAt = (obj as any).createdAt
-      if (createdAt) {
-        ;(doc as any).createdAt = this._timestamp.toStoreDate(createdAt)
+      if (dayjs.isDayjs(createdAt)) {
+        ;(doc as any).createdAt = Timestamp.fromDate(createdAt.toDate())
       } else {
         ;(doc as any).createdAt = FieldValue.serverTimestamp()
       }
@@ -132,7 +132,7 @@ export class Collection<T, S = T> {
     return obj.id
   }
 
-  async update(obj: EntityOptionalInput<T>, atomic?: AtomicOperation): Promise<string> {
+  async update(obj: EntityUpdateInput<T>, atomic?: AtomicOperation): Promise<string> {
     if (!obj.id) throw new Error('Argument object must have "id" property')
 
     const docRef = this.docRef(obj.id)
@@ -160,13 +160,13 @@ export class Collection<T, S = T> {
     return id
   }
 
-  async bulkAdd(objects: OmitEntityId<EntityInput<T>>[]): Promise<void> {
+  async bulkAdd(objects: EntityAddInput<T>[]): Promise<void> {
     return this.context.runBatch(async batch => {
       await Promise.all(objects.map(obj => this.add(obj, batch)))
     })
   }
 
-  async bulkSet(objects: EntityInput<T>[]): Promise<void> {
+  async bulkSet(objects: EntitySetInput<T>[]): Promise<void> {
     return this.context.runBatch(async batch => {
       await Promise.all(objects.map(obj => this.set(obj, batch)))
     })

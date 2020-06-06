@@ -7,7 +7,6 @@ export class WebFirestoreTestUtil {
   projectId: string
   uid: string
   db: firebase.firestore.Firestore
-  options: FirestoreExOptions
 
   constructor() {
     // Use random projectId to separate emulator firestore namespace for concurrent testing
@@ -22,14 +21,6 @@ export class WebFirestoreTestUtil {
         auth: { uid: this.uid },
       })
       .firestore()
-
-    this.options = {
-      timestamp: {
-        useInAll: true,
-        toAppDate: timestamp => dayjs(timestamp.toDate()),
-        toStoreDate: (date: Dayjs) => Timestamp.fromDate(date.toDate()),
-      },
-    }
   }
 
   // Clear emulator Firestore data
@@ -44,5 +35,3 @@ export class WebFirestoreTestUtil {
     await Promise.all(firebase.apps().map(app => app.delete()))
   }
 }
-
-export interface TestTimestampEntity extends TimestampEntity<Dayjs> {}
