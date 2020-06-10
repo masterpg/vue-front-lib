@@ -1,7 +1,7 @@
 {
   "name": "vue-front-lib",
   "scripts": {
-    "dev:storage": "gsutil cors set firebase.storage.cors.json gs://vue-base-project-7295.appspot.com",
+    "env:storage": "gsutil cors set firebase.storage.cors.json gs://lived-web-app-b9f08.appspot.com",
     "build:dev": "vue-cli-service build --mode development",
     "build:stg": "vue-cli-service build --mode staging",
     "build": "vue-cli-service build --mode production",
