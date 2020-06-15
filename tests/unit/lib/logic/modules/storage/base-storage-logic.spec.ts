@@ -295,7 +295,7 @@ describe('fetchDirDescendants', () => {
     // ・'d1/d11/f112.txt'が追加された
     // ・'d1/d12'が削除された
     // ・'d1/f11.txt'が一度削除され、その後また同じディレクトリに同じ名前でアップロードされた
-    const updated_f11 = cloneTestStorageNode(f11, { id: shortid.generate(), updated: dayjs() })
+    const updated_f11 = cloneTestStorageNode(f11, { id: shortid.generate(), updatedAt: dayjs() })
     td.when(storageLogic.getDirDescendantsAPI(d1.path)).thenResolve([d1, d11, f112, updated_f11])
 
     const actual = await storageLogic.fetchDirDescendants(d1.path)
@@ -397,7 +397,7 @@ describe('fetchDescendants', () => {
     // ・'d1/d11/f112.txt'が追加された
     // ・'d1/d12'が削除された
     // ・'d1/f11.txt'が一度削除され、その後また同じディレクトリに同じ名前でアップロードされた
-    const updated_f11 = cloneTestStorageNode(f11, { id: shortid.generate(), updated: dayjs() })
+    const updated_f11 = cloneTestStorageNode(f11, { id: shortid.generate(), updatedAt: dayjs() })
     td.when(storageLogic.getDescendantsAPI(d1.path)).thenResolve([d11, f112, updated_f11])
 
     const actual = await storageLogic.fetchDescendants(d1.path)
@@ -456,7 +456,7 @@ describe('fetchDirChildren', () => {
     // ・'d1/f11.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
     // ・'d1/f12.txt'が追加された
     // ・'d1/d12'が削除された
-    const updated_f11 = cloneTestStorageNode(f11, { id: shortid.generate(), updated: dayjs() })
+    const updated_f11 = cloneTestStorageNode(f11, { id: shortid.generate(), updatedAt: dayjs() })
     td.when(storageLogic.getDirChildrenAPI(d1.path)).thenResolve([d1, d11, updated_f11, f12])
 
     const actual = await storageLogic.fetchDirChildren(d1.path)
@@ -543,7 +543,7 @@ describe('fetchChildren', () => {
     // ・'d1/f11.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
     // ・'d1/f12.txt'が追加された
     // ・'d1/d12'が削除された
-    const updated_f11 = cloneTestStorageNode(f11, { id: shortid.generate(), updated: dayjs() })
+    const updated_f11 = cloneTestStorageNode(f11, { id: shortid.generate(), updatedAt: dayjs() })
     td.when(storageLogic.getChildrenAPI(d1.path)).thenResolve([d11, updated_f11, f12])
 
     const actual = await storageLogic.fetchChildren(d1.path)
@@ -580,7 +580,7 @@ describe('fetchHierarchicalDescendants', () => {
     // ・'d1/d11/f111.txt'が'f1.txt'へ移動+リネームされた
     // ・'d1/d11/f112.txt'が追加された
     // ・'d1/d12'が削除された
-    const updated_f1 = cloneTestStorageNode(f111, { dir: '', path: 'f1.txt', updated: dayjs() })
+    const updated_f1 = cloneTestStorageNode(f111, { dir: '', path: 'f1.txt', updatedAt: dayjs() })
     td.when(storageLogic.getDirDescendantsAPI(undefined)).thenResolve([d1, d11, f112, d2, updated_f1])
 
     const actual = await storageLogic.fetchHierarchicalDescendants()
@@ -618,7 +618,7 @@ describe('fetchHierarchicalDescendants', () => {
     // ・'d1/d11/d111'が削除された
     // ・'d1/d11/f111.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
     // ・'d1/d11/f112.txt'が追加された
-    const updated_f111 = cloneTestStorageNode(f111, { id: shortid.generate(), updated: dayjs() })
+    const updated_f111 = cloneTestStorageNode(f111, { id: shortid.generate(), updatedAt: dayjs() })
     td.when(storageLogic.getAncestorDirsAPI(d11.path)).thenResolve([d1])
     td.when(storageLogic.getDirDescendantsAPI(d11.path)).thenResolve([d11, updated_f111, f112])
 
@@ -717,7 +717,7 @@ describe('fetchHierarchicalChildren', () => {
     // APIから以下の状態のノードリストが取得される
     // ・'d1/d11/f111.txt'が'f1.txt'へ移動+リネームされた
     // ・'d2'が削除された
-    const updated_f1 = cloneTestStorageNode(f111, { dir: '', path: 'f1.txt', updated: dayjs() })
+    const updated_f1 = cloneTestStorageNode(f111, { dir: '', path: 'f1.txt', updatedAt: dayjs() })
     td.when(storageLogic.getDirChildrenAPI(undefined)).thenResolve([d1, d11, updated_f1])
 
     const actual = await storageLogic.fetchHierarchicalChildren()
@@ -754,7 +754,7 @@ describe('fetchHierarchicalChildren', () => {
     // ・'d1/d11/d111'が削除された
     // ・'d1/d11/f111.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
     // ・'d1/d11/f112.txt'が追加された
-    const updated_f111 = cloneTestStorageNode(f111, { id: shortid.generate(), updated: dayjs() })
+    const updated_f111 = cloneTestStorageNode(f111, { id: shortid.generate(), updatedAt: dayjs() })
     td.when(storageLogic.getAncestorDirsAPI(d11.path)).thenResolve([d1])
     td.when(storageLogic.getDirChildrenAPI(d11.path)).thenResolve([d11, updated_f111, f112])
 
@@ -938,7 +938,7 @@ describe('moveDir', () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111, d2]) })
 
     // モック設定
-    const moved_d11 = cloneTestStorageNode(d11, { dir: 'd2', path: 'd2/d11', updated: dayjs() })
+    const moved_d11 = cloneTestStorageNode(d11, { dir: 'd2', path: 'd2/d11', updatedAt: dayjs() })
     const moved_f111 = cloneTestStorageNode(f111, { dir: 'd2/d11', path: 'd2/d11/f111.txt' })
     td.when(storageLogic.moveDirAPI(d11.path, moved_d11.path)).thenResolve([moved_d11, moved_f111])
 
@@ -969,7 +969,7 @@ describe('moveDir', () => {
     storageStore.initState({ all: cloneDeep([d1, d11, d2]) })
 
     // モック設定
-    const moved_d11 = cloneTestStorageNode(d11, { dir: 'd2', path: 'd2/d11', updated: dayjs() })
+    const moved_d11 = cloneTestStorageNode(d11, { dir: 'd2', path: 'd2/d11', updatedAt: dayjs() })
     const moved_f111 = newTestStorageFileNode('d2/d11/f111.txt')
     td.when(storageLogic.moveDirAPI(d11.path, moved_d11.path)).thenResolve([moved_d11, moved_f111])
 
@@ -994,7 +994,7 @@ describe('moveDir', () => {
     storageStore.initState({ all: cloneDeep([d1, d11, d2]) })
 
     // モック設定
-    const moved_d11 = cloneTestStorageNode(d11, { dir: 'd2', path: 'd2/d11', updated: dayjs() })
+    const moved_d11 = cloneTestStorageNode(d11, { dir: 'd2', path: 'd2/d11', updatedAt: dayjs() })
     td.when(storageLogic.moveDirAPI(d11.path, moved_d11.path)).thenReject(new Error())
 
     try {
@@ -1015,7 +1015,7 @@ describe('moveFile', () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111, d12]) })
 
     // モック設定
-    const moved_f111 = cloneTestStorageNode(f111, { dir: 'd1/d12', path: 'd1/d12/f111.txt', updated: dayjs() })
+    const moved_f111 = cloneTestStorageNode(f111, { dir: 'd1/d12', path: 'd1/d12/f111.txt', updatedAt: dayjs() })
     td.when(storageLogic.moveFileAPI(f111.path, moved_f111.path)).thenResolve(moved_f111)
 
     // 'd1/d11/f111.txt'を'd1/d12/f111.txt'へ移動
@@ -1034,7 +1034,7 @@ describe('moveFile', () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111, d12]) })
 
     // モック設定
-    const moved_f111 = cloneTestStorageNode(f111, { dir: 'd1/d12', path: 'd1/d12/f111.txt', updated: dayjs() })
+    const moved_f111 = cloneTestStorageNode(f111, { dir: 'd1/d12', path: 'd1/d12/f111.txt', updatedAt: dayjs() })
     td.when(storageLogic.moveFileAPI(f111.path, moved_f111.path)).thenReject(new Error())
 
     try {
@@ -1058,7 +1058,7 @@ describe('renameDir', () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111]) })
 
     // モック設定
-    const renamed_x11 = cloneTestStorageNode(d11, { name: 'x11', path: 'd1/x11', updated: dayjs() })
+    const renamed_x11 = cloneTestStorageNode(d11, { name: 'x11', path: 'd1/x11', updatedAt: dayjs() })
     const renamed_f111 = cloneTestStorageNode(f111, { dir: 'd1/x11', path: 'd1/x11/f111.txt' })
     td.when(storageLogic.renameDirAPI(d11.path, renamed_x11.name)).thenResolve([renamed_x11, renamed_f111])
 
@@ -1082,7 +1082,7 @@ describe('renameDir', () => {
     storageStore.initState({ all: cloneDeep([d1, d11]) })
 
     // モック設定
-    const renamed_x11 = cloneTestStorageNode(d11, { name: 'x11', path: 'd1/x11', updated: dayjs() })
+    const renamed_x11 = cloneTestStorageNode(d11, { name: 'x11', path: 'd1/x11', updatedAt: dayjs() })
     const renamed_f111 = newTestStorageFileNode('d1/x11/f111.txt')
     td.when(storageLogic.renameDirAPI(d11.path, renamed_x11.name)).thenResolve([renamed_x11, renamed_f111])
 
@@ -1105,7 +1105,7 @@ describe('renameDir', () => {
     storageStore.initState({ all: cloneDeep([d1, d11]) })
 
     // モック設定
-    const renamed_x11 = cloneTestStorageNode(d11, { name: 'x11', path: 'd1/x11', updated: dayjs() })
+    const renamed_x11 = cloneTestStorageNode(d11, { name: 'x11', path: 'd1/x11', updatedAt: dayjs() })
     td.when(storageLogic.renameDirAPI(d11.path, renamed_x11.name)).thenReject(new Error())
 
     try {
@@ -1125,7 +1125,7 @@ describe('renameFile', () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111]) })
 
     // モック設定
-    const renamed_f11X = cloneTestStorageNode(f111, { name: 'f11X.txt', path: 'd1/d11/f11X.txt', updated: dayjs() })
+    const renamed_f11X = cloneTestStorageNode(f111, { name: 'f11X.txt', path: 'd1/d11/f11X.txt', updatedAt: dayjs() })
     td.when(storageLogic.renameFileAPI(f111.path, renamed_f11X.name)).thenResolve(renamed_f11X)
 
     // 'd1/d11/f111.txt'を'd1/d11/f11X.txt'へリネーム
@@ -1143,7 +1143,7 @@ describe('renameFile', () => {
     storageStore.initState({ all: cloneDeep([d1, d11, f111]) })
 
     // モック設定
-    const renamed_f11X = cloneTestStorageNode(f111, { name: 'fileX.txt', path: 'd1/d11/fileX.txt', updated: dayjs() })
+    const renamed_f11X = cloneTestStorageNode(f111, { name: 'fileX.txt', path: 'd1/d11/fileX.txt', updatedAt: dayjs() })
     td.when(storageLogic.renameFileAPI(f111.path, renamed_f11X.name)).thenReject(new Error())
 
     try {
@@ -1168,7 +1168,7 @@ describe('setDirShareSettings', () => {
     const f111 = newTestStorageFileNode('d1/d11/f111.txt')
     storageStore.initState({ all: cloneDeep([d1, d11, f111]) })
 
-    const updated_d11 = cloneTestStorageNode(d11, { share: NEW_SHARE_SETTINGS, updated: dayjs() })
+    const updated_d11 = cloneTestStorageNode(d11, { share: NEW_SHARE_SETTINGS, updatedAt: dayjs() })
     td.when(storageLogic.setDirShareSettingsAPI(d11.path, NEW_SHARE_SETTINGS)).thenResolve(updated_d11)
 
     const actual = await storageLogic.setDirShareSettings(d11.path, NEW_SHARE_SETTINGS)
@@ -1206,7 +1206,7 @@ describe('setFileShareSettings', () => {
     const f111 = newTestStorageFileNode('d1/d11/f111.txt')
     storageStore.initState({ all: cloneDeep([d1, d11, f111]) })
 
-    const updatedFileA = cloneTestStorageNode(f111, { share: NEW_SHARE_SETTINGS, updated: dayjs() })
+    const updatedFileA = cloneTestStorageNode(f111, { share: NEW_SHARE_SETTINGS, updatedAt: dayjs() })
     td.when(storageLogic.setFileShareSettingsAPI(f111.path, NEW_SHARE_SETTINGS)).thenResolve(updatedFileA)
 
     const actual = await storageLogic.setFileShareSettings(f111.path, NEW_SHARE_SETTINGS)
@@ -1279,9 +1279,9 @@ describe('setAPINodesToStore', () => {
     //     ││└fileC.txt
     //     │└fileB.txt
     //     └fileA.txt
-    dA = cloneTestStorageNode(dA, { dir: 'tmp2', path: 'tmp2/dA', updated: dayjs() })
+    dA = cloneTestStorageNode(dA, { dir: 'tmp2', path: 'tmp2/dA', updatedAt: dayjs() })
     dB = cloneTestStorageNode(dB, { dir: 'tmp2/dA', path: 'tmp2/dA/dB' })
-    dC = cloneTestStorageNode(dC, { dir: 'tmp2/dA/dB', path: 'tmp2/dA/dB/dC', updated: dayjs() })
+    dC = cloneTestStorageNode(dC, { dir: 'tmp2/dA/dB', path: 'tmp2/dA/dB/dC', updatedAt: dayjs() })
     fileC = cloneTestStorageNode(fileC, { dir: 'tmp2/dA/dB/dC', path: 'tmp2/dA/dB/dC/fileC.txt' })
     fileB = cloneTestStorageNode(fileB, { dir: 'tmp2/dA/dB', path: 'tmp2/dA/dB/fileB.txt' })
     fileA = cloneTestStorageNode(fileA, { dir: 'tmp2/dA', path: 'tmp2/dA/fileA.txt' })
@@ -1306,8 +1306,9 @@ describe('getPaginationNodesAPI', () => {
         contentType: '',
         size: 0,
         share: cloneDeep(EMPTY_SHARE_SETTINGS),
-        created: dayjs(),
-        updated: dayjs(),
+        version: 1,
+        createdAt: dayjs(),
+        updatedAt: dayjs(),
       })
     }
     return result

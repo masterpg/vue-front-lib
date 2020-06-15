@@ -16,8 +16,8 @@ export interface StorageTreeNodeData extends CompTreeNodeData {
   size: number
   share: StorageNodeShareSettings
   baseURL: string
-  created: Dayjs
-  updated: Dayjs
+  createdAt: Dayjs
+  updatedAt: Dayjs
 }
 
 export const treeSortFunc: ChildrenSortFunc = (a, b) => {

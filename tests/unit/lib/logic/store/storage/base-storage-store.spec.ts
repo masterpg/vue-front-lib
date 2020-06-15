@@ -63,8 +63,8 @@ function verifyStateNodes() {
       expect(node.contentType).toBeDefined()
       expect(node.size).toBeGreaterThan(0)
     }
-    expect(node.created).toBeDefined()
-    expect(node.updated).toBeDefined()
+    expect(node.createdAt).toBeDefined()
+    expect(node.updatedAt).toBeDefined()
   }
   toBeSorted()
 }
@@ -373,26 +373,26 @@ describe('setList', () => {
       all: storageStore.sort([d1, d11, f111, d12, d2]),
     })
 
-    const UPDATED = dayjs('2019-01-01')
+    const UPDATED_AT = dayjs('2019-01-01')
     const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
       isPublic: true,
       readUIds: ['ichiro'],
       writeUIds: ['ichiro'],
     }
     const actual = storageStore.setList([
-      cloneTestStorageNode(d11, { share: NEW_SHARE_SETTINGS, created: UPDATED, updated: UPDATED }),
-      cloneTestStorageNode(f111, { share: NEW_SHARE_SETTINGS, created: UPDATED, updated: UPDATED }),
+      cloneTestStorageNode(d11, { share: NEW_SHARE_SETTINGS, createdAt: UPDATED_AT, updatedAt: UPDATED_AT }),
+      cloneTestStorageNode(f111, { share: NEW_SHARE_SETTINGS, createdAt: UPDATED_AT, updatedAt: UPDATED_AT }),
     ])
 
     expect(actual.length).toBe(2)
     expect(actual[0].id).toBe(d11.id)
     expect(actual[0].share).toEqual(NEW_SHARE_SETTINGS)
-    expect(actual[0].created).toEqual(UPDATED)
-    expect(actual[0].updated).toEqual(UPDATED)
+    expect(actual[0].createdAt).toEqual(UPDATED_AT)
+    expect(actual[0].updatedAt).toEqual(UPDATED_AT)
     expect(actual[1].id).toBe(f111.id)
     expect(actual[1].share).toEqual(NEW_SHARE_SETTINGS)
-    expect(actual[1].created).toEqual(UPDATED)
-    expect(actual[1].updated).toEqual(UPDATED)
+    expect(actual[1].createdAt).toEqual(UPDATED_AT)
+    expect(actual[1].updatedAt).toEqual(UPDATED_AT)
 
     verifyStateNodes()
     existsStateNodes(actual)
@@ -409,7 +409,7 @@ describe('setList', () => {
       all: storageStore.sort([d1, d11, f111, d12, d2]),
     })
 
-    const UPDATED = dayjs('2019-01-01')
+    const UPDATED_AT = dayjs('2019-01-01')
     const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
       isPublic: true,
       readUIds: ['ichiro'],
@@ -423,8 +423,8 @@ describe('setList', () => {
         contentType: 'application/octet-stream',
         size: 99,
         share: NEW_SHARE_SETTINGS,
-        created: UPDATED,
-        updated: UPDATED,
+        createdAt: UPDATED_AT,
+        updatedAt: UPDATED_AT,
       }),
     ])
 
@@ -436,8 +436,8 @@ describe('setList', () => {
     expect(actual[0].contentType).toBe('application/octet-stream')
     expect(actual[0].size).toEqual(99)
     expect(actual[0].share).toEqual(NEW_SHARE_SETTINGS)
-    expect(actual[0].created).toEqual(UPDATED)
-    expect(actual[0].updated).toEqual(UPDATED)
+    expect(actual[0].createdAt).toEqual(UPDATED_AT)
+    expect(actual[0].updatedAt).toEqual(UPDATED_AT)
     // ---> コピーが設定されていることを検証
     expect(actual[0].share).not.toBe(NEW_SHARE_SETTINGS)
     expect(actual[0].share.readUIds).not.toBe(NEW_SHARE_SETTINGS.readUIds)
@@ -475,8 +475,8 @@ describe('setList', () => {
     expect(actual[0].path).toBe(f111.path)
     expect(actual[0].contentType).toBe(f111.contentType)
     expect(actual[0].share).toEqual(f111.share)
-    expect(actual[0].created).toEqual(f111.created)
-    expect(actual[0].updated).toEqual(f111.updated)
+    expect(actual[0].createdAt).toEqual(f111.createdAt)
+    expect(actual[0].updatedAt).toEqual(f111.updatedAt)
 
     verifyStateNodes()
     existsStateNodes(actual)
@@ -977,17 +977,17 @@ describe('move', () => {
 
     // 移動したノードの検証
     // ※移動されたのか、上書きされたのか、もとからあったのか
-    expect(_d1.updated).toEqual(dA_d1.updated) // ← 上書き
-    expect(_d11.updated).toEqual(dA_d11.updated) // ← 上書き
-    expect(_d111.updated).toEqual(dA_d111.updated) // ← 上書き
-    expect(_fileA.updated).toEqual(dA_fileA.updated) // ← 上書き
-    expect(_fileB.updated).toEqual(dA_fileB.updated) // ← 移動
-    expect(_fileC.updated).toEqual(dB_fileC.updated) // ← もとから
-    expect(_d12.updated).toEqual(dA_d12.updated) // ← 移動
-    expect(_d13.updated).toEqual(dB_d13.updated) // ← もとから
-    expect(_fileX.updated).toEqual(dA_fileX.updated) // ← 上書き
-    expect(_fileY.updated).toEqual(dA_fileY.updated) // ← 移動
-    expect(_fileZ.updated).toEqual(dB_fileZ.updated) // ← もとから
+    expect(_d1.updatedAt).toEqual(dA_d1.updatedAt) // ← 上書き
+    expect(_d11.updatedAt).toEqual(dA_d11.updatedAt) // ← 上書き
+    expect(_d111.updatedAt).toEqual(dA_d111.updatedAt) // ← 上書き
+    expect(_fileA.updatedAt).toEqual(dA_fileA.updatedAt) // ← 上書き
+    expect(_fileB.updatedAt).toEqual(dA_fileB.updatedAt) // ← 移動
+    expect(_fileC.updatedAt).toEqual(dB_fileC.updatedAt) // ← もとから
+    expect(_d12.updatedAt).toEqual(dA_d12.updatedAt) // ← 移動
+    expect(_d13.updatedAt).toEqual(dB_d13.updatedAt) // ← もとから
+    expect(_fileX.updatedAt).toEqual(dA_fileX.updatedAt) // ← 上書き
+    expect(_fileY.updatedAt).toEqual(dA_fileY.updatedAt) // ← 移動
+    expect(_fileZ.updatedAt).toEqual(dB_fileZ.updatedAt) // ← もとから
 
     verifyStateNodes()
     existsStateNodes(actual)

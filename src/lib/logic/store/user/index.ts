@@ -69,10 +69,6 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
     return this.m_user.isAppAdmin
   }
 
-  get myDirName(): string {
-    return this.m_user.myDirName
-  }
-
   get createdAt(): Dayjs {
     return this.m_user.createdAt
   }
@@ -96,7 +92,6 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
     if (typeof value.email === 'string') this.m_user.email = value.email
     if (typeof value.emailVerified === 'boolean') this.m_user.emailVerified = value.emailVerified
     if (typeof value.isAppAdmin === 'boolean') this.m_user.isAppAdmin = value.isAppAdmin
-    if (typeof value.myDirName === 'string') this.m_user.myDirName = value.myDirName
     if (value.createdAt) this.m_user.createdAt = value.createdAt
     if (value.updatedAt) this.m_user.updatedAt = value.updatedAt
     if (value.publicProfile) {
@@ -118,7 +113,6 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
       email: this.email,
       emailVerified: this.emailVerified,
       isAppAdmin: this.isAppAdmin,
-      myDirName: this.myDirName,
       createdAt: this.m_user.createdAt,
       updatedAt: this.m_user.updatedAt,
       publicProfile: {
@@ -133,8 +127,8 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
 
   async reflectCustomToken(): Promise<void> {
     const idToken = await firebase.auth().currentUser!.getIdTokenResult()
-    const { isAppAdmin, myDirName } = idToken.claims as UserClaims
-    this.set({ isAppAdmin, myDirName })
+    const { isAppAdmin } = idToken.claims as UserClaims
+    this.set({ isAppAdmin })
   }
 
   //----------------------------------------------------------------------
@@ -153,7 +147,6 @@ class UserStoreImpl extends BaseStore<void> implements UserStore {
       email: '',
       emailVerified: false,
       isAppAdmin: false,
-      myDirName: '',
       createdAt: dayjs(0),
       updatedAt: dayjs(0),
       publicProfile: {

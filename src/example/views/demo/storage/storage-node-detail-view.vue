@@ -83,8 +83,8 @@
           <div class="value">{{ m_share }}</div>
         </div>
         <div class="item">
-          <div class="title">{{ this.$t('storage.nodeDetail.updated') }}</div>
-          <div class="value">{{ m_updated }}</div>
+          <div class="title">{{ this.$t('storage.nodeDetail.updatedAt') }}</div>
+          <div class="value">{{ m_updatedAt }}</div>
         </div>
       </div>
     </div>
@@ -175,9 +175,9 @@ export default class StorageNodeDetailView extends mixins(BaseComponent, Resizab
     return this.m_fileNode.value
   }
 
-  private get m_updated(): string {
+  private get m_updatedAt(): string {
     if (!this.m_fileNode) return ''
-    return String(this.$d(this.m_fileNode.updatedDate.toDate(), 'dateSec'))
+    return String(this.$d(this.m_fileNode.updatedAt.toDate(), 'dateSec'))
   }
 
   private m_textData: string | null = null

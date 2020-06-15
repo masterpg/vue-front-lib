@@ -200,8 +200,9 @@ abstract class BaseStorageStore extends BaseStore<StorageState> implements Stora
         stateNode.share.readUIds = node.share.readUIds ? [...node.share.readUIds] : null
         stateNode.share.writeUIds = node.share.writeUIds ? [...node.share.writeUIds] : null
       }
-      if (node.created) stateNode.created = node.created
-      if (node.updated) stateNode.updated = node.updated
+      if (typeof node.version === 'number') stateNode.version = node.version
+      if (node.createdAt) stateNode.createdAt = node.createdAt
+      if (node.updatedAt) stateNode.updatedAt = node.updatedAt
 
       result.push(this.clone(stateNode))
     }
@@ -340,8 +341,9 @@ abstract class BaseStorageStore extends BaseStore<StorageState> implements Stora
         readUIds: value.share.readUIds ? [...value.share.readUIds] : null,
         writeUIds: value.share.writeUIds ? [...value.share.writeUIds] : null,
       },
-      created: value.created,
-      updated: value.updated,
+      version: value.version,
+      createdAt: value.createdAt,
+      updatedAt: value.updatedAt,
     }
   }
 
@@ -360,13 +362,7 @@ abstract class BaseStorageStore extends BaseStore<StorageState> implements Stora
       strB = `${b.dir}${String.fromCodePoint(0xffff)}${b.name}`
     }
 
-    if (strA < strB) {
-      return -1
-    } else if (strA > strB) {
-      return 1
-    } else {
-      return 0
-    }
+    return strA < strB ? -1 : strA > strB ? 1 : 0
   }
 
   //----------------------------------------------------------------------

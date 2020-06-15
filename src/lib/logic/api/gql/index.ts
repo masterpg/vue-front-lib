@@ -1,6 +1,4 @@
 import {
-  APIStorageNode,
-  APIStoragePaginationResult,
   AppConfigResponse,
   AuthDataResult,
   LibAPIContainer,
@@ -16,7 +14,6 @@ import {
   toTimestampEntity as _toTimestampEntity,
 } from '../base'
 import { BaseGQLClient } from './base'
-import dayjs from 'dayjs'
 import gql from 'graphql-tag'
 
 //========================================================================
@@ -34,6 +31,13 @@ interface APIUser extends ToAPITimestampEntity<Omit<UserInfo, 'publicProfile'>> 
 }
 
 interface APIPublicProfile extends ToAPITimestampEntity<PublicProfile> {}
+
+interface APIStorageNode extends ToAPITimestampEntity<StorageNode> {}
+
+interface APIStoragePaginationResult {
+  list: APIStorageNode[]
+  nextPageToken?: string
+}
 
 //========================================================================
 //
@@ -90,7 +94,6 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               email
               emailVerified
               isAppAdmin
-              myDirName
               createdAt
               updatedAt
               publicProfile {
@@ -131,7 +134,6 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
             email
             emailVerified
             isAppAdmin
-            myDirName
             createdAt
             updatedAt
             publicProfile {
@@ -188,8 +190,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
@@ -197,7 +200,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     const apiNode = response.data.userStorageNode
-    return apiNode ? this.toStorageNode(apiNode) : undefined
+    return apiNode ? this.toTimestampEntity(apiNode) : undefined
   }
 
   async getUserStorageDirDescendants(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult> {
@@ -218,8 +221,8 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              created
-              updated
+              createdAt
+              updatedAt
             }
             nextPageToken
           }
@@ -229,7 +232,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     return {
-      list: this.toStorageNodes(response.data.userStorageDirDescendants.list),
+      list: this.toTimestampEntities(response.data.userStorageDirDescendants.list),
       nextPageToken: response.data.userStorageDirDescendants.nextPageToken || undefined,
     }
   }
@@ -252,8 +255,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              created
-              updated
+              version
+              createdAt
+              updatedAt
             }
             nextPageToken
           }
@@ -263,7 +267,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     return {
-      list: this.toStorageNodes(response.data.userStorageDescendants.list),
+      list: this.toTimestampEntities(response.data.userStorageDescendants.list),
       nextPageToken: response.data.userStorageDescendants.nextPageToken || undefined,
     }
   }
@@ -286,8 +290,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              created
-              updated
+              version
+              createdAt
+              updatedAt
             }
             nextPageToken
           }
@@ -297,7 +302,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     return {
-      list: this.toStorageNodes(response.data.userStorageDirChildren.list),
+      list: this.toTimestampEntities(response.data.userStorageDirChildren.list),
       nextPageToken: response.data.userStorageDirChildren.nextPageToken || undefined,
     }
   }
@@ -320,8 +325,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              created
-              updated
+              version
+              createdAt
+              updatedAt
             }
             nextPageToken
           }
@@ -331,7 +337,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     return {
-      list: this.toStorageNodes(response.data.userStorageChildren.list),
+      list: this.toTimestampEntities(response.data.userStorageChildren.list),
       nextPageToken: response.data.userStorageChildren.nextPageToken || undefined,
     }
   }
@@ -353,15 +359,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { nodePath },
       isAuth: true,
     })
-    return this.toStorageNodes(response.data.userStorageHierarchicalNodes)
+    return this.toTimestampEntities(response.data.userStorageHierarchicalNodes)
   }
 
   async getUserStorageAncestorDirs(nodePath: string): Promise<StorageNode[]> {
@@ -381,15 +388,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { nodePath },
       isAuth: true,
     })
-    return this.toStorageNodes(response.data.userStorageAncestorDirs)
+    return this.toTimestampEntities(response.data.userStorageAncestorDirs)
   }
 
   async handleUploadedUserFile(filePath: string): Promise<StorageNode> {
@@ -409,15 +417,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { filePath },
       isAuth: true,
     })
-    return this.toStorageNode(response.data!.handleUploadedUserFile)
+    return this.toTimestampEntity(response.data!.handleUploadedUserFile)
   }
 
   async createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
@@ -437,15 +446,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { dirPaths },
       isAuth: true,
     })
-    return this.toStorageNodes(response.data!.createUserStorageDirs)
+    return this.toTimestampEntities(response.data!.createUserStorageDirs)
   }
 
   async removeUserStorageDir(options: StoragePaginationOptionsInput | null, dirPath: string): Promise<StoragePaginationResult> {
@@ -466,8 +476,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              created
-              updated
+              version
+              createdAt
+              updatedAt
             }
             nextPageToken
           }
@@ -477,7 +488,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     return {
-      list: this.toStorageNodes(response.data!.removeUserStorageDir.list),
+      list: this.toTimestampEntities(response.data!.removeUserStorageDir.list),
       nextPageToken: response.data!.removeUserStorageDir.nextPageToken || undefined,
     }
   }
@@ -499,8 +510,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
@@ -508,7 +520,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     const apiNode = response.data!.removeUserStorageFile
-    return apiNode ? this.toStorageNode(apiNode) : undefined
+    return apiNode ? this.toTimestampEntity(apiNode) : undefined
   }
 
   async moveUserStorageDir(options: StoragePaginationOptionsInput | null, fromDirPath: string, toDirPath: string): Promise<StoragePaginationResult> {
@@ -529,8 +541,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              created
-              updated
+              version
+              createdAt
+              updatedAt
             }
             nextPageToken
           }
@@ -540,7 +553,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     return {
-      list: this.toStorageNodes(response.data!.moveUserStorageDir.list),
+      list: this.toTimestampEntities(response.data!.moveUserStorageDir.list),
       nextPageToken: response.data!.moveUserStorageDir.nextPageToken || undefined,
     }
   }
@@ -562,15 +575,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { fromFilePath, toFilePath },
       isAuth: true,
     })
-    return this.toStorageNode(response.data!.moveUserStorageFile)
+    return this.toTimestampEntity(response.data!.moveUserStorageFile)
   }
 
   async renameUserStorageDir(options: StoragePaginationOptionsInput | null, dirPath: string, newName: string): Promise<StoragePaginationResult> {
@@ -591,8 +605,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              created
-              updated
+              version
+              createdAt
+              updatedAt
             }
             nextPageToken
           }
@@ -602,7 +617,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     return {
-      list: this.toStorageNodes(response.data!.renameUserStorageDir.list),
+      list: this.toTimestampEntities(response.data!.renameUserStorageDir.list),
       nextPageToken: response.data!.renameUserStorageDir.nextPageToken || undefined,
     }
   }
@@ -624,15 +639,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { filePath, newName },
       isAuth: true,
     })
-    return this.toStorageNode(response.data!.renameUserStorageFile)
+    return this.toTimestampEntity(response.data!.renameUserStorageFile)
   }
 
   async setUserStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
@@ -652,15 +668,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { dirPath, settings },
       isAuth: true,
     })
-    return this.toStorageNode(response.data!.setUserStorageDirShareSettings)
+    return this.toTimestampEntity(response.data!.setUserStorageDirShareSettings)
   }
 
   async setUserStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
@@ -680,15 +697,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { filePath, settings },
       isAuth: true,
     })
-    return this.toStorageNode(response.data!.setUserStorageFileShareSettings)
+    return this.toTimestampEntity(response.data!.setUserStorageFileShareSettings)
   }
 
   //--------------------------------------------------
@@ -712,8 +730,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
@@ -721,7 +740,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     const apiNode = response.data.storageNode
-    return apiNode ? this.toStorageNode(apiNode) : undefined
+    return apiNode ? this.toTimestampEntity(apiNode) : undefined
   }
 
   async getStorageDirDescendants(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult> {
@@ -742,8 +761,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              created
-              updated
+              version
+              createdAt
+              updatedAt
             }
             nextPageToken
           }
@@ -753,7 +773,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     return {
-      list: this.toStorageNodes(response.data.storageDirDescendants.list),
+      list: this.toTimestampEntities(response.data.storageDirDescendants.list),
       nextPageToken: response.data.storageDirDescendants.nextPageToken || undefined,
     }
   }
@@ -776,8 +796,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              created
-              updated
+              version
+              createdAt
+              updatedAt
             }
             nextPageToken
           }
@@ -787,7 +808,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     return {
-      list: this.toStorageNodes(response.data.storageDescendants.list),
+      list: this.toTimestampEntities(response.data.storageDescendants.list),
       nextPageToken: response.data.storageDescendants.nextPageToken || undefined,
     }
   }
@@ -810,8 +831,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              created
-              updated
+              version
+              createdAt
+              updatedAt
             }
             nextPageToken
           }
@@ -821,7 +843,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     return {
-      list: this.toStorageNodes(response.data.storageDirChildren.list),
+      list: this.toTimestampEntities(response.data.storageDirChildren.list),
       nextPageToken: response.data.storageDirChildren.nextPageToken || undefined,
     }
   }
@@ -844,8 +866,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              created
-              updated
+              version
+              createdAt
+              updatedAt
             }
             nextPageToken
           }
@@ -855,7 +878,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     return {
-      list: this.toStorageNodes(response.data.storageChildren.list),
+      list: this.toTimestampEntities(response.data.storageChildren.list),
       nextPageToken: response.data.storageChildren.nextPageToken || undefined,
     }
   }
@@ -877,15 +900,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { nodePath },
       isAuth: true,
     })
-    return this.toStorageNodes(response.data!.storageHierarchicalNodes)
+    return this.toTimestampEntities(response.data!.storageHierarchicalNodes)
   }
 
   async getStorageAncestorDirs(nodePath: string): Promise<StorageNode[]> {
@@ -905,15 +929,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { nodePath },
       isAuth: true,
     })
-    return this.toStorageNodes(response.data!.storageAncestorDirs)
+    return this.toTimestampEntities(response.data!.storageAncestorDirs)
   }
 
   async handleUploadedFile(filePath: string): Promise<StorageNode> {
@@ -933,15 +958,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { filePath },
       isAuth: true,
     })
-    return this.toStorageNode(response.data!.handleUploadedFile)
+    return this.toTimestampEntity(response.data!.handleUploadedFile)
   }
 
   async createStorageDirs(dirPaths: string[]): Promise<StorageNode[]> {
@@ -961,15 +987,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { dirPaths },
       isAuth: true,
     })
-    return this.toStorageNodes(response.data!.createStorageDirs)
+    return this.toTimestampEntities(response.data!.createStorageDirs)
   }
 
   async removeStorageDir(options: StoragePaginationOptionsInput | null, dirPath: string): Promise<StoragePaginationResult> {
@@ -990,8 +1017,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              created
-              updated
+              version
+              createdAt
+              updatedAt
             }
             nextPageToken
           }
@@ -1001,7 +1029,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     return {
-      list: this.toStorageNodes(response.data!.removeStorageDir.list),
+      list: this.toTimestampEntities(response.data!.removeStorageDir.list),
       nextPageToken: response.data!.removeStorageDir.nextPageToken || undefined,
     }
   }
@@ -1023,8 +1051,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
@@ -1032,7 +1061,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     const apiNode = response.data!.removeStorageFile
-    return apiNode ? this.toStorageNode(apiNode) : undefined
+    return apiNode ? this.toTimestampEntity(apiNode) : undefined
   }
 
   async moveStorageDir(options: StoragePaginationOptionsInput | null, fromDirPath: string, toDirPath: string): Promise<StoragePaginationResult> {
@@ -1053,8 +1082,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              created
-              updated
+              version
+              createdAt
+              updatedAt
             }
             nextPageToken
           }
@@ -1064,7 +1094,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     return {
-      list: this.toStorageNodes(response.data!.moveStorageDir.list),
+      list: this.toTimestampEntities(response.data!.moveStorageDir.list),
       nextPageToken: response.data!.moveStorageDir.nextPageToken || undefined,
     }
   }
@@ -1086,15 +1116,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { fromFilePath, toFilePath },
       isAuth: true,
     })
-    return this.toStorageNode(response.data!.moveStorageFile)
+    return this.toTimestampEntity(response.data!.moveStorageFile)
   }
 
   async renameStorageDir(options: StoragePaginationOptionsInput | null, dirPath: string, newName: string): Promise<StoragePaginationResult> {
@@ -1115,8 +1146,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              created
-              updated
+              version
+              createdAt
+              updatedAt
             }
             nextPageToken
           }
@@ -1126,7 +1158,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       isAuth: true,
     })
     return {
-      list: this.toStorageNodes(response.data!.renameStorageDir.list),
+      list: this.toTimestampEntities(response.data!.renameStorageDir.list),
       nextPageToken: response.data!.renameStorageDir.nextPageToken || undefined,
     }
   }
@@ -1148,15 +1180,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { filePath, newName },
       isAuth: true,
     })
-    return this.toStorageNode(response.data!.renameStorageFile)
+    return this.toTimestampEntity(response.data!.renameStorageFile)
   }
 
   async setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
@@ -1176,15 +1209,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { dirPath, settings },
       isAuth: true,
     })
-    return this.toStorageNode(response.data!.setStorageDirShareSettings)
+    return this.toTimestampEntity(response.data!.setStorageDirShareSettings)
   }
 
   async setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
@@ -1204,15 +1238,16 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            created
-            updated
+            version
+            createdAt
+            updatedAt
           }
         }
       `,
       variables: { filePath, settings },
       isAuth: true,
     })
-    return this.toStorageNode(response.data!.setStorageFileShareSettings)
+    return this.toTimestampEntity(response.data!.setStorageFileShareSettings)
   }
 
   async getSignedUploadUrls(inputs: { filePath: string; contentType?: string }[]): Promise<string[]> {
@@ -1272,17 +1307,6 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
   protected readonly toTimestampEntity = _toTimestampEntity
 
   protected readonly toTimestampEntities = _toTimestampEntities
-
-  protected toStorageNode(responseNode: APIStorageNode): StorageNode {
-    return Object.assign(responseNode, {
-      created: dayjs(responseNode.created),
-      updated: dayjs(responseNode.updated),
-    })
-  }
-
-  protected toStorageNodes(responseNodes: APIStorageNode[]): StorageNode[] {
-    return responseNodes.map(node => this.toStorageNode(node))
-  }
 }
 
 //========================================================================

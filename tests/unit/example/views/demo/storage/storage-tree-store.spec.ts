@@ -264,7 +264,7 @@ describe('reloadDir', () => {
     // ・'d1/d11/f111.txt'が'f1.txt'へ移動+リネームされた
     // ・'d1/d11/f112.txt'が追加された
     // ・'d1/d12'が削除された
-    const renamed_f1 = cloneTestStorageNode(f111, { dir: '', path: 'f1.txt', updated: dayjs() })
+    const renamed_f1 = cloneTestStorageNode(f111, { dir: '', path: 'f1.txt', updatedAt: dayjs() })
     // StorageLogic.getDirDescendants()をモック化
     td.when(storageLogic.getDirDescendants('')).thenReturn([d1, d11, f112, d2, renamed_f1])
 
@@ -326,7 +326,7 @@ describe('reloadDir', () => {
     // ・'d1/d11/d111'が削除された
     // ・'d1/d11/f111.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
     // ・'d1/d11/f112.txt'が追加された
-    const updated_f111 = cloneTestStorageNode(f111, { id: shortid.generate(), updated: dayjs() })
+    const updated_f111 = cloneTestStorageNode(f111, { id: shortid.generate(), updatedAt: dayjs() })
     // StorageLogic.getNode()をモック化
     td.when(storageLogic.getNode({ path: d1.path })).thenReturn(d1)
     // StorageLogic.getDirDescendants()をモック化
@@ -711,7 +711,7 @@ describe('mergeAllNodes', () => {
     // ・'d1/d11/f111.txt'が'fA.txt'へ移動+リネームされた
     // ・'d1/d11/f11A.txt'が追加された
     // ・'d1/d12'が削除された
-    const fA = cloneTestStorageNode(f111, { dir: '', path: 'fA.txt', updated: dayjs() })
+    const fA = cloneTestStorageNode(f111, { dir: '', path: 'fA.txt', updatedAt: dayjs() })
     const f11A = newTestStorageFileNode('d1/d11/f11A.txt')
     treeStore.mergeAllNodes([d1, d11, f11A, fA, d2])
     const actual = treeStore.getAllNodes()
@@ -907,17 +907,17 @@ describe('setNode + setNodes', () => {
     const d2 = newTestStorageDirNode('d2')
     treeStore.setAllNodes([d1, d11, f111, d2])
 
-    const created = dayjs('2019-12-01')
-    const updated = dayjs('2019-12-02')
-    const updatingD11 = Object.assign({}, d11, { created, updated })
-    const updatingFileA = Object.assign({}, f111, { created, updated })
+    const createdAt = dayjs('2019-12-01')
+    const updatedAt = dayjs('2019-12-02')
+    const updatingD11 = Object.assign({}, d11, { createdAt, updatedAt })
+    const updatingFileA = Object.assign({}, f111, { createdAt, updatedAt })
 
     treeStore.setNodes([updatingD11, updatingFileA])
 
-    expect(treeStore.getNode('d1/d11')!.createdDate).toEqual(created)
-    expect(treeStore.getNode('d1/d11')!.updatedDate).toEqual(updated)
-    expect(treeStore.getNode('d1/d11/f111.txt')!.createdDate).toEqual(created)
-    expect(treeStore.getNode('d1/d11/f111.txt')!.updatedDate).toEqual(updated)
+    expect(treeStore.getNode('d1/d11')!.createdAt).toEqual(createdAt)
+    expect(treeStore.getNode('d1/d11')!.updatedAt).toEqual(updatedAt)
+    expect(treeStore.getNode('d1/d11/f111.txt')!.createdAt).toEqual(createdAt)
+    expect(treeStore.getNode('d1/d11/f111.txt')!.updatedAt).toEqual(updatedAt)
   })
 
   it('ツリーに存在するノードの設定 - 親が変わっていた場合', () => {
@@ -928,17 +928,17 @@ describe('setNode + setNodes', () => {
     treeStore.setAllNodes([d1, d11, f111, d2])
 
     // 'd1/d11'が移動+リネームで'd2/d21'となった
-    const updated = dayjs()
-    const d21_from_d11 = cloneTestStorageNode(d11, { name: 'd21', dir: 'd2', path: 'd2/d21', updated: updated })
-    const f211_from_f111 = cloneTestStorageNode(f111, { name: 'f211.txt', dir: 'd2/d21', path: 'd2/d21/f211.txt', updated: updated })
+    const updatedAt = dayjs()
+    const d21_from_d11 = cloneTestStorageNode(d11, { name: 'd21', dir: 'd2', path: 'd2/d21', updatedAt })
+    const f211_from_f111 = cloneTestStorageNode(f111, { name: 'f211.txt', dir: 'd2/d21', path: 'd2/d21/f211.txt', updatedAt })
     treeStore.setNodes([d21_from_d11, f211_from_f111])
 
     const _d21 = treeStore.getNode('d2/d21')!
     expect(_d21.parent!.value).toBe('d2')
-    expect(_d21.updatedDate).toEqual(updated)
+    expect(_d21.updatedAt).toEqual(updatedAt)
     const _f211 = treeStore.getNode('d2/d21/f211.txt')!
     expect(_f211.parent!.value).toBe('d2/d21')
-    expect(_f211.updatedDate).toEqual(updated)
+    expect(_f211.updatedAt).toEqual(updatedAt)
 
     verifyParentChildRelationForTree(treeView)
   })
@@ -951,15 +951,15 @@ describe('setNode + setNodes', () => {
     treeStore.setAllNodes([d1, d11, f111, f112])
 
     // 'd1/d11/f112.txt'がリネームされて'd1/d11/f110.txt'となった
-    const updated = dayjs()
-    const f110_from_f112 = cloneTestStorageNode(f112, { name: 'f110.txt', dir: 'd1/d11', path: 'd1/d11/f110.txt', updated: updated })
+    const updatedAt = dayjs()
+    const f110_from_f112 = cloneTestStorageNode(f112, { name: 'f110.txt', dir: 'd1/d11', path: 'd1/d11/f110.txt', updatedAt })
     treeStore.setNodes([f110_from_f112])
 
     const _d11 = treeStore.getNode('d1/d11')!
     const [_f110, _f111] = _d11.children as StorageTreeNode[]
     expect(_f110.value).toBe('d1/d11/f110.txt')
     expect(_f110.label).toBe('f110.txt')
-    expect(_f110.updatedDate).toEqual(updated)
+    expect(_f110.updatedAt).toEqual(updatedAt)
     expect(_f111.value).toBe('d1/d11/f111.txt')
     expect(_f111.label).toBe('f111.txt')
 
@@ -972,13 +972,13 @@ describe('setNode + setNodes', () => {
     treeStore.setAllNodes([d1, d11])
 
     // 'd1/d11'が削除後また同じディレクトリに同じ名前で作成された
-    const created_d11 = cloneTestStorageNode(d11, { id: shortid.generate(), created: dayjs(), updated: dayjs() })
+    const created_d11 = cloneTestStorageNode(d11, { id: shortid.generate(), createdAt: dayjs(), updatedAt: dayjs() })
     treeStore.setNodes([created_d11])
 
     const _d11 = treeStore.getNode('d1/d11')!
     expect(_d11.id).toEqual(created_d11.id)
-    expect(_d11.createdDate).toEqual(created_d11.created)
-    expect(_d11.updatedDate).toEqual(created_d11.updated)
+    expect(_d11.createdAt).toEqual(created_d11.createdAt)
+    expect(_d11.updatedAt).toEqual(created_d11.updatedAt)
 
     verifyParentChildRelationForTree(treeView)
   })
@@ -991,13 +991,13 @@ describe('setNode + setNodes', () => {
     treeStore.setAllNodes([d1, d11, f111, f112])
 
     // 'd1/d11/f111.txt'が削除後また同じディレクトリに同じ名前でアップロードされた
-    const created_f111 = cloneTestStorageNode(f111, { id: shortid.generate(), created: dayjs(), updated: dayjs() })
+    const created_f111 = cloneTestStorageNode(f111, { id: shortid.generate(), createdAt: dayjs(), updatedAt: dayjs() })
     treeStore.setNodes([created_f111])
 
     const _f111 = treeStore.getNode('d1/d11/f111.txt')!
     expect(_f111.id).toEqual(created_f111.id)
-    expect(_f111.createdDate).toEqual(created_f111.created)
-    expect(_f111.updatedDate).toEqual(created_f111.updated)
+    expect(_f111.createdAt).toEqual(created_f111.createdAt)
+    expect(_f111.updatedAt).toEqual(created_f111.updatedAt)
 
     verifyParentChildRelationForTree(treeView)
   })

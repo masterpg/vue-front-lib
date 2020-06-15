@@ -20,8 +20,6 @@ function setAPI(value: LibAPIContainer): void {
 
 export {
   APIEntity,
-  APIStorageNode,
-  APIStoragePaginationResult,
   APITimestampEntity,
   AppConfigResponse,
   AuthDataResult,

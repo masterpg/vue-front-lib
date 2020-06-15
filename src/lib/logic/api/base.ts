@@ -142,7 +142,6 @@ export interface TimestampEntity {
 
 export interface UserClaims {
   isAppAdmin?: boolean
-  myDirName?: string
 }
 
 export interface UserIdClaims extends UserClaims {
@@ -180,7 +179,6 @@ export interface UserInfo extends TimestampEntity {
   email: string
   emailVerified: boolean
   isAppAdmin: boolean
-  myDirName: string
   publicProfile: PublicProfile
 }
 
@@ -198,8 +196,7 @@ export interface UserInfoInput {
 //  Storage
 //--------------------------------------------------
 
-export interface APIStorageNode {
-  id: string
+export interface StorageNode extends TimestampEntity {
   nodeType: StorageNodeType
   name: string
   dir: string
@@ -207,18 +204,7 @@ export interface APIStorageNode {
   contentType: string
   size: number
   share: StorageNodeShareSettings
-  created: string
-  updated: string
-}
-
-export interface APIStoragePaginationResult {
-  list: APIStorageNode[]
-  nextPageToken?: string
-}
-
-export interface StorageNode extends Omit<APIStorageNode, 'created' | 'updated'> {
-  created: Dayjs
-  updated: Dayjs
+  version: number
 }
 
 export interface StorageNodeShareSettings {

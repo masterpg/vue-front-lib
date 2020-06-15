@@ -239,12 +239,12 @@ export default class StorageTreeNode extends CompTreeNode {
     return `${this.baseURL}/${this.value}`
   }
 
-  get createdDate(): Dayjs {
-    return this.nodeData.created
+  get createdAt(): Dayjs {
+    return this.nodeData.createdAt
   }
 
-  get updatedDate(): Dayjs {
-    return this.nodeData.updated
+  get updatedAt(): Dayjs {
+    return this.nodeData.updatedAt
   }
 
   private m_inheritedShare: RequiredStorageNodeShareSettings = { isPublic: false, readUIds: [], writeUIds: [] }
@@ -310,11 +310,11 @@ export default class StorageTreeNode extends CompTreeNode {
     if (typeof editData.baseURL === 'string') {
       this.nodeData.baseURL = editData.baseURL
     }
-    if (editData.created) {
-      this.nodeData.created = editData.created
+    if (editData.createdAt) {
+      this.nodeData.createdAt = editData.createdAt
     }
-    if (editData.updated) {
-      this.nodeData.updated = editData.updated
+    if (editData.updatedAt) {
+      this.nodeData.updatedAt = editData.updatedAt
     }
   }
 

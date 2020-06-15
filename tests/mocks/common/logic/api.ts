@@ -14,7 +14,6 @@ import gql from 'graphql-tag'
 interface TestAuthUser {
   uid: string
   authStatus: AuthStatus
-  myDirName: string
   isAppAdmin?: boolean
 }
 
@@ -68,7 +67,6 @@ interface TestAPIContainer extends LibAPIContainer {
 const TEMP_ADMIN_USER: TestAuthUser = {
   uid: 'temp.admin.user',
   authStatus: AuthStatus.Available,
-  myDirName: 'temp.admin.user',
   isAppAdmin: true,
 }
 
@@ -228,7 +226,6 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
               email
               emailVerified
               isAppAdmin
-              myDirName
               createdAt
               updatedAt
               publicProfile {
@@ -271,7 +268,7 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
     //----------------------------------------------------------------------
 
     private m_toUserStorageBasePath(user: TestAuthUser): string {
-      return path.join(config.storage.usersDir, user.myDirName)
+      return path.join(config.storage.usersDir, user.uid)
     }
 
     private m_readAsArrayBuffer(fileData: string | Blob | Uint8Array | ArrayBuffer | File): Promise<ArrayBuffer> {

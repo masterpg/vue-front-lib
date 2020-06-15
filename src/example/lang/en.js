@@ -83,7 +83,7 @@ export default merge(require('@/lib/lang/en').default, {
       share: 'Share',
       path: 'Path',
       url: 'URL',
-      updated: 'Updated',
+      updatedAt: 'Updated',
     },
     download: {
       downloadFailure: 'Failed to download "{nodeName}".',

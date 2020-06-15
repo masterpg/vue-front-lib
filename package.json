@@ -14,7 +14,7 @@
     "test:e2e": "testcafe chrome:headless tests/e2e/**/*.test.ts -S -s screenshots --hostname localhost",
     "lint": "./node_modules/web-base-lib/tools/lint.sh",
     "deploy": "firebase deploy --only hosting,storage",
-    "emulators:firestore": "firebase emulators:start --only firestore"
+    "firebase:emulators": "firebase emulators:start"
   },
   "dependencies": {
     "@quasar/extras": "^1.7.0",

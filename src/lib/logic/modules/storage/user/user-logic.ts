@@ -16,7 +16,7 @@ export class UserStorageLogicImpl extends BaseStorageLogic implements UserStorag
   }
 
   get basePath(): string {
-    return `${_path.join(config.storage.usersDir, store.user.myDirName)}`
+    return `${_path.join(config.storage.usersDir, store.user.id)}`
   }
 
   get baseURL(): string {

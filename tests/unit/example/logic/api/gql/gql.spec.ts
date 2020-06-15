@@ -14,9 +14,9 @@ import { initExampleTest } from '../../../../../helpers/example/init'
 //========================================================================
 
 const API_PRODUCTS: APIProduct[] = [
-  { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 3, createdAt: '2020-01-01', updatedAt: '2020-01-02' },
-  { id: 'product2', title: 'Fire HD 8 Tablet', price: 80.99, stock: 5, createdAt: '2020-01-01', updatedAt: '2020-01-02' },
-  { id: 'product3', title: 'MediaPad T5 10', price: 150.8, stock: 10, createdAt: '2020-01-01', updatedAt: '2020-01-02' },
+  { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 3, createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-02T00:00:00.000Z' },
+  { id: 'product2', title: 'Fire HD 8 Tablet', price: 80.99, stock: 5, createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-02T00:00:00.000Z' },
+  { id: 'product3', title: 'MediaPad T5 10', price: 150.8, stock: 10, createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-02T00:00:00.000Z' },
 ]
 
 const PRODUCTS: Product[] = API_PRODUCTS.map(apiProduct => {
@@ -36,8 +36,8 @@ const API_CART_ITEMS: APICartItem[] = [
     title: 'iPad 4 Mini',
     price: 500.01,
     quantity: 1,
-    createdAt: '2020-01-01',
-    updatedAt: '2020-01-02',
+    createdAt: '2020-01-01T00:00:00.000Z',
+    updatedAt: '2020-01-02T00:00:00.000Z',
   },
   {
     id: 'cartItem2',
@@ -46,8 +46,8 @@ const API_CART_ITEMS: APICartItem[] = [
     title: 'Fire HD 8 Tablet',
     price: 80.99,
     quantity: 2,
-    createdAt: '2020-01-01',
-    updatedAt: '2020-01-02',
+    createdAt: '2020-01-01T00:00:00.000Z',
+    updatedAt: '2020-01-02T00:00:00.000Z',
   },
 ]
 

@@ -86,7 +86,7 @@
               <q-td key="share" :props="props">
                 <q-icon :name="props.row.share.icon" size="24px" />
               </q-td>
-              <q-td key="updated" :props="props">{{ props.row.updated }}</q-td>
+              <q-td key="updatedAt" :props="props">{{ props.row.updatedAt }}</q-td>
               <!-- コンテキストメニュー -->
               <q-menu touch-position context-menu>
                 <!-- 複数選択時 -->
@@ -195,9 +195,9 @@ class TableRow {
     icon: string
   }
 
-  updated!: string
+  updatedAt!: string
 
-  updatedNum!: number
+  updatedAtNum!: number
 
   get isDir(): boolean {
     return this.nodeType === StorageNodeType.Dir
@@ -255,7 +255,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
       { name: 'contentType', align: 'left', label: this.$t('storage.nodeDetail.type'), field: 'contentType', sortable: true },
       { name: 'size', align: 'right', label: this.$t('storage.nodeDetail.size'), field: 'size', sortable: true },
       { name: 'share', align: 'center', label: this.$t('storage.nodeDetail.share'), field: 'share', sortable: true },
-      { name: 'updated', align: 'left', label: this.$t('storage.nodeDetail.updated'), field: 'updated', sortable: true },
+      { name: 'updatedAt', align: 'left', label: this.$t('storage.nodeDetail.updatedAt'), field: 'updatedAt', sortable: true },
     ]
   }
 
@@ -414,8 +414,8 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     if (node.inheritedShare.isPublic) {
       tableRow.share = { icon: 'public' }
     }
-    tableRow.updated = String(this.$d(node.updatedDate.toDate(), 'dateTime'))
-    tableRow.updatedNum = node.updatedDate.unix()
+    tableRow.updatedAt = String(this.$d(node.updatedAt.toDate(), 'dateTime'))
+    tableRow.updatedAtNum = node.updatedAt.unix()
     return tableRow
   }
 
@@ -429,7 +429,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
       label: source.label,
       value: source.value,
       share: source.share,
-      updated: source.updated,
+      updatedAt: source.updatedAt,
     })
   }
 
@@ -448,8 +448,8 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
             return 1
           }
           return x[sortBy] > y[sortBy] ? 1 : x[sortBy] < y[sortBy] ? -1 : 0
-        } else if (sortBy === 'updated') {
-          return x.updatedNum - y.updatedNum
+        } else if (sortBy === 'updatedAt') {
+          return x.updatedAtNum - y.updatedAtNum
         } else {
           return x[sortBy] > y[sortBy] ? 1 : x[sortBy] < y[sortBy] ? -1 : 0
         }

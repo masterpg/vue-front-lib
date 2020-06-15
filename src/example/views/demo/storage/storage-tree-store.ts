@@ -895,8 +895,8 @@ export class StorageTreeStore extends Vue {
         writeUIds: [],
       },
       baseURL: this.storageLogic.baseURL,
-      created: dayjs(0),
-      updated: dayjs(0),
+      createdAt: dayjs(0),
+      updatedAt: dayjs(0),
     }
 
     return CompTreeViewUtils.newNode(rootNodeData) as StorageTreeNode
@@ -929,8 +929,8 @@ export class StorageTreeStore extends Vue {
           writeUIds: source.share.writeUIds ? [...source.share.writeUIds] : null,
         },
         baseURL: source.baseURL,
-        created: source.createdDate,
-        updated: source.updatedDate,
+        createdAt: source.createdAt,
+        updatedAt: source.updatedAt,
       }
       return result
     } else {
@@ -953,8 +953,8 @@ export class StorageTreeStore extends Vue {
           writeUIds: source.share.writeUIds ? [...source.share.writeUIds] : null,
         },
         baseURL: this.storageLogic.baseURL,
-        created: source.created,
-        updated: source.updated,
+        createdAt: source.createdAt,
+        updatedAt: source.updatedAt,
       }
       if (typeof source.opened === 'boolean') {
         result.opened = source.opened

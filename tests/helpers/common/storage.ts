@@ -31,8 +31,9 @@ function newTestStorageDirNode(dirPath: string, data?: Partial<Omit<StorageNode,
     contentType: data.contentType || '',
     size: data.size || 0,
     share: data.share || cloneDeep(EMPTY_SHARE_SETTINGS),
-    created: data.created || dayjs(),
-    updated: data.updated || dayjs(),
+    version: 1,
+    createdAt: data.createdAt || dayjs(),
+    updatedAt: data.updatedAt || dayjs(),
   }
   return result
 }
@@ -51,8 +52,9 @@ function newTestStorageFileNode(filePath: string, data?: Partial<Omit<StorageNod
     contentType: data.contentType || 'text/plain; charset=utf-8',
     size: data.size || 5,
     share: data.share || cloneDeep(EMPTY_SHARE_SETTINGS),
-    created: data.created || dayjs(),
-    updated: data.updated || dayjs(),
+    version: 1,
+    createdAt: data.createdAt || dayjs(),
+    updatedAt: data.updatedAt || dayjs(),
   }
   return result
 }

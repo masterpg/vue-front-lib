@@ -83,7 +83,7 @@ export default merge(require('@/lib/lang/ja').default, {
       share: '共有',
       path: 'パス',
       url: 'URL',
-      updated: '更新日',
+      updatedAt: '更新日',
     },
     download: {
       downloadFailure: '「{nodeName}」のダウンロードに失敗しました。',
