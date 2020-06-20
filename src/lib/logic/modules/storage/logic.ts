@@ -1,10 +1,11 @@
 import { Component, Watch } from 'vue-property-decorator'
 import { LibAPIContainer, StorageNode, StorageNodeShareSettingsInput, StoragePaginationOptionsInput, StoragePaginationResult } from '../../api'
 import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from './download'
-import { arrayToDict, splitHierarchicalPaths } from 'web-base-lib'
+import { arrayToDict, removeEndSlash, splitHierarchicalPaths } from 'web-base-lib'
 import { BaseLogic } from '../../base'
 import { StorageStore } from '../../store'
 import { StorageUploader } from './upload'
+import { config } from '@/lib/config'
 
 //========================================================================
 //
@@ -101,7 +102,9 @@ export abstract class BaseStorageLogic extends BaseLogic implements StorageLogic
 
   abstract readonly basePath: string
 
-  abstract readonly baseURL: string
+  get baseURL(): string {
+    return `${removeEndSlash(config.api.baseURL)}/storage`
+  }
 
   //----------------------------------------------------------------------
   //

@@ -1,6 +1,6 @@
 import * as path from 'path'
 import { StorageNode, StorageNodeType } from '../../api'
-import axios, { AxiosResponse, Canceler, ResponseType } from 'axios'
+import axios, { AxiosResponse, Canceler } from 'axios'
 import { StorageLogic } from './logic'
 
 export interface ResponseTypeDict {
@@ -472,7 +472,7 @@ export class StorageFileHTTPDownloader extends StorageFileDownloader {
     this.status = 'running'
 
     // URLの取得
-    const downloadURL = `${this.storageLogic.baseURL}/${this.fileNode.path}`
+    const downloadURL = `${this.storageLogic.baseURL}/${this.fileNode.id}`
 
     // 認証ヘッダの取得
     const authHeader = await this.getAuthHeader()

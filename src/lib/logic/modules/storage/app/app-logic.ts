@@ -4,8 +4,6 @@ import { StorageNode, StorageNodeShareSettingsInput, api } from '../../../api'
 import { AppStorageUploader } from './app-upload'
 import { Component } from 'vue-property-decorator'
 import { StorageUploader } from '../upload'
-import { config } from '../../../../config'
-import { removeEndSlash } from 'web-base-lib'
 
 @Component
 export class AppStorageLogicImpl extends BaseStorageLogic implements AppStorageLogic {
@@ -15,11 +13,6 @@ export class AppStorageLogicImpl extends BaseStorageLogic implements AppStorageL
 
   get basePath(): string {
     return ''
-  }
-
-  get baseURL(): string {
-    const baseStorageURL = `${removeEndSlash(config.api.baseURL)}/storage`
-    return `${baseStorageURL}`
   }
 
   newUploader(owner: Element): StorageUploader {

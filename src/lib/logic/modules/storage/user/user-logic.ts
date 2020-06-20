@@ -7,7 +7,6 @@ import { StorageUploader } from '../upload'
 import { UserStorageUploader } from './user-upload'
 import { UserStorageUrlUploadManager } from './user-upload-by-url'
 import { config } from '../../../../config'
-import { removeEndSlash } from 'web-base-lib'
 
 @Component
 export class UserStorageLogicImpl extends BaseStorageLogic implements UserStorageLogic {
@@ -17,10 +16,6 @@ export class UserStorageLogicImpl extends BaseStorageLogic implements UserStorag
 
   get basePath(): string {
     return `${_path.join(config.storage.usersDir, store.user.id)}`
-  }
-
-  get baseURL(): string {
-    return `${removeEndSlash(config.api.baseURL)}/storage/${this.basePath}`
   }
 
   newUploader(owner: Element): StorageUploader {

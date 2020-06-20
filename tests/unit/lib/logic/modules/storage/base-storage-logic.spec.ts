@@ -26,11 +26,7 @@ class MockStorageLogic extends BaseStorageLogic {
   }
 
   get basePath(): string {
-    return 'storage'
-  }
-
-  get baseURL(): string {
-    return `${this.basePath}/storage`
+    return 'test'
   }
 
   getNodeAPI = td.func() as any

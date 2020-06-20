@@ -236,7 +236,7 @@ export default class StorageTreeNode extends CompTreeNode {
   }
 
   get fileURL(): string {
-    return `${this.baseURL}/${this.value}`
+    return `${this.baseURL}/${this.id}`
   }
 
   get createdAt(): Dayjs {
