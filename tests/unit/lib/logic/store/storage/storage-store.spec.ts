@@ -2,8 +2,8 @@ import * as path from 'path'
 import * as shortid from 'shortid'
 import { StorageNode, StorageNodeShareSettings, StorageNodeType, StorageState, StorageStore } from '@/lib'
 import { cloneTestStorageNode, newTestStorageDirNode, newTestStorageFileNode } from '../../../../../helpers/common/storage'
-import { BaseStorageStore } from '../../../../../../src/lib/logic/store/storage'
 import { Component } from 'vue-property-decorator'
+import { StorageStoreImpl } from '../../../../../../src/lib/logic/store/storage'
 import { TestStore } from '../../../../../helpers/common/store'
 import { cloneDeep } from 'lodash'
 import dayjs from 'dayjs'
@@ -17,7 +17,7 @@ import { removeStartDirChars } from 'web-base-lib'
 //========================================================================
 
 @Component
-class MockStorageStore extends BaseStorageStore {}
+class MockStorageStore extends StorageStoreImpl {}
 
 const storageStore = (new MockStorageStore() as StorageStore) as TestStore<StorageStore, StorageState>
 
@@ -308,35 +308,6 @@ describe('getDirDescendants', () => {
     expect(actual[3].path).toEqual('d1/d12')
     expect(actual[4].path).toEqual('d2')
     toBeCopy(actual)
-  })
-})
-
-describe('getDict', () => {
-  it('ベーシックケース', () => {
-    const d1 = newTestStorageDirNode('d1')
-    const d11 = newTestStorageDirNode('d1/d11')
-    const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-    const d12 = newTestStorageDirNode('d1/d12')
-    const d2 = newTestStorageDirNode('d2')
-    const d21 = newTestStorageDirNode('d2/d21')
-    const f211 = newTestStorageFileNode('d2/d21/f211.txt')
-    const f1 = newTestStorageFileNode('f1.txt')
-    storageStore.initState({
-      all: storageStore.sort([d1, d11, f111, d12, d2, d21, f211, f1]),
-    })
-
-    const actual = storageStore.getDict()
-
-    expect(Object.keys(actual).length).toBe(8)
-    expect(actual['d1']).toBeDefined()
-    expect(actual['d1/d11']).toBeDefined()
-    expect(actual['d1/d11/f111.txt']).toBeDefined()
-    expect(actual['d1/d12']).toBeDefined()
-    expect(actual['d2']).toBeDefined()
-    expect(actual['d2/d21']).toBeDefined()
-    expect(actual['d2/d21/f211.txt']).toBeDefined()
-    expect(actual['f1.txt']).toBeDefined()
-    toBeCopy(Object.values(actual))
   })
 })
 

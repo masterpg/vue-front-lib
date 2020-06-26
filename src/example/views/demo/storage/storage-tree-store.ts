@@ -153,7 +153,10 @@ export class StorageTreeStore extends Vue {
     this.rootNode.lazy = true
     this.rootNode.lazyLoadStatus = 'loading'
 
-    // 引数ディレクトリのパスを構成する各ディレクトリの子ノードをサーバーから取得
+    // 引数ディレクトリを含め、階層構造を形成するディレクトリをサーバーから取得
+    await this.storageLogic.fetchHierarchicalNodes(dirPath)
+
+    // 引数ディレクトリ配下にある各ディレクトリの子ノードをサーバーから取得
     const dirPaths = splitHierarchicalPaths(dirPath)
     await Promise.all(
       [this.rootNode.value, ...dirPaths].map(async iDirPath => {
@@ -162,7 +165,7 @@ export class StorageTreeStore extends Vue {
     )
 
     // サーバーから取得された最新のストレージノードを取得
-    const nodeDict = this.storageLogic.getNodeDict()
+    const nodeDict = arrayToDict(this.storageLogic.nodes, 'path')
 
     // 引数ディレクトリのパスを構成するディレクトリは展開した状態にする
     // ※初期表示時は指定されたディレクトリを表示しておきたいので
@@ -365,7 +368,7 @@ export class StorageTreeStore extends Vue {
    * @param nodes
    */
   mergeAllNodes(nodes: StorageNodeForTree[]): void {
-    nodes = this.storageLogic.sortNodes([...nodes])
+    nodes = StorageLogic.sortNodes([...nodes])
 
     const nodeDict = nodes.reduce((result, node) => {
       result[node.path] = node
@@ -458,7 +461,7 @@ export class StorageTreeStore extends Vue {
    * @param nodes
    */
   setNodes(nodes: StorageNodeForTree[]): void {
-    nodes = this.storageLogic.sortNodes([...nodes])
+    nodes = StorageLogic.sortNodes([...nodes])
 
     for (const node of nodes) {
       this.setNode(node)

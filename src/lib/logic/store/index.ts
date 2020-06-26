@@ -1,4 +1,4 @@
-import { AppStorageStore, AppStorageStoreImpl, UserStorageStore, UserStorageStoreImpl } from './storage'
+import { StorageStore, StorageStoreImpl } from './storage'
 import { UserStore, UserStoreImpl } from './user'
 import Vue from 'vue'
 
@@ -10,8 +10,7 @@ import Vue from 'vue'
 
 interface LibStoreContainer {
   readonly user: UserStore
-  readonly userStorage: UserStorageStore
-  readonly appStorage: AppStorageStore
+  readonly storage: StorageStore
 }
 
 //========================================================================
@@ -22,8 +21,7 @@ interface LibStoreContainer {
 
 abstract class LibStoreContainerImpl extends Vue implements LibStoreContainer {
   readonly user: UserStore = new UserStoreImpl()
-  readonly userStorage: UserStorageStore = new UserStorageStoreImpl()
-  readonly appStorage: AppStorageStore = new AppStorageStoreImpl()
+  readonly storage: StorageStore = new StorageStoreImpl()
 }
 
 let store: LibStoreContainer
@@ -40,6 +38,6 @@ function setStore(value: LibStoreContainer): void {
 
 export { BaseStore, StatePartial, StoreError } from './base'
 export { UserStore, UserStoreImpl } from './user'
-export { AppStorageStore, AppStorageStoreImpl, StorageState, StorageStore, UserStorageStore, UserStorageStoreImpl } from './storage'
+export { StorageState, StorageStore } from './storage'
 
 export { LibStoreContainer, LibStoreContainerImpl, store, setStore }

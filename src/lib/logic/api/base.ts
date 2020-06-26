@@ -23,45 +23,7 @@ export interface LibAPIContainer {
   deleteOwnUser(): Promise<boolean>
 
   //--------------------------------------------------
-  //  Storage (User)
-  //--------------------------------------------------
-
-  getUserStorageNode(nodePath: string): Promise<StorageNode | undefined>
-
-  getUserStorageDirDescendants(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult>
-
-  getUserStorageDescendants(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult>
-
-  getUserStorageDirChildren(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult>
-
-  getUserStorageChildren(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult>
-
-  getUserStorageHierarchicalNodes(nodePath: string): Promise<StorageNode[]>
-
-  getUserStorageAncestorDirs(nodePath: string): Promise<StorageNode[]>
-
-  handleUploadedUserFile(filePath: string): Promise<StorageNode>
-
-  createUserStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
-
-  removeUserStorageDir(options: StoragePaginationOptionsInput | null, dirPath: string): Promise<StoragePaginationResult>
-
-  removeUserStorageFile(filePath: string): Promise<StorageNode | undefined>
-
-  moveUserStorageDir(options: StoragePaginationOptionsInput | null, fromDirPath: string, toDirPath: string): Promise<StoragePaginationResult>
-
-  moveUserStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode>
-
-  renameUserStorageDir(options: StoragePaginationOptionsInput | null, dirPath: string, newName: string): Promise<StoragePaginationResult>
-
-  renameUserStorageFile(filePath: string, newName: string): Promise<StorageNode>
-
-  setUserStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
-
-  setUserStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
-
-  //--------------------------------------------------
-  //  Storage (Admin)
+  //  Storage
   //--------------------------------------------------
 
   getStorageNode(nodePath: string): Promise<StorageNode | undefined>
@@ -77,8 +39,6 @@ export interface LibAPIContainer {
   getStorageHierarchicalNodes(nodePath: string): Promise<StorageNode[]>
 
   getStorageAncestorDirs(nodePath: string): Promise<StorageNode[]>
-
-  handleUploadedFile(filePath: string): Promise<StorageNode>
 
   createStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
 
@@ -97,6 +57,8 @@ export interface LibAPIContainer {
   setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
 
   setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
+
+  handleUploadedFile(filePath: string): Promise<StorageNode>
 
   getSignedUploadUrls(params: { filePath: string; contentType?: string }[]): Promise<string[]>
 

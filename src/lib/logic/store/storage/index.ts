@@ -24,8 +24,6 @@ interface StorageStore {
 
   getDirDescendants(dirPath?: string): StorageNode[]
 
-  getDict(): { [path: string]: StorageNode }
-
   addList(nodes: StorageNode[]): StorageNode[]
 
   add(value: StorageNode): StorageNode
@@ -62,10 +60,6 @@ interface StorageStore {
   sortFunc(a: StorageNode, b: StorageNode): number
 }
 
-interface UserStorageStore extends StorageStore {}
-
-interface AppStorageStore extends StorageStore {}
-
 type StorageNodeForSet = Partial<Omit<StorageNode, 'nodeType'>> & {
   id: string
   name: string
@@ -83,7 +77,8 @@ interface StorageState {
 //
 //========================================================================
 
-abstract class BaseStorageStore extends BaseStore<StorageState> implements StorageStore {
+@Component
+class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -156,14 +151,6 @@ abstract class BaseStorageStore extends BaseStore<StorageState> implements Stora
       }
       return result
     }
-  }
-
-  getDict(): { [path: string]: StorageNode } {
-    const result: { [path: string]: StorageNode } = {}
-    for (const node of this.state.all) {
-      result[node.path] = this.clone(node)
-    }
-    return result
   }
 
   setAll(nodes: StorageNode[]): void {
@@ -430,25 +417,10 @@ abstract class BaseStorageStore extends BaseStore<StorageState> implements Stora
   }
 }
 
-@Component
-class UserStorageStoreImpl extends BaseStorageStore implements UserStorageStore {}
-
-@Component
-class AppStorageStoreImpl extends BaseStorageStore implements AppStorageStore {}
-
 //========================================================================
 //
 //  Exports
 //
 //========================================================================
 
-export {
-  StorageStore,
-  UserStorageStore,
-  AppStorageStore,
-  StorageNodeForSet,
-  StorageState,
-  BaseStorageStore,
-  UserStorageStoreImpl,
-  AppStorageStoreImpl,
-}
+export { StorageNodeForSet, StorageState, StorageStore, StorageStoreImpl }

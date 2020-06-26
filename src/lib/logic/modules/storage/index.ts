@@ -4,11 +4,7 @@
 //
 //========================================================================
 
-export { AppStorageLogic, StorageLogic, UserStorageLogic } from './logic'
-export { StorageFileUploader, StorageUploader } from './upload'
-export { UserStorageLogicImpl } from './user/user-logic'
-export { UserStorageUploader } from './user/user-upload'
-export { UserStorageUrlUploadManager } from './user/user-upload-by-url'
-export { AppStorageLogicImpl } from './app/app-logic'
-export { AppStorageUploader } from './app/app-upload'
-export { StorageDownloader } from './download'
+export { StorageLogic, AppStorageLogic } from './logic'
+export { StorageUploader, StorageFileUploader } from './upload'
+export { StorageUrlUploadManager } from './upload-url'
+export { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from './download'

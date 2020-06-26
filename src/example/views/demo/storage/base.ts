@@ -6,6 +6,12 @@ import { Dayjs } from 'dayjs'
 import StorageTreeNode from './storage-tree-node.vue'
 import Vue from 'vue'
 
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
+
 export type StorageType = 'user' | 'app'
 
 export interface StorageTreeNodeData extends CompTreeNodeData {
@@ -20,22 +26,11 @@ export interface StorageTreeNodeData extends CompTreeNodeData {
   updatedAt: Dayjs
 }
 
-export const treeSortFunc: ChildrenSortFunc = (a, b) => {
-  const _a = a as StorageTreeNode
-  const _b = b as StorageTreeNode
-  if (_a.nodeType === StorageNodeType.Dir && _b.nodeType === StorageNodeType.File) {
-    return -1
-  } else if (_a.nodeType === StorageNodeType.File && _b.nodeType === StorageNodeType.Dir) {
-    return 1
-  }
-  if (_a.label < _b.label) {
-    return -1
-  } else if (_a.label > _b.label) {
-    return 1
-  } else {
-    return 0
-  }
-}
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
 
 let userTreeStore: StorageTreeStore
 
@@ -86,4 +81,15 @@ export class StorageTypeMixin extends Vue {
   protected get treeStore(): StorageTreeStore {
     return this.m_treeStore
   }
+}
+
+export const treeSortFunc: ChildrenSortFunc = (a, b) => {
+  const _a = a as StorageTreeNode
+  const _b = b as StorageTreeNode
+  if (_a.nodeType === StorageNodeType.Dir && _b.nodeType === StorageNodeType.File) {
+    return -1
+  } else if (_a.nodeType === StorageNodeType.File && _b.nodeType === StorageNodeType.Dir) {
+    return 1
+  }
+  return _a.label < _b.label ? -1 : _a.label > _b.label ? 1 : 0
 }

@@ -1,14 +1,6 @@
-import {
-  AppStorageLogic,
-  AppStorageLogicImpl,
-  StorageDownloader,
-  StorageFileUploader,
-  StorageLogic,
-  StorageUploader,
-  UserStorageLogic,
-  UserStorageLogicImpl,
-} from './modules/storage'
+import { AppStorageLogic, StorageDownloader, StorageFileUploader, StorageLogic, StorageUploader } from './modules/storage'
 import { AuthLogic, AuthLogicImpl } from './modules/auth'
+import { UserStorageLogic } from './modules/storage/logic-user'
 import Vue from 'vue'
 
 //========================================================================
@@ -18,8 +10,8 @@ import Vue from 'vue'
 //========================================================================
 
 interface LibLogicContainer {
-  readonly userStorage: UserStorageLogic
-  readonly appStorage: AppStorageLogic
+  readonly appStorage: StorageLogic
+  readonly userStorage: StorageLogic
   readonly auth: AuthLogic
 }
 
@@ -33,21 +25,23 @@ abstract class BaseLogicContainer extends Vue implements LibLogicContainer {
   constructor() {
     super()
 
-    this.userStorage = this.newUserStorageLogic()
     this.appStorage = this.newAppStorageLogic()
+    this.userStorage = this.newUserStorageLogic(this.appStorage)
     this.auth = this.newAuthLogic()
   }
 
-  readonly userStorage: UserStorageLogic
-  readonly appStorage: AppStorageLogic
+  readonly appStorage: StorageLogic
+  readonly userStorage: StorageLogic
   readonly auth: AuthLogic
 
-  protected newUserStorageLogic(): UserStorageLogic {
-    return new UserStorageLogicImpl()
+  protected newAppStorageLogic(): StorageLogic {
+    return new AppStorageLogic()
   }
 
-  protected newAppStorageLogic(): AppStorageLogic {
-    return new AppStorageLogicImpl()
+  protected newUserStorageLogic(appStorage: StorageLogic): StorageLogic {
+    const userStorage = new UserStorageLogic()
+    userStorage.init(appStorage)
+    return userStorage
   }
 
   protected newAuthLogic(): AuthLogic {
@@ -70,6 +64,6 @@ function setLogic(value: LibLogicContainer): void {
 export * from './api'
 export * from './store'
 export { BaseLogic } from './base'
-export { AppStorageLogic, StorageFileUploader, StorageLogic, StorageDownloader, StorageUploader, UserStorageLogic } from './modules/storage'
+export { StorageDownloader, StorageFileUploader, StorageLogic, StorageUploader, StorageUrlUploadManager } from './modules/storage'
 export { AuthLogic, AuthProviderType } from './modules/auth'
 export { LibLogicContainer, BaseLogicContainer, logic, setLogic }

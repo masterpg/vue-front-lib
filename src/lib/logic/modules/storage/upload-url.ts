@@ -1,24 +1,24 @@
-import * as _path from 'path'
-import { StorageFileUploader, StorageUploader, UploadFileParam } from '../upload'
+import * as path from 'path'
+import { StorageFileUploader, StorageUploader, UploadFileParam } from './upload'
 import axios, { Canceler } from 'axios'
-import { api } from '../../../api'
-import { config } from '../../../../config'
-import { store } from '../../../store'
+import { api } from '../../api'
 
-export class UserStorageUrlUploadManager extends StorageUploader {
-  protected async verifyExecutable(): Promise<void> {}
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
 
+class StorageUrlUploadManager extends StorageUploader {
   protected createUploadingFiles(files: File[]): StorageFileUploader[] {
-    const basePath = _path.join(config.storage.usersDir, store.user.id)
-
     const result: StorageFileUploader[] = []
     for (const file of files) {
-      const fileUploader = new UserStorageUrlFileUploader({
+      const fileUploader = new StorageUrlFileUploader({
         data: file,
         name: file.name,
         dir: this.getUploadDirPath(file),
+        basePath: this.storageLogic.basePath,
         type: file.type,
-        basePath,
       })
       result.push(fileUploader)
     }
@@ -26,7 +26,7 @@ export class UserStorageUrlUploadManager extends StorageUploader {
   }
 }
 
-class UserStorageUrlFileUploader extends StorageFileUploader {
+class StorageUrlFileUploader extends StorageFileUploader {
   //----------------------------------------------------------------------
   //
   //  Constructor
@@ -118,10 +118,18 @@ class UserStorageUrlFileUploader extends StorageFileUploader {
   private async m_getSignedUploadUrl(): Promise<string> {
     const params = [
       {
-        filePath: _path.join(this.uploadParam.basePath || '', this.path),
+        filePath: path.join(this.uploadParam.basePath, this.path),
         contentType: this.uploadParam.type,
       },
     ]
     return (await api.getSignedUploadUrls(params))[0]
   }
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { StorageUrlUploadManager }

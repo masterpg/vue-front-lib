@@ -47,9 +47,9 @@ interface TestAPIContainer extends LibAPIContainer {
   putTestStoreData(inputs: CollectionData[]): Promise<void>
   uploadTestUserFiles(user: TestAuthUser, uploadList: UploadFileItem[])
   uploadTestFiles(uploadList: UploadFileItem[])
-  removeUserBaseTestDir(user: TestAuthUser): Promise<void>
-  removeUserTestDir(user: TestAuthUser, dirPaths: string[]): Promise<void>
-  removeUserTestFiles(user: TestAuthUser, filePaths: string[]): Promise<void>
+  removeTestUserDir(user: TestAuthUser): Promise<void>
+  removeTestUserDirs(user: TestAuthUser, dirPaths: string[]): Promise<void>
+  removeTestUserFiles(user: TestAuthUser, filePaths: string[]): Promise<void>
   removeTestDir(dirPaths: string[]): Promise<void>
   removeTestFiles(filePaths: string[]): Promise<void>
   setTestFirebaseUsers(...users: TestFirebaseUserInput[]): Promise<void>
@@ -152,11 +152,11 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
       this.m_token = userBackup
     }
 
-    async removeUserBaseTestDir(user: TestAuthUser): Promise<void> {
+    async removeTestUserDir(user: TestAuthUser): Promise<void> {
       await this.removeTestDir([this.m_toUserStorageBasePath(user)])
     }
 
-    async removeUserTestDir(user: TestAuthUser, dirPaths: string[]): Promise<void> {
+    async removeTestUserDirs(user: TestAuthUser, dirPaths: string[]): Promise<void> {
       await this.removeTestDir(
         dirPaths.map(dirPath => {
           return path.join(this.m_toUserStorageBasePath(user), dirPath)
@@ -164,7 +164,7 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
       )
     }
 
-    async removeUserTestFiles(user: TestAuthUser, filePaths: string[]): Promise<void> {
+    async removeTestUserFiles(user: TestAuthUser, filePaths: string[]): Promise<void> {
       await this.removeTestFiles(
         filePaths.map(filePath => {
           return path.join(this.m_toUserStorageBasePath(user), filePath)

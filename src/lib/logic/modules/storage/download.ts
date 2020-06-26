@@ -2,19 +2,32 @@ import * as path from 'path'
 import { StorageNode, StorageNodeType } from '../../api'
 import axios, { AxiosResponse, Canceler } from 'axios'
 import { StorageLogic } from './logic'
+import { removeBothEndsSlash } from 'web-base-lib'
 
-export interface ResponseTypeDict {
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
+
+interface ResponseTypeDict {
   blob: Blob
   arraybuffer: ArrayBuffer
   text: string
 }
 
-export type StorageFileDownloaderType = 'firebase' | 'http'
+type StorageFileDownloaderType = 'firebase' | 'http'
+
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
 
 /**
  * ファイルまたはディレクトリのダウンロード管理を行うダウンローダーです。
  */
-export class StorageDownloader {
+class StorageDownloader {
   //----------------------------------------------------------------------
   //
   //  Constructor
@@ -119,6 +132,7 @@ export class StorageDownloader {
    * @param nodePath
    */
   *download(type: StorageFileDownloaderType, nodePath: string) {
+    nodePath = removeBothEndsSlash(nodePath)
     this.clear()
     this.m_status = 'running'
 
@@ -175,29 +189,33 @@ export class StorageDownloader {
   //----------------------------------------------------------------------
 
   private m_newFileDownloader(type: StorageFileDownloaderType, filePath: string): StorageFileDownloader {
-    switch (type) {
-      case 'firebase':
-        return new StorageFileFirebaseDownloader(this.storageLogic, filePath)
-      case 'http':
-        return new StorageFileHTTPDownloader(this.storageLogic, filePath)
-    }
+    return StorageFileDownloader.newInstance(this.storageLogic, type, filePath)
   }
 }
 
 /**
  * 単一ファイルダウンロードの管理を行うダウンローダーです。
  */
-export abstract class StorageFileDownloader {
+abstract class StorageFileDownloader {
   //----------------------------------------------------------------------
   //
   //  Constructor
   //
   //----------------------------------------------------------------------
 
-  constructor(protected storageLogic: StorageLogic, filePath: string) {
+  static newInstance(storageLogic: StorageLogic, type: StorageFileDownloaderType, filePath: string): StorageFileDownloader {
+    switch (type) {
+      case 'firebase':
+        return new StorageFileFirebaseDownloader(storageLogic, filePath)
+      case 'http':
+        return new StorageFileHTTPDownloader(storageLogic, filePath)
+    }
+  }
+
+  protected constructor(protected storageLogic: StorageLogic, filePath: string) {
     const fileNode = this.storageLogic.getNode({ path: filePath })
     if (!fileNode) {
-      throw new Error(`The specified node '${path.join(this.storageLogic.basePath, filePath)}' does not exist.`)
+      throw new Error(`The specified node '${filePath}' does not exist.`)
     }
     this.fileNode = fileNode
   }
@@ -343,15 +361,6 @@ export abstract class StorageFileDownloader {
   //
   //----------------------------------------------------------------------
 
-  static newInstance(params: { type: StorageFileDownloaderType; logic: StorageLogic; filePath: string }): StorageFileDownloader {
-    switch (params.type) {
-      case 'firebase':
-        return new StorageFileFirebaseDownloader(params.logic, params.filePath)
-      case 'http':
-        return new StorageFileHTTPDownloader(params.logic, params.filePath)
-    }
-  }
-
   /**
    * ダウンロードを実行します。
    */
@@ -381,7 +390,7 @@ export abstract class StorageFileDownloader {
   }
 }
 
-export class StorageFileFirebaseDownloader extends StorageFileDownloader {
+class StorageFileFirebaseDownloader extends StorageFileDownloader {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -405,7 +414,7 @@ export class StorageFileFirebaseDownloader extends StorageFileDownloader {
     this.status = 'running'
 
     // URLの取得
-    const downloadFilePath = path.join(this.storageLogic.basePath, this.fileNode.path)
+    const downloadFilePath = removeBothEndsSlash(path.join(this.storageLogic.basePath, this.fileNode.path))
     const fileRef = firebase.storage().ref(downloadFilePath)
     const downloadURL = await fileRef.getDownloadURL()
 
@@ -448,7 +457,7 @@ export class StorageFileFirebaseDownloader extends StorageFileDownloader {
   }
 }
 
-export class StorageFileHTTPDownloader extends StorageFileDownloader {
+class StorageFileHTTPDownloader extends StorageFileDownloader {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -512,3 +521,11 @@ export class StorageFileHTTPDownloader extends StorageFileDownloader {
     this.setCanceled(true)
   }
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType }
