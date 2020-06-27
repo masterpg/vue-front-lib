@@ -30,10 +30,6 @@ abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPICont
     throw new Error(`This method 'getAppConfig' is not implemented.`)
   }
 
-  async getCustomToken(): Promise<string> {
-    throw new Error(`This method 'getCustomToken' is not implemented.`)
-  }
-
   //--------------------------------------------------
   //  User
   //--------------------------------------------------

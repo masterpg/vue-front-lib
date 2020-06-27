@@ -65,18 +65,6 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     return response.data.appConfig
   }
 
-  async getCustomToken(): Promise<string> {
-    const response = await this.query<{ customToken: string }>({
-      query: gql`
-        query GetCustomToken {
-          customToken
-        }
-      `,
-      isAuth: true,
-    })
-    return response.data.customToken
-  }
-
   //--------------------------------------------------
   //  User
   //--------------------------------------------------

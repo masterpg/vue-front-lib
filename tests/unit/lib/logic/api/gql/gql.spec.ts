@@ -60,14 +60,12 @@ beforeEach(async () => {
   api.clearTestAuthUser()
 })
 
-describe('App API', () => {
-  describe('getCustomToken', () => {
+describe('Foundation API', () => {
+  describe('getAppConfig', () => {
     it('疎通確認', async () => {
-      api.setTestAuthToken(GENERAL_TOKEN)
+      const actual = await api.getAppConfig()
 
-      const actual = await api.getCustomToken()
-
-      expect(isEmpty(actual)).toBeFalsy()
+      expect(actual.usersDir).toBe('users')
     })
   })
 })

@@ -10,8 +10,6 @@ import { OmitEntityTimestamp } from '@/firestore-ex'
 export interface LibAPIContainer {
   getAppConfig(): Promise<AppConfigResponse>
 
-  getCustomToken(): Promise<string>
-
   //--------------------------------------------------
   //  User
   //--------------------------------------------------
