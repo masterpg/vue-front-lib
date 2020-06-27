@@ -158,11 +158,9 @@ export class StorageTreeStore extends Vue {
 
     // 引数ディレクトリ配下にある各ディレクトリの子ノードをサーバーから取得
     const dirPaths = splitHierarchicalPaths(dirPath)
-    await Promise.all(
-      [this.rootNode.value, ...dirPaths].map(async iDirPath => {
-        await this.storageLogic.fetchChildren(iDirPath)
-      })
-    )
+    for (const iDirPath of [this.rootNode.value, ...dirPaths]) {
+      await this.storageLogic.fetchChildren(iDirPath)
+    }
 
     // サーバーから取得された最新のストレージノードを取得
     const nodeDict = arrayToDict(this.storageLogic.nodes, 'path')
@@ -635,26 +633,23 @@ export class StorageTreeStore extends Vue {
     const removedNodePaths: string[] = []
 
     // APIによる削除処理を実行
-    for (const chunk of splitArrayChunk(nodePaths, 10)) {
-      const promises = chunk.map(async nodePath => {
-        const treeNode = this.getNode(nodePath)!
-        try {
-          switch (treeNode.nodeType) {
-            case StorageNodeType.Dir:
-              await this.storageLogic.removeDir(treeNode.value)
-              removedNodePaths.push(treeNode.value)
-              break
-            case StorageNodeType.File:
-              await this.storageLogic.removeFile(treeNode.value)
-              removedNodePaths.push(treeNode.value)
-              break
-          }
-        } catch (err) {
-          console.error(err)
-          this.m_showNotification('error', String(this.$t('storage.delete.deletingError', { nodeName: treeNode.label })))
+    for (const nodePath of nodePaths) {
+      const treeNode = this.getNode(nodePath)!
+      try {
+        switch (treeNode.nodeType) {
+          case StorageNodeType.Dir:
+            await this.storageLogic.removeDir(treeNode.value)
+            removedNodePaths.push(treeNode.value)
+            break
+          case StorageNodeType.File:
+            await this.storageLogic.removeFile(treeNode.value)
+            removedNodePaths.push(treeNode.value)
+            break
         }
-      })
-      await Promise.all(promises).then(nodes => nodes.flat())
+      } catch (err) {
+        console.error(err)
+        this.m_showNotification('error', String(this.$t('storage.delete.deletingError', { nodeName: treeNode.label })))
+      }
     }
 
     // ツリービューから引数ノードを削除
@@ -697,32 +692,26 @@ export class StorageTreeStore extends Vue {
     // 1. APIによる移動処理を実行
     //
     const movedNodes: StorageNode[] = []
-    for (const chunk of splitArrayChunk(fromNodePaths, 10)) {
-      const promises = chunk.map(async fromNodePath => {
-        const fromTreeNode = this.getNode(fromNodePath)!
-        const toNodePath = _path.join(toDirPath, fromTreeNode.label)
-        const result: StorageNode[] = []
-        try {
-          switch (fromTreeNode.nodeType) {
-            case StorageNodeType.Dir: {
-              const movedNodes = await this.storageLogic.moveDir(fromTreeNode.value, toNodePath)
-              result.push(...movedNodes)
-              break
-            }
-            case StorageNodeType.File: {
-              const movedNode = await this.storageLogic.moveFile(fromTreeNode.value, toNodePath)
-              result.push(movedNode)
-              break
-            }
+    for (const fromNodePath of fromNodePaths) {
+      const fromTreeNode = this.getNode(fromNodePath)!
+      const toNodePath = _path.join(toDirPath, fromTreeNode.label)
+      try {
+        switch (fromTreeNode.nodeType) {
+          case StorageNodeType.Dir: {
+            const nodes = await this.storageLogic.moveDir(fromTreeNode.value, toNodePath)
+            movedNodes.push(...nodes)
+            break
           }
-        } catch (err) {
-          console.error(err)
-          this.m_showNotification('error', String(this.$t('storage.move.movingError', { nodeName: fromTreeNode.label })))
+          case StorageNodeType.File: {
+            const node = await this.storageLogic.moveFile(fromTreeNode.value, toNodePath)
+            movedNodes.push(node)
+            break
+          }
         }
-        return result
-      })
-      const nodes = await Promise.all(promises).then(nodes => nodes.flat())
-      movedNodes.push(...nodes)
+      } catch (err) {
+        console.error(err)
+        this.m_showNotification('error', String(this.$t('storage.move.movingError', { nodeName: fromTreeNode.label })))
+      }
     }
 
     //
@@ -817,24 +806,18 @@ export class StorageTreeStore extends Vue {
 
     // APIによる共有設定処理を実行
     const processedNodes: StorageNode[] = []
-    for (const chunk of splitArrayChunk(nodePaths, 10)) {
-      const promises = chunk.map(async nodePath => {
-        const treeNode = this.getNode(nodePath)!
-        const result: StorageNode[] = []
-        try {
-          if (treeNode.nodeType === StorageNodeType.Dir) {
-            result.push(await this.storageLogic.setDirShareSettings(treeNode.value, settings))
-          } else if (treeNode.nodeType === StorageNodeType.File) {
-            result.push(await this.storageLogic.setFileShareSettings(treeNode.value, settings))
-          }
-        } catch (err) {
-          console.error(err)
-          this.m_showNotification('error', String(this.$t('storage.share.sharingError', { nodeName: treeNode.label })))
+    for (const nodePath of nodePaths) {
+      const treeNode = this.getNode(nodePath)!
+      try {
+        if (treeNode.nodeType === StorageNodeType.Dir) {
+          processedNodes.push(await this.storageLogic.setDirShareSettings(treeNode.value, settings))
+        } else if (treeNode.nodeType === StorageNodeType.File) {
+          processedNodes.push(await this.storageLogic.setFileShareSettings(treeNode.value, settings))
         }
-        return result
-      })
-      const nodes = await Promise.all(promises).then(nodes => nodes.flat())
-      processedNodes.push(...nodes)
+      } catch (err) {
+        console.error(err)
+        this.m_showNotification('error', String(this.$t('storage.share.sharingError', { nodeName: treeNode.label })))
+      }
     }
 
     // ツリービューに処理内容を反映
