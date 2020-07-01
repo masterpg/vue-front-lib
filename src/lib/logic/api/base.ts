@@ -116,6 +116,7 @@ export interface IdToken extends firebase.auth.IdTokenResult, UserClaims {}
 
 export interface AppConfigResponse {
   usersDir: string
+  siteDir: string
 }
 
 //--------------------------------------------------

@@ -3,7 +3,6 @@ import { AuthStatus, PublicProfile, StorageNode, StorageNodeShareSettings, Stora
 import { OmitEntityTimestamp } from '@/firestore-ex'
 import { TestLibAPIContainer } from '../../../../../mocks/lib/logic/api'
 import { initLibTest } from '../../../../../helpers/lib/init'
-import { isEmpty } from 'lodash'
 import { sleep } from 'web-base-lib'
 
 //========================================================================
@@ -66,6 +65,7 @@ describe('Foundation API', () => {
       const actual = await api.getAppConfig()
 
       expect(actual.usersDir).toBe('users')
+      expect(actual.siteDir).toBe('site')
     })
   })
 })

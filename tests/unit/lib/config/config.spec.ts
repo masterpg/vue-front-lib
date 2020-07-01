@@ -21,11 +21,10 @@ beforeAll(async () => {
   await initLibTest({ api })
 })
 
-describe('LibConfig', () => {
-  describe('サーバーとフロントの設定値が一致することを検証', () => {
-    it('storage.usersStorageDir', async () => {
-      const serverAppConfig = await api.getAppConfig()
-      expect(config.storage.usersDir).toBe(serverAppConfig.usersDir)
-    })
+describe('config', () => {
+  it('サーバーとフロントの設定値が一致することを検証', async () => {
+    const appConfig = await api.getAppConfig()
+    expect(config.storage.usersDir).toBe(appConfig.usersDir)
+    expect(config.storage.siteDir).toBe(appConfig.siteDir)
   })
 })
