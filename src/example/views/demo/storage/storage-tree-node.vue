@@ -171,16 +171,10 @@
 </template>
 
 <script lang="ts">
-import { CompTreeNode, CompTreeNodeEditData, NoCache, StorageNodeShareSettings, StorageNodeType } from '@/lib'
+import { CompTreeNode, CompTreeNodeEditData, NoCache, RequiredStorageNodeShareSettings, StorageNodeShareSettings, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { Dayjs } from 'dayjs'
 import { StorageTreeNodeData } from './base'
-
-interface RequiredStorageNodeShareSettings {
-  isPublic: boolean
-  readUIds: string[]
-  writeUIds: string[]
-}
 
 @Component
 export default class StorageTreeNode extends CompTreeNode {
@@ -231,12 +225,8 @@ export default class StorageTreeNode extends CompTreeNode {
     return this.nodeData.share
   }
 
-  get baseURL(): string {
-    return this.nodeData.baseURL
-  }
-
-  get fileURL(): string {
-    return `${this.baseURL}/${this.id}`
+  get url(): string {
+    return this.nodeData.url
   }
 
   get createdAt(): Dayjs {
@@ -307,8 +297,8 @@ export default class StorageTreeNode extends CompTreeNode {
       this.nodeData.share.readUIds = editData.share.readUIds
       this.nodeData.share.writeUIds = editData.share.writeUIds
     }
-    if (typeof editData.baseURL === 'string') {
-      this.nodeData.baseURL = editData.baseURL
+    if (typeof editData.url === 'string') {
+      this.nodeData.url = editData.url
     }
     if (editData.createdAt) {
       this.nodeData.createdAt = editData.createdAt

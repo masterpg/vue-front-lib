@@ -1,5 +1,6 @@
-import { APITimestampEntity, BaseGQLAPIContainer } from '@/lib'
-import { AppAPIContainer, CartItem, CartItemAddInput, CartItemEditResponse, CartItemUpdateInput, Product } from '../base'
+import { AppAPIContainer, CartItemAddInput, CartItemEditResponse, CartItemUpdateInput } from '../base'
+import { BaseGQLAPIContainer, RawTimestampEntity } from '@/lib'
+import { CartItem, Product } from '../../types'
 import { OmitEntityTimestamp } from '@/firestore-ex'
 import gql from 'graphql-tag'
 
@@ -9,9 +10,9 @@ import gql from 'graphql-tag'
 //
 //========================================================================
 
-interface APIProduct extends OmitEntityTimestamp<Product>, APITimestampEntity {}
+interface RawProduct extends OmitEntityTimestamp<Product>, RawTimestampEntity {}
 
-interface APICartItem extends OmitEntityTimestamp<CartItem>, APITimestampEntity {}
+interface RawCartItem extends OmitEntityTimestamp<CartItem>, RawTimestampEntity {}
 
 //========================================================================
 //
@@ -26,7 +27,7 @@ class AppGQLAPIContainer extends BaseGQLAPIContainer implements AppAPIContainer 
   }
 
   async getProducts(ids?: string[]): Promise<Product[]> {
-    const response = await this.query<{ products: APIProduct[] }>({
+    const response = await this.query<{ products: RawProduct[] }>({
       query: gql`
         query GetProducts($ids: [ID!]) {
           products(ids: $ids) {
@@ -51,7 +52,7 @@ class AppGQLAPIContainer extends BaseGQLAPIContainer implements AppAPIContainer 
   }
 
   async getCartItems(ids?: string[]): Promise<CartItem[]> {
-    const response = await this.query<{ cartItems: APICartItem[] }>({
+    const response = await this.query<{ cartItems: RawCartItem[] }>({
       query: gql`
         query GetCartItems($ids: [ID!]) {
           cartItems(ids: $ids) {
@@ -179,4 +180,4 @@ class AppGQLAPIContainer extends BaseGQLAPIContainer implements AppAPIContainer 
 //
 //========================================================================
 
-export { AppGQLAPIContainer, APIProduct, APICartItem }
+export { AppGQLAPIContainer, RawProduct, RawCartItem }

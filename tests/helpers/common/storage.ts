@@ -1,9 +1,10 @@
 import * as path from 'path'
-import * as shortid from 'shortid'
 import { StorageNode, StorageNodeShareSettings, StorageNodeType } from '@/lib'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { cloneDeep } from 'lodash'
 import dayjs from 'dayjs'
+import { generateFirestoreId } from './base'
+import { getStorageNodeURL } from '../../../src/lib/logic/base'
 
 //========================================================================
 //
@@ -22,12 +23,14 @@ function newTestStorageDirNode(dirPath: string, data?: Partial<Omit<StorageNode,
   data = data || {}
   const name = path.basename(dirPath)
   const dir = removeStartDirChars(path.dirname(dirPath))
+  const nodeId = data.id || generateFirestoreId()
   const result: StorageNode = {
-    id: data.id || shortid.generate(),
+    id: nodeId,
     nodeType: StorageNodeType.Dir,
     name,
     dir,
     path: dirPath,
+    url: getStorageNodeURL(nodeId),
     contentType: data.contentType || '',
     size: data.size || 0,
     share: data.share || cloneDeep(EMPTY_SHARE_SETTINGS),
@@ -43,12 +46,14 @@ function newTestStorageFileNode(filePath: string, data?: Partial<Omit<StorageNod
   data = data || {}
   const name = path.basename(filePath)
   const dir = removeStartDirChars(path.dirname(filePath))
+  const nodeId = data.id || generateFirestoreId()
   const result: StorageNode = {
-    id: data.id || shortid.generate(),
+    id: data.id || generateFirestoreId(),
     nodeType: StorageNodeType.File,
     name,
     dir,
     path: filePath,
+    url: getStorageNodeURL(nodeId),
     contentType: data.contentType || 'text/plain; charset=utf-8',
     size: data.size || 5,
     share: data.share || cloneDeep(EMPTY_SHARE_SETTINGS),

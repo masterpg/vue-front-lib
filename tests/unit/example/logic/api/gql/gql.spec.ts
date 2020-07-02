@@ -1,6 +1,6 @@
-import { APICartItem, APIProduct } from '../../../../../../src/example/logic/api/gql'
 import { CartItem, Product } from '@/example/logic'
 import { CartItemAddInput, CartItemEditResponse, CartItemUpdateInput } from '../../../../../../src/example/logic/api'
+import { RawCartItem, RawProduct } from '../../../../../../src/example/logic/api/gql'
 import { GENERAL_TOKEN } from '../../../../../helpers/common/data'
 import { TestAppAPIContainer } from '../../../../../mocks/example/logic/api'
 import { cloneDeep } from 'lodash'
@@ -13,13 +13,13 @@ import { initExampleTest } from '../../../../../helpers/example/init'
 //
 //========================================================================
 
-const API_PRODUCTS: APIProduct[] = [
+const RAW_PRODUCTS: RawProduct[] = [
   { id: 'product1', title: 'iPad 4 Mini', price: 500.01, stock: 3, createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-02T00:00:00.000Z' },
   { id: 'product2', title: 'Fire HD 8 Tablet', price: 80.99, stock: 5, createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-02T00:00:00.000Z' },
   { id: 'product3', title: 'MediaPad T5 10', price: 150.8, stock: 10, createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-02T00:00:00.000Z' },
 ]
 
-const PRODUCTS: Product[] = API_PRODUCTS.map(apiProduct => {
+const PRODUCTS: Product[] = RAW_PRODUCTS.map(apiProduct => {
   const { createdAt, updatedAt, ...body } = apiProduct
   return {
     ...body,
@@ -28,7 +28,7 @@ const PRODUCTS: Product[] = API_PRODUCTS.map(apiProduct => {
   }
 })
 
-const API_CART_ITEMS: APICartItem[] = [
+const RAW_CART_ITEMS: RawCartItem[] = [
   {
     id: 'cartItem1',
     uid: GENERAL_TOKEN.uid,
@@ -51,7 +51,7 @@ const API_CART_ITEMS: APICartItem[] = [
   },
 ]
 
-const CART_ITEMS: CartItem[] = API_CART_ITEMS.map(apiCartItem => {
+const CART_ITEMS: CartItem[] = RAW_CART_ITEMS.map(apiCartItem => {
   const { createdAt, updatedAt, ...body } = apiCartItem
   return {
     ...body,
@@ -90,7 +90,7 @@ beforeEach(async () => {
 describe('Product API', () => {
   describe('getProduct', () => {
     it('疎通確認', async () => {
-      await api.putTestStoreData([{ collectionName: 'products', collectionRecords: API_PRODUCTS }])
+      await api.putTestStoreData([{ collectionName: 'products', collectionRecords: RAW_PRODUCTS }])
       const product = PRODUCTS[0]
 
       const actual = await api.getProduct(product.id)
@@ -99,7 +99,7 @@ describe('Product API', () => {
     })
 
     it('存在しない商品IDを指定した場合', async () => {
-      await api.putTestStoreData([{ collectionName: 'products', collectionRecords: API_PRODUCTS }])
+      await api.putTestStoreData([{ collectionName: 'products', collectionRecords: RAW_PRODUCTS }])
       const actual = await api.getProduct('productXXX')
 
       expect(actual).toBeUndefined()
@@ -108,7 +108,7 @@ describe('Product API', () => {
 
   describe('getProducts', () => {
     it('疎通確認', async () => {
-      await api.putTestStoreData([{ collectionName: 'products', collectionRecords: API_PRODUCTS }])
+      await api.putTestStoreData([{ collectionName: 'products', collectionRecords: RAW_PRODUCTS }])
       const ids = [PRODUCTS[0].id, PRODUCTS[1].id]
 
       const actual = await api.getProducts(ids)
@@ -117,7 +117,7 @@ describe('Product API', () => {
     })
 
     it('存在しない商品IDを指定した場合', async () => {
-      await api.putTestStoreData([{ collectionName: 'products', collectionRecords: API_PRODUCTS }])
+      await api.putTestStoreData([{ collectionName: 'products', collectionRecords: RAW_PRODUCTS }])
       const ids = ['productXXX', 'productYYY']
 
       const actual = await api.getProducts(ids)
@@ -132,8 +132,8 @@ describe('Cart API', () => {
     it('疎通確認', async () => {
       api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
-        { collectionName: 'products', collectionRecords: API_PRODUCTS },
-        { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
+        { collectionName: 'products', collectionRecords: RAW_PRODUCTS },
+        { collectionName: 'cart', collectionRecords: RAW_CART_ITEMS },
       ])
       const cartItem = CART_ITEMS[0]
 
@@ -145,8 +145,8 @@ describe('Cart API', () => {
     it('存在しないカートアイテムIDを指定した場合', async () => {
       api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
-        { collectionName: 'products', collectionRecords: API_PRODUCTS },
-        { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
+        { collectionName: 'products', collectionRecords: RAW_PRODUCTS },
+        { collectionName: 'cart', collectionRecords: RAW_CART_ITEMS },
       ])
       const actual = await api.getCartItem('cartItemXXX')
 
@@ -171,8 +171,8 @@ describe('Cart API', () => {
     it('疎通確認', async () => {
       api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
-        { collectionName: 'products', collectionRecords: API_PRODUCTS },
-        { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
+        { collectionName: 'products', collectionRecords: RAW_PRODUCTS },
+        { collectionName: 'cart', collectionRecords: RAW_CART_ITEMS },
       ])
       const ids = [CART_ITEMS[0].id, CART_ITEMS[1].id]
 
@@ -184,8 +184,8 @@ describe('Cart API', () => {
     it('存在しない商品IDを指定した場合', async () => {
       api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
-        { collectionName: 'products', collectionRecords: API_PRODUCTS },
-        { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
+        { collectionName: 'products', collectionRecords: RAW_PRODUCTS },
+        { collectionName: 'cart', collectionRecords: RAW_CART_ITEMS },
       ])
       const ids = ['cartItemXXX', 'cartItemYYY']
 
@@ -217,7 +217,7 @@ describe('Cart API', () => {
     it('疎通確認', async () => {
       api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
-        { collectionName: 'products', collectionRecords: API_PRODUCTS },
+        { collectionName: 'products', collectionRecords: RAW_PRODUCTS },
         { collectionName: 'cart', collectionRecords: [] },
       ])
       const addItems = cloneDeep(ADD_CART_ITEMS)
@@ -261,8 +261,8 @@ describe('Cart API', () => {
     it('疎通確認', async () => {
       api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
-        { collectionName: 'products', collectionRecords: API_PRODUCTS },
-        { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
+        { collectionName: 'products', collectionRecords: RAW_PRODUCTS },
+        { collectionName: 'cart', collectionRecords: RAW_CART_ITEMS },
       ])
       const updateItems = CART_ITEMS.map(item => {
         return { ...item, quantity: item.quantity + 1 }
@@ -299,8 +299,8 @@ describe('Cart API', () => {
     it('疎通確認', async () => {
       api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
-        { collectionName: 'products', collectionRecords: API_PRODUCTS },
-        { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
+        { collectionName: 'products', collectionRecords: RAW_PRODUCTS },
+        { collectionName: 'cart', collectionRecords: RAW_CART_ITEMS },
       ])
       const removeIds = CART_ITEMS.map(item => item.id) as string[]
       const expectedItems = removeIds.map(id => {
@@ -343,8 +343,8 @@ describe('Cart API', () => {
     it('ベーシックケース', async () => {
       api.setTestAuthToken(GENERAL_TOKEN)
       await api.putTestStoreData([
-        { collectionName: 'products', collectionRecords: API_PRODUCTS },
-        { collectionName: 'cart', collectionRecords: API_CART_ITEMS },
+        { collectionName: 'products', collectionRecords: RAW_PRODUCTS },
+        { collectionName: 'cart', collectionRecords: RAW_CART_ITEMS },
       ])
 
       const actual = await api.checkoutCart()

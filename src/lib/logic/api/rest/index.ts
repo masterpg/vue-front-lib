@@ -2,15 +2,13 @@ import {
   AppConfigResponse,
   AuthDataResult,
   LibAPIContainer,
-  StorageNode,
   StorageNodeShareSettingsInput,
   StoragePaginationOptionsInput,
   StoragePaginationResult,
-  UserInfo,
-  UserInfoInput,
   toTimestampEntities as _toTimestampEntities,
   toTimestampEntity as _toTimestampEntity,
 } from '../base'
+import { StorageNode, UserInfo, UserInfoInput } from '../../types'
 import { BaseRESTClient } from './base'
 
 //========================================================================

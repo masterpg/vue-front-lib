@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { APIUser, AuthStatus, BaseGQLAPIContainer, LibAPIContainer, UserClaims, UserInfo, UserInfoInput } from '@/lib'
+import { AuthStatus, BaseGQLAPIContainer, LibAPIContainer, RawUser, UserClaims, UserInfo, UserInfoInput } from '@/lib'
 import { Constructor } from 'web-base-lib'
 import axios from 'axios'
 import { config } from '@/lib/config'
@@ -217,7 +217,7 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
     }
 
     async setTestUsers(...users: TestUserInput[]): Promise<UserInfo[]> {
-      const response = await this.mutate<{ setTestUsers: APIUser[] }>({
+      const response = await this.mutate<{ setTestUsers: RawUser[] }>({
         mutation: gql`
           mutation SetTestUsers($users: [TestUserInput!]!) {
             setTestUsers(users: $users) {

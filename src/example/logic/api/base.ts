@@ -1,4 +1,5 @@
-import { LibAPIContainer, TimestampEntity } from '@/lib'
+import { CartItem, Product } from '../types'
+import { LibAPIContainer } from '@/lib'
 
 //========================================================================
 //
@@ -6,7 +7,7 @@ import { LibAPIContainer, TimestampEntity } from '@/lib'
 //
 //========================================================================
 
-export interface AppAPIContainer extends LibAPIContainer {
+interface AppAPIContainer extends LibAPIContainer {
   getProduct(id: string): Promise<Product | undefined>
 
   getProducts(ids?: string[]): Promise<Product[]>
@@ -24,32 +25,26 @@ export interface AppAPIContainer extends LibAPIContainer {
   checkoutCart(): Promise<boolean>
 }
 
-export interface Product extends TimestampEntity {
-  title: string
-  price: number
-  stock: number
-}
-
-export interface CartItem extends TimestampEntity {
-  uid: string
+interface CartItemAddInput {
   productId: string
   title: string
   price: number
   quantity: number
 }
 
-export interface CartItemAddInput {
-  productId: string
-  title: string
-  price: number
-  quantity: number
-}
-
-export interface CartItemUpdateInput {
+interface CartItemUpdateInput {
   id: string
   quantity: number
 }
 
-export interface CartItemEditResponse extends CartItem {
+interface CartItemEditResponse extends CartItem {
   product: Pick<Product, 'id' | 'stock'>
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { AppAPIContainer, CartItemAddInput, CartItemUpdateInput, CartItemEditResponse }

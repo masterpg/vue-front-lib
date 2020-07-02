@@ -1,9 +1,10 @@
 import * as _path from 'path'
-import { StorageNode, StorageNodeType } from '../../api'
+import { StorageNode, StorageNodeType } from '../../types'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { BaseStore } from '../base'
 import { Component } from 'vue-property-decorator'
-import { NoCache } from '../../../base/decorators'
+import { NoCache } from '@/lib/base'
+import { sortStorageNodes } from '../../base'
 
 //========================================================================
 //
@@ -45,19 +46,6 @@ interface StorageStore {
   clone(value: StorageNode): StorageNode
 
   clear(): void
-
-  /**
-   * ノード配列をディレクトリ階層に従ってソートします。
-   * @param values
-   */
-  sort(values: StorageNode[]): StorageNode[]
-
-  /**
-   * ノード配列をディレクトリ階層に従ってソートするための関数です。
-   * @param a
-   * @param b
-   */
-  sortFunc(a: StorageNode, b: StorageNode): number
 }
 
 type StorageNodeForSet = Partial<Omit<StorageNode, 'nodeType'>> & {
@@ -157,7 +145,7 @@ class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
     this.state.all = nodes.map(node => {
       return this.clone(node)
     })
-    this.sort(this.state.all)
+    sortStorageNodes(this.state.all)
   }
 
   setList(nodes: StorageNodeForSet[]): StorageNode[] {
@@ -194,7 +182,7 @@ class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
       result.push(this.clone(stateNode))
     }
 
-    this.sort(this.state.all)
+    sortStorageNodes(this.state.all)
 
     return result
   }
@@ -209,7 +197,7 @@ class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
       return this.clone(node)
     })
 
-    this.sort(this.state.all)
+    sortStorageNodes(this.state.all)
 
     return addingNodes
   }
@@ -298,7 +286,7 @@ class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
       existsNode && this.removeSpecifiedNode({ id: existsNode.id })
     }
 
-    this.sort(this.state.all)
+    sortStorageNodes(this.state.all)
 
     return result
   }
@@ -321,6 +309,7 @@ class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
       name: value.name,
       dir: value.dir,
       path: value.path,
+      url: value.url,
       contentType: value.contentType,
       size: value.size,
       share: {
@@ -332,24 +321,6 @@ class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
       createdAt: value.createdAt,
       updatedAt: value.updatedAt,
     }
-  }
-
-  sort(values: StorageNode[]): StorageNode[] {
-    values.sort(this.sortFunc)
-    return values
-  }
-
-  sortFunc(a: StorageNode, b: StorageNode): number {
-    let strA = a.path
-    let strB = b.path
-    if (a.nodeType === StorageNodeType.File) {
-      strA = `${a.dir}${String.fromCodePoint(0xffff)}${a.name}`
-    }
-    if (b.nodeType === StorageNodeType.File) {
-      strB = `${b.dir}${String.fromCodePoint(0xffff)}${b.name}`
-    }
-
-    return strA < strB ? -1 : strA > strB ? 1 : 0
   }
 
   //----------------------------------------------------------------------

@@ -64,6 +64,7 @@ function setLogic(value: LibLogicContainer): void {
 export * from './api'
 export * from './store'
 export { BaseLogic } from './base'
+export * from './types'
 export { StorageDownloader, StorageFileUploader, StorageLogic, StorageUploader, StorageUrlUploadManager } from './modules/storage'
 export { AuthLogic, AuthProviderType } from './modules/auth'
 export { LibLogicContainer, BaseLogicContainer, logic, setLogic }

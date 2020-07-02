@@ -21,7 +21,7 @@ export interface StorageTreeNodeData extends CompTreeNodeData {
   contentType: string
   size: number
   share: StorageNodeShareSettings
-  baseURL: string
+  url: string
   createdAt: Dayjs
   updatedAt: Dayjs
 }

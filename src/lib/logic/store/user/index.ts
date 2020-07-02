@@ -1,4 +1,4 @@
-import { PublicProfile, UserClaims, UserInfo } from '../../api'
+import { PublicProfile, UserClaims, UserInfo } from '../../types'
 import dayjs, { Dayjs } from 'dayjs'
 import { BaseStore } from '../base'
 import { Component } from 'vue-property-decorator'

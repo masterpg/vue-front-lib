@@ -206,11 +206,6 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
   private m_scrollAnime: anime.AnimeInstance | null = null
 
   /**
-   * ツリービューの縦スクロール位置が初期化されたか否かです。
-   */
-  private m_initializedScrollTop = false
-
-  /**
    * パスのパンくずのブロック配列です。
    */
   private m_pathBlocks: { name: string; path: string; last: boolean }[] = []
@@ -561,28 +556,6 @@ export default class StoragePage extends mixins(BaseComponent, Resizable, Storag
       this.m_dirView.setDirPath(null)
       this.m_setupPathBlocks()
     }
-  }
-
-  private async m_loadFileButtonOnClick(e) {
-    /*
-    // 画像パス(例: images/space.png)から参照を取得
-    const ref = firebase.storage().ref(this.m_filePath)
-    // 取得した参照からダウンロード用のURLを取得し、URLの画像を表示
-    const downloadURL = await ref.getDownloadURL()
-
-    // ファイルのメタデータを取得
-    const metadata = await ref.getMetadata()
-    console.log(metadata)
-
-    // ファイルのコンテンツを取得
-    const response = await axios.request({
-      url: downloadURL,
-      method: 'get',
-      // responseType: 'blob',
-      responseType: 'text',
-    })
-    console.log(response)
-    */
   }
 
   /**

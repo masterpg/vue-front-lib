@@ -1,6 +1,6 @@
 import { BaseStore, NoCache, StatePartial, StoreError } from '@/lib'
 import { Component } from 'vue-property-decorator'
-import { Product } from '../../api'
+import { Product } from '../../types'
 import dayjs from 'dayjs'
 
 //========================================================================

@@ -1,5 +1,6 @@
-import { APITimestampEntity, BaseRESTAPIContainer } from '@/lib'
-import { AppAPIContainer, CartItem, CartItemAddInput, CartItemEditResponse, CartItemUpdateInput, Product } from '../base'
+import { AppAPIContainer, CartItemAddInput, CartItemEditResponse, CartItemUpdateInput } from '../base'
+import { BaseRESTAPIContainer, RawTimestampEntity } from '@/lib'
+import { CartItem, Product } from '../../types'
 import { OmitEntityTimestamp } from '@/firestore-ex'
 
 //========================================================================
@@ -8,9 +9,9 @@ import { OmitEntityTimestamp } from '@/firestore-ex'
 //
 //========================================================================
 
-interface APIProduct extends OmitEntityTimestamp<Product>, APITimestampEntity {}
+interface APIProduct extends OmitEntityTimestamp<Product>, RawTimestampEntity {}
 
-interface APICartItem extends OmitEntityTimestamp<CartItem>, APITimestampEntity {}
+interface APICartItem extends OmitEntityTimestamp<CartItem>, RawTimestampEntity {}
 
 //========================================================================
 //

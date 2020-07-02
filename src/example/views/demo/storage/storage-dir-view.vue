@@ -90,7 +90,7 @@
               <!-- コンテキストメニュー -->
               <q-menu touch-position context-menu>
                 <!-- 複数選択時 -->
-                <q-list v-if="props.row.multiSelected" dense style="min-width: 100px">
+                <q-list v-if="props.row.multiSelected" dense style="min-width: 100px;">
                   <q-item v-close-popup clickable>
                     <q-item-section @click="m_dispatchMoveSelected(m_table.selected)">{{ $t('common.move') }}</q-item-section>
                   </q-item>
@@ -102,7 +102,7 @@
                   </q-item>
                 </q-list>
                 <!-- フォルダ用メニュー -->
-                <q-list v-else-if="props.row.isDir" dense style="min-width: 100px">
+                <q-list v-else-if="props.row.isDir" dense style="min-width: 100px;">
                   <q-item v-close-popup clickable>
                     <q-item-section @click="m_dispatchCreateDirSelected(props.row)">
                       {{ $t('common.createSomehow', { somehow: $tc('common.folder', 1) }) }}
@@ -135,7 +135,7 @@
                   </q-item>
                 </q-list>
                 <!-- ファイル用メニュー -->
-                <q-list v-else-if="props.row.isFile" dense style="min-width: 100px">
+                <q-list v-else-if="props.row.isFile" dense style="min-width: 100px;">
                   <q-item v-close-popup clickable>
                     <q-item-section @click="m_dispatchMoveSelected([props.row])">{{ $t('common.move') }}</q-item-section>
                   </q-item>
@@ -166,11 +166,10 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, NoCache, Resizable, StorageNodeType } from '@/lib'
+import { BaseComponent, NoCache, Resizable, StorageNode, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QTable } from 'quasar'
 import StorageNodeDetailView from './storage-node-detail-view.vue'
-import StorageTreeNode from './storage-tree-node.vue'
 import { StorageTypeMixin } from './base'
 import bytes from 'bytes'
 import { mixins } from 'vue-class-component'
@@ -271,7 +270,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
 
   private m_selectedRows: TableRow[] = []
 
-  private m_detailViewNode: StorageTreeNode | null = null
+  private m_detailViewNode: StorageNode | null = null
 
   private get m_visibleNodeDetailView(): boolean {
     return !!this.m_detailViewNode
@@ -321,12 +320,12 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     if (this.m_dirPath === dirPath) {
       this.m_detailViewNode = (() => {
         if (!this.m_detailViewNode) return null
-        return this.treeStore.getNode(this.m_detailViewNode.value) || null
+        return this.storageLogic.getNode(this.m_detailViewNode) || null
       })()
       // ノード詳細ビューに表示されていたノードが存在する場合
       if (this.m_detailViewNode) {
         // ノード詳細ビューを更新
-        this.m_nodeDetailView.setNodePath(this.m_detailViewNode.value)
+        this.m_nodeDetailView.setNodePath(this.m_detailViewNode.path)
       }
       // ノード詳細ビューに表示されていたノードが存在しない場合
       else {
@@ -352,14 +351,16 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
   //----------------------------------------------------------------------
 
   private m_setupChildren(): void {
-    const dirNode = this.treeStore.getNode(this.m_dirPath!)
-    if (!dirNode) {
-      throw new Error(`'treeStore' does not have specified path's node: '${this.m_dirPath}'`)
+    if (this.m_dirPath) {
+      const dirNode = this.storageLogic.getNode({ path: this.m_dirPath })
+      if (!dirNode) {
+        throw new Error(`'storageLogic' does not have specified path's node: '${this.m_dirPath}'`)
+      }
     }
 
     const latestChildren: TableRow[] = []
     const latestChildDict: { [value: string]: TableRow } = {}
-    for (const child of dirNode.children as StorageTreeNode[]) {
+    for (const child of this.storageLogic.getChildren(this.m_dirPath || '')) {
       const row = this.m_toTableRow(child)
       latestChildren.push(row)
       latestChildDict[row.value] = row
@@ -402,17 +403,21 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
    * `StorageTreeNode`を`TableRow`へ変換します。
    * @param node
    */
-  private m_toTableRow(node: StorageTreeNode): TableRow {
+  private m_toTableRow(node: StorageNode): TableRow {
     const tableRow = new TableRow(this.m_table)
     tableRow.nodeType = node.nodeType as StorageNodeType
-    tableRow.label = node.nodeType === StorageNodeType.Dir ? `${node.label}/` : node.label
-    tableRow.value = node.value
+    tableRow.label = node.nodeType === StorageNodeType.Dir ? `${node.name}/` : node.name
+    tableRow.value = node.path
     tableRow.icon = node.nodeType === StorageNodeType.Dir ? 'folder' : 'description'
     tableRow.contentType = node.contentType
     tableRow.size = node.nodeType === StorageNodeType.Dir ? undefined : bytes(node.size)
     tableRow.share = { icon: '' }
-    if (node.inheritedShare.isPublic) {
-      tableRow.share = { icon: 'public' }
+    if (node.share.isPublic === null) {
+      if (this.storageLogic.getInheritedShare(node.path).isPublic) {
+        tableRow.share = { icon: 'public' }
+      }
+    } else {
+      tableRow.share = { icon: node.share.isPublic ? 'public' : 'lock' }
     }
     tableRow.updatedAt = String(this.$d(node.updatedAt.toDate(), 'dateTime'))
     tableRow.updatedAtNum = node.updatedAt.unix()
@@ -517,7 +522,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
       this.$emit('file-selected', row.value)
       // ノード詳細ビューを表示
       this.m_nodeDetailView.setNodePath(row.value)
-      this.m_detailViewNode = this.treeStore.getNode(row.value)!
+      this.m_detailViewNode = this.storageLogic.getNode({ path: row.value })!
     }
   }
 

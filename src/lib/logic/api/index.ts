@@ -20,26 +20,15 @@ function setAPI(value: LibAPIContainer): void {
 
 export {
   APIEntity,
-  APITimestampEntity,
+  RawTimestampEntity,
   AppConfigResponse,
   AuthDataResult,
-  AuthStatus,
-  IdToken,
   LibAPIContainer,
-  PublicProfile,
-  StorageNode,
-  StorageNodeShareSettings,
   StorageNodeShareSettingsInput,
-  StorageNodeType,
   StoragePaginationOptionsInput,
   StoragePaginationResult,
-  TimestampEntity,
-  ToAPITimestampEntity,
-  UserInfo,
-  UserClaims,
-  UserIdClaims,
-  UserInfoInput,
+  ToRawTimestampEntity,
 } from './base'
-export { BaseGQLAPIContainer, APIAuthDataResult, APIPublicProfile, APIUser } from './gql'
+export { BaseGQLAPIContainer, RawAuthDataResult, RawPublicProfile, RawUser } from './gql'
 export { BaseRESTAPIContainer } from './rest'
 export { api, setAPI }

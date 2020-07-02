@@ -1,9 +1,10 @@
 import * as path from 'path'
+import { RequiredStorageNodeShareSettings, StorageNode } from '../../types'
 import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from './download'
-import { StorageNode, StorageNodeShareSettingsInput } from '../../api'
 import { BaseLogic } from '../../base'
 import { Component } from 'vue-property-decorator'
 import { StorageLogic } from './logic'
+import { StorageNodeShareSettingsInput } from '../../api'
 import { StorageUploader } from './upload'
 import { StorageUrlUploadManager } from './upload-url'
 import { config } from '@/lib/config'
@@ -40,10 +41,6 @@ class UserStorageLogic extends BaseLogic implements StorageLogic {
   //  Methods
   //
   //----------------------------------------------------------------------
-
-  get baseURL(): string {
-    return this.appStorage.baseURL
-  }
 
   get basePath(): string {
     return path.join(config.storage.usersDir, store.user.id)
@@ -83,6 +80,11 @@ class UserStorageLogic extends BaseLogic implements StorageLogic {
   getHierarchicalNodes(nodePath: string): StorageNode[] {
     nodePath = StorageLogic.toFullNodePath(this.basePath, nodePath)
     return StorageLogic.toBasePathNodes(this.basePath, this.appStorage.getHierarchicalNodes(nodePath))
+  }
+
+  getInheritedShare(nodePath: string): RequiredStorageNodeShareSettings {
+    nodePath = StorageLogic.toFullNodePath(this.basePath, nodePath)
+    return this.appStorage.getInheritedShare(nodePath)
   }
 
   async fetchHierarchicalNodes(nodePath: string): Promise<StorageNode[]> {

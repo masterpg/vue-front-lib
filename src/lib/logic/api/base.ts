@@ -1,5 +1,6 @@
-import dayjs, { Dayjs } from 'dayjs'
+import { AuthStatus, StorageNode, TimestampEntity, UserInfo, UserInfoInput } from '../types'
 import { OmitEntityTimestamp } from '@/firestore-ex'
+import dayjs from 'dayjs'
 
 //========================================================================
 //
@@ -24,7 +25,7 @@ export interface LibAPIContainer {
   //  Storage
   //--------------------------------------------------
 
-  getStorageNode(nodePath: string): Promise<StorageNode | undefined>
+  getStorageNode(nodePath: string): Promise<APIStorageNode | undefined>
 
   getStorageDirDescendants(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult>
 
@@ -34,29 +35,29 @@ export interface LibAPIContainer {
 
   getStorageChildren(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult>
 
-  getStorageHierarchicalNodes(nodePath: string): Promise<StorageNode[]>
+  getStorageHierarchicalNodes(nodePath: string): Promise<APIStorageNode[]>
 
-  getStorageAncestorDirs(nodePath: string): Promise<StorageNode[]>
+  getStorageAncestorDirs(nodePath: string): Promise<APIStorageNode[]>
 
-  createStorageDirs(dirPaths: string[]): Promise<StorageNode[]>
+  createStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]>
 
   removeStorageDir(options: StoragePaginationOptionsInput | null, dirPath: string): Promise<StoragePaginationResult>
 
-  removeStorageFile(filePath: string): Promise<StorageNode | undefined>
+  removeStorageFile(filePath: string): Promise<APIStorageNode | undefined>
 
   moveStorageDir(options: StoragePaginationOptionsInput | null, fromDirPath: string, toDirPath: string): Promise<StoragePaginationResult>
 
-  moveStorageFile(fromFilePath: string, toFilePath: string): Promise<StorageNode>
+  moveStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode>
 
   renameStorageDir(options: StoragePaginationOptionsInput | null, dirPath: string, newName: string): Promise<StoragePaginationResult>
 
-  renameStorageFile(filePath: string, newName: string): Promise<StorageNode>
+  renameStorageFile(filePath: string, newName: string): Promise<APIStorageNode>
 
-  setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
+  setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<APIStorageNode>
 
-  setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
+  setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<APIStorageNode>
 
-  handleUploadedFile(filePath: string): Promise<StorageNode>
+  handleUploadedFile(filePath: string): Promise<APIStorageNode>
 
   getSignedUploadUrls(params: { filePath: string; contentType?: string }[]): Promise<string[]>
 
@@ -75,40 +76,20 @@ export interface LibAPIContainer {
   callStoragePaginationAPI<FUNC extends (...args: any[]) => Promise<StoragePaginationResult>>(
     func: FUNC,
     ...params: Parameters<FUNC>
-  ): Promise<StorageNode[]>
+  ): Promise<APIStorageNode[]>
 }
 
 export interface APIEntity {
   id: string
 }
 
-export interface APITimestampEntity {
+export interface RawTimestampEntity {
   id: string
   createdAt: string
   updatedAt: string
 }
 
-export type ToAPITimestampEntity<T> = OmitEntityTimestamp<T> & APITimestampEntity
-
-export interface Entity {
-  id: string
-}
-
-export interface TimestampEntity {
-  id: string
-  createdAt: Dayjs
-  updatedAt: Dayjs
-}
-
-export interface UserClaims {
-  isAppAdmin?: boolean
-}
-
-export interface UserIdClaims extends UserClaims {
-  uid: string
-}
-
-export interface IdToken extends firebase.auth.IdTokenResult, UserClaims {}
+export type ToRawTimestampEntity<T> = OmitEntityTimestamp<T> & RawTimestampEntity
 
 //--------------------------------------------------
 //  Foundation
@@ -123,56 +104,17 @@ export interface AppConfigResponse {
 //  User
 //--------------------------------------------------
 
-export enum AuthStatus {
-  None = 'None',
-  WaitForEmailVerified = 'WaitForEmailVerified',
-  WaitForEntry = 'WaitForEntry',
-  Available = 'Available',
-}
-
 export interface AuthDataResult {
   status: AuthStatus
   token: string
   user?: UserInfo
 }
 
-export interface UserInfo extends TimestampEntity {
-  email: string
-  emailVerified: boolean
-  isAppAdmin: boolean
-  publicProfile: PublicProfile
-}
-
-export interface PublicProfile extends TimestampEntity {
-  displayName: string
-  photoURL?: string
-}
-
-export interface UserInfoInput {
-  fullName: string
-  displayName: string
-}
-
 //--------------------------------------------------
 //  Storage
 //--------------------------------------------------
 
-export interface StorageNode extends TimestampEntity {
-  nodeType: StorageNodeType
-  name: string
-  dir: string
-  path: string
-  contentType: string
-  size: number
-  share: StorageNodeShareSettings
-  version: number
-}
-
-export interface StorageNodeShareSettings {
-  isPublic: boolean | null
-  readUIds: string[] | null
-  writeUIds: string[] | null
-}
+export interface APIStorageNode extends Omit<StorageNode, 'url'> {}
 
 export interface StorageNodeShareSettingsInput {
   isPublic: boolean | null
@@ -186,13 +128,8 @@ export interface StoragePaginationOptionsInput {
 }
 
 export interface StoragePaginationResult {
-  list: StorageNode[]
+  list: APIStorageNode[]
   nextPageToken?: string
-}
-
-export enum StorageNodeType {
-  File = 'File',
-  Dir = 'Dir',
 }
 
 //========================================================================
@@ -201,7 +138,7 @@ export enum StorageNodeType {
 //
 //========================================================================
 
-export function toTimestampEntity<T extends APITimestampEntity>(entity: T): OmitEntityTimestamp<T> & TimestampEntity {
+export function toTimestampEntity<T extends RawTimestampEntity>(entity: T): OmitEntityTimestamp<T> & TimestampEntity {
   const { createdAt, updatedAt, ...otherEntity } = entity
   return {
     ...otherEntity,
@@ -210,6 +147,6 @@ export function toTimestampEntity<T extends APITimestampEntity>(entity: T): Omit
   }
 }
 
-export function toTimestampEntities<T extends APITimestampEntity>(entities: T[]): (OmitEntityTimestamp<T> & TimestampEntity)[] {
+export function toTimestampEntities<T extends RawTimestampEntity>(entities: T[]): (OmitEntityTimestamp<T> & TimestampEntity)[] {
   return entities.map(entity => toTimestampEntity(entity))
 }

@@ -8,6 +8,7 @@ import { TestStore } from '../../../../../helpers/common/store'
 import { cloneDeep } from 'lodash'
 import dayjs from 'dayjs'
 import { generateFirestoreId } from '../../../../../helpers/common/base'
+import { getStorageNodeURL } from '../../../../../../src/lib/logic/base'
 import { initLibTest } from '../../../../../helpers/lib/init'
 import { store } from '../../../../../../src/lib/logic/store'
 
@@ -1283,15 +1284,17 @@ describe('setAPINodesToStore', () => {
 })
 
 describe('getPaginationNodesAPI', () => {
-  const [file01, file02, file03, file04, file05, file06, file07] = (() => {
+  function newTestNodes(): StorageNode[] {
     const result: StorageNode[] = []
     for (let i = 1; i <= 10; i++) {
+      const nodeId = generateFirestoreId()
       result.push({
-        id: generateFirestoreId(),
+        id: nodeId,
         nodeType: StorageNodeType.Dir,
         name: `file${i.toString().padStart(2, '0')}.txt`,
         dir: 'd1',
         path: `d1/file${i.toString().padStart(2, '0')}.txt`,
+        url: getStorageNodeURL(nodeId),
         contentType: '',
         size: 0,
         share: cloneDeep(EMPTY_SHARE_SETTINGS),
@@ -1301,9 +1304,10 @@ describe('getPaginationNodesAPI', () => {
       })
     }
     return result
-  })()
+  }
 
   it('ベーシックケース', async () => {
+    const [file01, file02, file03, file04, file05, file06, file07] = newTestNodes()
     const getStorageChildren = td.replace(api, 'getStorageChildren')
     td.when(
       getStorageChildren(
@@ -1339,6 +1343,7 @@ describe('getPaginationNodesAPI', () => {
   })
 
   it('optionsを指定しない場合', async () => {
+    const [file01, file02, file03, file04, file05, file06, file07] = newTestNodes()
     const getStorageChildren = td.replace(api, 'getStorageChildren')
     td.when(
       getStorageChildren(
@@ -1375,6 +1380,7 @@ describe('getPaginationNodesAPI', () => {
   })
 
   it('引数を全て指定しない場合', async () => {
+    const [file01, file02, file03, file04, file05, file06, file07] = newTestNodes()
     const getStorageChildren = td.replace(api, 'getStorageChildren')
     td.when(
       getStorageChildren({

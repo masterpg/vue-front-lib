@@ -1,4 +1,5 @@
-import { CartItem, CartItemEditResponse, Product, api } from '../../api'
+import { CartItem, Product } from '../../types'
+import { CartItemEditResponse, api } from '../../api'
 import { CheckoutStatus, store } from '../../store'
 import { Component, Watch } from 'vue-property-decorator'
 import { BaseLogic } from '@/lib'
@@ -251,5 +252,4 @@ class ShopLogicImpl extends BaseLogic implements ShopLogic {
 //========================================================================
 
 export { ShopLogic, ShopLogicImpl }
-export { CartItem, Product } from '../../api'
 export { CheckoutStatus } from '../../store'

@@ -77,12 +77,14 @@ export default merge(require('@/lib/lang/en').default, {
       sharingError: 'An error occurred while sharing "{nodeName}".',
     },
     nodeDetail: {
+      id: 'ID',
       name: 'Name',
       type: 'Type',
       size: 'Size',
       share: 'Share',
       path: 'Path',
       url: 'URL',
+      createdAt: 'Created',
       updatedAt: 'Updated',
     },
     download: {

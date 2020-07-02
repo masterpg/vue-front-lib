@@ -1,6 +1,14 @@
-import { AuthStatus } from './api'
+import { AuthStatus, StorageNodeType } from './types'
 import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
+import { config } from '@/lib/config'
+import { removeEndSlash } from 'web-base-lib'
+
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
 
 @Component
 class BaseLogicStore extends Vue {
@@ -16,7 +24,7 @@ class BaseLogicStore extends Vue {
 
 const logicStore = new BaseLogicStore()
 
-export abstract class BaseLogic extends Vue {
+abstract class BaseLogic extends Vue {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -49,3 +57,45 @@ export abstract class BaseLogic extends Vue {
     return this.authStatus === AuthStatus.Available
   }
 }
+
+/**
+ * ノード配列をディレクトリ階層に従ってソートします。
+ * @param nodes
+ */
+function sortStorageNodes<NODE extends { nodeType: StorageNodeType; name: string; dir: string; path: string }>(nodes: NODE[]): NODE[] {
+  return nodes.sort((a: NODE, b: NODE) => {
+    let strA = a.path
+    let strB = b.path
+    if (a.nodeType === StorageNodeType.File) {
+      strA = `${a.dir}${String.fromCodePoint(0xffff)}${a.name}`
+    }
+    if (b.nodeType === StorageNodeType.File) {
+      strB = `${b.dir}${String.fromCodePoint(0xffff)}${b.name}`
+    }
+
+    return strA < strB ? -1 : strA > strB ? 1 : 0
+  })
+}
+
+/**
+ * ストレージノードにアクセスするための基準となるURLです。
+ */
+function getBaseStorageURL(): string {
+  return `${removeEndSlash(config.api.baseURL)}/storage`
+}
+
+/**
+ * ストレージノードのアクセス先となるURLを取得します。
+ * @param nodeId
+ */
+function getStorageNodeURL(nodeId: string): string {
+  return `${getBaseStorageURL()}/${nodeId}`
+}
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { BaseLogic, sortStorageNodes, getBaseStorageURL, getStorageNodeURL }

@@ -1,8 +1,9 @@
-import { AuthStatus, UserInfo, UserInfoInput, api } from '../../api'
+import { AuthStatus, UserInfo, UserInfoInput } from '../../types'
 import { BaseLogic } from '../../base'
 import { Component } from 'vue-property-decorator'
 import { Dialog } from 'quasar'
 import { NoCache } from '@/lib/base'
+import { api } from '../../api'
 import { i18n } from '@/lib/i18n'
 import { store } from '../../store'
 

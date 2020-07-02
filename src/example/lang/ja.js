@@ -77,12 +77,14 @@ export default merge(require('@/lib/lang/ja').default, {
       sharingError: '「{nodeName}」の共有でエラーが発生しました。',
     },
     nodeDetail: {
+      id: 'ID',
       name: '名前',
       type: 'タイプ',
       size: 'サイズ',
       share: '共有',
       path: 'パス',
       url: 'URL',
+      createdAt: '作成日',
       updatedAt: '更新日',
     },
     download: {

@@ -22,9 +22,7 @@ let treeStore!: StorageTreeStore
 
 let treeView!: CompTreeView
 
-let storageLogic!: Omit<StorageLogic, 'baseURL'> & {
-  baseURL: StorageLogic['baseURL']
-}
+let storageLogic!: StorageLogic
 
 function verifyParentChildRelationForTree(treeView: CompTreeView | any) {
   for (let i = 0; i < treeView.children.length; i++) {
@@ -74,7 +72,6 @@ beforeEach(async () => {
   treeView = wrapper.vm as CompTreeView
 
   storageLogic = td.object<StorageLogic>()
-  storageLogic.baseURL = logic.userStorage.baseURL
 
   treeStore = newStorageTreeStore('user', storageLogic)
   treeStore.setup(treeView)
@@ -98,7 +95,6 @@ describe('constructor + init', () => {
 
     const rootNodeLabel = String(i18n.t('storage.userRootName'))
     expect(treeStore.rootNode.label).toBe(rootNodeLabel)
-    expect(treeStore.rootNode.baseURL).toBe(logic.userStorage.baseURL)
   })
 
   it('StorageTreeStoreを作成 - アプリケーションタイプ', () => {
@@ -109,7 +105,6 @@ describe('constructor + init', () => {
 
     const rootNodeLabel = String(i18n.t('storage.appRootName'))
     expect(treeStore.rootNode.label).toBe(rootNodeLabel)
-    expect(treeStore.rootNode.baseURL).toBe(logic.appStorage.baseURL)
   })
 
   it('既にルートノードが作成されている場合', () => {
