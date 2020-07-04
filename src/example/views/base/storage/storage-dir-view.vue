@@ -516,10 +516,8 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
    * @param row
    */
   private m_tableRowNameCellOnClick(row: TableRow) {
-    if (row.nodeType === StorageNodeType.Dir) {
-      this.$emit('dir-selected', row.value)
-    } else if (row.nodeType === StorageNodeType.File) {
-      this.$emit('file-selected', row.value)
+    this.$emit('selected', row.value)
+    if (row.nodeType === StorageNodeType.File) {
       // ノード詳細ビューを表示
       this.m_nodeDetailView.setNodePath(row.value)
       this.m_detailViewNode = this.storageLogic.getNode({ path: row.value })!

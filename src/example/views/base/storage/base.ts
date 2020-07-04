@@ -12,9 +12,9 @@ import Vue from 'vue'
 //
 //========================================================================
 
-export type StorageType = 'user' | 'app'
+type StorageType = 'user' | 'app'
 
-export interface StorageTreeNodeData extends CompTreeNodeData {
+interface StorageTreeNodeData extends CompTreeNodeData {
   icon: string
   id: string
   nodeType: StorageNodeType
@@ -37,7 +37,7 @@ let userTreeStore: StorageTreeStore
 let appTreeStore: StorageTreeStore
 
 @Component
-export class StorageTypeMixin extends Vue {
+class StorageTypeMixin extends Vue {
   created() {
     switch (this.storageType) {
       case 'user':
@@ -83,7 +83,7 @@ export class StorageTypeMixin extends Vue {
   }
 }
 
-export const treeSortFunc: ChildrenSortFunc = (a, b) => {
+const treeSortFunc: ChildrenSortFunc = (a, b) => {
   const _a = a as StorageTreeNode
   const _b = b as StorageTreeNode
   if (_a.nodeType === StorageNodeType.Dir && _b.nodeType === StorageNodeType.File) {
@@ -93,3 +93,11 @@ export const treeSortFunc: ChildrenSortFunc = (a, b) => {
   }
   return _a.label < _b.label ? -1 : _a.label > _b.label ? 1 : 0
 }
+
+//========================================================================
+//
+//  Exports
+//
+//========================================================================
+
+export { StorageType, StorageTreeNodeData, StorageTypeMixin, treeSortFunc }

@@ -1,6 +1,5 @@
 import { Component, Prop } from 'vue-property-decorator'
-import StoragePage from './storage-page.vue'
-import { StorageType } from './base'
+import { StoragePage, StorageType } from '../../base/storage'
 
 @Component
 class AppStoragePage extends StoragePage {

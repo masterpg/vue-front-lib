@@ -85,7 +85,7 @@ class UserStorageRoute extends StorageRoute {
   }
 
   get component() {
-    return () => import(/* webpackChunkName: "views/demo/storage/user" */ '@/example/views/demo/storage/index.user')
+    return () => import(/* webpackChunkName: "views/demo/storage/user" */ '@/example/views/demo/storage/user')
   }
 }
 
@@ -95,7 +95,7 @@ class AppStorageRoute extends StorageRoute {
   }
 
   get component() {
-    return () => import(/* webpackChunkName: "views/demo/storage/user" */ '@/example/views/demo/storage/index.app')
+    return () => import(/* webpackChunkName: "views/demo/storage/app" */ '@/example/views/demo/storage/app')
   }
 }
 
