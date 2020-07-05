@@ -15,8 +15,7 @@ interface UploadFileParam {
   data: Blob | Uint8Array | ArrayBuffer | File
   name: string
   dir: string
-  basePath: string
-  type?: string
+  type: string
 }
 
 //========================================================================
@@ -184,11 +183,10 @@ class StorageUploader {
   protected createUploadingFiles(files: File[]): StorageFileUploader[] {
     const result: StorageFileUploader[] = []
     for (const file of files) {
-      const fileUploader = new StorageFileUploader({
+      const fileUploader = new StorageFileUploader(this.storageLogic, {
         data: file,
         name: file.name,
         dir: removeBothEndsSlash(this.getUploadDirPath(file)),
-        basePath: removeBothEndsSlash(this.storageLogic.basePath),
         type: file.type,
       })
       result.push(fileUploader)
@@ -276,7 +274,7 @@ class StorageFileUploader {
   //
   //----------------------------------------------------------------------
 
-  constructor(uploadParam: UploadFileParam) {
+  constructor(protected storageLogic: StorageLogic, uploadParam: UploadFileParam) {
     this.uploadParam = uploadParam
   }
 
@@ -431,11 +429,19 @@ class StorageFileUploader {
 
     this.m_status = 'running'
 
+    // ファイルノードの新バージョン番号を取得
+    const node = this.storageLogic.getNode({ path: this.path })
+    const version = String(!node || !node.version ? 0 : node.version + 1) // バージョン番号をインクリメント
+
     // アップロード先の参照を取得
-    const uploadPath = path.join(this.uploadParam.basePath, this.uploadParam.dir, this.name)
+    const basePath = removeBothEndsSlash(this.storageLogic.basePath)
+    const uploadPath = path.join(basePath, this.uploadParam.dir, this.name)
     this.m_fileRef = firebase.storage().ref(uploadPath)
+
     // アップロード実行
-    this.m_uploadTask = this.m_fileRef.put(this.uploadParam.data)
+    this.m_uploadTask = this.m_fileRef.put(this.uploadParam.data, {
+      customMetadata: { version },
+    })
 
     return new Promise<void>((resolve, reject) => {
       this.m_uploadTask.on(

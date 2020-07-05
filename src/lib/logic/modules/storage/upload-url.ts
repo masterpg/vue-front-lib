@@ -1,7 +1,9 @@
 import * as path from 'path'
 import { StorageFileUploader, StorageUploader, UploadFileParam } from './upload'
 import axios, { Canceler } from 'axios'
+import { StorageLogic } from './logic'
 import { api } from '../../api'
+import { removeBothEndsSlash } from 'web-base-lib'
 
 //========================================================================
 //
@@ -13,11 +15,10 @@ class StorageUrlUploadManager extends StorageUploader {
   protected createUploadingFiles(files: File[]): StorageFileUploader[] {
     const result: StorageFileUploader[] = []
     for (const file of files) {
-      const fileUploader = new StorageUrlFileUploader({
+      const fileUploader = new StorageUrlFileUploader(this.storageLogic, {
         data: file,
         name: file.name,
         dir: this.getUploadDirPath(file),
-        basePath: this.storageLogic.basePath,
         type: file.type,
       })
       result.push(fileUploader)
@@ -33,8 +34,8 @@ class StorageUrlFileUploader extends StorageFileUploader {
   //
   //----------------------------------------------------------------------
 
-  constructor(uploadParam: UploadFileParam) {
-    super(uploadParam)
+  constructor(protected storageLogic: StorageLogic, uploadParam: UploadFileParam) {
+    super(storageLogic, uploadParam)
   }
 
   //----------------------------------------------------------------------
@@ -116,9 +117,10 @@ class StorageUrlFileUploader extends StorageFileUploader {
   }
 
   private async m_getSignedUploadUrl(): Promise<string> {
+    const basePath = removeBothEndsSlash(this.storageLogic.basePath)
     const params = [
       {
-        filePath: path.join(this.uploadParam.basePath, this.path),
+        filePath: path.join(basePath, this.path),
         contentType: this.uploadParam.type,
       },
     ]
