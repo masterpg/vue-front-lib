@@ -44,7 +44,7 @@ import * as path from 'path'
 import { BaseDialog, NoCache } from '@/lib'
 import { QDialog, QInput } from 'quasar'
 import { Component } from 'vue-property-decorator'
-import StorageTreeNode from './storage-tree-node.vue'
+import { StorageTreeNode } from './base'
 
 @Component
 export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, string> {
@@ -75,9 +75,9 @@ export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, 
 
     const storageNode = this.m_parentNode.getRootNode()
     if (storageNode === this.m_parentNode) {
-      return path.join(this.m_parentNode.label, '/')
+      return path.join(this.m_parentNode.name, '/')
     } else {
-      return path.join(storageNode.label, this.m_parentNode.value, '/')
+      return path.join(storageNode.name, this.m_parentNode.path, '/')
     }
   }
 
@@ -125,7 +125,7 @@ export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, 
     if (this.m_parentNode!.getRootNode() === this.m_parentNode) {
       dirPath = this.m_dirName!
     } else {
-      dirPath = path.join(this.m_parentNode!.value, this.m_dirName!)
+      dirPath = path.join(this.m_parentNode!.path, this.m_dirName!)
     }
     this.close(dirPath)
   }
@@ -157,7 +157,7 @@ export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, 
 
     // 作成しようとする名前のディレクトリが存在しないことをチェック
     for (const siblingNode of parentNode.children) {
-      if (siblingNode.label === this.m_dirName) {
+      if (siblingNode.name === this.m_dirName) {
         const nodeTypeName = this.$tc('common.folder', 1)
         this.m_errorMessage = String(this.$t('storage.nodeAlreadyExists', { nodeName: this.m_dirName, nodeType: nodeTypeName }))
         return false

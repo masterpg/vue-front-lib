@@ -51,7 +51,7 @@ describe('Foundation API', () => {
       const actual = await api.getAppConfig()
 
       expect(actual.usersDir).toBe('users')
-      expect(actual.siteDir).toBe('site')
+      expect(actual.docsDir).toBe('docs')
     })
   })
 })

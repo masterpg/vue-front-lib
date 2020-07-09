@@ -1,188 +1,67 @@
-<style lang="sass">
-// 以下CSSクラスの詳細は次を参考:
-//   https://quasar.dev/vue-components/table#Sticky-header%2Fcolumn
-.storage-dir-children-view__table
-  height: 100%
-
-  /* max height is important */
-  .q-table__middle
-    height: 100%
-
-  .q-table__top,
-  .q-table__bottom,
-  thead tr:first-child th
-    /* bg color is important for th; just specify one */
-    background-color: white
-
-  thead tr th
-    position: sticky
-    z-index: 1
-  thead tr:first-child th
-    top: 0
-
-  /* this is when the loading indicator appears */
-  &.q-table--loading thead tr:last-child th
-    /* height of all previous header rows */
-    top: 48px
-</style>
-
 <style lang="sass" scoped>
 @import 'src/example/styles/app.variables'
 
-.storage-dir-view-main
-
-.left-container
-  overflow: hidden
-  height: 100%
-
-  .table-container
-    overflow: hidden
-
-    .label
-      color: $app-link-color
-      span
-        @extend %app-link
-        font-weight: map-get($text-weights, "medium")
-        vertical-align: middle
-
-.file-node-view
-  width: 320px
+.th-name
+  color: $app-link-color
+  span
+    @extend %app-link
+    font-weight: map-get($text-weights, "medium")
+    vertical-align: middle
+    &.active
+      color: var(--comp-tree-selected-color, $pink-5)
 </style>
 
 <template>
-  <div class="storage-dir-view-main layout horizontal">
-    <div class="left-container layout vertical flex-1">
-      <div ref="tableContainer" class="table-container flex-1">
-        <q-table
-          ref="table"
-          :data="m_children"
-          :columns="m_columns"
-          virtual-scroll
-          :pagination.sync="m_pagination"
-          :rows-per-page-options="[0]"
-          :sort-method="m_childrenSort"
-          selection="multiple"
-          :selected.sync="m_selectedRows"
-          binary-state-sort
-          row-key="label"
-          hide-bottom
-          flat
-          :loading="loading"
-          class="storage-dir-children-view__table"
-        >
-          <template v-slot:body="props">
-            <q-tr :props="props">
-              <q-td auto-width>
-                <q-checkbox v-model="props.selected" />
-              </q-td>
-              <q-td key="label" :props="props">
-                <span class="label" @click="m_tableRowNameCellOnClick(props.row)">
-                  <q-icon :name="props.row.icon" size="24px" class="app-mr-6" />
-                  <span>{{ props.row.label }}</span>
-                </span>
-              </q-td>
-              <q-td key="contentType" :props="props">{{ props.row.contentType }}</q-td>
-              <q-td key="size" :props="props">{{ props.row.size }}</q-td>
-              <q-td key="share" :props="props">
-                <q-icon :name="props.row.share.icon" size="24px" />
-              </q-td>
-              <q-td key="updatedAt" :props="props">{{ props.row.updatedAt }}</q-td>
-              <!-- コンテキストメニュー -->
-              <q-menu touch-position context-menu>
-                <!-- 複数選択時 -->
-                <q-list v-if="props.row.multiSelected" dense style="min-width: 100px;">
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchMoveSelected(m_table.selected)">{{ $t('common.move') }}</q-item-section>
-                  </q-item>
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchDeleteSelected(m_table.selected)">{{ $t('common.delete') }}</q-item-section>
-                  </q-item>
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchShareSelected(m_table.selected)">{{ $t('common.share') }}</q-item-section>
-                  </q-item>
-                </q-list>
-                <!-- フォルダ用メニュー -->
-                <q-list v-else-if="props.row.isDir" dense style="min-width: 100px;">
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchCreateDirSelected(props.row)">
-                      {{ $t('common.createSomehow', { somehow: $tc('common.folder', 1) }) }}
-                    </q-item-section>
-                  </q-item>
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchFilesUploadSelected(props.row)">
-                      {{ $t('common.uploadSomehow', { somehow: $tc('common.file', 2) }) }}
-                    </q-item-section>
-                  </q-item>
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchDirUploadSelected(props.row)">
-                      {{ $t('common.uploadSomehow', { somehow: $tc('common.folder', 1) }) }}
-                    </q-item-section>
-                  </q-item>
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchMoveSelected([props.row])">{{ $t('common.move') }}</q-item-section>
-                  </q-item>
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchRenameSelected(props.row)">{{ $t('common.rename') }}</q-item-section>
-                  </q-item>
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchShareSelected([props.row])">{{ $t('common.share') }}</q-item-section>
-                  </q-item>
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchDeleteSelected([props.row])">{{ $t('common.delete') }}</q-item-section>
-                  </q-item>
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchReloadSelected(props.row)">{{ $t('common.reload') }}</q-item-section>
-                  </q-item>
-                </q-list>
-                <!-- ファイル用メニュー -->
-                <q-list v-else-if="props.row.isFile" dense style="min-width: 100px;">
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchMoveSelected([props.row])">{{ $t('common.move') }}</q-item-section>
-                  </q-item>
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchRenameSelected(props.row)">{{ $t('common.rename') }}</q-item-section>
-                  </q-item>
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchShareSelected([props.row])">{{ $t('common.share') }}</q-item-section>
-                  </q-item>
-                  <q-item v-close-popup clickable>
-                    <q-item-section @click="m_dispatchDeleteSelected([props.row])">{{ $t('common.delete') }}</q-item-section>
-                  </q-item>
-                </q-list>
-              </q-menu>
-            </q-tr>
-          </template>
-        </q-table>
-      </div>
-    </div>
-    <storage-node-detail-view
-      v-show="m_visibleNodeDetailView"
-      ref="nodeDetailView"
-      class="file-node-view"
-      :storage-type="storageType"
-      @close="m_nodeDetailViewOnClose"
-    />
-  </div>
+  <storage-dir-table
+    ref="table"
+    :data="m_childNodes"
+    :columns="columns"
+    :selected.sync="m_selectedNodes"
+    :sort-method="sortChildNodesMethod"
+    :loading="loading"
+    row-key="name"
+  >
+    <template v-slot:body="slotProps">
+      <q-tr :props="slotProps.tr">
+        <q-td auto-width>
+          <q-checkbox v-model="slotProps.tr.selected" />
+        </q-td>
+        <q-td key="name" :props="slotProps.tr">
+          <span class="th-name" @click="m_nameCellOnClick(slotProps.tr.row)">
+            <q-icon :name="slotProps.tr.row.icon" size="24px" class="app-mr-6" />
+            <span :class="{ active: slotProps.tr.row.isActive }">{{ slotProps.tr.row.name }}</span>
+          </span>
+        </q-td>
+        <q-td key="contentType" :props="slotProps.tr">{{ slotProps.tr.row.contentType }}</q-td>
+        <q-td key="size" :props="slotProps.tr">{{ slotProps.tr.row.size }}</q-td>
+        <q-td key="share" :props="slotProps.tr">
+          <q-icon :name="slotProps.tr.row.share.icon" size="24px" />
+        </q-td>
+        <q-td key="updatedAt" :props="slotProps.tr">{{ slotProps.tr.row.updatedAt }}</q-td>
+        <storage-node-context-menu :node="slotProps.tr.row" :selected-nodes="table.selected" @select="m_contextMenuOnSelect" />
+      </q-tr>
+    </template>
+  </storage-dir-table>
 </template>
 
 <script lang="ts">
 import { BaseComponent, NoCache, Resizable, StorageNode, StorageNodeType } from '@/lib'
-import { Component } from 'vue-property-decorator'
-import { QTable } from 'quasar'
-import StorageNodeDetailView from './storage-node-detail-view.vue'
-import { StorageTypeMixin } from './base'
+import { Component, Prop } from 'vue-property-decorator'
+import { StorageNodeContextMenuSelectedEvent, StorageTypeMixin } from './base'
+import { arrayToDict, removeBothEndsSlash } from 'web-base-lib'
+import StorageDirTable from './storage-dir-table.vue'
+import StorageNodeContextMenu from './storage-node-context-menu.vue'
 import bytes from 'bytes'
 import { mixins } from 'vue-class-component'
-import { removeBothEndsSlash } from 'web-base-lib'
 
-class TableRow {
-  constructor(private m_table: QTable) {}
+export class StorageDirTableRow {
+  constructor(private m_table: StorageDirTable) {}
 
   nodeType!: StorageNodeType
 
-  label!: string
+  name!: string
 
-  value!: string
+  path!: string
 
   icon!: string
 
@@ -198,28 +77,18 @@ class TableRow {
 
   updatedAtNum!: number
 
-  get isDir(): boolean {
-    return this.nodeType === StorageNodeType.Dir
-  }
-
-  get isFile(): boolean {
-    return this.nodeType === StorageNodeType.File
-  }
+  isActive!: boolean
 
   get selected(): boolean {
     if (!this.m_table.selected) return false
     return this.m_table.selected.includes(this)
   }
-
-  get multiSelected(): boolean {
-    if (!this.m_table.selected) return false
-    return this.m_table.selected.length >= 2 && this.selected
-  }
 }
 
 @Component({
   components: {
-    StorageNodeDetailView,
+    StorageDirTable,
+    StorageNodeContextMenu,
   },
 })
 export default class StorageDirView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
@@ -230,8 +99,8 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
   //----------------------------------------------------------------------
 
   mounted() {
-    const labelCol = this.m_columns[0]
-    this.m_table.sort(labelCol)
+    const labelCol = this.columns[0]
+    this.table.sort(labelCol)
   }
 
   //----------------------------------------------------------------------
@@ -248,9 +117,9 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
   //
   //----------------------------------------------------------------------
 
-  private get m_columns() {
+  protected get columns() {
     return [
-      { name: 'label', align: 'left', label: this.$t('storage.nodeDetail.name'), field: 'label', sortable: true },
+      { name: 'name', align: 'left', label: this.$t('storage.nodeDetail.name'), field: 'name', sortable: true },
       { name: 'contentType', align: 'left', label: this.$t('storage.nodeDetail.type'), field: 'contentType', sortable: true },
       { name: 'size', align: 'right', label: this.$t('storage.nodeDetail.size'), field: 'size', sortable: true },
       { name: 'share', align: 'center', label: this.$t('storage.nodeDetail.share'), field: 'share', sortable: true },
@@ -258,36 +127,19 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     ]
   }
 
-  private m_dirPath: string | null = null
+  protected dirPath: string | null = null
 
-  private m_children: TableRow[] = []
+  private m_childNodes: StorageDirTableRow[] = []
 
-  private m_childDict: { [value: string]: TableRow } = {}
-
-  private m_pagination = {
-    rowsPerPage: 0,
-  }
-
-  private m_selectedRows: TableRow[] = []
-
-  private m_detailViewNode: StorageNode | null = null
-
-  private get m_visibleNodeDetailView(): boolean {
-    return !!this.m_detailViewNode
-  }
+  private m_selectedNodes: StorageDirTableRow[] = []
 
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
 
   @NoCache
-  private get m_table(): QTable {
-    return this.$refs.table as QTable
-  }
-
-  @NoCache
-  private get m_nodeDetailView(): StorageNodeDetailView {
-    return this.$refs.nodeDetailView as StorageNodeDetailView
+  protected get table(): StorageDirTable {
+    return this.$refs.table as StorageDirTable
   }
 
   //----------------------------------------------------------------------
@@ -302,13 +154,14 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
    */
   setDirPath(dirPath: string | null): void {
     const clear = () => {
-      this.m_children = []
-      this.m_childDict = {}
-      this.m_table.selected && this.m_table.selected.splice(0)
-      this.m_detailViewNode = null
+      this.m_childNodes = []
+      // 選択状態を初期化
+      this.table.selected && this.table.selected.splice(0)
+      // スクロール位置を先頭へ初期化
+      this.table.$el.querySelector('.scroll')!.scrollTop = 0
     }
 
-    // 文字列以外が渡された場合、ビューをクリアして終了
+    // 文字列以外が渡された場合、テーブルをクリアして終了
     if (typeof dirPath !== 'string') {
       clear()
       return
@@ -316,32 +169,15 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
 
     dirPath = removeBothEndsSlash(dirPath)
 
-    // 前回と今回で設定されるディレクトリパスが同じ場合
-    if (this.m_dirPath === dirPath) {
-      this.m_detailViewNode = (() => {
-        if (!this.m_detailViewNode) return null
-        return this.storageLogic.getNode(this.m_detailViewNode) || null
-      })()
-      // ノード詳細ビューに表示されていたノードが存在する場合
-      if (this.m_detailViewNode) {
-        // ノード詳細ビューを更新
-        this.m_nodeDetailView.setNodePath(this.m_detailViewNode.path)
-      }
-      // ノード詳細ビューに表示されていたノードが存在しない場合
-      else {
-        // ノード詳細ビューを非表示
-        this.m_detailViewNode = null
-      }
-    }
     // 前回と今回で設定されるディレクトリパスが異なる場合
-    else {
-      // ビューをクリア
+    if (this.dirPath !== dirPath) {
+      // テーブルをクリア
       clear()
     }
 
-    this.m_dirPath = dirPath
+    this.dirPath = dirPath
 
-    this.m_setupChildren()
+    this.m_buildChildren()
   }
 
   //----------------------------------------------------------------------
@@ -350,64 +186,15 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
   //
   //----------------------------------------------------------------------
 
-  private m_setupChildren(): void {
-    if (this.m_dirPath) {
-      const dirNode = this.storageLogic.getNode({ path: this.m_dirPath })
-      if (!dirNode) {
-        throw new Error(`'storageLogic' does not have specified path's node: '${this.m_dirPath}'`)
-      }
-    }
-
-    const latestChildren: TableRow[] = []
-    const latestChildDict: { [value: string]: TableRow } = {}
-    for (const child of this.storageLogic.getChildren(this.m_dirPath || '')) {
-      const row = this.m_toTableRow(child)
-      latestChildren.push(row)
-      latestChildDict[row.value] = row
-    }
-
-    // 最新データにはないがビューには存在するノードを削除
-    for (let i = 0; i < this.m_children.length; i++) {
-      const child = this.m_children[i]
-      const latestChild = latestChildDict[child.value]
-      if (!latestChild) {
-        // 最新データにはないノードを削除
-        this.m_children.splice(i--, 1)
-        delete this.m_childDict[child.value]
-        // 選択ノードを格納している配列から最新データにないノードを削除
-        if (this.m_table.selected) {
-          const selectedIndex = this.m_table.selected.findIndex((row: TableRow) => {
-            return row.value === child.value
-          })
-          selectedIndex >= 0 && this.m_table.selected.splice(selectedIndex, 1)
-        }
-      }
-    }
-
-    // 最新データをビューに反映
-    for (const latestChild of latestChildren) {
-      const child = this.m_childDict[latestChild.value]
-      if (child) {
-        this.m_populateTableRow(latestChild, child)
-      } else {
-        this.m_children.push(latestChild)
-        this.m_childDict[latestChild.value] = latestChild
-      }
-    }
-
-    // スクロール位置を先頭へ初期化
-    this.m_table.$el.querySelector('.scroll')!.scrollTop = 0
-  }
-
   /**
-   * `StorageTreeNode`を`TableRow`へ変換します。
+   * `StorageNode`を`StorageDirTableRow`へ変換します。
    * @param node
    */
-  private m_toTableRow(node: StorageNode): TableRow {
-    const tableRow = new TableRow(this.m_table)
+  protected toTableRow(node: StorageNode): StorageDirTableRow {
+    const tableRow = new StorageDirTableRow(this.table)
     tableRow.nodeType = node.nodeType as StorageNodeType
-    tableRow.label = node.nodeType === StorageNodeType.Dir ? `${node.name}/` : node.name
-    tableRow.value = node.path
+    tableRow.name = node.nodeType === StorageNodeType.Dir ? `${node.name}/` : node.name
+    tableRow.path = node.path
     tableRow.icon = node.nodeType === StorageNodeType.Dir ? 'folder' : 'description'
     tableRow.contentType = node.contentType
     tableRow.size = node.nodeType === StorageNodeType.Dir ? undefined : bytes(node.size)
@@ -421,6 +208,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     }
     tableRow.updatedAt = String(this.$d(node.updatedAt.toDate(), 'dateTime'))
     tableRow.updatedAtNum = node.updatedAt.unix()
+    tableRow.isActive = this.selectedTreeNode ? this.selectedTreeNode.path === node.path : false
     return tableRow
   }
 
@@ -429,16 +217,23 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
    * @param source
    * @param dest
    */
-  private m_populateTableRow(source: TableRow, dest: TableRow): TableRow {
+  protected populateTableRow(source: StorageDirTableRow, dest: StorageDirTableRow): StorageDirTableRow {
     return Object.assign(dest, {
-      label: source.label,
-      value: source.value,
+      name: source.name,
+      path: source.path,
       share: source.share,
       updatedAt: source.updatedAt,
+      isActive: source.isActive,
     })
   }
 
-  private m_childrenSort(rows: TableRow[], sortBy: string, descending: boolean) {
+  /**
+   * 子ノードをソートするための関数です。
+   * @param rows
+   * @param sortBy
+   * @param descending
+   */
+  protected sortChildNodesMethod(rows: StorageDirTableRow[], sortBy: string, descending: boolean) {
     const data = [...rows]
 
     if (sortBy) {
@@ -446,7 +241,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
         const x = descending ? b : a
         const y = descending ? a : b
 
-        if (sortBy === 'label') {
+        if (sortBy === 'name') {
           if (x.nodeType === StorageNodeType.Dir && y.nodeType === StorageNodeType.File) {
             return -1
           } else if (x.nodeType === StorageNodeType.File && y.nodeType === StorageNodeType.Dir) {
@@ -464,45 +259,52 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     return data
   }
 
-  private m_dispatchCreateDirSelected(row: TableRow): void {
-    this.$emit('create-dir-selected', row.value)
-  }
+  private m_buildChildren(): void {
+    if (this.dirPath) {
+      const dirNode = this.storageLogic.getNode({ path: this.dirPath })
+      if (!dirNode) {
+        throw new Error(`'storageLogic' does not have specified path's node: '${this.dirPath}'`)
+      }
+    }
 
-  private m_dispatchFilesUploadSelected(row: TableRow): void {
-    this.$emit('files-upload-selected', row.value)
-  }
+    // ロジックストアから最新の子ノードを取得
+    const latestChildNodes: StorageDirTableRow[] = []
+    const latestChildDict: { [path: string]: StorageDirTableRow } = {}
+    for (const child of this.storageLogic.getChildren(this.dirPath || '')) {
+      const row = this.toTableRow(child)
+      latestChildNodes.push(row)
+      latestChildDict[row.path] = row
+    }
 
-  private m_dispatchDirUploadSelected(row: TableRow): void {
-    this.$emit('dir-upload-selected', row.value)
-  }
+    const childDict: { [path: string]: StorageDirTableRow } = arrayToDict(this.m_childNodes, 'path')
 
-  private m_dispatchMoveSelected(rows: TableRow[]): void {
-    this.$emit(
-      'move-selected',
-      rows.map(node => node.value)
-    )
-  }
+    // 最新データにはないがビューには存在するノードを削除
+    for (let i = 0; i < this.m_childNodes.length; i++) {
+      const child = this.m_childNodes[i]
+      const latestChild = latestChildDict[child.path]
+      if (!latestChild) {
+        // 最新データにはないノードを削除
+        this.m_childNodes.splice(i--, 1)
+        delete childDict[child.path]
+        // 選択ノードを格納している配列から最新データにないノードを削除
+        if (this.table.selected) {
+          const selectedIndex = this.table.selected.findIndex((row: StorageDirTableRow) => {
+            return row.path === child.path
+          })
+          selectedIndex >= 0 && this.table.selected.splice(selectedIndex, 1)
+        }
+      }
+    }
 
-  private m_dispatchRenameSelected(row: TableRow): void {
-    this.$emit('rename-selected', row.value)
-  }
-
-  private m_dispatchDeleteSelected(rows: TableRow[]): void {
-    this.$emit(
-      'delete-selected',
-      rows.map(node => node.value)
-    )
-  }
-
-  private m_dispatchShareSelected(rows: TableRow[]): void {
-    this.$emit(
-      'share-selected',
-      rows.map(node => node.value)
-    )
-  }
-
-  private m_dispatchReloadSelected(row: TableRow): void {
-    this.$emit('reload-selected', row.value)
+    // 最新データをビューに反映
+    for (const latestChild of latestChildNodes) {
+      const child = childDict[latestChild.path]
+      if (child) {
+        this.populateTableRow(latestChild, child)
+      } else {
+        this.m_childNodes.push(latestChild)
+      }
+    }
   }
 
   //----------------------------------------------------------------------
@@ -515,20 +317,16 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
    * テーブル行の名称セルがクリックされた際のリスナです。
    * @param row
    */
-  private m_tableRowNameCellOnClick(row: TableRow) {
-    this.$emit('selected', row.value)
-    if (row.nodeType === StorageNodeType.File) {
-      // ノード詳細ビューを表示
-      this.m_nodeDetailView.setNodePath(row.value)
-      this.m_detailViewNode = this.storageLogic.getNode({ path: row.value })!
-    }
+  private m_nameCellOnClick(row: StorageDirTableRow) {
+    this.$emit('select', row.path)
   }
 
   /**
-   * ノード詳細ビューが閉じられる際のリスナです。
+   * コンテキストメニューでメニューアイテムが選択された際のリスナです。
+   * @param e
    */
-  private m_nodeDetailViewOnClose() {
-    this.m_detailViewNode = null
+  private m_contextMenuOnSelect(e: StorageNodeContextMenuSelectedEvent) {
+    this.$emit('context-menu-select', e)
   }
 }
 </script>

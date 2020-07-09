@@ -58,18 +58,22 @@ export interface CompTreeNodeData {
 
 export type CompTreeNodeEditData<T> = Partial<Omit<T, 'nodeClass' | 'children'>>
 
-export type ChildrenSortFunc = (a: CompTreeNode, b: CompTreeNode) => number
+export type ChildrenSortFunc = <N extends CompTreeNode = CompTreeNode>(a: N, b: N) => number
 
 export interface CompTreeCheckboxNodeData extends CompTreeNodeData {
   checked?: boolean
+}
+
+export interface CompTreeViewEvent<N extends CompTreeNode = CompTreeNode> {
+  node: N
 }
 
 export type CompTreeViewLazyLoadStatus = 'none' | 'loading' | 'loaded'
 
 export type CompTreeViewLazyLoadDoneFunc = () => void
 
-export interface CompTreeViewLazyLoadEvent<NODE extends CompTreeNode = any> {
-  node: NODE
+export interface CompTreeViewLazyLoadEvent<N extends CompTreeNode = CompTreeNode> {
+  node: N
   done: CompTreeViewLazyLoadDoneFunc
 }
 

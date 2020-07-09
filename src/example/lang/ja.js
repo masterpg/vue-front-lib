@@ -3,6 +3,14 @@ import merge from 'lodash/merge'
 export default merge(require('@/lib/lang/ja').default, {
   common: {},
   error: {},
+  index: {
+    mainMenu: {
+      siteAdmin: 'サイト管理',
+      docsAdmin: 'ドキュメント',
+      userStorageAdmin: 'ストレージ',
+      appStorageAdmin: 'アプリケーションストレージ',
+    },
+  },
   sw: {
     ready: 'アプリケーションは Service Worker によってキャッシュからサーブされています。詳細は https://goo.gl/AFskqB を参照ください。',
     registered: 'Service Worker は既に登録されています。',
@@ -46,6 +54,7 @@ export default merge(require('@/lib/lang/ja').default, {
   storage: {
     userRootName: 'Home',
     appRootName: 'Storage',
+    docsRootName: 'ドキュメント',
     uploading: 'アップロード中',
     nodeAlreadyExists: '「{nodeName}」という{nodeType}はすでに存在します。',
     create: {

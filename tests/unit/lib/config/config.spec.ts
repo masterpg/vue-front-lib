@@ -25,6 +25,6 @@ describe('config', () => {
   it('サーバーとフロントの設定値が一致することを検証', async () => {
     const appConfig = await api.getAppConfig()
     expect(config.storage.usersDir).toBe(appConfig.usersDir)
-    expect(config.storage.siteDir).toBe(appConfig.siteDir)
+    expect(config.storage.docsDir).toBe(appConfig.docsDir)
   })
 })

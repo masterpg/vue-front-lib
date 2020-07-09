@@ -26,7 +26,7 @@ interface APIConfig {
 
 interface StorageConfig {
   usersDir: string
-  siteDir: string
+  docsDir: string
 }
 
 //========================================================================

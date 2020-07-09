@@ -97,7 +97,7 @@ export type ToRawTimestampEntity<T> = OmitEntityTimestamp<T> & RawTimestampEntit
 
 export interface AppConfigResponse {
   usersDir: string
-  siteDir: string
+  docsDir: string
 }
 
 //--------------------------------------------------

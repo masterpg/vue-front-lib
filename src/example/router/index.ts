@@ -15,6 +15,7 @@ function initRouter() {
     mode: 'history',
     routes: [
       error404Route,
+      adminRoute.docs,
       demoRoute.abc,
       demoRoute.shop,
       demoRoute.userStorage,
@@ -26,6 +27,47 @@ function initRouter() {
     ],
   })
   setRouter(router)
+}
+
+/**
+ * ストレージページ用ルーティングの基底クラスです。
+ * サブクラスでは`basePath`と`component`を実装してください。
+ * これとは逆に`path`と`move`を実装する必要はありません。
+ */
+abstract class StorageRoute<PARENT extends ViewRoute = any> extends ViewRoute<PARENT> {
+  abstract readonly basePath: string
+
+  get path(): string {
+    // https://github.com/pillarjs/path-to-regexp/tree/v1.7.0#zero-or-more
+    return `${this.basePath}/:nodePath*`
+  }
+
+  move(nodePath: string): boolean {
+    const currentRoutePath = removeEndSlash(router.currentRoute.path)
+    const nextPath = removeEndSlash(_path.join(this.basePath, nodePath))
+    if (currentRoutePath === nextPath) {
+      return false
+    }
+
+    router.push(nextPath)
+    return true
+  }
+
+  /**
+   * 現在ルートのURLからノードパスを取得します。
+   */
+  getNodePath(): string {
+    if (!this.isCurrentRoute) return ''
+    return router.currentRoute.params.nodePath || ''
+  }
+
+  /**
+   * 現在ルートが本ルートか否かを示します。
+   */
+  get isCurrentRoute(): boolean {
+    const reg = new RegExp(`^${this.basePath}/?`)
+    return reg.test(router.currentRoute.path)
+  }
 }
 
 //--------------------------------------------------
@@ -43,43 +85,34 @@ const error404Route = new (class Error404Route extends ViewRoute {
 })()
 
 //--------------------------------------------------
+//  AdminRoute
+//--------------------------------------------------
+
+const adminRoute = new (class AdminRoute extends ViewRoute {
+  get path() {
+    return '/views/admin'
+  }
+
+  get component() {
+    return undefined
+  }
+
+  docs = new (class extends StorageRoute<AdminRoute> {
+    get basePath() {
+      return `${this.parent!.path}/docs`
+    }
+
+    get component() {
+      return () => import(/* webpackChunkName: "views/admin/docs" */ '@/example/views/admin/docs')
+    }
+  })(this)
+})()
+
+//--------------------------------------------------
 //  DemoRoute
 //--------------------------------------------------
 
-abstract class StorageRoute extends ViewRoute<DemoRoute> {
-  abstract readonly basePath: string
-
-  get path() {
-    // https://github.com/pillarjs/path-to-regexp/tree/v1.7.0#zero-or-more
-    return `${this.basePath}/:nodePath*`
-  }
-
-  move(nodePath: string): boolean {
-    const currentRoutePath = removeEndSlash(router.currentRoute.path)
-    const nextPath = removeEndSlash(_path.join(this.basePath, nodePath))
-    if (currentRoutePath === nextPath) {
-      return false
-    }
-
-    router.push(nextPath)
-    return true
-  }
-
-  getNodePath(): string {
-    if (!this.isCurrentRoute) return ''
-    return router.currentRoute.params.nodePath || ''
-  }
-
-  /**
-   * 現在ルートが本ルートか否かを示します。
-   */
-  get isCurrentRoute(): boolean {
-    const reg = new RegExp(`^${this.basePath}/?`)
-    return reg.test(router.currentRoute.path)
-  }
-}
-
-class UserStorageRoute extends StorageRoute {
+class UserStorageRoute extends StorageRoute<DemoRoute> {
   get basePath() {
     return `${this.parent!.path}/storage/user`
   }
@@ -89,7 +122,7 @@ class UserStorageRoute extends StorageRoute {
   }
 }
 
-class AppStorageRoute extends StorageRoute {
+class AppStorageRoute extends StorageRoute<DemoRoute> {
   get basePath() {
     return `${this.parent!.path}/storage/app`
   }
@@ -219,9 +252,8 @@ const componentsRoute = new (class ComponentsRoute extends ViewRoute {
 class AppRouter extends BaseRouter {
   views = {
     error404: error404Route,
-
+    admin: adminRoute,
     demo: demoRoute,
-
     components: componentsRoute,
   }
 }

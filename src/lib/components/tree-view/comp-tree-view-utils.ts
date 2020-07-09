@@ -8,7 +8,7 @@ export namespace CompTreeViewUtils {
    * ノードを作成します。
    * @param nodeData
    */
-  export function newNode(nodeData: CompTreeNodeData): CompTreeNode {
+  export function newNode<N extends CompTreeNode = CompTreeNode>(nodeData: CompTreeNodeData): N {
     // プログラム的にコンポーネントのインスタンスを生成
     // https://css-tricks.com/creating-vue-js-component-instances-programmatically/
     const NodeClass = Vue.extend(nodeData.nodeClass || CompTreeNode)
@@ -22,9 +22,9 @@ export namespace CompTreeViewUtils {
    * 指定されたノードの子孫を配列で取得します。
    * @param node
    */
-  export function getDescendants(node: CompTreeNode): CompTreeNode[] {
-    const getChildren = (node: CompTreeNode) => {
-      const result: CompTreeNode[] = []
+  export function getDescendants<N extends CompTreeNode = CompTreeNode>(node: CompTreeNode): N[] {
+    const getChildren = (node: N) => {
+      const result: N[] = []
       for (const child of (node as any).children) {
         result.push(child)
         result.push(...getChildren(child))
@@ -32,7 +32,7 @@ export namespace CompTreeViewUtils {
       return result
     }
 
-    const result: CompTreeNode[] = []
+    const result: N[] = []
     for (const child of (node as any).children) {
       result.push(child)
       result.push(...getChildren(child))
@@ -44,8 +44,8 @@ export namespace CompTreeViewUtils {
    * 指定されたノードの子孫をマップで取得します。
    * @param node
    */
-  export function getDescendantDict(node: CompTreeNode): { [value: string]: CompTreeNode } {
-    const getChildren = (node: CompTreeNode, result: { [value: string]: CompTreeNode }) => {
+  export function getDescendantDict<N extends CompTreeNode = CompTreeNode>(node: CompTreeNode): { [value: string]: N } {
+    const getChildren = (node: N, result: { [value: string]: N }) => {
       for (const child of (node as any).children) {
         result[child.value] = child
         getChildren(child, result)
@@ -53,7 +53,7 @@ export namespace CompTreeViewUtils {
       return result
     }
 
-    const result: { [value: string]: CompTreeNode } = {}
+    const result: { [value: string]: N } = {}
     for (const child of (node as any).children) {
       result[child.value] = child
       getChildren(child, result)
@@ -65,9 +65,9 @@ export namespace CompTreeViewUtils {
    * ノードが追加された旨を通知するイベントを発火します。
    * @param node
    */
-  export function dispatchNodeAdded(node: CompTreeNode): void {
+  export function dispatchNodeAdd(node: CompTreeNode): void {
     node.$el.dispatchEvent(
-      new CustomEvent('node-added', {
+      new CustomEvent('node-add', {
         bubbles: true,
         cancelable: true,
         composed: true,
@@ -80,9 +80,9 @@ export namespace CompTreeViewUtils {
    * @param parent
    * @param child
    */
-  export function dispatchNodeBeforeRemoved(parent: CompTreeView | CompTreeNode, child: CompTreeNode): void {
+  export function dispatchBeforeNodeRemove(parent: CompTreeView | CompTreeNode, child: CompTreeNode): void {
     parent.$el.dispatchEvent(
-      new CustomEvent('node-before-removed', {
+      new CustomEvent('before-node-remove', {
         bubbles: true,
         cancelable: true,
         composed: true,
@@ -96,9 +96,9 @@ export namespace CompTreeViewUtils {
    * @param parent
    * @param child
    */
-  export function dispatchNodeRemoved(parent: CompTreeView | CompTreeNode, child: CompTreeNode): void {
+  export function dispatchNodeRemove(parent: CompTreeView | CompTreeNode, child: CompTreeNode): void {
     parent.$el.dispatchEvent(
-      new CustomEvent('node-removed', {
+      new CustomEvent('node-remove', {
         bubbles: true,
         cancelable: true,
         composed: true,
@@ -111,9 +111,23 @@ export namespace CompTreeViewUtils {
    * ノードの選択が変更された旨を通知するイベントを発火します。
    * @param target
    */
-  export function dispatchSelectedChanged(target: CompTreeNode): void {
+  export function dispatchSelectChange(target: CompTreeNode): void {
     target.$el.dispatchEvent(
-      new CustomEvent('selected-changed', {
+      new CustomEvent('select-change', {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+      })
+    )
+  }
+
+  /**
+   * ノードの選択された旨を通知するイベントを発火します。
+   * @param target
+   */
+  export function dispatchSelect(target: CompTreeNode): void {
+    target.$el.dispatchEvent(
+      new CustomEvent('select', {
         bubbles: true,
         cancelable: true,
         composed: true,
@@ -132,9 +146,9 @@ export namespace CompTreeViewUtils {
    * @param target
    * @param detail
    */
-  export function dispatchNodePropertyChanged(target: CompTreeNode, detail: NodePropertyChangeDetail): void {
+  export function dispatchNodePropertyChange(target: CompTreeNode, detail: NodePropertyChangeDetail): void {
     target.$el.dispatchEvent(
-      new CustomEvent('node-property-changed', {
+      new CustomEvent('node-property-change', {
         bubbles: true,
         cancelable: true,
         composed: true,

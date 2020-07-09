@@ -1,7 +1,7 @@
 <style lang="sass" scoped>
 @import 'src/example/styles/app.variables'
 
-.storage-path-breadcrumb-main
+.storage-dir-path-breadcrumb-main
   @extend %layout-horizontal
   @extend %layout-wrap
   margin: 16px
@@ -13,8 +13,8 @@
 </style>
 
 <template>
-  <div class="storage-path-breadcrumb-main">
-    <div v-for="pathBlock of m_pathBlocks" :key="pathBlock.label" class="path-block">
+  <div class="storage-dir-path-breadcrumb-main">
+    <div v-for="pathBlock of m_pathBlocks" :key="pathBlock.path" class="path-block">
       <span v-if="!pathBlock.last" class="path-block" @click="m_pathBlockOnClick(pathBlock.path)">{{ pathBlock.name }}</span>
       <span v-else>{{ pathBlock.name }}</span>
       <span v-show="!pathBlock.last" class="app-mx-8">/</span>
@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, Resizable } from '@/lib'
+import { BaseComponent, Resizable, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { StorageTypeMixin } from './base'
 import { mixins } from 'vue-class-component'
@@ -35,13 +35,29 @@ interface PathBlock {
 }
 
 @Component
-export default class StoragePathBreadcrumb extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
+export default class StorageDirPathBreadcrumb extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
   /**
    * パスのパンくずのブロック配列です。
    */
   private get m_pathBlocks(): PathBlock[] {
+    if (!this.rootTreeNode) return []
+    if (!this.selectedTreeNode) return []
+
     const result: PathBlock[] = []
-    const pathBlocks = this.treeStore.selectedNode.value.split('/').filter(item => !!item)
+
+    let dirPath = ''
+    switch (this.selectedTreeNode.nodeType) {
+      case StorageNodeType.Dir: {
+        dirPath = this.selectedTreeNode.path
+        break
+      }
+      case StorageNodeType.File: {
+        dirPath = this.selectedTreeNode.parent!.value
+        break
+      }
+    }
+
+    const pathBlocks = dirPath.split('/').filter(item => !!item)
 
     for (let i = 0; i < pathBlocks.length; i++) {
       const pathBlock = pathBlocks.slice(0, i + 1)
@@ -52,10 +68,9 @@ export default class StoragePathBreadcrumb extends mixins(BaseComponent, Resizab
       })
     }
 
-    const rootNode = this.treeStore.rootNode
     result.unshift({
-      name: rootNode.label,
-      path: rootNode.value,
+      name: this.rootTreeNode.name,
+      path: this.rootTreeNode.path,
       last: result.length <= 0,
     })
 
@@ -67,7 +82,7 @@ export default class StoragePathBreadcrumb extends mixins(BaseComponent, Resizab
    * @param nodePath
    */
   protected m_pathBlockOnClick(nodePath: string) {
-    this.$emit('selected', nodePath)
+    this.$emit('select', nodePath)
   }
 }
 </script>

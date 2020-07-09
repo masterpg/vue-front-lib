@@ -1,5 +1,4 @@
 import * as path from 'path'
-import * as shortid from 'shortid'
 import { StorageNode, StorageNodeShareSettings, StorageNodeType, StorageState, StorageStore } from '@/lib'
 import { cloneTestStorageNode, newTestStorageDirNode, newTestStorageFileNode } from '../../../../../helpers/common/storage'
 import { Component } from 'vue-property-decorator'
@@ -7,6 +6,7 @@ import { StorageStoreImpl } from '../../../../../../src/lib/logic/store/storage'
 import { TestStore } from '../../../../../helpers/common/store'
 import { cloneDeep } from 'lodash'
 import dayjs from 'dayjs'
+import { generateFirestoreId } from '../../../../../helpers/common/base'
 import { initLibTest } from '../../../../../helpers/lib/init'
 import { removeStartDirChars } from 'web-base-lib'
 import { sortStorageNodes } from '../../../../../../src/lib/logic/base'
@@ -466,7 +466,7 @@ describe('setList', () => {
     })
 
     let actual!: Error
-    const notExistsId = shortid.generate()
+    const notExistsId = generateFirestoreId()
     try {
       storageStore.setList([{ id: notExistsId, name: `dX`, dir: ``, path: `dX` }])
     } catch (err) {

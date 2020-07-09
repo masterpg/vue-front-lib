@@ -152,7 +152,7 @@ function getVueInlineComponentData(state: StateInline): VueInlineComponentData |
 
 /**
  * 指定された入力値から @Vue.MyComp({…}) のボディレベルの構造を取得します。
- * NOTE: 単体テストのためexportしています。
+ * NOTE: 単体テスト用にexport
  * @param block
  */
 function getMarkdownItVueComponentBodyData(block: string): { fullMatch: string; component: string; props: string; index: number } | undefined {
@@ -171,7 +171,7 @@ function getMarkdownItVueComponentBodyData(block: string): { fullMatch: string; 
 
 /**
  * 指定された値を解析してプロパティに変換します。
- * NOTE: 単体テストのためexportしています。
+ * NOTE: 単体テスト用にexport
  * @param rawProps
  *   例: `person: "{ "name": "Taro", "age": 18 }", flag: true`
  */

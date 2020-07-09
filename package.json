@@ -50,7 +50,6 @@
     "quasar": "^1.9.16",
     "reflect-metadata": "^0.1.13",
     "register-service-worker": "^1.7.1",
-    "shortid": "^2.2.15",
     "unfetch": "^4.1.0",
     "urijs": "^1.19.2",
     "validator": "^12.1.0",

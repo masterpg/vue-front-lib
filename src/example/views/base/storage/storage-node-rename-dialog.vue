@@ -56,7 +56,7 @@ import * as path from 'path'
 import { BaseDialog, CompAlertDialog, NoCache } from '@/lib'
 import { QDialog, QInput } from 'quasar'
 import { Component } from 'vue-property-decorator'
-import StorageTreeNode from './storage-tree-node.vue'
+import { StorageTreeNode } from './base'
 
 @Component({ components: { CompAlertDialog } })
 export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode, string> {
@@ -89,7 +89,6 @@ export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode,
 
   private get m_parentPath(): string {
     if (!this.m_targetNode) return ''
-
     const storageNode = this.m_targetNode.getRootNode()
     return path.join(storageNode.label, this.m_targetNode.parent!.value, '/')
   }
@@ -126,7 +125,7 @@ export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode,
   //----------------------------------------------------------------------
 
   open(targetNode: StorageTreeNode): Promise<string> {
-    this.m_newName = targetNode.label
+    this.m_newName = targetNode.name
     return this.openProcess(targetNode)
   }
 
@@ -146,7 +145,7 @@ export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode,
     if (!this.m_validate()) return
 
     // 入力値が元のままの場合、キャンセルとして閉じる
-    if (this.m_targetNode!.label === this.m_newName) {
+    if (this.m_targetNode!.name === this.m_newName) {
       this.close('')
     }
     // 上記以外は入力値を結果にして閉じる
@@ -182,7 +181,7 @@ export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode,
     }
 
     // リネームされているかチェック(入力値が変更されていること)
-    if (this.m_newName === targetNode.label) {
+    if (this.m_newName === targetNode.name) {
       this.m_errorMessage = String(this.$t('storage.rename.renamingNodeNameIsNotChanged'))
       return false
     }
@@ -190,7 +189,7 @@ export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode,
     // リネームしようとする名前のノードが存在しないことをチェック
     for (const siblingNode of targetNode.parent!.children) {
       if (siblingNode === targetNode) continue
-      if (siblingNode.label === this.m_newName) {
+      if (siblingNode.name === this.m_newName) {
         this.m_errorMessage = String(this.$t('storage.nodeAlreadyExists', { nodeName: this.m_newName, nodeType: targetNode.nodeTypeName }))
         return false
       }

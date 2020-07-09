@@ -91,77 +91,12 @@
           <span ref="itemLabel">{{ label }}</span>
         </div>
         <!-- コンテキストメニュー -->
-        <q-menu touch-position context-menu>
-          <!-- ルートノード用メニュー -->
-          <q-list v-show="m_isRoot" dense style="min-width: 100px">
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchCreateDirSelected()">
-                {{ $t('common.createSomehow', { somehow: $tc('common.folder', 1) }) }}
-              </q-item-section>
-            </q-item>
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchFilesUploadSelected()">
-                {{ $t('common.uploadSomehow', { somehow: $tc('common.file', 2) }) }}
-              </q-item-section>
-            </q-item>
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchDirUploadSelected()">
-                {{ $t('common.uploadSomehow', { somehow: $tc('common.folder', 1) }) }}
-              </q-item-section>
-            </q-item>
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchReloadSelected()">{{ $t('common.reload') }}</q-item-section>
-            </q-item>
-          </q-list>
-          <!-- フォルダ用メニュー -->
-          <q-list v-show="m_isDir" dense style="min-width: 100px">
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchCreateDirSelected()">
-                {{ $t('common.createSomehow', { somehow: $tc('common.folder', 1) }) }}
-              </q-item-section>
-            </q-item>
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchFilesUploadSelected()">
-                {{ $t('common.uploadSomehow', { somehow: $tc('common.file', 2) }) }}
-              </q-item-section>
-            </q-item>
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchDirUploadSelected()">
-                {{ $t('common.uploadSomehow', { somehow: $tc('common.folder', 1) }) }}
-              </q-item-section>
-            </q-item>
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchMoveSelected()">{{ $t('common.move') }}</q-item-section>
-            </q-item>
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchRenameSelected()">{{ $t('common.rename') }}</q-item-section>
-            </q-item>
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchShareSelected()">{{ $t('common.share') }}</q-item-section>
-            </q-item>
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchDeleteSelected()">{{ $t('common.delete') }}</q-item-section>
-            </q-item>
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchReloadSelected()">{{ $t('common.reload') }}</q-item-section>
-            </q-item>
-          </q-list>
-          <!-- ファイル用メニュー -->
-          <q-list v-show="m_isFile" dense style="min-width: 100px">
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchMoveSelected()">{{ $t('common.move') }}</q-item-section>
-            </q-item>
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchRenameSelected()">{{ $t('common.rename') }}</q-item-section>
-            </q-item>
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchShareSelected()">{{ $t('common.share') }}</q-item-section>
-            </q-item>
-            <q-item v-close-popup clickable>
-              <q-item-section @click="m_dispatchDeleteSelected()">{{ $t('common.delete') }}</q-item-section>
-            </q-item>
-          </q-list>
-        </q-menu>
+        <storage-node-context-menu
+          :node="{ path: value, nodeType }"
+          :is-root="m_isRoot"
+          :disabled="disableContextMenu"
+          @select="m_contextMenuOnSelect"
+        />
       </div>
     </div>
 
@@ -171,13 +106,21 @@
 </template>
 
 <script lang="ts">
+import * as path from 'path'
 import { CompTreeNode, CompTreeNodeEditData, NoCache, RequiredStorageNodeShareSettings, StorageNodeShareSettings, StorageNodeType } from '@/lib'
+import { StorageNodeContextMenuSelectedEvent, StorageTreeNode, StorageTreeNodeData } from './base'
 import { Component } from 'vue-property-decorator'
 import { Dayjs } from 'dayjs'
-import { StorageTreeNodeData } from './base'
+import StorageNodeContextMenu from './storage-node-context-menu.vue'
+import { removeStartDirChars } from 'web-base-lib'
 
-@Component
-export default class StorageTreeNode extends CompTreeNode {
+// @ts-ignore `CompTreeNode<StorageTreeNode>`によって発生するエラーを回避
+@Component({
+  components: {
+    StorageNodeContextMenu,
+  },
+})
+export default class StorageTreeNodeClass extends CompTreeNode<StorageTreeNode> implements StorageTreeNode {
   //----------------------------------------------------------------------
   //
   //  Properties
@@ -185,20 +128,23 @@ export default class StorageTreeNode extends CompTreeNode {
   //----------------------------------------------------------------------
 
   get extraEventNames(): string[] {
-    return [
-      'reload-selected',
-      'create-dir-selected',
-      'files-upload-selected',
-      'dir-upload-selected',
-      'move-selected',
-      'rename-selected',
-      'delete-selected',
-      'share-selected',
-    ]
+    return ['context-menu-select']
   }
 
   get id(): string {
     return this.nodeData.id
+  }
+
+  get name(): string {
+    return this.nodeData.label
+  }
+
+  get dir(): string {
+    return removeStartDirChars(path.dirname(this.nodeData.value))
+  }
+
+  get path(): string {
+    return this.nodeData.value
   }
 
   get nodeType(): StorageNodeType {
@@ -235,6 +181,10 @@ export default class StorageTreeNode extends CompTreeNode {
 
   get updatedAt(): Dayjs {
     return this.nodeData.updatedAt
+  }
+
+  get disableContextMenu(): boolean {
+    return this.nodeData.disableContextMenu!
   }
 
   private m_inheritedShare: RequiredStorageNodeShareSettings = { isPublic: false, readUIds: [], writeUIds: [] }
@@ -282,7 +232,12 @@ export default class StorageTreeNode extends CompTreeNode {
   //
   //----------------------------------------------------------------------
 
-  protected setNodeDataPlaceholder(editData: CompTreeNodeEditData<StorageTreeNodeData>): void {
+  protected init_sub(nodeData: StorageTreeNodeData): void {
+    // 任意項目は値が設定されていないとリアクティブにならないのでここで初期化
+    this.$set(nodeData, 'disableContextMenu', Boolean(nodeData.disableContextMenu))
+  }
+
+  protected setNodeData_sub(editData: CompTreeNodeEditData<StorageTreeNodeData>): void {
     if (typeof editData.id === 'string') {
       this.nodeData.id = editData.id
     }
@@ -306,6 +261,9 @@ export default class StorageTreeNode extends CompTreeNode {
     if (editData.updatedAt) {
       this.nodeData.updatedAt = editData.updatedAt
     }
+    if (typeof editData.disableContextMenu === 'boolean') {
+      this.nodeData.disableContextMenu = editData.disableContextMenu
+    }
   }
 
   /**
@@ -316,7 +274,7 @@ export default class StorageTreeNode extends CompTreeNode {
       return this.share.isPublic
     } else {
       if (this.parent) {
-        const parent = this.parent as StorageTreeNode
+        const parent = this.parent as this
         if (typeof parent.share.isPublic === 'boolean') {
           return parent.share.isPublic
         } else {
@@ -336,7 +294,7 @@ export default class StorageTreeNode extends CompTreeNode {
       return this.share.readUIds
     } else {
       if (this.parent) {
-        const parent = this.parent as StorageTreeNode
+        const parent = this.parent as this
         if (parent.share.readUIds) {
           return parent.share.readUIds
         } else {
@@ -348,36 +306,12 @@ export default class StorageTreeNode extends CompTreeNode {
     }
   }
 
-  private m_dispatchCreateDirSelected(): void {
-    this.dispatchExtraEvent('create-dir-selected')
-  }
-
-  private m_dispatchFilesUploadSelected(): void {
-    this.dispatchExtraEvent('files-upload-selected')
-  }
-
-  private m_dispatchDirUploadSelected(): void {
-    this.dispatchExtraEvent('dir-upload-selected')
-  }
-
-  private m_dispatchMoveSelected(): void {
-    this.dispatchExtraEvent('move-selected')
-  }
-
-  private m_dispatchRenameSelected(): void {
-    this.dispatchExtraEvent('rename-selected')
-  }
-
-  private m_dispatchDeleteSelected(): void {
-    this.dispatchExtraEvent('delete-selected')
-  }
-
-  private m_dispatchShareSelected(): void {
-    this.dispatchExtraEvent('share-selected')
-  }
-
-  private m_dispatchReloadSelected(): void {
-    this.dispatchExtraEvent('reload-selected')
+  /**
+   * コンテキストメニューでメニューアイテムが選択された際のリスナです。
+   * @param e
+   */
+  private m_contextMenuOnSelect(e: StorageNodeContextMenuSelectedEvent) {
+    this.dispatchExtraEvent('context-menu-select', e)
   }
 
   //----------------------------------------------------------------------

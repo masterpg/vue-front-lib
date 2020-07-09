@@ -1,14 +1,11 @@
-import * as path from 'path'
-import { RequiredStorageNodeShareSettings, StorageNode } from '../../types'
-import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from './download'
-import { BaseLogic } from '../../base'
+import { RequiredStorageNodeShareSettings, StorageNode } from '../../../types'
+import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from '../download'
+import { BaseLogic } from '../../../base'
 import { Component } from 'vue-property-decorator'
-import { StorageLogic } from './logic'
-import { StorageNodeShareSettingsInput } from '../../api'
-import { StorageUploader } from './upload'
-import { StorageUrlUploadManager } from './upload-url'
-import { config } from '@/lib/config'
-import { store } from '../../store'
+import { StorageLogic } from './base'
+import { StorageNodeShareSettingsInput } from '../../../api'
+import { StorageUploader } from '../upload'
+import { StorageUrlUploadManager } from '../upload-url'
 
 //========================================================================
 //
@@ -17,7 +14,7 @@ import { store } from '../../store'
 //========================================================================
 
 @Component
-class UserStorageLogic extends BaseLogic implements StorageLogic {
+class BasePathStorageLogic extends BaseLogic implements StorageLogic {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -26,6 +23,20 @@ class UserStorageLogic extends BaseLogic implements StorageLogic {
 
   init(appStorage: StorageLogic) {
     this.appStorage = appStorage
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //----------------------------------------------------------------------
+
+  get basePath(): string {
+    throw new Error('Not implemented.')
+  }
+
+  get nodes(): StorageNode[] {
+    return StorageLogic.toBasePathNodes(this.basePath, this.appStorage.getDirDescendants(this.basePath))
   }
 
   //----------------------------------------------------------------------
@@ -41,14 +52,6 @@ class UserStorageLogic extends BaseLogic implements StorageLogic {
   //  Methods
   //
   //----------------------------------------------------------------------
-
-  get basePath(): string {
-    return path.join(config.storage.usersDir, store.user.id)
-  }
-
-  get nodes(): StorageNode[] {
-    return StorageLogic.toBasePathNodes(this.basePath, this.appStorage.getDirDescendants(this.basePath))
-  }
 
   getNode(key: { id?: string; path?: string }): StorageNode | undefined {
     if (key.path) {
@@ -202,4 +205,4 @@ class UserStorageLogic extends BaseLogic implements StorageLogic {
 //
 //========================================================================
 
-export { UserStorageLogic }
+export { BasePathStorageLogic }

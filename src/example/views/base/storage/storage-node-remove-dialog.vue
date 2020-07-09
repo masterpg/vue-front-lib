@@ -39,7 +39,7 @@
 import { BaseDialog, NoCache, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import StorageTreeNode from './storage-tree-node.vue'
+import { StorageTreeNode } from './base'
 
 @Component
 export default class StorageNodeRemoveDialog extends BaseDialog<StorageTreeNode[], boolean> {
@@ -69,7 +69,7 @@ export default class StorageNodeRemoveDialog extends BaseDialog<StorageTreeNode[
 
     // ダイアログ引数で渡されたノードが1つの場合
     if (this.m_removingNodes.length === 1) {
-      return String(this.$t('storage.delete.deleteTargetQ', { target: this.m_removingNodes[0].label }))
+      return String(this.$t('storage.delete.deleteTargetQ', { target: this.m_removingNodes[0].name }))
     }
     // ダイアログ引数で渡されたノードが複数の場合
     else {

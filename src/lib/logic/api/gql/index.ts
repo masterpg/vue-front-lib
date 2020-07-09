@@ -56,7 +56,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
         query GetAppConfig {
           appConfig {
             usersDir
-            siteDir
+            docsDir
           }
         }
       `,

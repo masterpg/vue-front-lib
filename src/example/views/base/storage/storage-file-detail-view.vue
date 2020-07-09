@@ -112,7 +112,7 @@ import { removeBothEndsSlash } from 'web-base-lib'
 @Component({
   components: { CompStorageImg },
 })
-export default class StorageNodeDetailView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
+export default class StorageFileDetailView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -125,13 +125,23 @@ export default class StorageNodeDetailView extends mixins(BaseComponent, Resizab
 
   //----------------------------------------------------------------------
   //
+  //  Properties
+  //
+  //----------------------------------------------------------------------
+
+  private m_fileNode: StorageNode | null = null
+
+  get fileNode(): StorageNode | null {
+    return this.m_fileNode
+  }
+
+  //----------------------------------------------------------------------
+  //
   //  Variables
   //
   //----------------------------------------------------------------------
 
-  private m_nodePath: string | null = null
-
-  private m_fileNode: StorageNode | null = null
+  private m_filePath: string | null = null
 
   private get m_isImage(): boolean {
     if (!this.m_fileNode) return false
@@ -233,23 +243,23 @@ export default class StorageNodeDetailView extends mixins(BaseComponent, Resizab
   //----------------------------------------------------------------------
 
   /**
-   * ビューに表示するノードのパスを設定します。
-   * @param nodePath
+   * ビューに表示するファイルのパスを設定します。
+   * @param filePath
    */
-  setNodePath(nodePath: string): void {
+  setFilePath(filePath: string): void {
     const clear = () => {
       this.m_fileNode = null
       this.m_textData = ''
       ;(this.m_downloadLinear.$el as HTMLElement).style.opacity = '0'
     }
 
-    nodePath = removeBothEndsSlash(nodePath)
-    if (this.m_nodePath !== nodePath) {
+    filePath = removeBothEndsSlash(filePath)
+    if (this.m_filePath !== filePath) {
       clear()
     }
 
-    this.m_nodePath = nodePath
-    this.m_fileNode = this.storageLogic.getNode({ path: nodePath })!
+    this.m_filePath = filePath
+    this.m_fileNode = this.storageLogic.getNode({ path: filePath })!
 
     if (this.m_isText) {
       this.m_loadTextFile()

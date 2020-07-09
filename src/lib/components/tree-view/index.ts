@@ -7,6 +7,7 @@ export {
   CompTreeCheckboxNodeData,
   CompTreeNodeData,
   CompTreeNodeEditData,
+  CompTreeViewEvent,
   CompTreeViewLazyLoadDoneFunc,
   CompTreeViewLazyLoadEvent,
   CompTreeViewLazyLoadStatus,

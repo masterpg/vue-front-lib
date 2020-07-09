@@ -51,7 +51,12 @@
             </template>
           </q-input>
           <div class="app-mb-10">{{ $t('storage.move.selectDestPrompt') }}</div>
-          <comp-tree-view ref="treeView" class="tree-view" @selected="m_treeViewOnSelected($event)" @lazy-load="m_treeViewOnLazyLoad($event)" />
+          <comp-tree-view
+            ref="treeView"
+            class="tree-view"
+            @select-change="m_treeViewOnSelectChange($event)"
+            @lazy-load="m_treeViewOnLazyLoad($event)"
+          />
         </q-card-section>
 
         <!-- エラーメッセージ -->
@@ -74,11 +79,10 @@
 </template>
 
 <script lang="ts">
-import { BaseDialog, CompAlertDialog, CompTreeNode, CompTreeView, CompTreeViewLazyLoadEvent, NoCache, StorageNodeType } from '@/lib'
-import { StorageTypeMixin, treeSortFunc } from './base'
+import { BaseDialog, CompAlertDialog, CompTreeView, CompTreeViewLazyLoadEvent, NoCache, StorageNodeType } from '@/lib'
+import { StorageTreeNode, StorageTreeNodeData, StorageTypeMixin, nodeToTreeData, treeSortFunc } from './base'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import StorageTreeNode from './storage-tree-node.vue'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
 
@@ -121,7 +125,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
 
   private get m_movingNodeName(): string {
     if (this.m_movingNodes.length === 1) {
-      return this.m_movingNodes[0].label
+      return this.m_movingNodes[0].name
     }
     return ''
   }
@@ -140,15 +144,15 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
 
   private m_errorMessage = ''
 
-  private m_toDirNode: CompTreeNode | null = null
+  private m_toDirNode: StorageTreeNode | null = null
 
   //--------------------------------------------------
   //  Elements
   //--------------------------------------------------
 
   @NoCache
-  get m_treeView(): CompTreeView {
-    return this.$refs.treeView as CompTreeView
+  get m_treeView(): CompTreeView<StorageTreeNode> {
+    return this.$refs.treeView as CompTreeView<StorageTreeNode>
   }
 
   @NoCache
@@ -201,20 +205,20 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
     for (const movingNode of this.m_movingNodes) {
       let alreadyExists = false
       for (const siblingNode of this.m_toDirNode.children) {
-        if (siblingNode.label === movingNode.label) {
+        if (siblingNode.name === movingNode.name) {
           alreadyExists = true
         }
       }
       if (alreadyExists) {
         const confirmed = await this.m_alertDialog.open({
           type: 'confirm',
-          message: String(this.$t('storage.move.alreadyExistsQ', { nodeName: movingNode.label })),
+          message: String(this.$t('storage.move.alreadyExistsQ', { nodeName: movingNode.name })),
         })
         if (!confirmed) return
       }
     }
 
-    this.close(this.m_toDirNode.value)
+    this.close(this.m_toDirNode.path)
   }
 
   private m_clear(): void {
@@ -223,22 +227,24 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
   }
 
   private async m_buildTreeView(): Promise<void> {
+    if (!this.rootTreeNode) {
+      throw new Error(`"rootTreeNode" is not supposed to be the "${typeof this.rootTreeNode}".`)
+    }
+
+    // 現在の親ディレクトリがルートノードの場合、ルートノードを選択できないよう設定
+    const unselectable = this.m_movingNodesParentPath === this.rootTreeNode.path
     // ルートノードの追加
-    const srcRootTreeNode = this.treeStore.rootNode
     const rootTreeNode = this.m_treeView.addNode({
-      label: srcRootTreeNode.label,
-      value: srcRootTreeNode.value,
-      icon: srcRootTreeNode.icon,
+      ...nodeToTreeData(this.rootTreeNode),
       opened: true,
-      // 現在の親ディレクトリがルートノードの場合、ルートノードを選択できないよう設定
-      unselectable: this.m_movingNodesParentPath === srcRootTreeNode.value,
-      sortFunc: treeSortFunc,
-    })
+      unselectable,
+      disableContextMenu: true,
+    } as StorageTreeNodeData)
 
     rootTreeNode.lazyLoadStatus = 'loading'
 
     // サーバーから子ノードを読み込む
-    await this.m_pullChildren(rootTreeNode.value)
+    await this.m_pullChildren(rootTreeNode.path)
 
     rootTreeNode.lazyLoadStatus = 'loaded'
   }
@@ -259,19 +265,17 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
       // ディレクトリノード以外はツリービューに追加しない
       if (node.nodeType !== StorageNodeType.Dir) continue
       // 移動ノードはツリービューに追加しない
-      if (this.m_movingNodes.some(movingNode => movingNode.value === node.path)) continue
+      if (this.m_movingNodes.some(movingNode => movingNode.path === node.path)) continue
       // 現在の親ディレクトリは選択できないよう設定
       const unselectable = node.path === this.m_movingNodesParentPath
       // ツリービューにディレクトリノードを追加
       this.m_treeView.addNode(
         {
-          label: node.name,
-          value: node.path,
-          icon: 'folder',
+          ...nodeToTreeData(node),
           lazy: true,
           unselectable,
-          sortFunc: treeSortFunc,
-        },
+          disableContextMenu: true,
+        } as StorageTreeNodeData,
         {
           parent: node.dir,
         }
@@ -289,7 +293,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
    * ツリービューでノードが選択された際のリスナです。
    * @param node
    */
-  private m_treeViewOnSelected(node: CompTreeNode) {
+  private m_treeViewOnSelectChange(node: StorageTreeNode) {
     this.m_errorMessage = ''
     this.m_toDirNode = node
   }
@@ -299,7 +303,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
    * @param e
    */
   private async m_treeViewOnLazyLoad(e: CompTreeViewLazyLoadEvent<StorageTreeNode>) {
-    await this.m_pullChildren(e.node.value)
+    await this.m_pullChildren(e.node.path)
     e.done()
     e.node.open()
   }

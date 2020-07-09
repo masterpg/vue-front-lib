@@ -13,23 +13,32 @@
     ref="childContainer"
     class="child-container"
     :style="{ minWidth: m_minWidth + 'px' }"
-    @opened-changed="m_allNodesOnOpenedChanged"
-    @node-added="m_nodeAdded"
-    @node-before-removed="m_nodeBeforeRemoved"
-    @node-removed="m_nodeRemoved"
-    @selected-changed="m_allNodesOnSelectedChanged"
-    @node-property-changed="m_allNodesOnNodePropertyChanged"
+    @open-change="m_allNodesOnOpenChange"
+    @node-add="m_onNodeAdd"
+    @before-node-remove="m_onBeforeNodeRemove"
+    @node-remove="m_onNodeRemove"
+    @select-change="m_allNodesOnSelectChange"
+    @select="m_allNodesOnSelectDebounce"
+    @node-property-change="m_allNodesOnNodePropertyChange"
     @lazy-load="m_allNodesOnLazyLoad"
   ></div>
 </template>
 
 <script lang="ts">
 import { BaseComponent, NoCache } from '@/lib/base'
-import { ChildrenSortFunc, CompTreeNodeData, CompTreeNodeParent, CompTreeViewLazyLoadDoneFunc, CompTreeViewLazyLoadEvent } from './types'
+import {
+  ChildrenSortFunc,
+  CompTreeNodeData,
+  CompTreeNodeParent,
+  CompTreeViewEvent,
+  CompTreeViewLazyLoadDoneFunc,
+  CompTreeViewLazyLoadEvent,
+} from './types'
 import CompTreeNode from './comp-tree-node.vue'
 import { CompTreeViewUtils } from './comp-tree-view-utils'
 import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
+import debounce from 'lodash/debounce'
 
 /**
  * ツリーコンポーネントです。
@@ -47,32 +56,42 @@ import Vue from 'vue'
  * `--comp-tree-padding` | ツリービューのpaddingです | `10px`
  */
 @Component
-export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> extends BaseComponent implements CompTreeNodeParent {
+export default class CompTreeView<FAMILY_NODE extends CompTreeNode = CompTreeNode> extends BaseComponent implements CompTreeNodeParent {
+  //----------------------------------------------------------------------
+  //
+  //  Lifecycle hooks
+  //
+  //----------------------------------------------------------------------
+
+  created() {
+    this.m_allNodesOnSelectDebounce = debounce(this.m_allNodesOnSelect, 0)
+  }
+
   //----------------------------------------------------------------------
   //
   //  Properties
   //
   //----------------------------------------------------------------------
 
-  private m_children: CompTreeNode[] = []
+  private m_children: FAMILY_NODE[] = []
 
   /**
    * ツリービューのトップレベルのノードです。
    */
-  get children(): CompTreeNode[] {
+  get children(): FAMILY_NODE[] {
     return this.m_children
   }
 
-  private m_selectedNode: CompTreeNode | null = null
+  private m_selectedNode: FAMILY_NODE | null = null
 
   /**
    * 選択ノードです。
    */
-  get selectedNode(): CompTreeNode | undefined {
-    return this.m_selectedNode ? this.m_selectedNode : undefined
+  get selectedNode(): FAMILY_NODE | null {
+    return this.m_selectedNode
   }
 
-  set selectedNode(node: CompTreeNode | undefined) {
+  set selectedNode(node: FAMILY_NODE | null) {
     const prevSelectedNode = this.selectedNode
     if (node) {
       if (prevSelectedNode && prevSelectedNode !== node) {
@@ -113,7 +132,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
    * ツリービューが管理する全ノードのマップです。
    * key: ノードを特定するための値, value: ノード
    */
-  private m_allNodeDict: { [key: string]: CompTreeNode } = {}
+  private m_allNodeDict: { [key: string]: FAMILY_NODE } = {}
 
   /**
    * ツリービューの最小幅です。
@@ -152,7 +171,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
    *   <li>insertIndex: ノード挿入位置。ノードに`sortFunc`が設定されている場合、この値は無視されます。</li>
    * </ul>
    */
-  buildTree(nodeDataList: NODE_DATA[], options?: { sortFunc?: ChildrenSortFunc; insertIndex?: number | null }): void {
+  buildTree(nodeDataList: CompTreeNodeData[], options?: { sortFunc?: ChildrenSortFunc; insertIndex?: number | null }): void {
     const sortFunc = options?.sortFunc
     let insertIndex = options?.insertIndex
     this.m_sortFunc = sortFunc || null
@@ -167,14 +186,27 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
 
   /**
    * ノードを追加します。
-   * @param node ノード、またはノードを構築するためのデータ
+   * @param child 追加するノード
    * @param options
    * <ul>
    *   <li>parent: 親ノードを特定するための値。指定されない場合、ツリービューの子として追加されます。</li>
    *   <li>insertIndex: ノード挿入位置。ノードに`sortFunc`が設定されている場合、この値は無視されます。</li>
    * </ul>
    */
-  addNode(node: NODE_DATA | CompTreeNode, options?: { parent?: string; insertIndex?: number | null }): CompTreeNode {
+  addNode<N extends CompTreeNode>(child: N, options?: { insertIndex?: number | null }): N
+
+  /**
+   * ノードを追加します。
+   * @param child 追加ノードを構築するためのデータ
+   * @param options
+   * <ul>
+   *   <li>parent: 親ノードを特定するための値。指定されない場合、ツリービューの子として追加されます。</li>
+   *   <li>insertIndex: ノード挿入位置。ノードに`sortFunc`が設定されている場合、この値は無視されます。</li>
+   * </ul>
+   */
+  addNode<N extends CompTreeNode = FAMILY_NODE>(child: CompTreeNodeData, options?: { parent?: string; insertIndex?: number | null }): N
+
+  addNode(node: CompTreeNodeData | CompTreeNode, options?: { parent?: string; insertIndex?: number | null }): CompTreeNode {
     options = options || {}
 
     let result!: CompTreeNode
@@ -187,7 +219,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
       if (!parentNode) {
         throw new Error(`The parent node '${options.parent}' does not exist.`)
       }
-      result = parentNode.addChild(node, options)
+      result = parentNode.addChild(node as CompTreeNode, options)
     }
     // 親が指定されていない場合
     else {
@@ -197,7 +229,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
       }
       // 引数のノードがノードデータで指定された場合
       else if (childType === 'Data') {
-        result = this.m_addNodeByData(node as NODE_DATA, options)
+        result = this.m_addNodeByData(node as CompTreeNodeData, options)
       }
     }
 
@@ -208,15 +240,15 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
    * ノードを削除します。
    * @param value ノードを特定するための値
    */
-  removeNode<Node extends CompTreeNode = CompTreeNode>(value: string): Node | undefined {
-    const node = this.getNode<Node>(value)
+  removeNode<N extends CompTreeNode = FAMILY_NODE>(value: string): N | undefined {
+    const node = this.getNode<N>(value)
     if (!node) return
 
     // 親がツリービューの場合
     // (node.parentが空の場合、親はツリービュー)
     if (!node.parent) {
       this.m_removeChildFromContainer(node)
-      CompTreeViewUtils.dispatchNodeRemoved(this, node)
+      CompTreeViewUtils.dispatchNodeRemove(this, node)
     }
     // 親がノードの場合
     else {
@@ -239,20 +271,20 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
    * ノードを特定するためのvalueと一致するノードを取得します。
    * @param value ノードを特定するための値
    */
-  getNode<Node extends CompTreeNode = CompTreeNode>(value: string): Node | undefined {
-    return this.m_allNodeDict[value] as Node | undefined
+  getNode<N extends CompTreeNode = FAMILY_NODE>(value: string): N | undefined {
+    return (this.m_allNodeDict[value] as any) as N | undefined
   }
 
   /**
    * ツリービューの全ノードをツリー構造から平坦化した配列形式で取得します。
    */
-  getAllNodes<Node extends CompTreeNode = CompTreeNode>(): Node[] {
+  getAllNodes<N extends CompTreeNode = FAMILY_NODE>(): N[] {
     const result: CompTreeNode[] = []
     for (const child of this.m_children) {
       result.push(child)
       result.push(...CompTreeViewUtils.getDescendants(child))
     }
-    return result as Node[]
+    return result as N[]
   }
 
   //----------------------------------------------------------------------
@@ -261,7 +293,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
   //
   //----------------------------------------------------------------------
 
-  private m_addNodeByData(nodeData: NODE_DATA, options?: { insertIndex?: number | null }): CompTreeNode {
+  private m_addNodeByData(nodeData: CompTreeNodeData, options?: { insertIndex?: number | null }): CompTreeNode {
     options = options || {}
 
     if (this.getNode(nodeData.value)) {
@@ -269,7 +301,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
     }
 
     // ノードの作成
-    const node = CompTreeViewUtils.newNode(nodeData)
+    const node = CompTreeViewUtils.newNode<FAMILY_NODE>(nodeData)
 
     // ノード挿入位置を決定
     const insertIndex = this.m_getInsertIndex(node, options)
@@ -284,7 +316,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
     }
 
     // ノードが追加されたことを通知するイベントを発火
-    CompTreeViewUtils.dispatchNodeAdded(node)
+    CompTreeViewUtils.dispatchNodeAdd(node)
 
     return node
   }
@@ -296,12 +328,12 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
     // ※自身のツリービューの子として追加ノードが既に存在する場合
     if (!node.parent && node.treeView === this) {
       const newInsertIndex = this.m_getInsertIndex(node, options)
-      const currentIndex = this.children.indexOf(node)
+      const currentIndex = this.children.indexOf(node as FAMILY_NODE)
       // 現在の位置と新しい挿入位置が同じ場合
       if (currentIndex === newInsertIndex) {
-        CompTreeViewUtils.dispatchNodeAdded(node)
+        CompTreeViewUtils.dispatchNodeAdd(node)
         for (const descendant of CompTreeViewUtils.getDescendants(node)) {
-          CompTreeViewUtils.dispatchNodeAdded(descendant)
+          CompTreeViewUtils.dispatchNodeAdd(descendant)
         }
         return node
       }
@@ -331,7 +363,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
     }
 
     // ノードが追加されたことを通知するイベントを発火
-    CompTreeViewUtils.dispatchNodeAdded(node)
+    CompTreeViewUtils.dispatchNodeAdd(node)
 
     return node
   }
@@ -342,7 +374,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
     // ソート関数が指定されている場合
     if (typeof this.sortFunc === 'function') {
       const children: CompTreeNode[] = []
-      if (this.children.includes(newNode)) {
+      if (this.children.includes(newNode as FAMILY_NODE)) {
         children.push(...this.children)
       } else {
         children.push(...this.children, newNode)
@@ -390,7 +422,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
       this.m_childContainer.insertBefore(node.$el, afterNode)
     }
 
-    this.m_children.splice(insertIndex, 0, node)
+    this.m_children.splice(insertIndex, 0, node as FAMILY_NODE)
 
     // ルートノードにツリービューを設定
     node.treeView = this
@@ -409,7 +441,7 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
     // 要素の存在チェックをしてから指定されたノードの削除を行っている。
     this.m_childContainer && this.m_childContainer.removeChild(node.$el)
 
-    const index = this.m_children.indexOf(node)
+    const index = this.m_children.indexOf(node as FAMILY_NODE)
     if (index >= 0) {
       this.m_children.splice(index, 1)
     }
@@ -440,10 +472,10 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
    * ツリービューにノードが追加された際のリスナです。
    * @param e
    */
-  private m_nodeAdded(e) {
+  private m_onNodeAdd(e) {
     e.stopImmediatePropagation()
 
-    const node = e.target.__vue__ as CompTreeNode
+    const node = e.target.__vue__ as FAMILY_NODE
     this.m_allNodeDict[node.value] = node
 
     // ノードが発火する独自イベントの設定
@@ -460,15 +492,15 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
    * ツリービューからノードが削除される直前のリスナです。
    * @param e
    */
-  private m_nodeBeforeRemoved(e) {
+  private m_onBeforeNodeRemove(e) {
     e.stopImmediatePropagation()
 
-    const node = e.detail.node as CompTreeNode
+    const node = e.detail.node as FAMILY_NODE
 
-    const nodeDescendants = [node, ...node.getDescendants()]
+    const nodeDescendants = [node, ...node.getDescendants<FAMILY_NODE>()]
     for (const iNode of nodeDescendants) {
       if (this.selectedNode === iNode) {
-        this.selectedNode = undefined
+        this.selectedNode = null
         break
       }
     }
@@ -478,10 +510,10 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
    * ツリービューからノードが削除された際のリスナです。
    * @param e
    */
-  private m_nodeRemoved(e) {
+  private m_onNodeRemove(e) {
     e.stopImmediatePropagation()
 
-    const node = e.detail.node as CompTreeNode
+    const node = e.detail.node as FAMILY_NODE
     for (const descendant of CompTreeViewUtils.getDescendants(node)) {
       delete this.m_allNodeDict[descendant.value]
     }
@@ -489,13 +521,13 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
   }
 
   /**
-   * ノードでnode-property-changedイベントが発火した際のリスナです。
+   * ノードでnode-property-changeイベントが発火した際のリスナです。
    * @param e
    */
-  private m_allNodesOnNodePropertyChanged(e) {
+  private m_allNodesOnNodePropertyChange(e) {
     e.stopImmediatePropagation()
 
-    const node = e.target.__vue__ as CompTreeNode
+    const node = e.target.__vue__ as FAMILY_NODE
     const detail = e.detail as CompTreeViewUtils.NodePropertyChangeDetail
 
     if (detail.property === 'value') {
@@ -511,45 +543,58 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
   private m_allNodesOnLazyLoad(e) {
     e.stopImmediatePropagation()
 
-    const node = e.target.__vue__ as CompTreeNode
+    const node = e.target.__vue__ as FAMILY_NODE
     const done = e.detail.done as CompTreeViewLazyLoadDoneFunc
 
     this.$emit('lazy-load', { node, done } as CompTreeViewLazyLoadEvent)
   }
 
   /**
-   * ノードでopened-changedイベントが発火した際のリスナです。
+   * ノードでopen-changeイベントが発火した際のリスナです。
    * @param e
    */
-  private m_allNodesOnOpenedChanged(e) {
+  private m_allNodesOnOpenChange(e) {
     e.stopImmediatePropagation()
 
-    const node = e.target.__vue__ as CompTreeNode
-    this.$emit('opened-changed', node)
+    const node = e.target.__vue__ as FAMILY_NODE
+    this.$emit('open-change', { node } as CompTreeViewEvent)
   }
 
   /**
-   * ノードでselected-changedイベントが発火した際のリスナです。
+   * ノードでselect-changeイベントが発火した際のリスナです。
    * @param e
    */
-  private m_allNodesOnSelectedChanged(e) {
+  private m_allNodesOnSelectChange(e) {
     e.stopImmediatePropagation()
 
-    const node = e.target.__vue__ as CompTreeNode
+    const node = e.target.__vue__ as FAMILY_NODE
 
     // ノードが選択された場合
     if (node.selected) {
       this.selectedNode = node
-      this.$emit('selected', node)
     }
     // ノードの選択が解除された場合
     else {
       if (this.selectedNode === node) {
-        this.selectedNode = undefined
+        this.selectedNode = null
       }
-      this.$emit('unselected', node)
     }
+
+    this.$emit('select-change', { node } as CompTreeViewEvent)
   }
+
+  /**
+   * ノードでselectイベントが発火した際のリスナです。
+   * @param e
+   */
+  private m_allNodesOnSelect(e) {
+    e.stopImmediatePropagation()
+
+    const node = e.target.__vue__ as FAMILY_NODE
+    this.$emit('select', { node } as CompTreeViewEvent)
+  }
+
+  private m_allNodesOnSelectDebounce!: (e) => void | Promise<void>
 
   /**
    * ノードが発火する標準のイベントとは別に、独自イベントが発火した際のリスナです。
@@ -558,8 +603,13 @@ export default class CompTreeView<NODE_DATA extends CompTreeNodeData = any> exte
   private m_allNodesOnExtraNodeEvent(e) {
     e.stopImmediatePropagation()
 
-    const node = e.target.__vue__ as CompTreeNode
-    this.$emit(e.type, node)
+    const node = e.target.__vue__ as FAMILY_NODE
+    const args = { node }
+    if (e.detail) {
+      Object.assign(args, e.detail)
+    }
+
+    this.$emit(e.type, args)
   }
 }
 </script>

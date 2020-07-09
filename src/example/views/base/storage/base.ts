@@ -1,10 +1,22 @@
-import { ChildrenSortFunc, CompTreeNodeData, StorageLogic, StorageNodeShareSettings, StorageNodeType } from '@/lib'
+import {
+  ChildrenSortFunc,
+  CompTreeNode,
+  CompTreeNodeData,
+  CompTreeViewLazyLoadStatus,
+  RequiredStorageNodeShareSettings,
+  StorageLogic,
+  StorageNode,
+  StorageNodeShareSettings,
+  StorageNodeType,
+} from '@/lib'
 import { Component, Prop } from 'vue-property-decorator'
-import { StorageRoute, router } from '@/example/router'
-import { StorageTreeStore, newStorageTreeStore } from './storage-tree-store'
+import BaseStoragePage from './base-storage-page.vue'
 import { Dayjs } from 'dayjs'
-import StorageTreeNode from './storage-tree-node.vue'
+import { StorageRoute } from '@/example/router'
+import StorageTreeNodeClass from './storage-tree-node.vue'
 import Vue from 'vue'
+import { i18n } from '@/example/i18n'
+import { removeBothEndsSlash } from 'web-base-lib'
 
 //========================================================================
 //
@@ -12,7 +24,7 @@ import Vue from 'vue'
 //
 //========================================================================
 
-type StorageType = 'user' | 'app'
+type StorageType = 'user' | 'app' | 'docs'
 
 interface StorageTreeNodeData extends CompTreeNodeData {
   icon: string
@@ -24,6 +36,49 @@ interface StorageTreeNodeData extends CompTreeNodeData {
   url: string
   createdAt: Dayjs
   updatedAt: Dayjs
+  disableContextMenu?: boolean
+}
+
+/**
+ * `StorageNode`をツリービューノードへ変換する際に
+ * 必要となるプロパティを追加したインタフェースです。
+ */
+interface StorageTreeNodeInput extends StorageNode {
+  icon?: string
+  opened?: boolean
+  lazyLoadStatus?: CompTreeViewLazyLoadStatus
+  disableContextMenu?: boolean
+}
+
+interface StorageTreeNode extends CompTreeNode<StorageTreeNode> {
+  readonly id: string
+  readonly name: string
+  readonly dir: string
+  readonly path: string
+  readonly nodeType: StorageNodeType
+  readonly nodeTypeName: string
+  readonly contentType: string
+  readonly size: number
+  readonly share: StorageNodeShareSettings
+  readonly url: string
+  readonly createdAt: Dayjs
+  readonly updatedAt: Dayjs
+  disableContextMenu?: boolean
+  readonly inheritedShare: RequiredStorageNodeShareSettings
+}
+
+namespace StorageTreeNode {
+  export const clazz = StorageTreeNodeClass
+}
+
+interface StorageNodeContextMenuItem {
+  type: string
+  label: string
+}
+
+interface StorageNodeContextMenuSelectedEvent {
+  type: string
+  nodePaths: string[]
 }
 
 //========================================================================
@@ -32,67 +87,151 @@ interface StorageTreeNodeData extends CompTreeNodeData {
 //
 //========================================================================
 
-let userTreeStore: StorageTreeStore
+const storagePageDict: { [storageType: string]: BaseStoragePage } = {}
 
-let appTreeStore: StorageTreeStore
+function registerStoragePage(page: BaseStoragePage): void {
+  storagePageDict[page.storageType] = page
+}
 
 @Component
 class StorageTypeMixin extends Vue {
-  created() {
-    switch (this.storageType) {
-      case 'user':
-        if (!userTreeStore) {
-          userTreeStore = newStorageTreeStore(this.storageType, this.storageLogic)
-        }
-        this.m_treeStore = userTreeStore
-        break
-      case 'app':
-        if (!appTreeStore) {
-          appTreeStore = newStorageTreeStore(this.storageType, this.storageLogic)
-        }
-        this.m_treeStore = appTreeStore
-        break
-    }
-  }
-
   @Prop({ required: true })
   storageType!: StorageType
 
   protected get storageLogic(): StorageLogic {
-    switch (this.storageType) {
-      case 'user':
-        return this.$logic.userStorage
-      case 'app':
-        return this.$logic.appStorage
-    }
+    return this.m_storagePage.storageLogic
   }
 
   protected get storageRoute(): StorageRoute {
-    switch (this.storageType) {
-      case 'user':
-        return router.views.demo.userStorage
-      case 'app':
-        return router.views.demo.appStorage
-    }
+    return this.m_storagePage.storageRoute
   }
 
-  private m_treeStore!: StorageTreeStore
+  protected get rootTreeNode(): StorageTreeNode | null {
+    if (!this.m_storagePage.treeView) return null
+    return this.m_storagePage.treeView.rootNode
+  }
 
-  protected get treeStore(): StorageTreeStore {
-    return this.m_treeStore
+  protected get selectedTreeNode(): StorageTreeNode | null {
+    if (!this.m_storagePage.treeView) return null
+    return this.m_storagePage.treeView.selectedNode
+  }
+
+  private get m_storagePage(): BaseStoragePage {
+    return storagePageDict[this.storageType]
   }
 }
 
-const treeSortFunc: ChildrenSortFunc = (a, b) => {
-  const _a = a as StorageTreeNode
-  const _b = b as StorageTreeNode
-  if (_a.nodeType === StorageNodeType.Dir && _b.nodeType === StorageNodeType.File) {
+const treeSortFunc: ChildrenSortFunc = <StorageNode>(a, b) => {
+  if (a.nodeType === StorageNodeType.Dir && b.nodeType === StorageNodeType.File) {
     return -1
-  } else if (_a.nodeType === StorageNodeType.File && _b.nodeType === StorageNodeType.Dir) {
+  } else if (a.nodeType === StorageNodeType.File && b.nodeType === StorageNodeType.Dir) {
     return 1
   }
-  return _a.label < _b.label ? -1 : _a.label > _b.label ? 1 : 0
+  return a.name < b.name ? -1 : a.name > b.name ? 1 : 0
 }
+
+/**
+ * ストレージノードまたはツリーノードをツリービューで扱える形式へ変換します。
+ * @param source
+ */
+function nodeToTreeData(source: StorageTreeNodeInput | StorageTreeNode): StorageTreeNodeData {
+  const result = {
+    value: removeBothEndsSlash(source.path),
+    label: removeBothEndsSlash(source.name),
+    icon: source.icon ? source.icon : source.nodeType === StorageNodeType.Dir ? 'folder' : 'description',
+    nodeClass: StorageTreeNode.clazz,
+    lazy: source.nodeType === StorageNodeType.Dir,
+    sortFunc: treeSortFunc,
+    id: source.id,
+    nodeType: source.nodeType,
+    contentType: source.contentType,
+    size: source.size,
+    share: {
+      isPublic: source.share.isPublic,
+      readUIds: source.share.readUIds ? [...source.share.readUIds] : null,
+      writeUIds: source.share.writeUIds ? [...source.share.writeUIds] : null,
+    },
+    url: source.url,
+    createdAt: source.createdAt,
+    updatedAt: source.updatedAt,
+  } as StorageTreeNodeData
+
+  if (typeof source.opened === 'boolean') {
+    result.opened = source.opened
+  }
+  if (typeof source.lazyLoadStatus === 'string') {
+    result.lazyLoadStatus = source.lazyLoadStatus
+  }
+  if (typeof source.disableContextMenu === 'boolean') {
+    result.disableContextMenu = source.disableContextMenu
+  }
+
+  return result
+}
+
+//--------------------------------------------------
+//  ContextMenu
+//--------------------------------------------------
+
+class StorageNodeContextMenuTypeImpl {
+  readonly createDir: StorageNodeContextMenuItem = new (class {
+    readonly type = 'createDir'
+    get label(): string {
+      return String(i18n.t('common.createSomehow', { somehow: i18n.tc('common.folder', 1) }))
+    }
+  })()
+
+  readonly uploadFiles: StorageNodeContextMenuItem = new (class {
+    readonly type = 'uploadFiles'
+    get label(): string {
+      return String(i18n.t('common.uploadSomehow', { somehow: i18n.tc('common.file', 2) }))
+    }
+  })()
+
+  readonly uploadDir: StorageNodeContextMenuItem = new (class {
+    readonly type = 'uploadDir'
+    get label(): string {
+      return String(i18n.t('common.uploadSomehow', { somehow: i18n.tc('common.folder', 2) }))
+    }
+  })()
+
+  readonly move: StorageNodeContextMenuItem = new (class {
+    readonly type = 'move'
+    get label(): string {
+      return String(i18n.t('common.move'))
+    }
+  })()
+
+  readonly rename: StorageNodeContextMenuItem = new (class {
+    readonly type = 'rename'
+    get label(): string {
+      return String(i18n.t('common.rename'))
+    }
+  })()
+
+  readonly share: StorageNodeContextMenuItem = new (class {
+    readonly type = 'share'
+    get label(): string {
+      return String(i18n.t('common.share'))
+    }
+  })()
+
+  readonly deletion: StorageNodeContextMenuItem = new (class {
+    readonly type = 'delete'
+    get label(): string {
+      return String(i18n.t('common.delete'))
+    }
+  })()
+
+  readonly reload: StorageNodeContextMenuItem = new (class {
+    readonly type = 'reload'
+    get label(): string {
+      return String(i18n.t('common.reload'))
+    }
+  })()
+}
+
+const StorageNodeContextMenuType = new StorageNodeContextMenuTypeImpl()
 
 //========================================================================
 //
@@ -100,4 +239,17 @@ const treeSortFunc: ChildrenSortFunc = (a, b) => {
 //
 //========================================================================
 
-export { StorageType, StorageTreeNodeData, StorageTypeMixin, treeSortFunc }
+export {
+  StorageNodeContextMenuItem,
+  StorageNodeContextMenuSelectedEvent,
+  StorageNodeContextMenuType,
+  StorageNodeContextMenuTypeImpl,
+  StorageTreeNodeInput,
+  StorageTreeNode,
+  StorageTreeNodeData,
+  StorageType,
+  StorageTypeMixin,
+  nodeToTreeData,
+  registerStoragePage,
+  treeSortFunc,
+}

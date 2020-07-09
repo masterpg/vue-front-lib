@@ -3,6 +3,14 @@ import merge from 'lodash/merge'
 export default merge(require('@/lib/lang/en').default, {
   common: {},
   error: {},
+  index: {
+    mainMenu: {
+      siteAdmin: 'Site Admin',
+      docsAdmin: 'Documents',
+      userStorageAdmin: 'Storage',
+      appStorageAdmin: 'App Storage',
+    },
+  },
   sw: {
     ready: 'App is being served from cache by a service worker. For more details, visit https://goo.gl/AFskqB',
     registered: 'Service worker has been registered.',
@@ -46,6 +54,7 @@ export default merge(require('@/lib/lang/en').default, {
   storage: {
     userRootName: 'Home',
     appRootName: 'Storage',
+    docsRootName: 'Documents',
     uploading: 'Uploading',
     nodeAlreadyExists: 'A {nodeType} called "{nodeName}" already exists.',
     create: {

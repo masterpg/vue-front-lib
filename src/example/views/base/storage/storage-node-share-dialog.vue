@@ -83,7 +83,7 @@
 import { BaseDialog, NoCache, StorageNodeShareSettings } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import StorageTreeNode from './storage-tree-node.vue'
+import { StorageTreeNode } from './base'
 
 @Component({ components: {} })
 export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[], StorageNodeShareSettings | undefined> {
@@ -131,7 +131,7 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
 
   private get m_targetNodeName(): string {
     if (this.m_sharingNodes.length === 1) {
-      return this.m_sharingNodes[0].label
+      return this.m_sharingNodes[0].name
     }
     return ''
   }
@@ -161,7 +161,7 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
     // ノードが複数指定された場合、親が同じであることを検証
     const sharingNodeParentPath = sharingNodes[0].parent!.value
     for (const sharingNode of sharingNodes) {
-      if (sharingNode.parent!.value !== sharingNodeParentPath) {
+      if (sharingNode.parent!.path !== sharingNodeParentPath) {
         throw new Error('All nodes must have the same parent.')
       }
     }

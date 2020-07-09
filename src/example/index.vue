@@ -129,6 +129,16 @@
             </template>
           </q-list>
         </q-expansion-item>
+        <!-- Site Admin -->
+        <q-expansion-item v-model="m_siteAdminExpanded" icon="fas fa-cog" :label="$t('index.mainMenu.siteAdmin')" expand-separator>
+          <q-list padding>
+            <template v-for="(item, index) in m_siteAdminItems">
+              <q-item :key="index" v-ripple :to="item.path" class="app-ml-20" clickable>
+                <q-item-section>{{ item.title }}</q-item-section>
+              </q-item>
+            </template>
+          </q-list>
+        </q-expansion-item>
         <!-- Components -->
         <q-expansion-item v-model="m_componentsExpanded" icon="fas fa-cubes" label="Components" expand-separator>
           <q-list padding>
@@ -213,6 +223,17 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
         title: 'App Storage',
         path: `${router.views.demo.appStorage.basePath}`,
         hidden: this.m_user.isAppAdmin ? false : true,
+      },
+    ]
+  }
+
+  private m_siteAdminExpanded = true
+
+  private get m_siteAdminItems(): Array<{ title: string; path: string }> {
+    return [
+      {
+        title: String(this.$t('index.mainMenu.docsAdmin')),
+        path: `${router.views.admin.docs.basePath}`,
       },
     ]
   }

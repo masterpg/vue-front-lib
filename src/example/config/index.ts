@@ -19,7 +19,7 @@ class AppConfig extends BaseConfig {
       },
       storage: {
         usersDir: 'users',
-        siteDir: 'site',
+        docsDir: 'docs',
       },
     })
   }

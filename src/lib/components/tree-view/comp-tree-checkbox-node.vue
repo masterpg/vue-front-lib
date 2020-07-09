@@ -100,7 +100,7 @@ export default class CompTreeCheckboxNode extends CompTreeNode {
   //----------------------------------------------------------------------
 
   get extraEventNames(): string[] {
-    return ['checked-changed']
+    return ['checked-change']
   }
 
   get checked(): boolean {
@@ -111,7 +111,7 @@ export default class CompTreeCheckboxNode extends CompTreeNode {
     const changed = this.nodeData.checked !== value
     this.nodeData.checked = value
     if (changed) {
-      this.dispatchExtraEvent('checked-changed')
+      this.dispatchExtraEvent('checked-change')
     }
   }
 
@@ -125,12 +125,11 @@ export default class CompTreeCheckboxNode extends CompTreeNode {
 
   //----------------------------------------------------------------------
   //
-  //  Methods
+  //  Internal methods
   //
   //----------------------------------------------------------------------
 
-  init(nodeData: CompTreeCheckboxNodeData): void {
-    this.initBase(nodeData)
+  protected init_sub(nodeData: CompTreeCheckboxNodeData): void {
     // 任意項目は値が設定されていないとリアクティブにならないのでここで初期化
     this.$set(nodeData, 'checked', Boolean(nodeData.checked))
   }

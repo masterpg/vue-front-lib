@@ -15,7 +15,7 @@
 
 <template>
   <div class="layout vertical" :class="{ 'app-ma-48': screenSize.pc, 'app-ma-24': screenSize.tab, 'app-ma-12': screenSize.sp }">
-    <comp-tree-view ref="treeView" class="tree-view" @selected="m_treeViewOnSelected" @checked-changed="m_treeViewOnCheckedChanged" />
+    <comp-tree-view ref="treeView" class="tree-view" @select-change="m_treeViewOnSelectChange" @checked-change="m_treeViewOnCheckedChange" />
     <div class="layout vertical app-mt-20">
       <!-- 編集 -->
       <div class="layout horizontal operation-row">
@@ -52,7 +52,16 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, CompTreeCheckboxNode, CompTreeCheckboxNodeData, CompTreeNode, CompTreeView, NoCache, Resizable } from '@/lib'
+import {
+  BaseComponent,
+  CompTreeCheckboxNode,
+  CompTreeCheckboxNodeData,
+  CompTreeNode,
+  CompTreeView,
+  CompTreeViewEvent,
+  NoCache,
+  Resizable,
+} from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 
@@ -204,13 +213,13 @@ export default class TreeViewDemoPage extends mixins(BaseComponent, Resizable) {
     }
   }
 
-  private m_treeViewOnSelected(node: CompTreeNode) {
-    this.m_editedInput.nodeValue = node.value
-    this.m_editedInput.nodeLabel = node.label
+  private m_treeViewOnSelectChange(e: CompTreeViewEvent) {
+    this.m_editedInput.nodeValue = e.node.value
+    this.m_editedInput.nodeLabel = e.node.label
   }
 
-  private m_treeViewOnCheckedChanged(node: CompTreeNode) {
-    console.log(`The checkbox has changed: '${node.value}'`)
+  private m_treeViewOnCheckedChange(e: CompTreeViewEvent) {
+    console.log(`The checkbox has changed: '${e.node.value}'`)
   }
 }
 </script>
