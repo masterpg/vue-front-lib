@@ -11,7 +11,6 @@ import {
   CompTreeView,
   CompTreeViewEvent,
   CompTreeViewLazyLoadEvent,
-  CompTreeViewUtils,
   NoCache,
   Resizable,
   StorageLogic,
@@ -20,78 +19,10 @@ import {
   StorageNodeType,
   UploadEndedEvent,
 } from '@/lib'
-import { Component, Prop, Watch } from 'vue-property-decorator'
-import {
-  StorageNodeContextMenuSelectedEvent,
-  StorageTreeNode,
-  StorageTreeNodeData,
-  StorageTreeNodeInput,
-  StorageType,
-  StorageTypeMixin,
-  nodeToTreeData,
-  treeSortFunc,
-} from './base'
+import { Component, Watch } from 'vue-property-decorator'
+import { StorageNodeContextMenuSelectedEvent, StorageTreeNode, StorageTreeNodeInput, StorageTypeMixin, nodeToTreeData } from './base'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
-import Vue from 'vue'
-import dayjs from 'dayjs'
-import { i18n } from '@/example/i18n'
 import { mixins } from 'vue-class-component'
-
-@Component
-export class StorageTypeData extends Vue {
-  private static dict: { [storageType: string]: StorageTypeData } = {}
-
-  static get(storageType: StorageType): StorageTypeData {
-    return StorageTypeData.dict[storageType]
-  }
-
-  static register(propsData: { storageType: StorageType; rootNode: StorageTreeNode; isInitialPull: boolean }): void {
-    let storageTypeData = StorageTypeData.get(propsData.storageType)
-    if (storageTypeData) {
-      delete StorageTypeData.dict[storageTypeData.storageType]
-      storageTypeData.$destroy()
-    }
-
-    // プログラム的にコンポーネントのインスタンスを生成
-    // https://css-tricks.com/creating-vue-js-component-instances-programmatically/
-    const ComponentClass = Vue.extend(StorageTypeData)
-    storageTypeData = new ComponentClass({ propsData }) as StorageTypeData
-    StorageTypeData.dict[propsData.storageType] = storageTypeData
-  }
-
-  static clear(): void {
-    for (const storageTypeData of Object.values(StorageTypeData.dict)) {
-      delete StorageTypeData.dict[storageTypeData.storageType]
-      storageTypeData.$destroy()
-    }
-  }
-
-  @Prop({ required: true })
-  storageType!: StorageType
-
-  @Prop({ required: true })
-  rootNode!: StorageTreeNode
-
-  @Prop({ required: true })
-  isInitialPull!: boolean
-
-  @Prop({ default: false })
-  isActive!: boolean
-
-  @Watch('$logic.auth.isSignedIn')
-  private async m_isSignedInOnChange(newValue: boolean, oldValue: boolean) {
-    // 非アクティブな状態でサインアウトされた場合、対象のストレージタイプデータを削除する
-    // ※非アクティブな状態とは、ストレージタイプとひも付くページが表示されていない状態であり、
-    //   またツリービューも破棄されていることを意味する。
-    if (!this.isActive && !this.$logic.auth.isSignedIn) {
-      const storageTypeData = StorageTypeData.get(this.storageType)
-      if (storageTypeData) {
-        delete StorageTypeData.dict[this.storageType]
-        storageTypeData.$destroy()
-      }
-    }
-  }
-}
 
 @Component({
   components: { CompTreeView },
@@ -104,7 +35,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
   //----------------------------------------------------------------------
 
   created() {
-    this.m_storageTypeData.isActive = true
+    this.pageStore.isPageActive = true
   }
 
   mounted() {
@@ -112,7 +43,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
   }
 
   destroyed() {
-    this.m_storageTypeData.isActive = false
+    this.pageStore.isPageActive = false
   }
 
   //----------------------------------------------------------------------
@@ -125,7 +56,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
    * ツリービューのルートノードです。
    */
   get rootNode(): StorageTreeNode {
-    return this.m_storageTypeData.rootNode
+    return this.pageStore.rootNode
   }
 
   /**
@@ -150,7 +81,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
    * ストレージノードの初期読み込みが行われたかを示すフラグです。
    */
   get isInitialPull(): boolean {
-    return this.m_storageTypeData.isInitialPull
+    return this.pageStore.isInitialPull
   }
 
   @Watch('isInitialPull')
@@ -163,19 +94,6 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
   //  Variables
   //
   //----------------------------------------------------------------------
-
-  // NOTE: 単体テスト用にpublic
-  @NoCache
-  get m_storageTypeData(): StorageTypeData {
-    if (!StorageTypeData.get(this.storageType)) {
-      StorageTypeData.register({
-        storageType: this.storageType,
-        rootNode: this.m_createRootNode(),
-        isInitialPull: false,
-      })
-    }
-    return StorageTypeData.get(this.storageType)
-  }
 
   //--------------------------------------------------
   //  Elements
@@ -198,7 +116,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
    * @param dirPath
    */
   async pullInitialNodes(dirPath?: string): Promise<void> {
-    if (this.m_storageTypeData.isInitialPull) return
+    if (this.pageStore.isInitialPull) return
 
     dirPath = removeBothEndsSlash(dirPath)
 
@@ -243,7 +161,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     // ルートノードを遅延ロード済みに設定
     this.rootNode.lazyLoadStatus = 'loaded'
 
-    this.m_storageTypeData.isInitialPull = true
+    this.pageStore.isInitialPull = true
   }
 
   /**
@@ -899,47 +817,6 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
   }
 
   /**
-   * ルートノードを作成します。
-   */
-  private m_createRootNode(): StorageTreeNode {
-    const label = (() => {
-      switch (this.storageType) {
-        case 'user':
-          return String(i18n.t('storage.userRootName'))
-        case 'app':
-          return String(i18n.t('storage.appRootName'))
-        case 'docs':
-          return String(i18n.t('storage.docsRootName'))
-      }
-    })()
-
-    const rootNodeData: StorageTreeNodeData = {
-      nodeClass: StorageTreeNode.clazz,
-      label,
-      value: '',
-      icon: 'storage',
-      opened: false,
-      lazy: false,
-      sortFunc: treeSortFunc,
-      selected: true,
-      id: '',
-      nodeType: StorageNodeType.Dir,
-      contentType: '',
-      size: 0,
-      share: {
-        isPublic: false,
-        readUIds: [],
-        writeUIds: [],
-      },
-      url: '',
-      createdAt: dayjs(0),
-      updatedAt: dayjs(0),
-    }
-
-    return CompTreeViewUtils.newNode<StorageTreeNode>(rootNodeData)
-  }
-
-  /**
    * ロジックストアにないツリーノードを削除します。
    * @param storeNodes
    * @param treeNodes
@@ -978,7 +855,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
   private async m_isSignedInOnChange(newValue: boolean, oldValue: boolean) {
     if (!this.$logic.auth.isSignedIn) {
       // 初期ストレージの読み込みフラグをクリアする
-      this.m_storageTypeData.isInitialPull = false
+      this.pageStore.isInitialPull = false
       // 表示中のルートノード配下全ノードを削除し、ルートノードを選択ノードにする
       this.rootNode.removeAllChildren()
       this.selectedNode = this.rootNode
@@ -989,7 +866,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     // 初期読み込みが行われる前にルートノードのselectイベントが発生すると、
     // URLでノードパスが指定されてもそのパスがクリアされることになる。
     // このため初期読み込みが行われるまではselectイベントを発火しないようにしている。
-    if (!this.m_storageTypeData.isInitialPull) return
+    if (!this.pageStore.isInitialPull) return
 
     this.$emit('select', e)
   }

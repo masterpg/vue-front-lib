@@ -227,15 +227,13 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
   }
 
   private async m_buildTreeView(): Promise<void> {
-    if (!this.rootTreeNode) {
-      throw new Error(`"rootTreeNode" is not supposed to be the "${typeof this.rootTreeNode}".`)
-    }
+    const movingNodesRootNode = this.m_movingNodes[0].getRootNode()!
 
     // 現在の親ディレクトリがルートノードの場合、ルートノードを選択できないよう設定
-    const unselectable = this.m_movingNodesParentPath === this.rootTreeNode.path
+    const unselectable = this.m_movingNodesParentPath === movingNodesRootNode.path
     // ルートノードの追加
     const rootTreeNode = this.m_treeView.addNode({
-      ...nodeToTreeData(this.rootTreeNode),
+      ...nodeToTreeData(movingNodesRootNode),
       opened: true,
       unselectable,
       disableContextMenu: true,

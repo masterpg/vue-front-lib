@@ -24,8 +24,8 @@
 
 <script lang="ts">
 import { BaseComponent, Resizable, StorageNodeType } from '@/lib'
-import { Component } from 'vue-property-decorator'
-import { StorageTypeMixin } from './base'
+import { Component, Prop } from 'vue-property-decorator'
+import { StorageTreeNode, StorageTypeMixin } from './base'
 import { mixins } from 'vue-class-component'
 
 interface PathBlock {
@@ -36,23 +36,43 @@ interface PathBlock {
 
 @Component
 export default class StorageDirPathBreadcrumb extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
+  //----------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //----------------------------------------------------------------------
+
+  @Prop({ required: true })
+  selectedNode!: StorageTreeNode | null
+
+  //----------------------------------------------------------------------
+  //
+  //  Variables
+  //
+  //----------------------------------------------------------------------
+
+  get m_rootNode(): StorageTreeNode | null {
+    if (!this.selectedNode) return null
+    return this.selectedNode.getRootNode()!
+  }
+
   /**
    * パスのパンくずのブロック配列です。
    */
   private get m_pathBlocks(): PathBlock[] {
-    if (!this.rootTreeNode) return []
-    if (!this.selectedTreeNode) return []
+    if (!this.selectedNode) return []
+    if (!this.m_rootNode) return []
 
     const result: PathBlock[] = []
 
     let dirPath = ''
-    switch (this.selectedTreeNode.nodeType) {
+    switch (this.selectedNode.nodeType) {
       case StorageNodeType.Dir: {
-        dirPath = this.selectedTreeNode.path
+        dirPath = this.selectedNode.path
         break
       }
       case StorageNodeType.File: {
-        dirPath = this.selectedTreeNode.parent!.value
+        dirPath = this.selectedNode.parent!.value
         break
       }
     }
@@ -69,13 +89,19 @@ export default class StorageDirPathBreadcrumb extends mixins(BaseComponent, Resi
     }
 
     result.unshift({
-      name: this.rootTreeNode.name,
-      path: this.rootTreeNode.path,
+      name: this.m_rootNode.name,
+      path: this.m_rootNode.path,
       last: result.length <= 0,
     })
 
     return result
   }
+
+  //----------------------------------------------------------------------
+  //
+  //  Event listeners
+  //
+  //----------------------------------------------------------------------
 
   /**
    * パスのパンくずブロックがクリックされた際のリスナです。

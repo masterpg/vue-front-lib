@@ -14,9 +14,9 @@
 <template>
   <storage-dir-table
     ref="table"
-    :data="m_childNodes"
+    :data="m_dirChildNodes"
     :columns="columns"
-    :selected.sync="m_selectedNodes"
+    :selected.sync="m_dirSelectedNodes"
     :sort-method="sortChildNodesMethod"
     :loading="loading"
     row-key="name"
@@ -46,11 +46,11 @@
 
 <script lang="ts">
 import { BaseComponent, NoCache, Resizable, StorageNode, StorageNodeType } from '@/lib'
-import { Component, Prop } from 'vue-property-decorator'
-import { StorageNodeContextMenuSelectedEvent, StorageTypeMixin } from './base'
-import { arrayToDict, removeBothEndsSlash } from 'web-base-lib'
+import { StorageNodeContextMenuSelectedEvent, StorageTreeNode, StorageTypeMixin } from './base'
+import { Component } from 'vue-property-decorator'
 import StorageDirTable from './storage-dir-table.vue'
 import StorageNodeContextMenu from './storage-node-context-menu.vue'
+import { arrayToDict } from 'web-base-lib'
 import bytes from 'bytes'
 import { mixins } from 'vue-class-component'
 
@@ -127,11 +127,13 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     ]
   }
 
-  protected dirPath: string | null = null
+  protected dirNode: StorageTreeNode | null = null
 
-  private m_childNodes: StorageDirTableRow[] = []
+  protected selectedNode: StorageTreeNode | null = null
 
-  private m_selectedNodes: StorageDirTableRow[] = []
+  private m_dirChildNodes: StorageDirTableRow[] = []
+
+  private m_dirSelectedNodes: StorageDirTableRow[] = []
 
   //--------------------------------------------------
   //  Elements
@@ -149,35 +151,42 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
   //----------------------------------------------------------------------
 
   /**
-   * ビューに表示するディレクトリのパスを設定します。
-   * @param dirPath
+   * 選択されているノードを設定します。
+   * 選択ノードがディレクトリの場合、そのディレクトリの子ノード一覧が表示されます。
+   * 選択ノードがファイルの場合、親となるディレクトリの子ノード一覧が表示され、
+   * また選択ノードがアクティブな状態として表示されます。
+   * @param selectedNode
    */
-  setDirPath(dirPath: string | null): void {
+  setSelectedNode(selectedNode: StorageTreeNode | null): void {
     const clear = () => {
-      this.m_childNodes = []
+      this.selectedNode = null
+      this.dirNode = null
+      this.m_dirChildNodes = []
       // 選択状態を初期化
       this.table.selected && this.table.selected.splice(0)
       // スクロール位置を先頭へ初期化
       this.table.$el.querySelector('.scroll')!.scrollTop = 0
     }
 
-    // 文字列以外が渡された場合、テーブルをクリアして終了
-    if (typeof dirPath !== 'string') {
+    // 選択ノードに空が渡された場合、テーブルをクリアして終了
+    if (!selectedNode) {
       clear()
       return
     }
 
-    dirPath = removeBothEndsSlash(dirPath)
+    // 表示対象となるディレクトリを取得
+    const dirNode = selectedNode.nodeType === StorageNodeType.Dir ? selectedNode : selectedNode.parent!
 
-    // 前回と今回で設定されるディレクトリパスが異なる場合
-    if (this.dirPath !== dirPath) {
+    // 前回と今回で対象となるディレクトリが異なる場合
+    if (this.dirNode?.path !== dirNode.path) {
       // テーブルをクリア
       clear()
     }
 
-    this.dirPath = dirPath
+    this.selectedNode = selectedNode
+    this.dirNode = dirNode
 
-    this.m_buildChildren()
+    this.m_buildDirChildNodes()
   }
 
   //----------------------------------------------------------------------
@@ -208,7 +217,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     }
     tableRow.updatedAt = String(this.$d(node.updatedAt.toDate(), 'dateTime'))
     tableRow.updatedAtNum = node.updatedAt.unix()
-    tableRow.isActive = this.selectedTreeNode ? this.selectedTreeNode.path === node.path : false
+    tableRow.isActive = this.selectedNode ? this.selectedNode.path === node.path : false
     return tableRow
   }
 
@@ -259,32 +268,45 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     return data
   }
 
-  private m_buildChildren(): void {
-    if (this.dirPath) {
-      const dirNode = this.storageLogic.getNode({ path: this.dirPath })
-      if (!dirNode) {
-        throw new Error(`'storageLogic' does not have specified path's node: '${this.dirPath}'`)
+  private m_buildDirChildNodes(): void {
+    if (!this.selectedNode) return
+
+    if (this.selectedNode.path) {
+      const node = this.storageLogic.getNode({ path: this.selectedNode.path })
+      if (!node) {
+        throw new Error(`'storageLogic' does not have specified path's node: '${this.selectedNode.path}'`)
       }
     }
 
     // ロジックストアから最新の子ノードを取得
+    let dirNode!: StorageTreeNode
+    switch (this.selectedNode.nodeType) {
+      case StorageNodeType.Dir: {
+        dirNode = this.selectedNode
+        break
+      }
+      case StorageNodeType.File: {
+        dirNode = this.selectedNode.parent!
+        break
+      }
+    }
     const latestChildNodes: StorageDirTableRow[] = []
     const latestChildDict: { [path: string]: StorageDirTableRow } = {}
-    for (const child of this.storageLogic.getChildren(this.dirPath || '')) {
+    for (const child of this.storageLogic.getChildren(dirNode.path)) {
       const row = this.toTableRow(child)
       latestChildNodes.push(row)
       latestChildDict[row.path] = row
     }
 
-    const childDict: { [path: string]: StorageDirTableRow } = arrayToDict(this.m_childNodes, 'path')
+    const childDict: { [path: string]: StorageDirTableRow } = arrayToDict(this.m_dirChildNodes, 'path')
 
     // 最新データにはないがビューには存在するノードを削除
-    for (let i = 0; i < this.m_childNodes.length; i++) {
-      const child = this.m_childNodes[i]
+    for (let i = 0; i < this.m_dirChildNodes.length; i++) {
+      const child = this.m_dirChildNodes[i]
       const latestChild = latestChildDict[child.path]
       if (!latestChild) {
         // 最新データにはないノードを削除
-        this.m_childNodes.splice(i--, 1)
+        this.m_dirChildNodes.splice(i--, 1)
         delete childDict[child.path]
         // 選択ノードを格納している配列から最新データにないノードを削除
         if (this.table.selected) {
@@ -302,7 +324,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
       if (child) {
         this.populateTableRow(latestChild, child)
       } else {
-        this.m_childNodes.push(latestChild)
+        this.m_dirChildNodes.push(latestChild)
       }
     }
   }

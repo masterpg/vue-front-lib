@@ -39,7 +39,7 @@
       </template>
       <template v-slot:after>
         <div class="content-container layout vertical">
-          <storage-dir-path-breadcrumb ref="pathDirBreadcrumb" :storage-type="storageType" />
+          <storage-dir-path-breadcrumb ref="pathDirBreadcrumb" :storage-type="storageType" :selected-node="selectedNode" />
           <div class="view-container layout horizontal flex-1">
             <storage-dir-view ref="dirView" class="dir-view flex-1" :storage-type="storageType" @select="dirViewOnSelect" />
             <storage-file-detail-view
@@ -85,8 +85,7 @@ import {
 } from '@/lib'
 import { Component, Watch } from 'vue-property-decorator'
 import { RawLocation, Route } from 'vue-router'
-import { StorageNodeContextMenuSelectedEvent, StorageNodeContextMenuType, StorageTreeNode, registerStoragePage } from './base'
-import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
+import { StorageNodeContextMenuSelectedEvent, StorageNodeContextMenuType, StorageTreeNode, StorageType, StorageTypeData } from './base'
 import StorageDirCreateDialog from './storage-dir-create-dialog.vue'
 import StorageDirPathBreadcrumb from './storage-dir-path-breadcrumb.vue'
 import StorageDirView from './storage-dir-view.vue'
@@ -101,6 +100,7 @@ import Vue from 'vue'
 import anime from 'animejs'
 import debounce from 'lodash/debounce'
 import { mixins } from 'vue-class-component'
+import { removeBothEndsSlash } from 'web-base-lib'
 
 @Component({
   components: {
@@ -124,7 +124,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
 
   created() {
-    registerStoragePage(this)
+    StorageTypeData.register(this)
     this.movePageToNode = debounce(this.movePageToNodeFunc, 100)
   }
 
@@ -167,7 +167,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
-  get storageType(): string {
+  get storageType(): StorageType {
     throw new Error('Not implemented.')
   }
 
@@ -195,6 +195,11 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   protected splitterModel = 300
 
   protected scrollAnime: anime.AnimeInstance | null = null
+
+  protected get selectedNode(): StorageTreeNode | null {
+    if (!this.treeView) return null
+    return this.treeView.selectedNode
+  }
 
   //--------------------------------------------------
   //  Elements
@@ -309,21 +314,18 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
    * @param nodePath
    */
   protected selectNodeOnPage(nodePath: string): void {
-    const selectingNode = this.treeView.getNode(nodePath)
-    if (!selectingNode) return
+    const selectedNode = this.treeView.getNode(nodePath)
+    if (!selectedNode) return
 
     // 選択ノードを設定
-    this.treeView.selectedNode = selectingNode
+    this.treeView.selectedNode = selectedNode
 
-    let dirPath = ''
-    switch (selectingNode.nodeType) {
+    switch (selectedNode.nodeType) {
       case StorageNodeType.Dir: {
-        dirPath = selectingNode.path
         this.visibleNodeDetailView = false
         break
       }
       case StorageNodeType.File: {
-        dirPath = removeStartDirChars(path.dirname(selectingNode.path))
         // ファイル詳細ビューを表示
         this.nodeDetailView.setFilePath(nodePath)
         this.visibleNodeDetailView = true
@@ -331,8 +333,8 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
       }
     }
 
-    // ディレクトリビューのディレクトリパスを設定
-    this.dirView.setDirPath(dirPath)
+    // ディレクトリビューに選択ノードを設定
+    this.dirView.setSelectedNode(selectedNode)
   }
 
   /**
@@ -557,7 +559,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
     if (this.$logic.auth.isSignedIn) {
       await this.pullInitialNodes()
     } else {
-      this.dirView.setDirPath(null)
+      this.dirView.setSelectedNode(null)
       this.visibleNodeDetailView = false
     }
   }

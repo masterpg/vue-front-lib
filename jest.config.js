@@ -20,7 +20,8 @@ module.exports = {
         // TS2347: Untyped function calls may not accept type arguments.
         // TS2305: Module '"*.vue"' has no exported member 'xxx'.
         // TS2614: Module '"*.vue"' has no exported member 'xxx'. Did you mean to use 'import xxx from "*.vue"' instead?
-        ignoreCodes: [2315, 2339, 2551, 2347, 2305, 2614],
+        // TS2344: Type 'xxx' does not satisfy the constraint 'Vue'.
+        ignoreCodes: [2315, 2339, 2551, 2347, 2305, 2614, 2344],
       },
     },
   },

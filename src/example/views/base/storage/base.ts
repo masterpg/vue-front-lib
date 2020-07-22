@@ -3,15 +3,16 @@ import {
   CompTreeNode,
   CompTreeNodeData,
   CompTreeViewLazyLoadStatus,
+  CompTreeViewUtils,
   RequiredStorageNodeShareSettings,
   StorageLogic,
   StorageNode,
   StorageNodeShareSettings,
   StorageNodeType,
 } from '@/lib'
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop, Watch } from 'vue-property-decorator'
+import dayjs, { Dayjs } from 'dayjs'
 import BaseStoragePage from './base-storage-page.vue'
-import { Dayjs } from 'dayjs'
 import { StorageRoute } from '@/example/router'
 import StorageTreeNodeClass from './storage-tree-node.vue'
 import Vue from 'vue'
@@ -87,37 +88,151 @@ interface StorageNodeContextMenuSelectedEvent {
 //
 //========================================================================
 
-const storagePageDict: { [storageType: string]: BaseStoragePage } = {}
-
-function registerStoragePage(page: BaseStoragePage): void {
-  storagePageDict[page.storageType] = page
-}
-
 @Component
 class StorageTypeMixin extends Vue {
   @Prop({ required: true })
   storageType!: StorageType
 
   protected get storageLogic(): StorageLogic {
-    return this.m_storagePage.storageLogic
+    return this.m_storageTypeData.page.storageLogic
   }
 
   protected get storageRoute(): StorageRoute {
-    return this.m_storagePage.storageRoute
+    return this.m_storageTypeData.page.storageRoute
   }
 
-  protected get rootTreeNode(): StorageTreeNode | null {
-    if (!this.m_storagePage.treeView) return null
-    return this.m_storagePage.treeView.rootNode
+  private get m_storageTypeData(): StorageTypeData {
+    return StorageTypeData.get(this.storageType)
   }
 
-  protected get selectedTreeNode(): StorageTreeNode | null {
-    if (!this.m_storagePage.treeView) return null
-    return this.m_storagePage.treeView.selectedNode
+  readonly pageStore = new (class {
+    constructor(private m_storageType: StorageType) {}
+
+    get rootNode(): StorageTreeNode {
+      return this.m_storageTypeData.rootNode
+    }
+
+    get isInitialPull(): boolean {
+      return this.m_storageTypeData.isInitialPull
+    }
+
+    set isInitialPull(value: boolean) {
+      this.m_storageTypeData.isInitialPull = value
+    }
+
+    get isPageActive(): boolean {
+      return this.m_storageTypeData.isPageActive
+    }
+
+    set isPageActive(value: boolean) {
+      this.m_storageTypeData.isPageActive = value
+    }
+
+    get m_storageTypeData(): StorageTypeData {
+      return StorageTypeData.get(this.m_storageType)
+    }
+  })(this.storageType)
+}
+
+@Component
+class StorageTypeData extends Vue {
+  private static dict: { [storageType: string]: StorageTypeData } = {}
+
+  static get(storageType: StorageType): StorageTypeData {
+    return StorageTypeData.dict[storageType]
   }
 
-  private get m_storagePage(): BaseStoragePage {
-    return storagePageDict[this.storageType]
+  static register(page: BaseStoragePage): void {
+    const storageType = page.storageType
+    let storageTypeData = StorageTypeData.get(storageType)
+    if (storageTypeData) return
+
+    // プログラム的にコンポーネントのインスタンスを生成
+    // https://css-tricks.com/creating-vue-js-component-instances-programmatically/
+    const ComponentClass = Vue.extend(StorageTypeData)
+    storageTypeData = new ComponentClass({
+      propsData: {
+        page,
+        rootNode: this.createRootNode(storageType),
+      },
+    }) as StorageTypeData
+    StorageTypeData.dict[storageType] = storageTypeData
+  }
+
+  private static createRootNode(storageType: StorageType): StorageTreeNode {
+    const label = (() => {
+      switch (storageType) {
+        case 'user':
+          return String(i18n.t('storage.userRootName'))
+        case 'app':
+          return String(i18n.t('storage.appRootName'))
+        case 'docs':
+          return String(i18n.t('storage.docsRootName'))
+      }
+    })()
+
+    const rootNodeData: StorageTreeNodeData = {
+      nodeClass: StorageTreeNode.clazz,
+      label,
+      value: '',
+      icon: 'storage',
+      opened: false,
+      lazy: false,
+      sortFunc: treeSortFunc,
+      selected: true,
+      id: '',
+      nodeType: StorageNodeType.Dir,
+      contentType: '',
+      size: 0,
+      share: {
+        isPublic: false,
+        readUIds: [],
+        writeUIds: [],
+      },
+      url: '',
+      createdAt: dayjs(0),
+      updatedAt: dayjs(0),
+    }
+
+    return CompTreeViewUtils.newNode<StorageTreeNode>(rootNodeData)
+  }
+
+  static clear(): void {
+    for (const storageTypeData of Object.values(StorageTypeData.dict)) {
+      delete StorageTypeData.dict[storageTypeData.storageType]
+      storageTypeData.$destroy()
+    }
+    StorageTypeData.dict = {}
+  }
+
+  @Prop({ required: true })
+  page!: BaseStoragePage
+
+  @Prop({ required: true })
+  rootNode!: StorageTreeNode
+
+  @Prop({ default: false })
+  isInitialPull!: boolean
+
+  @Prop({ default: false })
+  isPageActive!: boolean
+
+  get storageType(): StorageType {
+    return this.page.storageType
+  }
+
+  @Watch('$logic.auth.isSignedIn')
+  private m_isSignedInOnChange(newValue: boolean, oldValue: boolean) {
+    // ページが非アクティブな状態でサインアウトされた場合、対象のストレージタイプデータを削除する
+    // ※ページが非アクティブな状態とは、ストレージタイプとひも付くページが表示されていない状態であり、
+    //   またツリービューも破棄されていることを意味する。
+    if (!this.isPageActive && !this.$logic.auth.isSignedIn) {
+      const storageTypeData = StorageTypeData.get(this.storageType)
+      if (storageTypeData) {
+        delete StorageTypeData.dict[this.storageType]
+        storageTypeData.$destroy()
+      }
+    }
   }
 }
 
@@ -244,12 +359,12 @@ export {
   StorageNodeContextMenuSelectedEvent,
   StorageNodeContextMenuType,
   StorageNodeContextMenuTypeImpl,
-  StorageTreeNodeInput,
   StorageTreeNode,
   StorageTreeNodeData,
+  StorageTreeNodeInput,
   StorageType,
+  StorageTypeData,
   StorageTypeMixin,
   nodeToTreeData,
-  registerStoragePage,
   treeSortFunc,
 }
