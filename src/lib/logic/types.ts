@@ -67,6 +67,9 @@ interface StorageNode extends TimestampEntity {
   contentType: string
   size: number
   share: StorageNodeShareSettings
+  docBundleType: StorageDocBundleType | null
+  isDoc: boolean | null
+  docSortOrder: number | null
   version: number
 }
 
@@ -85,6 +88,11 @@ interface RequiredStorageNodeShareSettings {
 enum StorageNodeType {
   File = 'File',
   Dir = 'Dir',
+}
+
+enum StorageDocBundleType {
+  List = 'List',
+  Category = 'Category',
 }
 
 //========================================================================

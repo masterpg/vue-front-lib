@@ -13,22 +13,20 @@
   overflow: auto
 
 .tree-view
-//--comp-tree-view-font-size: 26px
-//--comp-tree-node-indent: 20px
+  //--comp-tree-view-font-size: 26px
+  //--comp-tree-node-indent: 20px
 
 .content-container
-  @extend %layout-vertical
   height: 100%
 
 .view-container
-  @extend %layout-vertical
-  @extend %layout-flex-1
+  overflow: hidden
 
 .dir-view
-  @extend %layout-flex-1
+  overflow: hidden
 
-.image-node-view
-  @extend %layout-flex-1
+.node-detail-view
+  width: 320px
 </style>
 
 <template>
@@ -41,7 +39,7 @@
       </template>
       <template v-slot:after>
         <div class="content-container layout vertical">
-          <storage-dir-path-breadcrumb ref="pathDirBreadcrumb" :storage-type="storageType" />
+          <storage-dir-path-breadcrumb ref="pathDirBreadcrumb" :storage-type="storageType" :selected-node="selectedNode" />
           <div class="view-container layout horizontal flex-1">
             <storage-dir-view ref="dirView" class="dir-view flex-1" :storage-type="storageType" @select="dirViewOnSelect" />
             <storage-file-detail-view

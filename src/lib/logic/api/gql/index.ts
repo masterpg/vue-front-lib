@@ -177,6 +177,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            docBundleType
+            isDoc
+            docSortOrder
             version
             createdAt
             updatedAt
@@ -208,6 +211,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              docBundleType
+              isDoc
+              docSortOrder
               version
               createdAt
               updatedAt
@@ -243,6 +249,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              docBundleType
+              isDoc
+              docSortOrder
               version
               createdAt
               updatedAt
@@ -278,6 +287,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              docBundleType
+              isDoc
+              docSortOrder
               version
               createdAt
               updatedAt
@@ -313,6 +325,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              docBundleType
+              isDoc
+              docSortOrder
               version
               createdAt
               updatedAt
@@ -347,6 +362,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            docBundleType
+            isDoc
+            docSortOrder
             version
             createdAt
             updatedAt
@@ -376,6 +394,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            docBundleType
+            isDoc
+            docSortOrder
             version
             createdAt
             updatedAt
@@ -405,6 +426,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            docBundleType
+            isDoc
+            docSortOrder
             version
             createdAt
             updatedAt
@@ -435,6 +459,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              docBundleType
+              isDoc
+              docSortOrder
               version
               createdAt
               updatedAt
@@ -469,6 +496,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            docBundleType
+            isDoc
+            docSortOrder
             version
             createdAt
             updatedAt
@@ -500,6 +530,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              docBundleType
+              isDoc
+              docSortOrder
               version
               createdAt
               updatedAt
@@ -534,6 +567,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            docBundleType
+            isDoc
+            docSortOrder
             version
             createdAt
             updatedAt
@@ -564,6 +600,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              docBundleType
+              isDoc
+              docSortOrder
               version
               createdAt
               updatedAt
@@ -598,6 +637,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            docBundleType
+            isDoc
+            docSortOrder
             version
             createdAt
             updatedAt
@@ -627,6 +669,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            docBundleType
+            isDoc
+            docSortOrder
             version
             createdAt
             updatedAt
@@ -656,6 +701,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            docBundleType
+            isDoc
+            docSortOrder
             version
             createdAt
             updatedAt
@@ -685,6 +733,9 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            docBundleType
+            isDoc
+            docSortOrder
             version
             createdAt
             updatedAt
