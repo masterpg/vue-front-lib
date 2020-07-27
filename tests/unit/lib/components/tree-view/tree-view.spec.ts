@@ -900,6 +900,141 @@ describe('CompTreeView', () => {
     })
   })
 
+  describe('setSelectedNode', () => {
+    it('現在選択されているノードと同じノードを設定', async () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      treeView.buildTree(cloneDeep(baseNodeDataList))
+
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      expect(node1_1_1.selected).toBeTruthy()
+      await clearEmitted(wrapper)
+
+      treeView.setSelectedNode(node1_1_1.value, true)
+
+      // イベント発火を検証
+      // ・select-change
+      expect(wrapper.emitted('select-change')).toBeUndefined()
+      // ・select
+      await sleep(100)
+      const selectEmitted = wrapper.emitted('select')
+      const selectEvent: CompTreeViewEvent = selectEmitted[0][0]
+      expect(selectEmitted.length).toBe(1)
+      expect(selectEvent.node).toBe(node1_1_1)
+      // ノードの選択状態を検証
+      expect(treeView.selectedNode).toBe(node1_1_1)
+      expect(node1_1_1.selected).toBeTruthy()
+
+      verifyTreeView(treeView)
+    })
+
+    it('現在選択されているノードと別のノードを設定', async () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      treeView.buildTree(cloneDeep(baseNodeDataList))
+
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      expect(node1_1_1.selected).toBeTruthy()
+      const node1_1_3 = treeView.getNode('node1_1_3')!
+      expect(node1_1_3.selected).toBeFalsy()
+      await clearEmitted(wrapper)
+
+      treeView.setSelectedNode(node1_1_3.value, true)
+
+      // イベント発火を検証
+      // ・select-change
+      const selectChangeEmitted = wrapper.emitted('select-change')
+      const selectChangeEvent1: CompTreeViewEvent = selectChangeEmitted[0][0]
+      const selectChangeEvent2: CompTreeViewEvent = selectChangeEmitted[1][0]
+      expect(selectChangeEmitted.length).toBe(2)
+      expect(selectChangeEvent1.node).toBe(node1_1_1)
+      expect(selectChangeEvent2.node).toBe(node1_1_3)
+      // ・select
+      await sleep(100)
+      const selectEmitted = wrapper.emitted('select')
+      const selectEvent: CompTreeViewEvent = selectEmitted[0][0]
+      expect(selectEmitted.length).toBe(1)
+      expect(selectEvent.node).toBe(node1_1_3)
+      // ノードの選択状態を検証
+      expect(node1_1_1.selected).toBeFalsy()
+      expect(treeView.selectedNode).toBe(node1_1_3)
+      expect(node1_1_3.selected).toBeTruthy()
+
+      verifyTreeView(treeView)
+    })
+
+    it('現在選択されているノードの選択解除', async () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      treeView.buildTree(cloneDeep(baseNodeDataList))
+
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      expect(node1_1_1.selected).toBeTruthy()
+      await clearEmitted(wrapper)
+
+      treeView.setSelectedNode(node1_1_1.value, false)
+
+      // イベント発火を検証
+      await sleep(100)
+      // ・select
+      expect(wrapper.emitted('select')).toBeUndefined()
+      // ・select-change
+      const selectChangeEmitted = wrapper.emitted('select-change')
+      const selectChangeEvent: CompTreeViewEvent = selectChangeEmitted[0][0]
+      expect(selectChangeEmitted.length).toBe(1)
+      expect(selectChangeEvent.node).toBe(node1_1_1)
+      // ノードの選択状態を検証
+      expect(treeView.selectedNode).toBeNull()
+      expect(node1_1_1.selected).toBeFalsy()
+
+      verifyTreeView(treeView)
+    })
+
+    it('サイレントモードで選択ノードを設定', async () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      treeView.buildTree(cloneDeep(baseNodeDataList))
+
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      expect(node1_1_1.selected).toBeTruthy()
+      const node1_1_3 = treeView.getNode('node1_1_3')!
+      expect(node1_1_3.selected).toBeFalsy()
+      await clearEmitted(wrapper)
+
+      treeView.setSelectedNode(node1_1_3.value, true, true)
+
+      // イベント発火を検証
+      // ・select-change
+      expect(wrapper.emitted('select-change')).toBeUndefined()
+      // ・select
+      await sleep(100)
+      expect(wrapper.emitted('select')).toBeUndefined()
+
+      verifyTreeView(treeView)
+    })
+
+    it('サイレントモードで選択ノードを解除', async () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      treeView.buildTree(cloneDeep(baseNodeDataList))
+
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      expect(node1_1_1.selected).toBeTruthy()
+      await clearEmitted(wrapper)
+
+      treeView.setSelectedNode(node1_1_1.value, false, true)
+
+      // イベント発火を検証
+      // ・select-change
+      expect(wrapper.emitted('select-change')).toBeUndefined()
+      // ・select
+      await sleep(100)
+      expect(wrapper.emitted('select')).toBeUndefined()
+
+      verifyTreeView(treeView)
+    })
+  })
+
   describe('getAllNodes()', () => {
     it('ベーシックケース', () => {
       const wrapper = mount(CompTreeView)
@@ -1615,6 +1750,52 @@ describe('CompTreeNode', () => {
       // ノードを選択すると遅延ロードが開始される
       node1_1.selected = true
     })
+
+    it('選択ノード変更時 - サイレントモード', async done => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1', selected: false, lazy: true }])
+      treeView.buildTree(nodeDataList)
+
+      const node1_1 = treeView.getNode('node1_1')!
+      expect(node1_1.lazy).toBe(true)
+      expect(node1_1.lazyLoadStatus).toBe('none')
+      expect(node1_1.selected).toBe(false)
+
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      expect(node1_1_1.selected).toBe(true)
+
+      await clearEmitted(wrapper)
+
+      // 遅延ロードイベントのリスナ登録
+      treeView.$on('lazy-load', async (e: CompTreeViewLazyLoadEvent) => {
+        // 遅延ロード中の状態を検証
+        expect(node1_1.lazyLoadStatus).toBe('loading')
+        expect(node1_1.selected).toBe(false)
+        // 遅延ロードを完了する
+        e.done()
+        // 遅延ロードのアニメーションを考慮して一定時間待機
+        await sleep(1000)
+        // 遅延ロード完了後の状態を検証
+        expect(node1_1.lazyLoadStatus).toBe('loaded')
+        expect(node1_1.selected).toBe(true)
+        // 選択イベント発火を検証
+        // ・select-change
+        expect(wrapper.emitted('select-change')).toBeUndefined()
+        // ・select
+        expect(wrapper.emitted('select')).toBeUndefined()
+        // ノードの選択状態を検証
+        expect(node1_1_1.selected).toBeFalsy()
+        expect(getNodeData(nodeDataList, node1_1_1.value)!.selected).toBeFalsy()
+        expect(node1_1.selected).toBeTruthy()
+        expect(getNodeData(nodeDataList, node1_1.value)!.selected).toBeTruthy()
+        // 単体テスト完了
+        done()
+      })
+
+      // ノードを選択すると遅延ロードが開始される
+      node1_1.setSelected(true, true)
+    })
   })
 
   describe('プロパティ値の変更', () => {
@@ -2126,6 +2307,32 @@ describe('CompTreeNode', () => {
       verifyTreeView(treeView)
     })
 
+    it('selectedを変更(未選択から選択へ) - サイレントモード', async () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1_1', selected: false }])
+      treeView.buildTree(nodeDataList)
+
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      expect(node1_1_1.unselectable).toBeFalsy()
+      expect(node1_1_1.selected).toBeFalsy()
+      await clearEmitted(wrapper)
+
+      node1_1_1.setSelected(true, true)
+
+      // イベント発火を検証
+      // ・select-change
+      expect(wrapper.emitted('select-change')).toBeUndefined()
+      // ・select
+      await sleep(100)
+      expect(wrapper.emitted('select')).toBeUndefined()
+      // ノードの選択状態を検証
+      expect(node1_1_1.selected).toBeTruthy()
+      expect(getNodeData(nodeDataList, node1_1_1.value)!.selected).toBeTruthy()
+
+      verifyTreeView(treeView)
+    })
+
     it('selectedを変更(選択から選択へ、つまり変更なし) - プロパティ変更', async () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
@@ -2184,6 +2391,32 @@ describe('CompTreeNode', () => {
       verifyTreeView(treeView)
     })
 
+    it('selectedを変更(選択から選択へ、つまり変更なし) - サイレントモード', async () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      const nodeDataList = editNodeDataList(baseNodeDataList)
+      treeView.buildTree(nodeDataList)
+
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      expect(node1_1_1.unselectable).toBeFalsy()
+      expect(node1_1_1.selected).toBeTruthy()
+      await clearEmitted(wrapper)
+
+      node1_1_1.setSelected(true, true)
+
+      // イベント発火を検証
+      // ・select-change
+      expect(wrapper.emitted('select-change')).toBeUndefined()
+      // ・select
+      await sleep(100)
+      expect(wrapper.emitted('select')).toBeUndefined()
+      // ノードの選択状態を検証
+      expect(node1_1_1.selected).toBeTruthy()
+      expect(getNodeData(nodeDataList, node1_1_1.value)!.selected).toBeTruthy()
+
+      verifyTreeView(treeView)
+    })
+
     it('selectedを変更(選択から未選択へ) - プロパティ変更', async () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
@@ -2232,6 +2465,32 @@ describe('CompTreeNode', () => {
       const selectChangeEvent: CompTreeViewEvent = selectChangeEmitted[0][0]
       expect(selectChangeEmitted.length).toBe(1)
       expect(selectChangeEvent.node).toBe(node1_1_1)
+      // ・select
+      await sleep(100)
+      expect(wrapper.emitted('select')).toBeUndefined()
+      // ノードの選択状態を検証
+      expect(node1_1_1.selected).toBeFalsy()
+      expect(getNodeData(nodeDataList, node1_1_1.value)!.selected).toBeFalsy()
+
+      verifyTreeView(treeView)
+    })
+
+    it('selectedを変更(選択から未選択へ) - サイレントモード', async () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      const nodeDataList = editNodeDataList(baseNodeDataList)
+      treeView.buildTree(nodeDataList)
+
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      expect(node1_1_1.unselectable).toBeFalsy()
+      expect(node1_1_1.selected).toBeTruthy()
+      await clearEmitted(wrapper)
+
+      node1_1_1.setSelected(false, true)
+
+      // イベント発火を検証
+      // ・select-change
+      expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
       await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
@@ -2316,6 +2575,35 @@ describe('CompTreeNode', () => {
       verifyTreeView(treeView)
     })
 
+    it('selectedを変更(現在の選択ノードとは別のノードを選択) - サイレントモード', async () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      const nodeDataList = editNodeDataList(baseNodeDataList)
+      treeView.buildTree(nodeDataList)
+
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      expect(node1_1_1.selected).toBeTruthy()
+      const node1_1_3 = treeView.getNode('node1_1_3')!
+      expect(node1_1_3.selected).toBeFalsy()
+      await clearEmitted(wrapper)
+
+      node1_1_3.setSelected(true, true)
+
+      // イベント発火を検証
+      // ・select-change
+      expect(wrapper.emitted('select-change')).toBeUndefined()
+      // ・select
+      await sleep(100)
+      expect(wrapper.emitted('select')).toBeUndefined()
+      // ノードの選択状態を検証
+      expect(node1_1_1.selected).toBeFalsy()
+      expect(getNodeData(nodeDataList, node1_1_1.value)!.selected).toBeFalsy()
+      expect(node1_1_3.selected).toBeTruthy()
+      expect(getNodeData(nodeDataList, node1_1_3.value)!.selected).toBeTruthy()
+
+      verifyTreeView(treeView)
+    })
+
     it('selectedを変更(選択不可ノードに選択を設定) - プロパティ変更', async () => {
       const wrapper = mount(CompTreeView)
       const treeView = wrapper.vm as CompTreeView | any
@@ -2354,6 +2642,32 @@ describe('CompTreeNode', () => {
       await clearEmitted(wrapper)
 
       node1_1_1.setNodeData({ selected: true })
+
+      // イベント発火を検証
+      // ・select-change
+      expect(wrapper.emitted('select-change')).toBeUndefined()
+      // ・select
+      await sleep(100)
+      expect(wrapper.emitted('select')).toBeUndefined()
+      // ノードの選択状態を検証
+      expect(node1_1_1.selected).toBeFalsy()
+      expect(getNodeData(nodeDataList, node1_1_1.value)!.selected).toBeFalsy()
+
+      verifyTreeView(treeView)
+    })
+
+    it('selectedを変更(選択不可ノードに選択を設定) - プロパティ変更', async () => {
+      const wrapper = mount(CompTreeView)
+      const treeView = wrapper.vm as CompTreeView | any
+      const nodeDataList = editNodeDataList(baseNodeDataList, [{ value: 'node1_1_1', unselectable: true, selected: false }])
+      treeView.buildTree(nodeDataList)
+
+      const node1_1_1 = treeView.getNode('node1_1_1')!
+      expect(node1_1_1.unselectable).toBeTruthy()
+      expect(node1_1_1.selected).toBeFalsy()
+      await clearEmitted(wrapper)
+
+      node1_1_1.setSelected(true, true)
 
       // イベント発火を検証
       // ・select-change

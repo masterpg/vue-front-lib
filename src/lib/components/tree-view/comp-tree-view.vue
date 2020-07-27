@@ -92,18 +92,59 @@ export default class CompTreeView<FAMILY_NODE extends CompTreeNode = CompTreeNod
   }
 
   set selectedNode(node: FAMILY_NODE | null) {
-    const prevSelectedNode = this.selectedNode
+    const currentSelectedNode = this.selectedNode
+
+    // 選択ノードが指定された場合
     if (node) {
-      if (prevSelectedNode && prevSelectedNode !== node) {
-        prevSelectedNode.selected = false
+      // 現在の選択ノードと指定されたノードが違う場合
+      if (currentSelectedNode && currentSelectedNode !== node) {
+        // 現在の選択ノードを非選択にする
+        currentSelectedNode.selected = false
       }
+      // 指定されたノードを選択状態に設定
       node.selected = true
       this.m_selectedNode = node
-    } else {
-      if (prevSelectedNode) {
-        prevSelectedNode.selected = false
+    }
+    // 選択ノードが指定されたなかった場合
+    else {
+      // 現在の選択ノードを非選択にする
+      if (currentSelectedNode) {
+        currentSelectedNode.selected = false
       }
       this.m_selectedNode = null
+    }
+  }
+
+  /**
+   * 指定されたノードの選択状態を設定します。
+   * @param value ノードを特定するための値を指定
+   * @param selected 選択状態を指定
+   * @param silent 選択系イベントを発火したくない場合はtrueを指定
+   */
+  setSelectedNode(value: string, selected: boolean, silent = false): void {
+    const node = this.getNode(value)
+    if (!node) return
+
+    const currentSelectedNode = this.selectedNode
+
+    // 選択状態にする場合
+    if (selected) {
+      // 現在の選択ノードと指定されたノードが違う場合
+      if (currentSelectedNode && currentSelectedNode !== node) {
+        // 現在の選択ノードを非選択にする
+        currentSelectedNode.setSelected(false, silent)
+      }
+      // 指定されたノードを選択状態に設定
+      node.setSelected(true, silent)
+      this.m_selectedNode = node
+    }
+    // 非選択状態にする場合
+    else {
+      // 指定されたノードを非選択にする
+      node.setSelected(false, silent)
+      if (currentSelectedNode === node) {
+        this.m_selectedNode = null
+      }
     }
   }
 
@@ -568,19 +609,20 @@ export default class CompTreeView<FAMILY_NODE extends CompTreeNode = CompTreeNod
     e.stopImmediatePropagation()
 
     const node = e.target.__vue__ as FAMILY_NODE
+    const silent = e.detail.silent
 
     // ノードが選択された場合
     if (node.selected) {
-      this.selectedNode = node
+      this.setSelectedNode(node.value, true, silent)
     }
     // ノードの選択が解除された場合
     else {
       if (this.selectedNode === node) {
-        this.selectedNode = null
+        this.setSelectedNode(node.value, false, silent)
       }
     }
 
-    this.$emit('select-change', { node } as CompTreeViewEvent)
+    !silent && this.$emit('select-change', { node } as CompTreeViewEvent)
   }
 
   /**
@@ -591,7 +633,9 @@ export default class CompTreeView<FAMILY_NODE extends CompTreeNode = CompTreeNod
     e.stopImmediatePropagation()
 
     const node = e.target.__vue__ as FAMILY_NODE
-    this.$emit('select', { node } as CompTreeViewEvent)
+    const silent = e.detail.silent
+
+    !silent && this.$emit('select', { node } as CompTreeViewEvent)
   }
 
   private m_allNodesOnSelectDebounce!: (e) => void | Promise<void>

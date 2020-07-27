@@ -110,13 +110,15 @@ export namespace CompTreeViewUtils {
   /**
    * ノードの選択が変更された旨を通知するイベントを発火します。
    * @param target
+   * @param silent
    */
-  export function dispatchSelectChange(target: CompTreeNode): void {
+  export function dispatchSelectChange(target: CompTreeNode, silent: boolean): void {
     target.$el.dispatchEvent(
       new CustomEvent('select-change', {
         bubbles: true,
         cancelable: true,
         composed: true,
+        detail: { silent },
       })
     )
   }
@@ -124,13 +126,15 @@ export namespace CompTreeViewUtils {
   /**
    * ノードの選択された旨を通知するイベントを発火します。
    * @param target
+   * @param silent
    */
-  export function dispatchSelect(target: CompTreeNode): void {
+  export function dispatchSelect(target: CompTreeNode, silent: boolean): void {
     target.$el.dispatchEvent(
       new CustomEvent('select', {
         bubbles: true,
         cancelable: true,
         composed: true,
+        detail: { silent },
       })
     )
   }

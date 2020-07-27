@@ -256,7 +256,18 @@ export default class CompTreeNode<FAMILY_NODE extends CompTreeNode = any> extend
   }
 
   set selected(value: boolean) {
-    this.m_setSelected(value, false)
+    this.m_setSelected(value, { silent: false })
+
+    this.resetOwnPositionInParentDebounce()
+  }
+
+  /**
+   * 選択状態を設定します。
+   * @param selected 選択状態を指定
+   * @param silent 選択系イベントを発火したくない場合はtrueを指定
+   */
+  setSelected(selected: boolean, silent: boolean): void {
+    this.m_setSelected(selected, { silent })
 
     this.resetOwnPositionInParentDebounce()
   }
@@ -401,10 +412,6 @@ export default class CompTreeNode<FAMILY_NODE extends CompTreeNode = any> extend
 
   /**
    * ノードの初期化を行います。
-   *
-   * CompTreeNodeItemを拡張する際、初期化時に独自処理が必要な場合は
-   * このメソッドをオーバーライドして下さい。
-   *
    * @param nodeData
    */
   init(nodeData: CompTreeNodeData): void {
@@ -421,12 +428,16 @@ export default class CompTreeNode<FAMILY_NODE extends CompTreeNode = any> extend
     // サブクラスで必要な処理を実行
     this.init_sub(nodeData)
 
-    this.m_setSelected(this.nodeData.selected!, true)
+    this.m_setSelected(this.nodeData.selected!, { initializing: true })
   }
 
   /**
    * このコンポーネントを継承したサブクラスで`init()`に追加で処理が必要な場合、
    * その追加処理を記述するためのプレースホルダー関数になります。
+   *
+   * CompTreeNodeItemを拡張する際、初期化時に追加処理が必要な場合は
+   * このメソッドをオーバーライドして下さい。
+   *
    * @param nodeData
    */
   protected init_sub(nodeData: CompTreeNodeData): void {}
@@ -949,17 +960,24 @@ export default class CompTreeNode<FAMILY_NODE extends CompTreeNode = any> extend
   /**
    * selectedの設定を行います。
    * @param value selectedの設定値を指定
-   * @param initializing 初期化中か否かを指定
+   * @param options
+   * <ul>
+   *   <li>initializing 初期化中か否かを指定</li>
+   *   <li>silent 選択イベントを発火したくない場合はtrueを指定</li>
+   * </ul>
    */
-  private m_setSelected(value: boolean, initializing: boolean): void {
+  private m_setSelected(value: boolean, options: { initializing?: boolean; silent?: boolean } = {}): void {
+    const initializing = typeof options.initializing === 'boolean' ? options.initializing : false
+    const silent = typeof options.silent === 'boolean' ? options.silent : false
     const changed = this.nodeData.selected !== value
+
     // 選択不可の場合
     if (this.unselectable) {
       // 選択解除に変更された場合
       // ※選択不可ノードを選択状態へ変更しようとしてもこのブロックには入らない
       if (changed && !value) {
         this.nodeData.selected = false
-        !initializing && CompTreeViewUtils.dispatchSelectChange(this)
+        !initializing && CompTreeViewUtils.dispatchSelectChange(this, silent)
       }
     }
     // 選択可能な場合
@@ -971,25 +989,25 @@ export default class CompTreeNode<FAMILY_NODE extends CompTreeNode = any> extend
         if (this.lazy && this.lazyLoadStatus === 'none') {
           this.m_startLazyLoad(() => {
             this.nodeData.selected = value
-            // select-changeイベント
-            !initializing && CompTreeViewUtils.dispatchSelectChange(this)
-            // selectイベント
-            value && !initializing && CompTreeViewUtils.dispatchSelect(this)
+            // ①select-change
+            // > ノードが選択された場合:
+            // >   このイベントをCompTreeViewが受け取り、そこでノード選択が｢再度｣行われ、③selectが発火される
+            !initializing && CompTreeViewUtils.dispatchSelectChange(this, silent)
           })
         }
         // 遅延ロードの必要がない場合
         else {
           this.nodeData.selected = value
-          // select-changeイベント
-          !initializing && CompTreeViewUtils.dispatchSelectChange(this)
-          // selectイベント
-          value && !initializing && CompTreeViewUtils.dispatchSelect(this)
+          // ②select-change
+          // > ノードが選択された場合:
+          // >   このイベントをCompTreeViewが受け取り、そこでノード選択が｢再度｣行われ、③selectが発火される
+          !initializing && CompTreeViewUtils.dispatchSelectChange(this, silent)
         }
       }
       // 選択状態が変更されなかった場合
       else {
-        // selectイベント
-        value && !initializing && CompTreeViewUtils.dispatchSelect(this)
+        // ③select
+        value && !initializing && CompTreeViewUtils.dispatchSelect(this, silent)
       }
     }
   }

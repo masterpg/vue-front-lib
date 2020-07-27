@@ -53,12 +53,12 @@ export interface CompTreeNodeData {
   /**
    * 子ノードの並びを決めるソート関数を指定します。
    */
-  sortFunc?: ChildrenSortFunc
+  sortFunc?: ChildrenSortFunc<any>
 }
 
 export type CompTreeNodeEditData<T> = Partial<Omit<T, 'nodeClass' | 'children'>>
 
-export type ChildrenSortFunc = <N extends CompTreeNode = CompTreeNode>(a: N, b: N) => number
+export type ChildrenSortFunc<N extends CompTreeNode = CompTreeNode> = (a: N, b: N) => number
 
 export interface CompTreeCheckboxNodeData extends CompTreeNodeData {
   checked?: boolean
