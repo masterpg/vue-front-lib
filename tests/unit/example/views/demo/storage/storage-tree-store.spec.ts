@@ -1,11 +1,10 @@
 import * as td from 'testdouble'
-import { BaseStoragePage, StorageTreeNode, StorageTreeView } from '@/example/views/base/storage'
-import { CompTreeNode, StorageLogic, UploadEndedEvent } from '@/lib'
+import { BaseStoragePage, StorageTreeNode, StorageTreeView, StorageType } from '@/example/views/base/storage'
+import { CompTreeNode, StorageLogic, StorageNode, StorageNodeShareSettings, StorageNodeType, UploadEndedEvent } from '@/lib'
 import { EMPTY_SHARE_SETTINGS, cloneTestStorageNode, newTestStorageDirNode, newTestStorageFileNode } from '../../../../../helpers/common/storage'
 import { Wrapper, mount } from '@vue/test-utils'
-import { StorageNodeShareSettings } from '@/lib'
+import { StoragePageStore } from '@/example/views/base/storage/base'
 import { StorageRoute } from '@/example/router'
-import { StorageTypeData } from '@/example/views/base/storage/base'
 import dayjs from 'dayjs'
 import { generateFirestoreId } from '../../../../../helpers/common/base'
 import { i18n } from '@/example/i18n'
@@ -18,14 +17,6 @@ import { sleep } from 'web-base-lib'
 //  Test helpers
 //
 //=======================================================================
-
-let treeViewWrapper!: Wrapper<StorageTreeView>
-
-let treeView!: StorageTreeView
-
-let storageLogic!: StorageLogic
-
-let storageRoute!: StorageRoute
 
 function verifyParentChildRelationForTree(treeView: StorageTreeView) {
   for (let i = 0; i < treeView.m_treeView.children.length; i++) {
@@ -58,6 +49,42 @@ function shuffle<T>(array: T[]): T[] {
   return result
 }
 
+function newTreeView(
+  params: {
+    nodeFilter?: (node: StorageNode) => boolean
+    storageType?: StorageType
+  } = {}
+): { treeView: StorageTreeView; storageLogic: StorageLogic; wrapper: Wrapper<StorageTreeView> } {
+  StoragePageStore.clear()
+
+  const nodeFilter = params.nodeFilter || allNodeFilter
+  const storageType = params.storageType || 'app'
+
+  const storageLogic = td.object<StorageLogic>()
+  const storageRoute = td.object<StorageRoute>()
+
+  const storagePage = td.object<BaseStoragePage>()
+  ;(storagePage as any).storageType = storageType
+  ;(storagePage as any).storageLogic = storageLogic
+  ;(storagePage as any).storageRoute = storageRoute
+  StoragePageStore.register(storagePage)
+
+  const wrapper = mount(StorageTreeView, {
+    propsData: { storageType: 'app', nodeFilter },
+  })
+  const treeView = wrapper.vm
+
+  return { treeView, storageLogic, wrapper }
+}
+
+function allNodeFilter(node: StorageNode): boolean {
+  return true
+}
+
+function dirNodeFilter(node: StorageNode): boolean {
+  return node.nodeType === StorageNodeType.Dir
+}
+
 //========================================================================
 //
 //  Tests
@@ -68,29 +95,11 @@ beforeAll(async () => {
   await initExampleTest()
 })
 
-beforeEach(async () => {
-  StorageTypeData.clear()
-
-  storageLogic = td.object<StorageLogic>()
-  storageRoute = td.object<StorageRoute>()
-
-  const storagePage = td.object<BaseStoragePage>()
-  ;(storagePage as any).storageType = 'user'
-  ;(storagePage as any).storageLogic = storageLogic
-  ;(storagePage as any).storageRoute = storageRoute
-  StorageTypeData.register(storagePage)
-
-  treeViewWrapper = mount(StorageTreeView, {
-    propsData: {
-      storageType: 'user',
-    },
-  })
-  treeView = treeViewWrapper.vm
-})
+beforeEach(async () => {})
 
 describe('StorageType関連の検証', () => {
   beforeEach(async () => {
-    StorageTypeData.clear()
+    StoragePageStore.clear()
   })
 
   it('適切な依存オブジェクトが取得できるか', async () => {
@@ -98,33 +107,33 @@ describe('StorageType関連の検証', () => {
     ;(userStoragePage as any).storageType = 'user'
     ;(userStoragePage as any).storageLogic = td.object<StorageLogic>()
     ;(userStoragePage as any).storageRoute = td.object<StorageRoute>()
-    StorageTypeData.register(userStoragePage)
+    StoragePageStore.register(userStoragePage)
 
     const appStoragePage = td.object<BaseStoragePage>()
     ;(appStoragePage as any).storageType = 'app'
     ;(appStoragePage as any).storageLogic = td.object<StorageLogic>()
     ;(appStoragePage as any).storageRoute = td.object<StorageRoute>()
-    StorageTypeData.register(appStoragePage)
+    StoragePageStore.register(appStoragePage)
 
     const docsStoragePage = td.object<BaseStoragePage>()
     ;(docsStoragePage as any).storageType = 'docs'
     ;(docsStoragePage as any).storageLogic = td.object<StorageLogic>()
     ;(docsStoragePage as any).storageRoute = td.object<StorageRoute>()
-    StorageTypeData.register(docsStoragePage)
+    StoragePageStore.register(docsStoragePage)
 
-    const userTreeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'user' } })
+    const userTreeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'user', nodeFilter: allNodeFilter } })
     const userTreeView = userTreeViewWrapper.vm as StorageTreeView
     expect(userTreeView.rootNode.name).toBe(String(i18n.t('storage.userRootName')))
     expect((userTreeView as any).storageLogic).toBe(userStoragePage.storageLogic)
     expect((userTreeView as any).storageRoute).toBe(userStoragePage.storageRoute)
 
-    const appTreeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'app' } })
+    const appTreeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'app', nodeFilter: allNodeFilter } })
     const appTreeView = appTreeViewWrapper.vm as StorageTreeView
     expect(appTreeView.rootNode.name).toBe(String(i18n.t('storage.appRootName')))
     expect((appTreeView as any).storageLogic).toBe(appStoragePage.storageLogic)
     expect((appTreeView as any).storageRoute).toBe(appStoragePage.storageRoute)
 
-    const docsTreeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'docs' } })
+    const docsTreeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'docs', nodeFilter: allNodeFilter } })
     const docsTreeView = docsTreeViewWrapper.vm as StorageTreeView
     expect(docsTreeView.rootNode.name).toBe(String(i18n.t('storage.docsRootName')))
     expect((docsTreeView as any).storageLogic).toBe(docsStoragePage.storageLogic)
@@ -136,9 +145,9 @@ describe('StorageType関連の検証', () => {
     ;(userStoragePage as any).storageType = 'user'
     ;(userStoragePage as any).storageLogic = td.object<StorageLogic>()
     ;(userStoragePage as any).storageRoute = td.object<StorageRoute>()
-    StorageTypeData.register(userStoragePage)
+    StoragePageStore.register(userStoragePage)
 
-    const userTreeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'user' } })
+    const userTreeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'user', nodeFilter: allNodeFilter } })
     const userTreeView = userTreeViewWrapper.vm as StorageTreeView
 
     expect(userTreeView.pageStore.isInitialPull).toBeFalsy()
@@ -155,7 +164,7 @@ describe('StorageType関連の検証', () => {
   //   ;(storagePage as any).storageLogic = td.object<StorageLogic>()
   //   ;(storagePage as any).storageRoute = td.object<StorageRoute>()
   //   StorageTypeData.register(storagePage)
-  //   const treeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'user' } })
+  //   const treeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'user', nodeFilter: allNodeFilter } })
   //   const treeView = treeViewWrapper.vm as StorageTreeView
   //
   //   //
@@ -203,7 +212,7 @@ describe('StorageType関連の検証', () => {
   //   ;(storagePage as any).storageLogic = td.object<StorageLogic>()
   //   ;(storagePage as any).storageRoute = td.object<StorageRoute>()
   //   StorageTypeData.register(storagePage)
-  //   const treeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'user' } })
+  //   const treeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'user', nodeFilter: allNodeFilter } })
   //   const treeView = treeViewWrapper.vm as StorageTreeView
   //
   //   // サインイン状態にする
@@ -226,14 +235,18 @@ describe('StorageType関連の検証', () => {
 
 describe('pullInitialNodes', () => {
   it('ベーシックケース', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
-    // └d1
-    //   └d11
-    //     └f111.txt
+    // ※ツリービューにまだノードはない
     const d1 = newTestStorageDirNode(`d1`)
     const d11 = newTestStorageDirNode(`d1/d11`)
     const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
 
+    // APIから以下の状態のノードリストが取得される
+    // ・'d1'
+    // ・'d1/d11'
+    // ・'d1/d11/f111.txt'
     td.when(storageLogic.fetchChildren(td.matchers.anything())).thenReturn()
     td.replace(storageLogic, 'nodes', [d1, d11, f111])
 
@@ -241,6 +254,10 @@ describe('pullInitialNodes', () => {
     const actual = treeView.getAllNodes()
 
     // ツリービューが想定したノード構成になっているか検証
+    // root
+    // └d1
+    //   └d11
+    //     └f111.txt
     expect(actual.length).toBe(4)
     expect(actual[0].path).toBe(``)
     expect(actual[1].path).toBe(`d1`)
@@ -266,11 +283,42 @@ describe('pullInitialNodes', () => {
     expect(exp.calls[0].args[0]).toBe(``)
     expect(exp.calls[1].args[0]).toBe(`d1`)
     expect(exp.calls[2].args[0]).toBe(`d1/d11`)
+
+    verifyParentChildRelationForTree(treeView)
+  })
+
+  it('nodeFilterが機能しているか検証', async () => {
+    const { treeView, storageLogic } = newTreeView({ nodeFilter: dirNodeFilter })
+
+    // root
+    // ※ツリービューにまだノードはない
+    const d1 = newTestStorageDirNode(`d1`)
+    const f1 = newTestStorageFileNode(`f1.txt`)
+
+    // APIから以下の状態のノードリストが取得される
+    // ・'d1'
+    // ・'f1.txt'
+    td.when(storageLogic.fetchChildren(td.matchers.anything())).thenReturn()
+    td.replace(storageLogic, 'nodes', [d1, f1])
+
+    await treeView.pullInitialNodes()
+    const actual = treeView.getAllNodes()
+
+    // root
+    // ├d1
+    // └f1.txt ← nodeFilterで除外されるのでツリーには存在しない
+    expect(actual.length).toBe(2)
+    expect(actual[0].path).toBe(``)
+    expect(actual[1].path).toBe(`d1`)
+
+    verifyParentChildRelationForTree(treeView)
   })
 })
 
 describe('pullChildren', () => {
   it('dirPathを指定した場合 - ルートノードを指定', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root ← 対象
     // ├d1
     // └d3
@@ -278,7 +326,6 @@ describe('pullChildren', () => {
     const d2 = newTestStorageDirNode(`d2`)
     const d3 = newTestStorageDirNode(`d3`)
     treeView.setAllNodes([d1, d3])
-    console.log(treeView.getAllNodes().map(node => node.path))
     expect(treeView.getNode(``)!.lazyLoadStatus).toBe('none')
 
     // APIから以下の状態のノードリストが取得される
@@ -299,9 +346,13 @@ describe('pullChildren', () => {
     expect(_d2.path).toBe(`d2`)
 
     expect(_root.lazyLoadStatus).toBe('loaded')
+
+    verifyParentChildRelationForTree(treeView)
   })
 
   it('dirPathを指定した場合 - ルートノード配下のディレクトリを指定', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // └d1 ← 対象
     //   ├d11
@@ -333,11 +384,42 @@ describe('pullChildren', () => {
     expect(_d12.path).toBe(`d1/d12`)
 
     expect(_d1.lazyLoadStatus).toBe('loaded')
+
+    verifyParentChildRelationForTree(treeView)
+  })
+
+  it('nodeFilterが機能しているか検証', async () => {
+    const { treeView, storageLogic } = newTreeView({ nodeFilter: dirNodeFilter })
+
+    // root ← 対象
+    // └d1
+    const d1 = newTestStorageDirNode(`d1`)
+    const f1 = newTestStorageFileNode(`f1.txt`) // 追加される
+    treeView.setAllNodes([d1])
+
+    // APIから以下の状態のノードリストが取得される
+    // ・'f1.txt'が追加された
+    td.when(storageLogic.fetchChildren(``)).thenResolve([d1, f1])
+
+    await treeView.pullChildren(``)
+    const actual = treeView.getAllNodes()
+    const [_root, _d1] = actual
+
+    // root
+    // ├d1
+    // └f1.txt ← nodeFilterで除外されるのでツリーには存在しない
+    expect(actual.length).toBe(2)
+    expect(_root.path).toBe(``)
+    expect(_d1.path).toBe(`d1`)
+
+    verifyParentChildRelationForTree(treeView)
   })
 })
 
 describe('reloadDir', () => {
   it('dirPathにルートノードを指定', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├d1
     // │├d11
@@ -359,7 +441,7 @@ describe('reloadDir', () => {
     // ・'d1/d11/f111.txt'が'f1.txt'へ移動+リネームされた
     // ・'d1/d11/f112.txt'が追加された
     // ・'d1/d12'が削除された
-    const renamed_f1 = cloneTestStorageNode(f111, { dir: ``, path: `f1.txt`, updatedAt: dayjs() })
+    const renamed_f1 = cloneTestStorageNode(f111, { dir: ``, path: `f1.txt` })
     // StorageLogic.getDirDescendants()をモック化
     td.when(storageLogic.getDirDescendants(``)).thenReturn([d1, d11, f112, d2, renamed_f1])
 
@@ -396,6 +478,8 @@ describe('reloadDir', () => {
   })
 
   it('dirPathにルートノード配下のディレクトリを指定', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├d1
     // │├d11
@@ -421,7 +505,7 @@ describe('reloadDir', () => {
     // ・'d1/d11/d111'が削除された
     // ・'d1/d11/f111.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
     // ・'d1/d11/f112.txt'が追加された
-    const updated_f111 = cloneTestStorageNode(f111, { id: generateFirestoreId(), updatedAt: dayjs() })
+    const updated_f111 = cloneTestStorageNode(f111, { id: generateFirestoreId() })
     // StorageLogic.getNode()をモック化
     td.when(storageLogic.getNode({ path: d1.path })).thenReturn(d1)
     // StorageLogic.getDirDescendants()をモック化
@@ -465,6 +549,8 @@ describe('reloadDir', () => {
   })
 
   it('dirPathのノードが削除されていた場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├d1
     // │├d11
@@ -523,6 +609,8 @@ describe('reloadDir', () => {
   })
 
   it('dirPathの上位ノードが削除されていた場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├d1
     // │├d11
@@ -576,10 +664,41 @@ describe('reloadDir', () => {
 
     verifyParentChildRelationForTree(treeView)
   })
+
+  it('nodeFilterが機能しているか検証', async () => {
+    const { treeView, storageLogic } = newTreeView({ nodeFilter: dirNodeFilter })
+
+    // root
+    // └d1
+    const d1 = newTestStorageDirNode(`d1`)
+    const f1 = newTestStorageFileNode(`f1.txt`) // 追加される
+    treeView.setAllNodes([d1])
+
+    // 以下の状態のノードリストを再現する
+    // ・'f1.txt'が追加された
+    // StorageLogic.getDirDescendants()をモック化
+    td.when(storageLogic.getDirDescendants(``)).thenReturn([d1, f1])
+
+    // ルートノードを指定して実行
+    await treeView.reloadDir(``)
+    const actual = treeView.getAllNodes()
+    const [_root, _d1] = actual
+
+    // root
+    // ├d1
+    // └f1.txt ← nodeFilterで除外されるのでツリーには存在しない
+    expect(actual.length).toBe(2)
+    expect(_root.path).toBe(``)
+    expect(_d1.path).toBe(`d1`)
+
+    verifyParentChildRelationForTree(treeView)
+  })
 })
 
 describe('onUploaded', () => {
   it('ベーシックケース', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // └d1 ← アップロードディレクトリ
     //   ├d11 ← 今回アップロード、子ノード読み込み済み(アップロード前は子ノードが存在しなかった)
@@ -626,7 +745,7 @@ describe('onUploaded', () => {
 
     // root
     // └d1
-    //   ├d11 ← リロードにより配下ノードも読み込まれた
+    //   ├d11 ← 子ノードが未読み込み済みだったので、リロードにより配下ノードも読み込まれた
     //   │├d111
     //   ││└fileA.txt
     //   │└fileB.txt
@@ -647,9 +766,13 @@ describe('onUploaded', () => {
     expect(_fileD.path).toBe(`d1/fileD.txt`)
     // アップロードディレクトリの遅延ロード状態の検証
     expect(_d1.lazyLoadStatus).toBe('loaded')
+
+    verifyParentChildRelationForTree(treeView)
   })
 
   it('ルートディレクトリへアップロードした場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root ← アップロードディレクトリ
     // ├d1 ← 今回アップロード、子ノード読み込み済み(アップロード前は子ノードが存在しなかった)
     // │└d11 ← 今回アップロード
@@ -697,11 +820,51 @@ describe('onUploaded', () => {
     expect(_fileB.path).toBe(`fileB.txt`)
     // アップロードディレクトリの遅延ロード状態の検証
     expect(_root.lazyLoadStatus).toBe('loaded')
+
+    verifyParentChildRelationForTree(treeView)
+  })
+
+  it('nodeFilterが機能しているか検証', async () => {
+    const { treeView, storageLogic } = newTreeView({ nodeFilter: dirNodeFilter })
+
+    // root ← アップロードディレクトリ
+    // └d1
+    const d1 = newTestStorageDirNode(`d1`)
+    const fileA = newTestStorageFileNode(`fileA.txt`) // 今回アップロード
+    treeView.setAllNodes([d1])
+
+    const e: UploadEndedEvent = {
+      uploadDirPath: '',
+      uploadedFiles: [fileA],
+    }
+
+    //
+    // モック設定
+    //
+    // ロジックストア(サーバー)からアップロードディレクトリ直下のノードを取得
+    // ・'fileA.txt'がアップロードされた
+    td.when(storageLogic.fetchChildren(e.uploadDirPath)).thenResolve([d1, fileA])
+
+    // アップロードが行われた後のツリーの更新処理を実行
+    await treeView.onUploaded(e)
+
+    // root
+    // ├d1
+    // └fileA.txt ← nodeFilterで除外されるのでツリーには存在しない
+    const actual = treeView.getAllNodes()
+    const [_root, _d1] = actual
+    expect(actual.length).toBe(2)
+    expect(_root.path).toBe(``)
+    expect(_d1.path).toBe(`d1`)
+
+    verifyParentChildRelationForTree(treeView)
   })
 })
 
 describe('getAllNodes', () => {
   it('ベーシックケース', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d11 = newTestStorageDirNode(`d1/d11`)
     const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
@@ -729,6 +892,8 @@ describe('getAllNodes', () => {
 
 describe('getNode', () => {
   it('ベーシックケース', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d2 = newTestStorageDirNode(`d2`)
     treeView.setAllNodes([d1, d2])
@@ -739,6 +904,8 @@ describe('getNode', () => {
   })
 
   it('ルートノードを取得', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d2 = newTestStorageDirNode(`d2`)
     treeView.setAllNodes([d1, d2])
@@ -751,6 +918,8 @@ describe('getNode', () => {
 
 describe('setAllNodes', () => {
   it('ソートされていないノードリストを渡した場合', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├d1
     // │├d11
@@ -789,6 +958,8 @@ describe('setAllNodes', () => {
 
 describe('mergeAllNodes', () => {
   it('ベーシックケース', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├d1
     // │├d11
@@ -806,7 +977,7 @@ describe('mergeAllNodes', () => {
     // ・'d1/d11/f111.txt'が'fA.txt'へ移動+リネームされた
     // ・'d1/d11/f11A.txt'が追加された
     // ・'d1/d12'が削除された
-    const fA = cloneTestStorageNode(f111, { dir: ``, path: `fA.txt`, updatedAt: dayjs() })
+    const fA = cloneTestStorageNode(f111, { dir: ``, path: `fA.txt` })
     const f11A = newTestStorageFileNode(`d1/d11/f11A.txt`)
     treeView.mergeAllNodes([d1, d11, f11A, fA, d2])
     const actual = treeView.getAllNodes()
@@ -831,6 +1002,8 @@ describe('mergeAllNodes', () => {
 
 describe('mergeDirDescendants', () => {
   it('ベーシックケース', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├d1 ← 対象
     // │├d11
@@ -877,6 +1050,8 @@ describe('mergeDirDescendants', () => {
   })
 
   it('引数ディレクトリが削除されていた', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├d1 ← 対象
     // │└d11
@@ -903,10 +1078,42 @@ describe('mergeDirDescendants', () => {
 
     verifyParentChildRelationForTree(treeView)
   })
+
+  it('nodeFilterが機能しているか検証', () => {
+    const { treeView, storageLogic } = newTreeView({ nodeFilter: dirNodeFilter })
+
+    // root
+    // └d1 ← 対象
+    //   └d11
+    const d1 = newTestStorageDirNode(`d1`)
+    const d11 = newTestStorageDirNode(`d1/d11`)
+    const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
+    treeView.setAllNodes([d1, d11])
+
+    // ロジックストアから以下の状態のノードリストが取得される
+    // ・'d1/d11/f111.txt'が追加された
+    td.when(storageLogic.getDirDescendants(d1.path)).thenReturn([d1, d11, f111])
+
+    treeView.mergeDirDescendants(d1.path)
+    const actual = treeView.getAllNodes()
+
+    // root
+    // └d1
+    //   └d11
+    //      └f111.txt ← nodeFilterで除外されるのでツリーには存在しない
+    expect(actual.length).toBe(3)
+    expect(actual[0].path).toBe(``)
+    expect(actual[1].path).toBe(`d1`)
+    expect(actual[2].path).toBe(`d1/d11`)
+
+    verifyParentChildRelationForTree(treeView)
+  })
 })
 
 describe('mergeDirChildren', () => {
   it('ベーシックケース', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├d1 ← 対象
     // │├d11
@@ -936,7 +1143,7 @@ describe('mergeDirChildren', () => {
     // root
     // ├d1
     // │├d11
-    // ││└f111.txt
+    // ││├f111.txt
     // ││└f112.txt
     // │└f11.txt
     // └d2
@@ -953,6 +1160,8 @@ describe('mergeDirChildren', () => {
   })
 
   it('引数ディレクトリが削除されていた', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├d1 ← 対象
     // │└d11
@@ -979,10 +1188,42 @@ describe('mergeDirChildren', () => {
 
     verifyParentChildRelationForTree(treeView)
   })
+
+  it('nodeFilterが機能しているか検証', () => {
+    const { treeView, storageLogic } = newTreeView({ nodeFilter: dirNodeFilter })
+
+    // root
+    // └d1 ← 対象
+    //   └d11
+    const d1 = newTestStorageDirNode(`d1`)
+    const d11 = newTestStorageDirNode(`d1/d11`)
+    const f11 = newTestStorageFileNode(`d1/f11.txt`)
+    treeView.setAllNodes([d1, d11])
+
+    // ロジックストアから以下の状態のノードリストが取得される
+    // ・'d1/f11.txt'が追加された
+    td.when(storageLogic.getDirChildren(d1.path)).thenReturn([d1, d11, f11])
+
+    treeView.mergeDirChildren(d1.path)
+    const actual = treeView.getAllNodes()
+
+    // root
+    // └d1
+    //   ├d11
+    //   └f1.txt ← nodeFilterで除外されるのでツリーには存在しない
+    expect(actual.length).toBe(3)
+    expect(actual[0].path).toBe(``)
+    expect(actual[1].path).toBe(`d1`)
+    expect(actual[2].path).toBe(`d1/d11`)
+
+    verifyParentChildRelationForTree(treeView)
+  })
 })
 
 describe('setNode + setNodes', () => {
   it('ツリーに存在しないノードの設定', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode('d1')
     const d11 = newTestStorageDirNode('d1/d11')
     const f111 = newTestStorageFileNode('d1/d11/f111.txt')
@@ -996,6 +1237,8 @@ describe('setNode + setNodes', () => {
   })
 
   it('ツリーに存在するノードの設定', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d11 = newTestStorageDirNode(`d1/d11`)
     const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
@@ -1016,6 +1259,8 @@ describe('setNode + setNodes', () => {
   })
 
   it('ツリーに存在するノードの設定 - 親が変わっていた場合', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d11 = newTestStorageDirNode(`d1/d11`)
     const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
@@ -1039,6 +1284,8 @@ describe('setNode + setNodes', () => {
   })
 
   it('ツリーに存在するノードの設定 - リネームされていた場合', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d11 = newTestStorageDirNode(`d1/d11`)
     const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
@@ -1062,6 +1309,8 @@ describe('setNode + setNodes', () => {
   })
 
   it('ディレクトリ削除後また同じディレクトリに同じ名前のディレクトリが作成された場合', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d11 = newTestStorageDirNode(`d1/d11`)
     treeView.setAllNodes([d1, d11])
@@ -1079,6 +1328,8 @@ describe('setNode + setNodes', () => {
   })
 
   it('ファイル削除後また同じディレクトリに同じ名前でファイルがアップロードされた場合', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d11 = newTestStorageDirNode(`d1/d11`)
     const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
@@ -1098,6 +1349,8 @@ describe('setNode + setNodes', () => {
   })
 
   it('ソートされていないノードリストを渡した場合', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d11 = newTestStorageDirNode(`d1/d11`)
     const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
@@ -1126,6 +1379,8 @@ describe('setNode + setNodes', () => {
 
 describe('removeNodes', () => {
   it('ベーシックケース', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d11 = newTestStorageDirNode(`d1/d11`)
     const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
@@ -1144,6 +1399,8 @@ describe('removeNodes', () => {
   })
 
   it(`'d1/d11'と親である'd1'を同時に指定した場合`, () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d11 = newTestStorageDirNode(`d1/d11`)
     const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
@@ -1161,6 +1418,8 @@ describe('removeNodes', () => {
   })
 
   it('存在しないパスを指定した場合', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d2 = newTestStorageDirNode(`d2`)
     treeView.setAllNodes([d1, d2])
@@ -1172,6 +1431,8 @@ describe('removeNodes', () => {
   })
 
   it('削除により選択ノードがなくなった場合', () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d11 = newTestStorageDirNode(`d1/d11`)
     const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
@@ -1192,6 +1453,8 @@ describe('removeNodes', () => {
 
 describe('moveNode', () => {
   it('ディレクトリの移動', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├dev
     // │└projects ← workへ移動
@@ -1242,6 +1505,8 @@ describe('moveNode', () => {
   })
 
   it('ファイルの移動', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├d1
     // │├fileA.txt
@@ -1273,6 +1538,8 @@ describe('moveNode', () => {
   })
 
   it('ディレクトリのリネーム', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├d1
     // ├d2
@@ -1298,6 +1565,8 @@ describe('moveNode', () => {
   })
 
   it('ファイルのリネーム', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├file1.txt
     // ├file2.txt
@@ -1323,6 +1592,8 @@ describe('moveNode', () => {
   })
 
   it('ルートディレクトリへ移動', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // └dB
     //   ├dA
@@ -1354,6 +1625,8 @@ describe('moveNode', () => {
   })
 
   it('移動先に同名のディレクトリまたはファイルが存在する場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├dA
     // │└d1 ← 移動するノード
@@ -1454,6 +1727,8 @@ describe('moveNode', () => {
 
 describe('createStorageDir', () => {
   it('ベーシックケース', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // └d1
     //   └d12
@@ -1487,6 +1762,8 @@ describe('createStorageDir', () => {
   })
 
   it('ルートディレクトリ直下に作成', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // └d2
     const d2 = newTestStorageDirNode(`d2`)
@@ -1518,6 +1795,8 @@ describe('createStorageDir', () => {
   })
 
   it('APIでエラーが発生した場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     td.when(storageLogic.createDirs([`dA`])).thenReject(new Error())
 
     await treeView.createStorageDir(`dA`)
@@ -1529,6 +1808,8 @@ describe('createStorageDir', () => {
 
 describe('removeStorageNodes', () => {
   it('ベーシックケース', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├dev
     // │├projects ← 削除
@@ -1545,6 +1826,10 @@ describe('removeStorageNodes', () => {
     const memo = newTestStorageFileNode(`dev/memo.txt`)
     const work = newTestStorageDirNode(`work`)
     treeView.setAllNodes([dev, projects, blog, src, index, memo, work])
+
+    // モック設定
+    td.when(storageLogic.sgetNode({ path: `dev/projects` })).thenReturn(projects)
+    td.when(storageLogic.sgetNode({ path: `dev/memo.txt` })).thenReturn(memo)
 
     // 'dev/projects'と'dev/memo.txt'を削除
     await treeView.removeStorageNodes([`dev/projects`, `dev/memo.txt`])
@@ -1566,6 +1851,8 @@ describe('removeStorageNodes', () => {
   })
 
   it('ルートディレクトリ直下のノードを削除', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├dev
     // │├projects
@@ -1583,6 +1870,9 @@ describe('removeStorageNodes', () => {
     const work = newTestStorageDirNode(`work`)
     treeView.setAllNodes([dev, projects, blog, src, index, memo, work])
 
+    // モック設定
+    td.when(storageLogic.sgetNode({ path: `dev` })).thenReturn(dev)
+
     // 'dev'を削除
     await treeView.removeStorageNodes([`dev`])
 
@@ -1598,7 +1888,28 @@ describe('removeStorageNodes', () => {
     verifyParentChildRelationForTree(treeView)
   })
 
+  it('存在しないパスを指定した場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
+    treeView.setAllNodes([])
+
+    // モック設定
+    const expected = new Error()
+    td.when(storageLogic.sgetNode({ path: `dXXX` })).thenThrow(expected)
+
+    let actual!: Error
+    try {
+      await treeView.removeStorageNodes([`dXXX`])
+    } catch (err) {
+      actual = err
+    }
+
+    expect(actual).toBe(expected)
+  })
+
   it('APIでエラーが発生した場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├dev
     // │├projects ← 削除
@@ -1618,6 +1929,8 @@ describe('removeStorageNodes', () => {
 
     // モック設定
     {
+      td.when(storageLogic.sgetNode({ path: `dev/projects` })).thenReturn(projects)
+      td.when(storageLogic.sgetNode({ path: `dev/memo.txt` })).thenReturn(memo)
       // 'dev/projects'の削除でAPIエラーを発生させる
       td.when(storageLogic.removeDir(`dev/projects`)).thenReject(new Error())
       td.when(storageLogic.removeFile(`dev/memo.txt`)).thenResolve()
@@ -1652,6 +1965,8 @@ describe('removeStorageNodes', () => {
 
 describe('moveStorageNodes', () => {
   it('ベーシックケース', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├dev
     // │├projects ← workへ移動
@@ -1659,27 +1974,31 @@ describe('moveStorageNodes', () => {
     // ││  └src
     // ││    └index.html
     // │└memo.txt ← workへ移動
-    // └work ← 読み込まれていない
+    // └work ← クライアントに読み込まれていない
     const dev = newTestStorageDirNode(`dev`)
-    let projects = newTestStorageDirNode(`dev/projects`)
-    let blog = newTestStorageDirNode(`dev/projects/blog`)
-    let src = newTestStorageDirNode(`dev/projects/blog/src`)
-    let index = newTestStorageFileNode(`dev/projects/blog/src/index.html`)
-    let memo = newTestStorageFileNode(`dev/memo.txt`)
+    const projects = newTestStorageDirNode(`dev/projects`)
+    const blog = newTestStorageDirNode(`dev/projects/blog`)
+    const src = newTestStorageDirNode(`dev/projects/blog/src`)
+    const index = newTestStorageFileNode(`dev/projects/blog/src/index.html`)
+    const memo = newTestStorageFileNode(`dev/memo.txt`)
     const work = newTestStorageDirNode(`work`)
     treeView.setAllNodes([dev, projects, blog, src, index, memo])
 
     // モック設定
     {
-      projects = cloneTestStorageNode(projects, { dir: `work`, path: `work/projects` })
-      blog = cloneTestStorageNode(blog, { dir: `work/projects`, path: `work/projects/blog` })
-      src = cloneTestStorageNode(src, { dir: `work/projects/blog`, path: `work/projects/blog/src` })
-      index = cloneTestStorageNode(index, { dir: `work/projects/blog/src`, path: `work/projects/blog/src/index.html` })
-      memo = cloneTestStorageNode(memo, { dir: `work`, path: `work/memo.txt` })
+      const to_projects = cloneTestStorageNode(projects, { dir: `work`, path: `work/projects` })
+      const to_blog = cloneTestStorageNode(blog, { dir: `work/projects`, path: `work/projects/blog` })
+      const to_src = cloneTestStorageNode(src, { dir: `work/projects/blog`, path: `work/projects/blog/src` })
+      const to_index = cloneTestStorageNode(index, { dir: `work/projects/blog/src`, path: `work/projects/blog/src/index.html` })
+      const to_memo = cloneTestStorageNode(memo, { dir: `work`, path: `work/memo.txt` })
+
+      // 0. 対象ノードの取得
+      td.when(storageLogic.sgetNode({ path: `dev/projects` })).thenReturn(projects)
+      td.when(storageLogic.sgetNode({ path: `dev/memo.txt` })).thenReturn(memo)
 
       // 1. APIによる移動処理を実行
-      td.when(storageLogic.moveDir(`dev/projects`, `work/projects`)).thenReturn([projects, blog, src, index])
-      td.when(storageLogic.moveFile(`dev/memo.txt`, `work/memo.txt`)).thenReturn(memo)
+      td.when(storageLogic.moveDir(`dev/projects`, `work/projects`)).thenReturn([to_projects, to_blog, to_src, to_index])
+      td.when(storageLogic.moveFile(`dev/memo.txt`, `work/memo.txt`)).thenReturn(to_memo)
 
       // 2. 移動先ディレクトリとその上位ディレクトリ階層の作成
       td.when(storageLogic.fetchHierarchicalNodes(`work`)).thenReturn([work])
@@ -1725,26 +2044,32 @@ describe('moveStorageNodes', () => {
   })
 
   it('ルートディレクトリへ移動', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // └dB
     //   ├dA ← ルートディレクトリへ移動
     //   │└fileA.txt
     //   └fileB.txt ← ルートディレクトリへ移動
     const dB = newTestStorageDirNode(`dB`)
-    let dA = newTestStorageDirNode(`dB/dA`)
-    let fileA = newTestStorageFileNode(`dB/dA/fileA.txt`)
-    let fileB = newTestStorageFileNode(`dB/fileB.txt`)
+    const dA = newTestStorageDirNode(`dB/dA`)
+    const fileA = newTestStorageFileNode(`dB/dA/fileA.txt`)
+    const fileB = newTestStorageFileNode(`dB/fileB.txt`)
     treeView.setAllNodes([dB, dA, fileA, fileB])
 
     // モック設定
     {
-      dA = cloneTestStorageNode(dA, { dir: ``, path: `dA` })
-      fileA = cloneTestStorageNode(fileA, { dir: `dA`, path: `dA/fileA.txt` })
-      fileB = cloneTestStorageNode(fileB, { dir: ``, path: `fileB.txt` })
+      const to_dA = cloneTestStorageNode(dA, { dir: ``, path: `dA` })
+      const to_fileA = cloneTestStorageNode(fileA, { dir: `dA`, path: `dA/fileA.txt` })
+      const to_fileB = cloneTestStorageNode(fileB, { dir: ``, path: `fileB.txt` })
+
+      // 0. 対象ノードの取得
+      td.when(storageLogic.sgetNode({ path: `dB/dA` })).thenReturn(dA)
+      td.when(storageLogic.sgetNode({ path: `dB/fileB.txt` })).thenReturn(fileB)
 
       // 1. APIによる移動処理を実行
-      td.when(storageLogic.moveDir(`dB/dA`, `dA`)).thenReturn([dA, fileA])
-      td.when(storageLogic.moveFile(`dB/fileB.txt`, `fileB.txt`)).thenReturn(fileB)
+      td.when(storageLogic.moveDir(`dB/dA`, `dA`)).thenReturn([to_dA, to_fileA])
+      td.when(storageLogic.moveFile(`dB/fileB.txt`, `fileB.txt`)).thenReturn(to_fileB)
 
       // 2. 移動先ディレクトリとその上位ディレクトリ階層の作成
       td.when(storageLogic.fetchHierarchicalNodes(``)).thenReturn([])
@@ -1790,6 +2115,8 @@ describe('moveStorageNodes', () => {
   })
 
   it('移動先に同名のディレクトリまたはファイルが存在する場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├dA
     // │└d1 ← 移動するノード
@@ -1819,13 +2146,13 @@ describe('moveStorageNodes', () => {
     const dA_fileX = newTestStorageFileNode(`dA/d1/fileX.txt`)
     const dA_fileY = newTestStorageFileNode(`dA/d1/fileY.txt`)
     const dB = newTestStorageDirNode(`dB`)
-    let dB_d1 = newTestStorageDirNode(`dB/d1`)
-    let dB_d11 = newTestStorageDirNode(`dB/d1/d11`)
-    let dB_d111 = newTestStorageDirNode(`dB/d1/d11/d111`)
-    let dB_fileA = newTestStorageFileNode(`dB/d1/d11/d111/fileA.txt`)
+    const dB_d1 = newTestStorageDirNode(`dB/d1`)
+    const dB_d11 = newTestStorageDirNode(`dB/d1/d11`)
+    const dB_d111 = newTestStorageDirNode(`dB/d1/d11/d111`)
+    const dB_fileA = newTestStorageFileNode(`dB/d1/d11/d111/fileA.txt`)
     const dB_fileC = newTestStorageFileNode(`dB/d1/d11/d111/fileC.txt`)
     const dB_d13 = newTestStorageDirNode(`dB/d1/d13`)
-    let dB_fileX = newTestStorageFileNode(`dB/d1/fileX.txt`)
+    const dB_fileX = newTestStorageFileNode(`dB/d1/fileX.txt`)
     const dB_fileZ = newTestStorageFileNode(`dB/d1/fileZ.txt`)
     treeView.setAllNodes([
       dA,
@@ -1850,27 +2177,30 @@ describe('moveStorageNodes', () => {
 
     // モック設定
     {
-      dB_d1 = cloneTestStorageNode(dA_d1, { dir: `dB`, path: `dB/d1` })
-      dB_d11 = cloneTestStorageNode(dA_d11, { dir: `dB/d1`, path: `dB/d1/d11` })
-      dB_d111 = cloneTestStorageNode(dA_d111, { dir: `dB/d1/d11`, path: `dB/d1/d11/d111` })
-      dB_fileA = cloneTestStorageNode(dA_fileA, { dir: `dB/d1/d11/d111`, path: `dB/d1/d11/d111/fileA.txt` })
-      const dB_fileB = cloneTestStorageNode(dA_fileB, { dir: `dB/d1/d11/d111`, path: `dB/d1/d11/d111/fileB.txt` })
-      const dB_d12 = cloneTestStorageNode(dA_d12, { dir: `dB/d1`, path: `dB/d1/d12` })
-      dB_fileX = cloneTestStorageNode(dA_fileX, { dir: `dB/d1`, path: `dB/d1/fileX.txt` })
-      const dB_fileY = cloneTestStorageNode(dA_fileY, { dir: `dB/d1`, path: `dB/d1/fileY.txt` })
+      const to_dB_d1 = cloneTestStorageNode(dA_d1, { dir: `dB`, path: `dB/d1` })
+      const to_dB_d11 = cloneTestStorageNode(dA_d11, { dir: `dB/d1`, path: `dB/d1/d11` })
+      const to_dB_d111 = cloneTestStorageNode(dA_d111, { dir: `dB/d1/d11`, path: `dB/d1/d11/d111` })
+      const to_dB_fileA = cloneTestStorageNode(dA_fileA, { dir: `dB/d1/d11/d111`, path: `dB/d1/d11/d111/fileA.txt` })
+      const to_dB_fileB = cloneTestStorageNode(dA_fileB, { dir: `dB/d1/d11/d111`, path: `dB/d1/d11/d111/fileB.txt` })
+      const to_dB_d12 = cloneTestStorageNode(dA_d12, { dir: `dB/d1`, path: `dB/d1/d12` })
+      const to_dB_fileX = cloneTestStorageNode(dA_fileX, { dir: `dB/d1`, path: `dB/d1/fileX.txt` })
+      const to_dB_fileY = cloneTestStorageNode(dA_fileY, { dir: `dB/d1`, path: `dB/d1/fileY.txt` })
+
+      // 0. 対象ノードの取得
+      td.when(storageLogic.sgetNode({ path: `dA/d1` })).thenReturn(dA_d1)
 
       // 1. APIによる移動処理を実行
       td.when(storageLogic.moveDir(`dA/d1`, `dB/d1`)).thenReturn([
-        dB_d1,
-        dB_d11,
-        dB_d111,
-        dB_fileA,
-        dB_fileB,
+        to_dB_d1,
+        to_dB_d11,
+        to_dB_d111,
+        to_dB_fileA,
+        to_dB_fileB,
         dB_fileC,
-        dB_d12,
+        to_dB_d12,
         dB_d13,
-        dB_fileX,
-        dB_fileY,
+        to_dB_fileX,
+        to_dB_fileY,
         dB_fileZ,
       ])
 
@@ -1932,6 +2262,8 @@ describe('moveStorageNodes', () => {
   })
 
   it('ルートディレクトリを指定した場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d2 = newTestStorageDirNode(`d2`)
     treeView.setAllNodes([d1, d2])
@@ -1947,9 +2279,14 @@ describe('moveStorageNodes', () => {
   })
 
   it('存在しないパスを指定した場合', async () => {
-    const d1 = newTestStorageDirNode(`d1`)
-    const d2 = newTestStorageDirNode(`d2`)
-    treeView.setAllNodes([d1, d2])
+    const { treeView, storageLogic } = newTreeView()
+
+    const tmp = newTestStorageDirNode(`tmp`)
+    treeView.setAllNodes([tmp])
+
+    // モック設定
+    const expected = new Error()
+    td.when(storageLogic.sgetNode({ path: `dXXX` })).thenThrow(expected)
 
     let actual!: Error
     try {
@@ -1958,13 +2295,18 @@ describe('moveStorageNodes', () => {
       actual = err
     }
 
-    expect(actual.message).toBe(`The specified node could not be found: 'dXXX'`)
+    expect(actual).toBe(expected)
   })
 
   it('移動先ディレクトリが移動元のサブディレクトリの場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d2 = newTestStorageDirNode(`d2`)
     treeView.setAllNodes([d1, d2])
+
+    // モック設定
+    td.when(storageLogic.sgetNode({ path: `d1` })).thenReturn(d1)
 
     let actual!: Error
     try {
@@ -1977,6 +2319,8 @@ describe('moveStorageNodes', () => {
   })
 
   it('APIでエラーが発生した場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├dev
     // │├projects ← workへ移動
@@ -1990,18 +2334,22 @@ describe('moveStorageNodes', () => {
     const blog = newTestStorageDirNode(`dev/projects/blog`)
     const src = newTestStorageDirNode(`dev/projects/blog/src`)
     const index = newTestStorageFileNode(`dev/projects/blog/src/index.html`)
-    let memo = newTestStorageFileNode(`dev/memo.txt`)
+    const memo = newTestStorageFileNode(`dev/memo.txt`)
     const work = newTestStorageDirNode(`work`)
     treeView.setAllNodes([dev, projects, blog, src, index, memo, work])
 
     // モック設定
     {
-      memo = cloneTestStorageNode(memo, { dir: `work`, path: `work/memo.txt` })
+      const to_memo = cloneTestStorageNode(memo, { dir: `work`, path: `work/memo.txt` })
+
+      // 0. 対象ノードの取得
+      td.when(storageLogic.sgetNode({ path: `dev/projects` })).thenReturn(projects)
+      td.when(storageLogic.sgetNode({ path: `dev/memo.txt` })).thenReturn(memo)
 
       // 1. APIによる移動処理を実行
       // 'dev/projects'の移動でAPIエラーを発生させる
       td.when(storageLogic.moveDir(`dev/projects`, `work/projects`)).thenReject(new Error())
-      td.when(storageLogic.moveFile(`dev/memo.txt`, `work/memo.txt`)).thenReturn(memo)
+      td.when(storageLogic.moveFile(`dev/memo.txt`, `work/memo.txt`)).thenReturn(to_memo)
 
       // 2. 移動先ディレクトリとその上位ディレクトリ階層の作成
       td.when(storageLogic.fetchHierarchicalNodes(`work`)).thenReturn([work])
@@ -2043,10 +2391,71 @@ describe('moveStorageNodes', () => {
 
     verifyParentChildRelationForTree(treeView)
   })
+
+  it('nodeFilterが機能しているか検証', async () => {
+    const { treeView, storageLogic } = newTreeView({ nodeFilter: dirNodeFilter })
+
+    // root
+    // ├dev
+    // │├projects ← workへ移動
+    // │└memo.txt ← workへ移動 - nodeFilterで除外されるのでツリーには存在しない
+    // └work ← クライアントに読み込まれていない
+    const dev = newTestStorageDirNode(`dev`)
+    const projects = newTestStorageDirNode(`dev/projects`)
+    const memo = newTestStorageFileNode(`dev/memo.txt`)
+    const work = newTestStorageDirNode(`work`)
+    treeView.setAllNodes([dev, projects])
+
+    // モック設定
+    {
+      const to_projects = cloneTestStorageNode(projects, { dir: `work`, path: `work/projects` })
+      const to_memo = cloneTestStorageNode(memo, { dir: `work`, path: `work/memo.txt` })
+
+      // 0. 対象ノードの取得
+      td.when(storageLogic.sgetNode({ path: `dev/projects` })).thenReturn(projects)
+      td.when(storageLogic.sgetNode({ path: `dev/memo.txt` })).thenReturn(memo)
+
+      // 1. APIによる移動処理を実行
+      td.when(storageLogic.moveDir(`dev/projects`, `work/projects`)).thenReturn([to_projects])
+      td.when(storageLogic.moveFile(`dev/memo.txt`, `work/memo.txt`)).thenReturn(to_memo)
+
+      // 2. 移動先ディレクトリとその上位ディレクトリ階層の作成
+      td.when(storageLogic.fetchHierarchicalNodes(`work`)).thenReturn([work])
+    }
+
+    // 'dev/projects'と'dev/memo.txt'を'work'へ移動
+    await treeView.moveStorageNodes([`dev/projects`, `dev/memo.txt`], `work`)
+
+    // root
+    // ├dev
+    // └work
+    //   ├projects
+    //   └memo.txt ← nodeFilterで除外されるのでツリーには存在しない
+
+    // 'dev'の階層構造の検証
+    {
+      const _dev = treeView.getNode(`dev`)!
+      // 子孫ノードの検証
+      expect(_dev.getDescendants().length).toBe(0)
+    }
+    // 'work'の階層構造の検証
+    {
+      const _work = treeView.getNode(`work`)!
+      // 子孫ノードの検証
+      const _work_descendants = _work.getDescendants()
+      const [_projects] = _work_descendants
+      expect(_work_descendants.length).toBe(1)
+      expect(_projects.path).toBe(`work/projects`)
+    }
+
+    verifyParentChildRelationForTree(treeView)
+  })
 })
 
 describe('renameStorageNode', () => {
   it('ディレクトリのリネーム - ベーシックケース', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // └dA
     //   └d1 ← x1へリネーム
@@ -2056,27 +2465,30 @@ describe('renameStorageNode', () => {
     //     └fileB.txt
     const dA = newTestStorageDirNode(`dA`)
     const d1 = newTestStorageDirNode(`dA/d1`)
-    let d11 = newTestStorageDirNode(`dA/d1/d11`)
-    let fileA = newTestStorageFileNode(`dA/d1/d11/fileA.txt`)
-    let d12 = newTestStorageDirNode(`dA/d1/d12`)
-    let fileB = newTestStorageFileNode(`dA/d1/fileB.txt`)
+    const d11 = newTestStorageDirNode(`dA/d1/d11`)
+    const fileA = newTestStorageFileNode(`dA/d1/d11/fileA.txt`)
+    const d12 = newTestStorageDirNode(`dA/d1/d12`)
+    const fileB = newTestStorageFileNode(`dA/d1/fileB.txt`)
     treeView.setAllNodes([dA, d1, d11, fileA, d12, fileB])
 
     // ディレクトリの子ノード読み込みの検証準備
     treeView.getNode(`dA/d1`)!.lazyLoadStatus = 'loaded'
     treeView.getNode(`dA/d1/d11`)!.lazyLoadStatus = 'loaded'
-    const pullChildren = td.replace(treeView, 'pullChildren')
+    treeView.getNode(`dA/d1/d12`)!.lazyLoadStatus = 'none'
 
     // モック設定
     {
-      const x1 = cloneTestStorageNode(d1, { name: `x1`, dir: `dA`, path: `dA/x1` })
-      d11 = cloneTestStorageNode(d11, { dir: `dA/x1`, path: `dA/x1/d11` })
-      fileA = cloneTestStorageNode(fileA, { dir: `dA/x1/d11`, path: `dA/x1/d11/fileA.txt` })
-      d12 = cloneTestStorageNode(d12, { dir: `dA/x1`, path: `dA/x1/d12` })
-      fileB = cloneTestStorageNode(fileB, { dir: `dA/x1`, path: `dA/x1/fileB.txt` })
+      const to_x1 = cloneTestStorageNode(d1, { name: `x1`, dir: `dA`, path: `dA/x1` })
+      const to_d11 = cloneTestStorageNode(d11, { dir: `dA/x1`, path: `dA/x1/d11` })
+      const to_fileA = cloneTestStorageNode(fileA, { dir: `dA/x1/d11`, path: `dA/x1/d11/fileA.txt` })
+      const to_d12 = cloneTestStorageNode(d12, { dir: `dA/x1`, path: `dA/x1/d12` })
+      const to_fileB = cloneTestStorageNode(fileB, { dir: `dA/x1`, path: `dA/x1/fileB.txt` })
+
+      // 0. 対象ノードの取得
+      td.when(storageLogic.sgetNode({ path: `dA/d1` })).thenReturn(d1)
 
       // 1. APIによる移動処理を実行
-      td.when(storageLogic.renameDir(`dA/d1`, `x1`)).thenReturn([x1, d11, fileA, d12, fileB])
+      td.when(storageLogic.renameDir(`dA/d1`, `x1`)).thenReturn([to_x1, to_d11, to_fileA, to_d12, to_fileB])
     }
 
     // 'dA/d1'を'dA/x1'へリネーム
@@ -2108,6 +2520,8 @@ describe('renameStorageNode', () => {
   })
 
   it('ディレクトリのリネーム - 既存のディレクトリ名に文字を付け加える形でリネームをした場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // └dA
     //   └d1 ← d1XXXへリネーム
@@ -2117,22 +2531,25 @@ describe('renameStorageNode', () => {
     //     └fileB.txt
     const dA = newTestStorageDirNode(`dA`)
     const d1 = newTestStorageDirNode(`dA/d1`)
-    let d11 = newTestStorageDirNode(`dA/d1/d11`)
-    let fileA = newTestStorageFileNode(`dA/d1/d11/fileA.txt`)
-    let d12 = newTestStorageDirNode(`dA/d1/d12`)
-    let fileB = newTestStorageFileNode(`dA/d1/fileB.txt`)
+    const d11 = newTestStorageDirNode(`dA/d1/d11`)
+    const fileA = newTestStorageFileNode(`dA/d1/d11/fileA.txt`)
+    const d12 = newTestStorageDirNode(`dA/d1/d12`)
+    const fileB = newTestStorageFileNode(`dA/d1/fileB.txt`)
     treeView.setAllNodes([dA, d1, d11, fileA, d12, fileB])
 
     // モック設定
     {
-      const d1XXX = cloneTestStorageNode(d1, { name: `d1XXX`, dir: `dA`, path: `dA/d1XXX` })
-      d11 = cloneTestStorageNode(d11, { dir: `dA/d1XXX`, path: `dA/d1XXX/d11` })
-      fileA = cloneTestStorageNode(fileA, { dir: `dA/d1XXX/d11`, path: `dA/d1XXX/d11/fileA.txt` })
-      d12 = cloneTestStorageNode(d12, { dir: `dA/d1XXX`, path: `dA/d1XXX/d12` })
-      fileB = cloneTestStorageNode(fileB, { dir: `dA/d1XXX`, path: `dA/d1XXX/fileB.txt` })
+      const to_d1XXX = cloneTestStorageNode(d1, { name: `d1XXX`, dir: `dA`, path: `dA/d1XXX` })
+      const to_d11 = cloneTestStorageNode(d11, { dir: `dA/d1XXX`, path: `dA/d1XXX/d11` })
+      const to_fileA = cloneTestStorageNode(fileA, { dir: `dA/d1XXX/d11`, path: `dA/d1XXX/d11/fileA.txt` })
+      const to_d12 = cloneTestStorageNode(d12, { dir: `dA/d1XXX`, path: `dA/d1XXX/d12` })
+      const to_fileB = cloneTestStorageNode(fileB, { dir: `dA/d1XXX`, path: `dA/d1XXX/fileB.txt` })
+
+      // 0. 対象ノードの取得
+      td.when(storageLogic.sgetNode({ path: `dA/d1` })).thenReturn(d1)
 
       // 1. APIによる移動処理を実行
-      td.when(storageLogic.renameDir(`dA/d1`, `d1XXX`)).thenReturn([d1XXX, d11, fileA, d12, fileB])
+      td.when(storageLogic.renameDir(`dA/d1`, `d1XXX`)).thenReturn([to_d1XXX, to_d11, to_fileA, to_d12, to_fileB])
     }
 
     // 'dA/d1'を'dA/d1XXX'へリネーム
@@ -2164,6 +2581,8 @@ describe('renameStorageNode', () => {
   })
 
   it('ファイルのリネーム', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├dA
     // │└fileA.txt ← fileX.txtへリネーム
@@ -2177,10 +2596,13 @@ describe('renameStorageNode', () => {
 
     // モック設定
     {
-      const fileX = cloneTestStorageNode(fileA, { name: `fileX`, path: `dA/fileX.txt` })
+      const to_fileX = cloneTestStorageNode(fileA, { name: `fileX`, path: `dA/fileX.txt` })
+
+      // 0. 対象ノードの取得
+      td.when(storageLogic.sgetNode({ path: `dA/fileA.txt` })).thenReturn(fileA)
 
       // 1. APIによる移動処理を実行
-      td.when(storageLogic.renameFile(`dA/fileA.txt`, `fileX.txt`)).thenReturn(fileX)
+      td.when(storageLogic.renameFile(`dA/fileA.txt`, `fileX.txt`)).thenReturn(to_fileX)
     }
 
     // 'dA/fileA.txt'を'dA/fileX.txt'へリネーム
@@ -2198,13 +2620,15 @@ describe('renameStorageNode', () => {
   })
 
   it('ルートディレクトリ直下のノードをリネーム', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // ├dA ← dXへリネーム
     // │└fileA.txt
     // └dB
     //   └fileB.txt
     const dA = newTestStorageDirNode(`dA`)
-    let fileA = newTestStorageFileNode(`dA/fileA.txt`)
+    const fileA = newTestStorageFileNode(`dA/fileA.txt`)
     const dB = newTestStorageDirNode(`dB`)
     const fileB = newTestStorageFileNode(`dB/fileB.txt`)
     treeView.setAllNodes([dA, fileA, dB, fileB])
@@ -2216,11 +2640,14 @@ describe('renameStorageNode', () => {
 
     // モック設定
     {
-      const dX = cloneTestStorageNode(dA, { name: `dX`, path: `dX` })
-      fileA = cloneTestStorageNode(fileA, { dir: `dX`, path: `dX/fileA.txt` })
+      const to_dX = cloneTestStorageNode(dA, { name: `dX`, path: `dX` })
+      const to_fileA = cloneTestStorageNode(fileA, { dir: `dX`, path: `dX/fileA.txt` })
+
+      // 0. 対象ノードの取得
+      td.when(storageLogic.sgetNode({ path: `dA` })).thenReturn(dA)
 
       // 1. APIによる移動処理を実行
-      td.when(storageLogic.renameDir(`dA`, `dX`)).thenReturn([dX, fileA])
+      td.when(storageLogic.renameDir(`dA`, `dX`)).thenReturn([to_dX, to_fileA])
     }
 
     // 'dA'を'dX'へリネーム
@@ -2242,6 +2669,8 @@ describe('renameStorageNode', () => {
   })
 
   it('ルートディレクトリを指定した場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     const d1 = newTestStorageDirNode(`d1`)
     const d2 = newTestStorageDirNode(`d2`)
     treeView.setAllNodes([d1, d2])
@@ -2257,9 +2686,13 @@ describe('renameStorageNode', () => {
   })
 
   it('存在しないパスを指定した場合', async () => {
-    const d1 = newTestStorageDirNode(`d1`)
-    const d2 = newTestStorageDirNode(`d2`)
-    treeView.setAllNodes([d1, d2])
+    const { treeView, storageLogic } = newTreeView()
+
+    treeView.setAllNodes([])
+
+    // モック設定
+    const expected = new Error()
+    td.when(storageLogic.sgetNode({ path: `dXXX` })).thenThrow(expected)
 
     let actual!: Error
     try {
@@ -2268,7 +2701,48 @@ describe('renameStorageNode', () => {
       actual = err
     }
 
-    expect(actual.message).toBe(`The specified node could not be found: 'dXXX'`)
+    expect(actual).toBe(expected)
+  })
+
+  it('APIでエラーが発生した場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
+    // root
+    // └dA
+    //   └d1 ← x1へリネーム
+    //     └fileA.txt
+    const dA = newTestStorageDirNode(`dA`)
+    const d1 = newTestStorageDirNode(`dA/d1`)
+    const fileA = newTestStorageFileNode(`dA/d1/fileA.txt`)
+    treeView.setAllNodes([dA, d1, fileA])
+
+    // モック設定
+    {
+      const to_x1 = cloneTestStorageNode(d1, { name: `x1`, dir: `dA`, path: `dA/x1` })
+      const to_fileA = cloneTestStorageNode(fileA, { dir: `dA/x1/d11`, path: `dA/x1/fileA.txt` })
+
+      // 0. 対象ノードの取得
+      td.when(storageLogic.sgetNode({ path: `dA/d1` })).thenReturn(d1)
+
+      // 1. APIによる移動処理を実行
+      td.when(storageLogic.renameDir(`dA/d1`, `x1`)).thenReject(new Error())
+    }
+
+    // 'dA/d1'を'dA/x1'へリネーム
+    await treeView.renameStorageNode(`dA/d1`, `x1`)
+
+    // root
+    // └dA
+    //   └d1 ← リネームされなかった
+    //     └fileA.txt
+    const _d1 = treeView.getNode(`dA/d1`)!
+    const _d1_descendants = _d1.getDescendants()
+    const [_fileA] = _d1_descendants
+
+    expect(_d1_descendants.length).toBe(1)
+    expect(_fileA.path).toBe(`dA/d1/fileA.txt`)
+
+    verifyParentChildRelationForTree(treeView)
   })
 })
 
@@ -2280,6 +2754,8 @@ describe('setShareSettings', () => {
   }
 
   it('ベーシックケース', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // └dA
     //   ├d1 ← 設定対象
@@ -2288,27 +2764,32 @@ describe('setShareSettings', () => {
     //   ├fileB.txt ← 設定対象
     //   └fileC.txt
     const dA = newTestStorageDirNode(`dA`)
-    let d1 = newTestStorageDirNode(`dA/d1`)
+    const d1 = newTestStorageDirNode(`dA/d1`)
     const d11 = newTestStorageDirNode(`dA/d1/d11`)
     const fileA = newTestStorageFileNode(`dA/d1/d11/fileA.txt`)
-    let fileB = newTestStorageFileNode(`dA/fileB.txt`)
+    const fileB = newTestStorageFileNode(`dA/fileB.txt`)
     const fileC = newTestStorageFileNode(`dA/fileC.txt`)
     treeView.setAllNodes([dA, d1, d11, fileA, fileB, fileC])
 
     // モック設定
     {
-      d1 = cloneTestStorageNode(d1, { share: NEW_SHARE_SETTINGS })
-      fileB = cloneTestStorageNode(fileB, { share: NEW_SHARE_SETTINGS })
+      const to_d1 = cloneTestStorageNode(d1, { share: NEW_SHARE_SETTINGS })
+      const to_fileB = cloneTestStorageNode(fileB, { share: NEW_SHARE_SETTINGS })
 
-      td.when(storageLogic.setDirShareSettings(d1.path, NEW_SHARE_SETTINGS)).thenReturn(d1)
-      td.when(storageLogic.setFileShareSettings(fileB.path, NEW_SHARE_SETTINGS)).thenReturn(fileB)
+      td.when(storageLogic.sgetNode({ path: `dA/d1` })).thenReturn(d1)
+      td.when(storageLogic.sgetNode({ path: `dA/fileB.txt` })).thenReturn(fileB)
+
+      td.when(storageLogic.setDirShareSettings(to_d1.path, NEW_SHARE_SETTINGS)).thenReturn(to_d1)
+      td.when(storageLogic.setFileShareSettings(to_fileB.path, NEW_SHARE_SETTINGS)).thenReturn(to_fileB)
     }
 
     // 'dA/d1'と'dA/fileB.txt'に共有設定
     await treeView.setShareSettings([`dA/d1`, `dA/fileB.txt`], NEW_SHARE_SETTINGS)
 
     const _dA = treeView.getNode(`dA`)!
-    const [_d1, _d11, _fileA, _fileB, _fileC] = _dA.getDescendants<StorageTreeNode>()
+    const _dA_descendants = _dA.getDescendants()
+    const [_d1, _d11, _fileA, _fileB, _fileC] = _dA_descendants
+    expect(_dA_descendants.length).toBe(5)
     expect(_d1.share).toEqual(NEW_SHARE_SETTINGS)
     expect(_d11.share).toEqual(EMPTY_SHARE_SETTINGS)
     expect(_fileA.share).toEqual(EMPTY_SHARE_SETTINGS)
@@ -2319,6 +2800,8 @@ describe('setShareSettings', () => {
   })
 
   it('ルートディレクトリを指定した場合', async () => {
+    const { treeView, storageLogic } = newTreeView({ nodeFilter: dirNodeFilter })
+
     const d1 = newTestStorageDirNode(`d1`)
     const d2 = newTestStorageDirNode(`d2`)
     treeView.setAllNodes([d1, d2])
@@ -2334,9 +2817,13 @@ describe('setShareSettings', () => {
   })
 
   it('存在しないパスを指定した場合', async () => {
-    const d1 = newTestStorageDirNode(`d1`)
-    const d2 = newTestStorageDirNode(`d2`)
-    treeView.setAllNodes([d1, d2])
+    const { treeView, storageLogic } = newTreeView({ nodeFilter: dirNodeFilter })
+
+    treeView.setAllNodes([])
+
+    // モック設定
+    const expected = new Error()
+    td.when(storageLogic.sgetNode({ path: `dXXX` })).thenThrow(expected)
 
     let actual!: Error
     try {
@@ -2345,10 +2832,12 @@ describe('setShareSettings', () => {
       actual = err
     }
 
-    expect(actual.message).toBe(`The specified node could not be found: 'dXXX'`)
+    expect(actual).toBe(expected)
   })
 
   it('APIでエラーが発生した場合', async () => {
+    const { treeView, storageLogic } = newTreeView()
+
     // root
     // └dA
     //   ├d1 ← 設定対象
@@ -2357,21 +2846,24 @@ describe('setShareSettings', () => {
     //   ├fileB.txt ← 設定対象
     //   └fileC.txt
     const dA = newTestStorageDirNode(`dA`)
-    let d1 = newTestStorageDirNode(`dA/d1`)
+    const d1 = newTestStorageDirNode(`dA/d1`)
     const d11 = newTestStorageDirNode(`dA/d1/d11`)
     const fileA = newTestStorageFileNode(`dA/d1/d11/fileA.txt`)
-    let fileB = newTestStorageFileNode(`dA/fileB.txt`)
+    const fileB = newTestStorageFileNode(`dA/fileB.txt`)
     const fileC = newTestStorageFileNode(`dA/fileC.txt`)
     treeView.setAllNodes([dA, d1, d11, fileA, fileB, fileC])
 
     // モック設定
     {
-      d1 = cloneTestStorageNode(d1, { share: NEW_SHARE_SETTINGS })
-      fileB = cloneTestStorageNode(fileB, { share: NEW_SHARE_SETTINGS })
+      const to_d1 = cloneTestStorageNode(d1, { share: NEW_SHARE_SETTINGS })
+      const to_fileB = cloneTestStorageNode(fileB, { share: NEW_SHARE_SETTINGS })
+
+      td.when(storageLogic.sgetNode({ path: `dA/d1` })).thenReturn(d1)
+      td.when(storageLogic.sgetNode({ path: `dA/fileB.txt` })).thenReturn(fileB)
 
       // 'dA/d1'の共有設定でAPIエラーを発生させる
-      td.when(storageLogic.setDirShareSettings(d1.path, NEW_SHARE_SETTINGS)).thenReject(new Error())
-      td.when(storageLogic.setFileShareSettings(fileB.path, NEW_SHARE_SETTINGS)).thenReturn(fileB)
+      td.when(storageLogic.setDirShareSettings(to_d1.path, NEW_SHARE_SETTINGS)).thenReject(new Error())
+      td.when(storageLogic.setFileShareSettings(to_fileB.path, NEW_SHARE_SETTINGS)).thenReturn(to_fileB)
     }
 
     // 'dA/d1'と'dA/fileB.txt'に共有設定
@@ -2385,12 +2877,50 @@ describe('setShareSettings', () => {
     //   ├fileB.txt ← 設定された
     //   └fileC.txt
     const _dA = treeView.getNode(`dA`)!
-    const [_d1, _d11, _fileA, _fileB, _fileC] = _dA.getDescendants<StorageTreeNode>()
+    const _dA_descendants = _dA.getDescendants()
+    const [_d1, _d11, _fileA, _fileB, _fileC] = _dA_descendants
+    expect(_dA_descendants.length).toBe(5)
     expect(_d1.share).toEqual(EMPTY_SHARE_SETTINGS)
     expect(_d11.share).toEqual(EMPTY_SHARE_SETTINGS)
     expect(_fileA.share).toEqual(EMPTY_SHARE_SETTINGS)
     expect(_fileB.share).toEqual(NEW_SHARE_SETTINGS)
     expect(_fileC.share).toEqual(EMPTY_SHARE_SETTINGS)
+
+    verifyParentChildRelationForTree(treeView)
+  })
+
+  it('nodeFilterが機能しているか検証', async () => {
+    const { treeView, storageLogic } = newTreeView({ nodeFilter: dirNodeFilter })
+
+    // root
+    // ├d1 ← 設定対象
+    // └f1.txt ← 設定対象 - nodeFilterで除外されるのでツリーには存在しない
+    const d1 = newTestStorageDirNode(`d1`)
+    const f1 = newTestStorageFileNode(`f1.txt`)
+    treeView.setAllNodes([d1])
+
+    // モック設定
+    {
+      const to_d1 = cloneTestStorageNode(d1, { share: NEW_SHARE_SETTINGS })
+      const to_f1 = cloneTestStorageNode(f1, { share: NEW_SHARE_SETTINGS })
+
+      td.when(storageLogic.sgetNode({ path: `d1` })).thenReturn(d1)
+      td.when(storageLogic.sgetNode({ path: `f1.txt` })).thenReturn(f1)
+
+      td.when(storageLogic.setDirShareSettings(to_d1.path, NEW_SHARE_SETTINGS)).thenReturn(to_d1)
+      td.when(storageLogic.setFileShareSettings(to_f1.path, NEW_SHARE_SETTINGS)).thenReturn(to_f1)
+    }
+
+    // 'd1'と'f1.txt'に共有設定
+    await treeView.setShareSettings([`d1`, `f1.txt`], NEW_SHARE_SETTINGS)
+
+    // root
+    // ├d1
+    // └f1.txt ← nodeFilterで除外されるのでツリーには存在しない
+    const _descendants = treeView.rootNode.getDescendants()
+    const [_d1] = _descendants
+    expect(_descendants.length).toBe(1)
+    expect(_d1.share).toEqual(NEW_SHARE_SETTINGS)
 
     verifyParentChildRelationForTree(treeView)
   })

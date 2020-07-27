@@ -80,13 +80,17 @@
 </template>
 
 <script lang="ts">
-import { BaseDialog, NoCache, StorageNodeShareSettings } from '@/lib'
+import { BaseDialog, NoCache, StorageNode, StorageNodeShareSettings } from '@/lib'
+import { StorageTypeMixin, getStorageNodeTypeIcon, getStorageNodeTypeLabel } from './base'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import { StorageTreeNode } from './base'
+import { mixins } from 'vue-class-component'
+
+@Component
+class BaseDialogMixin extends BaseDialog<string[], StorageNodeShareSettings | undefined> {}
 
 @Component({ components: {} })
-export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[], StorageNodeShareSettings | undefined> {
+export default class StorageNodeShareDialog extends mixins(BaseDialogMixin, StorageTypeMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -98,13 +102,12 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
     return this.$refs.dialog as QDialog
   }
 
-  private get m_sharingNodes(): StorageTreeNode[] {
-    return this.params || []
-  }
+  private m_sharingNodes: StorageNode[] = []
 
   private get m_title(): string {
     if (this.m_sharingNodes.length === 1) {
-      return String(this.$t('common.shareSomehow', { somehow: this.m_sharingNodes[0].nodeTypeName }))
+      const nodeType = this.m_sharingNodes[0].nodeType
+      return String(this.$t('common.shareSomehow', { somehow: getStorageNodeTypeLabel(nodeType) }))
     } else if (this.m_sharingNodes.length >= 2) {
       const somehow = String(this.$tc('common.item', this.m_sharingNodes.length))
       return String(this.$t('common.shareSomehow', { somehow }))
@@ -114,7 +117,8 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
 
   private get m_selectPublicPrompt(): string {
     if (this.m_sharingNodes.length === 1) {
-      return String(this.$t('storage.share.selectPublicPrompt', { nodeType: this.m_sharingNodes[0].nodeTypeName }))
+      const nodeType = this.m_sharingNodes[0].nodeType
+      return String(this.$t('storage.share.selectPublicPrompt', { nodeType: getStorageNodeTypeLabel(nodeType) }))
     } else if (this.m_sharingNodes.length >= 2) {
       const nodeTypeName = String(this.$tc('common.item', this.m_sharingNodes.length))
       return String(this.$t('storage.share.selectPublicPrompt', { nodeType: nodeTypeName }))
@@ -124,7 +128,8 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
 
   private get m_targetNodeLabel(): string {
     if (this.m_sharingNodes.length === 1) {
-      return String(this.$t('storage.share.sharingNode', { nodeType: this.m_sharingNodes[0].nodeTypeName }))
+      const nodeType = this.m_sharingNodes[0].nodeType
+      return String(this.$t('storage.share.sharingNode', { nodeType: getStorageNodeTypeLabel(nodeType) }))
     }
     return ''
   }
@@ -138,7 +143,8 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
 
   private get m_targetNodeIcon(): string {
     if (this.m_sharingNodes.length === 1) {
-      return this.m_sharingNodes[0].icon
+      const nodeType = this.m_sharingNodes[0].nodeType
+      return getStorageNodeTypeIcon(nodeType)
     }
     return ''
   }
@@ -157,19 +163,25 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
   //
   //----------------------------------------------------------------------
 
-  open(sharingNodes: StorageTreeNode[]): Promise<StorageNodeShareSettings | undefined> {
+  open(nodePaths: string[]): Promise<StorageNodeShareSettings | undefined> {
+    this.m_sharingNodes = []
+    for (const nodePath of nodePaths) {
+      const node = this.storageLogic.sgetNode({ path: nodePath })
+      this.m_sharingNodes.push(node)
+    }
+
     // ノードが複数指定された場合、親が同じであることを検証
-    const sharingNodeParentPath = sharingNodes[0].parent!.value
-    for (const sharingNode of sharingNodes) {
-      if (sharingNode.parent!.path !== sharingNodeParentPath) {
+    const sharingNodeParentPath = this.m_sharingNodes[0].dir
+    for (const sharingNode of this.m_sharingNodes) {
+      if (sharingNode.dir !== sharingNodeParentPath) {
         throw new Error('All nodes must have the same parent.')
       }
     }
 
     // 全てのノードの公開タイプが同じ場合、公開フラグのトグルボタンに反映する
     // 一つでも公開タイプが違う場合、公開フラグのトグルボタンは未設定にする
-    let isPublic = sharingNodes[0].share.isPublic
-    for (const sharingNode of sharingNodes) {
+    let isPublic = this.m_sharingNodes[0].share.isPublic
+    for (const sharingNode of this.m_sharingNodes) {
       if (isPublic !== sharingNode.share.isPublic) {
         isPublic = sharingNode.share.isPublic
         break
@@ -177,7 +189,7 @@ export default class StorageNodeShareDialog extends BaseDialog<StorageTreeNode[]
     }
     this.m_isPublic = isPublic
 
-    return this.openProcess(sharingNodes, {
+    return this.openProcess(nodePaths, {
       opened: () => {},
     })
   }

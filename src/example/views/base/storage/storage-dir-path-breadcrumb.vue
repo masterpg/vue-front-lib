@@ -23,9 +23,9 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, Resizable, StorageNodeType } from '@/lib'
-import { Component, Prop } from 'vue-property-decorator'
-import { StorageTreeNode, StorageTypeMixin } from './base'
+import { BaseComponent, Resizable, StorageNode, StorageNodeType } from '@/lib'
+import { Component } from 'vue-property-decorator'
+import { StorageTypeMixin } from './base'
 import { mixins } from 'vue-class-component'
 
 interface PathBlock {
@@ -38,12 +38,13 @@ interface PathBlock {
 export default class StorageDirPathBreadcrumb extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
   //----------------------------------------------------------------------
   //
-  //  Properties
+  //  Variables
   //
   //----------------------------------------------------------------------
 
-  @Prop({ required: true })
-  selectedNode!: StorageTreeNode | null
+  mounted() {
+    this.m_pathBlocks = this.m_createPathBlocks(null)
+  }
 
   //----------------------------------------------------------------------
   //
@@ -51,46 +52,63 @@ export default class StorageDirPathBreadcrumb extends mixins(BaseComponent, Resi
   //
   //----------------------------------------------------------------------
 
-  get m_rootNode(): StorageTreeNode | null {
-    if (!this.selectedNode) return null
-    return this.selectedNode.getRootNode()!
-  }
+  private m_pathBlocks: PathBlock[] = []
+
+  //----------------------------------------------------------------------
+  //
+  //  Methods
+  //
+  //----------------------------------------------------------------------
 
   /**
-   * パスのパンくずのブロック配列です。
+   * 選択されているノードを設定します。
+   * @param selectedNodePath
    */
-  private get m_pathBlocks(): PathBlock[] {
-    if (!this.selectedNode) return []
-    if (!this.m_rootNode) return []
+  setSelectedNode(selectedNodePath: string | null): void {
+    let selectedNode: StorageNode | null = null
+    if (selectedNodePath) {
+      selectedNode = this.storageLogic.sgetNode({ path: selectedNodePath })
+    }
+    this.m_pathBlocks = this.m_createPathBlocks(selectedNode)
+  }
 
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
+
+  private m_createPathBlocks(selectedNode: StorageNode | null): PathBlock[] {
     const result: PathBlock[] = []
 
-    let dirPath = ''
-    switch (this.selectedNode.nodeType) {
-      case StorageNodeType.Dir: {
-        dirPath = this.selectedNode.path
-        break
+    if (selectedNode) {
+      let dirPath = ''
+      switch (selectedNode.nodeType) {
+        case StorageNodeType.Dir: {
+          dirPath = selectedNode.path
+          break
+        }
+        case StorageNodeType.File: {
+          dirPath = selectedNode.dir
+          break
+        }
       }
-      case StorageNodeType.File: {
-        dirPath = this.selectedNode.parent!.value
-        break
+
+      const pathBlocks = dirPath.split('/').filter(item => !!item)
+
+      for (let i = 0; i < pathBlocks.length; i++) {
+        const pathBlock = pathBlocks.slice(0, i + 1)
+        result.push({
+          name: pathBlock[pathBlock.length - 1],
+          path: pathBlock.join('/'),
+          last: i === pathBlocks.length - 1,
+        })
       }
-    }
-
-    const pathBlocks = dirPath.split('/').filter(item => !!item)
-
-    for (let i = 0; i < pathBlocks.length; i++) {
-      const pathBlock = pathBlocks.slice(0, i + 1)
-      result.push({
-        name: pathBlock[pathBlock.length - 1],
-        path: pathBlock.join('/'),
-        last: i === pathBlocks.length - 1,
-      })
     }
 
     result.unshift({
-      name: this.m_rootNode.name,
-      path: this.m_rootNode.path,
+      name: this.pageStore.rootNode.name,
+      path: this.pageStore.rootNode.path,
       last: result.length <= 0,
     })
 

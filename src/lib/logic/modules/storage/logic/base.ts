@@ -19,6 +19,8 @@ interface StorageLogic {
 
   getNode(key: { id?: string; path?: string }): StorageNode | undefined
 
+  sgetNode(key: { id?: string; path?: string }): StorageNode
+
   getDirDescendants(dirPath: string): StorageNode[]
 
   getDescendants(dirPath?: string): StorageNode[]

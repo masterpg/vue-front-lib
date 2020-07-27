@@ -28,6 +28,9 @@
 
 <style lang="sass" scoped>
 @import 'src/example/styles/app.variables'
+
+.table
+  color: $text-primary-color
 </style>
 
 <template>
@@ -46,7 +49,7 @@
     hide-bottom
     flat
     :loading="loading"
-    class="storage-dir-table__q-table"
+    class="storage-dir-table__q-table table"
   >
     <template v-slot:body="tr">
       <slot name="body" :tr="tr"></slot>

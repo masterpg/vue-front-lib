@@ -19,7 +19,7 @@ import {
   StorageNodeType,
   UploadEndedEvent,
 } from '@/lib'
-import { Component, Watch } from 'vue-property-decorator'
+import { Component, Prop, Watch } from 'vue-property-decorator'
 import { StorageNodeContextMenuSelectedEvent, StorageTreeNode, StorageTreeNodeInput, StorageTypeMixin, nodeToTreeData } from './base'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
 import { mixins } from 'vue-class-component'
@@ -52,6 +52,9 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
   //
   //----------------------------------------------------------------------
 
+  @Prop({ required: true })
+  nodeFilter!: (node: StorageNode) => boolean
+
   /**
    * ツリービューのルートノードです。
    */
@@ -75,6 +78,16 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     } else {
       this.m_treeView.selectedNode = node
     }
+  }
+
+  /**
+   * 指定されたノードの選択状態を設定します。
+   * @param value ノードを特定するための値を指定
+   * @param selected 選択状態を指定
+   * @param silent 選択イベントを発火したくない場合はtrueを指定
+   */
+  setSelectedNode(value: string, selected: boolean, silent: boolean): void {
+    this.m_treeView.setSelectedNode(value, selected, silent)
   }
 
   /**
@@ -135,19 +148,20 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     }
 
     // サーバーから取得された最新のストレージノードを取得
-    const nodeDict = arrayToDict(this.storageLogic.nodes, 'path')
+    const dirNodes = this.storageLogic.nodes.filter(this.nodeFilter)
+    const dirNodeDict = arrayToDict(dirNodes, 'path')
 
     // 引数ディレクトリのパスを構成するディレクトリは展開した状態にする
     // ※初期表示時は指定されたディレクトリを表示しておきたいので
     for (const dirPath of dirPaths) {
-      const dirNode = nodeDict[dirPath]
+      const dirNode = dirNodeDict[dirPath]
       if (dirNode) {
         ;(dirNode as StorageTreeNodeInput).opened = true
       }
     }
 
     // 最新のストレージノードをツリービューに設定
-    this.setAllNodes(Object.values(nodeDict))
+    this.setAllNodes(Object.values(dirNodeDict))
 
     // 引数ディレクトリのパスを構成する各ディレクトリは子ノードが取得済みなので、
     // 各ディレクトリの遅延ロードは済みにする
@@ -169,10 +183,10 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
    * @param dirPath
    */
   async pullChildren(dirPath: string): Promise<void> {
-    const storeChildNodes = await this.storageLogic.fetchChildren(dirPath)
+    const storeChildDirNodes = (await this.storageLogic.fetchChildren(dirPath)).filter(this.nodeFilter)
 
     // ロジックストアのノードをツリービューに反映
-    this.setNodes(storeChildNodes)
+    this.setNodes(storeChildDirNodes)
 
     const dirTreeNode = this.getNode(dirPath)
     if (!dirTreeNode) {
@@ -181,7 +195,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
 
     // ロジックストアにないがツリーには存在するノードをツリーから削除
     // ※他の端末で削除、移動、リネームされたノードが削除される
-    this.m_removeNotExistsTreeNodes(storeChildNodes, dirTreeNode.children)
+    this.m_removeNotExistsTreeNodes(storeChildDirNodes, dirTreeNode.children)
 
     // 引数ディレクトリを遅延ロード済みに設定
     dirTreeNode.lazyLoadStatus = 'loaded'
@@ -281,24 +295,23 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     }, [])
 
     // ロジックストア(サーバー)からアップロードディレクトリ直下のノードを取得
-    const storeChildNodes = await this.storageLogic.fetchChildren(e.uploadDirPath)
+    const storeChildDirNodes = (await this.storageLogic.fetchChildren(e.uploadDirPath)).filter(this.nodeFilter)
 
     // ロジックストアのノードで、アップロードされたノードをツリービューに反映
-    for (const storeNode of storeChildNodes) {
-      const treeNode = this.getNode(storeNode.path)
+    for (const storeDirNode of storeChildDirNodes) {
+      const treeNode = this.getNode(storeDirNode.path)
       // 次の場合リロードが必要
       // ・今回アップロードされたノードがツリービューに既に存在
-      // ・そのノードがディレクトリ
       // ・そのディレクトリが子ノードを読み込み済み
       // ・そのディレクトリがアップロード先ディレクトリの直下に存在する
-      const needReload = treeNode && treeNode.nodeType === 'Dir' && treeNode.lazyLoadStatus === 'loaded' && childNodePaths.includes(treeNode.path)
+      const needReload = treeNode && treeNode.lazyLoadStatus === 'loaded' && childNodePaths.includes(treeNode.path)
       // リロードが必要な場合
       if (needReload) {
         await this.reloadDir(treeNode!.path)
       }
       // リロードが必要ない場合
       else {
-        this.setNode(storeNode)
+        this.setNode(storeDirNode)
       }
     }
 
@@ -325,14 +338,14 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
    * ツリービューにあるノードを全て削除し、指定されたノードに置き換えます。
    * @param nodes
    */
-  setAllNodes(nodes: StorageTreeNodeInput[]): void {
+  setAllNodes(nodess: StorageTreeNodeInput[]): void {
     const targetNodePaths = this.getAllNodes().reduce((result, node) => {
       node !== this.rootNode && result.push(node.path)
       return result
     }, [] as string[])
     this.removeNodes(targetNodePaths)
 
-    this.setNodes(nodes)
+    this.setNodes(nodess)
   }
 
   /**
@@ -340,12 +353,10 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
    * @param nodes
    */
   mergeAllNodes(nodes: StorageTreeNodeInput[]): void {
-    nodes = StorageLogic.sortNodes([...nodes])
+    let filteredNodes = nodes.filter(this.nodeFilter)
+    filteredNodes = StorageLogic.sortNodes([...filteredNodes])
 
-    const nodeDict = nodes.reduce((result, node) => {
-      result[node.path] = node
-      return result
-    }, {} as { [path: string]: StorageNode })
+    const nodeDict = arrayToDict(filteredNodes, 'path')
 
     // 新ノードリストにないのにツリーには存在するノードを削除
     // ※他の端末で削除、移動、リネームされたノードが削除される
@@ -358,8 +369,8 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     }
 
     // 新ノードリストをツリービューへ反映
-    for (const newNode of nodes) {
-      this.setNode(newNode)
+    for (const newDirNode of Object.values(nodeDict)) {
+      this.setNode(newDirNode)
     }
   }
 
@@ -369,7 +380,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
    */
   mergeDirDescendants(dirPath: string): void {
     // ロジックストアから引数ディレクトリと配下のノードを取得
-    const storeDirDescendants = this.storageLogic.getDirDescendants(dirPath)
+    const storeDirDescendants = this.storageLogic.getDirDescendants(dirPath).filter(this.nodeFilter)
     const storeDirDescendantIdDict = arrayToDict(storeDirDescendants, 'id')
     const storeDirDescendantPathDict = arrayToDict(storeDirDescendants, 'path')
 
@@ -401,7 +412,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
    */
   mergeDirChildren(dirPath: string): void {
     // ロジックストアから引数ディレクトリと直下のノードを取得
-    const storeDirChildren = this.storageLogic.getDirChildren(dirPath)
+    const storeDirChildren = this.storageLogic.getDirChildren(dirPath).filter(this.nodeFilter)
     const storeDirChildrenIdDict = arrayToDict(storeDirChildren, 'id')
     const storeDirChildrenPathDict = arrayToDict(storeDirChildren, 'path')
 
@@ -597,32 +608,29 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
       if (nodePath === this.rootNode.path) {
         throw new Error(`The root node cannot be renamed.`)
       }
-
-      const treeNode = this.getNode(nodePath)
-      if (!treeNode) {
-        throw new Error(`The specified node could not be found: '${nodePath}'`)
-      }
+      // ストレージストアに指定ノードが存在するかチェック
+      this.storageLogic.sgetNode({ path: nodePath })
     }
 
     const removedNodePaths: string[] = []
 
     // APIによる削除処理を実行
     for (const nodePath of nodePaths) {
-      const treeNode = this.getNode(nodePath)!
+      const node = this.storageLogic.sgetNode({ path: nodePath })
       try {
-        switch (treeNode.nodeType) {
+        switch (node.nodeType) {
           case StorageNodeType.Dir:
-            await this.storageLogic.removeDir(treeNode.path)
-            removedNodePaths.push(treeNode.path)
+            await this.storageLogic.removeDir(node.path)
+            removedNodePaths.push(node.path)
             break
           case StorageNodeType.File:
-            await this.storageLogic.removeFile(treeNode.path)
-            removedNodePaths.push(treeNode.path)
+            await this.storageLogic.removeFile(node.path)
+            removedNodePaths.push(node.path)
             break
         }
       } catch (err) {
         console.error(err)
-        this.m_showNotification('error', String(this.$t('storage.delete.deletingError', { nodeName: treeNode.name })))
+        this.m_showNotification('error', String(this.$t('storage.delete.deletingError', { nodeName: node.name })))
       }
     }
 
@@ -646,13 +654,10 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
         throw new Error(`The root node cannot be moved.`)
       }
 
-      // 移動ノードが存在することを確認
-      const fromTreeNode = this.getNode(fromNodePath)
-      if (!fromTreeNode) {
-        throw new Error(`The specified node could not be found: '${fromNodePath}'`)
-      }
+      // ストレージストアに指定ノードが存在するかチェック
+      const fromNode = this.storageLogic.sgetNode({ path: fromNodePath })
 
-      if (fromTreeNode.nodeType === StorageNodeType.Dir) {
+      if (fromNode.nodeType === StorageNodeType.Dir) {
         // 移動先ディレクトリが移動対象のサブディレクトリでないことを確認
         // from: aaa/bbb → to: aaa/bbb/ccc/bbb [NG]
         //               → to: aaa/zzz/ccc/bbb [OK]
@@ -667,24 +672,24 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     //
     const movedNodes: StorageNode[] = []
     for (const fromNodePath of fromNodePaths) {
-      const fromTreeNode = this.getNode(fromNodePath)!
-      const toNodePath = _path.join(toDirPath, fromTreeNode.name)
+      const fromNode = this.storageLogic.sgetNode({ path: fromNodePath })
+      const toNodePath = _path.join(toDirPath, fromNode.name)
       try {
-        switch (fromTreeNode.nodeType) {
+        switch (fromNode.nodeType) {
           case StorageNodeType.Dir: {
-            const nodes = await this.storageLogic.moveDir(fromTreeNode.path, toNodePath)
+            const nodes = await this.storageLogic.moveDir(fromNode.path, toNodePath)
             movedNodes.push(...nodes)
             break
           }
           case StorageNodeType.File: {
-            const node = await this.storageLogic.moveFile(fromTreeNode.path, toNodePath)
+            const node = await this.storageLogic.moveFile(fromNode.path, toNodePath)
             movedNodes.push(node)
             break
           }
         }
       } catch (err) {
         console.error(err)
-        this.m_showNotification('error', String(this.$t('storage.move.movingError', { nodeName: fromTreeNode.name })))
+        this.m_showNotification('error', String(this.$t('storage.move.movingError', { nodeName: fromNode.name })))
       }
     }
 
@@ -697,8 +702,9 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     //
     // 3. 移動ノードをツリービューに反映
     //
+    const movedDirNodes = movedNodes.filter(this.nodeFilter)
     this.setNodes(
-      movedNodes.map(storeNode => {
+      movedDirNodes.map(storeNode => {
         if (storeNode.nodeType === StorageNodeType.Dir) {
           return Object.assign({}, storeNode, { lazyLoadStatus: 'loaded' })
         } else {
@@ -721,34 +727,32 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
       throw new Error(`The root node cannot be renamed.`)
     }
 
-    const treeNode = this.getNode(nodePath)
-    if (!treeNode) {
-      throw new Error(`The specified node could not be found: '${nodePath}'`)
-    }
+    const targetNode = this.storageLogic.sgetNode({ path: nodePath })
 
     //
     // 1. APIによるリネーム処理を実行
     //
     const renamedNodes: StorageNode[] = []
     try {
-      if (treeNode.nodeType === StorageNodeType.Dir) {
-        const nodes = await this.storageLogic.renameDir(treeNode.path, newName)
+      if (targetNode.nodeType === StorageNodeType.Dir) {
+        const nodes = await this.storageLogic.renameDir(targetNode.path, newName)
         renamedNodes.push(...nodes)
-      } else if (treeNode.nodeType === StorageNodeType.File) {
-        const node = await this.storageLogic.renameFile(treeNode.path, newName)
+      } else if (targetNode.nodeType === StorageNodeType.File) {
+        const node = await this.storageLogic.renameFile(targetNode.path, newName)
         renamedNodes.push(node)
       }
     } catch (err) {
       console.error(err)
-      this.m_showNotification('error', String(this.$t('storage.rename.renamingError', { nodeName: treeNode.name })))
+      this.m_showNotification('error', String(this.$t('storage.rename.renamingError', { nodeName: targetNode.name })))
       return
     }
 
     //
     // 2. リネームノードをツリービューに反映
     //
+    const renamedDirNodes = renamedNodes.filter(this.nodeFilter)
     this.setNodes(
-      renamedNodes.map(storeNode => {
+      renamedDirNodes.map(storeNode => {
         if (storeNode.nodeType === StorageNodeType.Dir) {
           return Object.assign({}, storeNode, { lazyLoadStatus: 'loaded' })
         } else {
@@ -772,30 +776,29 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
         throw new Error(`The root node cannot be set share settings.`)
       }
 
-      const treeNode = this.getNode(nodePath)
-      if (!treeNode) {
-        throw new Error(`The specified node could not be found: '${nodePath}'`)
-      }
+      // ストレージストアに指定ノードが存在するかチェック
+      this.storageLogic.sgetNode({ path: nodePath })
     }
 
     // APIによる共有設定処理を実行
     const processedNodes: StorageNode[] = []
     for (const nodePath of nodePaths) {
-      const treeNode = this.getNode(nodePath)!
+      const node = this.storageLogic.sgetNode({ path: nodePath })
       try {
-        if (treeNode.nodeType === StorageNodeType.Dir) {
-          processedNodes.push(await this.storageLogic.setDirShareSettings(treeNode.path, settings))
-        } else if (treeNode.nodeType === StorageNodeType.File) {
-          processedNodes.push(await this.storageLogic.setFileShareSettings(treeNode.path, settings))
+        if (node.nodeType === StorageNodeType.Dir) {
+          processedNodes.push(await this.storageLogic.setDirShareSettings(node.path, settings))
+        } else if (node.nodeType === StorageNodeType.File) {
+          processedNodes.push(await this.storageLogic.setFileShareSettings(node.path, settings))
         }
       } catch (err) {
         console.error(err)
-        this.m_showNotification('error', String(this.$t('storage.share.sharingError', { nodeName: treeNode.name })))
+        this.m_showNotification('error', String(this.$t('storage.share.sharingError', { nodeName: node.name })))
       }
     }
 
     // ツリービューに処理内容を反映
-    this.setNodes(processedNodes)
+    const processedDirNodes = processedNodes.filter(this.nodeFilter)
+    this.setNodes(processedDirNodes)
   }
 
   //----------------------------------------------------------------------

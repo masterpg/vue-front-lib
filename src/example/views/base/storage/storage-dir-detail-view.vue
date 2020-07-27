@@ -1,7 +1,7 @@
 <style lang="sass" scoped>
 @import 'src/example/styles/app.variables'
 
-.storage-file-node-view-main
+.storage-dir-node-view-main
   width: 100%
   padding: 0 16px 16px 32px
 
@@ -38,21 +38,15 @@
 </style>
 
 <template>
-  <div class="storage-file-node-view-main layout vertical">
+  <div class="storage-dir-node-view-main layout vertical">
     <!-- ノード名 -->
     <div class="layout horizontal center">
-      <q-icon name="description" size="24px" class="app-mr-12" />
-      <div class="node-name flex-1">{{ m_fileName }}</div>
+      <q-icon name="folder" size="24px" class="app-mr-12" />
+      <div class="node-name flex-1">{{ m_dirName }}</div>
       <q-btn flat round color="primary" icon="close" @click="m_closeOnClick" />
     </div>
     <!-- コンテンツエリア -->
     <div class="content-area flex-1" style="overflow-y: auto">
-      <!-- 画像 -->
-      <div v-show="m_isImage" class="layout vertical center">
-        <comp-storage-img :src="m_isImage ? m_url : undefined" class="img" />
-      </div>
-      <!-- テキストデータ -->
-      <q-input v-show="m_isText" v-model="m_textData" type="textarea" readonly filled />
       <!-- ダウンロード -->
       <div class="layout horizontal center end-justified app-mt-10">
         <q-linear-progress ref="downloadLinear" :value="m_downloader.progress" :stripe="m_downloader.running" size="md" class="flex-1" />
@@ -64,20 +58,12 @@
       <!-- ノード詳細 -->
       <div class="layout vertical">
         <div class="item">
-          <div class="title">{{ this.$t('storage.nodeDetail.url') }}</div>
-          <a class="value link" :href="m_url" target="_blank">{{ m_url }}</a>
-        </div>
-        <div class="item">
           <div class="title">{{ this.$t('storage.nodeDetail.id') }}</div>
           <div class="value">{{ m_id }}</div>
         </div>
         <div class="item">
           <div class="title">{{ this.$t('storage.nodeDetail.path') }}</div>
           <div class="value">{{ m_path }}</div>
-        </div>
-        <div class="item">
-          <div class="title">{{ this.$t('storage.nodeDetail.type') }}</div>
-          <div class="value">{{ m_contentType }}</div>
         </div>
         <div class="item">
           <div class="title">{{ this.$t('storage.nodeDetail.size') }}</div>
@@ -113,7 +99,7 @@ import { removeBothEndsSlash } from 'web-base-lib'
 @Component({
   components: { CompStorageImg },
 })
-export default class StorageFileDetailView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
+export default class StorageDirDetailView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -130,10 +116,10 @@ export default class StorageFileDetailView extends mixins(BaseComponent, Resizab
   //
   //----------------------------------------------------------------------
 
-  private m_fileNode: StorageNode | null = null
+  private m_dirNode: StorageNode | null = null
 
   get fileNode(): StorageNode | null {
-    return this.m_fileNode
+    return this.m_dirNode
   }
 
   //----------------------------------------------------------------------
@@ -142,54 +128,34 @@ export default class StorageFileDetailView extends mixins(BaseComponent, Resizab
   //
   //----------------------------------------------------------------------
 
-  private m_filePath: string | null = null
-
-  private get m_isImage(): boolean {
-    if (!this.m_fileNode) return false
-    return this.m_fileNode.contentType.startsWith('image/')
-  }
-
-  private get m_isText(): boolean {
-    if (!this.m_fileNode) return false
-    return this.m_fileNode.contentType.startsWith('text/')
-  }
-
-  private get m_url(): string {
-    if (!this.m_fileNode) return ''
-    return this.m_fileNode.url
-  }
+  private m_dirPath: string | null = null
 
   private get m_id(): string {
-    if (!this.m_fileNode) return ''
-    return this.m_fileNode.id
+    if (!this.m_dirNode) return ''
+    return this.m_dirNode.id
   }
 
   private get m_path(): string {
-    if (!this.m_fileNode) return ''
-    return this.m_fileNode.path
+    if (!this.m_dirNode) return ''
+    return this.m_dirNode.path
   }
 
-  private get m_fileName(): string {
-    if (!this.m_fileNode) return ''
-    return this.m_fileNode.name
-  }
-
-  private get m_contentType(): string {
-    if (!this.m_fileNode) return ''
-    return this.m_fileNode.contentType
+  private get m_dirName(): string {
+    if (!this.m_dirNode) return ''
+    return this.m_dirNode.name
   }
 
   private get m_size(): string {
-    if (!this.m_fileNode) return ''
-    return bytes(this.m_fileNode.size)
+    if (!this.m_dirNode) return ''
+    return bytes(this.m_dirNode.size)
   }
 
   private get m_share(): string {
-    if (!this.m_fileNode) return ''
+    if (!this.m_dirNode) return ''
 
     let result = ''
 
-    if (this.m_fileNode.share.isPublic === null) {
+    if (this.m_dirNode.share.isPublic === null) {
       if (this.m_inheritedShare.isPublic) {
         result = `${this.$t('storage.share.public')}`
       } else {
@@ -197,7 +163,7 @@ export default class StorageFileDetailView extends mixins(BaseComponent, Resizab
       }
       result += ` (${this.$t('storage.share.notSet')})`
     } else {
-      if (this.m_fileNode.share.isPublic) {
+      if (this.m_dirNode.share.isPublic) {
         result = `${this.$t('storage.share.public')}`
       } else {
         result = `${this.$t('storage.share.private')}`
@@ -208,23 +174,21 @@ export default class StorageFileDetailView extends mixins(BaseComponent, Resizab
   }
 
   private get m_bytes(): string {
-    if (!this.m_fileNode) return ''
-    return this.m_fileNode.size.toLocaleString()
+    if (!this.m_dirNode) return ''
+    return this.m_dirNode.size.toLocaleString()
   }
 
   private get m_createdAt(): string {
-    if (!this.m_fileNode) return ''
-    return `${this.$d(this.m_fileNode.createdAt.toDate(), 'dateSec')}`
+    if (!this.m_dirNode) return ''
+    return `${this.$d(this.m_dirNode.createdAt.toDate(), 'dateSec')}`
   }
 
   private get m_updatedAt(): string {
-    if (!this.m_fileNode) return ''
-    return `${this.$d(this.m_fileNode.updatedAt.toDate(), 'dateSec')}`
+    if (!this.m_dirNode) return ''
+    return `${this.$d(this.m_dirNode.updatedAt.toDate(), 'dateSec')}`
   }
 
   private m_inheritedShare: RequiredStorageNodeShareSettings = {} as any
-
-  private m_textData: string | null = null
 
   private m_downloader: StorageDownloader = {} as any
 
@@ -244,27 +208,22 @@ export default class StorageFileDetailView extends mixins(BaseComponent, Resizab
   //----------------------------------------------------------------------
 
   /**
-   * ビューに表示するファイルのパスを設定します。
-   * @param filePath
+   * ビューに表示するディレクトリのパスを設定します。
+   * @param dirPath
    */
-  setNodePath(filePath: string): void {
+  setNodePath(dirPath: string): void {
     const clear = () => {
-      this.m_fileNode = null
-      this.m_textData = ''
+      this.m_dirNode = null
       ;(this.m_downloadLinear.$el as HTMLElement).style.opacity = '0'
     }
 
-    filePath = removeBothEndsSlash(filePath)
-    if (this.m_filePath !== filePath) {
+    dirPath = removeBothEndsSlash(dirPath)
+    if (this.m_dirPath !== dirPath) {
       clear()
     }
 
-    this.m_filePath = filePath
-    this.m_fileNode = this.storageLogic.sgetNode({ path: filePath })
-
-    if (this.m_isText) {
-      this.m_loadTextFile()
-    }
+    this.m_dirPath = dirPath
+    this.m_dirNode = this.storageLogic.sgetNode({ path: dirPath })
   }
 
   //----------------------------------------------------------------------
@@ -272,12 +231,6 @@ export default class StorageFileDetailView extends mixins(BaseComponent, Resizab
   //  Internal methods
   //
   //----------------------------------------------------------------------
-
-  private async m_loadTextFile(): Promise<void> {
-    const downloader = this.storageLogic.newFileDownloader('http', this.m_fileNode!.path)
-    const text = await downloader.execute('text')
-    this.m_textData = text ?? ''
-  }
 
   /**
    * ダウンロード進捗バーの表示/非表示を行います。
@@ -308,7 +261,7 @@ export default class StorageFileDetailView extends mixins(BaseComponent, Resizab
     // ダウンロード進捗バーを表示
     this.m_showDownloadProgress(true, async () => {
       // ダウンロード実行
-      const iterator = this.m_downloader.download('firebase', this.m_fileNode!.path)
+      const iterator = this.m_downloader.download('firebase', this.m_dirNode!.path)
       for (const downloader of iterator) {
         const responseData = await downloader.execute('blob')
         if (downloader.canceled) continue
@@ -348,13 +301,13 @@ export default class StorageFileDetailView extends mixins(BaseComponent, Resizab
     })
   }
 
-  @Watch('m_fileNode.share', { deep: true })
+  @Watch('m_dirNode.share', { deep: true })
   private m_shareOnChange(): void {
-    if (!this.m_fileNode) {
+    if (!this.m_dirNode) {
       this.m_inheritedShare = {} as any
       return
     }
-    this.m_inheritedShare = this.storageLogic.getInheritedShare(this.m_fileNode.path)
+    this.m_inheritedShare = this.storageLogic.getInheritedShare(this.m_dirNode.path)
   }
 }
 </script>

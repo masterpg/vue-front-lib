@@ -66,6 +66,46 @@ beforeAll(async () => {
 
 beforeEach(async () => {})
 
+describe('sgetNode', () => {
+  it('ベーシックケース - ノードIDで取得', () => {
+    const d1 = newTestStorageDirNode(`d1`)
+    storageStore.initState({ all: [d1] })
+
+    const actual = storageLogic.sgetNode({ id: d1.id })
+
+    expect(actual).toEqual(d1)
+  })
+
+  it('ベーシックケース - ノードパスで取得', () => {
+    const d1 = newTestStorageDirNode(`d1`)
+    storageStore.initState({ all: [d1] })
+
+    const actual = storageLogic.sgetNode({ path: d1.path })
+
+    expect(actual).toEqual(d1)
+  })
+
+  it('ノードが見つからない場合 - ノードIDで取得', () => {
+    let actual!: Error
+    try {
+      storageLogic.sgetNode({ id: 'xxx' })
+    } catch (err) {
+      actual = err
+    }
+    expect(actual.message).toBe(`Storage store does not have specified node: {"id":"xxx"}`)
+  })
+
+  it('ノードが見つからない場合 - ノードIDで取得', () => {
+    let actual!: Error
+    try {
+      storageLogic.sgetNode({ path: 'xxx/yyy' })
+    } catch (err) {
+      actual = err
+    }
+    expect(actual.message).toBe(`Storage store does not have specified node: {"path":"xxx/yyy"}`)
+  })
+})
+
 describe('getHierarchicalNode', () => {
   it('ベーシックケース', () => {
     // root

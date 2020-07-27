@@ -79,15 +79,25 @@
 </template>
 
 <script lang="ts">
-import { BaseDialog, CompAlertDialog, CompTreeView, CompTreeViewLazyLoadEvent, NoCache, StorageNodeType } from '@/lib'
-import { StorageTreeNode, StorageTreeNodeData, StorageTypeMixin, nodeToTreeData, treeSortFunc } from './base'
+import {
+  BaseDialog,
+  CompAlertDialog,
+  CompTreeView,
+  CompTreeViewEvent,
+  CompTreeViewLazyLoadEvent,
+  NoCache,
+  StorageLogic,
+  StorageNode,
+  StorageNodeType,
+} from '@/lib'
+import { StorageTreeNode, StorageTreeNodeData, StorageTypeMixin, getStorageNodeTypeIcon, getStorageNodeTypeLabel, nodeToTreeData } from './base'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
 
 @Component
-class BaseDialogMixin extends BaseDialog<StorageTreeNode[], string | undefined> {}
+class BaseDialogMixin extends BaseDialog<string[], string | undefined> {}
 
 @Component({ components: { CompTreeView, CompAlertDialog } })
 export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, StorageTypeMixin) {
@@ -102,13 +112,12 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
     return this.$refs.dialog as QDialog
   }
 
-  private get m_movingNodes(): StorageTreeNode[] {
-    return this.params || []
-  }
+  private m_movingNodes: StorageNode[] = []
 
   private get m_title(): string {
     if (this.m_movingNodes.length === 1) {
-      return String(this.$t('common.moveSomehow', { somehow: this.m_movingNodes[0].nodeTypeName }))
+      const nodeType = this.m_movingNodes[0].nodeType
+      return String(this.$t('common.moveSomehow', { somehow: getStorageNodeTypeLabel(nodeType) }))
     } else if (this.m_movingNodes.length >= 2) {
       const somehow = String(this.$tc('common.item', this.m_movingNodes.length))
       return String(this.$t('common.moveSomehow', { somehow }))
@@ -118,7 +127,8 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
 
   private get m_movingNodeLabel(): string {
     if (this.m_movingNodes.length === 1) {
-      return String(this.$t('storage.move.movingNode', { nodeType: this.m_movingNodes[0].nodeTypeName }))
+      const nodeType = this.m_movingNodes[0].nodeType
+      return String(this.$t('storage.move.movingNode', { nodeType: getStorageNodeTypeLabel(nodeType) }))
     }
     return ''
   }
@@ -132,14 +142,15 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
 
   private get m_movingNodeIcon(): string {
     if (this.m_movingNodes.length === 1) {
-      return this.m_movingNodes[0].icon
+      const nodeType = this.m_movingNodes[0].nodeType
+      return getStorageNodeTypeIcon(nodeType)
     }
     return ''
   }
 
   private get m_movingNodesParentPath(): string {
     if (this.m_movingNodes.length === 0) return ''
-    return this.m_movingNodes[0].parent!.value
+    return this.m_movingNodes[0].dir
   }
 
   private m_errorMessage = ''
@@ -166,18 +177,24 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
   //
   //----------------------------------------------------------------------
 
-  open(movingNodes: StorageTreeNode[]): Promise<string | undefined> {
+  open(nodePaths: string[]): Promise<string | undefined> {
+    this.m_movingNodes = []
+    for (const nodePath of nodePaths) {
+      const node = this.storageLogic.sgetNode({ path: nodePath })
+      this.m_movingNodes.push(node)
+    }
+
     // ノードが複数指定された場合、親が同じであることを検証
-    const movingNodeParentPath = movingNodes[0].parent!.value
-    for (const movingNode of movingNodes) {
-      if (movingNode.parent!.value !== movingNodeParentPath) {
+    const movingNodeParentPath = this.m_movingNodes[0].dir
+    for (const movingNode of this.m_movingNodes) {
+      if (movingNode.dir !== movingNodeParentPath) {
         throw new Error('All nodes must have the same parent.')
       }
     }
 
-    movingNodes.sort(treeSortFunc)
+    StorageLogic.sortNodes(this.m_movingNodes)
 
-    return this.openProcess(movingNodes, {
+    return this.openProcess(nodePaths, {
       opened: async () => {
         await this.m_buildTreeView()
       },
@@ -227,7 +244,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
   }
 
   private async m_buildTreeView(): Promise<void> {
-    const movingNodesRootNode = this.m_movingNodes[0].getRootNode()!
+    const movingNodesRootNode = this.pageStore.rootNode
 
     // 現在の親ディレクトリがルートノードの場合、ルートノードを選択できないよう設定
     const unselectable = this.m_movingNodesParentPath === movingNodesRootNode.path
@@ -289,11 +306,11 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
 
   /**
    * ツリービューでノードが選択された際のリスナです。
-   * @param node
+   * @param e
    */
-  private m_treeViewOnSelectChange(node: StorageTreeNode) {
+  private m_treeViewOnSelectChange(e: CompTreeViewEvent<StorageTreeNode>) {
     this.m_errorMessage = ''
-    this.m_toDirNode = node
+    this.m_toDirNode = e.node
   }
 
   /**

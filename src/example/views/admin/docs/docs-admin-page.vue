@@ -34,17 +34,24 @@
     <q-splitter v-model="splitterModel" unit="px" class="splitter">
       <template v-slot:before>
         <div ref="treeViewContainer" class="tree-view-container">
-          <storage-tree-view ref="treeView" class="tree-view" :storage-type="storageType" />
+          <storage-tree-view ref="treeView" class="tree-view" :storage-type="storageType" :node-filter="treeNodeFilter" />
         </div>
       </template>
       <template v-slot:after>
         <div class="content-container layout vertical">
           <storage-dir-path-breadcrumb ref="pathDirBreadcrumb" :storage-type="storageType" :selected-node="selectedNode" />
           <div class="view-container layout horizontal flex-1">
-            <storage-dir-view ref="dirView" class="dir-view flex-1" :storage-type="storageType" @select="dirViewOnSelect" />
+            <storage-dir-view ref="dirView" class="dir-view flex-1" :storage-type="storageType" />
+            <storage-dir-detail-view
+              v-show="visibleDirDetailView"
+              ref="dirDetailView"
+              class="node-detail-view"
+              :storage-type="storageType"
+              @close="nodeDetailViewOnClose"
+            />
             <storage-file-detail-view
-              v-show="visibleNodeDetailView"
-              ref="nodeDetailView"
+              v-show="visibleFileDetailView"
+              ref="fileDetailView"
               class="node-detail-view"
               :storage-type="storageType"
               @close="nodeDetailViewOnClose"
@@ -54,11 +61,11 @@
       </template>
     </q-splitter>
 
-    <storage-dir-create-dialog ref="dirCreateDialog" />
+    <storage-dir-create-dialog ref="dirCreateDialog" :storage-type="storageType" />
     <storage-node-move-dialog ref="nodeMoveDialog" :storage-type="storageType" />
-    <storage-node-rename-dialog ref="nodeRenameDialog" />
-    <storage-node-remove-dialog ref="nodeRemoveDialog" />
-    <storage-node-share-dialog ref="nodeShareDialog" />
+    <storage-node-rename-dialog ref="nodeRenameDialog" :storage-type="storageType" />
+    <storage-node-remove-dialog ref="nodeRemoveDialog" :storage-type="storageType" />
+    <storage-node-share-dialog ref="nodeShareDialog" :storage-type="storageType" />
 
     <comp-storage-upload-progress-float
       ref="uploadProgressFloat"

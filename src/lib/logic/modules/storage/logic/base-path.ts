@@ -60,6 +60,13 @@ class BasePathStorageLogic extends BaseLogic implements StorageLogic {
     return StorageLogic.toBasePathNode(this.basePath, this.appStorage.getNode(key))
   }
 
+  sgetNode(key: { id?: string; path?: string }): StorageNode {
+    if (key.path) {
+      key.path = StorageLogic.toFullNodePath(this.basePath, key.path)
+    }
+    return StorageLogic.toBasePathNode(this.basePath, this.appStorage.sgetNode(key))
+  }
+
   getDescendants(dirPath?: string): StorageNode[] {
     dirPath = StorageLogic.toFullNodePath(this.basePath, dirPath)
     return StorageLogic.toBasePathNodes(this.basePath, this.appStorage.getDescendants(dirPath))

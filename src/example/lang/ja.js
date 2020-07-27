@@ -56,7 +56,7 @@ export default merge(require('@/lib/lang/ja').default, {
     appRootName: 'Storage',
     docsRootName: 'ドキュメント',
     uploading: 'アップロード中',
-    nodeAlreadyExists: '「{nodeName}」という{nodeType}はすでに存在します。',
+    nodeAlreadyExists: '「{nodeName}」という{nodeType}がすでに存在します。',
     create: {
       creatingDirError: '「{nodeName}」の作成でエラーが発生しました。',
     },

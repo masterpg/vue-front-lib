@@ -53,13 +53,17 @@
 
 <script lang="ts">
 import * as path from 'path'
-import { BaseDialog, CompAlertDialog, NoCache } from '@/lib'
+import { BaseDialog, CompAlertDialog, NoCache, StorageNode } from '@/lib'
 import { QDialog, QInput } from 'quasar'
+import { StorageTypeMixin, getStorageNodeTypeIcon, getStorageNodeTypeLabel } from './base'
 import { Component } from 'vue-property-decorator'
-import { StorageTreeNode } from './base'
+import { mixins } from 'vue-class-component'
+
+@Component
+class BaseDialogMixin extends BaseDialog<string, string> {}
 
 @Component({ components: { CompAlertDialog } })
-export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode, string> {
+export default class StorageNodeRenameDialog extends mixins(BaseDialogMixin, StorageTypeMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -71,26 +75,25 @@ export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode,
     return this.$refs.dialog as QDialog
   }
 
-  private get m_targetNode(): StorageTreeNode | null {
-    return this.params
-  }
+  private m_targetNode: StorageNode = null as any
 
   private get m_title(): string {
     if (!this.m_targetNode) return ''
-    return String(this.$t('common.renameSomehow', { somehow: this.m_targetNode.nodeTypeName }))
+    const nodeType = this.m_targetNode.nodeType
+    return String(this.$t('common.renameSomehow', { somehow: getStorageNodeTypeLabel(nodeType) }))
   }
 
   private get m_nodeIcon(): string {
     if (!this.m_targetNode) return ''
-    return this.m_targetNode.icon
+    const nodeType = this.m_targetNode.nodeType
+    return getStorageNodeTypeIcon(nodeType)
   }
 
   private m_newName: string | null = null
 
   private get m_parentPath(): string {
     if (!this.m_targetNode) return ''
-    const storageNode = this.m_targetNode.getRootNode()
-    return path.join(storageNode.label, this.m_targetNode.parent!.value, '/')
+    return path.join(this.pageStore.rootNode.label, this.m_targetNode.dir, '/')
   }
 
   private get m_isError(): boolean {
@@ -124,9 +127,10 @@ export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode,
   //
   //----------------------------------------------------------------------
 
-  open(targetNode: StorageTreeNode): Promise<string> {
-    this.m_newName = targetNode.name
-    return this.openProcess(targetNode)
+  open(targetNodePath: string): Promise<string> {
+    this.m_targetNode = this.storageLogic.sgetNode({ path: targetNodePath })
+    this.m_newName = this.m_targetNode.name
+    return this.openProcess(targetNodePath)
   }
 
   close(newName?: string): void {
@@ -166,7 +170,8 @@ export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode,
 
     // 必須入力チェック
     if (this.m_newName === '') {
-      const target = String(this.$t('common.somehowName', { somehow: targetNode.nodeTypeName }))
+      const nodeType = this.m_targetNode.nodeType
+      const target = String(this.$t('common.somehowName', { somehow: getStorageNodeTypeLabel(targetNode.nodeType) }))
       this.m_errorMessage = String(this.$t('error.required', { target }))
       return false
     }
@@ -187,10 +192,13 @@ export default class StorageNodeRenameDialog extends BaseDialog<StorageTreeNode,
     }
 
     // リネームしようとする名前のノードが存在しないことをチェック
-    for (const siblingNode of targetNode.parent!.children) {
+    const siblingNodes = this.storageLogic.getChildren(targetNode.dir)
+    for (const siblingNode of siblingNodes) {
       if (siblingNode === targetNode) continue
       if (siblingNode.name === this.m_newName) {
-        this.m_errorMessage = String(this.$t('storage.nodeAlreadyExists', { nodeName: this.m_newName, nodeType: targetNode.nodeTypeName }))
+        this.m_errorMessage = String(
+          this.$t('storage.nodeAlreadyExists', { nodeName: this.m_newName, nodeType: getStorageNodeTypeLabel(siblingNode.nodeType) })
+        )
         return false
       }
     }

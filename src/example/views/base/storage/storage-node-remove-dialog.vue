@@ -36,13 +36,17 @@
 </template>
 
 <script lang="ts">
-import { BaseDialog, NoCache, StorageNodeType } from '@/lib'
+import { BaseDialog, NoCache, StorageNode, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import { StorageTreeNode } from './base'
+import { StorageTypeMixin } from './base'
+import { mixins } from 'vue-class-component'
 
 @Component
-export default class StorageNodeRemoveDialog extends BaseDialog<StorageTreeNode[], boolean> {
+class BaseDialogMixin extends BaseDialog<string[], boolean> {}
+
+@Component
+export default class StorageNodeRemoveDialog extends mixins(BaseDialogMixin, StorageTypeMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -54,9 +58,7 @@ export default class StorageNodeRemoveDialog extends BaseDialog<StorageTreeNode[
     return this.$refs.dialog as QDialog
   }
 
-  private get m_removingNodes(): StorageTreeNode[] | null {
-    return this.params
-  }
+  private m_removingNodes: StorageNode[] = []
 
   private get m_title(): string {
     if (!this.m_removingNodes) return ''
@@ -65,7 +67,7 @@ export default class StorageNodeRemoveDialog extends BaseDialog<StorageTreeNode[
   }
 
   private get m_message(): string {
-    if (!this.m_removingNodes) return ''
+    if (!this.m_removingNodes.length) return ''
 
     // ダイアログ引数で渡されたノードが1つの場合
     if (this.m_removingNodes.length === 1) {
@@ -110,12 +112,18 @@ export default class StorageNodeRemoveDialog extends BaseDialog<StorageTreeNode[
   //
   //----------------------------------------------------------------------
 
-  open(nodes: StorageTreeNode[]): Promise<boolean> {
-    return this.openProcess(nodes)
+  open(nodePaths: string[]): Promise<boolean> {
+    this.m_removingNodes = []
+    for (const nodePath of nodePaths) {
+      const node = this.storageLogic.sgetNode({ path: nodePath })
+      this.m_removingNodes.push(node)
+    }
+
+    return this.openProcess(nodePaths)
   }
 
   close(isConfirmed?: boolean): void {
-    this.closeProcess(!!isConfirmed)
+    this.closeProcess(Boolean(isConfirmed))
   }
 }
 </script>

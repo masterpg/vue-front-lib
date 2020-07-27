@@ -7,8 +7,8 @@
     @extend %app-link
     font-weight: map-get($text-weights, "medium")
     vertical-align: middle
-    &.active
-      color: var(--comp-tree-selected-color, $pink-5)
+.th-label
+  cursor: default
 </style>
 
 <template>
@@ -22,22 +22,26 @@
     row-key="name"
   >
     <template v-slot:body="slotProps">
-      <q-tr :props="slotProps.tr">
+      <q-tr :props="slotProps.tr" @click="m_rowOnClick(slotProps.tr.row)">
         <q-td auto-width>
           <q-checkbox v-model="slotProps.tr.selected" />
         </q-td>
         <q-td key="name" :props="slotProps.tr">
-          <span class="th-name" @click="m_nameCellOnClick(slotProps.tr.row)">
+          <span v-if="slotProps.tr.row.isDir" class="th-name" @click="m_nameCellOnClick(slotProps.tr.row, $event)">
             <q-icon :name="slotProps.tr.row.icon" size="24px" class="app-mr-6" />
-            <span :class="{ active: slotProps.tr.row.isActive }">{{ slotProps.tr.row.name }}</span>
+            <span>{{ slotProps.tr.row.name }}</span>
+          </span>
+          <span v-else-if="slotProps.tr.row.isFile" class="th-label">
+            <q-icon :name="slotProps.tr.row.icon" size="24px" class="app-mr-6" />
+            <span>{{ slotProps.tr.row.name }}</span>
           </span>
         </q-td>
-        <q-td key="contentType" :props="slotProps.tr">{{ slotProps.tr.row.contentType }}</q-td>
-        <q-td key="size" :props="slotProps.tr">{{ slotProps.tr.row.size }}</q-td>
-        <q-td key="share" :props="slotProps.tr">
+        <q-td key="contentType" :props="slotProps.tr" class="th-label">{{ slotProps.tr.row.contentType }}</q-td>
+        <q-td key="size" :props="slotProps.tr" class="th-label">{{ slotProps.tr.row.size }}</q-td>
+        <q-td key="share" :props="slotProps.tr" class="th-label">
           <q-icon :name="slotProps.tr.row.share.icon" size="24px" />
         </q-td>
-        <q-td key="updatedAt" :props="slotProps.tr">{{ slotProps.tr.row.updatedAt }}</q-td>
+        <q-td key="updatedAt" :props="slotProps.tr" class="th-label">{{ slotProps.tr.row.updatedAt }}</q-td>
         <storage-node-context-menu :node="slotProps.tr.row" :selected-nodes="table.selected" @select="m_contextMenuOnSelect" />
       </q-tr>
     </template>
@@ -46,7 +50,7 @@
 
 <script lang="ts">
 import { BaseComponent, NoCache, Resizable, StorageNode, StorageNodeType } from '@/lib'
-import { StorageNodeContextMenuSelectedEvent, StorageTreeNode, StorageTypeMixin } from './base'
+import { StorageNodeContextMenuSelectedEvent, StorageTypeMixin } from './base'
 import { Component } from 'vue-property-decorator'
 import StorageDirTable from './storage-dir-table.vue'
 import StorageNodeContextMenu from './storage-node-context-menu.vue'
@@ -77,7 +81,13 @@ export class StorageDirTableRow {
 
   updatedAtNum!: number
 
-  isActive!: boolean
+  get isDir(): boolean {
+    return this.nodeType === StorageNodeType.Dir
+  }
+
+  get isFile(): boolean {
+    return this.nodeType === StorageNodeType.File
+  }
 
   get selected(): boolean {
     if (!this.m_table.selected) return false
@@ -127,9 +137,9 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     ]
   }
 
-  protected dirNode: StorageTreeNode | null = null
+  protected dirPath: string | null = null
 
-  protected selectedNode: StorageTreeNode | null = null
+  protected selectedNodePath: string | null = null
 
   private m_dirChildNodes: StorageDirTableRow[] = []
 
@@ -155,12 +165,12 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
    * 選択ノードがディレクトリの場合、そのディレクトリの子ノード一覧が表示されます。
    * 選択ノードがファイルの場合、親となるディレクトリの子ノード一覧が表示され、
    * また選択ノードがアクティブな状態として表示されます。
-   * @param selectedNode
+   * @param selectedNodePath
    */
-  setSelectedNode(selectedNode: StorageTreeNode | null): void {
+  setSelectedNode(selectedNodePath: string | null): void {
     const clear = () => {
-      this.selectedNode = null
-      this.dirNode = null
+      this.selectedNodePath = null
+      this.dirPath = null
       this.m_dirChildNodes = []
       // 選択状態を初期化
       this.table.selected && this.table.selected.splice(0)
@@ -168,25 +178,33 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
       this.table.$el.querySelector('.scroll')!.scrollTop = 0
     }
 
-    // 選択ノードに空が渡された場合、テーブルをクリアして終了
-    if (!selectedNode) {
+    // 選択ノードにnullが渡された場合、テーブルをクリアして終了
+    if (selectedNodePath === null) {
       clear()
       return
     }
 
-    // 表示対象となるディレクトリを取得
-    const dirNode = selectedNode.nodeType === StorageNodeType.Dir ? selectedNode : selectedNode.parent!
+    let dirPath!: string
+    // 選択ノードがルートノードの場合
+    if (!selectedNodePath) {
+      dirPath = selectedNodePath
+    }
+    // 選択ノードがルートノード配下のノードの場合
+    else {
+      const selectedNode = this.storageLogic.sgetNode({ path: selectedNodePath })
+      dirPath = selectedNode.nodeType === StorageNodeType.Dir ? selectedNode.path : selectedNode.dir
+    }
 
     // 前回と今回で対象となるディレクトリが異なる場合
-    if (this.dirNode?.path !== dirNode.path) {
+    if (this.dirPath !== dirPath) {
       // テーブルをクリア
       clear()
     }
 
-    this.selectedNode = selectedNode
-    this.dirNode = dirNode
+    this.selectedNodePath = selectedNodePath
+    this.dirPath = dirPath
 
-    this.m_buildDirChildNodes()
+    this.m_buildDirChildNodes(dirPath)
   }
 
   //----------------------------------------------------------------------
@@ -217,7 +235,6 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     }
     tableRow.updatedAt = String(this.$d(node.updatedAt.toDate(), 'dateTime'))
     tableRow.updatedAtNum = node.updatedAt.unix()
-    tableRow.isActive = this.selectedNode ? this.selectedNode.path === node.path : false
     return tableRow
   }
 
@@ -232,7 +249,6 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
       path: source.path,
       share: source.share,
       updatedAt: source.updatedAt,
-      isActive: source.isActive,
     })
   }
 
@@ -268,37 +284,17 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
     return data
   }
 
-  private m_buildDirChildNodes(): void {
-    if (!this.selectedNode) return
-
-    if (this.selectedNode.path) {
-      const node = this.storageLogic.getNode({ path: this.selectedNode.path })
-      if (!node) {
-        throw new Error(`'storageLogic' does not have specified path's node: '${this.selectedNode.path}'`)
-      }
-    }
-
+  private m_buildDirChildNodes(dirPath: string): void {
     // ロジックストアから最新の子ノードを取得
-    let dirNode!: StorageTreeNode
-    switch (this.selectedNode.nodeType) {
-      case StorageNodeType.Dir: {
-        dirNode = this.selectedNode
-        break
-      }
-      case StorageNodeType.File: {
-        dirNode = this.selectedNode.parent!
-        break
-      }
-    }
     const latestChildNodes: StorageDirTableRow[] = []
     const latestChildDict: { [path: string]: StorageDirTableRow } = {}
-    for (const child of this.storageLogic.getChildren(dirNode.path)) {
+    for (const child of this.storageLogic.getChildren(dirPath)) {
       const row = this.toTableRow(child)
       latestChildNodes.push(row)
       latestChildDict[row.path] = row
     }
 
-    const childDict: { [path: string]: StorageDirTableRow } = arrayToDict(this.m_dirChildNodes, 'path')
+    const childDict = arrayToDict(this.m_dirChildNodes, 'path')
 
     // 最新データにはないがビューには存在するノードを削除
     for (let i = 0; i < this.m_dirChildNodes.length; i++) {
@@ -336,11 +332,21 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
   //----------------------------------------------------------------------
 
   /**
-   * テーブル行の名称セルがクリックされた際のリスナです。
+   * テーブル行のがクリックされた際のリスナです。
    * @param row
    */
-  private m_nameCellOnClick(row: StorageDirTableRow) {
+  m_rowOnClick(row: StorageDirTableRow) {
     this.$emit('select', row.path)
+  }
+
+  /**
+   * テーブル行の名称セルがクリックされた際のリスナです。
+   * @param row
+   * @param e
+   */
+  private m_nameCellOnClick(row: StorageDirTableRow, e: Event) {
+    e.stopImmediatePropagation()
+    this.$emit('deep-select', row.path)
   }
 
   /**

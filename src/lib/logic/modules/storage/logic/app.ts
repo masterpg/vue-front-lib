@@ -42,6 +42,15 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     return store.storage.get(key)
   }
 
+  sgetNode(key: { id?: string; path?: string }): StorageNode {
+    const node = store.storage.get(key)
+    if (!node) {
+      const nodeKey = key.id ? JSON.stringify({ id: key.id }) : JSON.stringify({ path: key.path })
+      throw new Error(`Storage store does not have specified node: ${nodeKey}`)
+    }
+    return node
+  }
+
   getDirDescendants(dirPath: string): StorageNode[] {
     return store.storage.getDirDescendants(dirPath)
   }

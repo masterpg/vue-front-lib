@@ -41,13 +41,17 @@
 
 <script lang="ts">
 import * as path from 'path'
-import { BaseDialog, NoCache } from '@/lib'
+import { BaseDialog, NoCache, StorageNode, StorageNodeType } from '@/lib'
 import { QDialog, QInput } from 'quasar'
+import { StorageTypeMixin, getStorageNodeTypeLabel } from './base'
 import { Component } from 'vue-property-decorator'
-import { StorageTreeNode } from './base'
+import { mixins } from 'vue-class-component'
 
 @Component
-export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, string> {
+class BaseDialogMixin extends BaseDialog<string, string> {}
+
+@Component
+export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, StorageTypeMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -59,9 +63,7 @@ export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, 
     return this.$refs.dialog as QDialog
   }
 
-  private get m_parentNode(): StorageTreeNode | null {
-    return this.params
-  }
+  private m_parentNode: StorageNode | null = null
 
   private get m_title(): string {
     const nodeTypeName = this.$tc('common.folder', 1)
@@ -71,13 +73,10 @@ export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, 
   private m_dirName: string | null = null
 
   private get m_parentPath(): string {
-    if (!this.m_parentNode) return ''
-
-    const storageNode = this.m_parentNode.getRootNode()
-    if (storageNode === this.m_parentNode) {
-      return path.join(this.m_parentNode.name, '/')
+    if (!this.m_parentNode) {
+      return path.join(this.pageStore.rootNode.label, '/')
     } else {
-      return path.join(storageNode.name, this.m_parentNode.path, '/')
+      return path.join(this.pageStore.rootNode.label, this.m_parentNode.path, '/')
     }
   }
 
@@ -102,8 +101,13 @@ export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, 
   //
   //----------------------------------------------------------------------
 
-  open(parentNode: StorageTreeNode): Promise<string> {
-    return this.openProcess(parentNode)
+  open(parentPath: string): Promise<string> {
+    if (parentPath === this.pageStore.rootNode.path) {
+      this.m_parentNode = null
+    } else {
+      this.m_parentNode = this.storageLogic.sgetNode({ path: parentPath })
+    }
+    return this.openProcess(parentPath)
   }
 
   close(dirPath?: string): void {
@@ -122,7 +126,7 @@ export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, 
     if (!this.m_validate()) return
 
     let dirPath = ''
-    if (this.m_parentNode!.getRootNode() === this.m_parentNode) {
+    if (!this.m_parentNode) {
       dirPath = this.m_dirName!
     } else {
       dirPath = path.join(this.m_parentNode!.path, this.m_dirName!)
@@ -136,12 +140,9 @@ export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, 
   }
 
   private m_validate(): boolean {
-    const parentNode = this.m_parentNode
-    if (!parentNode) return false
-
     // ディレクトリ名必須入力チェック
     if (this.m_dirName === '') {
-      const target = String(this.$t('common.somehowName', { somehow: parentNode.nodeTypeName }))
+      const target = String(this.$t('common.somehowName', { somehow: getStorageNodeTypeLabel(StorageNodeType.Dir) }))
       this.m_errorMessage = String(this.$t('error.required', { target }))
       return false
     }
@@ -156,7 +157,8 @@ export default class StorageDirCreateDialog extends BaseDialog<StorageTreeNode, 
     }
 
     // 作成しようとする名前のディレクトリが存在しないことをチェック
-    for (const siblingNode of parentNode.children) {
+    const siblingNodes = this.storageLogic.getChildren(this.m_parentNode ? this.m_parentNode.path : '')
+    for (const siblingNode of siblingNodes) {
       if (siblingNode.name === this.m_dirName) {
         const nodeTypeName = this.$tc('common.folder', 1)
         this.m_errorMessage = String(this.$t('storage.nodeAlreadyExists', { nodeName: this.m_dirName, nodeType: nodeTypeName }))

@@ -70,6 +70,7 @@ interface StorageTreeNode extends CompTreeNode<StorageTreeNode> {
 
 namespace StorageTreeNode {
   export const clazz = StorageTreeNodeClass
+  export type type = StorageTreeNodeClass
 }
 
 interface StorageNodeContextMenuItem {
@@ -94,69 +95,41 @@ class StorageTypeMixin extends Vue {
   storageType!: StorageType
 
   protected get storageLogic(): StorageLogic {
-    return this.m_storageTypeData.page.storageLogic
+    return this.pageStore.page.storageLogic
   }
 
   protected get storageRoute(): StorageRoute {
-    return this.m_storageTypeData.page.storageRoute
+    return this.pageStore.page.storageRoute
   }
 
-  private get m_storageTypeData(): StorageTypeData {
-    return StorageTypeData.get(this.storageType)
+  get pageStore(): StoragePageStore {
+    return StoragePageStore.get(this.storageType)
   }
-
-  readonly pageStore = new (class {
-    constructor(private m_storageType: StorageType) {}
-
-    get rootNode(): StorageTreeNode {
-      return this.m_storageTypeData.rootNode
-    }
-
-    get isInitialPull(): boolean {
-      return this.m_storageTypeData.isInitialPull
-    }
-
-    set isInitialPull(value: boolean) {
-      this.m_storageTypeData.isInitialPull = value
-    }
-
-    get isPageActive(): boolean {
-      return this.m_storageTypeData.isPageActive
-    }
-
-    set isPageActive(value: boolean) {
-      this.m_storageTypeData.isPageActive = value
-    }
-
-    get m_storageTypeData(): StorageTypeData {
-      return StorageTypeData.get(this.m_storageType)
-    }
-  })(this.storageType)
 }
 
 @Component
-class StorageTypeData extends Vue {
-  private static dict: { [storageType: string]: StorageTypeData } = {}
+class StoragePageStore extends Vue {
+  private static dict: { [storageType: string]: StoragePageStore } = {}
 
-  static get(storageType: StorageType): StorageTypeData {
-    return StorageTypeData.dict[storageType]
+  static get(storageType: StorageType): StoragePageStore {
+    return StoragePageStore.dict[storageType]
   }
 
   static register(page: BaseStoragePage): void {
     const storageType = page.storageType
-    let storageTypeData = StorageTypeData.get(storageType)
+    let storageTypeData = StoragePageStore.get(storageType)
     if (storageTypeData) return
 
     // プログラム的にコンポーネントのインスタンスを生成
     // https://css-tricks.com/creating-vue-js-component-instances-programmatically/
-    const ComponentClass = Vue.extend(StorageTypeData)
+    const ComponentClass = Vue.extend(StoragePageStore)
     storageTypeData = new ComponentClass({
       propsData: {
         page,
         rootNode: this.createRootNode(storageType),
       },
-    }) as StorageTypeData
-    StorageTypeData.dict[storageType] = storageTypeData
+    }) as StoragePageStore
+    StoragePageStore.dict[storageType] = storageTypeData
   }
 
   private static createRootNode(storageType: StorageType): StorageTreeNode {
@@ -198,11 +171,11 @@ class StorageTypeData extends Vue {
   }
 
   static clear(): void {
-    for (const storageTypeData of Object.values(StorageTypeData.dict)) {
-      delete StorageTypeData.dict[storageTypeData.storageType]
+    for (const storageTypeData of Object.values(StoragePageStore.dict)) {
+      delete StoragePageStore.dict[storageTypeData.storageType]
       storageTypeData.$destroy()
     }
-    StorageTypeData.dict = {}
+    StoragePageStore.dict = {}
   }
 
   @Prop({ required: true })
@@ -211,11 +184,9 @@ class StorageTypeData extends Vue {
   @Prop({ required: true })
   rootNode!: StorageTreeNode
 
-  @Prop({ default: false })
-  isInitialPull!: boolean
+  isInitialPull = false
 
-  @Prop({ default: false })
-  isPageActive!: boolean
+  isPageActive = false
 
   get storageType(): StorageType {
     return this.page.storageType
@@ -227,16 +198,16 @@ class StorageTypeData extends Vue {
     // ※ページが非アクティブな状態とは、ストレージタイプとひも付くページが表示されていない状態であり、
     //   またツリービューも破棄されていることを意味する。
     if (!this.isPageActive && !this.$logic.auth.isSignedIn) {
-      const storageTypeData = StorageTypeData.get(this.storageType)
+      const storageTypeData = StoragePageStore.get(this.storageType)
       if (storageTypeData) {
-        delete StorageTypeData.dict[this.storageType]
+        delete StoragePageStore.dict[this.storageType]
         storageTypeData.$destroy()
       }
     }
   }
 }
 
-const treeSortFunc: ChildrenSortFunc = <StorageNode>(a, b) => {
+const treeSortFunc: ChildrenSortFunc<StorageTreeNode.type> = (a, b) => {
   if (a.nodeType === StorageNodeType.Dir && b.nodeType === StorageNodeType.File) {
     return -1
   } else if (a.nodeType === StorageNodeType.File && b.nodeType === StorageNodeType.Dir) {
@@ -253,7 +224,7 @@ function nodeToTreeData(source: StorageTreeNodeInput | StorageTreeNode): Storage
   const result = {
     value: removeBothEndsSlash(source.path),
     label: removeBothEndsSlash(source.name),
-    icon: source.icon ? source.icon : source.nodeType === StorageNodeType.Dir ? 'folder' : 'description',
+    icon: getStorageNodeTypeIcon(source.nodeType),
     nodeClass: StorageTreeNode.clazz,
     lazy: source.nodeType === StorageNodeType.Dir,
     sortFunc: treeSortFunc,
@@ -282,6 +253,34 @@ function nodeToTreeData(source: StorageTreeNodeInput | StorageTreeNode): Storage
   }
 
   return result
+}
+
+/**
+ * ストレージタイプのラベルを取得します。
+ * @param nodeType
+ * @param choice
+ */
+function getStorageNodeTypeLabel(nodeType: StorageNodeType, choice = 1): string {
+  switch (nodeType) {
+    case StorageNodeType.Dir:
+      return String(i18n.tc('common.folder', choice))
+    case StorageNodeType.File:
+      return String(i18n.tc('common.file', choice))
+  }
+}
+
+/**
+ * ストレージタイプのアイコンを取得します。
+ * @param nodeType
+ * @param choice
+ */
+function getStorageNodeTypeIcon(nodeType: StorageNodeType, choice = 1): string {
+  switch (nodeType) {
+    case StorageNodeType.Dir:
+      return 'folder'
+    case StorageNodeType.File:
+      return 'description'
+  }
 }
 
 //--------------------------------------------------
@@ -363,8 +362,10 @@ export {
   StorageTreeNodeData,
   StorageTreeNodeInput,
   StorageType,
-  StorageTypeData,
+  StoragePageStore,
   StorageTypeMixin,
+  getStorageNodeTypeLabel,
+  getStorageNodeTypeIcon,
   nodeToTreeData,
   treeSortFunc,
 }
