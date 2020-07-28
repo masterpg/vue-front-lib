@@ -62,8 +62,8 @@ export default class StorageNodeRemoveDialog extends mixins(BaseDialogMixin, Sto
 
   private get m_title(): string {
     if (!this.m_removingNodes) return ''
-    const somehow = String(this.$tc('common.item', this.m_removingNodes.length))
-    return String(this.$t('common.deleteSomehow', { somehow }))
+    const sth = String(this.$tc('common.item', this.m_removingNodes.length))
+    return String(this.$t('common.deleteSth', { sth }))
   }
 
   private get m_message(): string {

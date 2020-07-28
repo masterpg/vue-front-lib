@@ -73,12 +73,12 @@ namespace StorageTreeNode {
   export type type = StorageTreeNodeClass
 }
 
-interface StorageNodeContextMenuItem {
+interface StorageNodePopupMenuItem {
   type: string
   label: string
 }
 
-interface StorageNodeContextMenuSelectedEvent {
+interface StorageNodePopupMenuSelectEvent {
   type: string
   nodePaths: string[]
 }
@@ -287,57 +287,57 @@ function getStorageNodeTypeIcon(nodeType: StorageNodeType, choice = 1): string {
 //  ContextMenu
 //--------------------------------------------------
 
-class StorageNodeContextMenuTypeImpl {
-  readonly createDir: StorageNodeContextMenuItem = new (class {
+class StorageNodePopupMenuTypeImpl {
+  readonly createDir: StorageNodePopupMenuItem = new (class {
     readonly type = 'createDir'
     get label(): string {
-      return String(i18n.t('common.createSomehow', { somehow: i18n.tc('common.folder', 1) }))
+      return String(i18n.t('common.createSth', { sth: i18n.tc('common.folder', 1) }))
     }
   })()
 
-  readonly uploadFiles: StorageNodeContextMenuItem = new (class {
+  readonly uploadFiles: StorageNodePopupMenuItem = new (class {
     readonly type = 'uploadFiles'
     get label(): string {
-      return String(i18n.t('common.uploadSomehow', { somehow: i18n.tc('common.file', 2) }))
+      return String(i18n.t('common.uploadSth', { sth: i18n.tc('common.file', 2) }))
     }
   })()
 
-  readonly uploadDir: StorageNodeContextMenuItem = new (class {
+  readonly uploadDir: StorageNodePopupMenuItem = new (class {
     readonly type = 'uploadDir'
     get label(): string {
-      return String(i18n.t('common.uploadSomehow', { somehow: i18n.tc('common.folder', 2) }))
+      return String(i18n.t('common.uploadSth', { sth: i18n.tc('common.folder', 2) }))
     }
   })()
 
-  readonly move: StorageNodeContextMenuItem = new (class {
+  readonly move: StorageNodePopupMenuItem = new (class {
     readonly type = 'move'
     get label(): string {
       return String(i18n.t('common.move'))
     }
   })()
 
-  readonly rename: StorageNodeContextMenuItem = new (class {
+  readonly rename: StorageNodePopupMenuItem = new (class {
     readonly type = 'rename'
     get label(): string {
       return String(i18n.t('common.rename'))
     }
   })()
 
-  readonly share: StorageNodeContextMenuItem = new (class {
+  readonly share: StorageNodePopupMenuItem = new (class {
     readonly type = 'share'
     get label(): string {
       return String(i18n.t('common.share'))
     }
   })()
 
-  readonly deletion: StorageNodeContextMenuItem = new (class {
+  readonly deletion: StorageNodePopupMenuItem = new (class {
     readonly type = 'delete'
     get label(): string {
       return String(i18n.t('common.delete'))
     }
   })()
 
-  readonly reload: StorageNodeContextMenuItem = new (class {
+  readonly reload: StorageNodePopupMenuItem = new (class {
     readonly type = 'reload'
     get label(): string {
       return String(i18n.t('common.reload'))
@@ -345,7 +345,7 @@ class StorageNodeContextMenuTypeImpl {
   })()
 }
 
-const StorageNodeContextMenuType = new StorageNodeContextMenuTypeImpl()
+const StorageNodePopupMenuType = new StorageNodePopupMenuTypeImpl()
 
 //========================================================================
 //
@@ -354,10 +354,9 @@ const StorageNodeContextMenuType = new StorageNodeContextMenuTypeImpl()
 //========================================================================
 
 export {
-  StorageNodeContextMenuItem,
-  StorageNodeContextMenuSelectedEvent,
-  StorageNodeContextMenuType,
-  StorageNodeContextMenuTypeImpl,
+  StorageNodePopupMenuItem,
+  StorageNodePopupMenuSelectEvent,
+  StorageNodePopupMenuType,
   StorageTreeNode,
   StorageTreeNodeData,
   StorageTreeNodeInput,

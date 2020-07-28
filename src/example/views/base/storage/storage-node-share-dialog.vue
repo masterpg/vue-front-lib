@@ -107,10 +107,10 @@ export default class StorageNodeShareDialog extends mixins(BaseDialogMixin, Stor
   private get m_title(): string {
     if (this.m_sharingNodes.length === 1) {
       const nodeType = this.m_sharingNodes[0].nodeType
-      return String(this.$t('common.shareSomehow', { somehow: getStorageNodeTypeLabel(nodeType) }))
+      return String(this.$t('common.shareSth', { sth: getStorageNodeTypeLabel(nodeType) }))
     } else if (this.m_sharingNodes.length >= 2) {
-      const somehow = String(this.$tc('common.item', this.m_sharingNodes.length))
-      return String(this.$t('common.shareSomehow', { somehow }))
+      const sth = String(this.$tc('common.item', this.m_sharingNodes.length))
+      return String(this.$t('common.shareSth', { sth }))
     }
     return ''
   }

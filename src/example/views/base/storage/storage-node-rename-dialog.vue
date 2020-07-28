@@ -80,7 +80,7 @@ export default class StorageNodeRenameDialog extends mixins(BaseDialogMixin, Sto
   private get m_title(): string {
     if (!this.m_targetNode) return ''
     const nodeType = this.m_targetNode.nodeType
-    return String(this.$t('common.renameSomehow', { somehow: getStorageNodeTypeLabel(nodeType) }))
+    return String(this.$t('common.renameSth', { sth: getStorageNodeTypeLabel(nodeType) }))
   }
 
   private get m_nodeIcon(): string {
@@ -171,7 +171,7 @@ export default class StorageNodeRenameDialog extends mixins(BaseDialogMixin, Sto
     // 必須入力チェック
     if (this.m_newName === '') {
       const nodeType = this.m_targetNode.nodeType
-      const target = String(this.$t('common.somehowName', { somehow: getStorageNodeTypeLabel(targetNode.nodeType) }))
+      const target = String(this.$t('common.sthName', { sth: getStorageNodeTypeLabel(targetNode.nodeType) }))
       this.m_errorMessage = String(this.$t('error.required', { target }))
       return false
     }

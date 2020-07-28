@@ -1,7 +1,7 @@
 <style lang="sass" scoped></style>
 
 <template>
-  <comp-tree-view ref="treeView" @select="m_onSelect" @lazy-load="m_onLazyLoad" @context-menu-select="m_onContextMenuSelect" />
+  <comp-tree-view ref="treeView" @select="m_onSelect" @lazy-load="m_onLazyLoad" @menu-select="m_onMenuSelect" />
 </template>
 
 <script lang="ts">
@@ -20,7 +20,7 @@ import {
   UploadEndedEvent,
 } from '@/lib'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import { StorageNodeContextMenuSelectedEvent, StorageTreeNode, StorageTreeNodeInput, StorageTypeMixin, nodeToTreeData } from './base'
+import { StorageNodePopupMenuSelectEvent, StorageTreeNode, StorageTreeNodeInput, StorageTypeMixin, nodeToTreeData } from './base'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
 import { mixins } from 'vue-class-component'
 
@@ -878,8 +878,8 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     this.$emit('lazy-load', e)
   }
 
-  private async m_onContextMenuSelect(e: StorageNodeContextMenuSelectedEvent) {
-    this.$emit('context-menu-select', e)
+  private async m_onMenuSelect(e: StorageNodePopupMenuSelectEvent) {
+    this.$emit('menu-select', e)
   }
 }
 </script>

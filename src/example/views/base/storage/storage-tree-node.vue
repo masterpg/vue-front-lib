@@ -91,10 +91,11 @@
           <span ref="itemLabel">{{ label }}</span>
         </div>
         <!-- コンテキストメニュー -->
-        <storage-node-context-menu
+        <storage-node-popup-menu
           :node="{ path: value, nodeType }"
           :is-root="m_isRoot"
           :disabled="disableContextMenu"
+          context-menu
           @select="m_contextMenuOnSelect"
         />
       </div>
@@ -108,16 +109,16 @@
 <script lang="ts">
 import * as path from 'path'
 import { CompTreeNode, CompTreeNodeEditData, NoCache, RequiredStorageNodeShareSettings, StorageNodeShareSettings, StorageNodeType } from '@/lib'
-import { StorageNodeContextMenuSelectedEvent, StorageTreeNode, StorageTreeNodeData } from './base'
+import { StorageNodePopupMenuSelectEvent, StorageTreeNode, StorageTreeNodeData } from './base'
 import { Component } from 'vue-property-decorator'
 import { Dayjs } from 'dayjs'
-import StorageNodeContextMenu from './storage-node-context-menu.vue'
+import StorageNodePopupMenu from './storage-node-popup-menu.vue'
 import { removeStartDirChars } from 'web-base-lib'
 
 // @ts-ignore `CompTreeNode<StorageTreeNode>`によって発生するエラーを回避
 @Component({
   components: {
-    StorageNodeContextMenu,
+    StorageNodePopupMenu,
   },
 })
 export default class StorageTreeNodeClass extends CompTreeNode<StorageTreeNode> implements StorageTreeNode {
@@ -128,7 +129,7 @@ export default class StorageTreeNodeClass extends CompTreeNode<StorageTreeNode> 
   //----------------------------------------------------------------------
 
   get extraEventNames(): string[] {
-    return ['context-menu-select']
+    return ['menu-select']
   }
 
   get id(): string {
@@ -310,8 +311,8 @@ export default class StorageTreeNodeClass extends CompTreeNode<StorageTreeNode> 
    * コンテキストメニューでメニューアイテムが選択された際のリスナです。
    * @param e
    */
-  private m_contextMenuOnSelect(e: StorageNodeContextMenuSelectedEvent) {
-    this.dispatchExtraEvent('context-menu-select', e)
+  private m_contextMenuOnSelect(e: StorageNodePopupMenuSelectEvent) {
+    this.dispatchExtraEvent('menu-select', e)
   }
 
   //----------------------------------------------------------------------

@@ -10,7 +10,14 @@ import StorageNodeShareDialog from './storage-node-share-dialog.vue'
 import StoragePage from './base-storage-page.vue'
 import StorageTreeView from './storage-tree-view.vue'
 
-export { StorageNodeContextMenuTypeImpl, StorageTreeNode, StorageTreeNodeData, StorageType, StorageTypeMixin } from './base'
+export {
+  StorageNodePopupMenuItem,
+  StorageNodePopupMenuSelectEvent,
+  StorageTreeNode,
+  StorageTreeNodeData,
+  StorageType,
+  StorageTypeMixin,
+} from './base'
 export {
   BaseStoragePage,
   StorageDirCreateDialog,

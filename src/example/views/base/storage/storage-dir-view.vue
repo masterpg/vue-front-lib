@@ -42,7 +42,7 @@
           <q-icon :name="slotProps.tr.row.share.icon" size="24px" />
         </q-td>
         <q-td key="updatedAt" :props="slotProps.tr" class="th-label">{{ slotProps.tr.row.updatedAt }}</q-td>
-        <storage-node-context-menu :node="slotProps.tr.row" :selected-nodes="table.selected" @select="m_contextMenuOnSelect" />
+        <storage-node-popup-menu :node="slotProps.tr.row" :selected-nodes="table.selected" context-menu @select="m_popupMenuOnSelect" />
       </q-tr>
     </template>
   </storage-dir-table>
@@ -50,10 +50,10 @@
 
 <script lang="ts">
 import { BaseComponent, NoCache, Resizable, StorageNode, StorageNodeType } from '@/lib'
-import { StorageNodeContextMenuSelectedEvent, StorageTypeMixin } from './base'
+import { StorageNodePopupMenuSelectEvent, StorageTypeMixin } from './base'
 import { Component } from 'vue-property-decorator'
 import StorageDirTable from './storage-dir-table.vue'
-import StorageNodeContextMenu from './storage-node-context-menu.vue'
+import StorageNodePopupMenu from './storage-node-popup-menu.vue'
 import { arrayToDict } from 'web-base-lib'
 import bytes from 'bytes'
 import { mixins } from 'vue-class-component'
@@ -98,7 +98,7 @@ export class StorageDirTableRow {
 @Component({
   components: {
     StorageDirTable,
-    StorageNodeContextMenu,
+    StorageNodePopupMenu,
   },
 })
 export default class StorageDirView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
@@ -350,11 +350,11 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
   }
 
   /**
-   * コンテキストメニューでメニューアイテムが選択された際のリスナです。
+   * ポップアップメニューでメニューアイテムが選択された際のリスナです。
    * @param e
    */
-  private m_contextMenuOnSelect(e: StorageNodeContextMenuSelectedEvent) {
-    this.$emit('context-menu-select', e)
+  private m_popupMenuOnSelect(e: StorageNodePopupMenuSelectEvent) {
+    this.$emit('menu-select', e)
   }
 }
 </script>

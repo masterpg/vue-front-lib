@@ -117,10 +117,10 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
   private get m_title(): string {
     if (this.m_movingNodes.length === 1) {
       const nodeType = this.m_movingNodes[0].nodeType
-      return String(this.$t('common.moveSomehow', { somehow: getStorageNodeTypeLabel(nodeType) }))
+      return String(this.$t('common.moveSth', { sth: getStorageNodeTypeLabel(nodeType) }))
     } else if (this.m_movingNodes.length >= 2) {
-      const somehow = String(this.$tc('common.item', this.m_movingNodes.length))
-      return String(this.$t('common.moveSomehow', { somehow }))
+      const sth = String(this.$tc('common.item', this.m_movingNodes.length))
+      return String(this.$t('common.moveSth', { sth }))
     }
     return ''
   }

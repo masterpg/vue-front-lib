@@ -67,7 +67,7 @@ export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, Stor
 
   private get m_title(): string {
     const nodeTypeName = this.$tc('common.folder', 1)
-    return String(this.$t('common.createSomehow', { somehow: nodeTypeName }))
+    return String(this.$t('common.createSth', { sth: nodeTypeName }))
   }
 
   private m_dirName: string | null = null
@@ -142,7 +142,7 @@ export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, Stor
   private m_validate(): boolean {
     // ディレクトリ名必須入力チェック
     if (this.m_dirName === '') {
-      const target = String(this.$t('common.somehowName', { somehow: getStorageNodeTypeLabel(StorageNodeType.Dir) }))
+      const target = String(this.$t('common.sthName', { sth: getStorageNodeTypeLabel(StorageNodeType.Dir) }))
       this.m_errorMessage = String(this.$t('error.required', { target }))
       return false
     }

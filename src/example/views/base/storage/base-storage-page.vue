@@ -92,7 +92,7 @@ import {
 } from '@/lib'
 import { Component, Watch } from 'vue-property-decorator'
 import { RawLocation, Route } from 'vue-router'
-import { StorageNodeContextMenuSelectedEvent, StorageNodeContextMenuType, StoragePageStore, StorageTreeNode, StorageType } from './base'
+import { StorageNodePopupMenuSelectEvent, StorageNodePopupMenuType, StoragePageStore, StorageTreeNode, StorageType } from './base'
 import { removeBothEndsSlash, sleep } from 'web-base-lib'
 import StorageDirCreateDialog from './storage-dir-create-dialog.vue'
 import StorageDirDetailView from './storage-dir-detail-view.vue'
@@ -325,11 +325,12 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
 
     this.treeView.$on('select', e => this.treeViewOnSelect(e))
     this.treeView.$on('lazy-load', e => this.treeViewOnLazyLoad(e))
-    this.treeView.$on('context-menu-select', e => this.onContextMenuSelect(e))
+    this.treeView.$on('menu-select', e => this.popupOnMenuSelect(e))
     this.dirView.$on('select', e => this.dirViewOnSelect(e))
     this.dirView.$on('deep-select', e => this.dirViewOnDeepSelect(e))
-    this.dirView.$on('context-menu-select', e => this.onContextMenuSelect(e))
+    this.dirView.$on('menu-select', e => this.popupOnMenuSelect(e))
     this.pathDirBreadcrumb.$on('select', e => this.pathDirBreadcrumbOnSelectChange(e))
+    this.pathDirBreadcrumb.$on('menu-select', e => this.popupOnMenuSelect(e))
   }
 
   /**
@@ -642,9 +643,9 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
    * コンテキストメニューでメニューアイテムが選択された際のリスナです。
    * @param e
    */
-  protected async onContextMenuSelect(e: StorageNodeContextMenuSelectedEvent) {
+  protected async popupOnMenuSelect(e: StorageNodePopupMenuSelectEvent) {
     switch (e.type) {
-      case StorageNodeContextMenuType.reload.type: {
+      case StorageNodePopupMenuType.reload.type: {
         const dirPath = e.nodePaths[0]
         await this.treeView.reloadDir(dirPath)
         // ページの選択ノードを設定
@@ -652,7 +653,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
         this.changeDir(this.treeView.selectedNode.path)
         break
       }
-      case StorageNodeContextMenuType.createDir.type: {
+      case StorageNodePopupMenuType.createDir.type: {
         const dirPath = e.nodePaths[0]
         const creatingDirPath = await this.dirCreateDialog.open(dirPath)
         if (creatingDirPath) {
@@ -660,24 +661,24 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
         }
         break
       }
-      case StorageNodeContextMenuType.uploadFiles.type: {
+      case StorageNodePopupMenuType.uploadFiles.type: {
         const dirPath = e.nodePaths[0]
         this.uploadProgressFloat.openFilesSelectDialog(dirPath)
         break
       }
-      case StorageNodeContextMenuType.uploadDir.type: {
+      case StorageNodePopupMenuType.uploadDir.type: {
         const dirPath = e.nodePaths[0]
         this.uploadProgressFloat.openDirSelectDialog(dirPath)
         break
       }
-      case StorageNodeContextMenuType.move.type: {
+      case StorageNodePopupMenuType.move.type: {
         const toDir = await this.nodeMoveDialog.open(e.nodePaths)
         if (typeof toDir === 'string') {
           await this.moveNodes(e.nodePaths, toDir)
         }
         break
       }
-      case StorageNodeContextMenuType.rename.type: {
+      case StorageNodePopupMenuType.rename.type: {
         const nodePath = e.nodePaths[0]
         const newName = await this.nodeRenameDialog.open(nodePath)
         if (newName) {
@@ -685,14 +686,14 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
         }
         break
       }
-      case StorageNodeContextMenuType.share.type: {
+      case StorageNodePopupMenuType.share.type: {
         const settings = await this.nodeShareDialog.open(e.nodePaths)
         if (settings) {
           await this.setShareSettings(e.nodePaths, settings)
         }
         break
       }
-      case StorageNodeContextMenuType.deletion.type: {
+      case StorageNodePopupMenuType.deletion.type: {
         const confirmed = await this.nodeRemoveDialog.open(e.nodePaths)
         if (confirmed) {
           await this.removeNodes(e.nodePaths)
