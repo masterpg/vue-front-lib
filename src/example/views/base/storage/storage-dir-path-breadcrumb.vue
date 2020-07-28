@@ -59,7 +59,7 @@
 
 <script lang="ts">
 import { BaseComponent, Resizable, StorageNode, StorageNodeType } from '@/lib'
-import { StorageNodePopupMenuSelectEvent, StorageTypeMixin } from './base'
+import { StorageNodePopupMenuSelectEvent, StoragePageMixin } from './base'
 import { Component } from 'vue-property-decorator'
 import StorageNodePopupMenu from './storage-node-popup-menu.vue'
 import { mixins } from 'vue-class-component'
@@ -76,7 +76,7 @@ interface PathBlock {
 @Component({
   components: { StorageNodePopupMenu },
 })
-export default class StorageDirPathBreadcrumb extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
+export default class StorageDirPathBreadcrumb extends mixins(BaseComponent, Resizable, StoragePageMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables

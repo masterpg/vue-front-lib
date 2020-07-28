@@ -90,7 +90,7 @@ interface StorageNodePopupMenuSelectEvent {
 //========================================================================
 
 @Component
-class StorageTypeMixin extends Vue {
+class StoragePageMixin extends Vue {
   @Prop({ required: true })
   storageType!: StorageType
 
@@ -115,21 +115,31 @@ class StoragePageStore extends Vue {
     return StoragePageStore.dict[storageType]
   }
 
-  static register(page: BaseStoragePage): void {
-    const storageType = page.storageType
-    let storageTypeData = StoragePageStore.get(storageType)
-    if (storageTypeData) return
+  static register(storageType: StorageType, page: BaseStoragePage): void {
+    let pageStore = StoragePageStore.get(storageType)
+    if (pageStore) {
+      pageStore.page = page
+      return
+    }
 
     // プログラム的にコンポーネントのインスタンスを生成
     // https://css-tricks.com/creating-vue-js-component-instances-programmatically/
     const ComponentClass = Vue.extend(StoragePageStore)
-    storageTypeData = new ComponentClass({
-      propsData: {
+    pageStore = new ComponentClass({
+      data: {
+        storageType,
         page,
         rootNode: this.createRootNode(storageType),
       },
     }) as StoragePageStore
-    StoragePageStore.dict[storageType] = storageTypeData
+    StoragePageStore.dict[storageType] = pageStore
+  }
+
+  static unregister(storageType: StorageType): void {
+    const pageStore = StoragePageStore.get(storageType)
+    if (!pageStore) return
+
+    pageStore.page = null as any
   }
 
   private static createRootNode(storageType: StorageType): StorageTreeNode {
@@ -171,37 +181,36 @@ class StoragePageStore extends Vue {
   }
 
   static clear(): void {
-    for (const storageTypeData of Object.values(StoragePageStore.dict)) {
-      delete StoragePageStore.dict[storageTypeData.storageType]
-      storageTypeData.$destroy()
+    for (const pageStore of Object.values(StoragePageStore.dict)) {
+      delete StoragePageStore.dict[pageStore.storageType]
+      pageStore.$destroy()
     }
     StoragePageStore.dict = {}
   }
 
-  @Prop({ required: true })
-  page!: BaseStoragePage
+  storageType: StorageType = null as any
 
-  @Prop({ required: true })
-  rootNode!: StorageTreeNode
+  page: BaseStoragePage = null as any
+
+  rootNode: StorageTreeNode = null as any
 
   isInitialPull = false
 
-  isPageActive = false
-
-  get storageType(): StorageType {
-    return this.page.storageType
+  get isPageActive(): boolean {
+    return Boolean(this.page)
   }
 
   @Watch('$logic.auth.isSignedIn')
   private m_isSignedInOnChange(newValue: boolean, oldValue: boolean) {
-    // ページが非アクティブな状態でサインアウトされた場合、対象のストレージタイプデータを削除する
+    // ページが非アクティブな状態でサインアウトされた場合、対象のストレージページデータを削除する
     // ※ページが非アクティブな状態とは、ストレージタイプとひも付くページが表示されていない状態であり、
     //   またツリービューも破棄されていることを意味する。
     if (!this.isPageActive && !this.$logic.auth.isSignedIn) {
-      const storageTypeData = StoragePageStore.get(this.storageType)
-      if (storageTypeData) {
+      const pageStore = StoragePageStore.get(this.storageType)
+      if (pageStore) {
         delete StoragePageStore.dict[this.storageType]
-        storageTypeData.$destroy()
+        pageStore.rootNode.$destroy()
+        pageStore.$destroy()
       }
     }
   }
@@ -362,7 +371,7 @@ export {
   StorageTreeNodeInput,
   StorageType,
   StoragePageStore,
-  StorageTypeMixin,
+  StoragePageMixin,
   getStorageNodeTypeLabel,
   getStorageNodeTypeIcon,
   nodeToTreeData,

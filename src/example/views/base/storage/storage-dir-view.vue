@@ -50,7 +50,7 @@
 
 <script lang="ts">
 import { BaseComponent, NoCache, Resizable, StorageNode, StorageNodeType } from '@/lib'
-import { StorageNodePopupMenuSelectEvent, StorageTypeMixin } from './base'
+import { StorageNodePopupMenuSelectEvent, StoragePageMixin } from './base'
 import { Component } from 'vue-property-decorator'
 import StorageDirTable from './storage-dir-table.vue'
 import StorageNodePopupMenu from './storage-node-popup-menu.vue'
@@ -101,7 +101,7 @@ export class StorageDirTableRow {
     StorageNodePopupMenu,
   },
 })
-export default class StorageDirView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
+export default class StorageDirView extends mixins(BaseComponent, Resizable, StoragePageMixin) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks

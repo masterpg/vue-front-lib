@@ -105,7 +105,7 @@ import * as anime from 'animejs/lib/anime'
 import { BaseComponent, CompStorageImg, NoCache, RequiredStorageNodeShareSettings, Resizable, StorageDownloader, StorageNode } from '@/lib'
 import { Component, Watch } from 'vue-property-decorator'
 import { QLinearProgress } from 'quasar'
-import { StorageTypeMixin } from './base'
+import { StoragePageMixin } from './base'
 import bytes from 'bytes'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
@@ -113,7 +113,7 @@ import { removeBothEndsSlash } from 'web-base-lib'
 @Component({
   components: { CompStorageImg },
 })
-export default class StorageFileDetailView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
+export default class StorageFileDetailView extends mixins(BaseComponent, Resizable, StoragePageMixin) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks

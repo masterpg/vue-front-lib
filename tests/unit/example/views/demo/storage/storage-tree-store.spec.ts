@@ -67,7 +67,7 @@ function newTreeView(
   ;(storagePage as any).storageType = storageType
   ;(storagePage as any).storageLogic = storageLogic
   ;(storagePage as any).storageRoute = storageRoute
-  StoragePageStore.register(storagePage)
+  StoragePageStore.register(storageType, storagePage)
 
   const wrapper = mount(StorageTreeView, {
     propsData: { storageType: 'app', nodeFilter },
@@ -97,7 +97,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {})
 
-describe('StorageType関連の検証', () => {
+describe('StoragePageStore', () => {
   beforeEach(async () => {
     StoragePageStore.clear()
   })
@@ -107,19 +107,19 @@ describe('StorageType関連の検証', () => {
     ;(userStoragePage as any).storageType = 'user'
     ;(userStoragePage as any).storageLogic = td.object<StorageLogic>()
     ;(userStoragePage as any).storageRoute = td.object<StorageRoute>()
-    StoragePageStore.register(userStoragePage)
+    StoragePageStore.register('user', userStoragePage)
 
     const appStoragePage = td.object<BaseStoragePage>()
     ;(appStoragePage as any).storageType = 'app'
     ;(appStoragePage as any).storageLogic = td.object<StorageLogic>()
     ;(appStoragePage as any).storageRoute = td.object<StorageRoute>()
-    StoragePageStore.register(appStoragePage)
+    StoragePageStore.register('app', appStoragePage)
 
     const docsStoragePage = td.object<BaseStoragePage>()
     ;(docsStoragePage as any).storageType = 'docs'
     ;(docsStoragePage as any).storageLogic = td.object<StorageLogic>()
     ;(docsStoragePage as any).storageRoute = td.object<StorageRoute>()
-    StoragePageStore.register(docsStoragePage)
+    StoragePageStore.register('docs', docsStoragePage)
 
     const userTreeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'user', nodeFilter: allNodeFilter } })
     const userTreeView = userTreeViewWrapper.vm as StorageTreeView
@@ -145,7 +145,7 @@ describe('StorageType関連の検証', () => {
     ;(userStoragePage as any).storageType = 'user'
     ;(userStoragePage as any).storageLogic = td.object<StorageLogic>()
     ;(userStoragePage as any).storageRoute = td.object<StorageRoute>()
-    StoragePageStore.register(userStoragePage)
+    StoragePageStore.register('user', userStoragePage)
 
     const userTreeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'user', nodeFilter: allNodeFilter } })
     const userTreeView = userTreeViewWrapper.vm as StorageTreeView
@@ -158,79 +158,80 @@ describe('StorageType関連の検証', () => {
   //
   // 単体でテスト実行すると成功するが、複数テストの一部として実行すると失敗するためコメントにしている。
   //
-  // it('アクティブ状態でサインアウトした場合', async () => {
-  //   const storagePage = td.object<BaseStoragePage>()
-  //   ;(storagePage as any).storageType = 'user'
-  //   ;(storagePage as any).storageLogic = td.object<StorageLogic>()
-  //   ;(storagePage as any).storageRoute = td.object<StorageRoute>()
-  //   StorageTypeData.register(storagePage)
-  //   const treeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'user', nodeFilter: allNodeFilter } })
-  //   const treeView = treeViewWrapper.vm as StorageTreeView
-  //
-  //   //
-  //   // サインイン状態にする
-  //   //
-  //   ;(logic.auth as any).isSignedIn = true
-  //   await sleep(100)
-  //
-  //   //
-  //   // サインアウト前の状態を作成
-  //   //
-  //   treeView.pageStore.isInitialPull = true // 初期読み込みはtrue
-  //   expect(treeView.pageStore.isPageActive).toBeTruthy() // ページアクティブ状態
-  //
-  //   // root
-  //   // └d1 ← 選択状態
-  //   treeView.setAllNodes([newTestStorageDirNode(`d1`)])
-  //   const root = treeView.rootNode
-  //   const d1 = treeView.getNode('d1')!
-  //   treeView.selectedNode = d1
-  //   expect(treeView.getAllNodes()).toEqual([root, d1])
-  //   expect(treeView.selectedNode).toBe(d1)
-  //
-  //   //
-  //   // サインアウト状態にする
-  //   //
-  //   ;(logic.auth as any).isSignedIn = false
-  //
-  //   //
-  //   // サインアウト後の状態を検証
-  //   //
-  //   await sleep(100)
-  //   expect(treeView.pageStore.isInitialPull).toBeFalsy() // 初期読み込みはfalseに
-  //   expect(treeView.pageStore.isPageActive).toBeTruthy() // ページアクティブ状態（変わらず）
-  //   expect(treeView.getAllNodes()).toEqual([root]) // d1が削除された
-  //   expect(treeView.selectedNode).toBe(root) // 選択ノードがルートノードに変更された
-  // })
+  it('アクティブ状態でサインアウトした場合', async () => {
+    const storageType: StorageType = 'user'
+    const storagePage = td.object<BaseStoragePage>()
+    ;(storagePage as any).storageType = storageType
+    ;(storagePage as any).storageLogic = td.object<StorageLogic>()
+    ;(storagePage as any).storageRoute = td.object<StorageRoute>()
+    StoragePageStore.register(storageType, storagePage)
+    const treeViewWrapper = mount(StorageTreeView, { propsData: { storageType, nodeFilter: allNodeFilter } })
+    const treeView = treeViewWrapper.vm as StorageTreeView
+
+      //
+      // サインイン状態にする
+      //
+    ;(logic.auth as any).isSignedIn = true
+    await sleep(100)
+
+    //
+    // サインアウト前の状態を作成
+    //
+    treeView.pageStore.isInitialPull = true // 初期読み込みはtrue
+    expect(treeView.pageStore.isPageActive).toBeTruthy() // ページアクティブ状態
+
+    // root
+    // └d1 ← 選択状態
+    treeView.setAllNodes([newTestStorageDirNode(`d1`)])
+    const root = treeView.rootNode
+    const d1 = treeView.getNode('d1')!
+    treeView.selectedNode = d1
+    expect(treeView.getAllNodes()).toEqual([root, d1])
+    expect(treeView.selectedNode).toBe(d1)
+
+    //
+    // サインアウト状態にする
+    //
+    ;(logic.auth as any).isSignedIn = false
+
+    //
+    // サインアウト後の状態を検証
+    //
+    await sleep(100)
+    expect(treeView.pageStore.isInitialPull).toBeFalsy() // 初期読み込みはfalseに
+    expect(treeView.pageStore.isPageActive).toBeTruthy() // ページアクティブ状態（変わらず）
+    expect(treeView.getAllNodes()).toEqual([root]) // d1が削除された
+    expect(treeView.selectedNode).toBe(root) // 選択ノードがルートノードに変更された
+  })
 
   //
   // 単体でテスト実行すると成功するが、複数テストの一部として実行すると失敗するためコメントにしている。
   //
-  // it('非アクティブ状態でサインアウトした場合', async () => {
-  //   const storagePage = td.object<BaseStoragePage>()
-  //   ;(storagePage as any).storageType = 'user'
-  //   ;(storagePage as any).storageLogic = td.object<StorageLogic>()
-  //   ;(storagePage as any).storageRoute = td.object<StorageRoute>()
-  //   StorageTypeData.register(storagePage)
-  //   const treeViewWrapper = mount(StorageTreeView, { propsData: { storageType: 'user', nodeFilter: allNodeFilter } })
-  //   const treeView = treeViewWrapper.vm as StorageTreeView
-  //
-  //   // サインイン状態にする
-  //   ;(logic.auth as any).isSignedIn = true
-  //   await sleep(100)
-  //
-  //   // 非アクティブ状態にする
-  //   const storageType = treeView.storageType
-  //   treeViewWrapper.destroy()
-  //   expect(StorageTypeData.get(storageType).isPageActive).toBeFalsy()
-  //
-  //   // サインアウト状態にする
-  //   ;(logic.auth as any).isSignedIn = false
-  //
-  //   // サインアウト後の状態を検証
-  //   await sleep(100)
-  //   expect(StorageTypeData.get(storageType)).toBeUndefined()
-  // })
+  it('非アクティブ状態でサインアウトした場合', async () => {
+    const storageType: StorageType = 'user'
+    const storagePage = td.object<BaseStoragePage>()
+    ;(storagePage as any).storageType = storageType
+    ;(storagePage as any).storageLogic = td.object<StorageLogic>()
+    ;(storagePage as any).storageRoute = td.object<StorageRoute>()
+    StoragePageStore.register(storageType, storagePage)
+    const treeViewWrapper = mount(StorageTreeView, { propsData: { storageType, nodeFilter: allNodeFilter } })
+    const treeView = treeViewWrapper.vm as StorageTreeView
+
+      // サインイン状態にする
+    ;(logic.auth as any).isSignedIn = true
+    await sleep(100)
+
+    // 非アクティブ状態にする
+    StoragePageStore.unregister(storageType)
+    expect(StoragePageStore.get(storageType).isPageActive).toBeFalsy()
+
+    // サインアウト状態にする
+    ;(logic.auth as any).isSignedIn = false
+
+    // サインアウト後の状態を検証
+    await sleep(100)
+    expect(StoragePageStore.get(storageType)).toBeUndefined()
+  })
 })
 
 describe('pullInitialNodes', () => {

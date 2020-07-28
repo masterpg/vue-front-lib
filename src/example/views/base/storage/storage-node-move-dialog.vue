@@ -90,7 +90,7 @@ import {
   StorageNode,
   StorageNodeType,
 } from '@/lib'
-import { StorageTreeNode, StorageTreeNodeData, StorageTypeMixin, getStorageNodeTypeIcon, getStorageNodeTypeLabel, nodeToTreeData } from './base'
+import { StoragePageMixin, StorageTreeNode, StorageTreeNodeData, getStorageNodeTypeIcon, getStorageNodeTypeLabel, nodeToTreeData } from './base'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
 import { mixins } from 'vue-class-component'
@@ -100,7 +100,7 @@ import { removeBothEndsSlash } from 'web-base-lib'
 class BaseDialogMixin extends BaseDialog<string[], string | undefined> {}
 
 @Component({ components: { CompTreeView, CompAlertDialog } })
-export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, StorageTypeMixin) {
+export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, StoragePageMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables

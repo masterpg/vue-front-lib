@@ -81,7 +81,7 @@
 
 <script lang="ts">
 import { BaseDialog, NoCache, StorageNode, StorageNodeShareSettings } from '@/lib'
-import { StorageTypeMixin, getStorageNodeTypeIcon, getStorageNodeTypeLabel } from './base'
+import { StoragePageMixin, getStorageNodeTypeIcon, getStorageNodeTypeLabel } from './base'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
 import { mixins } from 'vue-class-component'
@@ -90,7 +90,7 @@ import { mixins } from 'vue-class-component'
 class BaseDialogMixin extends BaseDialog<string[], StorageNodeShareSettings | undefined> {}
 
 @Component({ components: {} })
-export default class StorageNodeShareDialog extends mixins(BaseDialogMixin, StorageTypeMixin) {
+export default class StorageNodeShareDialog extends mixins(BaseDialogMixin, StoragePageMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables

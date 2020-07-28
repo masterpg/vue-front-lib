@@ -1,6 +1,7 @@
 import BaseStoragePage from './base-storage-page.vue'
 import StorageDirCreateDialog from './storage-dir-create-dialog.vue'
 import StorageDirPathBreadcrumb from './storage-dir-path-breadcrumb.vue'
+import StorageDirTable from './storage-dir-table.vue'
 import StorageDirView from './storage-dir-view.vue'
 import StorageFileDetailView from './storage-file-detail-view.vue'
 import StorageNodeMoveDialog from './storage-node-move-dialog.vue'
@@ -16,11 +17,14 @@ export {
   StorageTreeNode,
   StorageTreeNodeData,
   StorageType,
-  StorageTypeMixin,
+  StoragePageMixin,
 } from './base'
+
 export {
   BaseStoragePage,
   StorageDirCreateDialog,
+  StorageDirPathBreadcrumb,
+  StorageDirTable,
   StorageDirView,
   StorageFileDetailView,
   StorageNodeMoveDialog,
@@ -28,6 +32,5 @@ export {
   StorageNodeRenameDialog,
   StorageNodeShareDialog,
   StoragePage,
-  StorageDirPathBreadcrumb,
   StorageTreeView,
 }

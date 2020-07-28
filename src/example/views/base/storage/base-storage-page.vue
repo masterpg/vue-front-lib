@@ -132,7 +132,12 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
 
   created() {
-    StoragePageStore.register(this)
+    StoragePageStore.register(this.storageType, this)
+    this.pageStore = StoragePageStore.get(this.storageType)
+  }
+
+  destroyed() {
+    StoragePageStore.unregister(this.storageType)
   }
 
   async mounted() {
@@ -141,7 +146,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
 
     // 初期ストレージノードの読み込みが既に行われている場合
     // ※本ページから別ページに遷移し、その後本ページに戻ってきた場合がこの状況に当たる
-    if (this.treeView.isInitialPull) {
+    if (this.pageStore.isInitialPull) {
       const dirPath = this.treeView.selectedNode!.path
       // 選択ノードのパスをURLに付与し、ページを更新
       this.updatePage(dirPath)
@@ -191,6 +196,8 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   //  Variables
   //
   //----------------------------------------------------------------------
+
+  protected pageStore: StoragePageStore = {} as any
 
   /**
    * ディレクトリ詳細ビューの表示フラグです。
@@ -334,9 +341,22 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   }
 
   /**
+   * ページ表示をクリアします。
+   */
+  protected clearPage(): void {
+    this.pageStore.isInitialPull = false
+    this.pathDirBreadcrumb.setSelectedNode(null)
+    this.dirView.setSelectedNode(null)
+    this.visibleDirDetailView = false
+    this.visibleFileDetailView = false
+  }
+
+  /**
    * 初回に読み込むべきストレージノードの読み込みを行います。
    */
   protected async pullInitialNodes(): Promise<void> {
+    if (this.pageStore.isInitialPull) return
+
     this.dirView.loading = true
 
     // 現在の選択ノードを取得
@@ -353,6 +373,8 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
     this.scrollToSelectedNode(dirPath, false)
 
     this.dirView.loading = false
+
+    this.pageStore.isInitialPull = true
   }
 
   /**
@@ -609,9 +631,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
     if (this.$logic.auth.isSignedIn) {
       await this.pullInitialNodes()
     } else {
-      this.pathDirBreadcrumb.setSelectedNode(null)
-      this.dirView.setSelectedNode(null)
-      this.visibleFileDetailView = false
+      this.clearPage()
     }
   }
 
@@ -727,6 +747,12 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
    * @param e
    */
   protected async treeViewOnSelect(e: CompTreeViewEvent<StorageTreeNode>) {
+    // 初期読み込みが行われる前にルートノードのselectイベントが発生すると、
+    // URLでノードパスが指定されていてもルートノードが選択ノードになってしまい、
+    // URLで指定されたノードパスがクリアされてしまう。
+    // このため初期読み込みされるまではselectイベントに反応しないようにしている。
+    if (!this.pageStore.isInitialPull) return
+
     const needOpenParentNode = (node: StorageTreeNode) => {
       if (!node.parent) return false
       if (!node.parent!.opened) return true

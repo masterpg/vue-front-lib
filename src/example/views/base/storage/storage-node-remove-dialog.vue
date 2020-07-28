@@ -39,14 +39,14 @@
 import { BaseDialog, NoCache, StorageNode, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import { StorageTypeMixin } from './base'
+import { StoragePageMixin } from './base'
 import { mixins } from 'vue-class-component'
 
 @Component
 class BaseDialogMixin extends BaseDialog<string[], boolean> {}
 
 @Component
-export default class StorageNodeRemoveDialog extends mixins(BaseDialogMixin, StorageTypeMixin) {
+export default class StorageNodeRemoveDialog extends mixins(BaseDialogMixin, StoragePageMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables

@@ -20,30 +20,22 @@ import {
   UploadEndedEvent,
 } from '@/lib'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import { StorageNodePopupMenuSelectEvent, StorageTreeNode, StorageTreeNodeInput, StorageTypeMixin, nodeToTreeData } from './base'
+import { StorageNodePopupMenuSelectEvent, StoragePageMixin, StorageTreeNode, StorageTreeNodeInput, nodeToTreeData } from './base'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
 import { mixins } from 'vue-class-component'
 
 @Component({
   components: { CompTreeView },
 })
-export default class StorageTreeView extends mixins(BaseComponent, Resizable, StorageTypeMixin) {
+export default class StorageTreeView extends mixins(BaseComponent, Resizable, StoragePageMixin) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
   //
   //----------------------------------------------------------------------
 
-  created() {
-    this.pageStore.isPageActive = true
-  }
-
   mounted() {
     this.m_treeView.addNode(this.rootNode)
-  }
-
-  destroyed() {
-    this.pageStore.isPageActive = false
   }
 
   //----------------------------------------------------------------------
@@ -90,18 +82,6 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     this.m_treeView.setSelectedNode(value, selected, silent)
   }
 
-  /**
-   * ストレージノードの初期読み込みが行われたかを示すフラグです。
-   */
-  get isInitialPull(): boolean {
-    return this.pageStore.isInitialPull
-  }
-
-  @Watch('isInitialPull')
-  private m_isInitialReaOnChange(newValue: string, oldValue: string): void {
-    console.log(`m_isInitialReaOnChange: newValue: "${newValue}", oldValue: "${oldValue}"`)
-  }
-
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -129,8 +109,6 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
    * @param dirPath
    */
   async pullInitialNodes(dirPath?: string): Promise<void> {
-    if (this.pageStore.isInitialPull) return
-
     dirPath = removeBothEndsSlash(dirPath)
 
     // ルートノードを遅延ロード中に設定
@@ -174,8 +152,6 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
 
     // ルートノードを遅延ロード済みに設定
     this.rootNode.lazyLoadStatus = 'loaded'
-
-    this.pageStore.isInitialPull = true
   }
 
   /**
@@ -857,8 +833,6 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
   @Watch('$logic.auth.isSignedIn')
   private async m_isSignedInOnChange(newValue: boolean, oldValue: boolean) {
     if (!this.$logic.auth.isSignedIn) {
-      // 初期ストレージの読み込みフラグをクリアする
-      this.pageStore.isInitialPull = false
       // 表示中のルートノード配下全ノードを削除し、ルートノードを選択ノードにする
       this.rootNode.removeAllChildren()
       this.selectedNode = this.rootNode
@@ -866,11 +840,6 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
   }
 
   private m_onSelect(e: CompTreeViewEvent<StorageTreeNode>) {
-    // 初期読み込みが行われる前にルートノードのselectイベントが発生すると、
-    // URLでノードパスが指定されてもそのパスがクリアされることになる。
-    // このため初期読み込みが行われるまではselectイベントを発火しないようにしている。
-    if (!this.pageStore.isInitialPull) return
-
     this.$emit('select', e)
   }
 

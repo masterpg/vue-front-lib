@@ -43,7 +43,7 @@
 import * as path from 'path'
 import { BaseDialog, NoCache, StorageNode, StorageNodeType } from '@/lib'
 import { QDialog, QInput } from 'quasar'
-import { StorageTypeMixin, getStorageNodeTypeLabel } from './base'
+import { StoragePageMixin, getStorageNodeTypeLabel } from './base'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 
@@ -51,7 +51,7 @@ import { mixins } from 'vue-class-component'
 class BaseDialogMixin extends BaseDialog<string, string> {}
 
 @Component
-export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, StorageTypeMixin) {
+export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, StoragePageMixin) {
   //----------------------------------------------------------------------
   //
   //  Variables
