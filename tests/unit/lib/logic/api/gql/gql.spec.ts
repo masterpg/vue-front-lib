@@ -1,7 +1,9 @@
 import { APP_ADMIN_TOKEN, GENERAL_TOKEN, GENERAL_USER } from '../../../../../helpers/common/data'
-import { AuthStatus, PublicProfile, StorageNodeShareSettings, UserInfo, UserInfoInput } from '@/lib'
+import { AuthStatus, PublicProfile, StorageArticleNodeType, StorageNodeShareSettings, UserInfo, UserInfoInput } from '@/lib'
+import { APIStorageNode } from '../../../../../../src/lib/logic/api/base'
 import { OmitEntityTimestamp } from '@/firestore-ex'
 import { TestLibAPIContainer } from '../../../../../mocks/lib/logic/api'
+import { config } from '@/example/config'
 import { initLibTest } from '../../../../../helpers/lib/init'
 import { sleep } from 'web-base-lib'
 import { sortStorageNodes } from '../../../../../../src/lib/logic/base'
@@ -50,8 +52,8 @@ describe('Foundation API', () => {
     it('疎通確認', async () => {
       const actual = await api.getAppConfig()
 
-      expect(actual.usersDir).toBe('users')
-      expect(actual.docsDir).toBe('docs')
+      expect(actual.users).toMatchObject(config.storage.users)
+      expect(actual.articles).toMatchObject(config.storage.articles)
     })
   })
 })
@@ -186,7 +188,7 @@ describe('Storage API', () => {
     it('疎通確認 - 対象ノードあり', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      const actual = (await api.getStorageNode(`${TEST_DIR}/d1/d11`))!
+      const actual = (await api.getStorageNode({ path: `${TEST_DIR}/d1/d11` }))!
 
       expect(actual.path).toBe(`${TEST_DIR}/d1/d11`)
     })
@@ -194,7 +196,7 @@ describe('Storage API', () => {
     it('疎通確認 - 対象ノードなし', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      const actual = (await api.getStorageNode(`${TEST_DIR}/d1/dXX`))!
+      const actual = (await api.getStorageNode({ path: `${TEST_DIR}/d1/dXX` }))!
 
       expect(actual).toBeUndefined()
     })
@@ -394,7 +396,7 @@ describe('Storage API', () => {
   describe('handleUploadedFile', () => {
     it('疎通確認', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
-      await api.createStorageDirs([`${TEST_DIR}/docs`])
+      await api.createStorageHierarchicalDirs([`${TEST_DIR}/docs`])
       await api.uploadTestFiles([{ filePath: `${TEST_DIR}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.handleUploadedFile(`${TEST_DIR}/docs/fileA.txt`)
@@ -403,11 +405,45 @@ describe('Storage API', () => {
     })
   })
 
-  describe('createStorageDirs', () => {
+  describe('createStorageDir', () => {
     it('疎通確認', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      const actual = await api.createStorageDirs([`${TEST_DIR}/d1/d11`])
+      // 祖先ディレクトリを事前に作成
+      await api.createStorageHierarchicalDirs([`${TEST_DIR}`])
+
+      const actual = await api.createStorageDir(`${TEST_DIR}/d1`)
+
+      expect(actual.path).toBe(`${TEST_DIR}/d1`)
+      expect(actual.share).toMatchObject({
+        isPublic: null,
+        readUIds: null,
+        writeUIds: null,
+      } as StorageNodeShareSettings)
+    })
+
+    it('疎通確認 + 共有設定', async () => {
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
+
+      // 祖先ディレクトリを事前に作成
+      await api.createStorageHierarchicalDirs([`${TEST_DIR}`])
+
+      const actual = await api.createStorageDir(`${TEST_DIR}/d1`, { isPublic: true })
+
+      expect(actual.path).toBe(`${TEST_DIR}/d1`)
+      expect(actual.share).toMatchObject({
+        isPublic: true,
+        readUIds: null,
+        writeUIds: null,
+      } as StorageNodeShareSettings)
+    })
+  })
+
+  describe('createStorageHierarchicalDirs', () => {
+    it('疎通確認', async () => {
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
+
+      const actual = await api.createStorageHierarchicalDirs([`${TEST_DIR}/d1/d11`])
 
       expect(actual.length).toBe(3)
       expect(actual[0].path).toBe(`${TEST_DIR}`)
@@ -480,7 +516,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングなし', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      await api.createStorageDirs([
+      await api.createStorageHierarchicalDirs([
         `${TEST_DIR}/d1/d11`,
         `${TEST_DIR}/d1/d12`,
         `${TEST_DIR}/d1/d13`,
@@ -504,7 +540,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      await api.createStorageDirs([
+      await api.createStorageHierarchicalDirs([
         `${TEST_DIR}/d1/d11`,
         `${TEST_DIR}/d1/d12`,
         `${TEST_DIR}/d1/d13`,
@@ -530,7 +566,7 @@ describe('Storage API', () => {
     it('疎通確認', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      await api.createStorageDirs([`${TEST_DIR}/d1`, `${TEST_DIR}/d2`])
+      await api.createStorageHierarchicalDirs([`${TEST_DIR}/d1`, `${TEST_DIR}/d2`])
       await api.uploadTestFiles([{ filePath: `${TEST_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.moveStorageFile(`${TEST_DIR}/d1/fileA.txt`, `${TEST_DIR}/d2/fileA.txt`)
@@ -543,7 +579,13 @@ describe('Storage API', () => {
     it('疎通確認 - ページングなし', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      await api.createStorageDirs([`${TEST_DIR}/d1/d11`, `${TEST_DIR}/d1/d12`, `${TEST_DIR}/d1/d13`, `${TEST_DIR}/d1/d14`, `${TEST_DIR}/d1/d15`])
+      await api.createStorageHierarchicalDirs([
+        `${TEST_DIR}/d1/d11`,
+        `${TEST_DIR}/d1/d12`,
+        `${TEST_DIR}/d1/d13`,
+        `${TEST_DIR}/d1/d14`,
+        `${TEST_DIR}/d1/d15`,
+      ])
 
       const actual = (await api.renameStorageDir(null, `${TEST_DIR}/d1`, `d2`)).list
 
@@ -560,7 +602,13 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      await api.createStorageDirs([`${TEST_DIR}/d1/d11`, `${TEST_DIR}/d1/d12`, `${TEST_DIR}/d1/d13`, `${TEST_DIR}/d1/d14`, `${TEST_DIR}/d1/d15`])
+      await api.createStorageHierarchicalDirs([
+        `${TEST_DIR}/d1/d11`,
+        `${TEST_DIR}/d1/d12`,
+        `${TEST_DIR}/d1/d13`,
+        `${TEST_DIR}/d1/d14`,
+        `${TEST_DIR}/d1/d15`,
+      ])
 
       const actual = await api.callStoragePaginationAPI(api.renameStorageDir, { maxChunk: 2 }, `${TEST_DIR}/d1`, `d2`)
 
@@ -579,7 +627,7 @@ describe('Storage API', () => {
     it('疎通確認', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      await api.createStorageDirs([`${TEST_DIR}/d1`])
+      await api.createStorageHierarchicalDirs([`${TEST_DIR}/d1`])
       await api.uploadTestFiles([{ filePath: `${TEST_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.renameStorageFile(`${TEST_DIR}/d1/fileA.txt`, `fileB.txt`)
@@ -591,7 +639,7 @@ describe('Storage API', () => {
   describe('setStorageDirShareSettings', () => {
     it('疎通確認', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
-      await api.createStorageDirs([`${TEST_DIR}/dir1`])
+      await api.createStorageHierarchicalDirs([`${TEST_DIR}/dir1`])
       await api.uploadTestFiles([{ filePath: `${TEST_DIR}/dir1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.setStorageDirShareSettings(`${TEST_DIR}/dir1`, { isPublic: true, readUIds: ['ichiro'], writeUIds: ['ichiro'] })
@@ -604,7 +652,7 @@ describe('Storage API', () => {
   describe('setStorageFileShareSettings', () => {
     it('疎通確認', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
-      await api.createStorageDirs([`${TEST_DIR}/dir1`])
+      await api.createStorageHierarchicalDirs([`${TEST_DIR}/dir1`])
       await api.uploadTestFiles([{ filePath: `${TEST_DIR}/dir1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
 
       const actual = await api.setStorageFileShareSettings(`${TEST_DIR}/dir1/fileA.txt`, {
@@ -614,6 +662,66 @@ describe('Storage API', () => {
       })
 
       expect(actual.path).toBe(`${TEST_DIR}/dir1/fileA.txt`)
+    })
+  })
+
+  //--------------------------------------------------
+  //  Article
+  //--------------------------------------------------
+
+  describe('createArticleDir', () => {
+    async function createArticlesRoot(uid: string): Promise<APIStorageNode> {
+      api.setTestAuthToken(GENERAL_TOKEN)
+      const articlesPath = `${config.storage.users.dir}/${uid}/${config.storage.articles.dir}`
+      await api.createStorageHierarchicalDirs([articlesPath])
+      return (await api.getStorageNode({ path: articlesPath }))!
+    }
+
+    it('疎通確認', async () => {
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
+
+      // ユーザーの記事ルートを事前に作成
+      const articlesRoot = await createArticlesRoot(GENERAL_TOKEN.uid)
+
+      const actual = await api.createArticleDir(`${articlesRoot.path}/blog`, {
+        articleNodeType: StorageArticleNodeType.ListBundle,
+      })
+
+      expect(actual.path).toBe(`${articlesRoot.path}/blog`)
+      expect(actual.articleNodeType).toBe(StorageArticleNodeType.ListBundle)
+      expect(typeof actual.articleSortOrder === 'number').toBeTruthy()
+    })
+  })
+
+  describe('setArticleSortOrder', () => {
+    async function createBundle(uid: string): Promise<APIStorageNode> {
+      api.setTestAuthToken(GENERAL_TOKEN)
+      const articlesPath = `${config.storage.users.dir}/${uid}/${config.storage.articles.dir}`
+      await api.createStorageHierarchicalDirs([articlesPath])
+      return await api.createArticleDir(`${articlesPath}/blog`, {
+        articleNodeType: StorageArticleNodeType.ListBundle,
+      })
+    }
+
+    it('疎通確認', async () => {
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
+
+      // ユーザーの記事ルートを事前に作成
+      const bundleDir = await createBundle(GENERAL_TOKEN.uid)
+      // 記事を作成
+      const art1Dir = await api.createArticleDir(`${bundleDir.path}/art1`, {
+        articleNodeType: StorageArticleNodeType.ArticleDir,
+      })
+      const art2Dir = await api.createArticleDir(`${bundleDir.path}/art2`, {
+        articleNodeType: StorageArticleNodeType.ArticleDir,
+      })
+
+      const actual = await api.setArticleSortOrder(`${art1Dir.path}`, {
+        insertAfterNodePath: `${art2Dir.path}`,
+      })
+
+      expect(actual.path).toBe(`${bundleDir.path}/art1`)
+      expect(actual.articleSortOrder! < art2Dir.articleSortOrder!).toBeTruthy()
     })
   })
 })

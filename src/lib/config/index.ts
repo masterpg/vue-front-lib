@@ -25,8 +25,18 @@ interface APIConfig {
 }
 
 interface StorageConfig {
-  usersDir: string
-  docsDir: string
+  users: StorageUsersConfig
+  articles: StorageArticlesConfig
+}
+
+interface StorageUsersConfig {
+  dir: string
+}
+
+interface StorageArticlesConfig {
+  dir: string
+  assetsDir: string
+  fileName: string
 }
 
 //========================================================================

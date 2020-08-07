@@ -194,9 +194,9 @@ export default class StorageNodeShareDialog extends mixins(BaseDialogMixin, Stor
     })
   }
 
-  close(settings?: StorageNodeShareSettings): void {
+  close(input?: StorageNodeShareSettings): void {
     this.m_clear()
-    this.closeProcess(settings)
+    this.closeProcess(input)
   }
 
   //----------------------------------------------------------------------
@@ -206,12 +206,12 @@ export default class StorageNodeShareDialog extends mixins(BaseDialogMixin, Stor
   //----------------------------------------------------------------------
 
   private m_setShareSettings(): void {
-    const settings: StorageNodeShareSettings = {
+    const input: StorageNodeShareSettings = {
       isPublic: this.m_isPublic,
       readUIds: null,
       writeUIds: null,
     }
-    this.close(settings)
+    this.close(input)
   }
 
   private m_clear(): void {

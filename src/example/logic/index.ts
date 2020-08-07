@@ -2,7 +2,6 @@ import { BaseLogicContainer, LibLogicContainer, StorageLogic, setLogic } from '@
 import { ShopLogic, ShopLogicImpl } from './modules/shop'
 import { getAPIType, setAPIType } from './api'
 import { Component } from 'vue-property-decorator'
-import { DocsStorageLogic } from './modules/storage'
 import Vue from 'vue'
 
 //========================================================================
@@ -13,8 +12,6 @@ import Vue from 'vue'
 
 export interface LogicContainer extends LibLogicContainer {
   apiType: 'gql' | 'rest'
-
-  readonly docsStorage: StorageLogic
 
   readonly shop: ShopLogic
 }
@@ -36,7 +33,6 @@ class LogicContainerImpl extends BaseLogicContainer implements LogicContainer {
   constructor() {
     super()
 
-    this.docsStorage = this.newDocsStorageLogic(this.appStorage)
     this.shop = new ShopLogicImpl()
   }
 
@@ -57,21 +53,7 @@ class LogicContainerImpl extends BaseLogicContainer implements LogicContainer {
     this.m_apiType = value
   }
 
-  readonly docsStorage: StorageLogic
-
   readonly shop: ShopLogic
-
-  //----------------------------------------------------------------------
-  //
-  //  Internal methods
-  //
-  //----------------------------------------------------------------------
-
-  protected newDocsStorageLogic(appStorage: StorageLogic): StorageLogic {
-    const docsStorage = new DocsStorageLogic()
-    docsStorage.init(appStorage)
-    return docsStorage
-  }
 }
 
 let logic: LogicContainer

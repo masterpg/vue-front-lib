@@ -558,7 +558,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     // APIによるディレクトリ作成処理を実行
     let dirNode: StorageNode
     try {
-      dirNode = (await this.storageLogic.createDirs([dirPath]))[0]
+      dirNode = (await this.storageLogic.createHierarchicalDirs([dirPath]))[0]
     } catch (err) {
       console.error(err)
       this.m_showNotification('error', String(this.$t('storage.create.creatingDirError', { nodeName: _path.basename(dirPath) })))
@@ -741,9 +741,9 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
   /**
    * ノードの共有設定を行います。
    * @param nodePaths 共有設定するノードのパス
-   * @param settings 共有設定の内容
+   * @param input 共有設定の内容
    */
-  async setShareSettings(nodePaths: string[], settings: StorageNodeShareSettings): Promise<void> {
+  async setShareSettings(nodePaths: string[], input: StorageNodeShareSettings): Promise<void> {
     nodePaths = nodePaths.map(fromNodePath => removeBothEndsSlash(fromNodePath))
 
     // 引数チェック
@@ -762,9 +762,9 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
       const node = this.storageLogic.sgetNode({ path: nodePath })
       try {
         if (node.nodeType === StorageNodeType.Dir) {
-          processedNodes.push(await this.storageLogic.setDirShareSettings(node.path, settings))
+          processedNodes.push(await this.storageLogic.setDirShareSettings(node.path, input))
         } else if (node.nodeType === StorageNodeType.File) {
-          processedNodes.push(await this.storageLogic.setFileShareSettings(node.path, settings))
+          processedNodes.push(await this.storageLogic.setFileShareSettings(node.path, input))
         }
       } catch (err) {
         console.error(err)

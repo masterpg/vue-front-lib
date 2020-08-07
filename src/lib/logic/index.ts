@@ -1,4 +1,13 @@
-import { AppStorageLogic, StorageDownloader, StorageFileUploader, StorageLogic, StorageUploader, UserStorageLogic } from './modules/storage'
+import {
+  AppStorageLogic,
+  ArticleStorageLogic,
+  ArticleStorageLogicImpl,
+  StorageDownloader,
+  StorageFileUploader,
+  StorageLogic,
+  StorageUploader,
+  UserStorageLogic,
+} from './modules/storage'
 import { AuthLogic, AuthLogicImpl } from './modules/auth'
 import Vue from 'vue'
 
@@ -11,6 +20,7 @@ import Vue from 'vue'
 interface LibLogicContainer {
   readonly appStorage: StorageLogic
   readonly userStorage: StorageLogic
+  readonly articleStorage: ArticleStorageLogic
   readonly auth: AuthLogic
 }
 
@@ -31,7 +41,8 @@ abstract class BaseLogicContainer extends Vue implements LibLogicContainer {
     super()
 
     this.appStorage = this.newAppStorageLogic()
-    this.userStorage = this.newUserStorageLogic(this.appStorage)
+    this.userStorage = this.newUserStorageLogic(this.appStorage as AppStorageLogic)
+    this.articleStorage = this.newArticleStorageLogic(this.appStorage as AppStorageLogic)
     this.auth = this.newAuthLogic()
   }
 
@@ -45,6 +56,8 @@ abstract class BaseLogicContainer extends Vue implements LibLogicContainer {
 
   readonly userStorage: StorageLogic
 
+  readonly articleStorage: ArticleStorageLogic
+
   readonly auth: AuthLogic
 
   //----------------------------------------------------------------------
@@ -57,10 +70,16 @@ abstract class BaseLogicContainer extends Vue implements LibLogicContainer {
     return new AppStorageLogic()
   }
 
-  protected newUserStorageLogic(appStorage: StorageLogic): StorageLogic {
+  protected newUserStorageLogic(appStorage: AppStorageLogic): StorageLogic {
     const userStorage = new UserStorageLogic()
     userStorage.init(appStorage)
     return userStorage
+  }
+
+  protected newArticleStorageLogic(appStorage: AppStorageLogic): ArticleStorageLogic {
+    const articleStorage = new ArticleStorageLogicImpl()
+    articleStorage.init(appStorage)
+    return articleStorage
   }
 
   protected newAuthLogic(): AuthLogic {
@@ -85,12 +104,13 @@ export * from './store'
 export { BaseLogic } from './base'
 export * from './types'
 export {
-  BasePathStorageLogic,
+  ArticleStorageLogic,
   StorageDownloader,
   StorageFileUploader,
   StorageLogic,
   StorageUploader,
   StorageUrlUploadManager,
+  SubStorageLogic,
 } from './modules/storage'
 export { AuthLogic, AuthProviderType } from './modules/auth'
 export { LibLogicContainer, BaseLogicContainer, logic, setLogic }

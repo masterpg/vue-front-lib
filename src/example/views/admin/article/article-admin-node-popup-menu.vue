@@ -3,7 +3,7 @@
 </style>
 
 <template>
-  <q-menu ref="menu" touch-position context-menu @before-show="m_menuOnBeforeShow">
+  <q-menu ref="menu" :touch-position="contextMenu" :context-menu="contextMenu" @before-show="m_menuOnBeforeShow">
     <!-- ルートノード用メニュー -->
     <q-list v-show="isRoot" dense style="min-width: 100px;">
       <q-item v-for="menuItem of m_menuItems.root" :key="menuItem.type" v-close-popup clickable>
@@ -34,13 +34,14 @@
 <script lang="ts">
 import { BaseComponent, NoCache, StorageNodeType } from '@/lib'
 import { Component, Prop } from 'vue-property-decorator'
-import { StorageNodeContextMenuSelectedEvent, StorageNodeContextMenuType } from './base'
+import { ArticleAdminNodeMenuType } from './base'
 import { QMenu } from 'quasar'
+import { StorageNodePopupMenuSelectEvent } from '../../base/storage'
 
 @Component({
   components: {},
 })
-export default class StorageNodeContextMenu extends BaseComponent {
+export default class ArticleAdminNodePopupMenu extends BaseComponent {
   //----------------------------------------------------------------------
   //
   //  Properties
@@ -53,11 +54,14 @@ export default class StorageNodeContextMenu extends BaseComponent {
   @Prop({ default: null })
   selectedNodes!: { path: string; nodeType: StorageNodeType }[] | null
 
-  @Prop({ default: false })
+  @Prop({ default: false, type: Boolean })
   isRoot!: boolean
 
-  @Prop({ default: false })
+  @Prop({ default: false, type: Boolean })
   disabled!: boolean
+
+  @Prop({ default: false, type: Boolean })
+  contextMenu!: boolean
 
   //----------------------------------------------------------------------
   //
@@ -66,24 +70,10 @@ export default class StorageNodeContextMenu extends BaseComponent {
   //----------------------------------------------------------------------
 
   private m_menuItems = {
-    root: [
-      StorageNodeContextMenuType.createDir,
-      StorageNodeContextMenuType.uploadDir,
-      StorageNodeContextMenuType.uploadFiles,
-      StorageNodeContextMenuType.reload,
-    ],
-    dir: [
-      StorageNodeContextMenuType.createDir,
-      StorageNodeContextMenuType.uploadDir,
-      StorageNodeContextMenuType.uploadFiles,
-      StorageNodeContextMenuType.move,
-      StorageNodeContextMenuType.rename,
-      StorageNodeContextMenuType.share,
-      StorageNodeContextMenuType.deletion,
-      StorageNodeContextMenuType.reload,
-    ],
-    file: [StorageNodeContextMenuType.move, StorageNodeContextMenuType.rename, StorageNodeContextMenuType.share, StorageNodeContextMenuType.deletion],
-    multi: [StorageNodeContextMenuType.move, StorageNodeContextMenuType.share, StorageNodeContextMenuType.deletion],
+    root: [ArticleAdminNodeMenuType.createListBundle, ArticleAdminNodeMenuType.createCategoryBundle],
+    dir: [],
+    file: [],
+    multi: [],
   }
 
   private get m_isMulti(): boolean {
@@ -136,7 +126,7 @@ export default class StorageNodeContextMenu extends BaseComponent {
 
   private m_menuItemOnClick(type: string) {
     const nodePaths = this.selectedNodes ? this.selectedNodes.map(node => node.path) : [this.node.path]
-    const event: StorageNodeContextMenuSelectedEvent = { type, nodePaths }
+    const event: StorageNodePopupMenuSelectEvent = { type, nodePaths }
     this.$emit('select', event)
   }
 }

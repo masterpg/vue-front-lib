@@ -232,8 +232,8 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
   private get m_siteAdminItems(): Array<{ title: string; path: string }> {
     return [
       {
-        title: String(this.$t('index.mainMenu.docsAdmin')),
-        path: `${router.views.admin.docs.basePath}`,
+        title: String(this.$t('index.mainMenu.articleAdmin')),
+        path: `${router.views.admin.article.basePath}`,
       },
     ]
   }

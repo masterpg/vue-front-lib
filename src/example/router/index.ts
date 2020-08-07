@@ -15,7 +15,7 @@ function initRouter() {
     mode: 'history',
     routes: [
       error404Route,
-      adminRoute.docs,
+      adminRoute.article,
       demoRoute.abc,
       demoRoute.shop,
       demoRoute.userStorage,
@@ -97,13 +97,13 @@ const adminRoute = new (class AdminRoute extends ViewRoute {
     return undefined
   }
 
-  docs = new (class extends StorageRoute<AdminRoute> {
+  article = new (class extends StorageRoute<AdminRoute> {
     get basePath() {
-      return `${this.parent!.path}/docs`
+      return `${this.parent!.path}/article`
     }
 
     get component() {
-      return () => import(/* webpackChunkName: "views/admin/docs" */ '@/example/views/admin/docs')
+      return () => import(/* webpackChunkName: "views/admin/article" */ '@/example/views/admin/article')
     }
   })(this)
 })()

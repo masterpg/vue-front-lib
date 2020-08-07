@@ -1,9 +1,9 @@
-import { RequiredStorageNodeShareSettings, StorageNode } from '../../../types'
+import { RequiredStorageNodeShareSettings, StorageNode, StorageNodeShareSettingsInput } from '../../../types'
 import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from '../download'
+import { AppStorageLogic } from './app'
 import { BaseLogic } from '../../../base'
 import { Component } from 'vue-property-decorator'
 import { StorageLogic } from './base'
-import { StorageNodeShareSettingsInput } from '../../../api'
 import { StorageUploader } from '../upload'
 import { StorageUrlUploadManager } from '../upload-url'
 
@@ -14,14 +14,14 @@ import { StorageUrlUploadManager } from '../upload-url'
 //========================================================================
 
 @Component
-class BasePathStorageLogic extends BaseLogic implements StorageLogic {
+class SubStorageLogic extends BaseLogic implements StorageLogic {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
   //
   //----------------------------------------------------------------------
 
-  init(appStorage: StorageLogic) {
+  init(appStorage: AppStorageLogic) {
     this.appStorage = appStorage
   }
 
@@ -45,7 +45,7 @@ class BasePathStorageLogic extends BaseLogic implements StorageLogic {
   //
   //----------------------------------------------------------------------
 
-  protected appStorage: StorageLogic = {} as any
+  protected appStorage: AppStorageLogic = {} as any
 
   //----------------------------------------------------------------------
   //
@@ -137,9 +137,9 @@ class BasePathStorageLogic extends BaseLogic implements StorageLogic {
     return StorageLogic.toBasePathNodes(this.basePath, await this.appStorage.fetchHierarchicalChildren(dirPath))
   }
 
-  async createDirs(dirPaths: string[]): Promise<StorageNode[]> {
+  async createHierarchicalDirs(dirPaths: string[]): Promise<StorageNode[]> {
     dirPaths = StorageLogic.toFullNodePaths(this.basePath, dirPaths)
-    return StorageLogic.toBasePathNodes(this.basePath, await this.appStorage.createDirs(dirPaths))
+    return StorageLogic.toBasePathNodes(this.basePath, await this.appStorage.createHierarchicalDirs(dirPaths))
   }
 
   async removeDir(dirPath: string): Promise<void> {
@@ -174,14 +174,14 @@ class BasePathStorageLogic extends BaseLogic implements StorageLogic {
     return StorageLogic.toBasePathNode(this.basePath, await this.appStorage.renameFile(filePath, newName))
   }
 
-  async setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
+  async setDirShareSettings(dirPath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode> {
     dirPath = StorageLogic.toFullNodePath(this.basePath, dirPath)
-    return StorageLogic.toBasePathNode(this.basePath, await this.appStorage.setDirShareSettings(dirPath, settings))
+    return StorageLogic.toBasePathNode(this.basePath, await this.appStorage.setDirShareSettings(dirPath, input))
   }
 
-  async setFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
+  async setFileShareSettings(filePath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode> {
     filePath = StorageLogic.toFullNodePath(this.basePath, filePath)
-    return StorageLogic.toBasePathNode(this.basePath, await this.appStorage.setFileShareSettings(filePath, settings))
+    return StorageLogic.toBasePathNode(this.basePath, await this.appStorage.setFileShareSettings(filePath, input))
   }
 
   newUploader(owner: Element): StorageUploader {
@@ -212,4 +212,4 @@ class BasePathStorageLogic extends BaseLogic implements StorageLogic {
 //
 //========================================================================
 
-export { BasePathStorageLogic }
+export { SubStorageLogic }

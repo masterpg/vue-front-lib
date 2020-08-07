@@ -1,4 +1,5 @@
 export { StorageLogic } from './base'
 export { AppStorageLogic } from './app'
-export { BasePathStorageLogic } from './base-path'
+export { ArticleStorageLogic, ArticleStorageLogicImpl } from './article'
+export { SubStorageLogic } from './sub'
 export { UserStorageLogic } from './user'

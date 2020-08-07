@@ -551,13 +551,13 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   /**
    * ノードの共有設定を行います。
    * @param nodePaths 共有設定するノード
-   * @param settings 共有設定の内容
+   * @param input 共有設定の内容
    */
-  protected async setShareSettings(nodePaths: string[], settings: StorageNodeShareSettings): Promise<void> {
+  protected async setShareSettings(nodePaths: string[], input: StorageNodeShareSettings): Promise<void> {
     this.$q.loading.show()
 
     // ノードの共有設定を実行
-    await this.treeView.setShareSettings(nodePaths, settings)
+    await this.treeView.setShareSettings(nodePaths, input)
 
     // 現在選択されているノードへURL遷移
     this.changeDirOnPage(this.treeView.selectedNode.path)
@@ -707,9 +707,9 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
         break
       }
       case StorageNodePopupMenuType.share.type: {
-        const settings = await this.nodeShareDialog.open(e.nodePaths)
-        if (settings) {
-          await this.setShareSettings(e.nodePaths, settings)
+        const input = await this.nodeShareDialog.open(e.nodePaths)
+        if (input) {
+          await this.setShareSettings(e.nodePaths, input)
         }
         break
       }

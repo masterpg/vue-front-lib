@@ -6,7 +6,7 @@ export default merge(require('@/lib/lang/en').default, {
   index: {
     mainMenu: {
       siteAdmin: 'Site Admin',
-      docsAdmin: 'Documents',
+      articleAdmin: '記事',
       userStorageAdmin: 'Storage',
       appStorageAdmin: 'App Storage',
     },
@@ -54,7 +54,6 @@ export default merge(require('@/lib/lang/en').default, {
   storage: {
     userRootName: 'Home',
     appRootName: 'Storage',
-    docsRootName: 'Documents',
     uploading: 'Uploading',
     nodeAlreadyExists: 'A {nodeType} called "{nodeName}" already exists.',
     create: {
@@ -99,5 +98,10 @@ export default merge(require('@/lib/lang/en').default, {
     download: {
       downloadFailure: 'Failed to download "{nodeName}".',
     },
+  },
+  articleAdmin: {
+    articleRootName: 'Article',
+    listBundle: 'List Type Bundle',
+    categoryBundle: 'Category Type Bundle',
   },
 })

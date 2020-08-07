@@ -25,7 +25,7 @@ import { removeBothEndsSlash } from 'web-base-lib'
 //
 //========================================================================
 
-type StorageType = 'user' | 'app' | 'docs'
+type StorageType = 'user' | 'app' | 'article'
 
 interface StorageTreeNodeData extends CompTreeNodeData {
   icon: string
@@ -149,8 +149,8 @@ class StoragePageStore extends Vue {
           return String(i18n.t('storage.userRootName'))
         case 'app':
           return String(i18n.t('storage.appRootName'))
-        case 'docs':
-          return String(i18n.t('storage.docsRootName'))
+        case 'article':
+          return String(i18n.t('storage.articleRootName'))
       }
     })()
 

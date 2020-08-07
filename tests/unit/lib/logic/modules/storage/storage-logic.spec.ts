@@ -31,7 +31,8 @@ class MockStorageLogic extends AppStorageLogic {
   getChildrenAPI = td.func() as any
   getHierarchicalNodesAPI = td.func() as any
   getAncestorDirsAPI = td.func() as any
-  createDirsAPI = td.func() as any
+  createDirAPI = td.func() as any
+  createHierarchicalDirsAPI = td.func() as any
   removeDirAPI = td.func() as any
   removeFileAPI = td.func() as any
   moveDirAPI = td.func() as any
@@ -40,6 +41,8 @@ class MockStorageLogic extends AppStorageLogic {
   renameFileAPI = td.func() as any
   setDirShareSettingsAPI = td.func() as any
   setFileShareSettingsAPI = td.func() as any
+  createArticleDirAPI = td.func() as any
+  setArticleSortOrderAPI = td.func() as any
 }
 
 let api!: LibAPIContainer
@@ -47,7 +50,7 @@ let api!: LibAPIContainer
 let storageStore!: TestStore<StorageStore, StorageState>
 
 let storageLogic!: AppStorageLogic & {
-  getPaginationNodesAPI: AppStorageLogic['getPaginationNodesAPI']
+  m_getPaginationNodesAPI: AppStorageLogic['m_getPaginationNodesAPI']
 }
 
 //========================================================================
@@ -832,16 +835,73 @@ describe('fetchHierarchicalChildren', () => {
   })
 })
 
-describe('createDirs', () => {
+describe('createDir', () => {
+  const SHARE_SETTINGS: StorageNodeShareSettings = {
+    isPublic: true,
+    readUIds: ['ichiro'],
+    writeUIds: ['ichiro'],
+  }
+
+  it('ベーシックケース', async () => {
+    const d1 = newTestStorageDirNode(`d1`)
+    const d11 = newTestStorageDirNode(`d1/d11`, { share: SHARE_SETTINGS })
+    storageStore.initState({ all: cloneDeep([d1]) })
+
+    td.when(storageLogic.createDirAPI(d11.path, SHARE_SETTINGS)).thenResolve(cloneDeep(d11))
+
+    const actual = await storageLogic.createDir(d11.path, SHARE_SETTINGS)
+
+    expect(actual).toEqual(d11)
+    expect(storageLogic.nodes).toEqual([d1, d11])
+  })
+
+  it('指定ディレクトリの祖先が読み込まれていない場合', async () => {
+    const d1 = newTestStorageDirNode(`d1`)
+    const d111 = newTestStorageDirNode(`d1/d11/d111`)
+    storageStore.initState({ all: cloneDeep([d1]) })
+
+    // 作成ディレクトリの祖先が読み込まれていない状態でディレクトリ作成
+    td.when(storageLogic.createDirAPI(d111.path)).thenThrow(new Error())
+
+    let actual!: Error
+    try {
+      await storageLogic.createDir(d111.path)
+    } catch (err) {
+      actual = err
+    }
+
+    // スローされたエラーを検証
+    expect(actual.message).toBe(`The ancestor directory 'd1/d11' has not yet been loaded.`)
+    // ノードリストに変化がないことを検証
+    expect(storageLogic.nodes).toEqual([d1])
+  })
+
+  it('APIでエラーが発生した場合', async () => {
+    const d1 = newTestStorageDirNode(`d1`)
+    const d11 = newTestStorageDirNode(`d1/d11`)
+    storageStore.initState({ all: cloneDeep([d1]) })
+
+    td.when(storageLogic.createDirAPI(d11.path)).thenThrow(new Error())
+
+    try {
+      await storageLogic.createDir(d11.path)
+    } catch (err) {}
+
+    // ノードリストに変化がないことを検証
+    expect(storageLogic.nodes).toEqual([d1])
+  })
+})
+
+describe('createHierarchicalDirs', () => {
   it('ベーシックケース', async () => {
     const d1 = newTestStorageDirNode(`d1`)
     const d11 = newTestStorageDirNode(`d1/d11`)
     const d12 = newTestStorageDirNode(`d1/d12`)
     storageStore.initState({ all: cloneDeep([d1]) })
 
-    td.when(storageLogic.createDirsAPI([d11.path, d12.path])).thenResolve(cloneDeep([d11, d12]))
+    td.when(storageLogic.createHierarchicalDirsAPI([d11.path, d12.path])).thenResolve(cloneDeep([d11, d12]))
 
-    const actual = await storageLogic.createDirs([d11.path, d12.path])
+    const actual = await storageLogic.createHierarchicalDirs([d11.path, d12.path])
 
     expect(actual).toEqual([d11, d12])
     expect(storageLogic.nodes).toEqual([d1, d11, d12])
@@ -853,10 +913,10 @@ describe('createDirs', () => {
     const d12 = newTestStorageDirNode(`d1/d12`)
     storageStore.initState({ all: cloneDeep([d1]) })
 
-    td.when(storageLogic.createDirsAPI([d11.path])).thenThrow(new Error())
+    td.when(storageLogic.createHierarchicalDirsAPI([d11.path])).thenThrow(new Error())
 
     try {
-      await storageLogic.createDirs([d11.path])
+      await storageLogic.createHierarchicalDirs([d11.path])
     } catch (err) {}
 
     // ノードリストに変化がないことを検証
@@ -1323,7 +1383,7 @@ describe('setAPINodesToStore', () => {
   })
 })
 
-describe('getPaginationNodesAPI', () => {
+describe('m_getPaginationNodesAPI', () => {
   function newTestNodes(): StorageNode[] {
     const result: StorageNode[] = []
     for (let i = 1; i <= 10; i++) {
@@ -1338,9 +1398,8 @@ describe('getPaginationNodesAPI', () => {
         contentType: '',
         size: 0,
         share: cloneDeep(EMPTY_SHARE_SETTINGS),
-        docBundleType: null,
-        isDoc: null,
-        docSortOrder: null,
+        articleNodeType: null,
+        articleSortOrder: null,
         version: 1,
         createdAt: dayjs(),
         updatedAt: dayjs(),
@@ -1380,7 +1439,7 @@ describe('getPaginationNodesAPI', () => {
       )
     ).thenResolve({ list: [file07] })
 
-    const actual = await storageLogic.getPaginationNodesAPI(api, getStorageChildren, { maxChunk: 3 }, `d1`)
+    const actual = await storageLogic.m_getPaginationNodesAPI(api, getStorageChildren, { maxChunk: 3 }, `d1`)
 
     expect(actual).toEqual([file01, file02, file03, file04, file05, file06, file07])
   })
@@ -1417,7 +1476,7 @@ describe('getPaginationNodesAPI', () => {
     ).thenResolve({ list: [file07] })
 
     // optionsを指定せずに実行
-    const actual = await storageLogic.getPaginationNodesAPI(api, getStorageChildren, null, `d1`)
+    const actual = await storageLogic.m_getPaginationNodesAPI(api, getStorageChildren, null, `d1`)
 
     expect(actual).toEqual([file01, file02, file03, file04, file05, file06, file07])
   })
@@ -1445,7 +1504,7 @@ describe('getPaginationNodesAPI', () => {
     ).thenResolve({ list: [file07] })
 
     // 引数を全て指定せずに実行
-    const actual = await storageLogic.getPaginationNodesAPI(api, getStorageChildren, null)
+    const actual = await storageLogic.m_getPaginationNodesAPI(api, getStorageChildren, null)
 
     expect(actual).toEqual([file01, file02, file03, file04, file05, file06, file07])
   })

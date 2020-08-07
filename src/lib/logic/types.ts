@@ -58,6 +58,18 @@ interface UserInfoInput {
 //  Storage
 //--------------------------------------------------
 
+enum StorageNodeType {
+  File = 'File',
+  Dir = 'Dir',
+}
+
+enum StorageArticleNodeType {
+  ListBundle = 'ListBundle',
+  CategoryBundle = 'CategoryBundle',
+  ArticleDir = 'ArticleDir',
+  CategoryDir = 'CategoryDir',
+}
+
 interface StorageNode extends TimestampEntity {
   nodeType: StorageNodeType
   name: string
@@ -67,9 +79,8 @@ interface StorageNode extends TimestampEntity {
   contentType: string
   size: number
   share: StorageNodeShareSettings
-  docBundleType: StorageDocBundleType | null
-  isDoc: boolean | null
-  docSortOrder: number | null
+  articleNodeType: StorageArticleNodeType | null
+  articleSortOrder: number | null
   version: number
 }
 
@@ -85,14 +96,26 @@ interface RequiredStorageNodeShareSettings {
   writeUIds: string[]
 }
 
-enum StorageNodeType {
-  File = 'File',
-  Dir = 'Dir',
+interface StorageNodeShareSettingsInput {
+  isPublic?: boolean | null
+  readUIds?: string[] | null
+  writeUIds?: string[] | null
 }
 
-enum StorageDocBundleType {
-  List = 'List',
-  Category = 'Category',
+interface StorageNodeKeyInput {
+  id?: string
+  path?: string
+}
+
+interface CreateStorageNodeInput extends StorageNodeShareSettingsInput {}
+
+interface CreateArticleDirInput {
+  articleNodeType?: StorageArticleNodeType
+}
+
+interface SetArticleSortOrderInput {
+  insertBeforeNodePath?: string
+  insertAfterNodePath?: string
 }
 
 //========================================================================
@@ -103,12 +126,18 @@ enum StorageDocBundleType {
 
 export {
   AuthStatus,
+  CreateArticleDirInput,
+  CreateStorageNodeInput,
   Entity,
   IdToken,
   PublicProfile,
   RequiredStorageNodeShareSettings,
+  SetArticleSortOrderInput,
+  StorageArticleNodeType,
   StorageNode,
   StorageNodeShareSettings,
+  StorageNodeShareSettingsInput,
+  StorageNodeKeyInput,
   StorageNodeType,
   TimestampEntity,
   UserClaims,

@@ -1,10 +1,18 @@
 import { BaseLogic, getStorageNodeURL } from '../../../base'
 import { Component, Watch } from 'vue-property-decorator'
-import { LibAPIContainer, StorageNodeShareSettingsInput, StoragePaginationOptionsInput, StoragePaginationResult, api } from '../../../api'
-import { RequiredStorageNodeShareSettings, StorageNode } from '../../../types'
+import {
+  CreateArticleDirInput,
+  CreateStorageNodeInput,
+  RequiredStorageNodeShareSettings,
+  SetArticleSortOrderInput,
+  StorageNode,
+  StorageNodeKeyInput,
+  StorageNodeShareSettingsInput,
+} from '../../../types'
+import { LibAPIContainer, StoragePaginationInput, StoragePaginationResult, api } from '../../../api'
 import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from '../download'
 import { arrayToDict, splitHierarchicalPaths } from 'web-base-lib'
-import { APIStorageNode } from '../../../api/base'
+import { APIStorageNode } from '../../../api'
 import { StorageLogic } from './base'
 import { StorageUploader } from '../upload'
 import { StorageUrlUploadManager } from '../upload-url'
@@ -217,8 +225,23 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     return StorageLogic.sortNodes(result)
   }
 
-  async createDirs(dirPaths: string[]): Promise<StorageNode[]> {
-    const apiNodes = await this.createDirsAPI(dirPaths)
+  async createDir(dirPath: string, input?: CreateStorageNodeInput): Promise<StorageNode> {
+    // 指定ディレクトリの祖先が読み込まれていない場合、例外をスロー
+    // ※祖先が読み込まれていない状態でディレクトリを作成すると、ストアのディレクトリ構造が不整合になるため
+    const ancestorDirPaths = splitHierarchicalPaths(dirPath).filter(iDirPath => iDirPath !== dirPath)
+    for (const iDirPath of ancestorDirPaths) {
+      const iDirNode = store.storage.get({ path: iDirPath })
+      if (!iDirNode) {
+        throw new Error(`The ancestor directory '${iDirPath}' has not yet been loaded.`)
+      }
+    }
+
+    const apiNode = await this.createDirAPI(dirPath, input)
+    return store.storage.add(apiNode)
+  }
+
+  async createHierarchicalDirs(dirPaths: string[]): Promise<StorageNode[]> {
+    const apiNodes = await this.createHierarchicalDirsAPI(dirPaths)
     return store.storage.addList(apiNodes)
   }
 
@@ -256,13 +279,13 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     return this.setAPINodesToStore([apiNode])[0]
   }
 
-  async setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
-    const apiNode = await this.setDirShareSettingsAPI(dirPath, settings)
+  async setDirShareSettings(dirPath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode> {
+    const apiNode = await this.setDirShareSettingsAPI(dirPath, input)
     return this.setAPINodesToStore([apiNode])[0]
   }
 
-  async setFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
-    const apiNode = await this.setFileShareSettingsAPI(filePath, settings)
+  async setFileShareSettings(filePath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode> {
+    const apiNode = await this.setFileShareSettingsAPI(filePath, input)
     return this.setAPINodesToStore([apiNode])[0]
   }
 
@@ -284,7 +307,7 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
 
   //----------------------------------------------------------------------
   //
-  //  Storage internal methods
+  //  Internal storage methods
   //
   //----------------------------------------------------------------------
 
@@ -312,8 +335,8 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
   //  API
   //--------------------------------------------------
 
-  async getNodeAPI(nodePath: string): Promise<StorageNode | undefined> {
-    const apiNode = await this.m_toStorageNode(await api.getStorageNode(nodePath))
+  async getNodeAPI(input: StorageNodeKeyInput): Promise<StorageNode | undefined> {
+    const apiNode = await this.m_toStorageNode(await api.getStorageNode(input))
     return this.m_toStorageNode(apiNode)
   }
 
@@ -347,8 +370,13 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     return this.m_toStorageNodes(apiNodes)
   }
 
-  async createDirsAPI(dirPaths: string[]): Promise<StorageNode[]> {
-    const apiNodes = await api.createStorageDirs(dirPaths)
+  async createDirAPI(dirPath: string, input?: CreateStorageNodeInput): Promise<StorageNode> {
+    const apiNode = await api.createStorageDir(dirPath, input)
+    return this.m_toStorageNode(apiNode)!
+  }
+
+  async createHierarchicalDirsAPI(dirPaths: string[]): Promise<StorageNode[]> {
+    const apiNodes = await api.createStorageHierarchicalDirs(dirPaths)
     return this.m_toStorageNodes(apiNodes)
   }
 
@@ -382,8 +410,8 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     return this.m_toStorageNode(apiNode)!
   }
 
-  async setDirShareSettingsAPI(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
-    const apiNode = await api.setStorageDirShareSettings(dirPath, settings)
+  async setDirShareSettingsAPI(dirPath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode> {
+    const apiNode = await api.setStorageDirShareSettings(dirPath, input)
     return this.m_toStorageNode(apiNode)!
   }
 
@@ -392,8 +420,18 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     return this.m_toStorageNode(apiNode)!
   }
 
-  async setFileShareSettingsAPI(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode> {
-    const apiNode = await api.setStorageFileShareSettings(filePath, settings)
+  async setFileShareSettingsAPI(filePath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode> {
+    const apiNode = await api.setStorageFileShareSettings(filePath, input)
+    return this.m_toStorageNode(apiNode)!
+  }
+
+  async createArticleDirAPI(dirPath: string, input: CreateArticleDirInput): Promise<StorageNode> {
+    const apiNode = await api.createArticleDir(dirPath, input)
+    return this.m_toStorageNode(apiNode)!
+  }
+
+  async setArticleSortOrderAPI(nodePath: string, input: SetArticleSortOrderInput): Promise<StorageNode> {
+    const apiNode = await api.setArticleSortOrder(nodePath, input)
     return this.m_toStorageNode(apiNode)!
   }
 
@@ -405,14 +443,14 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
 
   /**
    * ページングが必要なノード検索APIをページングがなくなるまで実行し結果を取得します。
-   * 注意: ノード検索API関数の第一引数は検索オプション（StoragePaginationOptionsInput）であることを前提とします。
+   * 注意: ノード検索API関数の第一引数は検索オプション（StoragePaginationInput）であることを前提とします。
    *
    * @param api ノード検索API関数のオーナーであるAPIを指定
    * @param func ノード検索API関数を指定
    * @param params ノード検索APIに渡す引数を指定
    */
   // eslint-disable-next-line space-before-function-paren
-  protected async getPaginationNodesAPI<FUNC extends (...args: any[]) => Promise<StoragePaginationResult>>(
+  protected async m_getPaginationNodesAPI<FUNC extends (...args: any[]) => Promise<StoragePaginationResult>>(
     api: LibAPIContainer,
     func: FUNC,
     ...params: Parameters<FUNC>
@@ -421,15 +459,15 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
 
     // ノード検索APIの検索オプションを取得
     // ※ノード検索APIの第一引数は検索オプションという前提
-    const options: StoragePaginationOptionsInput = Object.assign({ maxChunk: undefined, pageToken: undefined }, params[0])
-    params[0] = options
+    const input: StoragePaginationInput = Object.assign({ maxChunk: undefined, pageToken: undefined }, params[0])
+    params[0] = input
 
     // ノード検索APIの実行
     // ※ページングがなくなるまで実行
     let nodeData = await func.call(api, ...params)
     Object.assign(nodeDict, arrayToDict(nodeData.list, 'path'))
     while (nodeData.nextPageToken) {
-      options.pageToken = nodeData.nextPageToken
+      input.pageToken = nodeData.nextPageToken
       nodeData = await func.call(api, ...params)
       Object.assign(nodeDict, arrayToDict(nodeData.list, 'path'))
     }

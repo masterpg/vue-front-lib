@@ -1,5 +1,17 @@
-import { AuthStatus, StorageNode, TimestampEntity, UserInfo, UserInfoInput } from '../types'
+import {
+  AuthStatus,
+  CreateArticleDirInput,
+  CreateStorageNodeInput,
+  SetArticleSortOrderInput,
+  StorageNode,
+  StorageNodeKeyInput,
+  StorageNodeShareSettingsInput,
+  TimestampEntity,
+  UserInfo,
+  UserInfoInput,
+} from '../types'
 import { OmitEntityTimestamp } from '@/firestore-ex'
+import { StorageConfig } from '@/lib/config'
 import dayjs from 'dayjs'
 
 //========================================================================
@@ -25,41 +37,51 @@ export interface LibAPIContainer {
   //  Storage
   //--------------------------------------------------
 
-  getStorageNode(nodePath: string): Promise<APIStorageNode | undefined>
+  getStorageNode(input: StorageNodeKeyInput): Promise<APIStorageNode | undefined>
 
-  getStorageDirDescendants(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult>
+  getStorageDirDescendants(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult>
 
-  getStorageDescendants(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult>
+  getStorageDescendants(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult>
 
-  getStorageDirChildren(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult>
+  getStorageDirChildren(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult>
 
-  getStorageChildren(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult>
+  getStorageChildren(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult>
 
   getStorageHierarchicalNodes(nodePath: string): Promise<APIStorageNode[]>
 
   getStorageAncestorDirs(nodePath: string): Promise<APIStorageNode[]>
 
-  createStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]>
+  createStorageDir(dirPath: string, input?: CreateStorageNodeInput): Promise<APIStorageNode>
 
-  removeStorageDir(options: StoragePaginationOptionsInput | null, dirPath: string): Promise<StoragePaginationResult>
+  createStorageHierarchicalDirs(dirPaths: string[]): Promise<APIStorageNode[]>
+
+  removeStorageDir(input: StoragePaginationInput | null, dirPath: string): Promise<StoragePaginationResult>
 
   removeStorageFile(filePath: string): Promise<APIStorageNode | undefined>
 
-  moveStorageDir(options: StoragePaginationOptionsInput | null, fromDirPath: string, toDirPath: string): Promise<StoragePaginationResult>
+  moveStorageDir(input: StoragePaginationInput | null, fromDirPath: string, toDirPath: string): Promise<StoragePaginationResult>
 
   moveStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode>
 
-  renameStorageDir(options: StoragePaginationOptionsInput | null, dirPath: string, newName: string): Promise<StoragePaginationResult>
+  renameStorageDir(input: StoragePaginationInput | null, dirPath: string, newName: string): Promise<StoragePaginationResult>
 
   renameStorageFile(filePath: string, newName: string): Promise<APIStorageNode>
 
-  setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<APIStorageNode>
+  setStorageDirShareSettings(dirPath: string, input: StorageNodeShareSettingsInput): Promise<APIStorageNode>
 
-  setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<APIStorageNode>
+  setStorageFileShareSettings(filePath: string, input: StorageNodeShareSettingsInput): Promise<APIStorageNode>
 
   handleUploadedFile(filePath: string): Promise<APIStorageNode>
 
   getSignedUploadUrls(params: { filePath: string; contentType?: string }[]): Promise<string[]>
+
+  //--------------------------------------------------
+  //  Article
+  //--------------------------------------------------
+
+  createArticleDir(dirPath: string, input: CreateArticleDirInput): Promise<APIStorageNode>
+
+  setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<APIStorageNode>
 
   //--------------------------------------------------
   //  Helpers
@@ -67,7 +89,7 @@ export interface LibAPIContainer {
 
   /**
    * ページングが必要なノード検索APIをページングがなくなるまで実行し結果を取得します。
-   * 注意: ノード検索API関数の第一引数は検索オプション`StoragePaginationOptionsInput`
+   * 注意: ノード検索API関数の第一引数は検索オプション`StoragePaginationInput`
    *       であることを前提とします。
    *
    * @param func ノード検索API関数を指定
@@ -95,10 +117,7 @@ export type ToRawTimestampEntity<T> = OmitEntityTimestamp<T> & RawTimestampEntit
 //  Foundation
 //--------------------------------------------------
 
-export interface AppConfigResponse {
-  usersDir: string
-  docsDir: string
-}
+export interface AppConfigResponse extends StorageConfig {}
 
 //--------------------------------------------------
 //  User
@@ -116,13 +135,7 @@ export interface AuthDataResult {
 
 export interface APIStorageNode extends Omit<StorageNode, 'url'> {}
 
-export interface StorageNodeShareSettingsInput {
-  isPublic: boolean | null
-  readUIds: string[] | null
-  writeUIds: string[] | null
-}
-
-export interface StoragePaginationOptionsInput {
+export interface StoragePaginationInput {
   maxChunk?: number
   pageToken?: string
 }

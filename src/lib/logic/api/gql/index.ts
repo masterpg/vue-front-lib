@@ -3,14 +3,22 @@ import {
   AppConfigResponse,
   AuthDataResult,
   LibAPIContainer,
-  StorageNodeShareSettingsInput,
-  StoragePaginationOptionsInput,
+  StoragePaginationInput,
   StoragePaginationResult,
   ToRawTimestampEntity,
   toTimestampEntities as _toTimestampEntities,
   toTimestampEntity as _toTimestampEntity,
 } from '../base'
-import { PublicProfile, UserInfo, UserInfoInput } from '../../types'
+import {
+  CreateArticleDirInput,
+  CreateStorageNodeInput,
+  PublicProfile,
+  SetArticleSortOrderInput,
+  StorageNodeKeyInput,
+  StorageNodeShareSettingsInput,
+  UserInfo,
+  UserInfoInput,
+} from '../../types'
 import { BaseGQLClient } from './base'
 import gql from 'graphql-tag'
 
@@ -55,8 +63,14 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       query: gql`
         query GetAppConfig {
           appConfig {
-            usersDir
-            docsDir
+            users {
+              dir
+            }
+            articles {
+              dir
+              assetsDir
+              fileName
+            }
           }
         }
       `,
@@ -160,11 +174,11 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
   //  Storage
   //--------------------------------------------------
 
-  async getStorageNode(nodePath: string): Promise<APIStorageNode | undefined> {
+  async getStorageNode(input: StorageNodeKeyInput): Promise<APIStorageNode | undefined> {
     const response = await this.query<{ storageNode: RawStorageNode | null }>({
       query: gql`
-        query GetStorageNode($nodePath: String!) {
-          storageNode(nodePath: $nodePath) {
+        query GetStorageNode($input: StorageNodeKeyInput!) {
+          storageNode(input: $input) {
             id
             nodeType
             name
@@ -177,27 +191,26 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            docBundleType
-            isDoc
-            docSortOrder
+            articleNodeType
+            articleSortOrder
             version
             createdAt
             updatedAt
           }
         }
       `,
-      variables: { nodePath },
+      variables: { input },
       isAuth: true,
     })
     const apiNode = response.data.storageNode
     return apiNode ? this.toTimestampEntity(apiNode) : undefined
   }
 
-  async getStorageDirDescendants(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult> {
+  async getStorageDirDescendants(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult> {
     const response = await this.query<{ storageDirDescendants: RawStoragePaginationResult }>({
       query: gql`
-        query GetStorageDirDescendants($dirPath: String, $options: StoragePaginationOptionsInput) {
-          storageDirDescendants(dirPath: $dirPath, options: $options) {
+        query GetStorageDirDescendants($dirPath: String, $input: StoragePaginationInput) {
+          storageDirDescendants(dirPath: $dirPath, input: $input) {
             list {
               id
               nodeType
@@ -211,9 +224,8 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              docBundleType
-              isDoc
-              docSortOrder
+              articleNodeType
+              articleSortOrder
               version
               createdAt
               updatedAt
@@ -222,7 +234,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
           }
         }
       `,
-      variables: { dirPath, options },
+      variables: { dirPath, input },
       isAuth: true,
     })
     return {
@@ -231,11 +243,11 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     }
   }
 
-  async getStorageDescendants(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult> {
+  async getStorageDescendants(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult> {
     const response = await this.query<{ storageDescendants: RawStoragePaginationResult }>({
       query: gql`
-        query GetStorageDescendants($dirPath: String, $options: StoragePaginationOptionsInput) {
-          storageDescendants(dirPath: $dirPath, options: $options) {
+        query GetStorageDescendants($dirPath: String, $input: StoragePaginationInput) {
+          storageDescendants(dirPath: $dirPath, input: $input) {
             list {
               id
               nodeType
@@ -249,9 +261,8 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              docBundleType
-              isDoc
-              docSortOrder
+              articleNodeType
+              articleSortOrder
               version
               createdAt
               updatedAt
@@ -260,7 +271,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
           }
         }
       `,
-      variables: { dirPath, options },
+      variables: { dirPath, input },
       isAuth: true,
     })
     return {
@@ -269,11 +280,11 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     }
   }
 
-  async getStorageDirChildren(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult> {
+  async getStorageDirChildren(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult> {
     const response = await this.query<{ storageDirChildren: RawStoragePaginationResult }>({
       query: gql`
-        query GetStorageDirChildren($dirPath: String, $options: StoragePaginationOptionsInput) {
-          storageDirChildren(dirPath: $dirPath, options: $options) {
+        query GetStorageDirChildren($dirPath: String, $input: StoragePaginationInput) {
+          storageDirChildren(dirPath: $dirPath, input: $input) {
             list {
               id
               nodeType
@@ -287,9 +298,8 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              docBundleType
-              isDoc
-              docSortOrder
+              articleNodeType
+              articleSortOrder
               version
               createdAt
               updatedAt
@@ -298,7 +308,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
           }
         }
       `,
-      variables: { dirPath, options },
+      variables: { dirPath, input },
       isAuth: true,
     })
     return {
@@ -307,11 +317,11 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     }
   }
 
-  async getStorageChildren(options: StoragePaginationOptionsInput | null, dirPath?: string): Promise<StoragePaginationResult> {
+  async getStorageChildren(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult> {
     const response = await this.query<{ storageChildren: RawStoragePaginationResult }>({
       query: gql`
-        query GetStorageChildren($dirPath: String, $options: StoragePaginationOptionsInput) {
-          storageChildren(dirPath: $dirPath, options: $options) {
+        query GetStorageChildren($dirPath: String, $input: StoragePaginationInput) {
+          storageChildren(dirPath: $dirPath, input: $input) {
             list {
               id
               nodeType
@@ -325,9 +335,8 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              docBundleType
-              isDoc
-              docSortOrder
+              articleNodeType
+              articleSortOrder
               version
               createdAt
               updatedAt
@@ -336,7 +345,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
           }
         }
       `,
-      variables: { dirPath, options },
+      variables: { dirPath, input },
       isAuth: true,
     })
     return {
@@ -362,9 +371,8 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            docBundleType
-            isDoc
-            docSortOrder
+            articleNodeType
+            articleSortOrder
             version
             createdAt
             updatedAt
@@ -394,9 +402,8 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            docBundleType
-            isDoc
-            docSortOrder
+            articleNodeType
+            articleSortOrder
             version
             createdAt
             updatedAt
@@ -409,11 +416,11 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     return this.toTimestampEntities(response.data!.storageAncestorDirs)
   }
 
-  async createStorageDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
-    const response = await this.mutate<{ createStorageDirs: RawStorageNode[] }>({
+  async createStorageDir(dirPath: string, input?: CreateStorageNodeInput): Promise<APIStorageNode> {
+    const response = await this.mutate<{ createStorageDir: RawStorageNode }>({
       mutation: gql`
-        mutation CreateStorageDirs($dirPaths: [String!]!) {
-          createStorageDirs(dirPaths: $dirPaths) {
+        mutation CreateStorageDir($dirPath: String!, $input: CreateStorageNodeInput) {
+          createStorageDir(dirPath: $dirPath, input: $input) {
             id
             nodeType
             name
@@ -426,9 +433,39 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            docBundleType
-            isDoc
-            docSortOrder
+            articleNodeType
+            articleSortOrder
+            version
+            createdAt
+            updatedAt
+          }
+        }
+      `,
+      variables: { dirPath, input },
+      isAuth: true,
+    })
+    return this.toTimestampEntity(response.data!.createStorageDir)
+  }
+
+  async createStorageHierarchicalDirs(dirPaths: string[]): Promise<APIStorageNode[]> {
+    const response = await this.mutate<{ createStorageHierarchicalDirs: RawStorageNode[] }>({
+      mutation: gql`
+        mutation CreateStorageHierarchicalDirs($dirPaths: [String!]!) {
+          createStorageHierarchicalDirs(dirPaths: $dirPaths) {
+            id
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              readUIds
+              writeUIds
+            }
+            articleNodeType
+            articleSortOrder
             version
             createdAt
             updatedAt
@@ -438,14 +475,14 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       variables: { dirPaths },
       isAuth: true,
     })
-    return this.toTimestampEntities(response.data!.createStorageDirs)
+    return this.toTimestampEntities(response.data!.createStorageHierarchicalDirs)
   }
 
-  async removeStorageDir(options: StoragePaginationOptionsInput | null, dirPath: string): Promise<StoragePaginationResult> {
+  async removeStorageDir(input: StoragePaginationInput | null, dirPath: string): Promise<StoragePaginationResult> {
     const response = await this.mutate<{ removeStorageDir: RawStoragePaginationResult }>({
       mutation: gql`
-        mutation RemoveStorageDir($dirPath: String!, $options: StoragePaginationOptionsInput) {
-          removeStorageDir(dirPath: $dirPath, options: $options) {
+        mutation RemoveStorageDir($dirPath: String!, $input: StoragePaginationInput) {
+          removeStorageDir(dirPath: $dirPath, input: $input) {
             list {
               id
               nodeType
@@ -459,9 +496,8 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              docBundleType
-              isDoc
-              docSortOrder
+              articleNodeType
+              articleSortOrder
               version
               createdAt
               updatedAt
@@ -470,7 +506,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
           }
         }
       `,
-      variables: { dirPath, options },
+      variables: { dirPath, input },
       isAuth: true,
     })
     return {
@@ -496,9 +532,8 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            docBundleType
-            isDoc
-            docSortOrder
+            articleNodeType
+            articleSortOrder
             version
             createdAt
             updatedAt
@@ -512,11 +547,11 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     return apiNode ? this.toTimestampEntity(apiNode) : undefined
   }
 
-  async moveStorageDir(options: StoragePaginationOptionsInput | null, fromDirPath: string, toDirPath: string): Promise<StoragePaginationResult> {
+  async moveStorageDir(input: StoragePaginationInput | null, fromDirPath: string, toDirPath: string): Promise<StoragePaginationResult> {
     const response = await this.mutate<{ moveStorageDir: RawStoragePaginationResult }>({
       mutation: gql`
-        mutation MoveStorageDir($fromDirPath: String!, $toDirPath: String!, $options: StoragePaginationOptionsInput) {
-          moveStorageDir(fromDirPath: $fromDirPath, toDirPath: $toDirPath, options: $options) {
+        mutation MoveStorageDir($fromDirPath: String!, $toDirPath: String!, $input: StoragePaginationInput) {
+          moveStorageDir(fromDirPath: $fromDirPath, toDirPath: $toDirPath, input: $input) {
             list {
               id
               nodeType
@@ -530,9 +565,8 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              docBundleType
-              isDoc
-              docSortOrder
+              articleNodeType
+              articleSortOrder
               version
               createdAt
               updatedAt
@@ -541,7 +575,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
           }
         }
       `,
-      variables: { fromDirPath, toDirPath, options },
+      variables: { fromDirPath, toDirPath, input },
       isAuth: true,
     })
     return {
@@ -567,9 +601,8 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            docBundleType
-            isDoc
-            docSortOrder
+            articleNodeType
+            articleSortOrder
             version
             createdAt
             updatedAt
@@ -582,11 +615,11 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     return this.toTimestampEntity(response.data!.moveStorageFile)
   }
 
-  async renameStorageDir(options: StoragePaginationOptionsInput | null, dirPath: string, newName: string): Promise<StoragePaginationResult> {
+  async renameStorageDir(input: StoragePaginationInput | null, dirPath: string, newName: string): Promise<StoragePaginationResult> {
     const response = await this.mutate<{ renameStorageDir: RawStoragePaginationResult }>({
       mutation: gql`
-        mutation RenameStorageDir($dirPath: String!, $newName: String!, $options: StoragePaginationOptionsInput) {
-          renameStorageDir(dirPath: $dirPath, newName: $newName, options: $options) {
+        mutation RenameStorageDir($dirPath: String!, $newName: String!, $input: StoragePaginationInput) {
+          renameStorageDir(dirPath: $dirPath, newName: $newName, input: $input) {
             list {
               id
               nodeType
@@ -600,9 +633,8 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
-              docBundleType
-              isDoc
-              docSortOrder
+              articleNodeType
+              articleSortOrder
               version
               createdAt
               updatedAt
@@ -611,7 +643,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
           }
         }
       `,
-      variables: { dirPath, newName, options },
+      variables: { dirPath, newName, input },
       isAuth: true,
     })
     return {
@@ -637,9 +669,8 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            docBundleType
-            isDoc
-            docSortOrder
+            articleNodeType
+            articleSortOrder
             version
             createdAt
             updatedAt
@@ -652,11 +683,11 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     return this.toTimestampEntity(response.data!.renameStorageFile)
   }
 
-  async setStorageDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<APIStorageNode> {
+  async setStorageDirShareSettings(dirPath: string, input: StorageNodeShareSettingsInput): Promise<APIStorageNode> {
     const response = await this.mutate<{ setStorageDirShareSettings: RawStorageNode }>({
       mutation: gql`
-        mutation SetStorageDirShareSettings($dirPath: String!, $settings: StorageNodeShareSettingsInput!) {
-          setStorageDirShareSettings(dirPath: $dirPath, settings: $settings) {
+        mutation SetStorageDirShareSettings($dirPath: String!, $input: StorageNodeShareSettingsInput!) {
+          setStorageDirShareSettings(dirPath: $dirPath, input: $input) {
             id
             nodeType
             name
@@ -669,16 +700,15 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            docBundleType
-            isDoc
-            docSortOrder
+            articleNodeType
+            articleSortOrder
             version
             createdAt
             updatedAt
           }
         }
       `,
-      variables: { dirPath, settings },
+      variables: { dirPath, input },
       isAuth: true,
     })
     return this.toTimestampEntity(response.data!.setStorageDirShareSettings)
@@ -701,9 +731,8 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            docBundleType
-            isDoc
-            docSortOrder
+            articleNodeType
+            articleSortOrder
             version
             createdAt
             updatedAt
@@ -716,11 +745,11 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     return this.toTimestampEntity(response.data!.handleUploadedFile)
   }
 
-  async setStorageFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<APIStorageNode> {
+  async setStorageFileShareSettings(filePath: string, input: StorageNodeShareSettingsInput): Promise<APIStorageNode> {
     const response = await this.mutate<{ setStorageFileShareSettings: RawStorageNode }>({
       mutation: gql`
-        mutation SetStorageFileShareSettings($filePath: String!, $settings: StorageNodeShareSettingsInput!) {
-          setStorageFileShareSettings(filePath: $filePath, settings: $settings) {
+        mutation SetStorageFileShareSettings($filePath: String!, $input: StorageNodeShareSettingsInput!) {
+          setStorageFileShareSettings(filePath: $filePath, input: $input) {
             id
             nodeType
             name
@@ -733,16 +762,15 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
-            docBundleType
-            isDoc
-            docSortOrder
+            articleNodeType
+            articleSortOrder
             version
             createdAt
             updatedAt
           }
         }
       `,
-      variables: { filePath, settings },
+      variables: { filePath, input },
       isAuth: true,
     })
     return this.toTimestampEntity(response.data!.setStorageFileShareSettings)
@@ -762,6 +790,72 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
   }
 
   //--------------------------------------------------
+  //  Article
+  //--------------------------------------------------
+
+  async createArticleDir(dirPath: string, input: CreateArticleDirInput): Promise<APIStorageNode> {
+    const response = await this.mutate<{ createArticleDir: RawStorageNode }>({
+      mutation: gql`
+        mutation CreateArticleDir($dirPath: String!, $input: CreateArticleDirInput!) {
+          createArticleDir(dirPath: $dirPath, input: $input) {
+            id
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              readUIds
+              writeUIds
+            }
+            articleNodeType
+            articleSortOrder
+            version
+            createdAt
+            updatedAt
+          }
+        }
+      `,
+      variables: { dirPath, input },
+      isAuth: true,
+    })
+    return this.toTimestampEntity(response.data!.createArticleDir)
+  }
+
+  async setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<APIStorageNode> {
+    const response = await this.mutate<{ setArticleSortOrder: RawStorageNode }>({
+      mutation: gql`
+        mutation SetArticleSortOrder($nodePath: String!, $input: SetArticleSortOrderInput!) {
+          setArticleSortOrder(nodePath: $nodePath, input: $input) {
+            id
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              readUIds
+              writeUIds
+            }
+            articleNodeType
+            articleSortOrder
+            version
+            createdAt
+            updatedAt
+          }
+        }
+      `,
+      variables: { nodePath, input },
+      isAuth: true,
+    })
+    return this.toTimestampEntity(response.data!.setArticleSortOrder)
+  }
+
+  //--------------------------------------------------
   //  Helpers
   //--------------------------------------------------
 
@@ -774,21 +868,21 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
 
     // ノード検索APIの検索オプションを取得
     // ※ノード検索APIの第一引数は検索オプションという前提
-    const options: StoragePaginationOptionsInput = Object.assign(
+    const input: StoragePaginationInput = Object.assign(
       {
         maxChunk: undefined,
         pageToken: undefined,
       },
       params[0]
     )
-    params[0] = options
+    params[0] = input
 
     // ノード検索APIの実行
     // ※ページングがなくなるまで実行
     let nodeData = await func.call(this, ...params)
     result.push(...nodeData.list)
     while (nodeData.nextPageToken) {
-      options.pageToken = nodeData.nextPageToken
+      input.pageToken = nodeData.nextPageToken
       nodeData = await func.call(this, ...params)
       result.push(...nodeData.list)
     }

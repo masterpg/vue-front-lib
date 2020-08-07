@@ -1,9 +1,8 @@
 import * as path from 'path'
-import { RequiredStorageNodeShareSettings, StorageNode, StorageNodeType } from '../../../types'
+import { RequiredStorageNodeShareSettings, StorageNode, StorageNodeShareSettingsInput, StorageNodeType } from '../../../types'
 import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from '../download'
 import { getBaseStorageURL, sortStorageNodes } from '../../../base'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
-import { StorageNodeShareSettingsInput } from '../../../api'
 import { StorageUploader } from '../upload'
 
 //========================================================================
@@ -49,7 +48,7 @@ interface StorageLogic {
 
   fetchHierarchicalChildren(dirPath?: string): Promise<StorageNode[]>
 
-  createDirs(dirPaths: string[]): Promise<StorageNode[]>
+  createHierarchicalDirs(dirPaths: string[]): Promise<StorageNode[]>
 
   removeDir(dirPath: string): Promise<void>
 
@@ -63,9 +62,9 @@ interface StorageLogic {
 
   renameFile(filePath: string, newName: string): Promise<StorageNode>
 
-  setDirShareSettings(dirPath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
+  setDirShareSettings(dirPath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode>
 
-  setFileShareSettings(filePath: string, settings: StorageNodeShareSettingsInput): Promise<StorageNode>
+  setFileShareSettings(filePath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode>
 
   newUploader(owner: Element): StorageUploader
 

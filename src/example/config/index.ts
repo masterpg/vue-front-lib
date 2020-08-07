@@ -18,8 +18,14 @@ class AppConfig extends BaseConfig {
         basePath: String(process.env.VUE_APP_API_BASE_PATH),
       },
       storage: {
-        usersDir: 'users',
-        docsDir: 'docs',
+        users: {
+          dir: 'users',
+        },
+        articles: {
+          dir: 'articles',
+          assetsDir: 'articles/assets',
+          fileName: '__index__.md',
+        },
       },
     })
   }

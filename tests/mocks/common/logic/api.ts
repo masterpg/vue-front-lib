@@ -268,7 +268,7 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
     //----------------------------------------------------------------------
 
     private m_toUserStorageBasePath(user: TestAuthUser): string {
-      return path.join(config.storage.usersDir, user.uid)
+      return path.join(config.storage.users.dir, user.uid)
     }
 
     private m_readAsArrayBuffer(fileData: string | Blob | Uint8Array | ArrayBuffer | File): Promise<ArrayBuffer> {

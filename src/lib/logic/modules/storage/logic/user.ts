@@ -1,6 +1,6 @@
 import * as path from 'path'
-import { BasePathStorageLogic } from './base-path'
 import { Component } from 'vue-property-decorator'
+import { SubStorageLogic } from './sub'
 import { config } from '@/lib/config'
 import { store } from '../../../store'
 
@@ -11,9 +11,9 @@ import { store } from '../../../store'
 //========================================================================
 
 @Component
-class UserStorageLogic extends BasePathStorageLogic {
+class UserStorageLogic extends SubStorageLogic {
   get basePath(): string {
-    return path.join(config.storage.usersDir, store.user.id)
+    return path.join(config.storage.users.dir, store.user.id)
   }
 }
 
