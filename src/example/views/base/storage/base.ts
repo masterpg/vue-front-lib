@@ -5,6 +5,7 @@ import {
   CompTreeViewLazyLoadStatus,
   CompTreeViewUtils,
   RequiredStorageNodeShareSettings,
+  StorageArticleNodeType,
   StorageLogic,
   StorageNode,
   StorageNodeShareSettings,
@@ -78,7 +79,7 @@ interface StorageNodePopupMenuItem {
   label: string
 }
 
-interface StorageNodePopupMenuSelectEvent {
+interface StorageNodeActionEvent {
   type: string
   nodePaths: string[]
 }
@@ -292,69 +293,107 @@ function getStorageNodeTypeIcon(nodeType: StorageNodeType, choice = 1): string {
   }
 }
 
+/**
+ * 記事ノードタイプのラベルを取得します。
+ * @param nodeType
+ * @param choice
+ */
+function getArticleNodeTypeLabel(nodeType: StorageArticleNodeType, choice = 1): string {
+  switch (nodeType) {
+    case StorageArticleNodeType.ListBundle:
+      return String(i18n.tc('article.nodeType.listBundle', choice))
+    case StorageArticleNodeType.CategoryBundle:
+      return String(i18n.tc('article.nodeType.categoryBundle', choice))
+    case StorageArticleNodeType.CategoryDir:
+      return String(i18n.tc('article.nodeType.categoryDir', choice))
+    case StorageArticleNodeType.ArticleDir:
+      return String(i18n.tc('article.nodeType.articleDir', choice))
+  }
+}
+
+/**
+ * 記事ノードタイプのアイコンを取得します。
+ * @param nodeType
+ */
+function getArticleNodeTypeIcon(nodeType: StorageArticleNodeType): string {
+  switch (nodeType) {
+    case StorageArticleNodeType.ListBundle:
+      return 'view_list'
+    case StorageArticleNodeType.CategoryBundle:
+      return 'category'
+    case StorageArticleNodeType.CategoryDir:
+      return 'folder'
+    case StorageArticleNodeType.ArticleDir:
+      return 'description'
+  }
+}
+
 //--------------------------------------------------
 //  ContextMenu
 //--------------------------------------------------
 
-class StorageNodePopupMenuTypeImpl {
-  readonly createDir: StorageNodePopupMenuItem = new (class {
-    readonly type = 'createDir'
+interface StorageNodeActionType {
+  readonly type: string
+  readonly label: string
+}
+
+namespace StorageNodeActionType {
+  export const createDir: StorageNodeActionType = new (class {
+    type = 'createDir'
     get label(): string {
       return String(i18n.t('common.createSth', { sth: i18n.tc('common.folder', 1) }))
     }
   })()
 
-  readonly uploadFiles: StorageNodePopupMenuItem = new (class {
+  export const uploadFiles: StorageNodeActionType = new (class {
     readonly type = 'uploadFiles'
     get label(): string {
       return String(i18n.t('common.uploadSth', { sth: i18n.tc('common.file', 2) }))
     }
   })()
 
-  readonly uploadDir: StorageNodePopupMenuItem = new (class {
+  export const uploadDir: StorageNodeActionType = new (class {
     readonly type = 'uploadDir'
     get label(): string {
       return String(i18n.t('common.uploadSth', { sth: i18n.tc('common.folder', 2) }))
     }
   })()
 
-  readonly move: StorageNodePopupMenuItem = new (class {
+  export const move: StorageNodeActionType = new (class {
     readonly type = 'move'
     get label(): string {
       return String(i18n.t('common.move'))
     }
   })()
 
-  readonly rename: StorageNodePopupMenuItem = new (class {
+  export const rename: StorageNodeActionType = new (class {
     readonly type = 'rename'
     get label(): string {
       return String(i18n.t('common.rename'))
     }
   })()
 
-  readonly share: StorageNodePopupMenuItem = new (class {
+  export const share: StorageNodeActionType = new (class {
     readonly type = 'share'
     get label(): string {
       return String(i18n.t('common.share'))
     }
   })()
 
-  readonly deletion: StorageNodePopupMenuItem = new (class {
+  export const deletion: StorageNodeActionType = new (class {
     readonly type = 'delete'
     get label(): string {
       return String(i18n.t('common.delete'))
     }
   })()
 
-  readonly reload: StorageNodePopupMenuItem = new (class {
+  export const reload: StorageNodeActionType = new (class {
     readonly type = 'reload'
     get label(): string {
       return String(i18n.t('common.reload'))
     }
   })()
 }
-
-const StorageNodePopupMenuType = new StorageNodePopupMenuTypeImpl()
 
 //========================================================================
 //
@@ -364,16 +403,18 @@ const StorageNodePopupMenuType = new StorageNodePopupMenuTypeImpl()
 
 export {
   StorageNodePopupMenuItem,
-  StorageNodePopupMenuSelectEvent,
-  StorageNodePopupMenuType,
+  StorageNodeActionEvent,
+  StorageNodeActionType,
+  StoragePageMixin,
+  StoragePageStore,
   StorageTreeNode,
   StorageTreeNodeData,
   StorageTreeNodeInput,
   StorageType,
-  StoragePageStore,
-  StoragePageMixin,
-  getStorageNodeTypeLabel,
+  getArticleNodeTypeIcon,
+  getArticleNodeTypeLabel,
   getStorageNodeTypeIcon,
+  getStorageNodeTypeLabel,
   nodeToTreeData,
   treeSortFunc,
 }

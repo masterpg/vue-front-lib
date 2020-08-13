@@ -1,9 +1,11 @@
 import * as path from 'path'
-import { CreateArticleDirInput, SetArticleSortOrderInput, StorageNode } from '../../../types'
+import { CreateArticleDirInput, SetArticleSortOrderInput, StorageNode, StoragePaginationInput, StoragePaginationResult } from '../../../types'
 import { Component } from 'vue-property-decorator'
 import { StorageLogic } from './base'
 import { SubStorageLogic } from './sub'
+import { api } from '../../../api'
 import { config } from '@/lib/config'
+import { splitHierarchicalPaths } from 'web-base-lib'
 import { store } from '../../../store'
 
 //========================================================================
@@ -13,8 +15,8 @@ import { store } from '../../../store'
 //========================================================================
 
 interface ArticleStorageLogic extends StorageLogic {
+  fetchArticleRoot(): Promise<void>
   createArticleDir(dirPath: string, input: CreateArticleDirInput): Promise<StorageNode>
-
   setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<StorageNode>
 }
 
@@ -26,16 +28,66 @@ interface ArticleStorageLogic extends StorageLogic {
 
 @Component
 class ArticleStorageLogicImpl extends SubStorageLogic implements ArticleStorageLogic {
+  //----------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //----------------------------------------------------------------------
+
   get basePath(): string {
+    if (!this.isSignedIn) return ''
     return path.join(config.storage.users.dir, store.user.id, config.storage.articles.dir)
   }
 
+  //----------------------------------------------------------------------
+  //
+  //  Methods
+  //
+  //----------------------------------------------------------------------
+
+  /**
+   * 記事ルートを構成するノードをサーバーから読み込み、ストアに格納します。
+   * もし記事ルートを構成するノードが一部でも存在しなかった場合、作成を行います。
+   */
+  async fetchArticleRoot(): Promise<void> {
+    this.m_validateSignedIn()
+
+    // 記事ルートがストアに存在しない場合
+    if (!this.m_existsHierarchicalOnStore(this.basePath)) {
+      // 記事ルートをサーバーから読み込み
+      await this.appStorage.fetchHierarchicalNodes(this.basePath)
+    }
+    // 記事ルートがストアに存在しない場合
+    if (!this.m_existsHierarchicalOnStore(this.basePath)) {
+      // 記事ルートを作成
+      await this.appStorage.createHierarchicalDirs([this.basePath])
+    }
+  }
+
   async createArticleDir(dirPath: string, input: CreateArticleDirInput): Promise<StorageNode> {
+    this.m_validateSignedIn()
+
+    // 記事ルートを読み込み
+    await this.fetchArticleRoot()
+    // 指定ディレクトリの祖先を読み込み
+    await this.m_fetchAncestors(dirPath)
+    // 指定ディレクトリの祖先が存在しない場合、例外をスロー
+    if (!this.m_existsAncestorsOnStore(dirPath)) {
+      throw new Error(`The ancestor of the specified directory '${dirPath}' does not exist.`)
+    }
+
+    // APIで指定ディレクトリを作成
     const fullDirPath = StorageLogic.toFullNodePath(this.basePath, dirPath)
-    return StorageLogic.toBasePathNode(this.basePath, await this.appStorage.createArticleDirAPI(fullDirPath, input))
+    const dirNode = await this.m_createArticleDirAPI(fullDirPath, input)
+
+    // 作成されたディレクトリをストアに反映
+    this.appStorage.setAPINodesToStore([dirNode])
+
+    return StorageLogic.toBasePathNode(this.basePath, dirNode)
   }
 
   async setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<StorageNode> {
+    // APIでソート順を設定
     const fullNodePath = StorageLogic.toFullNodePath(this.basePath, nodePath)
     const fullInput: SetArticleSortOrderInput = {}
     if (input.insertBeforeNodePath) {
@@ -43,7 +95,97 @@ class ArticleStorageLogicImpl extends SubStorageLogic implements ArticleStorageL
     } else if (input.insertAfterNodePath) {
       fullInput.insertAfterNodePath = StorageLogic.toFullNodePath(this.basePath, input.insertAfterNodePath)
     }
-    return StorageLogic.toBasePathNode(this.basePath, await this.appStorage.setArticleSortOrderAPI(fullNodePath, fullInput))
+    const node = await this.m_setArticleSortOrderAPI(fullNodePath, fullInput)
+
+    // API結果をストアに反映
+    this.appStorage.setAPINodesToStore([node])
+
+    return StorageLogic.toBasePathNode(this.basePath, node)
+  }
+
+  async fetchArticleChildren(dirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult<StorageNode>> {
+    // APIノードをストアへ反映
+    const { nextPageToken, list: apiNodes } = await this.m_getArticleChildrenAPI(dirPath, input)
+    const list = this.appStorage.setAPINodesToStore(apiNodes)
+    // APIノードにないストアノードを削除
+    this.appStorage.removeNotExistsStoreNodes(list, store.storage.getChildren(dirPath))
+
+    return { nextPageToken, list }
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
+
+  /**
+   * ユーザーがサインインしているか検証します。
+   */
+  private m_validateSignedIn(): void {
+    if (!this.isSignedIn) {
+      throw new Error(`The application is not yet signed in.`)
+    }
+  }
+
+  /**
+   * 指定パスの祖先を構成するノードをサーバーから読み込み、ストアに格納します。
+   * @param targetPath
+   */
+  private async m_fetchAncestors(targetPath: string): Promise<void> {
+    // 対象ノードの祖先がストアに存在しない場合
+    if (!this.m_existsAncestorsOnStore(targetPath)) {
+      // 対象ノードの祖先をサーバーから読み込み
+      await this.appStorage.fetchAncestorDirs(targetPath)
+    }
+  }
+
+  /**
+   * 指定パスを含め階層を構成するノードがストアに存在しているかを走査します。
+   * @param targetPath
+   */
+  private m_existsHierarchicalOnStore(targetPath: string): boolean {
+    const nodePaths = splitHierarchicalPaths(targetPath)
+    for (const nodePath of nodePaths) {
+      const node = store.storage.get({ path: nodePath })
+      if (!node) return false
+    }
+    return true
+  }
+
+  /**
+   * 指定パスの祖先を構成するノードがストアに存在するかを走査します。
+   * @param targetPath
+   */
+  private async m_existsAncestorsOnStore(targetPath: string): Promise<boolean> {
+    const dirPaths = splitHierarchicalPaths(targetPath).filter(dirPath => dirPath !== targetPath)
+    for (const iDirPath of dirPaths) {
+      const iDirNode = store.storage.get({ path: iDirPath })
+      if (!iDirNode) return true
+    }
+    return false
+  }
+
+  //--------------------------------------------------
+  //  API
+  //--------------------------------------------------
+
+  private async m_createArticleDirAPI(dirPath: string, input: CreateArticleDirInput): Promise<StorageNode> {
+    const apiNode = await api.createArticleDir(dirPath, input)
+    return this.appStorage.apiNodeToStorageNode(apiNode)!
+  }
+
+  private async m_setArticleSortOrderAPI(nodePath: string, input: SetArticleSortOrderInput): Promise<StorageNode> {
+    const apiNode = await api.setArticleSortOrder(nodePath, input)
+    return this.appStorage.apiNodeToStorageNode(apiNode)!
+  }
+
+  private async m_getArticleChildrenAPI(dirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult<StorageNode>> {
+    const apiPagination = await api.getArticleChildren(dirPath, input)
+    return {
+      nextPageToken: apiPagination.nextPageToken,
+      list: this.appStorage.apiNodesToStorageNodes(apiPagination.list),
+    }
   }
 }
 

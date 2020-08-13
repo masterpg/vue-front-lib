@@ -41,12 +41,12 @@
   <div class="storage-dir-node-view-main layout vertical">
     <!-- ノード名 -->
     <div class="layout horizontal center">
-      <q-icon name="folder" size="24px" class="app-mr-12" />
+      <q-icon :name="m_icon" size="24px" class="app-mr-12" />
       <div class="node-name flex-1">{{ m_dirName }}</div>
       <q-btn flat round color="primary" icon="close" @click="m_closeOnClick" />
     </div>
     <!-- コンテンツエリア -->
-    <div class="content-area flex-1" style="overflow-y: auto">
+    <div class="content-area flex-1" style="overflow-y: auto;">
       <!-- ダウンロード -->
       <div class="layout horizontal center end-justified app-mt-10">
         <q-linear-progress ref="downloadLinear" :value="m_downloader.progress" :stripe="m_downloader.running" size="md" class="flex-1" />
@@ -64,6 +64,10 @@
         <div class="item">
           <div class="title">{{ this.$t('storage.nodeDetail.path') }}</div>
           <div class="value">{{ m_path }}</div>
+        </div>
+        <div v-show="Boolean(m_type)" class="item">
+          <div class="title">{{ this.$t('storage.nodeDetail.type') }}</div>
+          <div class="value">{{ m_type }}</div>
         </div>
         <div class="item">
           <div class="title">{{ this.$t('storage.nodeDetail.size') }}</div>
@@ -88,10 +92,19 @@
 
 <script lang="ts">
 import * as anime from 'animejs/lib/anime'
-import { BaseComponent, CompStorageImg, NoCache, RequiredStorageNodeShareSettings, Resizable, StorageDownloader, StorageNode } from '@/lib'
-import { Component, Watch } from 'vue-property-decorator'
+import {
+  BaseComponent,
+  CompStorageImg,
+  NoCache,
+  RequiredStorageNodeShareSettings,
+  Resizable,
+  StorageDownloader,
+  StorageLogic,
+  StorageNode,
+} from '@/lib'
+import { Component, Prop, Watch } from 'vue-property-decorator'
+import { getArticleNodeTypeIcon, getArticleNodeTypeLabel } from './base'
 import { QLinearProgress } from 'quasar'
-import { StoragePageMixin } from './base'
 import bytes from 'bytes'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
@@ -99,7 +112,7 @@ import { removeBothEndsSlash } from 'web-base-lib'
 @Component({
   components: { CompStorageImg },
 })
-export default class StorageDirDetailView extends mixins(BaseComponent, Resizable, StoragePageMixin) {
+export default class StorageDirDetailView extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -115,6 +128,9 @@ export default class StorageDirDetailView extends mixins(BaseComponent, Resizabl
   //  Properties
   //
   //----------------------------------------------------------------------
+
+  @Prop({ required: true })
+  storageLogic!: StorageLogic
 
   private m_dirNode: StorageNode | null = null
 
@@ -145,6 +161,15 @@ export default class StorageDirDetailView extends mixins(BaseComponent, Resizabl
     return this.m_dirNode.name
   }
 
+  private get m_type(): string {
+    if (!this.m_dirNode) return ''
+    if (this.m_dirNode.articleNodeType) {
+      return getArticleNodeTypeLabel(this.m_dirNode.articleNodeType)
+    } else {
+      return ''
+    }
+  }
+
   private get m_size(): string {
     if (!this.m_dirNode) return ''
     return bytes(this.m_dirNode.size)
@@ -168,6 +193,18 @@ export default class StorageDirDetailView extends mixins(BaseComponent, Resizabl
       } else {
         result = `${this.$t('storage.share.private')}`
       }
+    }
+
+    return result
+  }
+
+  private get m_icon(): string {
+    let result = 'folder'
+
+    if (!this.m_dirNode) return result
+
+    if (this.m_dirNode.articleNodeType) {
+      result = getArticleNodeTypeIcon(this.m_dirNode.articleNodeType)
     }
 
     return result

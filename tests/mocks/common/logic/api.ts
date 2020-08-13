@@ -177,7 +177,7 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
       this.m_token = TEMP_ADMIN_USER
 
       for (const dirPath of dirPaths) {
-        await this.callStoragePaginationAPI(this.removeStorageDir, null, dirPath)
+        await this.callStoragePaginationAPI(this.removeStorageDir, dirPath)
       }
 
       this.m_token = userBackup

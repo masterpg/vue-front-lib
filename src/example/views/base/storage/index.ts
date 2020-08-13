@@ -12,12 +12,16 @@ import StoragePage from './base-storage-page.vue'
 import StorageTreeView from './storage-tree-view.vue'
 
 export {
+  StorageNodeActionEvent,
   StorageNodePopupMenuItem,
-  StorageNodePopupMenuSelectEvent,
+  StoragePageMixin,
   StorageTreeNode,
   StorageTreeNodeData,
   StorageType,
-  StoragePageMixin,
+  getArticleNodeTypeIcon,
+  getArticleNodeTypeLabel,
+  getStorageNodeTypeIcon,
+  getStorageNodeTypeLabel,
 } from './base'
 
 export {

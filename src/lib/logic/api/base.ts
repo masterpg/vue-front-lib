@@ -6,6 +6,8 @@ import {
   StorageNode,
   StorageNodeKeyInput,
   StorageNodeShareSettingsInput,
+  StoragePaginationInput,
+  StoragePaginationResult,
   TimestampEntity,
   UserInfo,
   UserInfoInput,
@@ -39,13 +41,13 @@ export interface LibAPIContainer {
 
   getStorageNode(input: StorageNodeKeyInput): Promise<APIStorageNode | undefined>
 
-  getStorageDirDescendants(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult>
+  getStorageDirDescendants(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
 
-  getStorageDescendants(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult>
+  getStorageDescendants(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
 
-  getStorageDirChildren(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult>
+  getStorageDirChildren(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
 
-  getStorageChildren(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult>
+  getStorageChildren(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
 
   getStorageHierarchicalNodes(nodePath: string): Promise<APIStorageNode[]>
 
@@ -55,15 +57,15 @@ export interface LibAPIContainer {
 
   createStorageHierarchicalDirs(dirPaths: string[]): Promise<APIStorageNode[]>
 
-  removeStorageDir(input: StoragePaginationInput | null, dirPath: string): Promise<StoragePaginationResult>
+  removeStorageDir(dirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
 
   removeStorageFile(filePath: string): Promise<APIStorageNode | undefined>
 
-  moveStorageDir(input: StoragePaginationInput | null, fromDirPath: string, toDirPath: string): Promise<StoragePaginationResult>
+  moveStorageDir(fromDirPath: string, toDirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
 
   moveStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode>
 
-  renameStorageDir(input: StoragePaginationInput | null, dirPath: string, newName: string): Promise<StoragePaginationResult>
+  renameStorageDir(dirPath: string, newName: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
 
   renameStorageFile(filePath: string, newName: string): Promise<APIStorageNode>
 
@@ -82,6 +84,8 @@ export interface LibAPIContainer {
   createArticleDir(dirPath: string, input: CreateArticleDirInput): Promise<APIStorageNode>
 
   setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<APIStorageNode>
+
+  getArticleChildren(dirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
 
   //--------------------------------------------------
   //  Helpers
@@ -134,16 +138,6 @@ export interface AuthDataResult {
 //--------------------------------------------------
 
 export interface APIStorageNode extends Omit<StorageNode, 'url'> {}
-
-export interface StoragePaginationInput {
-  maxChunk?: number
-  pageToken?: string
-}
-
-export interface StoragePaginationResult {
-  list: APIStorageNode[]
-  nextPageToken?: string
-}
 
 //========================================================================
 //

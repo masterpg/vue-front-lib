@@ -42,7 +42,7 @@
           <q-icon :name="slotProps.tr.row.share.icon" size="24px" />
         </q-td>
         <q-td key="updatedAt" :props="slotProps.tr" class="th-label">{{ slotProps.tr.row.updatedAt }}</q-td>
-        <storage-node-popup-menu :node="slotProps.tr.row" :selected-nodes="table.selected" context-menu @select="m_popupMenuOnSelect" />
+        <storage-node-popup-menu :node="slotProps.tr.row" :selected-nodes="table.selected" context-menu @select="m_popupMenuOnNodeAction" />
       </q-tr>
     </template>
   </storage-dir-table>
@@ -50,7 +50,7 @@
 
 <script lang="ts">
 import { BaseComponent, NoCache, Resizable, StorageNode, StorageNodeType } from '@/lib'
-import { StorageNodePopupMenuSelectEvent, StoragePageMixin } from './base'
+import { StorageNodeActionEvent, StoragePageMixin } from './base'
 import { Component } from 'vue-property-decorator'
 import StorageDirTable from './storage-dir-table.vue'
 import StorageNodePopupMenu from './storage-node-popup-menu.vue'
@@ -219,7 +219,7 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
    */
   protected toTableRow(node: StorageNode): StorageDirTableRow {
     const tableRow = new StorageDirTableRow(this.table)
-    tableRow.nodeType = node.nodeType as StorageNodeType
+    tableRow.nodeType = node.nodeType
     tableRow.name = node.nodeType === StorageNodeType.Dir ? `${node.name}/` : node.name
     tableRow.path = node.path
     tableRow.icon = node.nodeType === StorageNodeType.Dir ? 'folder' : 'description'
@@ -350,11 +350,11 @@ export default class StorageDirView extends mixins(BaseComponent, Resizable, Sto
   }
 
   /**
-   * ポップアップメニューでメニューアイテムが選択された際のリスナです。
+   * ポップアップメニューでアクションが選択された際のリスナです。
    * @param e
    */
-  private m_popupMenuOnSelect(e: StorageNodePopupMenuSelectEvent) {
-    this.$emit('menu-select', e)
+  private m_popupMenuOnNodeAction(e: StorageNodeActionEvent) {
+    this.$emit('node-action', e)
   }
 }
 </script>

@@ -41,8 +41,6 @@ class MockStorageLogic extends AppStorageLogic {
   renameFileAPI = td.func() as any
   setDirShareSettingsAPI = td.func() as any
   setFileShareSettingsAPI = td.func() as any
-  createArticleDirAPI = td.func() as any
-  setArticleSortOrderAPI = td.func() as any
 }
 
 let api!: LibAPIContainer

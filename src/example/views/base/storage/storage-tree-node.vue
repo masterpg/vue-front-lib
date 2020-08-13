@@ -96,7 +96,7 @@
           :is-root="m_isRoot"
           :disabled="disableContextMenu"
           context-menu
-          @select="m_contextMenuOnSelect"
+          @select="m_popupMenuOnNodeAction"
         />
       </div>
     </div>
@@ -109,7 +109,7 @@
 <script lang="ts">
 import * as path from 'path'
 import { CompTreeNode, CompTreeNodeEditData, NoCache, RequiredStorageNodeShareSettings, StorageNodeShareSettings, StorageNodeType } from '@/lib'
-import { StorageNodePopupMenuSelectEvent, StorageTreeNode, StorageTreeNodeData } from './base'
+import { StorageNodeActionEvent, StorageTreeNode, StorageTreeNodeData } from './base'
 import { Component } from 'vue-property-decorator'
 import { Dayjs } from 'dayjs'
 import StorageNodePopupMenu from './storage-node-popup-menu.vue'
@@ -129,7 +129,7 @@ export default class StorageTreeNodeClass extends CompTreeNode<StorageTreeNode> 
   //----------------------------------------------------------------------
 
   get extraEventNames(): string[] {
-    return ['menu-select']
+    return ['node-action']
   }
 
   get id(): string {
@@ -308,11 +308,11 @@ export default class StorageTreeNodeClass extends CompTreeNode<StorageTreeNode> 
   }
 
   /**
-   * コンテキストメニューでメニューアイテムが選択された際のリスナです。
+   * ポップアップメニューでアクションが選択された際のリスナです。
    * @param e
    */
-  private m_contextMenuOnSelect(e: StorageNodePopupMenuSelectEvent) {
-    this.dispatchExtraEvent('menu-select', e)
+  private m_popupMenuOnNodeAction(e: StorageNodeActionEvent) {
+    this.dispatchExtraEvent('node-action', e)
   }
 
   //----------------------------------------------------------------------

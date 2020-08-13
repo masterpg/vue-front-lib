@@ -3,8 +3,6 @@ import {
   AppConfigResponse,
   AuthDataResult,
   LibAPIContainer,
-  StoragePaginationInput,
-  StoragePaginationResult,
   ToRawTimestampEntity,
   toTimestampEntities as _toTimestampEntities,
   toTimestampEntity as _toTimestampEntity,
@@ -16,6 +14,8 @@ import {
   SetArticleSortOrderInput,
   StorageNodeKeyInput,
   StorageNodeShareSettingsInput,
+  StoragePaginationInput,
+  StoragePaginationResult,
   UserInfo,
   UserInfoInput,
 } from '../../types'
@@ -206,7 +206,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     return apiNode ? this.toTimestampEntity(apiNode) : undefined
   }
 
-  async getStorageDirDescendants(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult> {
+  async getStorageDirDescendants(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     const response = await this.query<{ storageDirDescendants: RawStoragePaginationResult }>({
       query: gql`
         query GetStorageDirDescendants($dirPath: String, $input: StoragePaginationInput) {
@@ -243,7 +243,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     }
   }
 
-  async getStorageDescendants(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult> {
+  async getStorageDescendants(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     const response = await this.query<{ storageDescendants: RawStoragePaginationResult }>({
       query: gql`
         query GetStorageDescendants($dirPath: String, $input: StoragePaginationInput) {
@@ -280,7 +280,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     }
   }
 
-  async getStorageDirChildren(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult> {
+  async getStorageDirChildren(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     const response = await this.query<{ storageDirChildren: RawStoragePaginationResult }>({
       query: gql`
         query GetStorageDirChildren($dirPath: String, $input: StoragePaginationInput) {
@@ -317,7 +317,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     }
   }
 
-  async getStorageChildren(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult> {
+  async getStorageChildren(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     const response = await this.query<{ storageChildren: RawStoragePaginationResult }>({
       query: gql`
         query GetStorageChildren($dirPath: String, $input: StoragePaginationInput) {
@@ -478,7 +478,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     return this.toTimestampEntities(response.data!.createStorageHierarchicalDirs)
   }
 
-  async removeStorageDir(input: StoragePaginationInput | null, dirPath: string): Promise<StoragePaginationResult> {
+  async removeStorageDir(dirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     const response = await this.mutate<{ removeStorageDir: RawStoragePaginationResult }>({
       mutation: gql`
         mutation RemoveStorageDir($dirPath: String!, $input: StoragePaginationInput) {
@@ -547,7 +547,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     return apiNode ? this.toTimestampEntity(apiNode) : undefined
   }
 
-  async moveStorageDir(input: StoragePaginationInput | null, fromDirPath: string, toDirPath: string): Promise<StoragePaginationResult> {
+  async moveStorageDir(fromDirPath: string, toDirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     const response = await this.mutate<{ moveStorageDir: RawStoragePaginationResult }>({
       mutation: gql`
         mutation MoveStorageDir($fromDirPath: String!, $toDirPath: String!, $input: StoragePaginationInput) {
@@ -615,7 +615,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     return this.toTimestampEntity(response.data!.moveStorageFile)
   }
 
-  async renameStorageDir(input: StoragePaginationInput | null, dirPath: string, newName: string): Promise<StoragePaginationResult> {
+  async renameStorageDir(dirPath: string, newName: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     const response = await this.mutate<{ renameStorageDir: RawStoragePaginationResult }>({
       mutation: gql`
         mutation RenameStorageDir($dirPath: String!, $newName: String!, $input: StoragePaginationInput) {
@@ -855,6 +855,43 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     return this.toTimestampEntity(response.data!.setArticleSortOrder)
   }
 
+  async getArticleChildren(dirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
+    const response = await this.query<{ articleChildren: RawStoragePaginationResult }>({
+      query: gql`
+        query GetArticleChildren($dirPath: String!, $input: StoragePaginationInput) {
+          articleChildren(dirPath: $dirPath, input: $input) {
+            list {
+              id
+              nodeType
+              name
+              dir
+              path
+              contentType
+              size
+              share {
+                isPublic
+                readUIds
+                writeUIds
+              }
+              articleNodeType
+              articleSortOrder
+              version
+              createdAt
+              updatedAt
+            }
+            nextPageToken
+          }
+        }
+      `,
+      variables: { dirPath, input },
+      isAuth: true,
+    })
+    return {
+      list: this.toTimestampEntities(response.data.articleChildren.list),
+      nextPageToken: response.data.articleChildren.nextPageToken || undefined,
+    }
+  }
+
   //--------------------------------------------------
   //  Helpers
   //--------------------------------------------------
@@ -867,15 +904,19 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     const result: APIStorageNode[] = []
 
     // ノード検索APIの検索オプションを取得
-    // ※ノード検索APIの第一引数は検索オプションという前提
-    const input: StoragePaginationInput = Object.assign(
-      {
+    // ※ノード検索APIの引数の最後は検索オプションという前提
+    let input: StoragePaginationInput
+    const lastParam = params[params.length - 1]
+    if (typeof lastParam.maxChunk === 'number' || typeof lastParam.pageToken === 'string') {
+      input = lastParam
+      params[params.length - 1] = input
+    } else {
+      input = {
         maxChunk: undefined,
         pageToken: undefined,
-      },
-      params[0]
-    )
-    params[0] = input
+      }
+      params.push(input)
+    }
 
     // ノード検索APIの実行
     // ※ページングがなくなるまで実行

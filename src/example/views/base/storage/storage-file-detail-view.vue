@@ -46,7 +46,7 @@
       <q-btn flat round color="primary" icon="close" @click="m_closeOnClick" />
     </div>
     <!-- コンテンツエリア -->
-    <div class="content-area flex-1" style="overflow-y: auto">
+    <div class="content-area flex-1" style="overflow-y: auto;">
       <!-- 画像 -->
       <div v-show="m_isImage" class="layout vertical center">
         <comp-storage-img :src="m_isImage ? m_url : undefined" class="img" />
@@ -102,10 +102,18 @@
 
 <script lang="ts">
 import * as anime from 'animejs/lib/anime'
-import { BaseComponent, CompStorageImg, NoCache, RequiredStorageNodeShareSettings, Resizable, StorageDownloader, StorageNode } from '@/lib'
-import { Component, Watch } from 'vue-property-decorator'
+import {
+  BaseComponent,
+  CompStorageImg,
+  NoCache,
+  RequiredStorageNodeShareSettings,
+  Resizable,
+  StorageDownloader,
+  StorageLogic,
+  StorageNode,
+} from '@/lib'
+import { Component, Prop, Watch } from 'vue-property-decorator'
 import { QLinearProgress } from 'quasar'
-import { StoragePageMixin } from './base'
 import bytes from 'bytes'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
@@ -113,7 +121,7 @@ import { removeBothEndsSlash } from 'web-base-lib'
 @Component({
   components: { CompStorageImg },
 })
-export default class StorageFileDetailView extends mixins(BaseComponent, Resizable, StoragePageMixin) {
+export default class StorageFileDetailView extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -129,6 +137,9 @@ export default class StorageFileDetailView extends mixins(BaseComponent, Resizab
   //  Properties
   //
   //----------------------------------------------------------------------
+
+  @Prop({ required: true })
+  storageLogic!: StorageLogic
 
   private m_fileNode: StorageNode | null = null
 

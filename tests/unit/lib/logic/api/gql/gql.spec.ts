@@ -1,6 +1,5 @@
 import { APP_ADMIN_TOKEN, GENERAL_TOKEN, GENERAL_USER } from '../../../../../helpers/common/data'
 import { AuthStatus, PublicProfile, StorageArticleNodeType, StorageNodeShareSettings, UserInfo, UserInfoInput } from '@/lib'
-import { APIStorageNode } from '../../../../../../src/lib/logic/api/base'
 import { OmitEntityTimestamp } from '@/firestore-ex'
 import { TestLibAPIContainer } from '../../../../../mocks/lib/logic/api'
 import { config } from '@/example/config'
@@ -216,7 +215,7 @@ describe('Storage API', () => {
 
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      const actual = await api.getStorageDirDescendants(null, `${TEST_DIR}/d1`)
+      const actual = await api.getStorageDirDescendants(`${TEST_DIR}/d1`)
 
       sortStorageNodes(actual.list)
       expect(actual.nextPageToken).toBeUndefined()
@@ -232,7 +231,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      const actual = await api.callStoragePaginationAPI(api.getStorageDirDescendants, { maxChunk: 2 }, `${TEST_DIR}/d1`)
+      const actual = await api.callStoragePaginationAPI(api.getStorageDirDescendants, `${TEST_DIR}/d1`, { maxChunk: 2 })
 
       sortStorageNodes(actual)
       expect(actual.length).toBe(6)
@@ -257,7 +256,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングなし', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      const actual = await api.getStorageDescendants(null, `${TEST_DIR}/d1`)
+      const actual = await api.getStorageDescendants(`${TEST_DIR}/d1`)
 
       sortStorageNodes(actual.list)
       expect(actual.nextPageToken).toBeUndefined()
@@ -272,7 +271,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      const actual = await api.callStoragePaginationAPI(api.getStorageDescendants, { maxChunk: 2 }, `${TEST_DIR}/d1`)
+      const actual = await api.callStoragePaginationAPI(api.getStorageDescendants, `${TEST_DIR}/d1`, { maxChunk: 2 })
 
       sortStorageNodes(actual)
       expect(actual.length).toBe(5)
@@ -296,7 +295,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングなし', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      const actual = await api.getStorageDirChildren(null, `${TEST_DIR}/d1`)
+      const actual = await api.getStorageDirChildren(`${TEST_DIR}/d1`)
 
       sortStorageNodes(actual.list)
       expect(actual.nextPageToken).toBeUndefined()
@@ -310,7 +309,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      const actual = await api.callStoragePaginationAPI(api.getStorageDirChildren, { maxChunk: 2 }, `${TEST_DIR}/d1`)
+      const actual = await api.callStoragePaginationAPI(api.getStorageDirChildren, `${TEST_DIR}/d1`, { maxChunk: 2 })
 
       sortStorageNodes(actual)
       expect(actual.length).toBe(4)
@@ -333,7 +332,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングなし', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      const actual = await api.getStorageChildren(null, `${TEST_DIR}/d1`)
+      const actual = await api.getStorageChildren(`${TEST_DIR}/d1`)
 
       sortStorageNodes(actual.list)
       expect(actual.nextPageToken).toBeUndefined()
@@ -346,7 +345,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      const actual = await api.callStoragePaginationAPI(api.getStorageChildren, { maxChunk: 2 }, `${TEST_DIR}/d1`)
+      const actual = await api.callStoragePaginationAPI(api.getStorageChildren, `${TEST_DIR}/d1`, { maxChunk: 2 })
 
       sortStorageNodes(actual)
       expect(actual.length).toBe(3)
@@ -464,7 +463,7 @@ describe('Storage API', () => {
         { filePath: `${TEST_DIR}/d1/file5.txt`, fileData: 'test', contentType: 'text/plain' },
       ])
 
-      const actual = (await api.removeStorageDir(null, `${TEST_DIR}/d1`)).list
+      const actual = (await api.removeStorageDir(`${TEST_DIR}/d1`)).list
 
       sortStorageNodes(actual)
       expect(actual.length).toBe(6)
@@ -487,7 +486,7 @@ describe('Storage API', () => {
         { filePath: `${TEST_DIR}/d1/file5.txt`, fileData: 'test', contentType: 'text/plain' },
       ])
 
-      const actual = await api.callStoragePaginationAPI(api.removeStorageDir, { maxChunk: 2 }, `${TEST_DIR}/d1`)
+      const actual = await api.callStoragePaginationAPI(api.removeStorageDir, `${TEST_DIR}/d1`, { maxChunk: 2 })
 
       sortStorageNodes(actual)
       expect(actual.length).toBe(6)
@@ -525,7 +524,7 @@ describe('Storage API', () => {
         `${TEST_DIR}/d2`,
       ])
 
-      const actual = (await api.moveStorageDir(null, `${TEST_DIR}/d1`, `${TEST_DIR}/d2/d1`)).list
+      const actual = (await api.moveStorageDir(`${TEST_DIR}/d1`, `${TEST_DIR}/d2/d1`)).list
 
       sortStorageNodes(actual)
       expect(actual.length).toBe(6)
@@ -549,7 +548,7 @@ describe('Storage API', () => {
         `${TEST_DIR}/d2`,
       ])
 
-      const actual = await api.callStoragePaginationAPI(api.moveStorageDir, { maxChunk: 2 }, `${TEST_DIR}/d1`, `${TEST_DIR}/d2/d1`)
+      const actual = await api.callStoragePaginationAPI(api.moveStorageDir, `${TEST_DIR}/d1`, `${TEST_DIR}/d2/d1`, { maxChunk: 2 })
 
       sortStorageNodes(actual)
       expect(actual.length).toBe(6)
@@ -587,7 +586,7 @@ describe('Storage API', () => {
         `${TEST_DIR}/d1/d15`,
       ])
 
-      const actual = (await api.renameStorageDir(null, `${TEST_DIR}/d1`, `d2`)).list
+      const actual = (await api.renameStorageDir(`${TEST_DIR}/d1`, `d2`)).list
 
       sortStorageNodes(actual)
       expect(actual.length).toBe(6)
@@ -610,7 +609,7 @@ describe('Storage API', () => {
         `${TEST_DIR}/d1/d15`,
       ])
 
-      const actual = await api.callStoragePaginationAPI(api.renameStorageDir, { maxChunk: 2 }, `${TEST_DIR}/d1`, `d2`)
+      const actual = await api.callStoragePaginationAPI(api.renameStorageDir, `${TEST_DIR}/d1`, `d2`, { maxChunk: 2 })
 
       sortStorageNodes(actual)
       expect(actual.length).toBe(6)
@@ -670,49 +669,49 @@ describe('Storage API', () => {
   //--------------------------------------------------
 
   describe('createArticleDir', () => {
-    async function createArticlesRoot(uid: string): Promise<APIStorageNode> {
+    let articlesPath: string
+    let bundlePath: string
+
+    async function setupArticleNodes(): Promise<void> {
       api.setTestAuthToken(GENERAL_TOKEN)
-      const articlesPath = `${config.storage.users.dir}/${uid}/${config.storage.articles.dir}`
+      articlesPath = `${config.storage.users.dir}/${GENERAL_TOKEN.uid}/${config.storage.articles.dir}`
       await api.createStorageHierarchicalDirs([articlesPath])
-      return (await api.getStorageNode({ path: articlesPath }))!
     }
 
     it('疎通確認', async () => {
-      api.setTestAuthToken(APP_ADMIN_TOKEN)
-
       // ユーザーの記事ルートを事前に作成
-      const articlesRoot = await createArticlesRoot(GENERAL_TOKEN.uid)
+      await setupArticleNodes()
 
-      const actual = await api.createArticleDir(`${articlesRoot.path}/blog`, {
+      const actual = await api.createArticleDir(`${articlesPath}/blog`, {
         articleNodeType: StorageArticleNodeType.ListBundle,
       })
 
-      expect(actual.path).toBe(`${articlesRoot.path}/blog`)
+      expect(actual.path).toBe(`${articlesPath}/blog`)
       expect(actual.articleNodeType).toBe(StorageArticleNodeType.ListBundle)
       expect(typeof actual.articleSortOrder === 'number').toBeTruthy()
     })
   })
 
   describe('setArticleSortOrder', () => {
-    async function createBundle(uid: string): Promise<APIStorageNode> {
+    let articlesPath: string
+    let bundlePath: string
+
+    async function setupArticleNodes(): Promise<void> {
       api.setTestAuthToken(GENERAL_TOKEN)
-      const articlesPath = `${config.storage.users.dir}/${uid}/${config.storage.articles.dir}`
+      articlesPath = `${config.storage.users.dir}/${GENERAL_TOKEN.uid}/${config.storage.articles.dir}`
       await api.createStorageHierarchicalDirs([articlesPath])
-      return await api.createArticleDir(`${articlesPath}/blog`, {
-        articleNodeType: StorageArticleNodeType.ListBundle,
-      })
+      bundlePath = `${articlesPath}/blog`
+      await api.createArticleDir(`${bundlePath}`, { articleNodeType: StorageArticleNodeType.ListBundle })
     }
 
     it('疎通確認', async () => {
-      api.setTestAuthToken(APP_ADMIN_TOKEN)
-
       // ユーザーの記事ルートを事前に作成
-      const bundleDir = await createBundle(GENERAL_TOKEN.uid)
+      await setupArticleNodes()
       // 記事を作成
-      const art1Dir = await api.createArticleDir(`${bundleDir.path}/art1`, {
+      const art1Dir = await api.createArticleDir(`${bundlePath}/art1`, {
         articleNodeType: StorageArticleNodeType.ArticleDir,
       })
-      const art2Dir = await api.createArticleDir(`${bundleDir.path}/art2`, {
+      const art2Dir = await api.createArticleDir(`${bundlePath}/art2`, {
         articleNodeType: StorageArticleNodeType.ArticleDir,
       })
 
@@ -720,8 +719,47 @@ describe('Storage API', () => {
         insertAfterNodePath: `${art2Dir.path}`,
       })
 
-      expect(actual.path).toBe(`${bundleDir.path}/art1`)
+      expect(actual.path).toBe(`${bundlePath}/art1`)
       expect(actual.articleSortOrder! < art2Dir.articleSortOrder!).toBeTruthy()
+    })
+  })
+
+  describe('getArticleChildren', () => {
+    let articlesPath: string
+    let bundlePath: string
+
+    async function setupArticleNodes(): Promise<void> {
+      api.setTestAuthToken(GENERAL_TOKEN)
+      articlesPath = `${config.storage.users.dir}/${GENERAL_TOKEN.uid}/${config.storage.articles.dir}`
+      await api.createStorageHierarchicalDirs([articlesPath])
+      bundlePath = `${articlesPath}/blog`
+      await api.createArticleDir(`${bundlePath}`, { articleNodeType: StorageArticleNodeType.ListBundle })
+      await api.createArticleDir(`${bundlePath}/art1`, { articleNodeType: StorageArticleNodeType.ArticleDir })
+      await api.createArticleDir(`${bundlePath}/art2`, { articleNodeType: StorageArticleNodeType.ArticleDir })
+      await api.createArticleDir(`${bundlePath}/art3`, { articleNodeType: StorageArticleNodeType.ArticleDir })
+    }
+
+    it('疎通確認 - ページングなし', async () => {
+      await setupArticleNodes()
+
+      const actual = await api.getArticleChildren(`${bundlePath}`)
+
+      expect(actual.nextPageToken).toBeUndefined()
+      expect(actual.list.length).toBe(3)
+      expect(actual.list[0].path).toBe(`${bundlePath}/art3`)
+      expect(actual.list[1].path).toBe(`${bundlePath}/art2`)
+      expect(actual.list[2].path).toBe(`${bundlePath}/art1`)
+    })
+
+    it('疎通確認 - ページングあり', async () => {
+      await setupArticleNodes()
+
+      const actual = await api.callStoragePaginationAPI(api.getArticleChildren, `${bundlePath}`, { maxChunk: 2 })
+
+      expect(actual.length).toBe(3)
+      expect(actual[0].path).toBe(`${bundlePath}/art3`)
+      expect(actual[1].path).toBe(`${bundlePath}/art2`)
+      expect(actual[2].path).toBe(`${bundlePath}/art1`)
     })
   })
 })

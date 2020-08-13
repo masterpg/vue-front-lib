@@ -36,21 +36,22 @@
             <span>{{ slotProps.tr.row.name }}</span>
           </span>
         </q-td>
-        <q-td key="contentType" :props="slotProps.tr" class="th-label">{{ slotProps.tr.row.contentType }}</q-td>
+        <q-td key="type" :props="slotProps.tr" class="th-label">{{ slotProps.tr.row.type }}</q-td>
         <q-td key="size" :props="slotProps.tr" class="th-label">{{ slotProps.tr.row.size }}</q-td>
         <q-td key="share" :props="slotProps.tr" class="th-label">
           <q-icon :name="slotProps.tr.row.share.icon" size="24px" />
         </q-td>
         <q-td key="updatedAt" :props="slotProps.tr" class="th-label">{{ slotProps.tr.row.updatedAt }}</q-td>
-        <article-admin-node-popup-menu :node="slotProps.tr.row" :selected-nodes="m_table.selected" context-menu @select="m_popupMenuOnSelect" />
+        <article-admin-node-popup-menu :node="slotProps.tr.row" :selected-nodes="m_table.selected" context-menu @select="m_popupMenuOnNodeAction" />
       </q-tr>
     </template>
   </storage-dir-table>
 </template>
 
 <script lang="ts">
-import { BaseComponent, NoCache, Resizable, StorageNode, StorageNodeType } from '@/lib'
-import { StorageDirTable, StorageNodePopupMenuSelectEvent } from '../../base/storage'
+import { BaseComponent, NoCache, Resizable, StorageArticleNodeType, StorageNode, StorageNodeType } from '@/lib'
+import { StorageDirTable, StorageNodeActionEvent } from '../../base/storage'
+import { getArticleNodeTypeIcon, getArticleNodeTypeLabel } from '../../base/storage'
 import ArticleAdminNodePopupMenu from './article-admin-node-popup-menu.vue'
 import { ArticleAdminPageMixin } from './base'
 import { Component } from 'vue-property-decorator'
@@ -67,19 +68,33 @@ export class StorageDirTableRow {
 
   path!: string
 
-  icon!: string
-
-  contentType!: string
-
   size?: number
 
   share!: {
     icon: string
   }
 
+  articleNodeType: StorageArticleNodeType | null = null
+
   updatedAt!: string
 
   updatedAtNum!: number
+
+  get type(): string {
+    if (this.articleNodeType) {
+      return getArticleNodeTypeLabel(this.articleNodeType)
+    } else {
+      return ''
+    }
+  }
+
+  get icon(): string {
+    if (this.articleNodeType) {
+      return getArticleNodeTypeIcon(this.articleNodeType)
+    } else {
+      return ''
+    }
+  }
 
   get isDir(): boolean {
     return this.nodeType === StorageNodeType.Dir
@@ -124,11 +139,11 @@ export default class ArticleAdminDirView extends mixins(BaseComponent, Resizable
 
   protected get columns() {
     return [
-      { name: 'name', align: 'left', label: this.$t('storage.nodeDetail.name'), field: 'name', sortable: true },
-      { name: 'contentType', align: 'left', label: this.$t('storage.nodeDetail.type'), field: 'contentType', sortable: true },
-      { name: 'size', align: 'right', label: this.$t('storage.nodeDetail.size'), field: 'size', sortable: true },
-      { name: 'share', align: 'center', label: this.$t('storage.nodeDetail.share'), field: 'share', sortable: true },
-      { name: 'updatedAt', align: 'left', label: this.$t('storage.nodeDetail.updatedAt'), field: 'updatedAt', sortable: true },
+      { name: 'name', align: 'left', label: this.$t('storage.nodeDetail.name'), field: 'name' },
+      { name: 'type', align: 'left', label: this.$t('storage.nodeDetail.type'), field: 'type' },
+      { name: 'size', align: 'right', label: this.$t('storage.nodeDetail.size'), field: 'size' },
+      { name: 'share', align: 'center', label: this.$t('storage.nodeDetail.share'), field: 'share' },
+      { name: 'updatedAt', align: 'left', label: this.$t('storage.nodeDetail.updatedAt'), field: 'updatedAt' },
     ]
   }
 
@@ -196,11 +211,9 @@ export default class ArticleAdminDirView extends mixins(BaseComponent, Resizable
    */
   protected toTableRow(node: StorageNode): StorageDirTableRow {
     const tableRow = new StorageDirTableRow(this.m_table)
-    tableRow.nodeType = node.nodeType as StorageNodeType
+    tableRow.nodeType = node.nodeType
     tableRow.name = node.nodeType === StorageNodeType.Dir ? `${node.name}/` : node.name
     tableRow.path = node.path
-    tableRow.icon = node.nodeType === StorageNodeType.Dir ? 'folder' : 'description'
-    tableRow.contentType = node.contentType
     tableRow.size = node.nodeType === StorageNodeType.Dir ? undefined : bytes(node.size)
     tableRow.share = { icon: '' }
     if (node.share.isPublic === null) {
@@ -210,6 +223,7 @@ export default class ArticleAdminDirView extends mixins(BaseComponent, Resizable
     } else {
       tableRow.share = { icon: node.share.isPublic ? 'public' : 'lock' }
     }
+    tableRow.articleNodeType = node.articleNodeType
     tableRow.updatedAt = String(this.$d(node.updatedAt.toDate(), 'dateTime'))
     tableRow.updatedAtNum = node.updatedAt.unix()
     return tableRow
@@ -327,10 +341,10 @@ export default class ArticleAdminDirView extends mixins(BaseComponent, Resizable
   }
 
   /**
-   * ポップアップメニューでメニューアイテムが選択された際のリスナです。
+   * ポップアップメニューでアクションが選択された際のリスナです。
    * @param e
    */
-  private m_popupMenuOnSelect(e: StorageNodePopupMenuSelectEvent) {
+  private m_popupMenuOnNodeAction(e: StorageNodeActionEvent) {
     this.$emit('node-action', e)
   }
 }

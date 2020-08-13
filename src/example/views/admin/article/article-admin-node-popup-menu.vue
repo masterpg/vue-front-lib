@@ -4,7 +4,7 @@
 
 <template>
   <q-menu ref="menu" :touch-position="contextMenu" :context-menu="contextMenu" @before-show="m_menuOnBeforeShow">
-    <!-- ルートノード用メニュー -->
+    <!-- 記事ルート用メニュー -->
     <q-list v-show="isRoot" dense style="min-width: 100px;">
       <q-item v-for="menuItem of m_menuItems.root" :key="menuItem.type" v-close-popup clickable>
         <q-item-section @click="m_menuItemOnClick(menuItem.type)">{{ menuItem.label }}</q-item-section>
@@ -16,15 +16,27 @@
         <q-item-section @click="m_menuItemOnClick(menuItem.type)">{{ menuItem.label }}</q-item-section>
       </q-item>
     </q-list>
-    <!-- フォルダ用メニュー -->
-    <q-list v-show="m_isDir" dense style="min-width: 100px;">
-      <q-item v-for="menuItem of m_menuItems.dir" :key="menuItem.type" v-close-popup clickable>
+    <!-- リストバンドル用メニュー -->
+    <q-list v-show="m_isListBundle" dense style="min-width: 100px;">
+      <q-item v-for="menuItem of m_menuItems.listBundle" :key="menuItem.type" v-close-popup clickable>
         <q-item-section @click="m_menuItemOnClick(menuItem.type)">{{ menuItem.label }}</q-item-section>
       </q-item>
     </q-list>
-    <!-- ファイル用メニュー -->
-    <q-list v-show="m_isFile" dense style="min-width: 100px;">
-      <q-item v-for="menuItem of m_menuItems.file" :key="menuItem.type" v-close-popup clickable>
+    <!-- カテゴリバンドル用メニュー -->
+    <q-list v-show="m_isCategoryBundle" dense style="min-width: 100px;">
+      <q-item v-for="menuItem of m_menuItems.categoryBundle" :key="menuItem.type" v-close-popup clickable>
+        <q-item-section @click="m_menuItemOnClick(menuItem.type)">{{ menuItem.label }}</q-item-section>
+      </q-item>
+    </q-list>
+    <!-- カテゴリ用メニュー -->
+    <q-list v-show="m_isCategoryDir" dense style="min-width: 100px;">
+      <q-item v-for="menuItem of m_menuItems.categoryDir" :key="menuItem.type" v-close-popup clickable>
+        <q-item-section @click="m_menuItemOnClick(menuItem.type)">{{ menuItem.label }}</q-item-section>
+      </q-item>
+    </q-list>
+    <!-- 記事用メニュー -->
+    <q-list v-show="m_isArticleDir" dense style="min-width: 100px;">
+      <q-item v-for="menuItem of m_menuItems.articleDir" :key="menuItem.type" v-close-popup clickable>
         <q-item-section @click="m_menuItemOnClick(menuItem.type)">{{ menuItem.label }}</q-item-section>
       </q-item>
     </q-list>
@@ -32,11 +44,11 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, NoCache, StorageNodeType } from '@/lib'
+import { BaseComponent, NoCache, StorageArticleNodeType, StorageNodeType } from '@/lib'
 import { Component, Prop } from 'vue-property-decorator'
-import { ArticleAdminNodeMenuType } from './base'
+import { ArticleAdminNodeActionType } from './base'
 import { QMenu } from 'quasar'
-import { StorageNodePopupMenuSelectEvent } from '../../base/storage'
+import { StorageNodeActionEvent } from '../../base/storage'
 
 @Component({
   components: {},
@@ -49,7 +61,7 @@ export default class ArticleAdminNodePopupMenu extends BaseComponent {
   //----------------------------------------------------------------------
 
   @Prop({ required: true })
-  node!: { path: string; nodeType: StorageNodeType }
+  node!: { path: string; nodeType: StorageNodeType; articleNodeType: StorageArticleNodeType }
 
   @Prop({ default: null })
   selectedNodes!: { path: string; nodeType: StorageNodeType }[] | null
@@ -70,10 +82,11 @@ export default class ArticleAdminNodePopupMenu extends BaseComponent {
   //----------------------------------------------------------------------
 
   private m_menuItems = {
-    root: [ArticleAdminNodeMenuType.createListBundle, ArticleAdminNodeMenuType.createCategoryBundle],
-    dir: [],
-    file: [],
-    multi: [],
+    root: [ArticleAdminNodeActionType.createListBundle, ArticleAdminNodeActionType.createCategoryBundle],
+    listBundle: [ArticleAdminNodeActionType.createArticleDir],
+    categoryBundle: [ArticleAdminNodeActionType.createCategoryDir, ArticleAdminNodeActionType.createArticleDir],
+    categoryDir: [ArticleAdminNodeActionType.createCategoryDir, ArticleAdminNodeActionType.createArticleDir],
+    articleDir: [],
   }
 
   private get m_isMulti(): boolean {
@@ -84,12 +97,20 @@ export default class ArticleAdminNodePopupMenu extends BaseComponent {
     }
   }
 
-  private get m_isDir(): boolean {
-    return !this.isRoot && !this.m_isMulti && this.node.nodeType === StorageNodeType.Dir
+  private get m_isListBundle(): boolean {
+    return !this.isRoot && !this.m_isMulti && this.node.articleNodeType === StorageArticleNodeType.ListBundle
   }
 
-  private get m_isFile(): boolean {
-    return !this.isRoot && !this.m_isMulti && this.node.nodeType === StorageNodeType.File
+  private get m_isCategoryBundle(): boolean {
+    return !this.isRoot && !this.m_isMulti && this.node.articleNodeType === StorageArticleNodeType.CategoryBundle
+  }
+
+  private get m_isCategoryDir(): boolean {
+    return !this.isRoot && !this.m_isMulti && this.node.articleNodeType === StorageArticleNodeType.CategoryDir
+  }
+
+  private get m_isArticleDir(): boolean {
+    return !this.isRoot && !this.m_isMulti && this.node.articleNodeType === StorageArticleNodeType.ArticleDir
   }
 
   private get m_enabled(): boolean {
@@ -126,7 +147,7 @@ export default class ArticleAdminNodePopupMenu extends BaseComponent {
 
   private m_menuItemOnClick(type: string) {
     const nodePaths = this.selectedNodes ? this.selectedNodes.map(node => node.path) : [this.node.path]
-    const event: StorageNodePopupMenuSelectEvent = { type, nodePaths }
+    const event: StorageNodeActionEvent = { type, nodePaths }
     this.$emit('select', event)
   }
 }

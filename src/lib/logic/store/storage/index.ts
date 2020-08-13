@@ -1,6 +1,6 @@
 import * as _path from 'path'
 import { StorageNode, StorageNodeType } from '../../types'
-import { arrayToDict, removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
+import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
 import { BaseStore } from '../base'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '@/lib/base'
@@ -24,6 +24,10 @@ interface StorageStore {
   getDescendants(dirPath?: string): StorageNode[]
 
   getDirDescendants(dirPath?: string): StorageNode[]
+
+  getHierarchical(targetPath: string): StorageNode[]
+
+  getAncestors(targetPath: string): StorageNode[]
 
   addList(nodes: StorageNode[]): StorageNode[]
 
@@ -139,6 +143,26 @@ class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
       }
       return result
     }
+  }
+
+  getHierarchical(targetPath: string): StorageNode[] {
+    const result: StorageNode[] = []
+    const nodePaths = splitHierarchicalPaths(targetPath)
+    for (const nodePath of nodePaths) {
+      const node = this.get({ path: nodePath })
+      node && result.push(node)
+    }
+    return result
+  }
+
+  getAncestors(targetPath: string): StorageNode[] {
+    const result: StorageNode[] = []
+    const nodePaths = splitHierarchicalPaths(targetPath).filter(nodePath => nodePath !== targetPath)
+    for (const nodePath of nodePaths) {
+      const node = this.get({ path: nodePath })
+      node && result.push(node)
+    }
+    return result
   }
 
   setAll(nodes: StorageNode[]): void {

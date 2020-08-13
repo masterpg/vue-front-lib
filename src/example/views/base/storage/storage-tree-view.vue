@@ -1,7 +1,7 @@
 <style lang="sass" scoped></style>
 
 <template>
-  <comp-tree-view ref="treeView" @select="m_onSelect" @lazy-load="m_onLazyLoad" @menu-select="m_onMenuSelect" />
+  <comp-tree-view ref="treeView" @select="m_onSelect" @lazy-load="m_onLazyLoad" @node-action="m_onNodeAction" />
 </template>
 
 <script lang="ts">
@@ -20,7 +20,7 @@ import {
   UploadEndedEvent,
 } from '@/lib'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import { StorageNodePopupMenuSelectEvent, StoragePageMixin, StorageTreeNode, StorageTreeNodeInput, nodeToTreeData } from './base'
+import { StorageNodeActionEvent, StoragePageMixin, StorageTreeNode, StorageTreeNodeInput, nodeToTreeData } from './base'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
 import { mixins } from 'vue-class-component'
 
@@ -119,7 +119,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     // 引数ディレクトリを含め、階層構造を形成するディレクトリをサーバーから取得
     await this.storageLogic.fetchHierarchicalNodes(dirPath)
 
-    // 引数ディレクトリ配下にある各ディレクトリの子ノードをサーバーから取得
+    // 引数ディレクトリを含め、階層構造を形成する各ディレクトリの子ノードをサーバーから取得
     const dirPaths = splitHierarchicalPaths(dirPath)
     for (const iDirPath of [this.rootNode.path, ...dirPaths]) {
       await this.storageLogic.fetchChildren(iDirPath)
@@ -847,8 +847,8 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     this.$emit('lazy-load', e)
   }
 
-  private async m_onMenuSelect(e: StorageNodePopupMenuSelectEvent) {
-    this.$emit('menu-select', e)
+  private async m_onNodeAction(e: StorageNodeActionEvent) {
+    this.$emit('node-action', e)
   }
 }
 </script>

@@ -312,6 +312,47 @@ describe('getDirDescendants', () => {
   })
 })
 
+describe('getHierarchical', () => {
+  it('ベーシックケース', () => {
+    const d1 = newTestStorageDirNode('d1')
+    const d11 = newTestStorageDirNode('d1/d11')
+    const f111 = newTestStorageFileNode('d1/d11/f111.txt')
+    const d12 = newTestStorageDirNode('d1/d12')
+    const d2 = newTestStorageDirNode('d2')
+    storageStore.initState({
+      all: sortStorageNodes(cloneDeep([d1, d11, f111, d12, d2])),
+    })
+
+    const actual = storageStore.getHierarchical(f111.path)
+
+    expect(actual.length).toBe(3)
+    expect(actual[0].path).toEqual('d1')
+    expect(actual[1].path).toEqual('d1/d11')
+    expect(actual[2].path).toEqual('d1/d11/f111.txt')
+    toBeCopy(actual)
+  })
+})
+
+describe('getAncestors', () => {
+  it('ベーシックケース', () => {
+    const d1 = newTestStorageDirNode('d1')
+    const d11 = newTestStorageDirNode('d1/d11')
+    const f111 = newTestStorageFileNode('d1/d11/f111.txt')
+    const d12 = newTestStorageDirNode('d1/d12')
+    const d2 = newTestStorageDirNode('d2')
+    storageStore.initState({
+      all: sortStorageNodes(cloneDeep([d1, d11, f111, d12, d2])),
+    })
+
+    const actual = storageStore.getAncestors(f111.path)
+
+    expect(actual.length).toBe(2)
+    expect(actual[0].path).toEqual('d1')
+    expect(actual[1].path).toEqual('d1/d11')
+    toBeCopy(actual)
+  })
+})
+
 describe('setAll', () => {
   it('ベーシックケース', () => {
     const d1 = newTestStorageDirNode('d1')

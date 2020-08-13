@@ -1,3 +1,4 @@
+import { APIStorageNode } from './api'
 import { Dayjs } from 'dayjs'
 
 //========================================================================
@@ -84,6 +85,16 @@ interface StorageNode extends TimestampEntity {
   version: number
 }
 
+interface StoragePaginationInput {
+  maxChunk?: number
+  pageToken?: string
+}
+
+interface StoragePaginationResult<NODE extends APIStorageNode = APIStorageNode> {
+  list: NODE[]
+  nextPageToken?: string
+}
+
 interface StorageNodeShareSettings {
   isPublic: boolean | null
   readUIds: string[] | null
@@ -135,6 +146,8 @@ export {
   SetArticleSortOrderInput,
   StorageArticleNodeType,
   StorageNode,
+  StoragePaginationInput,
+  StoragePaginationResult,
   StorageNodeShareSettings,
   StorageNodeShareSettingsInput,
   StorageNodeKeyInput,

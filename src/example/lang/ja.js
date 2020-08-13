@@ -52,8 +52,9 @@ export default merge(require('@/lib/lang/ja').default, {
     },
   },
   storage: {
-    userRootName: 'Home',
     appRootName: 'Storage',
+    userRootName: 'Home',
+    articleRootName: '記事',
     uploading: 'アップロード中',
     nodeAlreadyExists: '「{nodeName}」という{nodeType}がすでに存在します。',
     create: {
@@ -99,9 +100,12 @@ export default merge(require('@/lib/lang/ja').default, {
       downloadFailure: '「{nodeName}」のダウンロードに失敗しました。',
     },
   },
-  articleAdmin: {
-    articleRootName: '記事',
-    listBundle: 'リスト型バンドル',
-    categoryBundle: 'カテゴリ型バンドル',
+  article: {
+    nodeType: {
+      listBundle: 'リスト型バンドル',
+      categoryBundle: 'カテゴリ型バンドル',
+      categoryDir: 'カテゴリ',
+      articleDir: '記事',
+    },
   },
 })

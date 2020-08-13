@@ -3,8 +3,6 @@ import {
   AppConfigResponse,
   AuthDataResult,
   LibAPIContainer,
-  StoragePaginationInput,
-  StoragePaginationResult,
   toTimestampEntities as _toTimestampEntities,
   toTimestampEntity as _toTimestampEntity,
 } from '../base'
@@ -15,6 +13,8 @@ import {
   StorageNode,
   StorageNodeKeyInput,
   StorageNodeShareSettingsInput,
+  StoragePaginationInput,
+  StoragePaginationResult,
   UserInfo,
   UserInfoInput,
 } from '../../types'
@@ -61,19 +61,19 @@ abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPICont
     throw new Error(`This method 'getStorageNode' is not implemented.`)
   }
 
-  getStorageDirDescendants(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult> {
+  getStorageDirDescendants(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     throw new Error(`This method 'getStorageDirDescendants' is not implemented.`)
   }
 
-  getStorageDescendants(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult> {
+  getStorageDescendants(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     throw new Error(`This method 'getStorageDescendants' is not implemented.`)
   }
 
-  getStorageDirChildren(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult> {
+  getStorageDirChildren(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     throw new Error(`This method 'getStorageDirChildren' is not implemented.`)
   }
 
-  getStorageChildren(input: StoragePaginationInput | null, dirPath?: string): Promise<StoragePaginationResult> {
+  getStorageChildren(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     throw new Error(`This method 'getStorageChildren' is not implemented.`)
   }
 
@@ -97,7 +97,7 @@ abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPICont
     throw new Error(`This method 'createStorageHierarchicalDirs' is not implemented.`)
   }
 
-  async removeStorageDir(input: StoragePaginationInput | null, dirPath: string): Promise<StoragePaginationResult> {
+  async removeStorageDir(dirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     throw new Error(`This method 'removeStorageDir' is not implemented.`)
   }
 
@@ -105,7 +105,7 @@ abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPICont
     throw new Error(`This method 'removeStorageFile' is not implemented.`)
   }
 
-  moveStorageDir(input: StoragePaginationInput | null, fromDirPath: string, toDirPath: string): Promise<StoragePaginationResult> {
+  moveStorageDir(fromDirPath: string, toDirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     throw new Error(`This method 'moveStorageDir' is not implemented.`)
   }
 
@@ -113,7 +113,7 @@ abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPICont
     throw new Error(`This method 'moveStorageFile' is not implemented.`)
   }
 
-  async renameStorageDir(input: StoragePaginationInput | null, dirPath: string, newName: string): Promise<StoragePaginationResult> {
+  async renameStorageDir(dirPath: string, newName: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     throw new Error(`This method 'renameStorageDir' is not implemented.`)
   }
 
@@ -143,6 +143,10 @@ abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPICont
 
   setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<APIStorageNode> {
     throw new Error(`This method 'setArticleSortOrder' is not implemented.`)
+  }
+
+  getArticleChildren(dirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
+    throw new Error(`This method 'getArticleChildren' is not implemented.`)
   }
 
   //--------------------------------------------------

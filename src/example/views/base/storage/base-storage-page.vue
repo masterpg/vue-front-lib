@@ -46,14 +46,14 @@
               v-show="visibleDirDetailView"
               ref="dirDetailView"
               class="node-detail-view"
-              :storage-type="storageType"
+              :storage-logic="storageLogic"
               @close="nodeDetailViewOnClose"
             />
             <storage-file-detail-view
               v-show="visibleFileDetailView"
               ref="fileDetailView"
               class="node-detail-view"
-              :storage-type="storageType"
+              :storage-logic="storageLogic"
               @close="nodeDetailViewOnClose"
             />
           </div>
@@ -92,7 +92,7 @@ import {
 } from '@/lib'
 import { Component, Watch } from 'vue-property-decorator'
 import { RawLocation, Route } from 'vue-router'
-import { StorageNodePopupMenuSelectEvent, StorageNodePopupMenuType, StoragePageStore, StorageTreeNode, StorageType } from './base'
+import { StorageNodeActionEvent, StorageNodeActionType, StoragePageStore, StorageTreeNode, StorageType } from './base'
 import { removeBothEndsSlash, sleep } from 'web-base-lib'
 import StorageDirCreateDialog from './storage-dir-create-dialog.vue'
 import StorageDirDetailView from './storage-dir-detail-view.vue'
@@ -332,12 +332,12 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
 
     this.treeView.$on('select', e => this.treeViewOnSelect(e))
     this.treeView.$on('lazy-load', e => this.treeViewOnLazyLoad(e))
-    this.treeView.$on('menu-select', e => this.popupOnMenuSelect(e))
+    this.treeView.$on('node-action', e => this.m_popupMenuOnNodeAction(e))
     this.dirView.$on('select', e => this.dirViewOnSelect(e))
     this.dirView.$on('deep-select', e => this.dirViewOnDeepSelect(e))
-    this.dirView.$on('menu-select', e => this.popupOnMenuSelect(e))
-    this.pathDirBreadcrumb.$on('select', e => this.pathDirBreadcrumbOnSelectChange(e))
-    this.pathDirBreadcrumb.$on('menu-select', e => this.popupOnMenuSelect(e))
+    this.dirView.$on('node-action', e => this.m_popupMenuOnNodeAction(e))
+    this.pathDirBreadcrumb.$on('select', e => this.pathDirBreadcrumbOnSelect(e))
+    this.pathDirBreadcrumb.$on('node-action', e => this.m_popupMenuOnNodeAction(e))
   }
 
   /**
@@ -401,7 +401,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
     this.visibleFileDetailView = false
     // 選択ノードを設定
     this.treeView.setSelectedNode(selectedNode.path, true, true)
-    // パスのパンくずに選択ノードを設定
+    // パンくずに選択ノードを設定
     this.pathDirBreadcrumb.setSelectedNode(selectedNode.path)
     // ディレクトリビューに選択ノードを設定
     this.dirView.setSelectedNode(selectedNode.path)
@@ -430,7 +430,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   }
 
   /**
-   * パスのパンくずブロック、またはディレクトリビューでディレクトリが選択された際の処理を行います。
+   * パンくずブロック、またはディレクトリビューでディレクトリが選択された際の処理を行います。
    * @param dirPath
    */
   protected dirOnChange(dirPath: string): void {
@@ -636,10 +636,10 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   }
 
   /**
-   * パスのパンくずブロックがクリックされた際のリスナです。
+   * パンくずのブロックがクリックされた際のリスナです。
    * @param nodePath
    */
-  protected pathDirBreadcrumbOnSelectChange(nodePath: string) {
+  protected pathDirBreadcrumbOnSelect(nodePath: string) {
     this.dirOnChange(nodePath)
   }
 
@@ -660,12 +660,12 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   }
 
   /**
-   * コンテキストメニューでメニューアイテムが選択された際のリスナです。
+   * ポップアップメニューでアクションが選択された際のリスナです。
    * @param e
    */
-  protected async popupOnMenuSelect(e: StorageNodePopupMenuSelectEvent) {
+  protected async m_popupMenuOnNodeAction(e: StorageNodeActionEvent) {
     switch (e.type) {
-      case StorageNodePopupMenuType.reload.type: {
+      case StorageNodeActionType.reload.type: {
         const dirPath = e.nodePaths[0]
         await this.treeView.reloadDir(dirPath)
         // ページの選択ノードを設定
@@ -673,7 +673,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
         this.changeDir(this.treeView.selectedNode.path)
         break
       }
-      case StorageNodePopupMenuType.createDir.type: {
+      case StorageNodeActionType.createDir.type: {
         const dirPath = e.nodePaths[0]
         const creatingDirPath = await this.dirCreateDialog.open(dirPath)
         if (creatingDirPath) {
@@ -681,24 +681,24 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
         }
         break
       }
-      case StorageNodePopupMenuType.uploadFiles.type: {
+      case StorageNodeActionType.uploadFiles.type: {
         const dirPath = e.nodePaths[0]
         this.uploadProgressFloat.openFilesSelectDialog(dirPath)
         break
       }
-      case StorageNodePopupMenuType.uploadDir.type: {
+      case StorageNodeActionType.uploadDir.type: {
         const dirPath = e.nodePaths[0]
         this.uploadProgressFloat.openDirSelectDialog(dirPath)
         break
       }
-      case StorageNodePopupMenuType.move.type: {
+      case StorageNodeActionType.move.type: {
         const toDir = await this.nodeMoveDialog.open(e.nodePaths)
         if (typeof toDir === 'string') {
           await this.moveNodes(e.nodePaths, toDir)
         }
         break
       }
-      case StorageNodePopupMenuType.rename.type: {
+      case StorageNodeActionType.rename.type: {
         const nodePath = e.nodePaths[0]
         const newName = await this.nodeRenameDialog.open(nodePath)
         if (newName) {
@@ -706,14 +706,14 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
         }
         break
       }
-      case StorageNodePopupMenuType.share.type: {
+      case StorageNodeActionType.share.type: {
         const input = await this.nodeShareDialog.open(e.nodePaths)
         if (input) {
           await this.setShareSettings(e.nodePaths, input)
         }
         break
       }
-      case StorageNodePopupMenuType.deletion.type: {
+      case StorageNodeActionType.deletion.type: {
         const confirmed = await this.nodeRemoveDialog.open(e.nodePaths)
         if (confirmed) {
           await this.removeNodes(e.nodePaths)

@@ -1,8 +1,7 @@
 import { ArticleStorageLogic, StorageNodeType } from '@/lib'
-import { Component, Prop } from 'vue-property-decorator'
 import { StorageRoute, router } from '@/example/router'
 import ArticleAdminPage from './article-admin-page.vue'
-import { StorageNodePopupMenuItem } from '../../base/storage'
+import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
 import { i18n } from '@/example/i18n'
 
@@ -37,6 +36,17 @@ class ArticleAdminPageMixin extends Vue {
   get pageStore(): ArticleAdminPageStore {
     return ArticleAdminPageStore.getInstance()
   }
+
+  protected showNotification(type: 'error' | 'warning', message: string): void {
+    this.$q.notify({
+      icon: type === 'error' ? 'error' : 'warning',
+      position: 'bottom-left',
+      message,
+      timeout: 0,
+      color: type === 'error' ? 'red-9' : 'grey-9',
+      actions: [{ icon: 'close', color: 'white' }],
+    })
+  }
 }
 
 @Component
@@ -48,24 +58,40 @@ class ArticleAdminPageStore extends Vue {
   }
 
   static register(page: ArticleAdminPage): void {
+    const pageStore = this.getInstance()
+    if (pageStore) {
+      pageStore.page = page
+      return
+    }
+
     // プログラム的にコンポーネントのインスタンスを生成
     // https://css-tricks.com/creating-vue-js-component-instances-programmatically/
     const ComponentClass = Vue.extend(ArticleAdminPageStore)
     this.m_instance = new ComponentClass({
-      propsData: { page },
+      data: { page },
     }) as ArticleAdminPageStore
   }
 
-  @Prop({ required: true })
-  page!: ArticleAdminPage
+  static unregister(): void {
+    const pageStore = this.getInstance()
+    if (!pageStore) return
+
+    pageStore.page = null as any
+  }
+
+  page: ArticleAdminPage = null as any
 
   isInitialPull = false
 
-  isPageActive = false
+  selectedDirPath = ''
+
+  get isPageActive(): boolean {
+    return Boolean(this.page)
+  }
 
   get rootNode(): ArticleAdminRootNodeData {
     return {
-      name: String(i18n.t('articleAdmin.articleRootName')),
+      name: String(i18n.t('storage.articleRootName')),
       path: '',
       nodeType: StorageNodeType.Dir,
     }
@@ -76,23 +102,40 @@ class ArticleAdminPageStore extends Vue {
 //  NodeMenu
 //--------------------------------------------------
 
-class ArticleAdminNodeMenuTypeImpl {
-  readonly createListBundle: StorageNodePopupMenuItem = new (class {
+interface ArticleAdminNodeActionType {
+  readonly type: string
+  readonly label: string
+}
+
+namespace ArticleAdminNodeActionType {
+  export const createListBundle: ArticleAdminNodeActionType = new (class {
     readonly type = 'createListBundle'
     get label(): string {
-      return String(i18n.t('common.createSth', { sth: i18n.t('articleAdmin.listBundle') }))
+      return String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.listBundle') }))
     }
   })()
 
-  readonly createCategoryBundle: StorageNodePopupMenuItem = new (class {
+  export const createCategoryBundle: ArticleAdminNodeActionType = new (class {
     readonly type = 'createCategoryBundle'
     get label(): string {
-      return String(i18n.t('common.createSth', { sth: i18n.t('articleAdmin.categoryBundle') }))
+      return String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.categoryBundle') }))
+    }
+  })()
+
+  export const createCategoryDir: ArticleAdminNodeActionType = new (class {
+    readonly type = 'createCategoryDir'
+    get label(): string {
+      return String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.categoryDir') }))
+    }
+  })()
+
+  export const createArticleDir: ArticleAdminNodeActionType = new (class {
+    readonly type = 'createArticleDir'
+    get label(): string {
+      return String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.articleDir') }))
     }
   })()
 }
-
-const ArticleAdminNodeMenuType = new ArticleAdminNodeMenuTypeImpl()
 
 //========================================================================
 //
@@ -100,4 +143,4 @@ const ArticleAdminNodeMenuType = new ArticleAdminNodeMenuTypeImpl()
 //
 //========================================================================
 
-export { ArticleAdminPageMixin, ArticleAdminPageStore, ArticleAdminNodeMenuType }
+export { ArticleAdminPageMixin, ArticleAdminPageStore, ArticleAdminNodeActionType }

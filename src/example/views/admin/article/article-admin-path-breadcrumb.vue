@@ -24,22 +24,33 @@
 
 .path-block-btn
   @extend %text-h6
+  color: $app-link-color
+  &.last
+    color: $text-primary-color
 </style>
 
 <template>
   <div class="article-admin-path-breadcrumb-main">
     <div v-for="pathBlock of m_pathBlocks" :key="pathBlock.path" class="path-block">
-      <q-btn v-if="!pathBlock.last" flat rounded :label="pathBlock.name" padding="xs" />
+      <q-btn
+        v-if="!pathBlock.last"
+        flat
+        :label="pathBlock.name"
+        class="article-admin-path-breadcrumb__q-btn path-block-btn"
+        padding="xs"
+        no-caps
+        @click="m_pathBlockOnClick(pathBlock.path)"
+      />
       <q-btn
         v-else
         flat
-        rounded
         :label="pathBlock.name"
-        icon-right="arrow_drop_down"
-        class="path-block-btn article-admin-path-breadcrumb__q-btn"
+        class="article-admin-path-breadcrumb__q-btn path-block-btn last"
         padding="xs"
+        no-caps
+        icon-right="arrow_drop_down"
       >
-        <article-admin-node-popup-menu :node="pathBlock" :is-root="pathBlock.isRoot" @select="m_popupMenuOnSelect" />
+        <article-admin-node-popup-menu :node="pathBlock" :is-root="pathBlock.isRoot" @select="m_popupMenuOnNodeAction" />
       </q-btn>
       <span v-show="!pathBlock.last" class="app-mx-8">/</span>
     </div>
@@ -51,7 +62,7 @@ import { BaseComponent, Resizable, StorageNodeType } from '@/lib'
 import ArticleAdminNodePopupMenu from './article-admin-node-popup-menu.vue'
 import { ArticleAdminPageMixin } from './base'
 import { Component } from 'vue-property-decorator'
-import { StorageNodePopupMenuSelectEvent } from '@/example/views/base/storage'
+import { StorageNodeActionEvent } from '@/example/views/base/storage'
 import { mixins } from 'vue-class-component'
 import { splitHierarchicalPaths } from 'web-base-lib'
 
@@ -151,10 +162,10 @@ export default class ArticleAdminPathBreadcrumb extends mixins(BaseComponent, Re
   }
 
   /**
-   * ポップアップメニューでメニューアイテムが選択された際のリスナです。
+   * ポップアップメニューでアクションが選択された際のリスナです。
    * @param e
    */
-  private m_popupMenuOnSelect(e: StorageNodePopupMenuSelectEvent) {
+  private m_popupMenuOnNodeAction(e: StorageNodeActionEvent) {
     this.$emit('node-action', e)
   }
 }

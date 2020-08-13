@@ -34,7 +34,7 @@
 <script lang="ts">
 import { BaseComponent, NoCache, StorageNodeType } from '@/lib'
 import { Component, Prop } from 'vue-property-decorator'
-import { StorageNodePopupMenuSelectEvent, StorageNodePopupMenuType } from './base'
+import { StorageNodeActionEvent, StorageNodeActionType } from './base'
 import { QMenu } from 'quasar'
 
 @Component({
@@ -69,24 +69,19 @@ export default class StorageNodePopupMenu extends BaseComponent {
   //----------------------------------------------------------------------
 
   private m_menuItems = {
-    root: [
-      StorageNodePopupMenuType.createDir,
-      StorageNodePopupMenuType.uploadDir,
-      StorageNodePopupMenuType.uploadFiles,
-      StorageNodePopupMenuType.reload,
-    ],
+    root: [StorageNodeActionType.createDir, StorageNodeActionType.uploadDir, StorageNodeActionType.uploadFiles, StorageNodeActionType.reload],
     dir: [
-      StorageNodePopupMenuType.createDir,
-      StorageNodePopupMenuType.uploadDir,
-      StorageNodePopupMenuType.uploadFiles,
-      StorageNodePopupMenuType.move,
-      StorageNodePopupMenuType.rename,
-      StorageNodePopupMenuType.share,
-      StorageNodePopupMenuType.deletion,
-      StorageNodePopupMenuType.reload,
+      StorageNodeActionType.createDir,
+      StorageNodeActionType.uploadDir,
+      StorageNodeActionType.uploadFiles,
+      StorageNodeActionType.move,
+      StorageNodeActionType.rename,
+      StorageNodeActionType.share,
+      StorageNodeActionType.deletion,
+      StorageNodeActionType.reload,
     ],
-    file: [StorageNodePopupMenuType.move, StorageNodePopupMenuType.rename, StorageNodePopupMenuType.share, StorageNodePopupMenuType.deletion],
-    multi: [StorageNodePopupMenuType.move, StorageNodePopupMenuType.share, StorageNodePopupMenuType.deletion],
+    file: [StorageNodeActionType.move, StorageNodeActionType.rename, StorageNodeActionType.share, StorageNodeActionType.deletion],
+    multi: [StorageNodeActionType.move, StorageNodeActionType.share, StorageNodeActionType.deletion],
   }
 
   private get m_isMulti(): boolean {
@@ -139,7 +134,7 @@ export default class StorageNodePopupMenu extends BaseComponent {
 
   private m_menuItemOnClick(type: string) {
     const nodePaths = this.selectedNodes ? this.selectedNodes.map(node => node.path) : [this.node.path]
-    const event: StorageNodePopupMenuSelectEvent = { type, nodePaths }
+    const event: StorageNodeActionEvent = { type, nodePaths }
     this.$emit('select', event)
   }
 }

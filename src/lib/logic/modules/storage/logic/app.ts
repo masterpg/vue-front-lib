@@ -1,15 +1,15 @@
 import { BaseLogic, getStorageNodeURL } from '../../../base'
 import { Component, Watch } from 'vue-property-decorator'
 import {
-  CreateArticleDirInput,
   CreateStorageNodeInput,
   RequiredStorageNodeShareSettings,
-  SetArticleSortOrderInput,
   StorageNode,
   StorageNodeKeyInput,
   StorageNodeShareSettingsInput,
+  StoragePaginationInput,
+  StoragePaginationResult,
 } from '../../../types'
-import { LibAPIContainer, StoragePaginationInput, StoragePaginationResult, api } from '../../../api'
+import { LibAPIContainer, api } from '../../../api'
 import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from '../download'
 import { arrayToDict, splitHierarchicalPaths } from 'web-base-lib'
 import { APIStorageNode } from '../../../api'
@@ -128,7 +128,7 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
       }
       return result
     })()
-    this.m_removeNotExistsStoreNodes(apiNodes, storeNodes)
+    this.removeNotExistsStoreNodes(apiNodes, storeNodes)
 
     return result
   }
@@ -148,7 +148,7 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
       }
       return result
     })()
-    this.m_removeNotExistsStoreNodes(apiNodes, storeNodes)
+    this.removeNotExistsStoreNodes(apiNodes, storeNodes)
 
     return result
   }
@@ -158,7 +158,7 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     const apiNodes = await this.getDirDescendantsAPI(dirPath)
     const result = this.setAPINodesToStore(apiNodes)
     // APIノードにないストアノードを削除
-    this.m_removeNotExistsStoreNodes(apiNodes, store.storage.getDirDescendants(dirPath))
+    this.removeNotExistsStoreNodes(apiNodes, store.storage.getDirDescendants(dirPath))
 
     return StorageLogic.sortNodes(result)
   }
@@ -168,7 +168,7 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     const apiNodes = await this.getDescendantsAPI(dirPath)
     const result = this.setAPINodesToStore(apiNodes)
     // APIノードにないストアノードを削除
-    this.m_removeNotExistsStoreNodes(apiNodes, store.storage.getDescendants(dirPath))
+    this.removeNotExistsStoreNodes(apiNodes, store.storage.getDescendants(dirPath))
 
     return StorageLogic.sortNodes(result)
   }
@@ -178,7 +178,7 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     const apiNodes = await this.getDirChildrenAPI(dirPath)
     const result = this.setAPINodesToStore(apiNodes)
     // APIノードにないストアノードを削除
-    this.m_removeNotExistsStoreNodes(apiNodes, store.storage.getDirChildren(dirPath))
+    this.removeNotExistsStoreNodes(apiNodes, store.storage.getDirChildren(dirPath))
 
     return StorageLogic.sortNodes(result)
   }
@@ -188,7 +188,7 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     const apiNodes = await this.getChildrenAPI(dirPath)
     const result = this.setAPINodesToStore(apiNodes)
     // APIノードにないストアノードを削除
-    this.m_removeNotExistsStoreNodes(apiNodes, store.storage.getChildren(dirPath))
+    this.removeNotExistsStoreNodes(apiNodes, store.storage.getChildren(dirPath))
 
     return StorageLogic.sortNodes(result)
   }
@@ -311,6 +311,119 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
   //
   //----------------------------------------------------------------------
 
+  //--------------------------------------------------
+  //  API
+  //--------------------------------------------------
+
+  async getNodeAPI(input: StorageNodeKeyInput): Promise<StorageNode | undefined> {
+    const apiNode = await this.apiNodeToStorageNode(await api.getStorageNode(input))
+    return this.apiNodeToStorageNode(apiNode)
+  }
+
+  async getDirDescendantsAPI(dirPath?: string): Promise<StorageNode[]> {
+    const apiNodes = await api.callStoragePaginationAPI(api.getStorageDirDescendants, dirPath)
+    return this.apiNodesToStorageNodes(apiNodes)
+  }
+
+  async getDescendantsAPI(dirPath?: string): Promise<StorageNode[]> {
+    const apiNodes = await api.callStoragePaginationAPI(api.getStorageDescendants, dirPath)
+    return this.apiNodesToStorageNodes(apiNodes)
+  }
+
+  async getDirChildrenAPI(dirPath?: string): Promise<StorageNode[]> {
+    const apiNodes = await api.callStoragePaginationAPI(api.getStorageDirChildren, dirPath)
+    return this.apiNodesToStorageNodes(apiNodes)
+  }
+
+  async getChildrenAPI(dirPath?: string): Promise<StorageNode[]> {
+    const apiNodes = await api.callStoragePaginationAPI(api.getStorageChildren, dirPath)
+    return this.apiNodesToStorageNodes(apiNodes)
+  }
+
+  async getHierarchicalNodesAPI(nodePath: string): Promise<StorageNode[]> {
+    const apiNodes = await api.getStorageHierarchicalNodes(nodePath)
+    return this.apiNodesToStorageNodes(apiNodes)
+  }
+
+  async getAncestorDirsAPI(nodePath: string): Promise<StorageNode[]> {
+    const apiNodes = await api.getStorageAncestorDirs(nodePath)
+    return this.apiNodesToStorageNodes(apiNodes)
+  }
+
+  async createDirAPI(dirPath: string, input?: CreateStorageNodeInput): Promise<StorageNode> {
+    const apiNode = await api.createStorageDir(dirPath, input)
+    return this.apiNodeToStorageNode(apiNode)!
+  }
+
+  async createHierarchicalDirsAPI(dirPaths: string[]): Promise<StorageNode[]> {
+    const apiNodes = await api.createStorageHierarchicalDirs(dirPaths)
+    return this.apiNodesToStorageNodes(apiNodes)
+  }
+
+  async removeDirAPI(dirPath: string): Promise<StorageNode[]> {
+    const apiNodes = await api.callStoragePaginationAPI(api.removeStorageDir, dirPath)
+    return this.apiNodesToStorageNodes(apiNodes)
+  }
+
+  async removeFileAPI(filePath: string): Promise<StorageNode | undefined> {
+    const apiNode = await api.removeStorageFile(filePath)
+    return this.apiNodeToStorageNode(apiNode)
+  }
+
+  async moveDirAPI(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
+    const apiNodes = await api.callStoragePaginationAPI(api.moveStorageDir, fromDirPath, toDirPath)
+    return this.apiNodesToStorageNodes(apiNodes)
+  }
+
+  async moveFileAPI(fromFilePath: string, toFilePath: string): Promise<StorageNode> {
+    const apiNode = await api.moveStorageFile(fromFilePath, toFilePath)
+    return this.apiNodeToStorageNode(apiNode)!
+  }
+
+  async renameDirAPI(dirPath: string, newName: string): Promise<StorageNode[]> {
+    const apiNodes = await api.callStoragePaginationAPI(api.renameStorageDir, dirPath, newName)
+    return this.apiNodesToStorageNodes(apiNodes)
+  }
+
+  async renameFileAPI(filePath: string, newName: string): Promise<StorageNode> {
+    const apiNode = await api.renameStorageFile(filePath, newName)
+    return this.apiNodeToStorageNode(apiNode)!
+  }
+
+  async setDirShareSettingsAPI(dirPath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode> {
+    const apiNode = await api.setStorageDirShareSettings(dirPath, input)
+    return this.apiNodeToStorageNode(apiNode)!
+  }
+
+  async handleUploadedFileAPI(filePath: string): Promise<StorageNode> {
+    const apiNode = await api.handleUploadedFile(filePath)
+    return this.apiNodeToStorageNode(apiNode)!
+  }
+
+  async setFileShareSettingsAPI(filePath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode> {
+    const apiNode = await api.setStorageFileShareSettings(filePath, input)
+    return this.apiNodeToStorageNode(apiNode)!
+  }
+
+  //--------------------------------------------------
+  //  Helper
+  //--------------------------------------------------
+
+  apiNodeToStorageNode(apiNode?: APIStorageNode): StorageNode | undefined {
+    if (!apiNode) return undefined
+    return this.apiNodesToStorageNodes([apiNode])[0]
+  }
+
+  apiNodesToStorageNodes(apiNodes: APIStorageNode[]): StorageNode[] {
+    return apiNodes.map(apiNode => {
+      return { ...apiNode, url: getStorageNodeURL(apiNode.id) }
+    })
+  }
+
+  /**
+   * APIノードをストアに反映します。
+   * @param apiNodes
+   */
   setAPINodesToStore(apiNodes: StorageNode[]): StorageNode[] {
     const result: StorageNode[] = []
 
@@ -331,108 +444,22 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     return result
   }
 
-  //--------------------------------------------------
-  //  API
-  //--------------------------------------------------
+  /**
+   * APIノードにないストアノードを削除します。
+   * @param apiNodes
+   * @param storeNodes
+   */
+  removeNotExistsStoreNodes(apiNodes: APIStorageNode[], storeNodes: StorageNode[]): StorageNode[] {
+    const apiNodeIdDict = arrayToDict(apiNodes, 'id')
+    const apiNodePathDict = arrayToDict(apiNodes, 'path')
 
-  async getNodeAPI(input: StorageNodeKeyInput): Promise<StorageNode | undefined> {
-    const apiNode = await this.m_toStorageNode(await api.getStorageNode(input))
-    return this.m_toStorageNode(apiNode)
-  }
+    const removingNodes: string[] = []
+    for (const storeNode of storeNodes) {
+      const exists = Boolean(apiNodeIdDict[storeNode.id] || apiNodePathDict[storeNode.path])
+      !exists && removingNodes.push(storeNode.path)
+    }
 
-  async getDirDescendantsAPI(dirPath?: string): Promise<StorageNode[]> {
-    const apiNodes = await api.callStoragePaginationAPI(api.getStorageDirDescendants, null, dirPath)
-    return this.m_toStorageNodes(apiNodes)
-  }
-
-  async getDescendantsAPI(dirPath?: string): Promise<StorageNode[]> {
-    const apiNodes = await api.callStoragePaginationAPI(api.getStorageDescendants, null, dirPath)
-    return this.m_toStorageNodes(apiNodes)
-  }
-
-  async getDirChildrenAPI(dirPath?: string): Promise<StorageNode[]> {
-    const apiNodes = await api.callStoragePaginationAPI(api.getStorageDirChildren, null, dirPath)
-    return this.m_toStorageNodes(apiNodes)
-  }
-
-  async getChildrenAPI(dirPath?: string): Promise<StorageNode[]> {
-    const apiNodes = await api.callStoragePaginationAPI(api.getStorageChildren, null, dirPath)
-    return this.m_toStorageNodes(apiNodes)
-  }
-
-  async getHierarchicalNodesAPI(nodePath: string): Promise<StorageNode[]> {
-    const apiNodes = await api.getStorageHierarchicalNodes(nodePath)
-    return this.m_toStorageNodes(apiNodes)
-  }
-
-  async getAncestorDirsAPI(nodePath: string): Promise<StorageNode[]> {
-    const apiNodes = await api.getStorageAncestorDirs(nodePath)
-    return this.m_toStorageNodes(apiNodes)
-  }
-
-  async createDirAPI(dirPath: string, input?: CreateStorageNodeInput): Promise<StorageNode> {
-    const apiNode = await api.createStorageDir(dirPath, input)
-    return this.m_toStorageNode(apiNode)!
-  }
-
-  async createHierarchicalDirsAPI(dirPaths: string[]): Promise<StorageNode[]> {
-    const apiNodes = await api.createStorageHierarchicalDirs(dirPaths)
-    return this.m_toStorageNodes(apiNodes)
-  }
-
-  async removeDirAPI(dirPath: string): Promise<StorageNode[]> {
-    const apiNodes = await api.callStoragePaginationAPI(api.removeStorageDir, null, dirPath)
-    return this.m_toStorageNodes(apiNodes)
-  }
-
-  async removeFileAPI(filePath: string): Promise<StorageNode | undefined> {
-    const apiNode = await api.removeStorageFile(filePath)
-    return this.m_toStorageNode(apiNode)
-  }
-
-  async moveDirAPI(fromDirPath: string, toDirPath: string): Promise<StorageNode[]> {
-    const apiNodes = await api.callStoragePaginationAPI(api.moveStorageDir, null, fromDirPath, toDirPath)
-    return this.m_toStorageNodes(apiNodes)
-  }
-
-  async moveFileAPI(fromFilePath: string, toFilePath: string): Promise<StorageNode> {
-    const apiNode = await api.moveStorageFile(fromFilePath, toFilePath)
-    return this.m_toStorageNode(apiNode)!
-  }
-
-  async renameDirAPI(dirPath: string, newName: string): Promise<StorageNode[]> {
-    const apiNodes = await api.callStoragePaginationAPI(api.renameStorageDir, null, dirPath, newName)
-    return this.m_toStorageNodes(apiNodes)
-  }
-
-  async renameFileAPI(filePath: string, newName: string): Promise<StorageNode> {
-    const apiNode = await api.renameStorageFile(filePath, newName)
-    return this.m_toStorageNode(apiNode)!
-  }
-
-  async setDirShareSettingsAPI(dirPath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode> {
-    const apiNode = await api.setStorageDirShareSettings(dirPath, input)
-    return this.m_toStorageNode(apiNode)!
-  }
-
-  async handleUploadedFileAPI(filePath: string): Promise<StorageNode> {
-    const apiNode = await api.handleUploadedFile(filePath)
-    return this.m_toStorageNode(apiNode)!
-  }
-
-  async setFileShareSettingsAPI(filePath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode> {
-    const apiNode = await api.setStorageFileShareSettings(filePath, input)
-    return this.m_toStorageNode(apiNode)!
-  }
-
-  async createArticleDirAPI(dirPath: string, input: CreateArticleDirInput): Promise<StorageNode> {
-    const apiNode = await api.createArticleDir(dirPath, input)
-    return this.m_toStorageNode(apiNode)!
-  }
-
-  async setArticleSortOrderAPI(nodePath: string, input: SetArticleSortOrderInput): Promise<StorageNode> {
-    const apiNode = await api.setArticleSortOrder(nodePath, input)
-    return this.m_toStorageNode(apiNode)!
+    return store.storage.removeList({ paths: removingNodes })
   }
 
   //----------------------------------------------------------------------
@@ -473,35 +500,6 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     }
 
     return StorageLogic.sortNodes(Object.values(nodeDict))
-  }
-
-  /**
-   * APIノードにないストアノードを削除します。
-   * @param apiNodes
-   * @param storeNodes
-   */
-  private m_removeNotExistsStoreNodes(apiNodes: APIStorageNode[], storeNodes: StorageNode[]): StorageNode[] {
-    const apiNodeIdDict = arrayToDict(apiNodes, 'id')
-    const apiNodePathDict = arrayToDict(apiNodes, 'path')
-
-    const removingNodes: string[] = []
-    for (const storeNode of storeNodes) {
-      const exists = Boolean(apiNodeIdDict[storeNode.id] || apiNodePathDict[storeNode.path])
-      !exists && removingNodes.push(storeNode.path)
-    }
-
-    return store.storage.removeList({ paths: removingNodes })
-  }
-
-  private m_toStorageNode(apiNode?: APIStorageNode): StorageNode | undefined {
-    if (!apiNode) return undefined
-    return this.m_toStorageNodes([apiNode])[0]
-  }
-
-  private m_toStorageNodes(apiNodes: APIStorageNode[]): StorageNode[] {
-    return apiNodes.map(apiNode => {
-      return { ...apiNode, url: getStorageNodeURL(apiNode.id) }
-    })
   }
 
   //----------------------------------------------------------------------

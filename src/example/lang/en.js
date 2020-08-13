@@ -54,6 +54,7 @@ export default merge(require('@/lib/lang/en').default, {
   storage: {
     userRootName: 'Home',
     appRootName: 'Storage',
+    articleRootName: 'Article',
     uploading: 'Uploading',
     nodeAlreadyExists: 'A {nodeType} called "{nodeName}" already exists.',
     create: {
@@ -99,9 +100,12 @@ export default merge(require('@/lib/lang/en').default, {
       downloadFailure: 'Failed to download "{nodeName}".',
     },
   },
-  articleAdmin: {
-    articleRootName: 'Article',
-    listBundle: 'List Type Bundle',
-    categoryBundle: 'Category Type Bundle',
+  article: {
+    nodeType: {
+      listBundle: 'List Type Bundle' | 'List Type Bundles',
+      categoryBundle: 'Category Bundle' | 'Category Bundles',
+      categoryDir: 'Category' | 'Categories',
+      articleDir: 'Article' | 'Articles',
+    },
   },
 })

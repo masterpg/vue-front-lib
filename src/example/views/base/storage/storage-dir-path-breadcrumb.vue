@@ -50,7 +50,7 @@
         no-caps
         icon-right="arrow_drop_down"
       >
-        <storage-node-popup-menu :node="pathBlock" :is-root="pathBlock.isRoot" @select="m_popupMenuOnSelect" />
+        <storage-node-popup-menu :node="pathBlock" :is-root="pathBlock.isRoot" @select="m_popupMenuOnNodeAction" />
       </q-btn>
       <span v-show="!pathBlock.last" class="app-mx-8">/</span>
     </div>
@@ -59,7 +59,7 @@
 
 <script lang="ts">
 import { BaseComponent, Resizable, StorageNode, StorageNodeType } from '@/lib'
-import { StorageNodePopupMenuSelectEvent, StoragePageMixin } from './base'
+import { StorageNodeActionEvent, StoragePageMixin } from './base'
 import { Component } from 'vue-property-decorator'
 import StorageNodePopupMenu from './storage-node-popup-menu.vue'
 import { mixins } from 'vue-class-component'
@@ -175,11 +175,11 @@ export default class StorageDirPathBreadcrumb extends mixins(BaseComponent, Resi
   }
 
   /**
-   * ポップアップメニューでメニューアイテムが選択された際のリスナです。
+   * ポップアップメニューでアクションが選択された際のリスナです。
    * @param e
    */
-  private m_popupMenuOnSelect(e: StorageNodePopupMenuSelectEvent) {
-    this.$emit('menu-select', e)
+  private m_popupMenuOnNodeAction(e: StorageNodeActionEvent) {
+    this.$emit('node-action', e)
   }
 }
 </script>
