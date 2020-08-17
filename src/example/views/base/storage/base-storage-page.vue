@@ -753,47 +753,17 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
     // このため初期読み込みされるまではselectイベントに反応しないようにしている。
     if (!this.pageStore.isInitialPull) return
 
-    const needOpenParentNode = (node: StorageTreeNode) => {
-      if (!node.parent) return false
-      if (!node.parent!.opened) return true
-      return needOpenParentNode(node.parent!)
-    }
-
     const selectedNode = e.node
-    const parentNode = e.node.parent
 
     // 選択ノードまでスクロールするフラグが立っている場合
     if (this.needScrollToSelectedNode) {
-      // 選択ノードを表示すために、親（祖先）の展開が必要な場合
-      if (needOpenParentNode(selectedNode)) {
-        // 親ノードが持つ子ノードが規定数以下の場合
-        if (parentNode && parentNode.children.length <= 25) {
-          // 選択されたノードの祖先を展開（アニメーションあり）
-          this.openParentNode(selectedNode.path, true)
-          // 展開アニメーションが終わりまで待機
-          await sleep(500)
-        }
-        // 親ノードが持つ子ノードが規定数より多い場合
-        else {
-          // 選択されたノードの祖先を展開（アニメーションなし）
-          this.openParentNode(selectedNode.path, false)
-        }
-      }
+      // 選択されたノードの祖先を展開（アニメーションなし）
+      this.openParentNode(selectedNode.path, false)
       // 選択ノードの位置までスクロールする
       this.scrollToSelectedNode(selectedNode.path, true)
 
       this.needScrollToSelectedNode = false
     }
-
-    // // 選択ノードまでスクロールするフラグが立っている場合
-    // if (this.needScrollToSelectedNode) {
-    //   // 選択されたノードの祖先を展開（アニメーションなし）
-    //   this.openParentNode(selectedNode.path, false)
-    //   // 選択ノードの位置までスクロールする
-    //   this.scrollToSelectedNode(selectedNode.path, true)
-    //
-    //   this.needScrollToSelectedNode = false
-    // }
 
     // 選択ノードのパスをURLに付与
     this.changeDirOnPage(selectedNode.path)
