@@ -1,5 +1,12 @@
 import * as path from 'path'
-import { CreateArticleDirInput, SetArticleSortOrderInput, StorageNode, StoragePaginationInput, StoragePaginationResult } from '../../../types'
+import {
+  CreateArticleDirInput,
+  SetArticleSortOrderInput,
+  StorageArticleNodeType,
+  StorageNode,
+  StoragePaginationInput,
+  StoragePaginationResult,
+} from '../../../types'
 import { Component } from 'vue-property-decorator'
 import { StorageLogic } from './base'
 import { SubStorageLogic } from './sub'
@@ -36,7 +43,7 @@ class ArticleStorageLogicImpl extends SubStorageLogic implements ArticleStorageL
 
   get basePath(): string {
     if (!this.isSignedIn) return ''
-    return path.join(config.storage.users.dir, store.user.id, config.storage.articles.dir)
+    return path.join(config.storage.user.rootName, store.user.id, config.storage.article.rootName)
   }
 
   //----------------------------------------------------------------------
@@ -62,6 +69,14 @@ class ArticleStorageLogicImpl extends SubStorageLogic implements ArticleStorageL
       // 記事ルートを作成
       await this.appStorage.createHierarchicalDirs([this.basePath])
     }
+
+    // アセットディレクトリを作成
+    const assetsPath = path.join(this.basePath, config.storage.article.assetsName)
+    let assetsNode = await this.appStorage.getNodeAPI({ path: assetsPath })
+    if (!assetsNode) {
+      assetsNode = await this.appStorage.createDir(assetsPath)
+    }
+    this.appStorage.setAPINodesToStore([assetsNode])
   }
 
   async createArticleDir(dirPath: string, input: CreateArticleDirInput): Promise<StorageNode> {
@@ -80,8 +95,14 @@ class ArticleStorageLogicImpl extends SubStorageLogic implements ArticleStorageL
     const fullDirPath = StorageLogic.toFullNodePath(this.basePath, dirPath)
     const dirNode = await this.m_createArticleDirAPI(fullDirPath, input)
 
+    // 記事ディレクトリ作成時は記事ファイルも作成されるので読み込みを行う
+    let dirChildren: StorageNode[] = []
+    if (input.articleNodeType === StorageArticleNodeType.ArticleDir) {
+      dirChildren = await this.appStorage.fetchChildren(fullDirPath)
+    }
+
     // 作成されたディレクトリをストアに反映
-    this.appStorage.setAPINodesToStore([dirNode])
+    this.appStorage.setAPINodesToStore([dirNode, ...dirChildren])
 
     return StorageLogic.toBasePathNode(this.basePath, dirNode)
   }

@@ -160,7 +160,7 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     // APIノードにないストアノードを削除
     this.removeNotExistsStoreNodes(apiNodes, store.storage.getDirDescendants(dirPath))
 
-    return StorageLogic.sortNodes(result)
+    return result
   }
 
   async fetchDescendants(dirPath?: string): Promise<StorageNode[]> {
@@ -170,7 +170,7 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     // APIノードにないストアノードを削除
     this.removeNotExistsStoreNodes(apiNodes, store.storage.getDescendants(dirPath))
 
-    return StorageLogic.sortNodes(result)
+    return result
   }
 
   async fetchDirChildren(dirPath?: string): Promise<StorageNode[]> {
@@ -180,7 +180,7 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     // APIノードにないストアノードを削除
     this.removeNotExistsStoreNodes(apiNodes, store.storage.getDirChildren(dirPath))
 
-    return StorageLogic.sortNodes(result)
+    return result
   }
 
   async fetchChildren(dirPath?: string): Promise<StorageNode[]> {
@@ -190,7 +190,7 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     // APIノードにないストアノードを削除
     this.removeNotExistsStoreNodes(apiNodes, store.storage.getChildren(dirPath))
 
-    return StorageLogic.sortNodes(result)
+    return result
   }
 
   async fetchHierarchicalDescendants(dirPath?: string): Promise<StorageNode[]> {
@@ -206,7 +206,7 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
       result.push(...(await this.fetchDirDescendants(dirPath)))
     }
 
-    return StorageLogic.sortNodes(result)
+    return result
   }
 
   async fetchHierarchicalChildren(dirPath?: string): Promise<StorageNode[]> {
@@ -218,11 +218,11 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     }
     // 引数ディレクトリが指定された場合
     else {
-      result.push(...(await this.getAncestorDirsAPI(dirPath)))
+      result.push(...(await this.fetchAncestorDirs(dirPath)))
       result.push(...(await this.fetchDirChildren(dirPath)))
     }
 
-    return StorageLogic.sortNodes(result)
+    return result
   }
 
   async createDir(dirPath: string, input?: CreateStorageNodeInput): Promise<StorageNode> {
@@ -237,12 +237,12 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     }
 
     const apiNode = await this.createDirAPI(dirPath, input)
-    return store.storage.add(apiNode)
+    return this.setAPINodesToStore([apiNode])[0]
   }
 
   async createHierarchicalDirs(dirPaths: string[]): Promise<StorageNode[]> {
     const apiNodes = await this.createHierarchicalDirsAPI(dirPaths)
-    return store.storage.addList(apiNodes)
+    return this.setAPINodesToStore(apiNodes)
   }
 
   async removeDir(dirPath: string): Promise<void> {
@@ -441,6 +441,8 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
       }
     }
 
+    store.storage.sort()
+
     return result
   }
 
@@ -499,7 +501,7 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
       Object.assign(nodeDict, arrayToDict(nodeData.list, 'path'))
     }
 
-    return StorageLogic.sortNodes(Object.values(nodeDict))
+    return StorageLogic.sortTree(Object.values(nodeDict))
   }
 
   //----------------------------------------------------------------------

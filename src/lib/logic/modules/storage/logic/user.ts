@@ -13,7 +13,7 @@ import { store } from '../../../store'
 @Component
 class UserStorageLogic extends SubStorageLogic {
   get basePath(): string {
-    return path.join(config.storage.users.dir, store.user.id)
+    return path.join(config.storage.user.rootName, store.user.id)
   }
 }
 

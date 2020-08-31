@@ -2,10 +2,10 @@ import { APP_ADMIN_TOKEN, GENERAL_TOKEN, GENERAL_USER } from '../../../../../hel
 import { AuthStatus, PublicProfile, StorageArticleNodeType, StorageNodeShareSettings, UserInfo, UserInfoInput } from '@/lib'
 import { OmitEntityTimestamp } from '@/firestore-ex'
 import { TestLibAPIContainer } from '../../../../../mocks/lib/logic/api'
-import { config } from '@/example/config'
+import { config } from '../../../../../mocks/lib/config'
 import { initLibTest } from '../../../../../helpers/lib/init'
 import { sleep } from 'web-base-lib'
-import { sortStorageNodes } from '../../../../../../src/lib/logic/base'
+import { sortStorageTree } from '../../../../../../src/lib/logic/base'
 
 //========================================================================
 //
@@ -51,8 +51,8 @@ describe('Foundation API', () => {
     it('疎通確認', async () => {
       const actual = await api.getAppConfig()
 
-      expect(actual.users).toMatchObject(config.storage.users)
-      expect(actual.articles).toMatchObject(config.storage.articles)
+      expect(actual.user).toMatchObject(config.storage.user)
+      expect(actual.article).toMatchObject(config.storage.article)
     })
   })
 })
@@ -217,7 +217,7 @@ describe('Storage API', () => {
 
       const actual = await api.getStorageDirDescendants(`${TEST_DIR}/d1`)
 
-      sortStorageNodes(actual.list)
+      sortStorageTree(actual.list)
       expect(actual.nextPageToken).toBeUndefined()
       expect(actual.list.length).toBe(6)
       expect(actual.list[0].path).toBe(`${TEST_DIR}/d1`)
@@ -233,7 +233,7 @@ describe('Storage API', () => {
 
       const actual = await api.callStoragePaginationAPI(api.getStorageDirDescendants, `${TEST_DIR}/d1`, { maxChunk: 2 })
 
-      sortStorageNodes(actual)
+      sortStorageTree(actual)
       expect(actual.length).toBe(6)
       expect(actual[0].path).toBe(`${TEST_DIR}/d1`)
       expect(actual[1].path).toBe(`${TEST_DIR}/d1/d11`)
@@ -258,7 +258,7 @@ describe('Storage API', () => {
 
       const actual = await api.getStorageDescendants(`${TEST_DIR}/d1`)
 
-      sortStorageNodes(actual.list)
+      sortStorageTree(actual.list)
       expect(actual.nextPageToken).toBeUndefined()
       expect(actual.list.length).toBe(5)
       expect(actual.list[0].path).toBe(`${TEST_DIR}/d1/d11`)
@@ -273,7 +273,7 @@ describe('Storage API', () => {
 
       const actual = await api.callStoragePaginationAPI(api.getStorageDescendants, `${TEST_DIR}/d1`, { maxChunk: 2 })
 
-      sortStorageNodes(actual)
+      sortStorageTree(actual)
       expect(actual.length).toBe(5)
       expect(actual[0].path).toBe(`${TEST_DIR}/d1/d11`)
       expect(actual[1].path).toBe(`${TEST_DIR}/d1/d11/d111`)
@@ -297,7 +297,7 @@ describe('Storage API', () => {
 
       const actual = await api.getStorageDirChildren(`${TEST_DIR}/d1`)
 
-      sortStorageNodes(actual.list)
+      sortStorageTree(actual.list)
       expect(actual.nextPageToken).toBeUndefined()
       expect(actual.list.length).toBe(4)
       expect(actual.list[0].path).toBe(`${TEST_DIR}/d1`)
@@ -311,7 +311,7 @@ describe('Storage API', () => {
 
       const actual = await api.callStoragePaginationAPI(api.getStorageDirChildren, `${TEST_DIR}/d1`, { maxChunk: 2 })
 
-      sortStorageNodes(actual)
+      sortStorageTree(actual)
       expect(actual.length).toBe(4)
       expect(actual[0].path).toBe(`${TEST_DIR}/d1`)
       expect(actual[1].path).toBe(`${TEST_DIR}/d1/d11`)
@@ -334,7 +334,7 @@ describe('Storage API', () => {
 
       const actual = await api.getStorageChildren(`${TEST_DIR}/d1`)
 
-      sortStorageNodes(actual.list)
+      sortStorageTree(actual.list)
       expect(actual.nextPageToken).toBeUndefined()
       expect(actual.list.length).toBe(3)
       expect(actual.list[0].path).toBe(`${TEST_DIR}/d1/d11`)
@@ -347,7 +347,7 @@ describe('Storage API', () => {
 
       const actual = await api.callStoragePaginationAPI(api.getStorageChildren, `${TEST_DIR}/d1`, { maxChunk: 2 })
 
-      sortStorageNodes(actual)
+      sortStorageTree(actual)
       expect(actual.length).toBe(3)
       expect(actual[0].path).toBe(`${TEST_DIR}/d1/d11`)
       expect(actual[1].path).toBe(`${TEST_DIR}/d1/fileA.txt`)
@@ -465,7 +465,7 @@ describe('Storage API', () => {
 
       const actual = (await api.removeStorageDir(`${TEST_DIR}/d1`)).list
 
-      sortStorageNodes(actual)
+      sortStorageTree(actual)
       expect(actual.length).toBe(6)
       expect(actual[0].path).toBe(`${TEST_DIR}/d1`)
       expect(actual[1].path).toBe(`${TEST_DIR}/d1/file1.txt`)
@@ -488,7 +488,7 @@ describe('Storage API', () => {
 
       const actual = await api.callStoragePaginationAPI(api.removeStorageDir, `${TEST_DIR}/d1`, { maxChunk: 2 })
 
-      sortStorageNodes(actual)
+      sortStorageTree(actual)
       expect(actual.length).toBe(6)
       expect(actual[0].path).toBe(`${TEST_DIR}/d1`)
       expect(actual[1].path).toBe(`${TEST_DIR}/d1/file1.txt`)
@@ -526,7 +526,7 @@ describe('Storage API', () => {
 
       const actual = (await api.moveStorageDir(`${TEST_DIR}/d1`, `${TEST_DIR}/d2/d1`)).list
 
-      sortStorageNodes(actual)
+      sortStorageTree(actual)
       expect(actual.length).toBe(6)
       expect(actual[0].path).toBe(`${TEST_DIR}/d2/d1`)
       expect(actual[1].path).toBe(`${TEST_DIR}/d2/d1/d11`)
@@ -550,7 +550,7 @@ describe('Storage API', () => {
 
       const actual = await api.callStoragePaginationAPI(api.moveStorageDir, `${TEST_DIR}/d1`, `${TEST_DIR}/d2/d1`, { maxChunk: 2 })
 
-      sortStorageNodes(actual)
+      sortStorageTree(actual)
       expect(actual.length).toBe(6)
       expect(actual[0].path).toBe(`${TEST_DIR}/d2/d1`)
       expect(actual[1].path).toBe(`${TEST_DIR}/d2/d1/d11`)
@@ -588,7 +588,7 @@ describe('Storage API', () => {
 
       const actual = (await api.renameStorageDir(`${TEST_DIR}/d1`, `d2`)).list
 
-      sortStorageNodes(actual)
+      sortStorageTree(actual)
       expect(actual.length).toBe(6)
       expect(actual[0].path).toBe(`${TEST_DIR}/d2`)
       expect(actual[1].path).toBe(`${TEST_DIR}/d2/d11`)
@@ -611,7 +611,7 @@ describe('Storage API', () => {
 
       const actual = await api.callStoragePaginationAPI(api.renameStorageDir, `${TEST_DIR}/d1`, `d2`, { maxChunk: 2 })
 
-      sortStorageNodes(actual)
+      sortStorageTree(actual)
       expect(actual.length).toBe(6)
       expect(actual[0].path).toBe(`${TEST_DIR}/d2`)
       expect(actual[1].path).toBe(`${TEST_DIR}/d2/d11`)
@@ -669,38 +669,38 @@ describe('Storage API', () => {
   //--------------------------------------------------
 
   describe('createArticleDir', () => {
-    let articlesPath: string
+    let articleRootPath: string
     let bundlePath: string
 
     async function setupArticleNodes(): Promise<void> {
       api.setTestAuthToken(GENERAL_TOKEN)
-      articlesPath = `${config.storage.users.dir}/${GENERAL_TOKEN.uid}/${config.storage.articles.dir}`
-      await api.createStorageHierarchicalDirs([articlesPath])
+      articleRootPath = `${config.storage.user.rootName}/${GENERAL_TOKEN.uid}/${config.storage.article.rootName}`
+      await api.createStorageHierarchicalDirs([articleRootPath])
     }
 
     it('疎通確認', async () => {
       // ユーザーの記事ルートを事前に作成
       await setupArticleNodes()
 
-      const actual = await api.createArticleDir(`${articlesPath}/blog`, {
+      const actual = await api.createArticleDir(`${articleRootPath}/blog`, {
         articleNodeType: StorageArticleNodeType.ListBundle,
       })
 
-      expect(actual.path).toBe(`${articlesPath}/blog`)
+      expect(actual.path).toBe(`${articleRootPath}/blog`)
       expect(actual.articleNodeType).toBe(StorageArticleNodeType.ListBundle)
       expect(typeof actual.articleSortOrder === 'number').toBeTruthy()
     })
   })
 
   describe('setArticleSortOrder', () => {
-    let articlesPath: string
+    let articleRootPath: string
     let bundlePath: string
 
     async function setupArticleNodes(): Promise<void> {
       api.setTestAuthToken(GENERAL_TOKEN)
-      articlesPath = `${config.storage.users.dir}/${GENERAL_TOKEN.uid}/${config.storage.articles.dir}`
-      await api.createStorageHierarchicalDirs([articlesPath])
-      bundlePath = `${articlesPath}/blog`
+      articleRootPath = `${config.storage.user.rootName}/${GENERAL_TOKEN.uid}/${config.storage.article.rootName}`
+      await api.createStorageHierarchicalDirs([articleRootPath])
+      bundlePath = `${articleRootPath}/blog`
       await api.createArticleDir(`${bundlePath}`, { articleNodeType: StorageArticleNodeType.ListBundle })
     }
 
@@ -725,14 +725,14 @@ describe('Storage API', () => {
   })
 
   describe('getArticleChildren', () => {
-    let articlesPath: string
+    let articleRootPath: string
     let bundlePath: string
 
     async function setupArticleNodes(): Promise<void> {
       api.setTestAuthToken(GENERAL_TOKEN)
-      articlesPath = `${config.storage.users.dir}/${GENERAL_TOKEN.uid}/${config.storage.articles.dir}`
-      await api.createStorageHierarchicalDirs([articlesPath])
-      bundlePath = `${articlesPath}/blog`
+      articleRootPath = `${config.storage.user.rootName}/${GENERAL_TOKEN.uid}/${config.storage.article.rootName}`
+      await api.createStorageHierarchicalDirs([articleRootPath])
+      bundlePath = `${articleRootPath}/blog`
       await api.createArticleDir(`${bundlePath}`, { articleNodeType: StorageArticleNodeType.ListBundle })
       await api.createArticleDir(`${bundlePath}/art1`, { articleNodeType: StorageArticleNodeType.ArticleDir })
       await api.createArticleDir(`${bundlePath}/art2`, { articleNodeType: StorageArticleNodeType.ArticleDir })

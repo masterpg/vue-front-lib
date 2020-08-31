@@ -1,21 +1,13 @@
-import { BaseStoragePage, StorageType } from '../../base/storage'
-import { StorageRoute, router } from '@/example/router'
-import { Component } from 'vue-property-decorator'
-import { StorageLogic } from '@/lib'
+import { Component, Prop } from 'vue-property-decorator'
+import { BaseStoragePage } from '../../base/storage'
+import { StorageType } from '@/lib'
 
 @Component
 class UserStoragePage extends BaseStoragePage {
-  get storageType(): StorageType {
-    return 'user'
-  }
+  @Prop({ default: 'user' })
+  storageType!: StorageType
 
-  get storageLogic(): StorageLogic {
-    return this.$logic.userStorage
-  }
-
-  get storageRoute(): StorageRoute {
-    return router.views.demo.userStorage
-  }
+  protected async initStorage(): Promise<void> {}
 }
 
 export default UserStoragePage

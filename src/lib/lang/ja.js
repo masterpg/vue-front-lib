@@ -54,4 +54,12 @@ export default {
     uploadFileFailed: 'アップロード失敗',
     uploadFileCanceled: 'キャンセル',
   },
+  article: {
+    nodeType: {
+      listBundle: 'リスト型バンドル',
+      categoryBundle: 'カテゴリ型バンドル',
+      categoryDir: 'カテゴリ',
+      articleDir: '記事',
+    },
+  },
 }

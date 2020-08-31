@@ -1,4 +1,4 @@
-export { StorageLogic } from './base'
+export { StorageLogic, StorageType } from './base'
 export { AppStorageLogic } from './app'
 export { ArticleStorageLogic, ArticleStorageLogicImpl } from './article'
 export { SubStorageLogic } from './sub'

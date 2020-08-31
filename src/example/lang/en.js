@@ -56,6 +56,7 @@ export default merge(require('@/lib/lang/en').default, {
     appRootName: 'Storage',
     articleRootName: 'Article',
     uploading: 'Uploading',
+    asset: 'Asset | Assets',
     nodeAlreadyExists: 'A {nodeType} called "{nodeName}" already exists.',
     create: {
       creatingDirError: 'An error occurred while creating "{nodeName}"',
@@ -67,8 +68,8 @@ export default merge(require('@/lib/lang/en').default, {
       deletingError: 'An error occurred while deleting "{nodeName}".',
     },
     move: {
-      movingNode: 'Move {nodeType}',
-      selectDestPrompt: 'Select a destination:',
+      movingTarget: 'Moving target',
+      selectDestPrompt: 'Select a destination.',
       destNotSelected: 'The destination has not been selected.',
       alreadyExistsQ: 'Item "{nodeName}" already exists.\nExisting items will be overwritten. Are you sure?',
       movingError: 'An error occurred while moving "{nodeName}".',
@@ -78,8 +79,8 @@ export default merge(require('@/lib/lang/en').default, {
       renamingError: 'An error occurred while renaming "{nodeName}".',
     },
     share: {
-      sharingNode: 'Share {nodeType}',
-      selectPublicPrompt: 'Choose whether to publish {nodeType}:',
+      sharingTarget: 'Sharing target',
+      selectPublicPrompt: 'Select a publication type.',
       notSet: 'Not set',
       public: 'Public',
       private: 'Private',
@@ -98,14 +99,6 @@ export default merge(require('@/lib/lang/en').default, {
     },
     download: {
       downloadFailure: 'Failed to download "{nodeName}".',
-    },
-  },
-  article: {
-    nodeType: {
-      listBundle: 'List Type Bundle' | 'List Type Bundles',
-      categoryBundle: 'Category Bundle' | 'Category Bundles',
-      categoryDir: 'Category' | 'Categories',
-      articleDir: 'Article' | 'Articles',
     },
   },
 })

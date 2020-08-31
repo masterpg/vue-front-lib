@@ -4,7 +4,7 @@ import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchica
 import { BaseStore } from '../base'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '@/lib/base'
-import { sortStorageNodes } from '../../base'
+import { sortStorageTree } from '../../base'
 
 //========================================================================
 //
@@ -50,6 +50,8 @@ interface StorageStore {
   clone(value: StorageNode): StorageNode
 
   clear(): void
+
+  sort(): void
 }
 
 type StorageNodeForSet = Partial<Omit<StorageNode, 'nodeType'>> & {
@@ -169,7 +171,6 @@ class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
     this.state.all = nodes.map(node => {
       return this.clone(node)
     })
-    sortStorageNodes(this.state.all)
   }
 
   setList(nodes: StorageNodeForSet[]): StorageNode[] {
@@ -206,8 +207,6 @@ class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
       result.push(this.clone(stateNode))
     }
 
-    sortStorageNodes(this.state.all)
-
     return result
   }
 
@@ -220,8 +219,6 @@ class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
       this.state.all.push(this.clone(node))
       return this.clone(node)
     })
-
-    sortStorageNodes(this.state.all)
 
     return addingNodes
   }
@@ -310,8 +307,6 @@ class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
       existsNode && this.removeSpecifiedNode({ id: existsNode.id })
     }
 
-    sortStorageNodes(this.state.all)
-
     return result
   }
 
@@ -347,6 +342,10 @@ class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
       createdAt: value.createdAt,
       updatedAt: value.updatedAt,
     }
+  }
+
+  sort(): void {
+    sortStorageTree(this.state.all)
   }
 
   //----------------------------------------------------------------------

@@ -102,18 +102,10 @@
 
 <script lang="ts">
 import * as anime from 'animejs/lib/anime'
-import {
-  BaseComponent,
-  CompStorageImg,
-  NoCache,
-  RequiredStorageNodeShareSettings,
-  Resizable,
-  StorageDownloader,
-  StorageLogic,
-  StorageNode,
-} from '@/lib'
-import { Component, Prop, Watch } from 'vue-property-decorator'
+import { BaseComponent, CompStorageImg, NoCache, RequiredStorageNodeShareSettings, Resizable, StorageDownloader, StorageNode } from '@/lib'
+import { Component, Watch } from 'vue-property-decorator'
 import { QLinearProgress } from 'quasar'
+import { StoragePageMixin } from './storage-page-mixin'
 import bytes from 'bytes'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
@@ -121,7 +113,7 @@ import { removeBothEndsSlash } from 'web-base-lib'
 @Component({
   components: { CompStorageImg },
 })
-export default class StorageFileDetailView extends mixins(BaseComponent, Resizable) {
+export default class StorageFileDetailView extends mixins(BaseComponent, Resizable, StoragePageMixin) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -137,9 +129,6 @@ export default class StorageFileDetailView extends mixins(BaseComponent, Resizab
   //  Properties
   //
   //----------------------------------------------------------------------
-
-  @Prop({ required: true })
-  storageLogic!: StorageLogic
 
   private m_fileNode: StorageNode | null = null
 
@@ -325,7 +314,7 @@ export default class StorageFileDetailView extends mixins(BaseComponent, Resizab
         if (downloader.canceled) continue
         if (downloader.failed) {
           const message = String(this.$t('storage.download.downloadFailure', { nodeName: downloader.name }))
-          this.m_showNotification('warning', message)
+          this.showNotification('warning', message)
           continue
         }
         // ダウンロードされたファイルをブラウザ経由でダウンロード
@@ -345,17 +334,6 @@ export default class StorageFileDetailView extends mixins(BaseComponent, Resizab
     this.m_downloader.cancel()
     this.m_showDownloadProgress(false, () => {
       this.m_downloader.clear()
-    })
-  }
-
-  private m_showNotification(type: 'error' | 'warning', message: string): void {
-    this.$q.notify({
-      icon: type === 'error' ? 'error' : 'warning',
-      position: 'bottom-left',
-      message,
-      timeout: 0,
-      color: type === 'error' ? 'red-9' : 'grey-9',
-      actions: [{ icon: 'close', color: 'white' }],
     })
   }
 

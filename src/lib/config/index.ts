@@ -1,4 +1,7 @@
+import { DeepPartial } from 'web-base-lib'
 import URI from 'urijs'
+import firebaseConfig from '../../../firebase.config'
+import merge from 'lodash/merge'
 
 //========================================================================
 //
@@ -25,18 +28,18 @@ interface APIConfig {
 }
 
 interface StorageConfig {
-  users: StorageUsersConfig
-  articles: StorageArticlesConfig
+  user: StorageUsersConfig
+  article: StorageArticlesConfig
 }
 
 interface StorageUsersConfig {
-  dir: string
+  rootName: string
 }
 
 interface StorageArticlesConfig {
-  dir: string
-  assetsDir: string
+  rootName: string
   fileName: string
+  assetsName: string
 }
 
 //========================================================================
@@ -46,10 +49,41 @@ interface StorageArticlesConfig {
 //========================================================================
 
 abstract class BaseConfig {
-  protected constructor(params: { firebase: FirebaseConfig; api: Omit<APIConfig, 'baseURL'>; storage: StorageConfig }) {
-    this.m_firebase = params.firebase
-    this.m_api = this.getAPIConfig(params.api)
-    this.m_storage = params.storage
+  protected constructor(
+    params: {
+      firebase?: DeepPartial<FirebaseConfig>
+      api?: DeepPartial<Omit<APIConfig, 'baseURL'>>
+      storage?: DeepPartial<StorageConfig>
+    } = {}
+  ) {
+    this.m_firebase = merge(firebaseConfig, params.firebase)
+
+    this.m_api = this.getAPIConfig(
+      merge(
+        {
+          protocol: String(process.env.VUE_APP_API_PROTOCOL),
+          host: String(process.env.VUE_APP_API_HOST),
+          port: Number(process.env.VUE_APP_API_PORT),
+          basePath: String(process.env.VUE_APP_API_BASE_PATH),
+        },
+        params.api
+      )
+    )
+
+    this.m_storage = merge(
+      {
+        user: {
+          rootName: 'users',
+        },
+        article: {
+          rootName: 'articles',
+          fileName: '__index__.md',
+          assetsName: 'assets',
+        },
+      },
+      params.storage
+    )
+
     firebase.initializeApp(this.firebase!)
   }
 

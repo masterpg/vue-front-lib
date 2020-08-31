@@ -9,7 +9,7 @@ import dayjs from 'dayjs'
 import { generateFirestoreId } from '../../../../../helpers/common/base'
 import { initLibTest } from '../../../../../helpers/lib/init'
 import { removeStartDirChars } from 'web-base-lib'
-import { sortStorageNodes } from '../../../../../../src/lib/logic/base'
+import { sortStorageTree } from '../../../../../../src/lib/logic/base'
 
 //========================================================================
 //
@@ -87,7 +87,7 @@ function toBeCopy(node: StorageNode | StorageNode[]): void {
  */
 function toBeSorted(): void {
   const beforeAll = [...storageStore.state.all]
-  const sortedAll = sortStorageNodes(beforeAll)
+  const sortedAll = sortStorageTree(beforeAll)
   expect(storageStore.state.all).toEqual(sortedAll)
 }
 
@@ -116,7 +116,7 @@ describe('all', () => {
     const f211 = newTestStorageFileNode('d2/d21/f211.txt')
     const f1 = newTestStorageFileNode('f1.txt')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, d111, f1111, d12, f11, d2, d21, f211, f1]),
+      all: sortStorageTree([d1, d11, d111, f1111, d12, f11, d2, d21, f211, f1]),
     })
 
     const actual = storageStore.all
@@ -134,7 +134,7 @@ describe('get', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.get({ id: d11.id })!
@@ -150,7 +150,7 @@ describe('get', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.get({ path: d11.path })!
@@ -179,7 +179,7 @@ describe('getById', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.get({ id: d11.id })!
@@ -197,7 +197,7 @@ describe('getChildren', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes(cloneDeep([d1, d11, f111, d12, d2])),
+      all: sortStorageTree(cloneDeep([d1, d11, f111, d12, d2])),
     })
 
     const actual = storageStore.getChildren(d1.path)
@@ -217,7 +217,7 @@ describe('getDirChildren', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.getDirChildren('d1')
@@ -236,7 +236,7 @@ describe('getDirChildren', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.getDirChildren()
@@ -256,7 +256,7 @@ describe('getDescendants', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.getDescendants(d1.path)
@@ -277,7 +277,7 @@ describe('getDirDescendants', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.getDirDescendants(d1.path)
@@ -297,7 +297,7 @@ describe('getDirDescendants', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.getDirDescendants()
@@ -320,7 +320,7 @@ describe('getHierarchical', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes(cloneDeep([d1, d11, f111, d12, d2])),
+      all: sortStorageTree(cloneDeep([d1, d11, f111, d12, d2])),
     })
 
     const actual = storageStore.getHierarchical(f111.path)
@@ -341,7 +341,7 @@ describe('getAncestors', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes(cloneDeep([d1, d11, f111, d12, d2])),
+      all: sortStorageTree(cloneDeep([d1, d11, f111, d12, d2])),
     })
 
     const actual = storageStore.getAncestors(f111.path)
@@ -362,7 +362,7 @@ describe('setAll', () => {
     const d2 = newTestStorageDirNode('d2')
     const f1 = newTestStorageFileNode('f1.txt')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     storageStore.setAll([d2, f1])
@@ -383,7 +383,7 @@ describe('setList', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const UPDATED_AT = dayjs('2019-01-01')
@@ -397,6 +397,7 @@ describe('setList', () => {
       cloneTestStorageNode(f111, { share: NEW_SHARE_SETTINGS, createdAt: UPDATED_AT, updatedAt: UPDATED_AT }),
     ])
 
+    storageStore.sort()
     expect(actual.length).toBe(2)
     expect(actual[0].id).toBe(d11.id)
     expect(actual[0].share).toEqual(NEW_SHARE_SETTINGS)
@@ -419,7 +420,7 @@ describe('setList', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const UPDATED_AT = dayjs('2019-01-01')
@@ -441,6 +442,7 @@ describe('setList', () => {
       }),
     ])
 
+    storageStore.sort()
     expect(actual.length).toBe(1)
     expect(actual[0].id).toBe(f111.id)
     expect(actual[0].name).toBe('new_f111.txt')
@@ -469,7 +471,7 @@ describe('setList', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.setList([
@@ -481,6 +483,7 @@ describe('setList', () => {
       },
     ])
 
+    storageStore.sort()
     expect(actual.length).toBe(1)
     expect(actual[0].id).toBe(f111.id)
     expect(actual[0].name).toBe(f111.name)
@@ -503,7 +506,7 @@ describe('setList', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     let actual!: Error
@@ -527,11 +530,12 @@ describe('addList', () => {
     const f121 = newTestStorageFileNode('d1/d12/f121.txt')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.addList([d12, f121])
 
+    storageStore.sort()
     expect(actual[0]).toEqual(d12)
     expect(actual[1]).toEqual(f121)
 
@@ -550,11 +554,12 @@ describe('add', () => {
     const f121 = newTestStorageFileNode('d1/d12/f121.txt')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.add(f121)
 
+    storageStore.sort()
     expect(actual).toEqual(f121)
 
     verifyStateNodes()
@@ -572,7 +577,7 @@ describe('removeList', () => {
       const d12 = newTestStorageDirNode('d1/d12')
       const d2 = newTestStorageDirNode('d2')
       storageStore.initState({
-        all: sortStorageNodes([d1, d11, f111, d12, d2]),
+        all: sortStorageTree([d1, d11, f111, d12, d2]),
       })
 
       const actual = storageStore.removeList({ paths: [d11.path, d12.path] })
@@ -591,12 +596,12 @@ describe('removeList', () => {
       const d12 = newTestStorageDirNode('d1/d12')
       const d2 = newTestStorageDirNode('d2')
       storageStore.initState({
-        all: sortStorageNodes([d1, d11, f111, d12, d2]),
+        all: sortStorageTree([d1, d11, f111, d12, d2]),
       })
 
       const actual = storageStore.removeList({ paths: [d11.path, d1.path] })
 
-      sortStorageNodes(actual)
+      sortStorageTree(actual)
       expect(actual.length).toBe(4)
       expect(actual[0].path).toBe('d1')
       expect(actual[1].path).toBe('d1/d11')
@@ -612,7 +617,7 @@ describe('removeList', () => {
       const d12 = newTestStorageDirNode('d1/d12')
       const d2 = newTestStorageDirNode('d2')
       storageStore.initState({
-        all: sortStorageNodes([d1, d11, f111, d12, d2]),
+        all: sortStorageTree([d1, d11, f111, d12, d2]),
       })
 
       const actual = storageStore.removeList({ paths: [d11.path, 'dX', d12.path] })
@@ -633,7 +638,7 @@ describe('removeList', () => {
       const d12 = newTestStorageDirNode('d1/d12')
       const d2 = newTestStorageDirNode('d2')
       storageStore.initState({
-        all: sortStorageNodes([d1, d11, f111, d12, d2]),
+        all: sortStorageTree([d1, d11, f111, d12, d2]),
       })
 
       const actual = storageStore.removeList({ ids: [d11.id, d12.id] })
@@ -654,12 +659,12 @@ describe('removeList', () => {
       const d12 = newTestStorageDirNode('d1/d12')
       const d2 = newTestStorageDirNode('d2')
       storageStore.initState({
-        all: sortStorageNodes([d1, d11, f111, d12, d2]),
+        all: sortStorageTree([d1, d11, f111, d12, d2]),
       })
 
       const actual = storageStore.removeList({ ids: [d11.id, d1.id] })
 
-      sortStorageNodes(actual)
+      sortStorageTree(actual)
       expect(actual.length).toBe(4)
       expect(actual[0].path).toBe('d1')
       expect(actual[1].path).toBe('d1/d11')
@@ -677,7 +682,7 @@ describe('removeList', () => {
       const d12 = newTestStorageDirNode('d1/d12')
       const d2 = newTestStorageDirNode('d2')
       storageStore.initState({
-        all: sortStorageNodes([d1, d11, f111, d12, d2]),
+        all: sortStorageTree([d1, d11, f111, d12, d2]),
       })
 
       const actual = storageStore.removeList({ ids: [d11.id, 'xxx', d12.id] })
@@ -712,7 +717,7 @@ describe('remove', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.remove({ path: d11.path })
@@ -732,7 +737,7 @@ describe('remove', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.remove({ id: d11.id })
@@ -762,7 +767,7 @@ describe('remove', () => {
     const d11_bk = newTestStorageDirNode('d1/d11_bk')
     const fileC = newTestStorageDirNode('d1/d11_bk/fileC.txt')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, d111, fileA, fileB, d11_bk, fileC]),
+      all: sortStorageTree([d1, d11, d111, fileA, fileB, d11_bk, fileC]),
     })
 
     const actual = storageStore.remove({ path: 'd1/d11' })
@@ -780,7 +785,7 @@ describe('remove', () => {
   it('存在しないパスを指定した場合', () => {
     const d1 = newTestStorageDirNode('d1')
     storageStore.initState({
-      all: sortStorageNodes([d1]),
+      all: sortStorageTree([d1]),
     })
 
     const actual = storageStore.remove({ path: 'dXXX' })
@@ -791,7 +796,7 @@ describe('remove', () => {
   it('存在しないIDを指定した場合', () => {
     const d1 = newTestStorageDirNode('d1')
     storageStore.initState({
-      all: sortStorageNodes([d1]),
+      all: sortStorageTree([d1]),
     })
 
     const actual = storageStore.remove({ id: 'xxx' })
@@ -808,11 +813,12 @@ describe('move', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.move('d1', 'd2/d1')
 
+    storageStore.sort()
     expect(actual.length).toBe(4)
     expect(actual[0].path).toBe('d2/d1')
     expect(actual[1].path).toBe('d2/d1/d11')
@@ -830,11 +836,12 @@ describe('move', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.move('d1/d12', 'd12')
 
+    storageStore.sort()
     expect(actual.length).toBe(1)
     expect(actual[0].path).toBe('d12')
 
@@ -849,11 +856,12 @@ describe('move', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.move('d1/d11/f111.txt', 'd1/d12/f111.txt')
 
+    storageStore.sort()
     expect(actual.length).toBe(1)
     expect(actual[0].path).toBe('d1/d12/f111.txt')
 
@@ -868,11 +876,12 @@ describe('move', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1, d11, f111, d12, d2]),
     })
 
     const actual = storageStore.move('d1/d11/f111.txt', 'f111.txt')
 
+    storageStore.sort()
     expect(actual.length).toBe(1)
     expect(actual[0].path).toBe('f111.txt')
 
@@ -919,7 +928,7 @@ describe('move', () => {
     const dB_fileX = newTestStorageFileNode('dB/d1/fileX.txt')
     const dB_fileZ = newTestStorageFileNode('dB/d1/fileZ.txt')
     storageStore.initState({
-      all: sortStorageNodes([
+      all: sortStorageTree([
         dA,
         dA_d1,
         dA_d11,
@@ -972,6 +981,7 @@ describe('move', () => {
     ])
 
     // 全ノードを取得し、移動後に想定したノードリストとなっているか検証
+    storageStore.sort()
     const [_dA, _dB, _d1, _d11, _d111, _fileA, _fileB, _fileC, _d12, _d13, _fileX, _fileY, _fileZ] = storageStore.all
     expect(storageStore.all.length).toBe(13)
     expect(_dA.path).toBe('dA')
@@ -1011,7 +1021,7 @@ describe('move', () => {
     const d1 = newTestStorageDirNode('d1')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes(cloneDeep([d1, d2])),
+      all: sortStorageTree(cloneDeep([d1, d2])),
     })
 
     let actual!: Error
@@ -1031,7 +1041,7 @@ describe('move', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes(cloneDeep([d1, d11, f111, d12, d2])),
+      all: sortStorageTree(cloneDeep([d1, d11, f111, d12, d2])),
     })
 
     let actual!: Error
@@ -1053,11 +1063,12 @@ describe('rename', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes(cloneDeep([d1, d11, f111, d12, d2])),
+      all: sortStorageTree(cloneDeep([d1, d11, f111, d12, d2])),
     })
 
     const actual = storageStore.rename('d1', 'x1')
 
+    storageStore.sort()
     expect(actual.length).toBe(4)
     expect(actual[0].path).toBe('x1')
     expect(actual[1].path).toBe('x1/d11')
@@ -1075,12 +1086,13 @@ describe('rename', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes(cloneDeep([d1, d11, f111, d12, d2])),
+      all: sortStorageTree(cloneDeep([d1, d11, f111, d12, d2])),
     })
 
     // 'd1'を'd1XXX'へリネーム
     const actual = storageStore.rename('d1', 'd1XXX')
 
+    storageStore.sort()
     expect(actual.length).toBe(4)
     expect(actual[0].path).toBe('d1XXX')
     expect(actual[1].path).toBe('d1XXX/d11')
@@ -1096,11 +1108,12 @@ describe('rename', () => {
     const d11 = newTestStorageDirNode('d1/d11')
     const f111 = newTestStorageFileNode('d1/d11/f111.txt')
     storageStore.initState({
-      all: sortStorageNodes(cloneDeep([d1, d11, f111])),
+      all: sortStorageTree(cloneDeep([d1, d11, f111])),
     })
 
     const actual = storageStore.rename('d1/d11/f111.txt', 'fileX.txt')
 
+    storageStore.sort()
     expect(actual.length).toBe(1)
     expect(actual[0].path).toBe('d1/d11/fileX.txt')
 
@@ -1112,7 +1125,7 @@ describe('rename', () => {
     const d1 = newTestStorageDirNode('d1')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes(cloneDeep([d1, d2])),
+      all: sortStorageTree(cloneDeep([d1, d2])),
     })
 
     let actual!: Error
@@ -1134,7 +1147,7 @@ describe('clear', () => {
     const d12 = newTestStorageDirNode('d1/d12')
     const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageNodes(cloneDeep([d1, d11, f111, d12, d2])),
+      all: sortStorageTree(cloneDeep([d1, d11, f111, d12, d2])),
     })
 
     const beforeAll = storageStore.all
@@ -1171,7 +1184,7 @@ describe('sort', () => {
     const d21 = newTestStorageDirNode('d2/d21')
     const f1 = newTestStorageFileNode('f1.txt')
 
-    const actual = sortStorageNodes([f111, f121, f1, d1, d2, d11, d12, d21])
+    const actual = sortStorageTree([f111, f121, f1, d1, d2, d11, d12, d21])
 
     expect(actual[0]).toEqual(d1)
     expect(actual[1]).toEqual(d11)

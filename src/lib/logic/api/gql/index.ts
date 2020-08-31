@@ -63,13 +63,13 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       query: gql`
         query GetAppConfig {
           appConfig {
-            users {
-              dir
+            user {
+              rootName
             }
-            articles {
-              dir
-              assetsDir
+            article {
+              rootName
               fileName
+              assetsName
             }
           }
         }

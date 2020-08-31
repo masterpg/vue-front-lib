@@ -54,8 +54,9 @@ export default merge(require('@/lib/lang/ja').default, {
   storage: {
     appRootName: 'Storage',
     userRootName: 'Home',
-    articleRootName: '記事',
+    articleRootName: 'ホーム',
     uploading: 'アップロード中',
+    asset: 'アセット',
     nodeAlreadyExists: '「{nodeName}」という{nodeType}がすでに存在します。',
     create: {
       creatingDirError: '「{nodeName}」の作成でエラーが発生しました。',
@@ -67,8 +68,8 @@ export default merge(require('@/lib/lang/ja').default, {
       deletingError: '「{nodeName}」の削除でエラーが発生しました。',
     },
     move: {
-      movingNode: '移動{nodeType}',
-      selectDestPrompt: '移動先を選択してください:',
+      movingTarget: '移動対象',
+      selectDestPrompt: '移動先を選択してください。',
       destNotSelected: '移動先が選択されていません。',
       alreadyExistsQ: '「{nodeName}」というアイテムはすでに存在します。\n既存のアイテムは上書きされますがよろしいですか？',
       movingError: '「{nodeName}」の移動でエラーが発生しました。',
@@ -78,8 +79,8 @@ export default merge(require('@/lib/lang/ja').default, {
       renamingError: '「{nodeName}」の名前変更でエラーが発生しました。',
     },
     share: {
-      sharingNode: '共有する{nodeType}',
-      selectPublicPrompt: '{nodeType}を公開するか選択してください:',
+      sharingTarget: '共有対象',
+      selectPublicPrompt: '公開タイプ選択してください。',
       notSet: '未設定',
       public: '公開',
       private: '非公開',
@@ -98,14 +99,6 @@ export default merge(require('@/lib/lang/ja').default, {
     },
     download: {
       downloadFailure: '「{nodeName}」のダウンロードに失敗しました。',
-    },
-  },
-  article: {
-    nodeType: {
-      listBundle: 'リスト型バンドル',
-      categoryBundle: 'カテゴリ型バンドル',
-      categoryDir: 'カテゴリ',
-      articleDir: '記事',
     },
   },
 })

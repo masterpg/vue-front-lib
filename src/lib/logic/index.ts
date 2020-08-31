@@ -108,6 +108,7 @@ export {
   StorageDownloader,
   StorageFileUploader,
   StorageLogic,
+  StorageType,
   StorageUploader,
   StorageUrlUploadManager,
   SubStorageLogic,

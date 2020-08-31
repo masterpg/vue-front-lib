@@ -35,7 +35,7 @@
       <q-btn
         v-if="!pathBlock.last"
         flat
-        :label="pathBlock.name"
+        :label="pathBlock.label"
         class="storage-dir-path-breadcrumb__q-btn path-block-btn"
         padding="xs"
         no-caps
@@ -44,13 +44,13 @@
       <q-btn
         v-else
         flat
-        :label="pathBlock.name"
+        :label="pathBlock.label"
         class="storage-dir-path-breadcrumb__q-btn path-block-btn last"
         padding="xs"
         no-caps
         icon-right="arrow_drop_down"
       >
-        <storage-node-popup-menu :node="pathBlock" :is-root="pathBlock.isRoot" @select="m_popupMenuOnNodeAction" />
+        <storage-node-popup-menu :storage-type="storageType" :node="pathBlock" :is-root="pathBlock.isRoot" @select="m_popupMenuOnNodeAction" />
       </q-btn>
       <span v-show="!pathBlock.last" class="app-mx-8">/</span>
     </div>
@@ -59,14 +59,15 @@
 
 <script lang="ts">
 import { BaseComponent, Resizable, StorageNode, StorageNodeType } from '@/lib'
-import { StorageNodeActionEvent, StoragePageMixin } from './base'
 import { Component } from 'vue-property-decorator'
+import { StorageNodeActionEvent } from './base'
 import StorageNodePopupMenu from './storage-node-popup-menu.vue'
+import { StoragePageMixin } from './storage-page-mixin'
 import { mixins } from 'vue-class-component'
 import { splitHierarchicalPaths } from 'web-base-lib'
 
 interface PathBlock {
-  name: string
+  label: string
   path: string
   nodeType: StorageNodeType
   last: boolean
@@ -142,6 +143,7 @@ export default class StorageDirPathBreadcrumb extends mixins(BaseComponent, Resi
         const dirNode = this.storageLogic.sgetNode({ path: dirPath })
         result.push({
           ...dirNode,
+          label: this.getDisplayName(dirNode),
           last: i === hierarchicalDirPaths.length - 1,
           isRoot: false,
         })
@@ -150,7 +152,7 @@ export default class StorageDirPathBreadcrumb extends mixins(BaseComponent, Resi
 
     const rootNode = this.pageStore.rootNode
     result.unshift({
-      name: rootNode.name,
+      label: rootNode.label,
       path: rootNode.path,
       nodeType: rootNode.nodeType,
       last: result.length <= 0,

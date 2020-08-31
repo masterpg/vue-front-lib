@@ -75,7 +75,7 @@
 <script lang="ts">
 import { BaseComponent, Resizable } from '@/lib/base'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import { StorageFileUploader, StorageUploader } from '@/lib/logic'
+import { StorageFileUploader, StorageType, StorageUploader } from '@/lib/logic'
 import { mixins } from 'vue-class-component'
 
 export interface UploadEndedEvent {
@@ -105,6 +105,9 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
         this.m_uploader = this.$logic.userStorage.newUploader(this.$el)
         // this.m_uploader = this.$logic.userStorage.newUrlUploader(this.$el)
         break
+      case 'article':
+        this.m_uploader = this.$logic.articleStorage.newUploader(this.$el)
+        break
       case 'app':
         this.m_uploader = this.$logic.appStorage.newUploader(this.$el)
         break
@@ -118,7 +121,7 @@ export default class CompStorageUploadProgressFloat extends mixins(BaseComponent
   //----------------------------------------------------------------------
 
   @Prop({ required: true })
-  storageType!: 'user' | 'app'
+  storageType!: StorageType
 
   //----------------------------------------------------------------------
   //

@@ -1,9 +1,10 @@
 import * as path from 'path'
-import { RequiredStorageNodeShareSettings, StorageNode, StorageNodeShareSettingsInput, StorageNodeType } from '../../../types'
+import { RequiredStorageNodeShareSettings, StorageNode, StorageNodeShareSettingsInput } from '../../../types'
+import { SortStorageNode, getBaseStorageURL, sortStorageTree, storageChildrenSortFunc } from '../../../base'
 import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from '../download'
-import { getBaseStorageURL, sortStorageNodes } from '../../../base'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { StorageUploader } from '../upload'
+import { config } from '@/lib/config'
 
 //========================================================================
 //
@@ -76,6 +77,8 @@ interface StorageLogic {
 
   handleUploadedFileAPI(filePath: string): Promise<StorageNode>
 }
+
+type StorageType = 'user' | 'app' | 'article'
 
 //========================================================================
 //
@@ -189,8 +192,69 @@ namespace StorageLogic {
    * ノード配列をディレクトリ階層に従ってソートします。
    * @param nodes
    */
-  export function sortNodes<NODE extends { nodeType: StorageNodeType; name: string; dir: string; path: string }>(nodes: NODE[]): NODE[] {
-    return sortStorageNodes(nodes)
+  export function sortTree<NODE extends SortStorageNode>(nodes: NODE[]): NODE[] {
+    return sortStorageTree(nodes)
+  }
+
+  /**
+   * ディレクトリの子ノードをソートをソートします。
+   * @param nodes
+   */
+  export function sortChildren<NODE extends SortStorageNode>(nodes: NODE[]): NODE[] {
+    return nodes.sort(childrenSortFunc)
+  }
+
+  /**
+   * ディレクトリの子ノードをソートする関数です。
+   */
+  export const childrenSortFunc = storageChildrenSortFunc
+
+  /**
+   * 指定されたパスのストレージタイプを取得します。
+   * @param nodePath
+   */
+  export function getStorageType(nodePath: string): StorageType {
+    const userRootName = config.storage.user.rootName
+    const articleRootName = config.storage.article.rootName
+
+    // 引数パスが記事ルート含め配下を示す場合
+    const articlesReg = new RegExp(`^${userRootName}/[^/]+/(?:${articleRootName}$|${articleRootName}/)`)
+    if (articlesReg.test(nodePath)) {
+      return 'article'
+    }
+
+    // 引数パスがユーザールート含め配下を示す場合
+    const usersReg = new RegExp(`^${userRootName}/[^/]+/(?:[^/]+$|[^/]+/)`)
+    if (usersReg.test(nodePath)) {
+      return 'user'
+    }
+
+    // 上記以外はアプリケーションストレージ
+    return 'app'
+  }
+
+  export function isRootNode(nodePath?: string): boolean {
+    // アプリケーションルートの場合
+    if (!nodePath) {
+      return true
+    }
+
+    const userRootName = config.storage.user.rootName
+    const articleRootName = config.storage.article.rootName
+
+    // 記事ルートかチェック
+    const articlesReg = new RegExp(`^${userRootName}/[^/]+/${articleRootName}/?$`)
+    if (articlesReg.test(nodePath)) {
+      return true
+    }
+
+    // ユーザールートかチェック
+    const usersReg = new RegExp(`^${userRootName}/[^/]+/?$`)
+    if (usersReg.test(nodePath)) {
+      return true
+    }
+
+    return false
   }
 }
 
@@ -200,4 +264,4 @@ namespace StorageLogic {
 //
 //========================================================================
 
-export { StorageLogic }
+export { StorageLogic, StorageType }

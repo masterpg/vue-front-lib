@@ -92,7 +92,8 @@
         </div>
         <!-- コンテキストメニュー -->
         <storage-node-popup-menu
-          :node="{ path: value, nodeType }"
+          :storage-type="storageType"
+          :node="{ path: value, nodeType, articleNodeType }"
           :is-root="m_isRoot"
           :disabled="disableContextMenu"
           context-menu
@@ -108,20 +109,26 @@
 
 <script lang="ts">
 import * as path from 'path'
-import { CompTreeNode, CompTreeNodeEditData, NoCache, RequiredStorageNodeShareSettings, StorageNodeShareSettings, StorageNodeType } from '@/lib'
-import { StorageNodeActionEvent, StorageTreeNode, StorageTreeNodeData } from './base'
+import {
+  CompTreeNode,
+  CompTreeNodeEditData,
+  NoCache,
+  RequiredStorageNodeShareSettings,
+  StorageArticleNodeType,
+  StorageNodeShareSettings,
+  StorageNodeType,
+  StorageType,
+} from '@/lib'
+import { StorageNodeActionEvent, StorageTreeNodeData } from './base'
 import { Component } from 'vue-property-decorator'
 import { Dayjs } from 'dayjs'
 import StorageNodePopupMenu from './storage-node-popup-menu.vue'
 import { removeStartDirChars } from 'web-base-lib'
 
-// @ts-ignore `CompTreeNode<StorageTreeNode>`によって発生するエラーを回避
 @Component({
-  components: {
-    StorageNodePopupMenu,
-  },
+  components: { StorageNodePopupMenu },
 })
-export default class StorageTreeNodeClass extends CompTreeNode<StorageTreeNode> implements StorageTreeNode {
+export default class StorageTreeNode extends CompTreeNode<StorageTreeNode> {
   //----------------------------------------------------------------------
   //
   //  Properties
@@ -132,12 +139,16 @@ export default class StorageTreeNodeClass extends CompTreeNode<StorageTreeNode> 
     return ['node-action']
   }
 
+  get storageType(): StorageType {
+    return this.nodeData.storageType
+  }
+
   get id(): string {
     return this.nodeData.id
   }
 
   get name(): string {
-    return this.nodeData.label
+    return path.basename(this.nodeData.value)
   }
 
   get dir(): string {
@@ -172,6 +183,14 @@ export default class StorageTreeNodeClass extends CompTreeNode<StorageTreeNode> 
     return this.nodeData.share
   }
 
+  get articleNodeType(): StorageArticleNodeType | null {
+    return this.nodeData.articleNodeType
+  }
+
+  get articleSortOrder(): number | null {
+    return this.nodeData.articleSortOrder
+  }
+
   get url(): string {
     return this.nodeData.url
   }
@@ -185,7 +204,7 @@ export default class StorageTreeNodeClass extends CompTreeNode<StorageTreeNode> 
   }
 
   get disableContextMenu(): boolean {
-    return this.nodeData.disableContextMenu!
+    return this.nodeData.disableContextMenu
   }
 
   private m_inheritedShare: RequiredStorageNodeShareSettings = { isPublic: false, readUIds: [], writeUIds: [] }
@@ -235,7 +254,6 @@ export default class StorageTreeNodeClass extends CompTreeNode<StorageTreeNode> 
 
   protected init_sub(nodeData: StorageTreeNodeData): void {
     // 任意項目は値が設定されていないとリアクティブにならないのでここで初期化
-    this.$set(nodeData, 'disableContextMenu', Boolean(nodeData.disableContextMenu))
   }
 
   protected setNodeData_sub(editData: CompTreeNodeEditData<StorageTreeNodeData>): void {
@@ -252,6 +270,12 @@ export default class StorageTreeNodeClass extends CompTreeNode<StorageTreeNode> 
       this.nodeData.share.isPublic = editData.share.isPublic
       this.nodeData.share.readUIds = editData.share.readUIds
       this.nodeData.share.writeUIds = editData.share.writeUIds
+    }
+    if (typeof editData.articleNodeType === 'string' || editData.articleNodeType === null) {
+      this.nodeData.articleNodeType = editData.articleNodeType
+    }
+    if (typeof editData.articleSortOrder === 'number' || editData.articleSortOrder === null) {
+      this.nodeData.articleSortOrder = editData.articleSortOrder
     }
     if (typeof editData.url === 'string') {
       this.nodeData.url = editData.url

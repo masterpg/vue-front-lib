@@ -39,7 +39,7 @@
 import { BaseDialog, NoCache, StorageNode, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import { StoragePageMixin } from './base'
+import { StoragePageMixin } from './storage-page-mixin'
 import { mixins } from 'vue-class-component'
 
 @Component
@@ -61,9 +61,14 @@ export default class StorageNodeRemoveDialog extends mixins(BaseDialogMixin, Sto
   private m_removingNodes: StorageNode[] = []
 
   private get m_title(): string {
-    if (!this.m_removingNodes) return ''
-    const sth = String(this.$tc('common.item', this.m_removingNodes.length))
-    return String(this.$t('common.deleteSth', { sth }))
+    if (this.m_removingNodes.length === 1) {
+      const nodeTypeLabel = this.getNodeTypeLabel(this.m_removingNodes[0])
+      return String(this.$t('common.deleteSth', { sth: nodeTypeLabel }))
+    } else if (this.m_removingNodes.length >= 2) {
+      const sth = String(this.$tc('common.item', this.m_removingNodes.length))
+      return String(this.$t('common.deleteSth', { sth }))
+    }
+    return ''
   }
 
   private get m_message(): string {
@@ -71,7 +76,8 @@ export default class StorageNodeRemoveDialog extends mixins(BaseDialogMixin, Sto
 
     // ダイアログ引数で渡されたノードが1つの場合
     if (this.m_removingNodes.length === 1) {
-      return String(this.$t('storage.delete.deleteTargetQ', { target: this.m_removingNodes[0].name }))
+      const target = this.getDisplayName(this.m_removingNodes[0])
+      return String(this.$t('storage.delete.deleteTargetQ', { target }))
     }
     // ダイアログ引数で渡されたノードが複数の場合
     else {

@@ -10,7 +10,7 @@
   > *
     margin-top: 20px
 
-.node-name
+.node-label
   @extend %text-h6
   word-break: break-all
 
@@ -42,7 +42,7 @@
     <!-- ノード名 -->
     <div class="layout horizontal center">
       <q-icon :name="m_icon" size="24px" class="app-mr-12" />
-      <div class="node-name flex-1">{{ m_dirName }}</div>
+      <div class="node-label flex-1">{{ m_label }}</div>
       <q-btn flat round color="primary" icon="close" @click="m_closeOnClick" />
     </div>
     <!-- コンテンツエリア -->
@@ -65,7 +65,7 @@
           <div class="title">{{ this.$t('storage.nodeDetail.path') }}</div>
           <div class="value">{{ m_path }}</div>
         </div>
-        <div v-show="Boolean(m_type)" class="item">
+        <div class="item">
           <div class="title">{{ this.$t('storage.nodeDetail.type') }}</div>
           <div class="value">{{ m_type }}</div>
         </div>
@@ -98,13 +98,13 @@ import {
   NoCache,
   RequiredStorageNodeShareSettings,
   Resizable,
+  StorageArticleNodeType,
   StorageDownloader,
-  StorageLogic,
   StorageNode,
 } from '@/lib'
-import { Component, Prop, Watch } from 'vue-property-decorator'
-import { getArticleNodeTypeIcon, getArticleNodeTypeLabel } from './base'
+import { Component, Watch } from 'vue-property-decorator'
 import { QLinearProgress } from 'quasar'
+import { StoragePageMixin } from './storage-page-mixin'
 import bytes from 'bytes'
 import { mixins } from 'vue-class-component'
 import { removeBothEndsSlash } from 'web-base-lib'
@@ -112,7 +112,7 @@ import { removeBothEndsSlash } from 'web-base-lib'
 @Component({
   components: { CompStorageImg },
 })
-export default class StorageDirDetailView extends mixins(BaseComponent, Resizable) {
+export default class StorageDirDetailView extends mixins(BaseComponent, Resizable, StoragePageMixin) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -129,9 +129,6 @@ export default class StorageDirDetailView extends mixins(BaseComponent, Resizabl
   //
   //----------------------------------------------------------------------
 
-  @Prop({ required: true })
-  storageLogic!: StorageLogic
-
   private m_dirNode: StorageNode | null = null
 
   get fileNode(): StorageNode | null {
@@ -146,6 +143,16 @@ export default class StorageDirDetailView extends mixins(BaseComponent, Resizabl
 
   private m_dirPath: string | null = null
 
+  private get m_icon(): string {
+    if (!this.m_dirNode) return ''
+    return this.getNodeIcon(this.m_dirNode)
+  }
+
+  private get m_label(): string {
+    if (!this.m_dirNode) return ''
+    return this.getDisplayName(this.m_dirNode)
+  }
+
   private get m_id(): string {
     if (!this.m_dirNode) return ''
     return this.m_dirNode.id
@@ -156,18 +163,9 @@ export default class StorageDirDetailView extends mixins(BaseComponent, Resizabl
     return this.m_dirNode.path
   }
 
-  private get m_dirName(): string {
-    if (!this.m_dirNode) return ''
-    return this.m_dirNode.name
-  }
-
   private get m_type(): string {
     if (!this.m_dirNode) return ''
-    if (this.m_dirNode.articleNodeType) {
-      return getArticleNodeTypeLabel(this.m_dirNode.articleNodeType)
-    } else {
-      return ''
-    }
+    return this.getNodeTypeLabel(this.m_dirNode)
   }
 
   private get m_size(): string {
@@ -193,18 +191,6 @@ export default class StorageDirDetailView extends mixins(BaseComponent, Resizabl
       } else {
         result = `${this.$t('storage.share.private')}`
       }
-    }
-
-    return result
-  }
-
-  private get m_icon(): string {
-    let result = 'folder'
-
-    if (!this.m_dirNode) return result
-
-    if (this.m_dirNode.articleNodeType) {
-      result = getArticleNodeTypeIcon(this.m_dirNode.articleNodeType)
     }
 
     return result
@@ -304,7 +290,7 @@ export default class StorageDirDetailView extends mixins(BaseComponent, Resizabl
         if (downloader.canceled) continue
         if (downloader.failed) {
           const message = String(this.$t('storage.download.downloadFailure', { nodeName: downloader.name }))
-          this.m_showNotification('warning', message)
+          this.showNotification('warning', message)
           continue
         }
         // ダウンロードされたファイルをブラウザ経由でダウンロード
@@ -324,17 +310,6 @@ export default class StorageDirDetailView extends mixins(BaseComponent, Resizabl
     this.m_downloader.cancel()
     this.m_showDownloadProgress(false, () => {
       this.m_downloader.clear()
-    })
-  }
-
-  private m_showNotification(type: 'error' | 'warning', message: string): void {
-    this.$q.notify({
-      icon: type === 'error' ? 'error' : 'warning',
-      position: 'bottom-left',
-      message,
-      timeout: 0,
-      color: type === 'error' ? 'red-9' : 'grey-9',
-      actions: [{ icon: 'close', color: 'white' }],
     })
   }
 

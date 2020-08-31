@@ -54,4 +54,12 @@ export default {
     uploadFileFailed: 'Upload failed.',
     uploadFileCanceled: 'Upload canceled.',
   },
+  article: {
+    nodeType: {
+      listBundle: 'List Type Bundle' | 'List Type Bundles',
+      categoryBundle: 'Category Bundle' | 'Category Bundles',
+      categoryDir: 'Category' | 'Categories',
+      articleDir: 'Article' | 'Articles',
+    },
+  },
 }

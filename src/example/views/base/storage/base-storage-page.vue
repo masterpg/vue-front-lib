@@ -46,14 +46,14 @@
               v-show="visibleDirDetailView"
               ref="dirDetailView"
               class="node-detail-view"
-              :storage-logic="storageLogic"
+              :storage-type="storageType"
               @close="nodeDetailViewOnClose"
             />
             <storage-file-detail-view
               v-show="visibleFileDetailView"
               ref="fileDetailView"
               class="node-detail-view"
-              :storage-logic="storageLogic"
+              :storage-type="storageType"
               @close="nodeDetailViewOnClose"
             />
           </div>
@@ -84,7 +84,7 @@ import {
   CompTreeViewEvent,
   CompTreeViewLazyLoadEvent,
   Resizable,
-  StorageLogic,
+  StorageArticleNodeType,
   StorageNode,
   StorageNodeShareSettings,
   StorageNodeType,
@@ -92,22 +92,23 @@ import {
 } from '@/lib'
 import { Component, Watch } from 'vue-property-decorator'
 import { RawLocation, Route } from 'vue-router'
-import { StorageNodeActionEvent, StorageNodeActionType, StoragePageStore, StorageTreeNode, StorageType } from './base'
-import { removeBothEndsSlash, sleep } from 'web-base-lib'
+import StorageDirView, { IStorageDirView } from './storage-dir-view.vue'
+import { StorageNodeActionEvent, StorageNodeActionType } from './base'
+import { StoragePageMixin, StoragePageStore } from './storage-page-mixin'
 import StorageDirCreateDialog from './storage-dir-create-dialog.vue'
 import StorageDirDetailView from './storage-dir-detail-view.vue'
 import StorageDirPathBreadcrumb from './storage-dir-path-breadcrumb.vue'
-import StorageDirView from './storage-dir-view.vue'
 import StorageFileDetailView from './storage-file-detail-view.vue'
 import StorageNodeMoveDialog from './storage-node-move-dialog.vue'
 import StorageNodeRemoveDialog from './storage-node-remove-dialog.vue'
 import StorageNodeRenameDialog from './storage-node-rename-dialog.vue'
 import StorageNodeShareDialog from './storage-node-share-dialog.vue'
-import { StorageRoute } from '@/example/router'
+import StorageTreeNode from './storage-tree-node.vue'
 import StorageTreeView from './storage-tree-view.vue'
 import Vue from 'vue'
 import anime from 'animejs'
 import { mixins } from 'vue-class-component'
+import { removeBothEndsSlash } from 'web-base-lib'
 
 @Component({
   components: {
@@ -124,7 +125,7 @@ import { mixins } from 'vue-class-component'
     StorageTreeView,
   },
 })
-export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
+export default class BaseStoragePage extends mixins(BaseComponent, Resizable, StoragePageMixin) {
   //----------------------------------------------------------------------
   //
   //  Lifecycle hooks
@@ -133,7 +134,6 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
 
   created() {
     StoragePageStore.register(this.storageType, this)
-    this.pageStore = StoragePageStore.get(this.storageType)
   }
 
   destroyed() {
@@ -157,6 +157,8 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
     }
     // 初期ストレージノードの読み込みが行われていなく、かつユーザーがサインインしてる場合
     else if (this.$logic.auth.isSignedIn) {
+      // ストレージの初期化
+      await this.initStorage()
       // 初期ストレージノードの読み込み
       await this.pullInitialNodes()
     }
@@ -166,7 +168,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
     next()
 
     // URLから選択ノードパスを取得(取得できなかった場合はルートノード)
-    const dirPath = this.storageRoute.getNodePath() || this.treeView.rootNode.path
+    const dirPath = this.storageRoute.getNodePath()
     // ページの選択ノードを設定
     this.changeDir(dirPath)
   }
@@ -177,18 +179,6 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   //
   //----------------------------------------------------------------------
 
-  get storageType(): StorageType {
-    throw new Error('Not implemented.')
-  }
-
-  get storageLogic(): StorageLogic {
-    throw new Error('Not implemented.')
-  }
-
-  get storageRoute(): StorageRoute {
-    throw new Error('Not implemented.')
-  }
-
   treeView: StorageTreeView = null as any
 
   //----------------------------------------------------------------------
@@ -196,8 +186,6 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   //  Variables
   //
   //----------------------------------------------------------------------
-
-  protected pageStore: StoragePageStore = {} as any
 
   /**
    * ディレクトリ詳細ビューの表示フラグです。
@@ -242,7 +230,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
 
   protected pathDirBreadcrumb: StorageDirPathBreadcrumb = null as any
 
-  protected dirView: StorageDirView = null as any
+  protected dirView: IStorageDirView = null as any
 
   protected dirDetailView: StorageDirDetailView = null as any
 
@@ -267,6 +255,13 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   //----------------------------------------------------------------------
 
   /**
+   * ストレージの初期化を行います。
+   */
+  protected async initStorage(): Promise<void> {
+    throw new Error('Not implemented.')
+  }
+
+  /**
    * 本コンポーネントで必要となる要素の設定を行います。
    */
   protected setupElements(): void {
@@ -288,7 +283,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
     if (!this.$refs.dirView) {
       throw new Error('The element with the reference name ref="dirView" does not exist.')
     }
-    this.dirView = this.$refs.dirView as StorageDirView
+    this.dirView = this.$refs.dirView as IStorageDirView
 
     if (!this.$refs.dirDetailView) {
       throw new Error('The element with the reference name ref="dirDetailView" does not exist.')
@@ -330,7 +325,15 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
     }
     this.uploadProgressFloat = this.$refs.uploadProgressFloat as CompStorageUploadProgressFloat
 
-    this.treeView.$on('select', e => this.treeViewOnSelect(e))
+    this.treeView.$on('select', e => {
+      // 初期読み込みが行われる前にルートノードのselectイベントが発生すると、
+      // URLでノードパスが指定されていてもルートノードが選択ノードになってしまい、
+      // URLで指定されたノードパスがクリアされてしまう。
+      // このため初期読み込みされるまではselectイベントに反応しないようにしている。
+      if (!this.pageStore.isInitialPull) return
+
+      this.treeViewOnSelect(e)
+    })
     this.treeView.$on('lazy-load', e => this.treeViewOnLazyLoad(e))
     this.treeView.$on('node-action', e => this.m_popupMenuOnNodeAction(e))
     this.dirView.$on('select', e => this.dirViewOnSelect(e))
@@ -566,6 +569,24 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   }
 
   /**
+   * ディレクトリの作成を行います。
+   * @param dirPath 作成するディレクトリのパス
+   * @param articleNodeType 作成する記事ノードタイプ
+   */
+  protected async createArticleDir(dirPath: string, articleNodeType: StorageArticleNodeType): Promise<void> {
+    this.$q.loading.show()
+
+    // ディレクトリの作成を実行
+    await this.treeView.createArticleDir(dirPath, articleNodeType)
+    const treeNode = this.treeView.getNode(dirPath)!
+
+    // 現在選択されているノードへURL遷移
+    this.changeDirOnPage(this.treeView.selectedNode.path)
+
+    this.$q.loading.hide()
+  }
+
+  /**
    * 指定されたノードの祖先ノードを展開します。
    * @param nodePath
    * @param animated
@@ -629,6 +650,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
   @Watch('$logic.auth.isSignedIn')
   protected async isSignedInOnChange(newValue: AuthStatus, oldValue: AuthStatus) {
     if (this.$logic.auth.isSignedIn) {
+      await this.initStorage()
       await this.pullInitialNodes()
     } else {
       this.clearPage()
@@ -675,7 +697,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
       }
       case StorageNodeActionType.createDir.type: {
         const dirPath = e.nodePaths[0]
-        const creatingDirPath = await this.dirCreateDialog.open(dirPath)
+        const creatingDirPath = await this.dirCreateDialog.open({ parentPath: dirPath })
         if (creatingDirPath) {
           await this.createDir(creatingDirPath)
         }
@@ -720,6 +742,23 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
         }
         break
       }
+      case StorageNodeActionType.createListBundle.type:
+      case StorageNodeActionType.createCategoryBundle.type:
+      case StorageNodeActionType.createCategoryDir.type:
+      case StorageNodeActionType.createArticleDir.type: {
+        let articleNodeType!: StorageArticleNodeType
+        if (e.type === StorageNodeActionType.createListBundle.type) articleNodeType = StorageArticleNodeType.ListBundle
+        if (e.type === StorageNodeActionType.createCategoryBundle.type) articleNodeType = StorageArticleNodeType.CategoryBundle
+        if (e.type === StorageNodeActionType.createCategoryDir.type) articleNodeType = StorageArticleNodeType.CategoryDir
+        if (e.type === StorageNodeActionType.createArticleDir.type) articleNodeType = StorageArticleNodeType.ArticleDir
+
+        const dirPath = e.nodePaths[0]
+        const creatingDirPath = await this.dirCreateDialog.open({ parentPath: dirPath, articleNodeType })
+        if (creatingDirPath) {
+          await this.createArticleDir(creatingDirPath, articleNodeType)
+        }
+        break
+      }
     }
   }
 
@@ -747,12 +786,6 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable) {
    * @param e
    */
   protected async treeViewOnSelect(e: CompTreeViewEvent<StorageTreeNode>) {
-    // 初期読み込みが行われる前にルートノードのselectイベントが発生すると、
-    // URLでノードパスが指定されていてもルートノードが選択ノードになってしまい、
-    // URLで指定されたノードパスがクリアされてしまう。
-    // このため初期読み込みされるまではselectイベントに反応しないようにしている。
-    if (!this.pageStore.isInitialPull) return
-
     const selectedNode = e.node
 
     // 選択ノードまでスクロールするフラグが立っている場合

@@ -79,6 +79,7 @@
 </template>
 
 <script lang="ts">
+import * as path from 'path'
 import {
   BaseDialog,
   CompAlertDialog,
@@ -86,15 +87,18 @@ import {
   CompTreeViewEvent,
   CompTreeViewLazyLoadEvent,
   NoCache,
+  StorageArticleNodeType,
   StorageLogic,
   StorageNode,
   StorageNodeType,
 } from '@/lib'
-import { StoragePageMixin, StorageTreeNode, StorageTreeNodeData, getStorageNodeTypeIcon, getStorageNodeTypeLabel, nodeToTreeData } from './base'
+import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
+import { StoragePageMixin } from './storage-page-mixin'
+import StorageTreeNode from './storage-tree-node.vue'
+import { StorageTreeNodeData } from './base'
 import { mixins } from 'vue-class-component'
-import { removeBothEndsSlash } from 'web-base-lib'
 
 @Component
 class BaseDialogMixin extends BaseDialog<string[], string | undefined> {}
@@ -116,8 +120,8 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
 
   private get m_title(): string {
     if (this.m_movingNodes.length === 1) {
-      const nodeType = this.m_movingNodes[0].nodeType
-      return String(this.$t('common.moveSth', { sth: getStorageNodeTypeLabel(nodeType) }))
+      const nodeTypeLabel = this.getNodeTypeLabel(this.m_movingNodes[0])
+      return String(this.$t('common.moveSth', { sth: nodeTypeLabel }))
     } else if (this.m_movingNodes.length >= 2) {
       const sth = String(this.$tc('common.item', this.m_movingNodes.length))
       return String(this.$t('common.moveSth', { sth }))
@@ -127,8 +131,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
 
   private get m_movingNodeLabel(): string {
     if (this.m_movingNodes.length === 1) {
-      const nodeType = this.m_movingNodes[0].nodeType
-      return String(this.$t('storage.move.movingNode', { nodeType: getStorageNodeTypeLabel(nodeType) }))
+      return String(this.$t('storage.move.movingTarget'))
     }
     return ''
   }
@@ -142,8 +145,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
 
   private get m_movingNodeIcon(): string {
     if (this.m_movingNodes.length === 1) {
-      const nodeType = this.m_movingNodes[0].nodeType
-      return getStorageNodeTypeIcon(nodeType)
+      return this.getNodeIcon(this.m_movingNodes[0])
     }
     return ''
   }
@@ -192,7 +194,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
       }
     }
 
-    StorageLogic.sortNodes(this.m_movingNodes)
+    StorageLogic.sortTree(this.m_movingNodes)
 
     return this.openProcess(nodePaths, {
       opened: async () => {
@@ -244,13 +246,20 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
   }
 
   private async m_buildTreeView(): Promise<void> {
-    const movingNodesRootNode = this.pageStore.rootNode
+    //
+    // ルートノードの選択可/不可設定
+    //
+    let unselectable = false
+    // 移動ノードの親ディレクトリがルートノードの場合、ルートノードを選択できないよう設定
+    unselectable = this.m_movingNodesParentPath === this.pageStore.rootNode.path
+    // ストレージタイプが｢記事｣の場合、ルートノードは選択できないよう設定
+    if (this.storageType === 'article') {
+      unselectable = true
+    }
 
-    // 現在の親ディレクトリがルートノードの場合、ルートノードを選択できないよう設定
-    const unselectable = this.m_movingNodesParentPath === movingNodesRootNode.path
     // ルートノードの追加
     const rootTreeNode = this.m_treeView.addNode({
-      ...nodeToTreeData(movingNodesRootNode),
+      ...this.createRootNodeData(),
       opened: true,
       unselectable,
       disableContextMenu: true,
@@ -274,28 +283,131 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
     // 引数ディレクトリ直下の子ノードをサーバーから取得
     await this.storageLogic.fetchChildren(dirPath)
 
-    // 取得した子ノードをツリービューに追加
-    const childNodes = this.storageLogic.getChildren(dirPath)
-    for (const node of childNodes) {
-      // ディレクトリノード以外はツリービューに追加しない
-      if (node.nodeType !== StorageNodeType.Dir) continue
-      // 移動ノードはツリービューに追加しない
-      if (this.m_movingNodes.some(movingNode => movingNode.path === node.path)) continue
-      // 現在の親ディレクトリは選択できないよう設定
-      const unselectable = node.path === this.m_movingNodesParentPath
-      // ツリービューにディレクトリノードを追加
-      this.m_treeView.addNode(
-        {
-          ...nodeToTreeData(node),
-          lazy: true,
-          unselectable,
-          disableContextMenu: true,
-        } as StorageTreeNodeData,
-        {
-          parent: node.dir,
-        }
-      )
+    // 引数ディレクトリ直下の子ディレクトリのデータを取得
+    const childNodeDataList = this.m_createChildNodeDataList(dirPath)
+
+    // ストレージタイプが｢記事｣の場合
+    if (this.storageType === 'article') {
+      // 移動するノードのタイプによって移動先を絞り込み
+      if (this.m_containsCategory()) {
+        this.m_filterForCategory(childNodeDataList)
+      } else if (this.m_containsArticle()) {
+        this.m_filterForArticle(childNodeDataList)
+      } else {
+        this.m_filter(childNodeDataList)
+      }
     }
+
+    // ツリービューにディレクトリノードを追加
+    for (const childNodeData of childNodeDataList) {
+      const parentPath = removeStartDirChars(path.dirname(childNodeData.value))
+      this.m_treeView.addNode(childNodeData, {
+        parent: parentPath,
+      })
+    }
+  }
+
+  /**
+   * 指定されたディレクトリ直下の子ディレクトリを取得し、
+   * 取得したディレクトリをツリーに追加可能なデータとして作成します。
+   * @param dirPath
+   */
+  private m_createChildNodeDataList(dirPath: string): StorageTreeNodeData[] {
+    const result: StorageTreeNodeData[] = []
+
+    const childNodes = this.storageLogic.getChildren(dirPath)
+    for (const childNode of childNodes) {
+      // ディレクトリノード以外はツリービューに追加しない
+      if (childNode.nodeType !== StorageNodeType.Dir) continue
+      // 移動ノードはツリービューに追加しない
+      if (this.m_movingNodes.some(movingNode => movingNode.path === childNode.path)) continue
+      // 現在の親ディレクトリは選択できないよう設定
+      const unselectable = childNode.path === this.m_movingNodesParentPath
+
+      result.push({
+        ...this.nodeToTreeData(this.storageType, childNode),
+        lazy: true,
+        unselectable,
+        disableContextMenu: true,
+      })
+    }
+
+    return result
+  }
+
+  /**
+   * 移動ノードに｢カテゴリ｣を含んでいるかを取得します。
+   */
+  private m_containsCategory(): boolean {
+    return this.m_movingNodes.some(node => node.articleNodeType === StorageArticleNodeType.CategoryDir)
+  }
+
+  /**
+   * 移動ノードに｢記事｣を含んでいるかを取得します。
+   */
+  private m_containsArticle(): boolean {
+    return this.m_movingNodes.some(node => node.articleNodeType === StorageArticleNodeType.ArticleDir)
+  }
+
+  //--------------------------------------------------
+  //  移動先絞り込みフィルター
+  //--------------------------------------------------
+
+  /**
+   * 一般的なディレクトリまたはファイルの移動先を絞り込みます。
+   * 一般的なディレクトリまたはファイルは｢一般ディレクトリ、記事｣へ移動可能です。
+   * @param childNodeDataList
+   */
+  private m_filter(childNodeDataList: StorageTreeNodeData[]): StorageTreeNodeData[] {
+    for (let i = 0; i < childNodeDataList.length; i++) {
+      const nodeData = childNodeDataList[i]
+      // 一般的なディレクトリまたはファイルは｢一般ディレクトリ、記事｣へ移動可能であり、それ以外は選択不可
+      if (!(!nodeData.articleNodeType || nodeData.articleNodeType === StorageArticleNodeType.ArticleDir)) {
+        nodeData.unselectable = true
+      }
+    }
+
+    return childNodeDataList
+  }
+
+  /**
+   * カテゴリの移動先を絞り込みます。
+   * カテゴリは｢カテゴリバンドル、カテゴリ｣へ移動可能です。
+   * @param childNodeDataList
+   */
+  private m_filterForCategory(childNodeDataList: StorageTreeNodeData[]): StorageTreeNodeData[] {
+    for (let i = 0; i < childNodeDataList.length; i++) {
+      const nodeData = childNodeDataList[i]
+      // カテゴリは｢カテゴリバンドル、カテゴリ｣へ移動可能であり、それ以外のノードは除去
+      if (!(nodeData.articleNodeType === StorageArticleNodeType.CategoryBundle || nodeData.articleNodeType === StorageArticleNodeType.CategoryDir)) {
+        childNodeDataList.splice(i--, 1)
+      }
+    }
+
+    return childNodeDataList
+  }
+
+  /**
+   * 記事の移動先を絞り込みます。
+   * 記事は｢リストバンドル、カテゴリバンドル、カテゴリ｣へ移動可能です。
+   * @param childNodeDataList
+   */
+  private m_filterForArticle(childNodeDataList: StorageTreeNodeData[]): StorageTreeNodeData[] {
+    for (let i = 0; i < childNodeDataList.length; i++) {
+      const nodeData = childNodeDataList[i]
+      // 記事は｢リストバンドル、カテゴリバンドル、カテゴリ｣へ移動可能であり、それ以外のノードは除去
+      if (
+        !(
+          nodeData.articleNodeType === StorageArticleNodeType.ListBundle ||
+          nodeData.articleNodeType === StorageArticleNodeType.CategoryBundle ||
+          nodeData.articleNodeType === StorageArticleNodeType.CategoryDir
+        )
+      ) {
+        childNodeDataList.splice(i--, 1)
+      }
+    }
+
+    return childNodeDataList
   }
 
   //----------------------------------------------------------------------

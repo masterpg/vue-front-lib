@@ -24,9 +24,9 @@ beforeAll(async () => {
 describe('config', () => {
   it('サーバーとフロントの設定値が一致することを検証', async () => {
     const appConfig = await api.getAppConfig()
-    expect(config.storage.users.dir).toBe(appConfig.users.dir)
-    expect(config.storage.articles.dir).toBe(appConfig.articles.dir)
-    expect(config.storage.articles.assetsDir).toBe(appConfig.articles.assetsDir)
-    expect(config.storage.articles.fileName).toBe(appConfig.articles.fileName)
+    expect(config.storage.user.rootName).toBe(appConfig.user.rootName)
+    expect(config.storage.article.rootName).toBe(appConfig.article.rootName)
+    expect(config.storage.article.fileName).toBe(appConfig.article.fileName)
+    expect(config.storage.article.assetsName).toBe(appConfig.article.assetsName)
   })
 })

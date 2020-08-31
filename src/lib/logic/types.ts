@@ -1,5 +1,6 @@
 import { APIStorageNode } from './api'
 import { Dayjs } from 'dayjs'
+import { i18n } from '@/lib/i18n'
 
 //========================================================================
 //
@@ -64,11 +65,63 @@ enum StorageNodeType {
   Dir = 'Dir',
 }
 
+namespace StorageNodeType {
+  export function getLabel(nodeType: StorageNodeType, choice = 1): string {
+    switch (nodeType) {
+      case StorageNodeType.Dir:
+        return String(i18n.tc('common.folder', choice))
+      case StorageNodeType.File:
+        return String(i18n.tc('common.file', choice))
+    }
+  }
+
+  export function getIcon(nodeType: StorageNodeType): string {
+    switch (nodeType) {
+      case StorageNodeType.Dir:
+        return 'folder'
+      case StorageNodeType.File:
+        return 'description'
+    }
+  }
+}
+
 enum StorageArticleNodeType {
   ListBundle = 'ListBundle',
   CategoryBundle = 'CategoryBundle',
   ArticleDir = 'ArticleDir',
   CategoryDir = 'CategoryDir',
+}
+
+namespace StorageArticleNodeType {
+  export function getLabel(nodeType: StorageArticleNodeType | null, choice = 1): string {
+    switch (nodeType) {
+      case StorageArticleNodeType.ListBundle:
+        return String(i18n.tc('article.nodeType.listBundle', choice))
+      case StorageArticleNodeType.CategoryBundle:
+        return String(i18n.tc('article.nodeType.categoryBundle', choice))
+      case StorageArticleNodeType.CategoryDir:
+        return String(i18n.tc('article.nodeType.categoryDir', choice))
+      case StorageArticleNodeType.ArticleDir:
+        return String(i18n.tc('article.nodeType.articleDir', choice))
+      default:
+        return ''
+    }
+  }
+
+  export function getIcon(nodeType: StorageArticleNodeType | null): string {
+    switch (nodeType) {
+      case StorageArticleNodeType.ListBundle:
+        return 'view_headline'
+      case StorageArticleNodeType.CategoryBundle:
+        return 'subject'
+      case StorageArticleNodeType.CategoryDir:
+        return 'snippet_folder'
+      case StorageArticleNodeType.ArticleDir:
+        return 'article'
+      default:
+        return ''
+    }
+  }
 }
 
 interface StorageNode extends TimestampEntity {

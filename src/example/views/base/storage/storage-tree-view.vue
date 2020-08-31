@@ -7,12 +7,14 @@
 <script lang="ts">
 import * as _path from 'path'
 import {
+  ArticleStorageLogic,
   BaseComponent,
   CompTreeView,
   CompTreeViewEvent,
   CompTreeViewLazyLoadEvent,
   NoCache,
   Resizable,
+  StorageArticleNodeType,
   StorageLogic,
   StorageNode,
   StorageNodeShareSettings,
@@ -20,8 +22,10 @@ import {
   UploadEndedEvent,
 } from '@/lib'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import { StorageNodeActionEvent, StoragePageMixin, StorageTreeNode, StorageTreeNodeInput, nodeToTreeData } from './base'
+import { StorageNodeActionEvent, StorageTreeNodeInput } from './base'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
+import { StoragePageMixin } from './storage-page-mixin'
+import StorageTreeNode from './storage-tree-node.vue'
 import { mixins } from 'vue-class-component'
 
 @Component({
@@ -314,14 +318,14 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
    * ツリービューにあるノードを全て削除し、指定されたノードに置き換えます。
    * @param nodes
    */
-  setAllNodes(nodess: StorageTreeNodeInput[]): void {
+  setAllNodes(nodes: StorageTreeNodeInput[]): void {
     const targetNodePaths = this.getAllNodes().reduce((result, node) => {
       node !== this.rootNode && result.push(node.path)
       return result
     }, [] as string[])
     this.removeNodes(targetNodePaths)
 
-    this.setNodes(nodess)
+    this.setNodes(nodes)
   }
 
   /**
@@ -330,7 +334,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
    */
   mergeAllNodes(nodes: StorageTreeNodeInput[]): void {
     let filteredNodes = nodes.filter(this.nodeFilter)
-    filteredNodes = StorageLogic.sortNodes([...filteredNodes])
+    filteredNodes = StorageLogic.sortTree([...filteredNodes])
 
     const nodeDict = arrayToDict(filteredNodes, 'path')
 
@@ -420,7 +424,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
    * @param nodes
    */
   setNodes(nodes: StorageTreeNodeInput[]): void {
-    nodes = StorageLogic.sortNodes([...nodes])
+    nodes = StorageLogic.sortTree([...nodes])
 
     for (const node of nodes) {
       this.setNode(node)
@@ -452,11 +456,11 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
         //   これにより`treeNode`はツリービューには存在しないノードとなるため取得し直す必要がある。
         treeNode = this.getNode(node.path)!
       }
-      treeNode.setNodeData(nodeToTreeData(node))
+      treeNode.setNodeData(this.nodeToTreeData(this.storageType, node))
     }
     // ツリービューに引数ノードがまだ存在しない場合
     else {
-      this.m_treeView.addNode(nodeToTreeData(node), {
+      this.m_treeView.addNode(this.nodeToTreeData(this.storageType, node), {
         parent: node.dir || this.rootNode.path,
       })
     }
@@ -509,7 +513,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
         // 移動先に同名ノードが存在する場合
         if (existsTreeNode) {
           // 移動ノードを移動先の同名ノードへ上書き
-          const toTreeNodeData = nodeToTreeData(targetTreeNode)
+          const toTreeNodeData = this.nodeToTreeData(this.storageType, targetTreeNode)
           delete toTreeNodeData.opened
           delete toTreeNodeData.lazyLoadStatus
           existsTreeNode.setNodeData(toTreeNodeData)
@@ -561,12 +565,48 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
       dirNode = (await this.storageLogic.createHierarchicalDirs([dirPath]))[0]
     } catch (err) {
       console.error(err)
-      this.m_showNotification('error', String(this.$t('storage.create.creatingDirError', { nodeName: _path.basename(dirPath) })))
+      this.showNotification('error', String(this.$t('storage.create.creatingDirError', { nodeName: _path.basename(dirPath) })))
       return
     }
 
     // ツリービューに作成したディレクトリノードを追加
     this.setNode(dirNode)
+    const dirTreeNode = this.getNode(dirPath)!
+    // 作成したディレクトリの遅延ロード状態を済みに設定
+    dirTreeNode.lazyLoadStatus = 'loaded'
+  }
+
+  /**
+   * 記事系ディレクトリの作成を行います。
+   * @param dirPath 作成するディレクトリのパス
+   * @param articleNodeType 作成する記事ノードタイプ
+   */
+  async createArticleDir(dirPath: string, articleNodeType?: StorageArticleNodeType): Promise<void> {
+    if (this.storageType !== 'article') {
+      throw new Error(`This method cannot be executed by storageType '${this.storageType}'.`)
+    }
+
+    dirPath = removeBothEndsSlash(dirPath)
+    const storageLogic = this.storageLogic as ArticleStorageLogic
+
+    // APIによるディレクトリ作成処理を実行
+    let dirNode: StorageNode
+    try {
+      dirNode = await storageLogic.createArticleDir(dirPath, { articleNodeType })
+    } catch (err) {
+      console.error(err)
+      this.showNotification('error', String(this.$t('storage.create.creatingDirError', { nodeName: _path.basename(dirPath) })))
+      return
+    }
+
+    // 記事ディレクトリ作成時は記事ファイルも作成されるので読み込みを行う
+    let dirChildren: StorageNode[] = []
+    if (articleNodeType === StorageArticleNodeType.ArticleDir) {
+      dirChildren = storageLogic.getChildren(dirPath)
+    }
+
+    // ツリービューに作成したディレクトリノードを追加
+    this.setNodes([dirNode, ...dirChildren])
     const dirTreeNode = this.getNode(dirPath)!
     // 作成したディレクトリの遅延ロード状態を済みに設定
     dirTreeNode.lazyLoadStatus = 'loaded'
@@ -606,7 +646,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
         }
       } catch (err) {
         console.error(err)
-        this.m_showNotification('error', String(this.$t('storage.delete.deletingError', { nodeName: node.name })))
+        this.showNotification('error', String(this.$t('storage.delete.deletingError', { nodeName: node.name })))
       }
     }
 
@@ -665,7 +705,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
         }
       } catch (err) {
         console.error(err)
-        this.m_showNotification('error', String(this.$t('storage.move.movingError', { nodeName: fromNode.name })))
+        this.showNotification('error', String(this.$t('storage.move.movingError', { nodeName: fromNode.name })))
       }
     }
 
@@ -719,7 +759,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
       }
     } catch (err) {
       console.error(err)
-      this.m_showNotification('error', String(this.$t('storage.rename.renamingError', { nodeName: targetNode.name })))
+      this.showNotification('error', String(this.$t('storage.rename.renamingError', { nodeName: targetNode.name })))
       return
     }
 
@@ -768,7 +808,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
         }
       } catch (err) {
         console.error(err)
-        this.m_showNotification('error', String(this.$t('storage.share.sharingError', { nodeName: node.name })))
+        this.showNotification('error', String(this.$t('storage.share.sharingError', { nodeName: node.name })))
       }
     }
 
@@ -811,17 +851,6 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     }
 
     this.removeNodes(removingNodes)
-  }
-
-  private m_showNotification(type: 'error' | 'warning', message: string): void {
-    this.$q.notify({
-      icon: type === 'error' ? 'error' : 'warning',
-      position: 'bottom-left',
-      message,
-      timeout: 0,
-      color: 'red',
-      actions: [{ icon: 'close', color: 'white' }],
-    })
   }
 
   //----------------------------------------------------------------------

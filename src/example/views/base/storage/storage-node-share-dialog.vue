@@ -80,10 +80,10 @@
 </template>
 
 <script lang="ts">
-import { BaseDialog, NoCache, StorageNode, StorageNodeShareSettings } from '@/lib'
-import { StoragePageMixin, getStorageNodeTypeIcon, getStorageNodeTypeLabel } from './base'
+import { BaseDialog, NoCache, StorageNode, StorageNodeShareSettings, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
+import { StoragePageMixin } from './storage-page-mixin'
 import { mixins } from 'vue-class-component'
 
 @Component
@@ -106,8 +106,8 @@ export default class StorageNodeShareDialog extends mixins(BaseDialogMixin, Stor
 
   private get m_title(): string {
     if (this.m_sharingNodes.length === 1) {
-      const nodeType = this.m_sharingNodes[0].nodeType
-      return String(this.$t('common.shareSth', { sth: getStorageNodeTypeLabel(nodeType) }))
+      const nodeTypeLabel = this.getNodeTypeLabel(this.m_sharingNodes[0])
+      return String(this.$t('common.shareSth', { sth: nodeTypeLabel }))
     } else if (this.m_sharingNodes.length >= 2) {
       const sth = String(this.$tc('common.item', this.m_sharingNodes.length))
       return String(this.$t('common.shareSth', { sth }))
@@ -117,11 +117,9 @@ export default class StorageNodeShareDialog extends mixins(BaseDialogMixin, Stor
 
   private get m_selectPublicPrompt(): string {
     if (this.m_sharingNodes.length === 1) {
-      const nodeType = this.m_sharingNodes[0].nodeType
-      return String(this.$t('storage.share.selectPublicPrompt', { nodeType: getStorageNodeTypeLabel(nodeType) }))
+      return String(this.$t('storage.share.selectPublicPrompt'))
     } else if (this.m_sharingNodes.length >= 2) {
-      const nodeTypeName = String(this.$tc('common.item', this.m_sharingNodes.length))
-      return String(this.$t('storage.share.selectPublicPrompt', { nodeType: nodeTypeName }))
+      return String(this.$t('storage.share.selectPublicPrompt'))
     }
     return ''
   }
@@ -129,7 +127,7 @@ export default class StorageNodeShareDialog extends mixins(BaseDialogMixin, Stor
   private get m_targetNodeLabel(): string {
     if (this.m_sharingNodes.length === 1) {
       const nodeType = this.m_sharingNodes[0].nodeType
-      return String(this.$t('storage.share.sharingNode', { nodeType: getStorageNodeTypeLabel(nodeType) }))
+      return String(this.$t('storage.share.sharingTarget'))
     }
     return ''
   }
@@ -143,8 +141,7 @@ export default class StorageNodeShareDialog extends mixins(BaseDialogMixin, Stor
 
   private get m_targetNodeIcon(): string {
     if (this.m_sharingNodes.length === 1) {
-      const nodeType = this.m_sharingNodes[0].nodeType
-      return getStorageNodeTypeIcon(nodeType)
+      return this.getNodeIcon(this.m_sharingNodes[0])
     }
     return ''
   }

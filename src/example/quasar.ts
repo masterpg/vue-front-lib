@@ -83,7 +83,7 @@ Vue.use(Quasar, {
     QPageContainer,
     QRouteTab,
     QScrollArea,
-    // QSeparator,
+    QSeparator,
     // QSpace,
     // QSplitter,
     QTab,

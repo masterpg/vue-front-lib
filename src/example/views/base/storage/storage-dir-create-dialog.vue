@@ -23,7 +23,7 @@
       <q-card-section>
         <q-input ref="dirNameInput" v-model="m_dirName" class="app-pb-20" :label="m_parentPath" :error="m_isError" :error-message="m_errorMessage">
           <template v-slot:prepend>
-            <q-icon name="folder" />
+            <q-icon :name="m_icon" />
           </template>
         </q-input>
       </q-card-section>
@@ -41,14 +41,19 @@
 
 <script lang="ts">
 import * as path from 'path'
-import { BaseDialog, NoCache, StorageNode, StorageNodeType } from '@/lib'
+import { BaseDialog, NoCache, StorageArticleNodeType, StorageNode, StorageNodeType } from '@/lib'
 import { QDialog, QInput } from 'quasar'
-import { StoragePageMixin, getStorageNodeTypeLabel } from './base'
 import { Component } from 'vue-property-decorator'
+import { StoragePageMixin } from './storage-page-mixin'
 import { mixins } from 'vue-class-component'
 
+interface DialogParam {
+  parentPath: string
+  articleNodeType?: StorageArticleNodeType
+}
+
 @Component
-class BaseDialogMixin extends BaseDialog<string, string> {}
+class BaseDialogMixin extends BaseDialog<DialogParam, string> {}
 
 @Component
 export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, StoragePageMixin) {
@@ -65,9 +70,21 @@ export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, Stor
 
   private m_parentNode: StorageNode | null = null
 
+  private m_articleNodeType: StorageArticleNodeType | null = null
+
+  private get m_icon(): string {
+    return this.getNodeTypeIcon({
+      nodeType: StorageNodeType.Dir,
+      articleNodeType: this.m_articleNodeType,
+    })
+  }
+
   private get m_title(): string {
-    const nodeTypeName = this.$tc('common.folder', 1)
-    return String(this.$t('common.createSth', { sth: nodeTypeName }))
+    const nodeTypeLabel = this.getNodeTypeLabel({
+      nodeType: StorageNodeType.Dir,
+      articleNodeType: this.m_articleNodeType,
+    })
+    return String(this.$t('common.createSth', { sth: nodeTypeLabel }))
   }
 
   private m_dirName: string | null = null
@@ -76,7 +93,7 @@ export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, Stor
     if (!this.m_parentNode) {
       return path.join(this.pageStore.rootNode.label, '/')
     } else {
-      return path.join(this.pageStore.rootNode.label, this.m_parentNode.path, '/')
+      return path.join(this.pageStore.rootNode.label, this.getDisplayPath(this.m_parentNode), '/')
     }
   }
 
@@ -101,13 +118,16 @@ export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, Stor
   //
   //----------------------------------------------------------------------
 
-  open(parentPath: string): Promise<string> {
-    if (parentPath === this.pageStore.rootNode.path) {
+  open(param: DialogParam): Promise<string> {
+    if (param.parentPath === this.pageStore.rootNode.path) {
       this.m_parentNode = null
     } else {
-      this.m_parentNode = this.storageLogic.sgetNode({ path: parentPath })
+      this.m_parentNode = this.storageLogic.sgetNode({ path: param.parentPath })
     }
-    return this.openProcess(parentPath)
+
+    this.m_articleNodeType = param.articleNodeType || null
+
+    return this.openProcess(param)
   }
 
   close(dirPath?: string): void {
@@ -142,7 +162,7 @@ export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, Stor
   private m_validate(): boolean {
     // ディレクトリ名必須入力チェック
     if (this.m_dirName === '') {
-      const target = String(this.$t('common.sthName', { sth: getStorageNodeTypeLabel(StorageNodeType.Dir) }))
+      const target = String(this.$t('common.sthName', { sth: StorageNodeType.getLabel(StorageNodeType.Dir) }))
       this.m_errorMessage = String(this.$t('error.required', { target }))
       return false
     }

@@ -21,7 +21,8 @@ module.exports = {
         // TS2305: Module '"*.vue"' has no exported member 'xxx'.
         // TS2614: Module '"*.vue"' has no exported member 'xxx'. Did you mean to use 'import xxx from "*.vue"' instead?
         // TS2344: Type 'xxx' does not satisfy the constraint 'Vue'.
-        ignoreCodes: [2315, 2339, 2551, 2347, 2305, 2614, 2344],
+        // TS2345: Argument of type 'Vue' is not assignable to parameter of type 'xxx'.
+        ignoreCodes: [2315, 2339, 2551, 2347, 2305, 2614, 2344, 2345],
       },
     },
   },

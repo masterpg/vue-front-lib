@@ -53,10 +53,10 @@
 
 <script lang="ts">
 import * as path from 'path'
-import { BaseDialog, CompAlertDialog, NoCache, StorageNode } from '@/lib'
+import { BaseDialog, CompAlertDialog, NoCache, StorageNode, StorageNodeType } from '@/lib'
 import { QDialog, QInput } from 'quasar'
-import { StoragePageMixin, getStorageNodeTypeIcon, getStorageNodeTypeLabel } from './base'
 import { Component } from 'vue-property-decorator'
+import { StoragePageMixin } from './storage-page-mixin'
 import { mixins } from 'vue-class-component'
 
 @Component
@@ -79,21 +79,20 @@ export default class StorageNodeRenameDialog extends mixins(BaseDialogMixin, Sto
 
   private get m_title(): string {
     if (!this.m_targetNode) return ''
-    const nodeType = this.m_targetNode.nodeType
-    return String(this.$t('common.renameSth', { sth: getStorageNodeTypeLabel(nodeType) }))
+    const nodeTypeLabel = this.getNodeTypeLabel(this.m_targetNode)
+    return String(this.$t('common.renameSth', { sth: nodeTypeLabel }))
   }
 
   private get m_nodeIcon(): string {
     if (!this.m_targetNode) return ''
-    const nodeType = this.m_targetNode.nodeType
-    return getStorageNodeTypeIcon(nodeType)
+    return this.getNodeIcon(this.m_targetNode)
   }
 
   private m_newName: string | null = null
 
   private get m_parentPath(): string {
     if (!this.m_targetNode) return ''
-    return path.join(this.pageStore.rootNode.label, this.m_targetNode.dir, '/')
+    return path.join(this.pageStore.rootNode.label, this.getDisplayPath(this.m_targetNode), '/')
   }
 
   private get m_isError(): boolean {
@@ -170,8 +169,7 @@ export default class StorageNodeRenameDialog extends mixins(BaseDialogMixin, Sto
 
     // 必須入力チェック
     if (this.m_newName === '') {
-      const nodeType = this.m_targetNode.nodeType
-      const target = String(this.$t('common.sthName', { sth: getStorageNodeTypeLabel(targetNode.nodeType) }))
+      const target = String(this.$t('common.sthName', { sth: StorageNodeType.getLabel(targetNode.nodeType) }))
       this.m_errorMessage = String(this.$t('error.required', { target }))
       return false
     }
@@ -197,7 +195,7 @@ export default class StorageNodeRenameDialog extends mixins(BaseDialogMixin, Sto
       if (siblingNode === targetNode) continue
       if (siblingNode.name === this.m_newName) {
         this.m_errorMessage = String(
-          this.$t('storage.nodeAlreadyExists', { nodeName: this.m_newName, nodeType: getStorageNodeTypeLabel(siblingNode.nodeType) })
+          this.$t('storage.nodeAlreadyExists', { nodeName: this.m_newName, nodeType: StorageNodeType.getLabel(siblingNode.nodeType) })
         )
         return false
       }
