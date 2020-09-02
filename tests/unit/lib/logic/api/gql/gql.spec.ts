@@ -742,7 +742,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングなし', async () => {
       await setupArticleNodes()
 
-      const actual = await api.getArticleChildren(`${bundlePath}`)
+      const actual = await api.getArticleChildren(`${bundlePath}`, [StorageArticleNodeType.ArticleDir])
 
       expect(actual.nextPageToken).toBeUndefined()
       expect(actual.list.length).toBe(3)
@@ -754,7 +754,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       await setupArticleNodes()
 
-      const actual = await api.callStoragePaginationAPI(api.getArticleChildren, `${bundlePath}`, { maxChunk: 2 })
+      const actual = await api.callStoragePaginationAPI(api.getArticleChildren, `${bundlePath}`, [StorageArticleNodeType.ArticleDir], { maxChunk: 2 })
 
       expect(actual.length).toBe(3)
       expect(actual[0].path).toBe(`${bundlePath}/art3`)

@@ -12,6 +12,7 @@ import {
   CreateStorageNodeInput,
   PublicProfile,
   SetArticleSortOrderInput,
+  StorageArticleNodeType,
   StorageNodeKeyInput,
   StorageNodeShareSettingsInput,
   StoragePaginationInput,
@@ -855,11 +856,15 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     return this.toTimestampEntity(response.data!.setArticleSortOrder)
   }
 
-  async getArticleChildren(dirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
+  async getArticleChildren(
+    dirPath: string,
+    articleTypes: StorageArticleNodeType[],
+    input?: StoragePaginationInput
+  ): Promise<StoragePaginationResult> {
     const response = await this.query<{ articleChildren: RawStoragePaginationResult }>({
       query: gql`
-        query GetArticleChildren($dirPath: String!, $input: StoragePaginationInput) {
-          articleChildren(dirPath: $dirPath, input: $input) {
+        query GetArticleChildren($dirPath: String!, $articleTypes: [StorageArticleNodeType!]!, $input: StoragePaginationInput) {
+          articleChildren(dirPath: $dirPath, articleTypes: $articleTypes, input: $input) {
             list {
               id
               nodeType
@@ -883,7 +888,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
           }
         }
       `,
-      variables: { dirPath, input },
+      variables: { dirPath, articleTypes, input },
       isAuth: true,
     })
     return {

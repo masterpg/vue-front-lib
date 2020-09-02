@@ -3,6 +3,7 @@ import {
   CreateArticleDirInput,
   CreateStorageNodeInput,
   SetArticleSortOrderInput,
+  StorageArticleNodeType,
   StorageNode,
   StorageNodeKeyInput,
   StorageNodeShareSettingsInput,
@@ -85,7 +86,7 @@ export interface LibAPIContainer {
 
   setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<APIStorageNode>
 
-  getArticleChildren(dirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
+  getArticleChildren(dirPath: string, articleTypes: StorageArticleNodeType[], input?: StoragePaginationInput): Promise<StoragePaginationResult>
 
   //--------------------------------------------------
   //  Helpers

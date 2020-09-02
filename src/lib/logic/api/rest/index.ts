@@ -10,6 +10,7 @@ import {
   CreateArticleDirInput,
   CreateStorageNodeInput,
   SetArticleSortOrderInput,
+  StorageArticleNodeType,
   StorageNode,
   StorageNodeKeyInput,
   StorageNodeShareSettingsInput,
@@ -145,7 +146,7 @@ abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPICont
     throw new Error(`This method 'setArticleSortOrder' is not implemented.`)
   }
 
-  getArticleChildren(dirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult> {
+  getArticleChildren(dirPath: string, articleTypes: StorageArticleNodeType[], input?: StoragePaginationInput): Promise<StoragePaginationResult> {
     throw new Error(`This method 'getArticleChildren' is not implemented.`)
   }
 

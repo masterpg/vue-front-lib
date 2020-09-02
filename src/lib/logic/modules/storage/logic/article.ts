@@ -124,9 +124,13 @@ class ArticleStorageLogicImpl extends SubStorageLogic implements ArticleStorageL
     return StorageLogic.toBasePathNode(this.basePath, node)
   }
 
-  async fetchArticleChildren(dirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult<StorageNode>> {
+  async fetchArticleChildren(
+    dirPath: string,
+    articleTypes: StorageArticleNodeType[],
+    input?: StoragePaginationInput
+  ): Promise<StoragePaginationResult<StorageNode>> {
     // APIノードをストアへ反映
-    const { nextPageToken, list: apiNodes } = await this.m_getArticleChildrenAPI(dirPath, input)
+    const { nextPageToken, list: apiNodes } = await this.m_getArticleChildrenAPI(dirPath, articleTypes, input)
     const list = this.appStorage.setAPINodesToStore(apiNodes)
     // APIノードにないストアノードを削除
     this.appStorage.removeNotExistsStoreNodes(list, store.storage.getChildren(dirPath))
@@ -201,8 +205,12 @@ class ArticleStorageLogicImpl extends SubStorageLogic implements ArticleStorageL
     return this.appStorage.apiNodeToStorageNode(apiNode)!
   }
 
-  private async m_getArticleChildrenAPI(dirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult<StorageNode>> {
-    const apiPagination = await api.getArticleChildren(dirPath, input)
+  private async m_getArticleChildrenAPI(
+    dirPath: string,
+    articleTypes: StorageArticleNodeType[],
+    input?: StoragePaginationInput
+  ): Promise<StoragePaginationResult<StorageNode>> {
+    const apiPagination = await api.getArticleChildren(dirPath, articleTypes, input)
     return {
       nextPageToken: apiPagination.nextPageToken,
       list: this.appStorage.apiNodesToStorageNodes(apiPagination.list),

@@ -355,13 +355,13 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
 
   /**
    * 一般的なディレクトリまたはファイルの移動先を絞り込みます。
-   * 一般的なディレクトリまたはファイルは｢一般ディレクトリ、記事｣へ移動可能です。
+   * 一般的なディレクトリまたはファイルは｢一般ディレクトリ、記事｣へのみ移動可能です。
    * @param childNodeDataList
    */
   private m_filter(childNodeDataList: StorageTreeNodeData[]): StorageTreeNodeData[] {
     for (let i = 0; i < childNodeDataList.length; i++) {
       const nodeData = childNodeDataList[i]
-      // 一般的なディレクトリまたはファイルは｢一般ディレクトリ、記事｣へ移動可能であり、それ以外は選択不可
+      // 一般的なディレクトリまたはファイルは｢一般ディレクトリ、記事｣へのみ移動可能であり、それ以外は選択不可
       if (!(!nodeData.articleNodeType || nodeData.articleNodeType === StorageArticleNodeType.ArticleDir)) {
         nodeData.unselectable = true
       }
@@ -372,13 +372,13 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
 
   /**
    * カテゴリの移動先を絞り込みます。
-   * カテゴリは｢カテゴリバンドル、カテゴリ｣へ移動可能です。
+   * カテゴリは｢カテゴリバンドル、カテゴリ｣へのみ移動可能です。
    * @param childNodeDataList
    */
   private m_filterForCategory(childNodeDataList: StorageTreeNodeData[]): StorageTreeNodeData[] {
     for (let i = 0; i < childNodeDataList.length; i++) {
       const nodeData = childNodeDataList[i]
-      // カテゴリは｢カテゴリバンドル、カテゴリ｣へ移動可能であり、それ以外のノードは除去
+      // カテゴリは｢カテゴリバンドル、カテゴリ｣へのみ移動可能であり、それ以外の移動先ノードは除去
       if (!(nodeData.articleNodeType === StorageArticleNodeType.CategoryBundle || nodeData.articleNodeType === StorageArticleNodeType.CategoryDir)) {
         childNodeDataList.splice(i--, 1)
       }
@@ -389,13 +389,13 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
 
   /**
    * 記事の移動先を絞り込みます。
-   * 記事は｢リストバンドル、カテゴリバンドル、カテゴリ｣へ移動可能です。
+   * 記事は｢リストバンドル、カテゴリバンドル、カテゴリ｣へのみ移動可能です。
    * @param childNodeDataList
    */
   private m_filterForArticle(childNodeDataList: StorageTreeNodeData[]): StorageTreeNodeData[] {
     for (let i = 0; i < childNodeDataList.length; i++) {
       const nodeData = childNodeDataList[i]
-      // 記事は｢リストバンドル、カテゴリバンドル、カテゴリ｣へ移動可能であり、それ以外のノードは除去
+      // 記事は｢リストバンドル、カテゴリバンドル、カテゴリ｣へのみ移動可能であり、それ以外の移動先ノードは除去
       if (
         !(
           nodeData.articleNodeType === StorageArticleNodeType.ListBundle ||
