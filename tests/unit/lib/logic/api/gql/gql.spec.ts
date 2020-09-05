@@ -668,7 +668,7 @@ describe('Storage API', () => {
   //  Article
   //--------------------------------------------------
 
-  describe('createArticleDir', () => {
+  describe('createArticleRootUnderDir', () => {
     let articleRootPath: string
     let bundlePath: string
 
@@ -682,7 +682,7 @@ describe('Storage API', () => {
       // ユーザーの記事ルートを事前に作成
       await setupArticleNodes()
 
-      const actual = await api.createArticleDir(`${articleRootPath}/blog`, {
+      const actual = await api.createArticleRootUnderDir(`${articleRootPath}/blog`, {
         articleNodeType: StorageArticleNodeType.ListBundle,
       })
 
@@ -701,18 +701,18 @@ describe('Storage API', () => {
       articleRootPath = `${config.storage.user.rootName}/${GENERAL_TOKEN.uid}/${config.storage.article.rootName}`
       await api.createStorageHierarchicalDirs([articleRootPath])
       bundlePath = `${articleRootPath}/blog`
-      await api.createArticleDir(`${bundlePath}`, { articleNodeType: StorageArticleNodeType.ListBundle })
+      await api.createArticleRootUnderDir(`${bundlePath}`, { articleNodeType: StorageArticleNodeType.ListBundle })
     }
 
     it('疎通確認', async () => {
       // ユーザーの記事ルートを事前に作成
       await setupArticleNodes()
       // 記事を作成
-      const art1Dir = await api.createArticleDir(`${bundlePath}/art1`, {
-        articleNodeType: StorageArticleNodeType.ArticleDir,
+      const art1Dir = await api.createArticleRootUnderDir(`${bundlePath}/art1`, {
+        articleNodeType: StorageArticleNodeType.Article,
       })
-      const art2Dir = await api.createArticleDir(`${bundlePath}/art2`, {
-        articleNodeType: StorageArticleNodeType.ArticleDir,
+      const art2Dir = await api.createArticleRootUnderDir(`${bundlePath}/art2`, {
+        articleNodeType: StorageArticleNodeType.Article,
       })
 
       const actual = await api.setArticleSortOrder(`${art1Dir.path}`, {
@@ -733,16 +733,16 @@ describe('Storage API', () => {
       articleRootPath = `${config.storage.user.rootName}/${GENERAL_TOKEN.uid}/${config.storage.article.rootName}`
       await api.createStorageHierarchicalDirs([articleRootPath])
       bundlePath = `${articleRootPath}/blog`
-      await api.createArticleDir(`${bundlePath}`, { articleNodeType: StorageArticleNodeType.ListBundle })
-      await api.createArticleDir(`${bundlePath}/art1`, { articleNodeType: StorageArticleNodeType.ArticleDir })
-      await api.createArticleDir(`${bundlePath}/art2`, { articleNodeType: StorageArticleNodeType.ArticleDir })
-      await api.createArticleDir(`${bundlePath}/art3`, { articleNodeType: StorageArticleNodeType.ArticleDir })
+      await api.createArticleRootUnderDir(`${bundlePath}`, { articleNodeType: StorageArticleNodeType.ListBundle })
+      await api.createArticleRootUnderDir(`${bundlePath}/art1`, { articleNodeType: StorageArticleNodeType.Article })
+      await api.createArticleRootUnderDir(`${bundlePath}/art2`, { articleNodeType: StorageArticleNodeType.Article })
+      await api.createArticleRootUnderDir(`${bundlePath}/art3`, { articleNodeType: StorageArticleNodeType.Article })
     }
 
     it('疎通確認 - ページングなし', async () => {
       await setupArticleNodes()
 
-      const actual = await api.getArticleChildren(`${bundlePath}`, [StorageArticleNodeType.ArticleDir])
+      const actual = await api.getArticleChildren(`${bundlePath}`, [StorageArticleNodeType.Article])
 
       expect(actual.nextPageToken).toBeUndefined()
       expect(actual.list.length).toBe(3)
@@ -754,7 +754,7 @@ describe('Storage API', () => {
     it('疎通確認 - ページングあり', async () => {
       await setupArticleNodes()
 
-      const actual = await api.callStoragePaginationAPI(api.getArticleChildren, `${bundlePath}`, [StorageArticleNodeType.ArticleDir], { maxChunk: 2 })
+      const actual = await api.callStoragePaginationAPI(api.getArticleChildren, `${bundlePath}`, [StorageArticleNodeType.Article], { maxChunk: 2 })
 
       expect(actual.length).toBe(3)
       expect(actual[0].path).toBe(`${bundlePath}/art3`)

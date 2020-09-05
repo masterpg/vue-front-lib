@@ -77,7 +77,7 @@ abstract class BaseConfig {
         },
         article: {
           rootName: 'articles',
-          fileName: '__index__.md',
+          fileName: 'index.md',
           assetsName: 'assets',
         },
       },

@@ -58,8 +58,8 @@ export default {
     nodeType: {
       listBundle: 'List Type Bundle' | 'List Type Bundles',
       categoryBundle: 'Category Bundle' | 'Category Bundles',
-      categoryDir: 'Category' | 'Categories',
-      articleDir: 'Article' | 'Articles',
+      category: 'Category' | 'Categories',
+      article: 'Article' | 'Articles',
     },
   },
 }

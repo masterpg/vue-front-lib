@@ -569,15 +569,15 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable, St
   }
 
   /**
-   * ディレクトリの作成を行います。
+   * 記事ルート配下にディレクトリの作成を行います。
    * @param dirPath 作成するディレクトリのパス
    * @param articleNodeType 作成する記事ノードタイプ
    */
-  protected async createArticleDir(dirPath: string, articleNodeType: StorageArticleNodeType): Promise<void> {
+  protected async createArticleRootUnderDir(dirPath: string, articleNodeType?: StorageArticleNodeType): Promise<void> {
     this.$q.loading.show()
 
     // ディレクトリの作成を実行
-    await this.treeView.createArticleDir(dirPath, articleNodeType)
+    await this.treeView.createArticleRootUnderDir(dirPath, articleNodeType)
     const treeNode = this.treeView.getNode(dirPath)!
 
     // 現在選択されているノードへURL遷移
@@ -687,7 +687,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable, St
    */
   protected async m_popupMenuOnNodeAction(e: StorageNodeActionEvent) {
     switch (e.type) {
-      case StorageNodeActionType.reload.type: {
+      case 'reload': {
         const dirPath = e.nodePaths[0]
         await this.treeView.reloadDir(dirPath)
         // ページの選択ノードを設定
@@ -695,7 +695,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable, St
         this.changeDir(this.treeView.selectedNode.path)
         break
       }
-      case StorageNodeActionType.createDir.type: {
+      case 'createDir': {
         const dirPath = e.nodePaths[0]
         const creatingDirPath = await this.dirCreateDialog.open({ parentPath: dirPath })
         if (creatingDirPath) {
@@ -703,24 +703,24 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable, St
         }
         break
       }
-      case StorageNodeActionType.uploadFiles.type: {
-        const dirPath = e.nodePaths[0]
-        this.uploadProgressFloat.openFilesSelectDialog(dirPath)
-        break
-      }
-      case StorageNodeActionType.uploadDir.type: {
+      case 'uploadDir': {
         const dirPath = e.nodePaths[0]
         this.uploadProgressFloat.openDirSelectDialog(dirPath)
         break
       }
-      case StorageNodeActionType.move.type: {
+      case 'uploadFiles': {
+        const dirPath = e.nodePaths[0]
+        this.uploadProgressFloat.openFilesSelectDialog(dirPath)
+        break
+      }
+      case 'move': {
         const toDir = await this.nodeMoveDialog.open(e.nodePaths)
         if (typeof toDir === 'string') {
           await this.moveNodes(e.nodePaths, toDir)
         }
         break
       }
-      case StorageNodeActionType.rename.type: {
+      case 'rename': {
         const nodePath = e.nodePaths[0]
         const newName = await this.nodeRenameDialog.open(nodePath)
         if (newName) {
@@ -728,34 +728,26 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable, St
         }
         break
       }
-      case StorageNodeActionType.share.type: {
+      case 'share': {
         const input = await this.nodeShareDialog.open(e.nodePaths)
         if (input) {
           await this.setShareSettings(e.nodePaths, input)
         }
         break
       }
-      case StorageNodeActionType.deletion.type: {
+      case 'delete': {
         const confirmed = await this.nodeRemoveDialog.open(e.nodePaths)
         if (confirmed) {
           await this.removeNodes(e.nodePaths)
         }
         break
       }
-      case StorageNodeActionType.createListBundle.type:
-      case StorageNodeActionType.createCategoryBundle.type:
-      case StorageNodeActionType.createCategoryDir.type:
-      case StorageNodeActionType.createArticleDir.type: {
-        let articleNodeType!: StorageArticleNodeType
-        if (e.type === StorageNodeActionType.createListBundle.type) articleNodeType = StorageArticleNodeType.ListBundle
-        if (e.type === StorageNodeActionType.createCategoryBundle.type) articleNodeType = StorageArticleNodeType.CategoryBundle
-        if (e.type === StorageNodeActionType.createCategoryDir.type) articleNodeType = StorageArticleNodeType.CategoryDir
-        if (e.type === StorageNodeActionType.createArticleDir.type) articleNodeType = StorageArticleNodeType.ArticleDir
-
+      case 'createArticleRootUnderDir': {
+        const articleNodeType = e.articleNodeType
         const dirPath = e.nodePaths[0]
         const creatingDirPath = await this.dirCreateDialog.open({ parentPath: dirPath, articleNodeType })
         if (creatingDirPath) {
-          await this.createArticleDir(creatingDirPath, articleNodeType)
+          await this.createArticleRootUnderDir(creatingDirPath, articleNodeType)
         }
         break
       }

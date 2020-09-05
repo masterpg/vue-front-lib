@@ -8,7 +8,7 @@
       <template v-for="(menuItem, index) in m_menuItems">
         <q-separator v-if="menuItem.type === 'separator'" :key="index" />
         <q-item v-else :key="index" v-close-popup clickable>
-          <q-item-section @click="m_menuItemOnClick(menuItem.type)">{{ menuItem.label }}</q-item-section>
+          <q-item-section @click="m_menuItemOnClick(menuItem)">{{ menuItem.label }}</q-item-section>
         </q-item>
       </template>
     </q-list>
@@ -16,9 +16,9 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, NoCache, StorageArticleNodeType, StorageNodeType, StorageType } from '@/lib'
+import { BaseComponent, NoCache, StorageArticleNodeType, StorageNodeType } from '@/lib'
 import { Component, Prop } from 'vue-property-decorator'
-import { StorageNodeActionEvent, StorageNodeActionType } from './base'
+import { StorageNodeActionEvent as _StorageNodeActionEvent, StorageNodeActionType as _StorageNodeActionType } from './base'
 import { QMenu } from 'quasar'
 import { StoragePageMixin } from './storage-page-mixin'
 import { mixins } from 'vue-class-component'
@@ -28,6 +28,10 @@ interface Node {
   nodeType: StorageNodeType
   articleNodeType: StorageArticleNodeType
 }
+
+type StorageNodeActionType = _StorageNodeActionType | 'separator'
+
+class StorageNodeActionEvent extends _StorageNodeActionEvent<StorageNodeActionType> {}
 
 @Component({
   components: {},
@@ -60,126 +64,161 @@ export default class StorageNodePopupMenu extends mixins(BaseComponent, StorageP
   //
   //----------------------------------------------------------------------
 
-  private get m_menuItems(): StorageNodeActionType[] {
+  private get m_menuItems(): StorageNodeActionEvent[] {
     // ストレージ系メニュー
     if (this.m_isStorage) {
       // 複数選択用メニュー
       if (this.m_isMulti) {
-        return [StorageNodeActionType.move, StorageNodeActionType.share, StorageNodeActionType.deletion]
+        return [
+          new StorageNodeActionEvent('move', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('share', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('delete', this.m_selectedNodePaths),
+        ]
       }
       // ルートノード用メニュー
       else if (this.isRoot) {
-        return [StorageNodeActionType.createDir, StorageNodeActionType.uploadDir, StorageNodeActionType.uploadFiles, StorageNodeActionType.reload]
+        return [
+          new StorageNodeActionEvent('createDir', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('uploadDir', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('uploadFiles', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('reload', this.m_selectedNodePaths),
+        ]
       }
       // フォルダ用メニュー
       else if (this.m_isStorageDir) {
         return [
-          StorageNodeActionType.createDir,
-          StorageNodeActionType.uploadDir,
-          StorageNodeActionType.uploadFiles,
-          StorageNodeActionType.move,
-          StorageNodeActionType.rename,
-          StorageNodeActionType.share,
-          StorageNodeActionType.deletion,
-          StorageNodeActionType.reload,
+          new StorageNodeActionEvent('createDir', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('uploadDir', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('uploadFiles', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('move', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('rename', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('share', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('delete', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('reload', this.m_selectedNodePaths),
         ]
       }
       // ファイル用メニュー
       else if (this.m_isStorageFile) {
-        return [StorageNodeActionType.move, StorageNodeActionType.rename, StorageNodeActionType.share, StorageNodeActionType.deletion]
+        return [
+          new StorageNodeActionEvent('move', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('rename', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('share', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('delete', this.m_selectedNodePaths),
+        ]
       }
     }
     // 記事系メニュー
     else {
       // 複数選択用メニュー
       if (this.m_isMulti) {
-        const result = [StorageNodeActionType.move, StorageNodeActionType.share, StorageNodeActionType.deletion]
+        const result = [
+          new StorageNodeActionEvent('move', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('share', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('delete', this.m_selectedNodePaths),
+        ]
         if (this.m_containsBundle(this.selectedNodes!)) {
-          const index = result.indexOf(StorageNodeActionType.move)
+          const index = result.findIndex(e => e.type === 'move')
           index >= 0 && result.splice(index, 1)
         }
         if (this.m_containsAssetsDir(this.selectedNodes!)) {
-          const index = result.indexOf(StorageNodeActionType.deletion)
+          const index = result.findIndex(e => e.type === 'delete')
           index >= 0 && result.splice(index, 1)
         }
         return result
       }
       // 記事ルート用メニュー
       else if (this.isRoot) {
-        return [StorageNodeActionType.createListBundle, StorageNodeActionType.createCategoryBundle]
+        return [
+          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths, StorageArticleNodeType.ListBundle),
+          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths, StorageArticleNodeType.CategoryBundle),
+        ]
       }
       // リストバンドル用メニュー
       else if (this.m_isListBundle) {
         return [
-          StorageNodeActionType.createArticleDir,
-          StorageNodeActionType.separator,
-          StorageNodeActionType.rename,
-          StorageNodeActionType.share,
-          StorageNodeActionType.deletion,
-          StorageNodeActionType.reload,
+          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths, StorageArticleNodeType.Article),
+          new StorageNodeActionEvent('separator', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('rename', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('share', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('delete', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('reload', this.m_selectedNodePaths),
         ]
       }
       // カテゴリバンドル用メニュー
       else if (this.m_isCategoryBundle) {
         return [
-          StorageNodeActionType.createCategoryDir,
-          StorageNodeActionType.createArticleDir,
-          StorageNodeActionType.separator,
-          StorageNodeActionType.rename,
-          StorageNodeActionType.share,
-          StorageNodeActionType.deletion,
-          StorageNodeActionType.reload,
+          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths, StorageArticleNodeType.Category),
+          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths, StorageArticleNodeType.Article),
+          new StorageNodeActionEvent('separator', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('rename', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('share', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('delete', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('reload', this.m_selectedNodePaths),
         ]
       }
       // カテゴリ用メニュー
       else if (this.m_isCategory) {
         return [
-          StorageNodeActionType.createCategoryDir,
-          StorageNodeActionType.createArticleDir,
-          StorageNodeActionType.separator,
-          StorageNodeActionType.move,
-          StorageNodeActionType.rename,
-          StorageNodeActionType.share,
-          StorageNodeActionType.deletion,
-          StorageNodeActionType.reload,
+          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths, StorageArticleNodeType.Category),
+          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths, StorageArticleNodeType.Article),
+          new StorageNodeActionEvent('separator', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('rename', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('share', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('delete', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('reload', this.m_selectedNodePaths),
         ]
       }
       // 記事用メニュー
       else if (this.m_isArticle) {
         return [
-          StorageNodeActionType.uploadDir,
-          StorageNodeActionType.uploadFiles,
-          StorageNodeActionType.move,
-          StorageNodeActionType.rename,
-          StorageNodeActionType.share,
-          StorageNodeActionType.deletion,
-          StorageNodeActionType.reload,
+          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('uploadDir', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('uploadFiles', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('move', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('rename', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('share', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('delete', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('reload', this.m_selectedNodePaths),
         ]
       }
       // フォルダ用メニュー
       else if (this.m_isStorageDir) {
         if (this.m_isAssetsDir) {
-          return [StorageNodeActionType.createDir, StorageNodeActionType.uploadDir, StorageNodeActionType.uploadFiles, StorageNodeActionType.reload]
+          return [
+            new StorageNodeActionEvent('createDir', this.m_selectedNodePaths),
+            new StorageNodeActionEvent('uploadDir', this.m_selectedNodePaths),
+            new StorageNodeActionEvent('uploadFiles', this.m_selectedNodePaths),
+            new StorageNodeActionEvent('reload', this.m_selectedNodePaths),
+          ]
         } else {
           return [
-            StorageNodeActionType.createDir,
-            StorageNodeActionType.uploadDir,
-            StorageNodeActionType.uploadFiles,
-            StorageNodeActionType.move,
-            StorageNodeActionType.rename,
-            StorageNodeActionType.share,
-            StorageNodeActionType.deletion,
-            StorageNodeActionType.reload,
+            new StorageNodeActionEvent('createDir', this.m_selectedNodePaths),
+            new StorageNodeActionEvent('uploadDir', this.m_selectedNodePaths),
+            new StorageNodeActionEvent('uploadFiles', this.m_selectedNodePaths),
+            new StorageNodeActionEvent('move', this.m_selectedNodePaths),
+            new StorageNodeActionEvent('rename', this.m_selectedNodePaths),
+            new StorageNodeActionEvent('share', this.m_selectedNodePaths),
+            new StorageNodeActionEvent('delete', this.m_selectedNodePaths),
+            new StorageNodeActionEvent('reload', this.m_selectedNodePaths),
           ]
         }
       }
       // ファイル用メニュー
       else if (this.m_isStorageFile) {
-        return [StorageNodeActionType.move, StorageNodeActionType.rename, StorageNodeActionType.share, StorageNodeActionType.deletion]
+        return [
+          new StorageNodeActionEvent('move', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('rename', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('share', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('delete', this.m_selectedNodePaths),
+        ]
       }
     }
 
     return []
+  }
+
+  private get m_selectedNodePaths(): string[] {
+    return this.selectedNodes ? this.selectedNodes.map(node => node.path) : [this.node.path]
   }
 
   private get m_isStorage(): boolean {
@@ -278,10 +317,8 @@ export default class StorageNodePopupMenu extends mixins(BaseComponent, StorageP
     }
   }
 
-  private m_menuItemOnClick(type: string) {
-    const nodePaths = this.selectedNodes ? this.selectedNodes.map(node => node.path) : [this.node.path]
-    const event: StorageNodeActionEvent = { type, nodePaths }
-    this.$emit('select', event)
+  private m_menuItemOnClick(e: StorageNodeActionEvent) {
+    this.$emit('select', e)
   }
 }
 </script>

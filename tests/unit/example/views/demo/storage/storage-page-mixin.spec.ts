@@ -106,9 +106,9 @@ describe('StoragePageMixin', () => {
       //       └art1
       //         └index.md ← 指定
       const blog = newTestStorageDirNode(`blog`, { articleNodeType: StorageArticleNodeType.ListBundle })
-      const art1 = newTestStorageDirNode(`blog/art1`, { articleNodeType: StorageArticleNodeType.ArticleDir })
+      const art1 = newTestStorageDirNode(`blog/art1`, { articleNodeType: StorageArticleNodeType.Article })
       const index = newTestStorageFileNode(`blog/art1/${articleFileName}`, {
-        articleNodeType: StorageArticleNodeType.ArticleDir,
+        articleNodeType: StorageArticleNodeType.Article,
       })
 
       // モック設定
@@ -131,9 +131,9 @@ describe('StoragePageMixin', () => {
       //       └art1 ← 指定
       //         └index.md
       const blog = newTestStorageDirNode(`blog`, { articleNodeType: StorageArticleNodeType.ListBundle })
-      const art1 = newTestStorageDirNode(`blog/art1`, { articleNodeType: StorageArticleNodeType.ArticleDir })
+      const art1 = newTestStorageDirNode(`blog/art1`, { articleNodeType: StorageArticleNodeType.Article })
       const index = newTestStorageFileNode(`blog/art1/${articleFileName}`, {
-        articleNodeType: StorageArticleNodeType.ArticleDir,
+        articleNodeType: StorageArticleNodeType.Article,
       })
 
       // モック設定
@@ -156,7 +156,7 @@ describe('StoragePageMixin', () => {
       //     └d11
       //       └f111.txt
       const blog = newTestStorageDirNode(`blog`, { articleNodeType: StorageArticleNodeType.ListBundle })
-      const art1 = newTestStorageDirNode(`blog/art1`, { articleNodeType: StorageArticleNodeType.ArticleDir })
+      const art1 = newTestStorageDirNode(`blog/art1`, { articleNodeType: StorageArticleNodeType.Article })
       const d1 = newTestStorageDirNode(`blog/art1/d1`)
       const d11 = newTestStorageDirNode(`blog/art1/d1/d11`)
       const f111 = newTestStorageFileNode(`blog/art1/d1/d11/f111.txt`)

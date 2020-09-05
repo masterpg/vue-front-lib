@@ -49,10 +49,16 @@ interface StorageNodePopupMenuItem {
   label: string
 }
 
-interface StorageNodeActionEvent {
-  type: string
-  nodePaths: string[]
-}
+type StorageNodeActionType =
+  | 'createDir'
+  | 'uploadFiles'
+  | 'uploadDir'
+  | 'move'
+  | 'rename'
+  | 'share'
+  | 'delete'
+  | 'reload'
+  | 'createArticleRootUnderDir'
 
 //========================================================================
 //
@@ -64,102 +70,66 @@ interface StorageNodeActionEvent {
 //  ContextMenu
 //--------------------------------------------------
 
-interface StorageNodeActionType {
-  readonly type: string
-  readonly label: string
-}
+class StorageNodeActionEvent<T extends string = StorageNodeActionType> {
+  constructor(type: T, nodePaths: string[], articleNodeType?: StorageArticleNodeType) {
+    this.type = type
+    this.nodePaths = nodePaths
+    this.articleNodeType = articleNodeType
 
-namespace StorageNodeActionType {
-  export const createDir: StorageNodeActionType = new (class {
-    readonly type = 'createDir'
-    get label(): string {
-      return String(i18n.t('common.createSth', { sth: i18n.tc('common.folder', 1) }))
+    switch (this.type) {
+      case 'createDir':
+        this.label = String(i18n.t('common.createSth', { sth: i18n.tc('common.folder', 1) }))
+        break
+      case 'uploadFiles':
+        this.label = String(i18n.t('common.uploadSth', { sth: i18n.tc('common.file', 2) }))
+        break
+      case 'uploadDir':
+        this.label = String(i18n.t('common.uploadSth', { sth: i18n.tc('common.folder', 2) }))
+        break
+      case 'move':
+        this.label = String(i18n.t('common.move'))
+        break
+      case 'rename':
+        this.label = String(i18n.t('common.rename'))
+        break
+      case 'share':
+        this.label = String(i18n.t('common.share'))
+        break
+      case 'delete':
+        this.label = String(i18n.t('common.delete'))
+        break
+      case 'reload':
+        this.label = String(i18n.t('common.reload'))
+        break
+      case 'createArticleRootUnderDir': {
+        switch (this.articleNodeType) {
+          case StorageArticleNodeType.ListBundle:
+            this.label = String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.listBundle') }))
+            break
+          case StorageArticleNodeType.CategoryBundle:
+            this.label = String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.categoryBundle') }))
+            break
+          case StorageArticleNodeType.Category:
+            this.label = String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.category') }))
+            break
+          case StorageArticleNodeType.Article:
+            this.label = String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.article') }))
+            break
+          default:
+            this.label = String(i18n.t('common.createSth', { sth: i18n.tc('common.folder', 1) }))
+            break
+        }
+      }
     }
-  })()
+  }
 
-  export const uploadFiles: StorageNodeActionType = new (class {
-    readonly type = 'uploadFiles'
-    get label(): string {
-      return String(i18n.t('common.uploadSth', { sth: i18n.tc('common.file', 2) }))
-    }
-  })()
+  readonly type: T
 
-  export const uploadDir: StorageNodeActionType = new (class {
-    readonly type = 'uploadDir'
-    get label(): string {
-      return String(i18n.t('common.uploadSth', { sth: i18n.tc('common.folder', 2) }))
-    }
-  })()
+  readonly label: string = ''
 
-  export const move: StorageNodeActionType = new (class {
-    readonly type = 'move'
-    get label(): string {
-      return String(i18n.t('common.move'))
-    }
-  })()
+  readonly nodePaths: string[]
 
-  export const rename: StorageNodeActionType = new (class {
-    readonly type = 'rename'
-    get label(): string {
-      return String(i18n.t('common.rename'))
-    }
-  })()
-
-  export const share: StorageNodeActionType = new (class {
-    readonly type = 'share'
-    get label(): string {
-      return String(i18n.t('common.share'))
-    }
-  })()
-
-  export const deletion: StorageNodeActionType = new (class {
-    readonly type = 'delete'
-    get label(): string {
-      return String(i18n.t('common.delete'))
-    }
-  })()
-
-  export const reload: StorageNodeActionType = new (class {
-    readonly type = 'reload'
-    get label(): string {
-      return String(i18n.t('common.reload'))
-    }
-  })()
-
-  export const createListBundle: StorageNodeActionType = new (class {
-    readonly type = 'createListBundle'
-    get label(): string {
-      return String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.listBundle') }))
-    }
-  })()
-
-  export const createCategoryBundle: StorageNodeActionType = new (class {
-    readonly type = 'createCategoryBundle'
-    get label(): string {
-      return String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.categoryBundle') }))
-    }
-  })()
-
-  export const createCategoryDir: StorageNodeActionType = new (class {
-    readonly type = 'createCategoryDir'
-    get label(): string {
-      return String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.categoryDir') }))
-    }
-  })()
-
-  export const createArticleDir: StorageNodeActionType = new (class {
-    readonly type = 'createArticleDir'
-    get label(): string {
-      return String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.articleDir') }))
-    }
-  })()
-
-  export const separator: StorageNodeActionType = new (class {
-    readonly type = 'separator'
-    get label(): string {
-      return ''
-    }
-  })()
+  readonly articleNodeType?: StorageArticleNodeType
 }
 
 //========================================================================

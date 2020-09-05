@@ -581,7 +581,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
    * @param dirPath 作成するディレクトリのパス
    * @param articleNodeType 作成する記事ノードタイプ
    */
-  async createArticleDir(dirPath: string, articleNodeType?: StorageArticleNodeType): Promise<void> {
+  async createArticleRootUnderDir(dirPath: string, articleNodeType?: StorageArticleNodeType): Promise<void> {
     if (this.storageType !== 'article') {
       throw new Error(`This method cannot be executed by storageType '${this.storageType}'.`)
     }
@@ -592,7 +592,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     // APIによるディレクトリ作成処理を実行
     let dirNode: StorageNode
     try {
-      dirNode = await storageLogic.createArticleDir(dirPath, { articleNodeType })
+      dirNode = await storageLogic.createArticleRootUnderDir(dirPath, { articleNodeType })
     } catch (err) {
       console.error(err)
       this.showNotification('error', String(this.$t('storage.create.creatingDirError', { nodeName: _path.basename(dirPath) })))
@@ -601,7 +601,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
 
     // 記事ディレクトリ作成時は記事ファイルも作成されるので読み込みを行う
     let dirChildren: StorageNode[] = []
-    if (articleNodeType === StorageArticleNodeType.ArticleDir) {
+    if (articleNodeType === StorageArticleNodeType.Article) {
       dirChildren = storageLogic.getChildren(dirPath)
     }
 

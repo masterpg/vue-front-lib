@@ -8,7 +8,7 @@ import {
   toTimestampEntity as _toTimestampEntity,
 } from '../base'
 import {
-  CreateArticleDirInput,
+  CreateArticleRootUnderDirInput,
   CreateStorageNodeInput,
   PublicProfile,
   SetArticleSortOrderInput,
@@ -794,11 +794,11 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
   //  Article
   //--------------------------------------------------
 
-  async createArticleDir(dirPath: string, input: CreateArticleDirInput): Promise<APIStorageNode> {
-    const response = await this.mutate<{ createArticleDir: RawStorageNode }>({
+  async createArticleRootUnderDir(dirPath: string, input?: CreateArticleRootUnderDirInput): Promise<APIStorageNode> {
+    const response = await this.mutate<{ createArticleRootUnderDir: RawStorageNode }>({
       mutation: gql`
-        mutation CreateArticleDir($dirPath: String!, $input: CreateArticleDirInput!) {
-          createArticleDir(dirPath: $dirPath, input: $input) {
+        mutation CreateArticleRootUnderDir($dirPath: String!, $input: CreateArticleRootUnderDirInput) {
+          createArticleRootUnderDir(dirPath: $dirPath, input: $input) {
             id
             nodeType
             name
@@ -822,7 +822,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
       variables: { dirPath, input },
       isAuth: true,
     })
-    return this.toTimestampEntity(response.data!.createArticleDir)
+    return this.toTimestampEntity(response.data!.createArticleRootUnderDir)
   }
 
   async setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<APIStorageNode> {

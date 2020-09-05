@@ -279,7 +279,7 @@ class StoragePageMixin extends Vue {
     if (this.storageType !== 'article') return false
     const node = this.m_getStorageNode(node_or_nodePath)
     if (!node) return false
-    return node.articleNodeType === StorageArticleNodeType.CategoryDir
+    return node.articleNodeType === StorageArticleNodeType.Category
   }
 
   /**
@@ -290,7 +290,7 @@ class StoragePageMixin extends Vue {
     if (this.storageType !== 'article') return false
     const node = this.m_getStorageNode(node_or_nodePath)
     if (!node) return false
-    return node.articleNodeType === StorageArticleNodeType.ArticleDir
+    return node.articleNodeType === StorageArticleNodeType.Article
   }
 
   /**
@@ -307,7 +307,7 @@ class StoragePageMixin extends Vue {
     const parent = this.storageLogic.getNode({ path: parentPath })
     if (!parent) return false
 
-    return parent.articleNodeType === StorageArticleNodeType.ArticleDir && node.name === config.storage.article.fileName
+    return parent.articleNodeType === StorageArticleNodeType.Article && node.name === config.storage.article.fileName
   }
 
   /**
@@ -328,7 +328,7 @@ class StoragePageMixin extends Vue {
       const parentNode = this.storageLogic.getNode({ path: parentPath })
       if (!parentNode) return false
 
-      if (parentNode.articleNodeType === StorageArticleNodeType.ArticleDir) {
+      if (parentNode.articleNodeType === StorageArticleNodeType.Article) {
         return true
       } else {
         return existsArticle(parentPath)

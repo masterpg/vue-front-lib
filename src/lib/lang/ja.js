@@ -58,8 +58,8 @@ export default {
     nodeType: {
       listBundle: 'リスト型バンドル',
       categoryBundle: 'カテゴリ型バンドル',
-      categoryDir: 'カテゴリ',
-      articleDir: '記事',
+      category: 'カテゴリ',
+      article: '記事',
     },
   },
 }

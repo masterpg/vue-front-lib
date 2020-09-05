@@ -339,14 +339,14 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
    * 移動ノードに｢カテゴリ｣を含んでいるかを取得します。
    */
   private m_containsCategory(): boolean {
-    return this.m_movingNodes.some(node => node.articleNodeType === StorageArticleNodeType.CategoryDir)
+    return this.m_movingNodes.some(node => node.articleNodeType === StorageArticleNodeType.Category)
   }
 
   /**
    * 移動ノードに｢記事｣を含んでいるかを取得します。
    */
   private m_containsArticle(): boolean {
-    return this.m_movingNodes.some(node => node.articleNodeType === StorageArticleNodeType.ArticleDir)
+    return this.m_movingNodes.some(node => node.articleNodeType === StorageArticleNodeType.Article)
   }
 
   //--------------------------------------------------
@@ -362,7 +362,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
     for (let i = 0; i < childNodeDataList.length; i++) {
       const nodeData = childNodeDataList[i]
       // 一般的なディレクトリまたはファイルは｢一般ディレクトリ、記事｣へのみ移動可能であり、それ以外は選択不可
-      if (!(!nodeData.articleNodeType || nodeData.articleNodeType === StorageArticleNodeType.ArticleDir)) {
+      if (!(!nodeData.articleNodeType || nodeData.articleNodeType === StorageArticleNodeType.Article)) {
         nodeData.unselectable = true
       }
     }
@@ -379,7 +379,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
     for (let i = 0; i < childNodeDataList.length; i++) {
       const nodeData = childNodeDataList[i]
       // カテゴリは｢カテゴリバンドル、カテゴリ｣へのみ移動可能であり、それ以外の移動先ノードは除去
-      if (!(nodeData.articleNodeType === StorageArticleNodeType.CategoryBundle || nodeData.articleNodeType === StorageArticleNodeType.CategoryDir)) {
+      if (!(nodeData.articleNodeType === StorageArticleNodeType.CategoryBundle || nodeData.articleNodeType === StorageArticleNodeType.Category)) {
         childNodeDataList.splice(i--, 1)
       }
     }
@@ -400,7 +400,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
         !(
           nodeData.articleNodeType === StorageArticleNodeType.ListBundle ||
           nodeData.articleNodeType === StorageArticleNodeType.CategoryBundle ||
-          nodeData.articleNodeType === StorageArticleNodeType.CategoryDir
+          nodeData.articleNodeType === StorageArticleNodeType.Category
         )
       ) {
         childNodeDataList.splice(i--, 1)

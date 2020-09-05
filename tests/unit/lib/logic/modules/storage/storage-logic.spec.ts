@@ -1543,12 +1543,12 @@ describe('sortTree', () => {
       articleSortOrder: 9,
     })
     const blog_art1 = newTestStorageDirNode(`blog/art1`, {
-      articleNodeType: StorageArticleNodeType.ArticleDir,
+      articleNodeType: StorageArticleNodeType.Article,
       articleSortOrder: 99,
     })
     const blog_art1_index = newTestStorageFileNode(`blog/art1/index.md`)
     const blog_art2 = newTestStorageDirNode(`blog/art2`, {
-      articleNodeType: StorageArticleNodeType.ArticleDir,
+      articleNodeType: StorageArticleNodeType.Article,
       articleSortOrder: 98,
     })
     const blog_art2_index = newTestStorageFileNode(`blog/art2/index.md`)
@@ -1557,33 +1557,33 @@ describe('sortTree', () => {
       articleSortOrder: 8,
     })
     const category_art1 = newTestStorageDirNode(`category/art1`, {
-      articleNodeType: StorageArticleNodeType.ArticleDir,
+      articleNodeType: StorageArticleNodeType.Article,
       articleSortOrder: 99,
     })
     const category_art2 = newTestStorageDirNode(`category/art2`, {
-      articleNodeType: StorageArticleNodeType.ArticleDir,
+      articleNodeType: StorageArticleNodeType.Article,
       articleSortOrder: 98,
     })
     const category_ts = newTestStorageDirNode(`category/TypeScript`, {
       articleSortOrder: 97,
     })
     const category_ts_art1 = newTestStorageDirNode(`category/TypeScript/art1`, {
-      articleNodeType: StorageArticleNodeType.ArticleDir,
+      articleNodeType: StorageArticleNodeType.Article,
       articleSortOrder: 999,
     })
     const category_ts_art1_index = newTestStorageFileNode(`category/TypeScript/art1/index.md`)
     const category_ts_art2 = newTestStorageDirNode(`category/TypeScript/art2`, {
-      articleNodeType: StorageArticleNodeType.ArticleDir,
+      articleNodeType: StorageArticleNodeType.Article,
       articleSortOrder: 998,
     })
     const category_ts_art2_index = newTestStorageFileNode(`category/TypeScript/art2/index.md`)
     const category_js = newTestStorageDirNode(`category/JavaScript`)
     const category_js_art1 = newTestStorageDirNode(`category/JavaScript/art1`, {
-      articleNodeType: StorageArticleNodeType.ArticleDir,
+      articleNodeType: StorageArticleNodeType.Article,
       articleSortOrder: 999,
     })
     const category_js_art2 = newTestStorageDirNode(`category/JavaScript/art2`, {
-      articleNodeType: StorageArticleNodeType.ArticleDir,
+      articleNodeType: StorageArticleNodeType.Article,
       articleSortOrder: 998,
     })
 
@@ -1638,33 +1638,33 @@ describe('sortTree', () => {
     //     ├art1
     //     └art2
     const category_art1 = newTestStorageDirNode(`category/art1`, {
-      articleNodeType: StorageArticleNodeType.ArticleDir,
+      articleNodeType: StorageArticleNodeType.Article,
       articleSortOrder: 99,
     })
     const category_art2 = newTestStorageDirNode(`category/art2`, {
-      articleNodeType: StorageArticleNodeType.ArticleDir,
+      articleNodeType: StorageArticleNodeType.Article,
       articleSortOrder: 98,
     })
     const category_ts = newTestStorageDirNode(`category/TypeScript`, {
       articleSortOrder: 97,
     })
     const category_ts_art1 = newTestStorageDirNode(`category/TypeScript/art1`, {
-      articleNodeType: StorageArticleNodeType.ArticleDir,
+      articleNodeType: StorageArticleNodeType.Article,
       articleSortOrder: 999,
     })
     const category_ts_art2 = newTestStorageDirNode(`category/TypeScript/art2`, {
-      articleNodeType: StorageArticleNodeType.ArticleDir,
+      articleNodeType: StorageArticleNodeType.Article,
       articleSortOrder: 998,
     })
     const category_js = newTestStorageDirNode(`category/JavaScript`, {
       articleSortOrder: 96,
     })
     const category_js_art1 = newTestStorageDirNode(`category/JavaScript/art1`, {
-      articleNodeType: StorageArticleNodeType.ArticleDir,
+      articleNodeType: StorageArticleNodeType.Article,
       articleSortOrder: 999,
     })
     const category_js_art2 = newTestStorageDirNode(`category/JavaScript/art2`, {
-      articleNodeType: StorageArticleNodeType.ArticleDir,
+      articleNodeType: StorageArticleNodeType.Article,
       articleSortOrder: 998,
     })
 

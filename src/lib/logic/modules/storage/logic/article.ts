@@ -1,6 +1,6 @@
 import * as path from 'path'
 import {
-  CreateArticleDirInput,
+  CreateArticleRootUnderDirInput,
   SetArticleSortOrderInput,
   StorageArticleNodeType,
   StorageNode,
@@ -23,7 +23,7 @@ import { store } from '../../../store'
 
 interface ArticleStorageLogic extends StorageLogic {
   fetchArticleRoot(): Promise<void>
-  createArticleDir(dirPath: string, input: CreateArticleDirInput): Promise<StorageNode>
+  createArticleRootUnderDir(dirPath: string, input?: CreateArticleRootUnderDirInput): Promise<StorageNode>
   setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<StorageNode>
 }
 
@@ -79,7 +79,7 @@ class ArticleStorageLogicImpl extends SubStorageLogic implements ArticleStorageL
     this.appStorage.setAPINodesToStore([assetsNode])
   }
 
-  async createArticleDir(dirPath: string, input: CreateArticleDirInput): Promise<StorageNode> {
+  async createArticleRootUnderDir(dirPath: string, input?: CreateArticleRootUnderDirInput): Promise<StorageNode> {
     this.m_validateSignedIn()
 
     // 記事ルートを読み込み
@@ -93,11 +93,11 @@ class ArticleStorageLogicImpl extends SubStorageLogic implements ArticleStorageL
 
     // APIで指定ディレクトリを作成
     const fullDirPath = StorageLogic.toFullNodePath(this.basePath, dirPath)
-    const dirNode = await this.m_createArticleDirAPI(fullDirPath, input)
+    const dirNode = await this.m_createArticleRootUnderDirAPI(fullDirPath, input)
 
-    // 記事ディレクトリ作成時は記事ファイルも作成されるので読み込みを行う
+    // 記事作成時は記事ファイルも作成されるので読み込みを行う
     let dirChildren: StorageNode[] = []
-    if (input.articleNodeType === StorageArticleNodeType.ArticleDir) {
+    if (input && input.articleNodeType === StorageArticleNodeType.Article) {
       dirChildren = await this.appStorage.fetchChildren(fullDirPath)
     }
 
@@ -195,8 +195,8 @@ class ArticleStorageLogicImpl extends SubStorageLogic implements ArticleStorageL
   //  API
   //--------------------------------------------------
 
-  private async m_createArticleDirAPI(dirPath: string, input: CreateArticleDirInput): Promise<StorageNode> {
-    const apiNode = await api.createArticleDir(dirPath, input)
+  private async m_createArticleRootUnderDirAPI(dirPath: string, input?: CreateArticleRootUnderDirInput): Promise<StorageNode> {
+    const apiNode = await api.createArticleRootUnderDir(dirPath, input)
     return this.appStorage.apiNodeToStorageNode(apiNode)!
   }
 

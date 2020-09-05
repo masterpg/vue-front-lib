@@ -88,8 +88,8 @@ namespace StorageNodeType {
 enum StorageArticleNodeType {
   ListBundle = 'ListBundle',
   CategoryBundle = 'CategoryBundle',
-  ArticleDir = 'ArticleDir',
-  CategoryDir = 'CategoryDir',
+  Category = 'Category',
+  Article = 'Article',
 }
 
 namespace StorageArticleNodeType {
@@ -99,10 +99,10 @@ namespace StorageArticleNodeType {
         return String(i18n.tc('article.nodeType.listBundle', choice))
       case StorageArticleNodeType.CategoryBundle:
         return String(i18n.tc('article.nodeType.categoryBundle', choice))
-      case StorageArticleNodeType.CategoryDir:
-        return String(i18n.tc('article.nodeType.categoryDir', choice))
-      case StorageArticleNodeType.ArticleDir:
-        return String(i18n.tc('article.nodeType.articleDir', choice))
+      case StorageArticleNodeType.Category:
+        return String(i18n.tc('article.nodeType.category', choice))
+      case StorageArticleNodeType.Article:
+        return String(i18n.tc('article.nodeType.article', choice))
       default:
         return ''
     }
@@ -114,9 +114,9 @@ namespace StorageArticleNodeType {
         return 'view_headline'
       case StorageArticleNodeType.CategoryBundle:
         return 'subject'
-      case StorageArticleNodeType.CategoryDir:
+      case StorageArticleNodeType.Category:
         return 'snippet_folder'
-      case StorageArticleNodeType.ArticleDir:
+      case StorageArticleNodeType.Article:
         return 'article'
       default:
         return ''
@@ -173,7 +173,7 @@ interface StorageNodeKeyInput {
 
 interface CreateStorageNodeInput extends StorageNodeShareSettingsInput {}
 
-interface CreateArticleDirInput {
+interface CreateArticleRootUnderDirInput {
   articleNodeType?: StorageArticleNodeType
 }
 
@@ -190,7 +190,7 @@ interface SetArticleSortOrderInput {
 
 export {
   AuthStatus,
-  CreateArticleDirInput,
+  CreateArticleRootUnderDirInput,
   CreateStorageNodeInput,
   Entity,
   IdToken,
