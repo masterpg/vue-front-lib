@@ -336,6 +336,7 @@ class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
         readUIds: value.share.readUIds ? [...value.share.readUIds] : null,
         writeUIds: value.share.writeUIds ? [...value.share.writeUIds] : null,
       },
+      articleNodeName: value.articleNodeName ? value.articleNodeName : null,
       articleNodeType: value.articleNodeType ? value.articleNodeType : null,
       articleSortOrder: value.articleSortOrder ? value.articleSortOrder : null,
       version: value.version,

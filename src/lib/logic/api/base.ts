@@ -1,6 +1,6 @@
 import {
   AuthStatus,
-  CreateArticleRootUnderDirInput,
+  CreateArticleTypeDirInput,
   CreateStorageNodeInput,
   SetArticleSortOrderInput,
   StorageArticleNodeType,
@@ -82,7 +82,9 @@ export interface LibAPIContainer {
   //  Article
   //--------------------------------------------------
 
-  createArticleRootUnderDir(dirPath: string, input?: CreateArticleRootUnderDirInput): Promise<APIStorageNode>
+  createArticleTypeDir(input: CreateArticleTypeDirInput): Promise<APIStorageNode>
+
+  createArticleGeneralDir(dirPath: string): Promise<APIStorageNode>
 
   setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<APIStorageNode>
 

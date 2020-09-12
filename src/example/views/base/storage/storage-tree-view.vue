@@ -12,6 +12,7 @@ import {
   CompTreeView,
   CompTreeViewEvent,
   CompTreeViewLazyLoadEvent,
+  CreateArticleTypeDirInput,
   NoCache,
   Resizable,
   StorageArticleNodeType,
@@ -562,7 +563,7 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
     // APIによるディレクトリ作成処理を実行
     let dirNode: StorageNode
     try {
-      dirNode = (await this.storageLogic.createHierarchicalDirs([dirPath]))[0]
+      dirNode = await this.storageLogic.createDir(dirPath)
     } catch (err) {
       console.error(err)
       this.showNotification('error', String(this.$t('storage.create.creatingDirError', { nodeName: _path.basename(dirPath) })))
@@ -578,38 +579,38 @@ export default class StorageTreeView extends mixins(BaseComponent, Resizable, St
 
   /**
    * 記事系ディレクトリの作成を行います。
-   * @param dirPath 作成するディレクトリのパス
-   * @param articleNodeType 作成する記事ノードタイプ
+   * @param input
    */
-  async createArticleRootUnderDir(dirPath: string, articleNodeType?: StorageArticleNodeType): Promise<void> {
+  async createArticleTypeDir(input: CreateArticleTypeDirInput): Promise<StorageTreeNode | undefined> {
     if (this.storageType !== 'article') {
       throw new Error(`This method cannot be executed by storageType '${this.storageType}'.`)
     }
 
-    dirPath = removeBothEndsSlash(dirPath)
     const storageLogic = this.storageLogic as ArticleStorageLogic
 
     // APIによるディレクトリ作成処理を実行
     let dirNode: StorageNode
     try {
-      dirNode = await storageLogic.createArticleRootUnderDir(dirPath, { articleNodeType })
+      dirNode = await storageLogic.createArticleTypeDir(input)
     } catch (err) {
       console.error(err)
-      this.showNotification('error', String(this.$t('storage.create.creatingDirError', { nodeName: _path.basename(dirPath) })))
+      this.showNotification('error', String(this.$t('storage.create.creatingDirError', { nodeName: input.articleNodeName })))
       return
     }
 
     // 記事ディレクトリ作成時は記事ファイルも作成されるので読み込みを行う
     let dirChildren: StorageNode[] = []
-    if (articleNodeType === StorageArticleNodeType.Article) {
-      dirChildren = storageLogic.getChildren(dirPath)
+    if (dirNode.articleNodeType === StorageArticleNodeType.Article) {
+      dirChildren = storageLogic.getChildren(dirNode.path)
     }
 
     // ツリービューに作成したディレクトリノードを追加
     this.setNodes([dirNode, ...dirChildren])
-    const dirTreeNode = this.getNode(dirPath)!
+    const dirTreeNode = this.getNode(dirNode.path)!
     // 作成したディレクトリの遅延ロード状態を済みに設定
     dirTreeNode.lazyLoadStatus = 'loaded'
+
+    return dirTreeNode
   }
 
   /**

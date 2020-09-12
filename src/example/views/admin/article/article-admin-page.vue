@@ -135,10 +135,6 @@ export default class ArticleAdminPage extends BaseStoragePage {
   //
   //----------------------------------------------------------------------
 
-  protected async initStorage(): Promise<void> {
-    await this.storageLogic.fetchArticleRoot()
-  }
-
   protected async treeViewOnSelect(e: CompTreeViewEvent<StorageTreeNode>) {
     const selectedNode = e.node
 

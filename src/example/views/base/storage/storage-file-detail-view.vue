@@ -75,6 +75,10 @@
           <div class="title">{{ this.$t('storage.nodeDetail.path') }}</div>
           <div class="value">{{ m_path }}</div>
         </div>
+        <div class="item" v-show="Boolean(m_displayPath)">
+          <div class="title">{{ this.$t('storage.nodeDetail.displayPath') }}</div>
+          <div class="value">{{ m_displayPath }}</div>
+        </div>
         <div class="item">
           <div class="title">{{ this.$t('storage.nodeDetail.type') }}</div>
           <div class="value">{{ m_contentType }}</div>
@@ -167,6 +171,12 @@ export default class StorageFileDetailView extends mixins(BaseComponent, Resizab
   private get m_path(): string {
     if (!this.m_fileNode) return ''
     return this.m_fileNode.path
+  }
+
+  private get m_displayPath(): string {
+    if (!this.m_fileNode) return ''
+    if (this.storageType !== 'article') return ''
+    return this.getDisplayPath(this.m_fileNode)
   }
 
   private get m_fileName(): string {

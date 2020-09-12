@@ -1664,7 +1664,7 @@ describe('createStorageDir', () => {
     {
       const d11 = newTestStorageDirNode(`d1/d11`)
 
-      td.when(storageLogic.createHierarchicalDirs([`d1/d11`])).thenResolve([d11])
+      td.when(storageLogic.createDir(`d1/d11`)).thenResolve(d11)
     }
 
     // 'd1/d11'を作成
@@ -1697,7 +1697,7 @@ describe('createStorageDir', () => {
     {
       const d1 = newTestStorageDirNode(`d1`)
 
-      td.when(storageLogic.createHierarchicalDirs([`d1`])).thenResolve([d1])
+      td.when(storageLogic.createDir(`d1`)).thenResolve(d1)
     }
 
     // 'd1'を作成
@@ -1721,7 +1721,7 @@ describe('createStorageDir', () => {
   it('APIでエラーが発生した場合', async () => {
     const { treeView, storageLogic } = newTreeView()
 
-    td.when(storageLogic.createHierarchicalDirs([`dA`])).thenReject(new Error())
+    td.when(storageLogic.createDir(`dA`)).thenReject(new Error())
 
     await treeView.createStorageDir(`dA`)
 

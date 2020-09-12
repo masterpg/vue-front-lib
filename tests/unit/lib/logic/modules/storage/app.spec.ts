@@ -879,7 +879,7 @@ describe('createDir', () => {
     }
 
     // スローされたエラーを検証
-    expect(actual.message).toBe(`The ancestor directory 'd1/d11' has not yet been loaded.`)
+    expect(actual.message).toBe(`One of the ancestor nodes in the path '${d111.path}' does not exist.`)
     // ノードリストに変化がないことを検証
     expect(storageLogic.nodes).toEqual([d1])
   })
@@ -1405,6 +1405,7 @@ describe('m_getPaginationNodesAPI', () => {
         contentType: '',
         size: 0,
         share: cloneDeep(EMPTY_SHARE_SETTINGS),
+        articleNodeName: null,
         articleNodeType: null,
         articleSortOrder: null,
         version: 1,

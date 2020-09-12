@@ -114,6 +114,10 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     return result
   }
 
+  async fetchRoot(): Promise<void> {
+    // アプリケーションストレージの場合、特にすることはない
+  }
+
   async fetchHierarchicalNodes(nodePath: string): Promise<StorageNode[]> {
     // APIノードをストアへ反映
     const apiNodes = await this.getHierarchicalNodesAPI(nodePath)
@@ -228,12 +232,8 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
   async createDir(dirPath: string, input?: CreateStorageNodeInput): Promise<StorageNode> {
     // 指定ディレクトリの祖先が読み込まれていない場合、例外をスロー
     // ※祖先が読み込まれていない状態でディレクトリを作成すると、ストアのディレクトリ構造が不整合になるため
-    const ancestorDirPaths = splitHierarchicalPaths(dirPath).filter(iDirPath => iDirPath !== dirPath)
-    for (const iDirPath of ancestorDirPaths) {
-      const iDirNode = store.storage.get({ path: iDirPath })
-      if (!iDirNode) {
-        throw new Error(`The ancestor directory '${iDirPath}' has not yet been loaded.`)
-      }
+    if (!this.existsAncestorDirsOnStore(dirPath)) {
+      throw new Error(`One of the ancestor nodes in the path '${dirPath}' does not exist.`)
     }
 
     const apiNode = await this.createDirAPI(dirPath, input)
@@ -462,6 +462,67 @@ class AppStorageLogic extends BaseLogic implements StorageLogic {
     }
 
     return store.storage.removeList({ paths: removingNodes })
+  }
+
+  /**
+   * 指定パスを構成するノードに未読み込みのノードがある場合、
+   * サーバーから読み込み、ストアに格納します。
+   * @param targetPath
+   */
+  async fetchUnloadedHierarchicalNodes(targetPath: string): Promise<void> {
+    // 対象ノードの祖先がストアに存在しない場合
+    if (!this.existsHierarchicalOnStore(targetPath)) {
+      // 対象ノードを構成するノードをサーバーから読み込み
+      await this.fetchHierarchicalNodes(targetPath)
+    }
+  }
+
+  /**
+   * 指定パスを含め階層を構成するノードがストアに存在しているかを走査します。
+   * @param targetPath
+   */
+  existsHierarchicalOnStore(targetPath: string): boolean {
+    const nodePaths = splitHierarchicalPaths(targetPath)
+    for (const nodePath of nodePaths) {
+      const node = store.storage.get({ path: nodePath })
+      if (!node) return false
+    }
+    return true
+  }
+
+  /**
+   * 指定パスの祖先を構成するノードにみ読み込みのノードがある場合、
+   * サーバーから読み込み、ストアに格納します。
+   * @param targetPath
+   */
+  async fetchUnloadedAncestorDirs(targetPath: string): Promise<void> {
+    // 対象ノードの祖先がストアに存在しない場合
+    if (!this.existsAncestorDirsOnStore(targetPath)) {
+      // 対象ノードの祖先をサーバーから読み込み
+      await this.fetchAncestorDirs(targetPath)
+    }
+  }
+
+  /**
+   * 指定パスの祖先を構成するノードがストアに存在するかを走査します。
+   * @param targetPath
+   */
+  existsAncestorDirsOnStore(targetPath: string): boolean {
+    const nodePaths = splitHierarchicalPaths(targetPath).filter(dirPath => dirPath !== targetPath)
+    for (const nodePath of nodePaths) {
+      const node = store.storage.get({ path: nodePath })
+      if (!node) return false
+    }
+    return true
+  }
+
+  /**
+   * ユーザーがサインインしているか検証します。
+   */
+  validateSignedIn(): void {
+    if (!this.isSignedIn) {
+      throw new Error(`The application is not yet signed in.`)
+    }
   }
 
   //----------------------------------------------------------------------

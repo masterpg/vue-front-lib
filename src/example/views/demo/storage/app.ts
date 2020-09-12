@@ -6,8 +6,6 @@ import { StorageType } from '@/lib'
 class AppStoragePage extends BaseStoragePage {
   @Prop({ default: 'app' })
   storageType!: StorageType
-
-  protected async initStorage(): Promise<void> {}
 }
 
 export default AppStoragePage

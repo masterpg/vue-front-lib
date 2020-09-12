@@ -129,14 +129,14 @@ export default class StorageNodePopupMenu extends mixins(BaseComponent, StorageP
       // 記事ルート用メニュー
       else if (this.isRoot) {
         return [
-          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths, StorageArticleNodeType.ListBundle),
-          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths, StorageArticleNodeType.CategoryBundle),
+          new StorageNodeActionEvent('createArticleTypeDir', this.m_selectedNodePaths, StorageArticleNodeType.ListBundle),
+          new StorageNodeActionEvent('createArticleTypeDir', this.m_selectedNodePaths, StorageArticleNodeType.CategoryBundle),
         ]
       }
       // リストバンドル用メニュー
       else if (this.m_isListBundle) {
         return [
-          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths, StorageArticleNodeType.Article),
+          new StorageNodeActionEvent('createArticleTypeDir', this.m_selectedNodePaths, StorageArticleNodeType.Article),
           new StorageNodeActionEvent('separator', this.m_selectedNodePaths),
           new StorageNodeActionEvent('rename', this.m_selectedNodePaths),
           new StorageNodeActionEvent('share', this.m_selectedNodePaths),
@@ -147,8 +147,8 @@ export default class StorageNodePopupMenu extends mixins(BaseComponent, StorageP
       // カテゴリバンドル用メニュー
       else if (this.m_isCategoryBundle) {
         return [
-          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths, StorageArticleNodeType.Category),
-          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths, StorageArticleNodeType.Article),
+          new StorageNodeActionEvent('createArticleTypeDir', this.m_selectedNodePaths, StorageArticleNodeType.Category),
+          new StorageNodeActionEvent('createArticleTypeDir', this.m_selectedNodePaths, StorageArticleNodeType.Article),
           new StorageNodeActionEvent('separator', this.m_selectedNodePaths),
           new StorageNodeActionEvent('rename', this.m_selectedNodePaths),
           new StorageNodeActionEvent('share', this.m_selectedNodePaths),
@@ -159,8 +159,8 @@ export default class StorageNodePopupMenu extends mixins(BaseComponent, StorageP
       // カテゴリ用メニュー
       else if (this.m_isCategory) {
         return [
-          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths, StorageArticleNodeType.Category),
-          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths, StorageArticleNodeType.Article),
+          new StorageNodeActionEvent('createArticleTypeDir', this.m_selectedNodePaths, StorageArticleNodeType.Category),
+          new StorageNodeActionEvent('createArticleTypeDir', this.m_selectedNodePaths, StorageArticleNodeType.Article),
           new StorageNodeActionEvent('separator', this.m_selectedNodePaths),
           new StorageNodeActionEvent('rename', this.m_selectedNodePaths),
           new StorageNodeActionEvent('share', this.m_selectedNodePaths),
@@ -171,7 +171,7 @@ export default class StorageNodePopupMenu extends mixins(BaseComponent, StorageP
       // 記事用メニュー
       else if (this.m_isArticle) {
         return [
-          new StorageNodeActionEvent('createArticleRootUnderDir', this.m_selectedNodePaths),
+          new StorageNodeActionEvent('createDir', this.m_selectedNodePaths),
           new StorageNodeActionEvent('uploadDir', this.m_selectedNodePaths),
           new StorageNodeActionEvent('uploadFiles', this.m_selectedNodePaths),
           new StorageNodeActionEvent('move', this.m_selectedNodePaths),

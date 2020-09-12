@@ -1,6 +1,7 @@
 import * as path from 'path'
 import {
-  CreateArticleRootUnderDirInput,
+  CreateArticleTypeDirInput,
+  CreateStorageNodeInput,
   SetArticleSortOrderInput,
   StorageArticleNodeType,
   StorageNode,
@@ -12,7 +13,6 @@ import { StorageLogic } from './base'
 import { SubStorageLogic } from './sub'
 import { api } from '../../../api'
 import { config } from '@/lib/config'
-import { splitHierarchicalPaths } from 'web-base-lib'
 import { store } from '../../../store'
 
 //========================================================================
@@ -22,8 +22,7 @@ import { store } from '../../../store'
 //========================================================================
 
 interface ArticleStorageLogic extends StorageLogic {
-  fetchArticleRoot(): Promise<void>
-  createArticleRootUnderDir(dirPath: string, input?: CreateArticleRootUnderDirInput): Promise<StorageNode>
+  createArticleTypeDir(input: CreateArticleTypeDirInput): Promise<StorageNode>
   setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<StorageNode>
 }
 
@@ -56,53 +55,77 @@ class ArticleStorageLogicImpl extends SubStorageLogic implements ArticleStorageL
    * 記事ルートを構成するノードをサーバーから読み込み、ストアに格納します。
    * もし記事ルートを構成するノードが一部でも存在しなかった場合、作成を行います。
    */
-  async fetchArticleRoot(): Promise<void> {
-    this.m_validateSignedIn()
+  async fetchRoot(): Promise<void> {
+    this.appStorage.validateSignedIn()
 
     // 記事ルートがストアに存在しない場合
-    if (!this.m_existsHierarchicalOnStore(this.basePath)) {
+    if (!this.appStorage.existsHierarchicalOnStore(this.basePath)) {
       // 記事ルートをサーバーから読み込み
       await this.appStorage.fetchHierarchicalNodes(this.basePath)
     }
-    // 記事ルートがストアに存在しない場合
-    if (!this.m_existsHierarchicalOnStore(this.basePath)) {
+    // サーバーから記事ルートを読み込んだ後でも、記事ルートが存在しない場合
+    if (!this.appStorage.existsHierarchicalOnStore(this.basePath)) {
       // 記事ルートを作成
       await this.appStorage.createHierarchicalDirs([this.basePath])
     }
 
-    // アセットディレクトリを作成
+    // アセットディレクトリのパスを取得
     const assetsPath = path.join(this.basePath, config.storage.article.assetsName)
-    let assetsNode = await this.appStorage.getNodeAPI({ path: assetsPath })
+    // アセットディレクトリがストアに存在しない場合
+    let assetsNode = store.storage.get({ path: assetsPath })
     if (!assetsNode) {
-      assetsNode = await this.appStorage.createDir(assetsPath)
+      // アセットディレクトリをサーバーから読み込み
+      assetsNode = await this.appStorage.getNodeAPI({ path: assetsPath })
+      assetsNode && this.appStorage.setAPINodesToStore([assetsNode])
     }
-    this.appStorage.setAPINodesToStore([assetsNode])
+    // サーバーからアセットディレクトリを読み込んだ後でも、アセットディレクトリが存在しない場合
+    if (!assetsNode) {
+      // アセットディレクトリを作成
+      assetsNode = await this.m_createArticleGeneralDirAPI(assetsPath)
+      this.appStorage.setAPINodesToStore([assetsNode])
+    }
   }
 
-  async createArticleRootUnderDir(dirPath: string, input?: CreateArticleRootUnderDirInput): Promise<StorageNode> {
-    this.m_validateSignedIn()
+  async createDir(dirPath: string, input?: CreateStorageNodeInput): Promise<StorageNode> {
+    this.appStorage.validateSignedIn()
+    dirPath = StorageLogic.toFullNodePath(this.basePath, dirPath)
 
-    // 記事ルートを読み込み
-    await this.fetchArticleRoot()
-    // 指定ディレクトリの祖先を読み込み
-    await this.m_fetchAncestors(dirPath)
-    // 指定ディレクトリの祖先が存在しない場合、例外をスロー
-    if (!this.m_existsAncestorsOnStore(dirPath)) {
-      throw new Error(`The ancestor of the specified directory '${dirPath}' does not exist.`)
+    // 指定ディレクトリの祖先が読み込まれていない場合、例外をスロー
+    // ※祖先が読み込まれていない状態でディレクトリを作成すると、ストアのディレクトリ構造が不整合になるため
+    if (!this.appStorage.existsAncestorDirsOnStore(dirPath)) {
+      throw new Error(`One of the ancestor nodes in the path '${dirPath}' does not exist.`)
     }
 
     // APIで指定ディレクトリを作成
-    const fullDirPath = StorageLogic.toFullNodePath(this.basePath, dirPath)
-    const dirNode = await this.m_createArticleRootUnderDirAPI(fullDirPath, input)
+    const apiNode = await this.m_createArticleGeneralDirAPI(dirPath)
+    const dirNode = this.appStorage.setAPINodesToStore([apiNode])[0]
 
-    // 記事作成時は記事ファイルも作成されるので読み込みを行う
-    let dirChildren: StorageNode[] = []
-    if (input && input.articleNodeType === StorageArticleNodeType.Article) {
-      dirChildren = await this.appStorage.fetchChildren(fullDirPath)
+    return StorageLogic.toBasePathNode(this.basePath, dirNode)
+  }
+
+  async createArticleTypeDir(input: CreateArticleTypeDirInput): Promise<StorageNode> {
+    this.appStorage.validateSignedIn()
+
+    const parentPath = StorageLogic.toFullNodePath(this.basePath, input.dir)
+
+    // 指定ディレクトリの祖先が読み込まれていない場合、例外をスロー
+    // ※祖先が読み込まれていない状態でディレクトリを作成すると、ストアのディレクトリ構造が不整合になるため
+    if (!this.appStorage.existsHierarchicalOnStore(parentPath)) {
+      throw new Error(`One of the nodes in the path '${parentPath}' does not exist.`)
     }
 
+    // 指定された記事系ディレクトリをAPIで作成
+    const apiNode = await this.m_createArticleTypeDirAPI({
+      ...input,
+      dir: parentPath,
+    })
     // 作成されたディレクトリをストアに反映
-    this.appStorage.setAPINodesToStore([dirNode, ...dirChildren])
+    const dirNode = this.appStorage.setAPINodesToStore([apiNode])[0]
+
+    // 記事作成時は記事ファイルも作成されるので読み込みを行う
+    if (apiNode.articleNodeType === StorageArticleNodeType.Article) {
+      await this.appStorage.fetchChildren(apiNode.path)
+    }
 
     return StorageLogic.toBasePathNode(this.basePath, dirNode)
   }
@@ -144,68 +167,26 @@ class ArticleStorageLogicImpl extends SubStorageLogic implements ArticleStorageL
   //
   //----------------------------------------------------------------------
 
-  /**
-   * ユーザーがサインインしているか検証します。
-   */
-  private m_validateSignedIn(): void {
-    if (!this.isSignedIn) {
-      throw new Error(`The application is not yet signed in.`)
-    }
-  }
-
-  /**
-   * 指定パスの祖先を構成するノードをサーバーから読み込み、ストアに格納します。
-   * @param targetPath
-   */
-  private async m_fetchAncestors(targetPath: string): Promise<void> {
-    // 対象ノードの祖先がストアに存在しない場合
-    if (!this.m_existsAncestorsOnStore(targetPath)) {
-      // 対象ノードの祖先をサーバーから読み込み
-      await this.appStorage.fetchAncestorDirs(targetPath)
-    }
-  }
-
-  /**
-   * 指定パスを含め階層を構成するノードがストアに存在しているかを走査します。
-   * @param targetPath
-   */
-  private m_existsHierarchicalOnStore(targetPath: string): boolean {
-    const nodePaths = splitHierarchicalPaths(targetPath)
-    for (const nodePath of nodePaths) {
-      const node = store.storage.get({ path: nodePath })
-      if (!node) return false
-    }
-    return true
-  }
-
-  /**
-   * 指定パスの祖先を構成するノードがストアに存在するかを走査します。
-   * @param targetPath
-   */
-  private async m_existsAncestorsOnStore(targetPath: string): Promise<boolean> {
-    const dirPaths = splitHierarchicalPaths(targetPath).filter(dirPath => dirPath !== targetPath)
-    for (const iDirPath of dirPaths) {
-      const iDirNode = store.storage.get({ path: iDirPath })
-      if (!iDirNode) return true
-    }
-    return false
-  }
-
   //--------------------------------------------------
   //  API
   //--------------------------------------------------
 
-  private async m_createArticleRootUnderDirAPI(dirPath: string, input?: CreateArticleRootUnderDirInput): Promise<StorageNode> {
-    const apiNode = await api.createArticleRootUnderDir(dirPath, input)
+  protected async m_createArticleTypeDirAPI(input: CreateArticleTypeDirInput): Promise<StorageNode> {
+    const apiNode = await api.createArticleTypeDir(input)
     return this.appStorage.apiNodeToStorageNode(apiNode)!
   }
 
-  private async m_setArticleSortOrderAPI(nodePath: string, input: SetArticleSortOrderInput): Promise<StorageNode> {
+  protected async m_createArticleGeneralDirAPI(dirPath: string): Promise<StorageNode> {
+    const apiNode = await api.createArticleGeneralDir(dirPath)
+    return this.appStorage.apiNodeToStorageNode(apiNode)!
+  }
+
+  protected async m_setArticleSortOrderAPI(nodePath: string, input: SetArticleSortOrderInput): Promise<StorageNode> {
     const apiNode = await api.setArticleSortOrder(nodePath, input)
     return this.appStorage.apiNodeToStorageNode(apiNode)!
   }
 
-  private async m_getArticleChildrenAPI(
+  protected async m_getArticleChildrenAPI(
     dirPath: string,
     articleTypes: StorageArticleNodeType[],
     input?: StoragePaginationInput

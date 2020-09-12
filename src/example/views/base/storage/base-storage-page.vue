@@ -77,12 +77,14 @@
 </template>
 
 <script lang="ts">
+import * as path from 'path'
 import {
   AuthStatus,
   BaseComponent,
   CompStorageUploadProgressFloat,
   CompTreeViewEvent,
   CompTreeViewLazyLoadEvent,
+  CreateArticleTypeDirInput,
   Resizable,
   StorageArticleNodeType,
   StorageNode,
@@ -258,7 +260,7 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable, St
    * ストレージの初期化を行います。
    */
   protected async initStorage(): Promise<void> {
-    throw new Error('Not implemented.')
+    await this.storageLogic.fetchRoot()
   }
 
   /**
@@ -569,16 +571,14 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable, St
   }
 
   /**
-   * 記事ルート配下にディレクトリの作成を行います。
-   * @param dirPath 作成するディレクトリのパス
-   * @param articleNodeType 作成する記事ノードタイプ
+   * 記事系ディレクトリの作成を行います。
+   * @param input
    */
-  protected async createArticleRootUnderDir(dirPath: string, articleNodeType?: StorageArticleNodeType): Promise<void> {
+  protected async createArticleTypeDir(input: CreateArticleTypeDirInput): Promise<void> {
     this.$q.loading.show()
 
     // ディレクトリの作成を実行
-    await this.treeView.createArticleRootUnderDir(dirPath, articleNodeType)
-    const treeNode = this.treeView.getNode(dirPath)!
+    await this.treeView.createArticleTypeDir(input)
 
     // 現在選択されているノードへURL遷移
     this.changeDirOnPage(this.treeView.selectedNode.path)
@@ -697,9 +697,9 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable, St
       }
       case 'createDir': {
         const dirPath = e.nodePaths[0]
-        const creatingDirPath = await this.dirCreateDialog.open({ parentPath: dirPath })
-        if (creatingDirPath) {
-          await this.createDir(creatingDirPath)
+        const pathData = await this.dirCreateDialog.open({ parentPath: dirPath })
+        if (pathData) {
+          await this.createDir(path.join(pathData.dir, pathData.name))
         }
         break
       }
@@ -742,12 +742,16 @@ export default class BaseStoragePage extends mixins(BaseComponent, Resizable, St
         }
         break
       }
-      case 'createArticleRootUnderDir': {
-        const articleNodeType = e.articleNodeType
+      case 'createArticleTypeDir': {
+        const articleNodeType = e.articleNodeType!
         const dirPath = e.nodePaths[0]
-        const creatingDirPath = await this.dirCreateDialog.open({ parentPath: dirPath, articleNodeType })
-        if (creatingDirPath) {
-          await this.createArticleRootUnderDir(creatingDirPath, articleNodeType)
+        const pathData = await this.dirCreateDialog.open({ parentPath: dirPath, articleNodeType })
+        if (pathData) {
+          await this.createArticleTypeDir({
+            dir: pathData.dir,
+            articleNodeName: pathData.name,
+            articleNodeType,
+          })
         }
         break
       }

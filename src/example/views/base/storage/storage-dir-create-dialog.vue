@@ -52,8 +52,13 @@ interface DialogParam {
   articleNodeType?: StorageArticleNodeType
 }
 
+interface DialogResult {
+  dir: string
+  name: string
+}
+
 @Component
-class BaseDialogMixin extends BaseDialog<DialogParam, string> {}
+class BaseDialogMixin extends BaseDialog<DialogParam, DialogResult | undefined> {}
 
 @Component
 export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, StoragePageMixin) {
@@ -118,7 +123,7 @@ export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, Stor
   //
   //----------------------------------------------------------------------
 
-  open(param: DialogParam): Promise<string> {
+  open(param: DialogParam): Promise<DialogResult | undefined> {
     if (param.parentPath === this.pageStore.rootNode.path) {
       this.m_parentNode = null
     } else {
@@ -130,9 +135,9 @@ export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, Stor
     return this.openProcess(param)
   }
 
-  close(dirPath?: string): void {
+  close(dialogResult?: DialogResult): void {
     this.m_clear()
-    this.closeProcess(dirPath || '')
+    this.closeProcess(dialogResult)
   }
 
   //----------------------------------------------------------------------
@@ -145,13 +150,13 @@ export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, Stor
     this.m_dirName = this.m_dirName === null ? '' : this.m_dirName
     if (!this.m_validate()) return
 
-    let dirPath = ''
+    let dialogResult: DialogResult
     if (!this.m_parentNode) {
-      dirPath = this.m_dirName!
+      dialogResult = { dir: '', name: this.m_dirName! }
     } else {
-      dirPath = path.join(this.m_parentNode!.path, this.m_dirName!)
+      dialogResult = { dir: this.m_parentNode.path, name: this.m_dirName! }
     }
-    this.close(dirPath)
+    this.close(dialogResult)
   }
 
   private m_clear(): void {

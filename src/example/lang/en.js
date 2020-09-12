@@ -93,6 +93,7 @@ export default merge(require('@/lib/lang/en').default, {
       size: 'Size',
       share: 'Share',
       path: 'Path',
+      displayPath: 'Display Path',
       url: 'URL',
       createdAt: 'Created',
       updatedAt: 'Updated',

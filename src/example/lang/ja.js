@@ -93,6 +93,7 @@ export default merge(require('@/lib/lang/ja').default, {
       size: 'サイズ',
       share: '共有',
       path: 'パス',
+      displayPath: '表示パス',
       url: 'URL',
       createdAt: '作成日',
       updatedAt: '更新日',

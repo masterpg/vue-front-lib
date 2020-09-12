@@ -7,7 +7,7 @@ import {
   toTimestampEntity as _toTimestampEntity,
 } from '../base'
 import {
-  CreateArticleRootUnderDirInput,
+  CreateArticleTypeDirInput,
   CreateStorageNodeInput,
   SetArticleSortOrderInput,
   StorageArticleNodeType,
@@ -138,8 +138,12 @@ abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPICont
   //  Article
   //--------------------------------------------------
 
-  createArticleRootUnderDir(dirPath: string, input?: CreateArticleRootUnderDirInput): Promise<APIStorageNode> {
-    throw new Error(`This method 'createArticleRootUnderDir' is not implemented.`)
+  createArticleTypeDir(input: CreateArticleTypeDirInput): Promise<APIStorageNode> {
+    throw new Error(`This method 'createArticleTypeDir' is not implemented.`)
+  }
+
+  createArticleGeneralDir(dirPath: string): Promise<APIStorageNode> {
+    throw new Error(`This method 'createArticleGeneralDir' is not implemented.`)
   }
 
   setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<APIStorageNode> {

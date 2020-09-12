@@ -1,5 +1,4 @@
 import {
-  CompTreeNode,
   CompTreeNodeData,
   CompTreeViewLazyLoadStatus,
   StorageArticleNodeType,
@@ -25,6 +24,7 @@ interface StorageTreeNodeData extends CompTreeNodeData {
   contentType: string
   size: number
   share: StorageNodeShareSettings
+  articleNodeName: string | null
   articleNodeType: StorageArticleNodeType | null
   articleSortOrder: number | null
   url: string
@@ -49,16 +49,7 @@ interface StorageNodePopupMenuItem {
   label: string
 }
 
-type StorageNodeActionType =
-  | 'createDir'
-  | 'uploadFiles'
-  | 'uploadDir'
-  | 'move'
-  | 'rename'
-  | 'share'
-  | 'delete'
-  | 'reload'
-  | 'createArticleRootUnderDir'
+type StorageNodeActionType = 'createDir' | 'uploadFiles' | 'uploadDir' | 'move' | 'rename' | 'share' | 'delete' | 'reload' | 'createArticleTypeDir'
 
 //========================================================================
 //
@@ -101,7 +92,7 @@ class StorageNodeActionEvent<T extends string = StorageNodeActionType> {
       case 'reload':
         this.label = String(i18n.t('common.reload'))
         break
-      case 'createArticleRootUnderDir': {
+      case 'createArticleTypeDir': {
         switch (this.articleNodeType) {
           case StorageArticleNodeType.ListBundle:
             this.label = String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.listBundle') }))
@@ -115,10 +106,8 @@ class StorageNodeActionEvent<T extends string = StorageNodeActionType> {
           case StorageArticleNodeType.Article:
             this.label = String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.article') }))
             break
-          default:
-            this.label = String(i18n.t('common.createSth', { sth: i18n.tc('common.folder', 1) }))
-            break
         }
+        break
       }
     }
   }

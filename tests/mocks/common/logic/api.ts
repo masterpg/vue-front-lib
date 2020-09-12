@@ -1,6 +1,6 @@
 import * as path from 'path'
 import { AuthStatus, BaseGQLAPIContainer, LibAPIContainer, RawUser, UserClaims, UserInfo, UserInfoInput } from '@/lib'
-import { Constructor } from 'web-base-lib'
+import { Constructor, removeStartDirChars } from 'web-base-lib'
 import axios from 'axios'
 import { config } from '@/lib/config'
 import gql from 'graphql-tag'
@@ -146,6 +146,8 @@ function TestGQLAPIContainerMixin(superclass: Constructor<BaseGQLAPIContainer>):
             'content-type': 'application/octet-stream',
           },
         })
+        const parentPath = removeStartDirChars(path.dirname(uploadItem.filePath))
+        await this.createStorageHierarchicalDirs([parentPath])
         await this.handleUploadedFile(uploadItem.filePath)
       }
 

@@ -1,6 +1,6 @@
 import * as path from 'path'
+import { removeBothEndsSlash, splitHierarchicalPaths } from 'web-base-lib'
 import { StorageLogic } from './logic'
-import { removeBothEndsSlash } from 'web-base-lib'
 
 //========================================================================
 //
@@ -245,6 +245,18 @@ class StorageUploader {
 
     // 状態をアップロード中に設定
     this.m_status = 'running'
+
+    // アップロードファイルを格納するディレクトリを作成
+    const dirPaths = splitHierarchicalPaths(...this.m_fileUploaders.map(item => item.dir)).filter(dir => {
+      if (this.uploadDirPath) {
+        return dir.startsWith(path.join(this.uploadDirPath, '/'))
+      } else {
+        return dir
+      }
+    })
+    for (const dirPath of dirPaths) {
+      await this.storageLogic.createDir(dirPath)
+    }
 
     // 実際にアップロードを実行
     for (const uploadingFile of this.m_fileUploaders) {

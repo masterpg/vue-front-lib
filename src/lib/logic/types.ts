@@ -133,6 +133,7 @@ interface StorageNode extends TimestampEntity {
   contentType: string
   size: number
   share: StorageNodeShareSettings
+  articleNodeName: string | null
   articleNodeType: StorageArticleNodeType | null
   articleSortOrder: number | null
   version: number
@@ -173,8 +174,10 @@ interface StorageNodeKeyInput {
 
 interface CreateStorageNodeInput extends StorageNodeShareSettingsInput {}
 
-interface CreateArticleRootUnderDirInput {
-  articleNodeType?: StorageArticleNodeType
+interface CreateArticleTypeDirInput {
+  dir: string
+  articleNodeName: string
+  articleNodeType: StorageArticleNodeType
 }
 
 interface SetArticleSortOrderInput {
@@ -190,7 +193,7 @@ interface SetArticleSortOrderInput {
 
 export {
   AuthStatus,
-  CreateArticleRootUnderDirInput,
+  CreateArticleTypeDirInput,
   CreateStorageNodeInput,
   Entity,
   IdToken,

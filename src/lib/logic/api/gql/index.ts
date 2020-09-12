@@ -8,7 +8,7 @@ import {
   toTimestampEntity as _toTimestampEntity,
 } from '../base'
 import {
-  CreateArticleRootUnderDirInput,
+  CreateArticleTypeDirInput,
   CreateStorageNodeInput,
   PublicProfile,
   SetArticleSortOrderInput,
@@ -192,6 +192,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            articleNodeName
             articleNodeType
             articleSortOrder
             version
@@ -225,6 +226,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              articleNodeName
               articleNodeType
               articleSortOrder
               version
@@ -262,6 +264,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              articleNodeName
               articleNodeType
               articleSortOrder
               version
@@ -299,6 +302,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              articleNodeName
               articleNodeType
               articleSortOrder
               version
@@ -336,6 +340,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              articleNodeName
               articleNodeType
               articleSortOrder
               version
@@ -372,6 +377,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            articleNodeName
             articleNodeType
             articleSortOrder
             version
@@ -403,6 +409,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            articleNodeName
             articleNodeType
             articleSortOrder
             version
@@ -434,6 +441,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            articleNodeName
             articleNodeType
             articleSortOrder
             version
@@ -465,6 +473,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            articleNodeName
             articleNodeType
             articleSortOrder
             version
@@ -497,6 +506,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              articleNodeName
               articleNodeType
               articleSortOrder
               version
@@ -533,6 +543,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            articleNodeName
             articleNodeType
             articleSortOrder
             version
@@ -566,6 +577,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              articleNodeName
               articleNodeType
               articleSortOrder
               version
@@ -602,6 +614,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            articleNodeName
             articleNodeType
             articleSortOrder
             version
@@ -634,6 +647,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              articleNodeName
               articleNodeType
               articleSortOrder
               version
@@ -670,6 +684,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            articleNodeName
             articleNodeType
             articleSortOrder
             version
@@ -701,6 +716,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            articleNodeName
             articleNodeType
             articleSortOrder
             version
@@ -732,6 +748,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            articleNodeName
             articleNodeType
             articleSortOrder
             version
@@ -763,6 +780,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            articleNodeName
             articleNodeType
             articleSortOrder
             version
@@ -794,11 +812,11 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
   //  Article
   //--------------------------------------------------
 
-  async createArticleRootUnderDir(dirPath: string, input?: CreateArticleRootUnderDirInput): Promise<APIStorageNode> {
-    const response = await this.mutate<{ createArticleRootUnderDir: RawStorageNode }>({
+  async createArticleTypeDir(input: CreateArticleTypeDirInput): Promise<APIStorageNode> {
+    const response = await this.mutate<{ createArticleTypeDir: RawStorageNode }>({
       mutation: gql`
-        mutation CreateArticleRootUnderDir($dirPath: String!, $input: CreateArticleRootUnderDirInput) {
-          createArticleRootUnderDir(dirPath: $dirPath, input: $input) {
+        mutation CreateArticleTypeDir($input: CreateArticleTypeDirInput!) {
+          createArticleTypeDir(input: $input) {
             id
             nodeType
             name
@@ -811,6 +829,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            articleNodeName
             articleNodeType
             articleSortOrder
             version
@@ -819,10 +838,42 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
           }
         }
       `,
-      variables: { dirPath, input },
+      variables: { input },
       isAuth: true,
     })
-    return this.toTimestampEntity(response.data!.createArticleRootUnderDir)
+    return this.toTimestampEntity(response.data!.createArticleTypeDir)
+  }
+
+  async createArticleGeneralDir(dirPath: string): Promise<APIStorageNode> {
+    const response = await this.mutate<{ createArticleGeneralDir: RawStorageNode }>({
+      mutation: gql`
+        mutation CreateArticleGeneralDir($dirPath: String!) {
+          createArticleGeneralDir(dirPath: $dirPath) {
+            id
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              readUIds
+              writeUIds
+            }
+            articleNodeName
+            articleNodeType
+            articleSortOrder
+            version
+            createdAt
+            updatedAt
+          }
+        }
+      `,
+      variables: { dirPath },
+      isAuth: true,
+    })
+    return this.toTimestampEntity(response.data!.createArticleGeneralDir)
   }
 
   async setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<APIStorageNode> {
@@ -842,6 +893,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
               readUIds
               writeUIds
             }
+            articleNodeName
             articleNodeType
             articleSortOrder
             version
@@ -878,6 +930,7 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
                 readUIds
                 writeUIds
               }
+              articleNodeName
               articleNodeType
               articleSortOrder
               version

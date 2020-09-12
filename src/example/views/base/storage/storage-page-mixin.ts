@@ -99,6 +99,7 @@ class StoragePageMixin extends Vue {
         readUIds: source.share.readUIds ? [...source.share.readUIds] : null,
         writeUIds: source.share.writeUIds ? [...source.share.writeUIds] : null,
       },
+      articleNodeName: source.articleNodeName,
       articleNodeType: source.articleNodeType,
       articleSortOrder: source.articleSortOrder,
       url: source.url,
@@ -124,10 +125,12 @@ class StoragePageMixin extends Vue {
    * ノードの表示用の名前を取得します。
    * @param node
    */
-  protected getDisplayName(node: { path: StorageNode['path']; name: StorageNode['name'] }): string {
+  protected getDisplayName(node: { path: StorageNode['path']; name: StorageNode['name']; articleNodeName: StorageNode['articleNodeName'] }): string {
     if (this.storageType === 'article') {
       if (node.path === config.storage.article.assetsName) {
         return String(this.$tc('storage.asset', 2))
+      } else if (node.articleNodeName) {
+        return node.articleNodeName
       }
     }
     return node.name
@@ -146,17 +149,11 @@ class StoragePageMixin extends Vue {
         return node.path
       }
       case 'article': {
-        let result = ''
-        const segments = node.path.split('/')
-        for (let i = 0; i < segments.length; i++) {
-          const segment = segments[i]
-          if (i === 0 && segment === config.storage.article.assetsName) {
-            result = path.join(result, String(this.$tc('storage.asset', 2)))
-          } else {
-            result = path.join(result, segment)
-          }
-        }
-        return result
+        const hierarchicalNodes = this.storageLogic.getHierarchicalNodes(node.path)
+        return hierarchicalNodes.reduce((result, node) => {
+          const name = node.articleNodeName ? node.articleNodeName : node.name
+          return result ? `${result}/${name}` : name
+        }, '')
       }
     }
   }
@@ -461,6 +458,7 @@ function createRootNodeData(storageType: StorageType): StorageTreeNodeData {
       readUIds: [],
       writeUIds: [],
     },
+    articleNodeName: null,
     articleNodeType: null,
     articleSortOrder: null,
     url: '',

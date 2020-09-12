@@ -183,6 +183,10 @@ export default class StorageTreeNode extends CompTreeNode<StorageTreeNode> {
     return this.nodeData.share
   }
 
+  get articleNodeName(): string | null {
+    return this.nodeData.articleNodeName
+  }
+
   get articleNodeType(): StorageArticleNodeType | null {
     return this.nodeData.articleNodeType
   }

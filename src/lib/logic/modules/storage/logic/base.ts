@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { RequiredStorageNodeShareSettings, StorageNode, StorageNodeShareSettingsInput } from '../../../types'
+import { CreateStorageNodeInput, RequiredStorageNodeShareSettings, StorageNode, StorageNodeShareSettingsInput } from '../../../types'
 import { SortStorageNode, getBaseStorageURL, sortStorageTree, storageChildrenSortFunc } from '../../../base'
 import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from '../download'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
@@ -33,6 +33,8 @@ interface StorageLogic {
 
   getInheritedShare(nodePath: string): RequiredStorageNodeShareSettings
 
+  fetchRoot(): Promise<void>
+
   fetchHierarchicalNodes(nodePath: string): Promise<StorageNode[]>
 
   fetchAncestorDirs(nodePath: string): Promise<StorageNode[]>
@@ -48,6 +50,8 @@ interface StorageLogic {
   fetchHierarchicalDescendants(dirPath?: string): Promise<StorageNode[]>
 
   fetchHierarchicalChildren(dirPath?: string): Promise<StorageNode[]>
+
+  createDir(dirPath: string, input?: CreateStorageNodeInput): Promise<StorageNode>
 
   createHierarchicalDirs(dirPaths: string[]): Promise<StorageNode[]>
 
