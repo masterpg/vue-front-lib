@@ -275,6 +275,9 @@ export default class StorageTreeNode extends CompTreeNode<StorageTreeNode> {
       this.nodeData.share.readUIds = editData.share.readUIds
       this.nodeData.share.writeUIds = editData.share.writeUIds
     }
+    if (typeof editData.articleNodeName === 'string' || editData.articleNodeName === null) {
+      this.nodeData.articleNodeName = editData.articleNodeName
+    }
     if (typeof editData.articleNodeType === 'string' || editData.articleNodeType === null) {
       this.nodeData.articleNodeType = editData.articleNodeType
     }

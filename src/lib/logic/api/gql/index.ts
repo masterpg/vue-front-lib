@@ -876,6 +876,38 @@ abstract class BaseGQLAPIContainer extends BaseGQLClient implements LibAPIContai
     return this.toTimestampEntity(response.data!.createArticleGeneralDir)
   }
 
+  async renameArticleNode(nodePath: string, newName: string): Promise<APIStorageNode> {
+    const response = await this.mutate<{ renameArticleNode: RawStorageNode }>({
+      mutation: gql`
+        mutation RenameArticleNode($nodePath: String!, $newName: String!) {
+          renameArticleNode(nodePath: $nodePath, newName: $newName) {
+            id
+            nodeType
+            name
+            dir
+            path
+            contentType
+            size
+            share {
+              isPublic
+              readUIds
+              writeUIds
+            }
+            articleNodeName
+            articleNodeType
+            articleSortOrder
+            version
+            createdAt
+            updatedAt
+          }
+        }
+      `,
+      variables: { nodePath, newName },
+      isAuth: true,
+    })
+    return this.toTimestampEntity(response.data!.renameArticleNode)
+  }
+
   async setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<APIStorageNode> {
     const response = await this.mutate<{ setArticleSortOrder: RawStorageNode }>({
       mutation: gql`

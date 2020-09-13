@@ -146,6 +146,10 @@ abstract class BaseRESTAPIContainer extends BaseRESTClient implements LibAPICont
     throw new Error(`This method 'createArticleGeneralDir' is not implemented.`)
   }
 
+  renameArticleNode(nodePath: string, newName: string): Promise<APIStorageNode> {
+    throw new Error(`This method 'renameArticleNode' is not implemented.`)
+  }
+
   setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<APIStorageNode> {
     throw new Error(`This method 'setArticleSortOrder' is not implemented.`)
   }

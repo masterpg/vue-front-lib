@@ -86,6 +86,8 @@ export interface LibAPIContainer {
 
   createArticleGeneralDir(dirPath: string): Promise<APIStorageNode>
 
+  renameArticleNode(nodePath: string, newName: string): Promise<APIStorageNode>
+
   setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<APIStorageNode>
 
   getArticleChildren(dirPath: string, articleTypes: StorageArticleNodeType[], input?: StoragePaginationInput): Promise<StoragePaginationResult>

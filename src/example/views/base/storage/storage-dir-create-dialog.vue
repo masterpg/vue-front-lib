@@ -98,7 +98,7 @@ export default class StorageDirCreateDialog extends mixins(BaseDialogMixin, Stor
     if (!this.m_parentNode) {
       return path.join(this.pageStore.rootNode.label, '/')
     } else {
-      return path.join(this.pageStore.rootNode.label, this.getDisplayPath(this.m_parentNode), '/')
+      return path.join(this.pageStore.rootNode.label, this.getDisplayPath(this.m_parentNode.path), '/')
     }
   }
 

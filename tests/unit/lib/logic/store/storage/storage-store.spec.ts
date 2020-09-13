@@ -1,10 +1,12 @@
 import * as path from 'path'
-import { StorageNode, StorageNodeShareSettings, StorageNodeType, StorageState, StorageStore } from '@/lib'
+import { StorageArticleNodeType, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageState, StorageStore } from '@/lib'
 import { cloneTestStorageNode, newTestStorageDirNode, newTestStorageFileNode } from '../../../../../helpers/common/storage'
 import { Component } from 'vue-property-decorator'
+import { GENERAL_USER } from '../../../../../helpers/common/data'
 import { StorageStoreImpl } from '../../../../../../src/lib/logic/store/storage'
 import { TestStore } from '../../../../../helpers/common/store'
 import { cloneDeep } from 'lodash'
+import { config } from '../../../../../mocks/lib/config'
 import dayjs from 'dayjs'
 import { generateFirestoreId } from '../../../../../helpers/common/base'
 import { initLibTest } from '../../../../../helpers/lib/init'
@@ -64,10 +66,13 @@ function verifyStateNodes() {
       expect(node.contentType).toBeDefined()
       expect(node.size).toBeGreaterThan(0)
     }
+    if (node.articleNodeType) {
+      expect(node.articleNodeName).toBeDefined()
+      expect(node.articleSortOrder).toBeGreaterThan(0)
+    }
     expect(node.createdAt).toBeDefined()
     expect(node.updatedAt).toBeDefined()
   }
-  toBeSorted()
 }
 
 /**
@@ -80,15 +85,6 @@ function toBeCopy(node: StorageNode | StorageNode[]): void {
     const stateNode = getStateNode(node.path)
     expect(node).not.toBe(stateNode)
   }
-}
-
-/**
- * ステートのノードがソートされているか検証します。
- */
-function toBeSorted(): void {
-  const beforeAll = [...storageStore.state.all]
-  const sortedAll = sortStorageTree(beforeAll)
-  expect(storageStore.state.all).toEqual(sortedAll)
 }
 
 //========================================================================
@@ -412,8 +408,10 @@ describe('setList', () => {
     existsStateNodes(actual)
     toBeCopy(actual)
   })
+})
 
-  it('プロパティの変更', () => {
+describe('set', () => {
+  it('ベーシックケース - 一般ノード', () => {
     const d1 = newTestStorageDirNode('d1')
     const d11 = newTestStorageDirNode('d1/d11')
     const f111 = newTestStorageFileNode('d1/d11/f111.txt')
@@ -429,7 +427,7 @@ describe('setList', () => {
       readUIds: ['ichiro'],
       writeUIds: ['ichiro'],
     }
-    const actual = storageStore.setList([
+    const actual = storageStore.set(
       cloneTestStorageNode(f111, {
         name: 'new_f111.txt',
         dir: 'd1',
@@ -439,25 +437,56 @@ describe('setList', () => {
         share: NEW_SHARE_SETTINGS,
         createdAt: UPDATED_AT,
         updatedAt: UPDATED_AT,
-      }),
-    ])
+      })
+    )
 
-    storageStore.sort()
-    expect(actual.length).toBe(1)
-    expect(actual[0].id).toBe(f111.id)
-    expect(actual[0].name).toBe('new_f111.txt')
-    expect(actual[0].dir).toBe('d1')
-    expect(actual[0].path).toBe('d1/new_f111.txt')
-    expect(actual[0].contentType).toBe('application/octet-stream')
-    expect(actual[0].size).toEqual(99)
-    expect(actual[0].share).toEqual(NEW_SHARE_SETTINGS)
-    expect(actual[0].createdAt).toEqual(UPDATED_AT)
-    expect(actual[0].updatedAt).toEqual(UPDATED_AT)
+    expect(actual.id).toBe(f111.id)
+    expect(actual.name).toBe('new_f111.txt')
+    expect(actual.dir).toBe('d1')
+    expect(actual.path).toBe('d1/new_f111.txt')
+    expect(actual.contentType).toBe('application/octet-stream')
+    expect(actual.size).toEqual(99)
+    expect(actual.share).toEqual(NEW_SHARE_SETTINGS)
+    expect(actual.createdAt).toEqual(UPDATED_AT)
+    expect(actual.updatedAt).toEqual(UPDATED_AT)
     // ---> コピーが設定されていることを検証
-    expect(actual[0].share).not.toBe(NEW_SHARE_SETTINGS)
-    expect(actual[0].share.readUIds).not.toBe(NEW_SHARE_SETTINGS.readUIds)
-    expect(actual[0].share.writeUIds).not.toBe(NEW_SHARE_SETTINGS.writeUIds)
+    expect(actual.share).not.toBe(NEW_SHARE_SETTINGS)
+    expect(actual.share.readUIds).not.toBe(NEW_SHARE_SETTINGS.readUIds)
+    expect(actual.share.writeUIds).not.toBe(NEW_SHARE_SETTINGS.writeUIds)
     // <---
+
+    verifyStateNodes()
+    existsStateNodes(actual)
+    toBeCopy(actual)
+  })
+
+  it('ベーシックケース - 記事系ノード', () => {
+    const usersPath = `${config.storage.user.rootName}`
+    const userRootPath = `${usersPath}/${GENERAL_USER.uid}`
+    const articleRootPath = `${userRootPath}/${config.storage.article.rootName}`
+    const bundle = newTestStorageDirNode(`${articleRootPath}/${generateFirestoreId()}`, {
+      articleNodeName: 'バンドル',
+      articleNodeType: StorageArticleNodeType.ListBundle,
+      articleSortOrder: 1,
+    })
+    storageStore.initState({
+      all: sortStorageTree([bundle]),
+    })
+
+    const actual = storageStore.set(
+      cloneTestStorageNode(bundle, {
+        articleNodeName: 'バンドル',
+        articleNodeType: StorageArticleNodeType.CategoryBundle,
+        articleSortOrder: 2,
+      })
+    )
+
+    expect(actual).toEqual({
+      ...bundle,
+      articleNodeName: 'バンドル',
+      articleNodeType: StorageArticleNodeType.CategoryBundle,
+      articleSortOrder: 2,
+    })
 
     verifyStateNodes()
     existsStateNodes(actual)
@@ -466,40 +495,32 @@ describe('setList', () => {
 
   it('プロパティの変更がない場合', () => {
     const d1 = newTestStorageDirNode('d1')
-    const d11 = newTestStorageDirNode('d1/d11')
-    const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-    const d12 = newTestStorageDirNode('d1/d12')
-    const d2 = newTestStorageDirNode('d2')
     storageStore.initState({
-      all: sortStorageTree([d1, d11, f111, d12, d2]),
+      all: sortStorageTree([d1]),
     })
 
-    const actual = storageStore.setList([
-      {
-        id: f111.id,
-        name: f111.name,
-        dir: f111.dir,
-        path: f111.path,
-      },
-    ])
+    const actual = storageStore.set({
+      id: d1.id,
+      name: d1.name,
+      dir: d1.dir,
+      path: d1.path,
+    })
 
-    storageStore.sort()
-    expect(actual.length).toBe(1)
-    expect(actual[0].id).toBe(f111.id)
-    expect(actual[0].name).toBe(f111.name)
-    expect(actual[0].dir).toBe(f111.dir)
-    expect(actual[0].path).toBe(f111.path)
-    expect(actual[0].contentType).toBe(f111.contentType)
-    expect(actual[0].share).toEqual(f111.share)
-    expect(actual[0].createdAt).toEqual(f111.createdAt)
-    expect(actual[0].updatedAt).toEqual(f111.updatedAt)
+    expect(actual.id).toBe(d1.id)
+    expect(actual.name).toBe(d1.name)
+    expect(actual.dir).toBe(d1.dir)
+    expect(actual.path).toBe(d1.path)
+    expect(actual.contentType).toBe(d1.contentType)
+    expect(actual.share).toEqual(d1.share)
+    expect(actual.createdAt).toEqual(d1.createdAt)
+    expect(actual.updatedAt).toEqual(d1.updatedAt)
 
     verifyStateNodes()
     existsStateNodes(actual)
     toBeCopy(actual)
   })
 
-  it('存在しないpathを指定した場合', () => {
+  it('存在しないパスを指定した場合', () => {
     const d1 = newTestStorageDirNode('d1')
     const d11 = newTestStorageDirNode('d1/d11')
     const f111 = newTestStorageFileNode('d1/d11/f111.txt')
@@ -512,7 +533,7 @@ describe('setList', () => {
     let actual!: Error
     const notExistsId = generateFirestoreId()
     try {
-      storageStore.setList([{ id: notExistsId, name: `dX`, dir: ``, path: `dX` }])
+      storageStore.set({ id: notExistsId, name: `dX`, dir: ``, path: `dX` })
     } catch (err) {
       actual = err
     }
@@ -1160,8 +1181,10 @@ describe('clear', () => {
 })
 
 describe('clone', () => {
-  it('ベーシックケース', () => {
-    const d1 = newTestStorageDirNode('d1', { share: { isPublic: true, writeUIds: ['ichiro'], readUIds: ['ichiro'] } })
+  it('ベーシックケース - 一般ノード', () => {
+    const d1 = newTestStorageDirNode(`d1`, {
+      share: { isPublic: true, writeUIds: ['ichiro'], readUIds: ['ichiro'] },
+    })
 
     const actual = storageStore.clone(d1)
 
@@ -1170,6 +1193,25 @@ describe('clone', () => {
     expect(actual.share.readUIds).not.toBe(d1.share.readUIds)
     expect(actual.share.writeUIds).not.toBe(d1.share.writeUIds)
     expect(actual).toEqual(d1)
+  })
+
+  it('ベーシックケース - 記事系ノード', () => {
+    const usersPath = `${config.storage.user.rootName}`
+    const userRootPath = `${usersPath}/${GENERAL_USER.uid}`
+    const articleRootPath = `${userRootPath}/${config.storage.article.rootName}`
+    const bundle = newTestStorageDirNode(`${articleRootPath}/${generateFirestoreId()}`, {
+      articleNodeName: 'バンドル',
+      articleNodeType: StorageArticleNodeType.ListBundle,
+      articleSortOrder: 1,
+    })
+
+    const actual = storageStore.clone(bundle)
+
+    expect(actual).not.toBe(bundle)
+    expect(actual.articleNodeName).toBe(bundle.articleNodeName)
+    expect(actual.articleNodeType).toBe(bundle.articleNodeType)
+    expect(actual.articleSortOrder).toBe(bundle.articleSortOrder)
+    expect(actual).toEqual(bundle)
   })
 })
 
@@ -1183,16 +1225,19 @@ describe('sort', () => {
     const d2 = newTestStorageDirNode('d2')
     const d21 = newTestStorageDirNode('d2/d21')
     const f1 = newTestStorageFileNode('f1.txt')
+    storageStore.initState({
+      all: sortStorageTree([f111, f121, f1, d1, d2, d11, d12, d21]),
+    })
 
-    const actual = sortStorageTree([f111, f121, f1, d1, d2, d11, d12, d21])
+    storageStore.sort()
 
-    expect(actual[0]).toEqual(d1)
-    expect(actual[1]).toEqual(d11)
-    expect(actual[2]).toEqual(f111)
-    expect(actual[3]).toEqual(d12)
-    expect(actual[4]).toEqual(f121)
-    expect(actual[5]).toEqual(d2)
-    expect(actual[6]).toEqual(d21)
-    expect(actual[7]).toEqual(f1)
+    expect(storageStore.state.all[0]).toEqual(d1)
+    expect(storageStore.state.all[1]).toEqual(d11)
+    expect(storageStore.state.all[2]).toEqual(f111)
+    expect(storageStore.state.all[3]).toEqual(d12)
+    expect(storageStore.state.all[4]).toEqual(f121)
+    expect(storageStore.state.all[5]).toEqual(d2)
+    expect(storageStore.state.all[6]).toEqual(d21)
+    expect(storageStore.state.all[7]).toEqual(f1)
   })
 })

@@ -729,6 +729,37 @@ describe('Storage API', () => {
     })
   })
 
+  describe('renameArticleNode', () => {
+    let articleRootPath: string
+    let bundle: APIStorageNode
+
+    async function setupArticleNodes(): Promise<void> {
+      api.setTestAuthToken(GENERAL_TOKEN)
+      articleRootPath = `${config.storage.user.rootName}/${GENERAL_TOKEN.uid}/${config.storage.article.rootName}`
+      await api.createStorageHierarchicalDirs([articleRootPath])
+      bundle = await api.createArticleTypeDir({
+        dir: `${articleRootPath}`,
+        articleNodeName: 'バンドル',
+        articleNodeType: StorageArticleNodeType.ListBundle,
+      })
+    }
+
+    it('疎通確認', async () => {
+      // ユーザーの記事ルートを事前に作成
+      await setupArticleNodes()
+
+      const actual = await api.renameArticleNode(`${bundle.path}`, 'Bundle')
+
+      const expectBundle: APIStorageNode = {
+        ...bundle,
+        articleNodeName: 'Bundle',
+        version: bundle.version + 1,
+      }
+
+      expect(actual).toEqual(expectBundle)
+    })
+  })
+
   describe('setArticleSortOrder', () => {
     let articleRootPath: string
     let bundle: APIStorageNode

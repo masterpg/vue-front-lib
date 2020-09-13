@@ -170,7 +170,7 @@ export default class StorageDirDetailView extends mixins(BaseComponent, Resizabl
   private get m_displayPath(): string {
     if (!this.m_dirNode) return ''
     if (this.storageType !== 'article') return ''
-    return this.getDisplayPath(this.m_dirNode)
+    return this.getDisplayPath(this.m_dirNode.path)
   }
 
   private get m_type(): string {

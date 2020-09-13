@@ -2,7 +2,7 @@ import * as path from 'path'
 import * as td from 'testdouble'
 import { AppStorageLogic, ArticleStorageLogicImpl } from '../../../../../../src/lib/logic/modules/storage'
 import { LibAPIContainer, StorageArticleNodeType, StorageNode, StorageState, StorageStore } from '@/lib'
-import { MockAppStorageLogic, newTestStorageDirNode, newTestStorageFileNode } from '../../../../../helpers/common/storage'
+import { MockAppStorageLogic, cloneTestStorageNode, newTestStorageDirNode, newTestStorageFileNode } from '../../../../../helpers/common/storage'
 import { Component } from 'vue-property-decorator'
 import { GENERAL_USER } from '../../../../../helpers/common/data'
 import { TestStore } from '../../../../../helpers/common/store'
@@ -26,6 +26,7 @@ class MockArticleStorageLogic extends ArticleStorageLogicImpl {
 
   m_createArticleTypeDirAPI = td.func() as any
   m_createArticleGeneralDirAPI = td.func() as any
+  m_renameArticleNodeAPI = td.func() as any
   m_setArticleSortOrderAPI = td.func() as any
   m_getArticleChildrenAPI = td.func() as any
 }
@@ -38,6 +39,8 @@ let storageLogic!: ArticleStorageLogicImpl & {
   appStorage: AppStorageLogic
   m_createArticleTypeDirAPI: ArticleStorageLogicImpl['m_createArticleTypeDirAPI']
   m_createArticleGeneralDirAPI: ArticleStorageLogicImpl['m_createArticleGeneralDirAPI']
+  m_renameArticleNodeAPI: ArticleStorageLogicImpl['m_renameArticleNodeAPI']
+  m_setArticleSortOrderAPI: ArticleStorageLogicImpl['m_setArticleSortOrderAPI']
 }
 
 function validate_validateSignedIn_called(): void {
@@ -108,6 +111,134 @@ describe('ArticleStorageLogic', () => {
       expect(hierarchicalNodes[1].path).toBe(user.path)
       expect(hierarchicalNodes[2].path).toBe(articles.path)
       expect(hierarchicalNodes[3].path).toBe(assets.path)
+
+      validate_validateSignedIn_called()
+    })
+  })
+
+  describe('renameDir', () => {
+    it('ベーシックケース - 記事系ノード', async () => {
+      const bundle = newTestStorageDirNode(`${articles.path}/${generateFirestoreId()}`, {
+        version: 2,
+        articleNodeName: 'バンドル',
+        articleNodeType: StorageArticleNodeType.CategoryBundle,
+        articleSortOrder: 1,
+      })
+      storageStore.initState({ all: cloneDeep([users, user, articles, bundle]) })
+
+      // モック設定
+      const renamed_bundle = cloneTestStorageNode(bundle, { articleNodeName: `Bundle`, version: bundle.version + 1 })
+      td.when(storageLogic.m_renameArticleNodeAPI(bundle.path, bundle.articleNodeName!)).thenResolve(renamed_bundle)
+
+      // テスト対象実行
+      const bundleRelativePath = `${bundle.id}`
+      const [actual] = await storageLogic.renameDir(bundleRelativePath, bundle.articleNodeName!)
+
+      expect(actual.id).toBe(renamed_bundle.id)
+      expect(actual.path).toBe(`${renamed_bundle.id}`)
+      expect(actual.name).toBe(renamed_bundle.name)
+      expect(actual.version).toBe(renamed_bundle.version)
+      expect(actual.articleNodeName).toBe(renamed_bundle.articleNodeName)
+      expect(actual.articleNodeType).toBe(renamed_bundle.articleNodeType)
+      expect(actual.articleSortOrder).toBe(renamed_bundle.articleSortOrder)
+
+      const updated_bundle = storageLogic.sgetNode({ id: renamed_bundle.id })
+      expect(updated_bundle.id).toBe(renamed_bundle.id)
+      expect(updated_bundle.path).toBe(`${renamed_bundle.id}`)
+      expect(updated_bundle.name).toBe(renamed_bundle.name)
+      expect(updated_bundle.version).toBe(renamed_bundle.version)
+      expect(updated_bundle.articleNodeName).toBe(renamed_bundle.articleNodeName)
+      expect(updated_bundle.articleNodeType).toBe(renamed_bundle.articleNodeType)
+      expect(updated_bundle.articleSortOrder).toBe(renamed_bundle.articleSortOrder)
+
+      const hierarchicalNodes = storageLogic.appStorage.getHierarchicalNodes(renamed_bundle.path)
+      expect(hierarchicalNodes.length).toBe(4)
+      expect(hierarchicalNodes[0].path).toBe(users.path)
+      expect(hierarchicalNodes[1].path).toBe(user.path)
+      expect(hierarchicalNodes[2].path).toBe(articles.path)
+      expect(hierarchicalNodes[3].path).toBe(renamed_bundle.path)
+
+      validate_validateSignedIn_called()
+    })
+
+    it('ベーシックケース - 一般ノード', async () => {
+      const d1 = newTestStorageDirNode(`${assets.path}/d1`)
+      storageStore.initState({ all: cloneDeep([users, user, articles, assets, d1]) })
+
+      // モック設定
+      const renamed_x1 = cloneTestStorageNode(d1, { name: `x1`, path: `${assets.path}/x1`, version: d1.version + 1 })
+      td.when(storageLogic.appStorage.renameDirAPI(d1.path, 'x1')).thenResolve([renamed_x1])
+
+      // テスト対象実行
+      const d1RelativePath = `${assets.name}/${d1.name}`
+      const [actual] = await storageLogic.renameDir(d1RelativePath, renamed_x1.name)
+
+      expect(actual.id).toBe(renamed_x1.id)
+      expect(actual.path).toBe(`${assets.name}/${renamed_x1.name}`)
+      expect(actual.name).toBe(renamed_x1.name)
+      expect(actual.version).toBe(renamed_x1.version)
+      expect(actual.articleNodeName).toBeNull()
+      expect(actual.articleNodeType).toBeNull()
+      expect(actual.articleSortOrder).toBeNull()
+
+      const updated_x1 = storageLogic.sgetNode({ id: renamed_x1.id })
+      expect(updated_x1.id).toBe(renamed_x1.id)
+      expect(updated_x1.path).toBe(`${assets.name}/${renamed_x1.name}`)
+      expect(updated_x1.name).toBe(renamed_x1.name)
+      expect(updated_x1.version).toBe(renamed_x1.version)
+      expect(updated_x1.articleNodeName).toBeNull()
+      expect(updated_x1.articleNodeType).toBeNull()
+      expect(updated_x1.articleSortOrder).toBeNull()
+
+      const hierarchicalNodes = storageLogic.appStorage.getHierarchicalNodes(renamed_x1.path)
+      expect(hierarchicalNodes.length).toBe(5)
+      expect(hierarchicalNodes[0].path).toBe(users.path)
+      expect(hierarchicalNodes[1].path).toBe(user.path)
+      expect(hierarchicalNodes[2].path).toBe(articles.path)
+      expect(hierarchicalNodes[3].path).toBe(assets.path)
+      expect(hierarchicalNodes[4].path).toBe(renamed_x1.path)
+
+      validate_validateSignedIn_called()
+    })
+  })
+
+  describe('renameFile', () => {
+    it('ベーシックケース - 一般ノード', async () => {
+      const f1 = newTestStorageFileNode(`${assets.path}/f1.txt`)
+      storageStore.initState({ all: cloneDeep([users, user, articles, assets, f1]) })
+
+      // モック設定
+      const renamed_x1 = cloneTestStorageNode(f1, { name: `x1.txt`, path: `${assets.path}/x1.txt`, version: f1.version + 1 })
+      td.when(storageLogic.appStorage.renameFileAPI(f1.path, 'x1.txt')).thenResolve(renamed_x1)
+
+      // テスト対象実行
+      const f1RelativePath = `${assets.name}/${f1.name}`
+      const actual = await storageLogic.renameFile(f1RelativePath, renamed_x1.name)
+
+      expect(actual.id).toBe(renamed_x1.id)
+      expect(actual.path).toBe(`${assets.name}/${renamed_x1.name}`)
+      expect(actual.name).toBe(renamed_x1.name)
+      expect(actual.version).toBe(renamed_x1.version)
+      expect(actual.articleNodeName).toBeNull()
+      expect(actual.articleNodeType).toBeNull()
+      expect(actual.articleSortOrder).toBeNull()
+
+      const updated_x1 = storageLogic.sgetNode({ id: renamed_x1.id })
+      expect(updated_x1.id).toBe(renamed_x1.id)
+      expect(updated_x1.path).toBe(`${assets.name}/${renamed_x1.name}`)
+      expect(updated_x1.name).toBe(renamed_x1.name)
+      expect(updated_x1.version).toBe(renamed_x1.version)
+      expect(updated_x1.articleNodeName).toBeNull()
+      expect(updated_x1.articleNodeType).toBeNull()
+      expect(updated_x1.articleSortOrder).toBeNull()
+
+      const hierarchicalNodes = storageLogic.appStorage.getHierarchicalNodes(renamed_x1.path)
+      expect(hierarchicalNodes.length).toBe(5)
+      expect(hierarchicalNodes[0].path).toBe(users.path)
+      expect(hierarchicalNodes[1].path).toBe(user.path)
+      expect(hierarchicalNodes[2].path).toBe(articles.path)
+      expect(hierarchicalNodes[3].path).toBe(assets.path)
+      expect(hierarchicalNodes[4].path).toBe(renamed_x1.path)
 
       validate_validateSignedIn_called()
     })

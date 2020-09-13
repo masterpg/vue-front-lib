@@ -125,37 +125,33 @@ class StoragePageMixin extends Vue {
    * ノードの表示用の名前を取得します。
    * @param node
    */
-  protected getDisplayName(node: { path: StorageNode['path']; name: StorageNode['name']; articleNodeName: StorageNode['articleNodeName'] }): string {
+  protected getDisplayName(node: {
+    path: StorageNode['path']
+    name: StorageNode['name']
+    articleNodeName: StorageNode['articleNodeName']
+    articleNodeType: StorageNode['articleNodeType']
+  }): string {
     if (this.storageType === 'article') {
       if (node.path === config.storage.article.assetsName) {
         return String(this.$tc('storage.asset', 2))
-      } else if (node.articleNodeName) {
-        return node.articleNodeName
       }
+    }
+    if (node.articleNodeName) {
+      return node.articleNodeName
     }
     return node.name
   }
 
   /**
    * ノードの表示用パスを取得します。
-   * @param node
+   * @param nodePath
    */
-  protected getDisplayPath(node: StorageNode): string {
-    switch (this.storageType) {
-      case 'app': {
-        return node.path
-      }
-      case 'user': {
-        return node.path
-      }
-      case 'article': {
-        const hierarchicalNodes = this.storageLogic.getHierarchicalNodes(node.path)
-        return hierarchicalNodes.reduce((result, node) => {
-          const name = node.articleNodeName ? node.articleNodeName : node.name
-          return result ? `${result}/${name}` : name
-        }, '')
-      }
-    }
+  protected getDisplayPath(nodePath: string): string {
+    const hierarchicalNodes = this.storageLogic.getHierarchicalNodes(nodePath)
+    return hierarchicalNodes.reduce((result, node) => {
+      const name = node.articleNodeName ? node.articleNodeName : node.name
+      return result ? `${result}/${name}` : name
+    }, '')
   }
 
   /**

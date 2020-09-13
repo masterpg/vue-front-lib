@@ -86,7 +86,6 @@ import {
   CompTreeViewLazyLoadEvent,
   CreateArticleTypeDirInput,
   Resizable,
-  StorageArticleNodeType,
   StorageNode,
   StorageNodeShareSettings,
   StorageNodeType,
@@ -95,12 +94,12 @@ import {
 import { Component, Watch } from 'vue-property-decorator'
 import { RawLocation, Route } from 'vue-router'
 import StorageDirView, { IStorageDirView } from './storage-dir-view.vue'
-import { StorageNodeActionEvent, StorageNodeActionType } from './base'
 import { StoragePageMixin, StoragePageStore } from './storage-page-mixin'
 import StorageDirCreateDialog from './storage-dir-create-dialog.vue'
 import StorageDirDetailView from './storage-dir-detail-view.vue'
 import StorageDirPathBreadcrumb from './storage-dir-path-breadcrumb.vue'
 import StorageFileDetailView from './storage-file-detail-view.vue'
+import { StorageNodeActionEvent } from './base'
 import StorageNodeMoveDialog from './storage-node-move-dialog.vue'
 import StorageNodeRemoveDialog from './storage-node-remove-dialog.vue'
 import StorageNodeRenameDialog from './storage-node-rename-dialog.vue'

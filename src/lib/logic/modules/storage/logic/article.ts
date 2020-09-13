@@ -86,6 +86,34 @@ class ArticleStorageLogicImpl extends SubStorageLogic implements ArticleStorageL
     }
   }
 
+  async renameDir(dirPath: string, newName: string): Promise<StorageNode[]> {
+    this.appStorage.validateSignedIn()
+
+    dirPath = StorageLogic.toFullNodePath(this.basePath, dirPath)
+    const dirNode = this.appStorage.sgetNode({ path: dirPath })
+    if (dirNode.articleNodeType) {
+      const apiNode = await this.m_renameArticleNodeAPI(dirPath, newName)
+      const dirNode = this.appStorage.setAPINodesToStore([apiNode])[0]
+      return StorageLogic.toBasePathNodes(this.basePath, [dirNode])
+    } else {
+      return StorageLogic.toBasePathNodes(this.basePath, await this.appStorage.renameDir(dirPath, newName))
+    }
+  }
+
+  async renameFile(filePath: string, newName: string): Promise<StorageNode> {
+    this.appStorage.validateSignedIn()
+
+    filePath = StorageLogic.toFullNodePath(this.basePath, filePath)
+    const dirNode = this.appStorage.sgetNode({ path: filePath })
+    if (dirNode.articleNodeType) {
+      const apiNode = await this.m_renameArticleNodeAPI(filePath, newName)
+      const fileNode = this.appStorage.setAPINodesToStore([apiNode])[0]
+      return StorageLogic.toBasePathNode(this.basePath, fileNode)
+    } else {
+      return StorageLogic.toBasePathNode(this.basePath, await this.appStorage.renameFile(filePath, newName))
+    }
+  }
+
   async createDir(dirPath: string, input?: CreateStorageNodeInput): Promise<StorageNode> {
     this.appStorage.validateSignedIn()
     dirPath = StorageLogic.toFullNodePath(this.basePath, dirPath)
@@ -178,6 +206,11 @@ class ArticleStorageLogicImpl extends SubStorageLogic implements ArticleStorageL
 
   protected async m_createArticleGeneralDirAPI(dirPath: string): Promise<StorageNode> {
     const apiNode = await api.createArticleGeneralDir(dirPath)
+    return this.appStorage.apiNodeToStorageNode(apiNode)!
+  }
+
+  protected async m_renameArticleNodeAPI(nodePath: string, newName: string): Promise<StorageNode> {
+    const apiNode = await api.renameArticleNode(nodePath, newName)
     return this.appStorage.apiNodeToStorageNode(apiNode)!
   }
 

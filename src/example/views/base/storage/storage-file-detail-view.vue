@@ -176,7 +176,7 @@ export default class StorageFileDetailView extends mixins(BaseComponent, Resizab
   private get m_displayPath(): string {
     if (!this.m_fileNode) return ''
     if (this.storageType !== 'article') return ''
-    return this.getDisplayPath(this.m_fileNode)
+    return this.getDisplayPath(this.m_fileNode.path)
   }
 
   private get m_fileName(): string {

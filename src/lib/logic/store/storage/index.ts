@@ -174,57 +174,56 @@ class StorageStoreImpl extends BaseStore<StorageState> implements StorageStore {
   }
 
   setList(nodes: StorageNodeForSet[]): StorageNode[] {
-    const result: StorageNode[] = []
-
-    for (const node of nodes) {
-      // id検索が必要な理由:
-      //   他端末でノード移動するとidは変わらないがpathは変化する。
-      //   この状況でpath検索を行うと、対象のノードを見つけられないためid検索する必要がある。
-      // path検索が必要な理由:
-      //   他端末で'd1/d11'を削除してからまた同じパスの'd1/d11'が作成された場合、
-      //   元のidと再作成されたidが異なり、パスは同じでもidが異なる状況が発生する。
-      //   この場合id検索しても対象ノードが見つからないため、path検索する必要がある。
-      const stateNode = this.getStateNode({ id: node.id, path: node.path })
-      if (!stateNode) {
-        throw new Error(`The specified node was not found: '${node.id}'`)
-      }
-
-      stateNode.id = node.id
-      stateNode.name = node.name
-      stateNode.dir = node.dir
-      stateNode.path = node.path
-      if (typeof node.contentType === 'string') stateNode.contentType = node.contentType
-      if (typeof node.size === 'number') stateNode.size = node.size
-      if (node.share) {
-        stateNode.share.isPublic = node.share.isPublic
-        stateNode.share.readUIds = node.share.readUIds ? [...node.share.readUIds] : null
-        stateNode.share.writeUIds = node.share.writeUIds ? [...node.share.writeUIds] : null
-      }
-      if (typeof node.version === 'number') stateNode.version = node.version
-      if (node.createdAt) stateNode.createdAt = node.createdAt
-      if (node.updatedAt) stateNode.updatedAt = node.updatedAt
-
-      result.push(this.clone(stateNode))
-    }
-
-    return result
+    return nodes.map(node => this.set(node))
   }
 
   set(node: StorageNodeForSet): StorageNode {
-    return this.setList([node])[0]
+    // id検索が必要な理由:
+    //   他端末でノード移動するとidは変わらないがpathは変化する。
+    //   この状況でpath検索を行うと、対象のノードを見つけられないためid検索する必要がある。
+    // path検索が必要な理由:
+    //   他端末で'd1/d11'を削除してからまた同じパスの'd1/d11'が作成された場合、
+    //   元のidと再作成されたidが異なり、パスは同じでもidが異なる状況が発生する。
+    //   この場合id検索しても対象ノードが見つからないため、path検索する必要がある。
+    const stateNode = this.getStateNode({ id: node.id, path: node.path })
+    if (!stateNode) {
+      throw new Error(`The specified node was not found: '${node.id}'`)
+    }
+
+    stateNode.id = node.id
+    stateNode.name = node.name
+    stateNode.dir = node.dir
+    stateNode.path = node.path
+    if (typeof node.contentType === 'string') stateNode.contentType = node.contentType
+    if (typeof node.size === 'number') stateNode.size = node.size
+    if (node.share) {
+      stateNode.share.isPublic = node.share.isPublic
+      stateNode.share.readUIds = node.share.readUIds ? [...node.share.readUIds] : null
+      stateNode.share.writeUIds = node.share.writeUIds ? [...node.share.writeUIds] : null
+    }
+    if (typeof node.articleNodeName === 'string' || node.articleNodeName === null) {
+      stateNode.articleNodeName = node.articleNodeName
+    }
+    if (typeof node.articleNodeType === 'string' || node.articleNodeType === null) {
+      stateNode.articleNodeType = node.articleNodeType
+    }
+    if (typeof node.articleSortOrder === 'number' || node.articleSortOrder === null) {
+      stateNode.articleSortOrder = node.articleSortOrder
+    }
+    if (typeof node.version === 'number') stateNode.version = node.version
+    if (node.createdAt) stateNode.createdAt = node.createdAt
+    if (node.updatedAt) stateNode.updatedAt = node.updatedAt
+
+    return this.clone(stateNode)
   }
 
   addList(nodes: StorageNode[]): StorageNode[] {
-    const addingNodes = nodes.map(node => {
-      this.state.all.push(this.clone(node))
-      return this.clone(node)
-    })
-
-    return addingNodes
+    return nodes.map(node => this.add(node))
   }
 
-  add(value: StorageNode): StorageNode {
-    return this.addList([value])[0]
+  add(node: StorageNode): StorageNode {
+    this.state.all.push(this.clone(node))
+    return this.clone(node)
   }
 
   removeList(key: { ids?: string[]; paths?: string[] }): StorageNode[] {
