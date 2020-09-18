@@ -138,7 +138,7 @@ export default class StorageNodeMoveDialog extends mixins(BaseDialogMixin, Stora
 
   private get m_movingNodeName(): string {
     if (this.m_movingNodes.length === 1) {
-      return this.m_movingNodes[0].name
+      return this.getDisplayName(this.m_movingNodes[0])
     }
     return ''
   }

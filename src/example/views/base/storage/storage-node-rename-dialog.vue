@@ -128,7 +128,7 @@ export default class StorageNodeRenameDialog extends mixins(BaseDialogMixin, Sto
 
   open(targetNodePath: string): Promise<string> {
     this.m_targetNode = this.storageLogic.sgetNode({ path: targetNodePath })
-    this.m_newName = this.m_targetNode.articleNodeName || this.m_targetNode.name
+    this.m_newName = this.getDisplayName(this.m_targetNode)
     return this.openProcess(targetNodePath)
   }
 
