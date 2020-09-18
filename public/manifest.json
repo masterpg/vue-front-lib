@@ -1,14 +1,14 @@
 {
-  "name": "vue-base-project",
-  "short_name": "vue-base-project",
+  "name": "vue-front-lib",
+  "short_name": "vue-front-lib",
   "icons": [
     {
-      "src": "img/icons/app/favicon-96x96.png",
+      "src": "img/icons/favicon-96x96.png",
       "sizes": "96x96",
       "type": "image/png"
     },
     {
-      "src": "img/icons/app/favicon-128x128.png",
+      "src": "img/icons/favicon-128x128.png",
       "sizes": "128x128",
       "type": "image/png"
     }

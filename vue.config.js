@@ -56,8 +56,8 @@ module.exports = {
   pwa: {
     name: 'vue-base-project',
     iconPaths: {
-      favicon32: 'img/icons/app/favicon-32x32.png',
-      favicon16: 'img/icons/app/favicon-16x16.png',
+      favicon32: 'img/icons/favicon-32x32.png',
+      favicon16: 'img/icons/favicon-16x16.png',
       appleTouchIcon: 'img/icons/manifest/apple-touch-icon-152x152.png',
       maskIcon: 'img/icons/manifest/safari-pinned-tab.svg',
       msTileImage: 'img/icons/manifest/msapplication-icon-144x144.png',
@@ -70,7 +70,7 @@ module.exports = {
       skipWaiting: true,
 
       // ServiceWorkerインストール時にキャッシュされるファイルを設定
-      include: [/\.html$/, /\.js$/, /\.css$/, /^favicon\.ico$/],
+      include: [/\.html$/, /\.js$/, /\.css$/, /^favicon\.ico$/, /^img\/(?:[^/]+\/)*[^/]+\.(?:jpg|jpeg|png|gif|bmp|svg)$/],
       exclude: [/\.map$/],
 
       // ※ 以下のような不具合があったが、`filenameHashing`の対応を行ったところ、
@@ -90,10 +90,6 @@ module.exports = {
       runtimeCaching: [
         {
           urlPattern: /\/api\//,
-          handler: 'networkFirst',
-        },
-        {
-          urlPattern: /\/img\//,
           handler: 'networkFirst',
         },
       ],

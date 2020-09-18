@@ -1,3 +1,4 @@
+import * as path from 'path'
 import { i18n } from '../i18n'
 
 //========================================================================
@@ -43,7 +44,7 @@ abstract class BaseSWManager {
     if (!execute) return
 
     const register = require('register-service-worker').register
-    register(`${process.env.BASE_URL}service-worker.js`, {
+    register(path.join(process.env.BASE_URL || '', 'service-worker.js'), {
       ready: () => {
         this.m_dispatchToListeners(SWChangeState.ready, String(i18n.t('sw.ready')))
       },
