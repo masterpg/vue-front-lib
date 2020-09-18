@@ -18,7 +18,7 @@ interface AppAPIContainer extends LibAPIContainer {
 
   addCartItems(items: CartItemAddInput[]): Promise<CartItemEditResponse[]>
 
-  updateCartItems(items: { id: string; quantity: number }[]): Promise<CartItemEditResponse[]>
+  updateCartItems(items: CartItemUpdateInput[]): Promise<CartItemEditResponse[]>
 
   removeCartItems(cartItemIds: string[]): Promise<CartItemEditResponse[]>
 

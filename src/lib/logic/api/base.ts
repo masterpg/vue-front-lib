@@ -110,12 +110,11 @@ export interface LibAPIContainer {
   ): Promise<APIStorageNode[]>
 }
 
-export interface APIEntity {
+export interface RawEntity {
   id: string
 }
 
-export interface RawTimestampEntity {
-  id: string
+export interface RawTimestampEntity extends RawEntity {
   createdAt: string
   updatedAt: string
 }

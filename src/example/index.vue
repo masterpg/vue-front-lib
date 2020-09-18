@@ -12,7 +12,7 @@
 .menu-list
   min-width: 150px
 
-.container
+.page
   height: 100vh
 
 .drawer-scroll-area
@@ -152,7 +152,7 @@
       </q-scroll-area>
     </q-drawer>
 
-    <q-page-container class="container">
+    <q-page-container class="page">
       <transition name="view" mode="out-in" enter-active-class="animated tada faster" leave-active-class="animated bounceOutRight faster">
         <router-view />
       </transition>
@@ -202,7 +202,7 @@ export default class AppPage extends mixins(BaseComponent, Resizable) {
 
   private m_demoExpanded = true
 
-  private get m_demoItems(): Array<{ title: string; path: string; icon?: string; hidden: boolean }> {
+  private get m_demoItems(): Array<{ title: string; path: string; hidden: boolean }> {
     return [
       {
         title: 'ABC',

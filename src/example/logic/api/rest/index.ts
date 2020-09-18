@@ -9,9 +9,9 @@ import { OmitEntityTimestamp } from '@/firestore-ex'
 //
 //========================================================================
 
-interface APIProduct extends OmitEntityTimestamp<Product>, RawTimestampEntity {}
+interface RawProduct extends OmitEntityTimestamp<Product>, RawTimestampEntity {}
 
-interface APICartItem extends OmitEntityTimestamp<CartItem>, RawTimestampEntity {}
+interface RawCartItem extends OmitEntityTimestamp<CartItem>, RawTimestampEntity {}
 
 //========================================================================
 //
@@ -21,22 +21,22 @@ interface APICartItem extends OmitEntityTimestamp<CartItem>, RawTimestampEntity 
 
 class AppRESTAPIContainer extends BaseRESTAPIContainer implements AppAPIContainer {
   async getProduct(id: string): Promise<Product | undefined> {
-    const response = await this.get<APIProduct>(`products/${id}`)
+    const response = await this.get<RawProduct>(`products/${id}`)
     return this.toTimestampEntity(response.data)
   }
 
   async getProducts(ids?: string[]): Promise<Product[]> {
-    const response = await this.get<APIProduct[]>('products')
+    const response = await this.get<RawProduct[]>('products')
     return this.toTimestampEntities(response.data)
   }
 
   async getCartItem(id: string): Promise<CartItem | undefined> {
-    const response = await this.get<APICartItem>(`cartItems/${id}`, { isAuth: true })
+    const response = await this.get<RawCartItem>(`cartItems/${id}`, { isAuth: true })
     return this.toTimestampEntity(response.data)
   }
 
   async getCartItems(ids?: string[]): Promise<CartItem[]> {
-    const response = await this.get<APICartItem[]>('cartItems', { isAuth: true })
+    const response = await this.get<RawCartItem[]>('cartItems', { isAuth: true })
     return this.toTimestampEntities(response.data)
   }
 
