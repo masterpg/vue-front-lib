@@ -1,5 +1,5 @@
 import { TestLibAPIContainer } from '../../../mocks/lib/logic/api'
-import { config } from '@/lib/config'
+import { config } from '@/example/config'
 import { initLibTest } from '../../../helpers/lib/init'
 
 //========================================================================

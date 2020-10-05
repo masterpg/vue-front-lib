@@ -1,7 +1,7 @@
 import * as path from 'path'
 import { Component } from 'vue-property-decorator'
 import { SubStorageLogic } from './sub'
-import { config } from '@/lib/config'
+import { config } from '@/example/config'
 import { store } from '../../../store'
 
 //========================================================================

@@ -14,7 +14,7 @@ import { AppStorageLogic } from '../../../../../../src/lib/logic/modules/storage
 import { Component } from 'vue-property-decorator'
 import { TestStore } from '../../../../../helpers/common/store'
 import { cloneDeep } from 'lodash'
-import { config } from '../../../../../mocks/lib/config'
+import { config } from '@/example/config'
 import dayjs from 'dayjs'
 import { generateFirestoreId } from '../../../../../helpers/common/base'
 import { getStorageNodeURL } from '../../../../../../src/lib/logic/base'

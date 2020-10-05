@@ -14,7 +14,7 @@ import {
   UserInfoInput,
 } from '../types'
 import { OmitEntityTimestamp } from '@/firestore-ex'
-import { StorageConfig } from '@/lib/config'
+import { StorageConfig } from '@/example/config'
 import dayjs from 'dayjs'
 
 //========================================================================

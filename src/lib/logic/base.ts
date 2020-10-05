@@ -1,7 +1,7 @@
 import { AuthStatus, StorageNodeType } from './types'
 import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
-import { config } from '@/lib/config'
+import { config } from '@/example/config'
 import { removeEndSlash } from 'web-base-lib'
 
 //========================================================================

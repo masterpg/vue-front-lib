@@ -12,7 +12,7 @@ import { Component } from 'vue-property-decorator'
 import { StorageLogic } from './base'
 import { SubStorageLogic } from './sub'
 import { api } from '../../../api'
-import { config } from '@/lib/config'
+import { config } from '@/example/config'
 import { store } from '../../../store'
 
 //========================================================================

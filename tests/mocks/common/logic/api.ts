@@ -2,7 +2,7 @@ import * as path from 'path'
 import { AuthStatus, BaseGQLAPIContainer, LibAPIContainer, RawUser, UserClaims, UserInfo, UserInfoInput } from '@/lib'
 import { Constructor, removeStartDirChars } from 'web-base-lib'
 import axios from 'axios'
-import { config } from '@/lib/config'
+import { config } from '@/example/config'
 import gql from 'graphql-tag'
 
 //========================================================================

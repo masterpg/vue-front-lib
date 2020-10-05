@@ -1,6 +1,6 @@
 import axios, { Method, ResponseType } from 'axios'
 import Vue from 'vue'
-import { config } from '../../../config'
+import { config } from '@/example/config'
 
 export interface APIRequestConfig {
   headers?: any

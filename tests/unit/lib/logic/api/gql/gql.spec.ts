@@ -2,7 +2,7 @@ import { APIStorageNode, AuthStatus, PublicProfile, StorageArticleNodeType, Stor
 import { APP_ADMIN_TOKEN, GENERAL_TOKEN, GENERAL_USER } from '../../../../../helpers/common/data'
 import { OmitEntityTimestamp } from '@/firestore-ex'
 import { TestLibAPIContainer } from '../../../../../mocks/lib/logic/api'
-import { config } from '../../../../../mocks/lib/config'
+import { config } from '@/example/config'
 import { initLibTest } from '../../../../../helpers/lib/init'
 import { sleep } from 'web-base-lib'
 import { sortStorageTree } from '../../../../../../src/lib/logic/base'

@@ -4,7 +4,7 @@ import { SortStorageNode, getBaseStorageURL, sortStorageTree, storageChildrenSor
 import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from '../download'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { StorageUploader } from '../upload'
-import { config } from '@/lib/config'
+import { config } from '@/example/config'
 
 //========================================================================
 //
