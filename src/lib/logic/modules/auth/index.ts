@@ -4,7 +4,7 @@ import { Component } from 'vue-property-decorator'
 import { Dialog } from 'quasar'
 import { NoCache } from '@/lib/base'
 import { api } from '../../api'
-import { i18n } from '@/lib/i18n'
+import { i18n } from '@/example/i18n'
 import { store } from '../../store'
 
 //========================================================================

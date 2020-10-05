@@ -1,7 +1,6 @@
 export * from './base/component'
 export * from './base/decorators'
 export * from './components'
-export * from './i18n'
 export * from './logic'
 export * from './markdown-it'
 export * from './quasar'

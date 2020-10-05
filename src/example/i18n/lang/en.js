@@ -1,8 +1,45 @@
-import merge from 'lodash/merge'
-
-export default merge(require('@/lib/lang/en').default, {
-  common: {},
-  error: {},
+export default {
+  common: {
+    ok: 'OK',
+    cancel: 'Cancel',
+    create: 'Create',
+    update: 'Update',
+    delete: 'Delete',
+    entry: 'Entry',
+    send: 'Send',
+    failed: 'Failed',
+    close: 'Close',
+    move: 'Move',
+    next: 'Next',
+    share: 'Share',
+    rename: 'Rename',
+    download: 'Download',
+    reload: 'Reload',
+    error: 'Error | Errors',
+    systemError: 'System Error',
+    folder: 'Folder | Folders',
+    file: 'File | Files',
+    item: 'Item | Items',
+    password: 'Password',
+    email: 'E-mail',
+    displayName: 'Display Name',
+    signUn: 'Sign up',
+    signIn: 'Sign in',
+    signOut: 'Sign out',
+    sthName: '{sth} Name',
+    createSth: 'Create {sth}',
+    deleteSth: 'Delete {sth}',
+    moveSth: 'Move {sth}',
+    renameSth: 'Rename {sth}',
+    uploadSth: 'Upload {sth}',
+    shareSth: 'Share {sth}',
+  },
+  error: {
+    required: '"{target}" is a required.',
+    invalid: '"{target}" is a invali.',
+    unusable: '"{target}" cannot be used.',
+    unexpected: 'An unexpected error has occurred.',
+  },
   index: {
     mainMenu: {
       siteAdmin: 'Site Admin',
@@ -56,6 +93,9 @@ export default merge(require('@/lib/lang/en').default, {
     appRootName: 'Storage',
     articleRootName: 'Article',
     uploading: 'Uploading',
+    uploadTotalRatio: 'Upload {0} / {1}',
+    uploadFileFailed: 'Upload failed.',
+    uploadFileCanceled: 'Upload canceled.',
     asset: 'Asset | Assets',
     nodeAlreadyExists: 'A {nodeType} called "{nodeName}" already exists.',
     create: {
@@ -102,4 +142,12 @@ export default merge(require('@/lib/lang/en').default, {
       downloadFailure: 'Failed to download "{nodeName}".',
     },
   },
-})
+  article: {
+    nodeType: {
+      listBundle: 'List Type Bundle' | 'List Type Bundles',
+      categoryBundle: 'Category Bundle' | 'Category Bundles',
+      category: 'Category' | 'Categories',
+      article: 'Article' | 'Articles',
+    },
+  },
+}

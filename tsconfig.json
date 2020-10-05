@@ -34,7 +34,6 @@
       "@/lib/assets/*": ["src/lib/assets/*"],
       "@/lib/base": ["src/lib/base"],
       "@/lib/components": ["src/lib/components"],
-      "@/lib/i18n": ["src/lib/i18n"],
       "@/lib/lang/*": ["src/lib/lang/*"],
       "@/lib/logic": ["src/lib/logic"],
       "@/lib/markdown-it": ["src/lib/markdown-it"],

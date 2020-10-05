@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { i18n } from '../i18n'
+import { i18n } from '@/example/i18n'
 
 //========================================================================
 //

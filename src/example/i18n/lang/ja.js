@@ -1,8 +1,45 @@
-import merge from 'lodash/merge'
-
-export default merge(require('@/lib/lang/ja').default, {
-  common: {},
-  error: {},
+export default {
+  common: {
+    ok: 'OK',
+    cancel: 'キャンセル',
+    create: '作成',
+    update: '更新',
+    delete: '削除',
+    entry: '登録',
+    send: '送信',
+    failed: '失敗',
+    close: '閉じる',
+    move: '移動',
+    next: '次へ',
+    share: '共有',
+    rename: '名前変更',
+    download: 'ダウンロード',
+    reload: 'リロード',
+    error: 'エラー',
+    systemError: 'システムエラー',
+    folder: 'フォルダ',
+    file: 'ファイル',
+    item: 'アイテム',
+    password: 'パスワード',
+    email: 'メールアドス',
+    displayName: '表示名',
+    signUp: 'ユーザー登録',
+    signIn: 'サインイン',
+    signOut: 'サインアウト',
+    sthName: '{sth}名',
+    createSth: '{sth}の作成',
+    deleteSth: '{sth}の削除',
+    moveSth: '{sth}の移動',
+    renameSth: '{sth}の名前変更',
+    uploadSth: '{sth}のアップロード',
+    shareSth: '{sth}の共有',
+  },
+  error: {
+    required: '「{target}」は必須です。',
+    invalid: '「{target}」は不正です。',
+    unusable: '「{target}」は使用できません。',
+    unexpected: '予期しないエラーが発生しました。',
+  },
   index: {
     mainMenu: {
       siteAdmin: 'サイト管理',
@@ -56,6 +93,9 @@ export default merge(require('@/lib/lang/ja').default, {
     userRootName: 'Home',
     articleRootName: 'ホーム',
     uploading: 'アップロード中',
+    uploadTotalRatio: 'アップロード {0} / {1}',
+    uploadFileFailed: 'アップロード失敗',
+    uploadFileCanceled: 'キャンセル',
     asset: 'アセット',
     nodeAlreadyExists: '「{nodeName}」という{nodeType}がすでに存在します。',
     create: {
@@ -102,4 +142,12 @@ export default merge(require('@/lib/lang/ja').default, {
       downloadFailure: '「{nodeName}」のダウンロードに失敗しました。',
     },
   },
-})
+  article: {
+    nodeType: {
+      listBundle: 'リスト型バンドル',
+      categoryBundle: 'カテゴリ型バンドル',
+      category: 'カテゴリ',
+      article: '記事',
+    },
+  },
+}

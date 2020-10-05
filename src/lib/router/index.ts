@@ -1,7 +1,7 @@
 import { NavigationGuard, Route } from 'vue-router/types/router'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import { i18n } from '../i18n'
+import { i18n } from '@/example/i18n'
 
 Vue.use(VueRouter)
 
