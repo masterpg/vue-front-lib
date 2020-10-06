@@ -1,11 +1,11 @@
-import '@/example/quasar'
 import { initLogic, initStore } from '@/example/logic'
-import { AppAPIContainer } from '../../../src/example/logic/api/base'
+import { AppAPIContainer } from '@/example/logic/api/base'
 import { MockLogicContainer } from '../../mocks/example/logic'
 import { initConfig } from '@/example/config'
 import { initExampleTestAPI } from '../../mocks/example/logic/api'
 import { initI18n } from '@/example/i18n'
 import { initRouter } from '@/example/router'
+import { quasar } from '@/example/quasar'
 
 //========================================================================
 //
@@ -14,6 +14,7 @@ import { initRouter } from '@/example/router'
 //========================================================================
 
 async function initExampleTest(params: { api?: AppAPIContainer } = {}): Promise<void> {
+  quasar.setup()
   initConfig()
   initRouter()
   initExampleTestAPI(params.api)

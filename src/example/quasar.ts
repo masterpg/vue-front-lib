@@ -48,67 +48,75 @@ import {
   Ripple,
 } from 'quasar'
 import Vue from 'vue'
-import { quasar } from '@/lib'
 
-Vue.use(Quasar, {
-  components: {
-    ...quasar.components,
-    // QBtn,
-    // QAvatar,
-    // QBar,
-    QBreadcrumbs,
-    QBreadcrumbsEl,
-    // QBtn,
-    QBtnToggle,
-    QCard,
-    QCardActions,
-    QCardSection,
-    // QCheckbox,
-    QDialog,
-    QDrawer,
-    QExpansionItem,
-    QForm,
-    QHeader,
-    // QIcon,
-    QImg,
-    QInput,
-    QItem,
-    QItemLabel,
-    QItemSection,
-    QLayout,
-    // QLinearProgress,
-    QList,
-    QMenu,
-    QPage,
-    QPageContainer,
-    QRouteTab,
-    QScrollArea,
-    QSeparator,
-    // QSpace,
-    // QSplitter,
-    QTab,
-    QTable,
-    QTabs,
-    QTd,
-    QTh,
-    QToolbar,
-    QToolbarTitle,
-    QTooltip,
-    QTr,
-  },
-  config: {
-    ...quasar.config,
-    notify: {},
-    loading: {},
-  },
-  directives: {
-    ...quasar.directives,
-    ClosePopup,
-    Ripple,
-  },
-  plugins: {
-    ...quasar.plugins,
-    Loading,
-    Notify,
-  },
-})
+export namespace quasar {
+  export function setup() {
+    Vue.use(Quasar, {
+      components: {
+        QAvatar,
+        QBar,
+        QBreadcrumbs,
+        QBreadcrumbsEl,
+        QBtn,
+        QBtnToggle,
+        QCard,
+        QCardActions,
+        QCardSection,
+        QCheckbox,
+        QDialog,
+        QDrawer,
+        QExpansionItem,
+        QForm,
+        QHeader,
+        QIcon,
+        QImg,
+        QInput,
+        QItem,
+        QItemLabel,
+        QItemSection,
+        QLayout,
+        QLinearProgress,
+        QList,
+        QMenu,
+        QPage,
+        QPageContainer,
+        QRouteTab,
+        QScrollArea,
+        QSeparator,
+        QSpace,
+        QSplitter,
+        QTab,
+        QTable,
+        QTabs,
+        QTd,
+        QTh,
+        QToolbar,
+        QToolbarTitle,
+        QTooltip,
+        QTr,
+      },
+
+      config: {
+        notify: {},
+        loading: {},
+      },
+
+      directives: {
+        ClosePopup,
+        Ripple,
+      },
+
+      plugins: {
+        Dialog,
+        Loading,
+        Notify,
+      },
+    })
+  }
+
+  export function setupExtras() {
+    require('@quasar/extras/roboto-font/roboto-font.css')
+    require('@quasar/extras/material-icons/material-icons.css')
+    require('@quasar/extras/fontawesome-v5/fontawesome-v5.css')
+  }
+}
