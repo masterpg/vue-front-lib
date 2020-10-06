@@ -1,11 +1,42 @@
-@import 'src/example/styles/app.variables'
-@import 'src/lib/styles/lib'
+@import './app.variables'
+@import './classes/flex-layout'
+@import './classes/spacing'
+@import '~github-markdown-css/github-markdown'
+
+@import '~quasar/dist/quasar'
+//@import '~quasar/src/css/flex-addon'
 
 body
   margin: 0
   font-family: 'Roboto', 'Noto', sans-serif
   background-color: #ffffff
   color: #{$text-primary-color}
+
+[hidden]
+  display: none !important
+
+[invisible]
+  visibility: hidden !important
+
+a
+  @extend %app-link
+
+.app-link
+  @extend %app-link
+
+.markdown-body
+  --comp-img-max-height: 400px
+
+  > div
+    margin-bottom: 16px
+
+  img
+    max-width: 35%
+    vertical-align: middle
+
+  // hack to allign emojies to line height
+  .emoji
+    height: 1.2em
 
 //\:root
 //  --red: #{$red}
