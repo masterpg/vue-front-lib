@@ -38,7 +38,6 @@
       "@/lib/logic": ["src/lib/logic"],
       "@/lib/markdown-it": ["src/lib/markdown-it"],
       "@/lib/styles/*": ["src/lib/styles/*"],
-      "@/lib/sw": ["src/lib/sw"],
       "@/firestore-ex": ["src/firestore-ex"]
     },
     "lib": [
