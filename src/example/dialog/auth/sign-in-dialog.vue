@@ -32,14 +32,15 @@
 </template>
 
 <script lang="ts">
-import { AuthMessageView, EmailSignInView, EmailSignInViewResult } from './base'
-import { UserEntry, dialogManager } from '..'
+import { AuthMessageView, EmailSignInView, EmailSignInViewResult } from '@/example/dialog/auth/base'
 import { AuthStatus } from '@/lib'
 import { BaseDialog } from '@/example/base'
 import { Component } from 'vue-property-decorator'
-import PasswordResetView from './base/password-reset-view.vue'
-import ProviderListView from './base/provider-list-view.vue'
+import PasswordResetView from '@/example/dialog/auth/base/password-reset-view.vue'
+import ProviderListView from '@/example/dialog/auth//base/provider-list-view.vue'
 import { QDialog } from 'quasar'
+import { UserEntry } from '@/example/dialog/history-dialog-manager.vue'
+import { dialogManager } from '..'
 import { router } from '@/example/router'
 
 @Component({

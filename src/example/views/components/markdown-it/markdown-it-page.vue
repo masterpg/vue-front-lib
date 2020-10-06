@@ -139,7 +139,7 @@
 
 import { BaseComponent, NoCache, Resizable } from '@/example/base'
 import { Component, Watch } from 'vue-property-decorator'
-import { CompImg } from '@/lib'
+import { CompImg } from '@/example/components'
 import MarkdownIt from 'markdown-it'
 import anime from 'animejs'
 import cheatSheet from './cheat-sheet.md'

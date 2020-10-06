@@ -109,15 +109,8 @@
 
 <script lang="ts">
 import * as path from 'path'
-import {
-  CompTreeNode,
-  CompTreeNodeEditData,
-  RequiredStorageNodeShareSettings,
-  StorageArticleNodeType,
-  StorageNodeShareSettings,
-  StorageNodeType,
-  StorageType,
-} from '@/lib'
+import { CompTreeNode, CompTreeNodeEditData } from '@/example/components'
+import { RequiredStorageNodeShareSettings, StorageArticleNodeType, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/lib'
 import { StorageNodeActionEvent, StorageTreeNodeData } from './base'
 import { Component } from 'vue-property-decorator'
 import { Dayjs } from 'dayjs'

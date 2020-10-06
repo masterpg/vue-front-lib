@@ -77,7 +77,8 @@
 </template>
 
 <script lang="ts">
-import { ArticleStorageLogic, CompStorageUploadProgressFloat, CompTreeViewEvent, StorageNode, StorageNodeType, StorageType } from '@/lib'
+import { ArticleStorageLogic, StorageNode, StorageNodeType, StorageType } from '@/lib'
+import { CompStorageUploadProgressFloat, CompTreeViewEvent } from '@/example/components'
 import { Component, Prop } from 'vue-property-decorator'
 import ArticleAdminDirView from './article-admin-dir-view.vue'
 import { BaseStoragePage } from '../../base/storage'

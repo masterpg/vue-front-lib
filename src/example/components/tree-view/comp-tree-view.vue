@@ -1,5 +1,5 @@
 <style lang="sass" scoped>
-@import 'src/lib/styles/lib.variables'
+@import 'src/example/styles/app.variables'
 
 .child-container
   color: var(--comp-tree-view-color, $app-link-color)
@@ -34,8 +34,8 @@ import {
   CompTreeViewLazyLoadDoneFunc,
   CompTreeViewLazyLoadEvent,
 } from './types'
-import CompTreeNode from './comp-tree-node.vue'
-import { CompTreeViewUtils } from './comp-tree-view-utils'
+import CompTreeNode from '@/example/components/tree-view/comp-tree-node.vue'
+import { CompTreeViewUtils } from '@/example/components/tree-view/comp-tree-view-utils'
 import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
 import debounce from 'lodash/debounce'

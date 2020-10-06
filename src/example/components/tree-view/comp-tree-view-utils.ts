@@ -1,6 +1,6 @@
-import { CompTreeNodeData, CompTreeViewLazyLoadDoneFunc } from './types'
-import CompTreeNode from './comp-tree-node.vue'
-import CompTreeView from './comp-tree-view.vue'
+import { CompTreeNodeData, CompTreeViewLazyLoadDoneFunc } from '@/example/components/tree-view/types'
+import CompTreeNode from '@/example/components/tree-view/comp-tree-node.vue'
+import CompTreeView from '@/example/components/tree-view/comp-tree-view.vue'
 import Vue from 'vue'
 
 export namespace CompTreeViewUtils {

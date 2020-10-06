@@ -81,16 +81,8 @@
 <script lang="ts">
 import * as path from 'path'
 import { BaseDialog, NoCache } from '@/example/base'
-import {
-  CompAlertDialog,
-  CompTreeView,
-  CompTreeViewEvent,
-  CompTreeViewLazyLoadEvent,
-  StorageArticleNodeType,
-  StorageLogic,
-  StorageNode,
-  StorageNodeType,
-} from '@/lib'
+import { CompAlertDialog, CompTreeView, CompTreeViewEvent, CompTreeViewLazyLoadEvent } from '@/example/components'
+import { StorageArticleNodeType, StorageLogic, StorageNode, StorageNodeType } from '@/lib'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'

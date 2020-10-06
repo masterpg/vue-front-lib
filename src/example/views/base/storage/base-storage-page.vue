@@ -78,18 +78,9 @@
 
 <script lang="ts">
 import * as path from 'path'
-import {
-  AuthStatus,
-  CompStorageUploadProgressFloat,
-  CompTreeViewEvent,
-  CompTreeViewLazyLoadEvent,
-  CreateArticleTypeDirInput,
-  StorageNode,
-  StorageNodeShareSettings,
-  StorageNodeType,
-  UploadEndedEvent,
-} from '@/lib'
+import { AuthStatus, CreateArticleTypeDirInput, StorageNode, StorageNodeShareSettings, StorageNodeType } from '@/lib'
 import { BaseComponent, Resizable } from '@/example/base'
+import { CompStorageUploadProgressFloat, CompTreeViewEvent, CompTreeViewLazyLoadEvent, UploadEndedEvent } from '@/example/components'
 import { Component, Watch } from 'vue-property-decorator'
 import { RawLocation, Route } from 'vue-router'
 import StorageDirView, { IStorageDirView } from './storage-dir-view.vue'

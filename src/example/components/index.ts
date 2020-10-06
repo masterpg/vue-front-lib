@@ -1,0 +1,6 @@
+export * from '@/example/components/dialog'
+export * from '@/example/components/storage'
+export * from '@/example/components/alert-dialog'
+export * from '@/example/components/img'
+export * from '@/example/components/loading-spinner'
+export * from '@/example/components/tree-view'

@@ -1,4 +1,4 @@
-import CompTreeNode from './comp-tree-node.vue'
+import CompTreeNode from '@/example/components/tree-view/comp-tree-node.vue'
 import { Constructor } from 'web-base-lib'
 
 export interface CompTreeNodeData {

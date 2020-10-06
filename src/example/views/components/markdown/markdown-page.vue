@@ -72,7 +72,7 @@
 
 import * as monaco from 'monaco-editor'
 import { BaseComponent, NoCache, Resizable } from '@/example/base'
-import { CompImg } from '@/lib'
+import { CompImg } from '@/example/components'
 import { Component } from 'vue-property-decorator'
 import MarkdownIt from 'markdown-it'
 import MarkdownItAddr from 'markdown-it-abbr'

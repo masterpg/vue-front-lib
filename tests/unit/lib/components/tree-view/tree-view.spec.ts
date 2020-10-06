@@ -8,7 +8,7 @@ import {
   CompTreeViewLazyLoadEvent,
   CompTreeViewLazyLoadStatus,
   CompTreeViewUtils,
-} from '@/lib'
+} from '@/example/components'
 import { Wrapper, mount } from '@vue/test-utils'
 import { cloneDeep, merge } from 'lodash'
 import { Explanation } from 'testdouble'

@@ -8,18 +8,15 @@
 import * as _path from 'path'
 import {
   ArticleStorageLogic,
-  CompTreeView,
-  CompTreeViewEvent,
-  CompTreeViewLazyLoadEvent,
   CreateArticleTypeDirInput,
   StorageArticleNodeType,
   StorageLogic,
   StorageNode,
   StorageNodeShareSettings,
   StorageNodeType,
-  UploadEndedEvent,
 } from '@/lib'
 import { BaseComponent, NoCache, Resizable } from '@/example/base'
+import { CompTreeView, CompTreeViewEvent, CompTreeViewLazyLoadEvent, UploadEndedEvent } from '@/example/components'
 import { Component, Prop, Watch } from 'vue-property-decorator'
 import { StorageNodeActionEvent, StorageTreeNodeInput } from './base'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'

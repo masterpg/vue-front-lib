@@ -1,5 +1,5 @@
 <style lang="sass" scoped>
-@import 'src/lib/styles/lib.variables'
+@import 'src/example/styles/app.variables'
 
 .com-img-main
   box-sizing: border-box

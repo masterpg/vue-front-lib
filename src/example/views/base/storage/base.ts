@@ -1,12 +1,5 @@
-import {
-  CompTreeNodeData,
-  CompTreeViewLazyLoadStatus,
-  StorageArticleNodeType,
-  StorageNode,
-  StorageNodeShareSettings,
-  StorageNodeType,
-  StorageType,
-} from '@/lib'
+import { CompTreeNodeData, CompTreeViewLazyLoadStatus } from '@/example/components'
+import { StorageArticleNodeType, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/lib'
 import { Dayjs } from 'dayjs'
 import { i18n } from '@/example/i18n'
 
