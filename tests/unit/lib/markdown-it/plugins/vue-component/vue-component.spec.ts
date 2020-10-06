@@ -6,7 +6,7 @@ import { Component, Prop } from 'vue-property-decorator'
 //
 //========================================================================
 
-import { MarkdownItVueComponent, getMarkdownItVueComponentBodyData, getMarkdownItVueComponentPropsData } from '@/lib'
+import { MarkdownItVueComponent, getMarkdownItVueComponentBodyData, getMarkdownItVueComponentPropsData } from '@/example/markdown-it'
 import MarkdownIt from 'markdown-it'
 import Vue from 'vue'
 import { join } from 'path'

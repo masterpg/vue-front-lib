@@ -26,6 +26,7 @@
       "@/example/i18n": ["src/example/i18n"],
       "@/example/lang/*": ["src/example/lang/*"],
       "@/example/logic": ["src/example/logic"],
+      "@/example/markdown-it": ["src/example/markdown-it"],
       "@/example/router": ["src/example/router"],
       "@/example/styles/*": ["src/example/styles/*"],
       "@/example/sw": ["src/example/sw"],
@@ -36,7 +37,6 @@
       "@/lib/components": ["src/lib/components"],
       "@/lib/lang/*": ["src/lib/lang/*"],
       "@/lib/logic": ["src/lib/logic"],
-      "@/lib/markdown-it": ["src/lib/markdown-it"],
       "@/lib/styles/*": ["src/lib/styles/*"],
       "@/firestore-ex": ["src/firestore-ex"]
     },
