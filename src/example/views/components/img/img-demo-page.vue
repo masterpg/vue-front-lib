@@ -75,7 +75,8 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, CompImg, NoCache, Resizable } from '@/lib'
+import { BaseComponent, NoCache, Resizable } from '@/example/base'
+import { CompImg } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 

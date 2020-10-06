@@ -28,7 +28,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, Resizable } from '@/lib'
+import { BaseComponent, Resizable } from '@/example/base'
 import { Component, Prop } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 

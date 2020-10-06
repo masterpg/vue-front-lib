@@ -163,7 +163,8 @@
 </template>
 
 <script lang="ts">
-import { AuthStatus, BaseComponent, NoCache, Resizable, UserInfo } from '@/lib'
+import { AuthStatus, UserInfo } from '@/lib'
+import { BaseComponent, NoCache, Resizable } from '@/example/base'
 import { Component, Watch } from 'vue-property-decorator'
 import { EmailChange, HistoryDialogManager, SignIn, SignUp, UserDelete, UserEntry, dialogManager, initDialog } from '@/example/dialog'
 import { SWChangeState, SWStateChangeInfo, sw } from '@/example/sw'

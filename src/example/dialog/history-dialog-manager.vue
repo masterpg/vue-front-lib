@@ -9,9 +9,10 @@
 </template>
 
 <script lang="ts">
-import { BaseHistoryDialogManager, Dialog } from '@/lib'
 import { EmailChangeDialog, SignInDialog, SignUpDialog, UserDeleteDialog, UserEntryDialog } from './auth'
+import { BaseHistoryDialogManager } from '@/lib'
 import { Component } from 'vue-property-decorator'
+import { Dialog } from '@/example/base'
 
 export namespace SignIn {
   export const name = 'signIn'

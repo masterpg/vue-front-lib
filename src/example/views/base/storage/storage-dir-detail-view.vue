@@ -96,16 +96,8 @@
 
 <script lang="ts">
 import * as anime from 'animejs/lib/anime'
-import {
-  BaseComponent,
-  CompStorageImg,
-  NoCache,
-  RequiredStorageNodeShareSettings,
-  Resizable,
-  StorageArticleNodeType,
-  StorageDownloader,
-  StorageNode,
-} from '@/lib'
+import { BaseComponent, NoCache, Resizable } from '@/example/base'
+import { CompStorageImg, RequiredStorageNodeShareSettings, StorageDownloader, StorageNode } from '@/lib'
 import { Component, Watch } from 'vue-property-decorator'
 import { QLinearProgress } from 'quasar'
 import { StoragePageMixin } from './storage-page-mixin'

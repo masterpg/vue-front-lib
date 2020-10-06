@@ -1,5 +1,3 @@
-export * from './base/component'
-export * from './base/decorators'
 export * from './components'
 export * from './logic'
 export * from './quasar'

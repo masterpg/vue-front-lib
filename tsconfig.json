@@ -21,6 +21,7 @@
     "paths": {
       "@/example/assets/*": ["src/example/assets/*"],
       "@/example/components": ["src/example/components"],
+      "@/example/base": ["src/example/base"],
       "@/example/config": ["src/example/config"],
       "@/example/dialog": ["src/example/dialog"],
       "@/example/i18n": ["src/example/i18n"],
@@ -33,7 +34,6 @@
       "@/example/views/*": ["src/example/views/*"],
       "@/lib": ["src/lib"],
       "@/lib/assets/*": ["src/lib/assets/*"],
-      "@/lib/base": ["src/lib/base"],
       "@/lib/components": ["src/lib/components"],
       "@/lib/lang/*": ["src/lib/lang/*"],
       "@/lib/logic": ["src/lib/logic"],

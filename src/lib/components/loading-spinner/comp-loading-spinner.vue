@@ -33,7 +33,7 @@
 
 <script lang="ts">
 import { Component, Prop } from 'vue-property-decorator'
-import { BaseComponent } from '@/lib/base'
+import { BaseComponent } from '@/example/base'
 
 @Component
 export default class CompLoadingSpinner extends BaseComponent {

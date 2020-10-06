@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, NoCache } from '@/lib/base'
+import { BaseComponent, NoCache } from '@/example/base'
 import {
   ChildrenSortFunc,
   CompTreeNodeData,

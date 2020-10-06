@@ -58,7 +58,8 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, Resizable, StorageNode, StorageNodeType } from '@/lib'
+import { BaseComponent, Resizable } from '@/example/base'
+import { StorageNode, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { StorageNodeActionEvent } from './base'
 import StorageNodePopupMenu from './storage-node-popup-menu.vue'

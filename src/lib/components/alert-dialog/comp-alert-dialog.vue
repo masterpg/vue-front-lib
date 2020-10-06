@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts">
-import { BaseDialog, NoCache } from '@/lib/base'
+import { BaseDialog, NoCache } from '@/example/base'
 import { Component, Prop } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
 

@@ -80,17 +80,16 @@
 import * as path from 'path'
 import {
   AuthStatus,
-  BaseComponent,
   CompStorageUploadProgressFloat,
   CompTreeViewEvent,
   CompTreeViewLazyLoadEvent,
   CreateArticleTypeDirInput,
-  Resizable,
   StorageNode,
   StorageNodeShareSettings,
   StorageNodeType,
   UploadEndedEvent,
 } from '@/lib'
+import { BaseComponent, Resizable } from '@/example/base'
 import { Component, Watch } from 'vue-property-decorator'
 import { RawLocation, Route } from 'vue-router'
 import StorageDirView, { IStorageDirView } from './storage-dir-view.vue'

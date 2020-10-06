@@ -60,9 +60,9 @@
 </template>
 
 <script lang="ts">
-import { StorageArticleNodeType, StorageLogic } from '@/lib'
 import { StorageDirTable, StorageDirTableRow, StorageDirView, StorageNodePopupMenu } from '../../base/storage'
 import { Component } from 'vue-property-decorator'
+import { StorageLogic } from '@/lib'
 import { config } from '@/example/config'
 
 @Component({

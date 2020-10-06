@@ -80,13 +80,12 @@
 
 <script lang="ts">
 import * as path from 'path'
+import { BaseDialog, NoCache } from '@/example/base'
 import {
-  BaseDialog,
   CompAlertDialog,
   CompTreeView,
   CompTreeViewEvent,
   CompTreeViewLazyLoadEvent,
-  NoCache,
   StorageArticleNodeType,
   StorageLogic,
   StorageNode,

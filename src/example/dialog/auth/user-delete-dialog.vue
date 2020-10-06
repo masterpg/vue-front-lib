@@ -88,7 +88,8 @@
 </template>
 
 <script lang="ts">
-import { AuthProviderType, AuthStatus, BaseDialog, NoCache } from '@/lib'
+import { AuthProviderType, AuthStatus } from '@/lib'
+import { BaseDialog, NoCache } from '@/example/base'
 import { EmailSignInView, EmailSignInViewResult, ProviderListView } from './base'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'

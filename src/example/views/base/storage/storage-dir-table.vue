@@ -59,7 +59,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, NoCache } from '@/lib'
+import { BaseComponent, NoCache } from '@/example/base'
 import { Component, Prop, Watch } from 'vue-property-decorator'
 import { LooseDictionary, QTable, QTableColumn } from 'quasar'
 

@@ -77,8 +77,9 @@
 </template>
 
 <script lang="ts">
-import { AuthStatus, BaseComponent, NoCache, Resizable } from '@/lib'
+import { BaseComponent, NoCache, Resizable } from '@/example/base'
 import { Component, Prop } from 'vue-property-decorator'
+import { AuthStatus } from '@/lib'
 import { QInput } from 'quasar'
 import { UserEntry } from '../..'
 import isEmail from 'validator/lib/isEmail'

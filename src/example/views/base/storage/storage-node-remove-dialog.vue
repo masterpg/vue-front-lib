@@ -36,7 +36,8 @@
 </template>
 
 <script lang="ts">
-import { BaseDialog, NoCache, StorageNode, StorageNodeType } from '@/lib'
+import { BaseDialog, NoCache } from '@/example/base'
+import { StorageNode, StorageNodeType } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
 import { StoragePageMixin } from './storage-page-mixin'

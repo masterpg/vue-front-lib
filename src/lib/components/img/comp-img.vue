@@ -64,7 +64,7 @@
 
 <script lang="ts">
 import * as anime from 'animejs/lib/anime'
-import { BaseComponent, NoCache, Resizable } from '@/lib/base'
+import { BaseComponent, NoCache, Resizable } from '@/example/base'
 import { Component, Prop, Watch } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 

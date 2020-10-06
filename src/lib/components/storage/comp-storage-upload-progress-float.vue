@@ -73,7 +73,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, Resizable } from '@/lib/base'
+import { BaseComponent, Resizable } from '@/example/base'
 import { Component, Prop, Watch } from 'vue-property-decorator'
 import { StorageFileUploader, StorageType, StorageUploader } from '@/lib/logic'
 import { mixins } from 'vue-class-component'

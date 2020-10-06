@@ -1,4 +1,4 @@
-import { Dialog } from '@/lib/base'
+import { Dialog } from '@/example/base'
 import { Route } from 'vue-router'
 import Vue from 'vue'
 import { Watch } from 'vue-property-decorator'

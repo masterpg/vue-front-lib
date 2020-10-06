@@ -1,6 +1,7 @@
-import { BaseStore, NoCache, StatePartial } from '@/lib'
+import { BaseStore, StatePartial } from '@/lib'
 import { CartItem } from '../../types'
 import { Component } from 'vue-property-decorator'
+import { NoCache } from '@/example/base'
 import dayjs from 'dayjs'
 
 //========================================================================

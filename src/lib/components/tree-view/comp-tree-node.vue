@@ -86,7 +86,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, NoCache } from '@/lib/base'
+import { BaseComponent, NoCache } from '@/example/base'
 import { ChildrenSortFunc, CompTreeNodeData, CompTreeNodeEditData, CompTreeNodeParent, CompTreeViewLazyLoadStatus } from './types'
 import CompLoadingSpinner from '../loading-spinner/comp-loading-spinner.vue'
 import CompTreeView from './comp-tree-view.vue'

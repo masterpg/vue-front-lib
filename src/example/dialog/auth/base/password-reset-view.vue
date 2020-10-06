@@ -64,7 +64,7 @@
 </template>
 
 <script lang="ts">
-import { BaseComponent, NoCache, Resizable } from '@/lib'
+import { BaseComponent, NoCache, Resizable } from '@/example/base'
 import { Component } from 'vue-property-decorator'
 import { QInput } from 'quasar'
 import { SignIn } from '../..'

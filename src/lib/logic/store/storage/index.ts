@@ -3,7 +3,7 @@ import { StorageNode, StorageNodeType } from '../../types'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
 import { BaseStore } from '../base'
 import { Component } from 'vue-property-decorator'
-import { NoCache } from '@/lib/base'
+import { NoCache } from '@/example/base'
 import { sortStorageTree } from '../../base'
 
 //========================================================================

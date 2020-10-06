@@ -33,8 +33,9 @@
 
 <script lang="ts">
 import { AuthMessageView, EmailSignInView, EmailSignInViewResult } from './base'
-import { AuthStatus, BaseDialog } from '@/lib'
 import { UserEntry, dialogManager } from '..'
+import { AuthStatus } from '@/lib'
+import { BaseDialog } from '@/example/base'
 import { Component } from 'vue-property-decorator'
 import PasswordResetView from './base/password-reset-view.vue'
 import ProviderListView from './base/provider-list-view.vue'

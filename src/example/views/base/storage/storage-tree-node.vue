@@ -112,7 +112,6 @@ import * as path from 'path'
 import {
   CompTreeNode,
   CompTreeNodeEditData,
-  NoCache,
   RequiredStorageNodeShareSettings,
   StorageArticleNodeType,
   StorageNodeShareSettings,
@@ -122,6 +121,7 @@ import {
 import { StorageNodeActionEvent, StorageTreeNodeData } from './base'
 import { Component } from 'vue-property-decorator'
 import { Dayjs } from 'dayjs'
+import { NoCache } from '@/example/base'
 import StorageNodePopupMenu from './storage-node-popup-menu.vue'
 import { removeStartDirChars } from 'web-base-lib'
 

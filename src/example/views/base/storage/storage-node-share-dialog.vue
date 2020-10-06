@@ -80,7 +80,8 @@
 </template>
 
 <script lang="ts">
-import { BaseDialog, NoCache, StorageNode, StorageNodeShareSettings, StorageNodeType } from '@/lib'
+import { BaseDialog, NoCache } from '@/example/base'
+import { StorageNode, StorageNodeShareSettings } from '@/lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
 import { StoragePageMixin } from './storage-page-mixin'

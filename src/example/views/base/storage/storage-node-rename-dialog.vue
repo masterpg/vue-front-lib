@@ -53,7 +53,8 @@
 
 <script lang="ts">
 import * as path from 'path'
-import { BaseDialog, CompAlertDialog, NoCache, StorageNode, StorageNodeType } from '@/lib'
+import { BaseDialog, NoCache } from '@/example/base'
+import { CompAlertDialog, StorageNode, StorageNodeType } from '@/lib'
 import { QDialog, QInput } from 'quasar'
 import { Component } from 'vue-property-decorator'
 import { StoragePageMixin } from './storage-page-mixin'
