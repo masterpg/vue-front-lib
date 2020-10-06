@@ -88,7 +88,7 @@
 </template>
 
 <script lang="ts">
-import { AuthProviderType, AuthStatus } from '@/lib'
+import { AuthProviderType, AuthStatus } from '@/example/logic'
 import { BaseDialog, NoCache } from '@/example/base'
 import { EmailSignInView, EmailSignInViewResult, ProviderListView } from './base'
 import { Component } from 'vue-property-decorator'

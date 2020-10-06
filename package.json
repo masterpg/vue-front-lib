@@ -9,7 +9,6 @@
     "serve:stg": "vue-cli-service serve --mode staging",
     "test": "vue-cli-service test:unit",
     "test:app": "vue-cli-service test:unit /example/",
-    "test:lib": "vue-cli-service test:unit /lib/",
     "test:firestore-ex": "export FIRESTORE_EMULATOR_HOST=localhost:5020 && vue-cli-service test:unit /firestore-ex/",
     "test:e2e": "testcafe chrome:headless tests/e2e/**/*.test.ts -S -s screenshots --hostname localhost",
     "lint": "./node_modules/web-base-lib/tools/lint.sh",

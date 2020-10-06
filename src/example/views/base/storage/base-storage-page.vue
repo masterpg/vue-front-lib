@@ -78,7 +78,7 @@
 
 <script lang="ts">
 import * as path from 'path'
-import { AuthStatus, CreateArticleTypeDirInput, StorageNode, StorageNodeShareSettings, StorageNodeType } from '@/lib'
+import { AuthStatus, CreateArticleTypeDirInput, StorageNode, StorageNodeShareSettings, StorageNodeType } from '@/example/logic'
 import { BaseComponent, Resizable } from '@/example/base'
 import { CompStorageUploadProgressFloat, CompTreeViewEvent, CompTreeViewLazyLoadEvent, UploadEndedEvent } from '@/example/components'
 import { Component, Watch } from 'vue-property-decorator'

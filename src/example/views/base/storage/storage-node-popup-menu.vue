@@ -18,7 +18,7 @@
 <script lang="ts">
 import { BaseComponent, NoCache } from '@/example/base'
 import { Component, Prop } from 'vue-property-decorator'
-import { StorageArticleNodeType, StorageNodeType } from '@/lib'
+import { StorageArticleNodeType, StorageNodeType } from '@/example/logic'
 import { StorageNodeActionEvent as _StorageNodeActionEvent, StorageNodeActionType as _StorageNodeActionType } from './base'
 import { QMenu } from 'quasar'
 import { StoragePageMixin } from './storage-page-mixin'

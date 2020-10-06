@@ -55,7 +55,7 @@
 import * as path from 'path'
 import { BaseDialog, NoCache } from '@/example/base'
 import { QDialog, QInput } from 'quasar'
-import { StorageNode, StorageNodeType } from '@/lib'
+import { StorageNode, StorageNodeType } from '@/example/logic'
 import { CompAlertDialog } from '@/example/components'
 import { Component } from 'vue-property-decorator'
 import { StoragePageMixin } from './storage-page-mixin'

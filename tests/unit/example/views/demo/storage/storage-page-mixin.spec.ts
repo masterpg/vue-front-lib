@@ -1,13 +1,12 @@
 import * as td from 'testdouble'
 import { BaseStoragePage, StoragePageMixin } from '@/example/views/base/storage'
-import { StorageArticleNodeType, StorageLogic, StorageType } from '@/lib'
+import { StorageArticleNodeType, StorageLogic, StorageType, logic } from '@/example/logic'
 import { StorageRoute, router } from '@/example/router'
 import { Wrapper, mount } from '@vue/test-utils'
-import { newTestStorageDirNode, newTestStorageFileNode } from '../../../../../helpers/common/storage'
+import { newTestStorageDirNode, newTestStorageFileNode } from '../../../../../helpers/example/storage'
 import { StoragePageStore } from '@/example/views/base/storage'
 import { config } from '@/example/config'
 import { initExampleTest } from '../../../../../helpers/example/init'
-import { logic } from '@/example/logic'
 
 //========================================================================
 //

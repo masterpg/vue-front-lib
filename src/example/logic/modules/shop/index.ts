@@ -2,7 +2,7 @@ import { CartItem, Product } from '../../types'
 import { CartItemEditResponse, api } from '../../api'
 import { CheckoutStatus, store } from '../../store'
 import { Component, Watch } from 'vue-property-decorator'
-import { BaseLogic } from '@/lib'
+import { BaseLogic } from '@/example/logic/base'
 
 //========================================================================
 //

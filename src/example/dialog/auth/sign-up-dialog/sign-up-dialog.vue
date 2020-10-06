@@ -26,7 +26,7 @@
 <script lang="ts">
 import { AuthMessageView, ProviderListView } from '../base'
 import EmailSignUpView, { EmailSignUpViewResult } from './email-sign-up-view.vue'
-import { AuthStatus } from '@/lib'
+import { AuthStatus } from '@/example/logic'
 import { BaseDialog } from '@/example/base'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'

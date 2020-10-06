@@ -1,5 +1,5 @@
-import { BaseStore, StatePartial } from '@/lib'
-import { CartItem } from '../../types'
+import { BaseStore, StatePartial } from '@/example/logic/store/base'
+import { CartItem } from '@/example/logic/types'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '@/example/base'
 import dayjs from 'dayjs'

@@ -1,7 +1,6 @@
 import * as td from 'testdouble'
-import { AuthLogic, AuthStatus, UserInfo } from '@/lib'
+import { AuthLogic, AuthStatus, LogicContainerImpl, UserInfo } from '@/example/logic'
 import { Component } from 'vue-property-decorator'
-import { LogicContainerImpl } from '@/example/logic'
 import Vue from 'vue'
 
 //========================================================================

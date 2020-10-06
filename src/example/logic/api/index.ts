@@ -1,7 +1,6 @@
 import { AppAPIContainer } from './base'
 import { AppGQLAPIContainer } from './gql'
 import { AppRESTAPIContainer } from './rest'
-import { setAPI } from '@/lib'
 
 //========================================================================
 //
@@ -25,7 +24,6 @@ function initAPI(params?: { apiType: 'gql' | 'rest'; api: AppAPIContainer }): vo
 
   apiType = params.apiType
   api = params.api
-  setAPI(api)
 }
 
 function getAPIType() {
@@ -39,7 +37,6 @@ function setAPIType(value: 'gql' | 'rest') {
   } else {
     api = restAPI ? restAPI : new AppRESTAPIContainer()
   }
-  setAPI(api)
 }
 
 //========================================================================
@@ -48,5 +45,7 @@ function setAPIType(value: 'gql' | 'rest') {
 //
 //========================================================================
 
-export { api, initAPI, getAPIType, setAPIType }
-export { CartItemAddInput, CartItemEditResponse, CartItemUpdateInput } from './base'
+export { AppAPIContainer, api, getAPIType, initAPI, setAPIType }
+export { APIStorageNode, AppConfigResponse, AuthDataResult, RawEntity, RawTimestampEntity, ToRawTimestampEntity } from '@/example/logic/api/base'
+export { CartItemAddInput, CartItemEditResponse, CartItemUpdateInput } from '@/example/logic/api/base'
+export { RawAuthDataResult, RawPublicProfile, RawUser } from '@/example/logic/api/gql'

@@ -14,7 +14,7 @@ import {
   StorageNode,
   StorageNodeShareSettings,
   StorageNodeType,
-} from '@/lib'
+} from '@/example/logic'
 import { BaseComponent, NoCache, Resizable } from '@/example/base'
 import { CompTreeView, CompTreeViewEvent, CompTreeViewLazyLoadEvent, UploadEndedEvent } from '@/example/components'
 import { Component, Prop, Watch } from 'vue-property-decorator'

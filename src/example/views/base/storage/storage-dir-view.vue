@@ -56,7 +56,7 @@
 
 <script lang="ts">
 import { BaseComponent, NoCache, Resizable } from '@/example/base'
-import { StorageArticleNodeType, StorageNode, StorageNodeType, StorageType } from '@/lib'
+import { StorageArticleNodeType, StorageNode, StorageNodeType, StorageType } from '@/example/logic'
 import { Component } from 'vue-property-decorator'
 import { QTableColumn } from 'quasar'
 import StorageDirTable from './storage-dir-table.vue'

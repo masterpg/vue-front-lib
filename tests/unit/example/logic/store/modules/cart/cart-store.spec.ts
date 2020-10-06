@@ -1,10 +1,9 @@
 import { CartItem, CheckoutStatus } from '@/example/logic'
-import { CartState, CartStore } from '../../../../../../../src/example/logic/store/cart'
-import { TestStore } from '../../../../../../helpers/common/store'
+import { CartState, CartStore, store } from '@/example/logic/store'
+import { TestStore } from '../../../../../../helpers/example/store'
 import { cloneDeep } from 'lodash'
 import dayjs from 'dayjs'
 import { initExampleTest } from '../../../../../../helpers/example/init'
-import { store } from '../../../../../../../src/example/logic/store'
 
 //========================================================================
 //

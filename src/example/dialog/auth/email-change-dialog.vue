@@ -92,7 +92,7 @@
 import { AuthMessageView, EmailSignInView, EmailSignInViewResult } from './base'
 import { BaseDialog, NoCache } from '@/example/base'
 import { QDialog, QInput } from 'quasar'
-import { AuthStatus } from '@/lib'
+import { AuthStatus } from '@/example/logic'
 import { Component } from 'vue-property-decorator'
 import { router } from '@/example/router'
 const isEmail = require('validator/lib/isEmail')

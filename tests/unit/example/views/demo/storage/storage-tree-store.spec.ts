@@ -1,16 +1,15 @@
 import * as td from 'testdouble'
 import { BaseStoragePage, StorageTreeNode, StorageTreeView } from '@/example/views/base/storage'
 import { CompTreeNode, UploadEndedEvent } from '@/example/components'
-import { EMPTY_SHARE_SETTINGS, cloneTestStorageNode, newTestStorageDirNode, newTestStorageFileNode } from '../../../../../helpers/common/storage'
-import { StorageLogic, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/lib'
+import { EMPTY_SHARE_SETTINGS, cloneTestStorageNode, newTestStorageDirNode, newTestStorageFileNode } from '../../../../../helpers/example/storage'
+import { StorageLogic, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType, logic } from '@/example/logic'
 import { Wrapper, mount } from '@vue/test-utils'
 import { shuffleArray, sleep } from 'web-base-lib'
 import { StoragePageStore } from '@/example/views/base/storage'
 import { StorageRoute } from '@/example/router'
 import dayjs from 'dayjs'
-import { generateFirestoreId } from '../../../../../helpers/common/base'
+import { generateFirestoreId } from '../../../../../helpers/example/base'
 import { initExampleTest } from '../../../../../helpers/example/init'
-import { logic } from '@/example/logic'
 
 //========================================================================
 //

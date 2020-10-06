@@ -81,7 +81,7 @@
 
 <script lang="ts">
 import { BaseDialog, NoCache } from '@/example/base'
-import { StorageNode, StorageNodeShareSettings } from '@/lib'
+import { StorageNode, StorageNodeShareSettings } from '@/example/logic'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
 import { StoragePageMixin } from './storage-page-mixin'

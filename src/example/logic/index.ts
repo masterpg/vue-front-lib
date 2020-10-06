@@ -1,6 +1,7 @@
-import { BaseLogicContainer, LibLogicContainer, StorageLogic, setLogic } from '@/lib'
-import { ShopLogic, ShopLogicImpl } from './modules/shop'
-import { getAPIType, setAPIType } from './api'
+import { AppStorageLogic, ArticleStorageLogic, ArticleStorageLogicImpl, StorageLogic, UserStorageLogic } from '@/example/logic/modules/storage'
+import { AuthLogic, AuthLogicImpl } from '@/example/logic/modules/auth'
+import { ShopLogic, ShopLogicImpl } from '@/example/logic/modules/shop'
+import { getAPIType, setAPIType } from '@/example/logic/api'
 import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
 
@@ -10,10 +11,13 @@ import Vue from 'vue'
 //
 //========================================================================
 
-export interface LogicContainer extends LibLogicContainer {
-  apiType: 'gql' | 'rest'
-
+export interface LogicContainer {
+  readonly appStorage: StorageLogic
+  readonly userStorage: StorageLogic
+  readonly articleStorage: ArticleStorageLogic
+  readonly auth: AuthLogic
   readonly shop: ShopLogic
+  apiType: 'gql' | 'rest'
 }
 
 //========================================================================
@@ -23,7 +27,7 @@ export interface LogicContainer extends LibLogicContainer {
 //========================================================================
 
 @Component
-class LogicContainerImpl extends BaseLogicContainer implements LogicContainer {
+class LogicContainerImpl extends Vue implements LogicContainer {
   //----------------------------------------------------------------------
   //
   //  Constructor
@@ -33,6 +37,10 @@ class LogicContainerImpl extends BaseLogicContainer implements LogicContainer {
   constructor() {
     super()
 
+    this.appStorage = this.newAppStorageLogic()
+    this.userStorage = this.newUserStorageLogic(this.appStorage as AppStorageLogic)
+    this.articleStorage = this.newArticleStorageLogic(this.appStorage as AppStorageLogic)
+    this.auth = this.newAuthLogic()
     this.shop = new ShopLogicImpl()
   }
 
@@ -41,6 +49,16 @@ class LogicContainerImpl extends BaseLogicContainer implements LogicContainer {
   //  Properties
   //
   //----------------------------------------------------------------------
+
+  readonly appStorage: StorageLogic
+
+  readonly userStorage: StorageLogic
+
+  readonly articleStorage: ArticleStorageLogic
+
+  readonly auth: AuthLogic
+
+  readonly shop: ShopLogic
 
   private m_apiType = getAPIType()
 
@@ -53,14 +71,37 @@ class LogicContainerImpl extends BaseLogicContainer implements LogicContainer {
     this.m_apiType = value
   }
 
-  readonly shop: ShopLogic
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
+
+  protected newAppStorageLogic(): StorageLogic {
+    return new AppStorageLogic()
+  }
+
+  protected newUserStorageLogic(appStorage: AppStorageLogic): StorageLogic {
+    const userStorage = new UserStorageLogic()
+    userStorage.init(appStorage)
+    return userStorage
+  }
+
+  protected newArticleStorageLogic(appStorage: AppStorageLogic): ArticleStorageLogic {
+    const articleStorage = new ArticleStorageLogicImpl()
+    articleStorage.init(appStorage)
+    return articleStorage
+  }
+
+  protected newAuthLogic(): AuthLogic {
+    return new AuthLogicImpl()
+  }
 }
 
 let logic: LogicContainer
 
 function initLogic(logicContainer?: LogicContainer): void {
   logic = logicContainer ? logicContainer : new LogicContainerImpl()
-  setLogic(logic)
 
   Object.defineProperty(Vue.prototype, '$logic', {
     value: logic,
@@ -75,8 +116,19 @@ function initLogic(logicContainer?: LogicContainer): void {
 //
 //========================================================================
 
-export * from './types'
-export * from './modules/shop'
-export { initAPI } from './api'
-export { initStore } from './store'
 export { logic, initLogic, LogicContainerImpl }
+export * from '@/example/logic/types'
+export * from '@/example/logic/modules/shop'
+export { initAPI } from '@/example/logic/api'
+export { initStore } from '@/example/logic/store'
+export { AuthLogic, AuthProviderType } from '@/example/logic/modules/auth'
+export {
+  ArticleStorageLogic,
+  StorageDownloader,
+  StorageFileUploader,
+  StorageLogic,
+  StorageType,
+  StorageUploader,
+  StorageUrlUploadManager,
+  SubStorageLogic,
+} from '@/example/logic/modules/storage'

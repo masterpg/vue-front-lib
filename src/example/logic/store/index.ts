@@ -1,7 +1,9 @@
-import { CartStore, CartStoreImpl } from './cart'
-import { LibStoreContainer, LibStoreContainerImpl, setStore } from '@/lib'
-import { ProductStore, ProductStoreImpl } from './product'
+import { CartStore, CartStoreImpl } from '@/example/logic/store/cart'
+import { ProductStore, ProductStoreImpl } from '@/example/logic/store/product'
+import { StorageStore, StorageStoreImpl } from '@/example/logic/store/storage'
+import { UserStore, UserStoreImpl } from '@/example/logic/store/user'
 import { Component } from 'vue-property-decorator'
+import Vue from 'vue'
 
 //========================================================================
 //
@@ -9,7 +11,9 @@ import { Component } from 'vue-property-decorator'
 //
 //========================================================================
 
-interface StoreContainer extends LibStoreContainer {
+interface StoreContainer {
+  readonly user: UserStore
+  readonly storage: StorageStore
   readonly product: ProductStore
   readonly cart: CartStore
 }
@@ -21,7 +25,9 @@ interface StoreContainer extends LibStoreContainer {
 //========================================================================
 
 @Component
-class StoreContainerImpl extends LibStoreContainerImpl implements StoreContainer {
+class StoreContainerImpl extends Vue implements StoreContainer {
+  readonly user: UserStore = new UserStoreImpl()
+  readonly storage: StorageStore = new StorageStoreImpl()
   readonly product: ProductStore = new ProductStoreImpl()
   readonly cart: CartStore = new CartStoreImpl()
 }
@@ -30,7 +36,6 @@ let store: StoreContainer
 
 function initStore(): void {
   store = new StoreContainerImpl()
-  setStore(store)
 }
 
 //========================================================================
@@ -39,6 +44,8 @@ function initStore(): void {
 //
 //========================================================================
 
-export * from './cart'
-export * from './product'
 export { StoreContainer, store, initStore }
+export * from '@/example/logic/store/user'
+export * from '@/example/logic/store/storage'
+export * from '@/example/logic/store/cart'
+export * from '@/example/logic/store/product'

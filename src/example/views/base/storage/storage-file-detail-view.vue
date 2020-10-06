@@ -108,7 +108,7 @@
 import * as anime from 'animejs/lib/anime'
 import { BaseComponent, NoCache, Resizable } from '@/example/base'
 import { Component, Watch } from 'vue-property-decorator'
-import { RequiredStorageNodeShareSettings, StorageDownloader, StorageNode } from '@/lib'
+import { RequiredStorageNodeShareSettings, StorageDownloader, StorageNode } from '@/example/logic'
 import { CompStorageImg } from '@/example/components'
 import { QLinearProgress } from 'quasar'
 import { StoragePageMixin } from './storage-page-mixin'

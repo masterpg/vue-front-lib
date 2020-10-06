@@ -79,7 +79,7 @@
 <script lang="ts">
 import { BaseComponent, NoCache, Resizable } from '@/example/base'
 import { Component, Prop } from 'vue-property-decorator'
-import { AuthStatus } from '@/lib'
+import { AuthStatus } from '@/example/logic'
 import { QInput } from 'quasar'
 import { UserEntry } from '../..'
 import isEmail from 'validator/lib/isEmail'

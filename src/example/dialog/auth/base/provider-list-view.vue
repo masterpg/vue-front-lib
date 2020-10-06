@@ -95,7 +95,7 @@ import {AuthProviderType} from '../../logic'
 <script lang="ts">
 import { BaseComponent, Resizable } from '@/example/base'
 import { Component, Prop } from 'vue-property-decorator'
-import { AuthProviderType } from '@/lib'
+import { AuthProviderType } from '@/example/logic'
 import { mixins } from 'vue-class-component'
 
 @Component({

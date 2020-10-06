@@ -1,6 +1,6 @@
 import * as path from 'path'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import { StorageArticleNodeType, StorageLogic, StorageNode, StorageNodeType, StorageType } from '@/lib'
+import { StorageArticleNodeType, StorageLogic, StorageNode, StorageNodeType, StorageType } from '@/example/logic'
 import { StorageRoute, router } from '@/example/router'
 import { StorageTreeNodeData, StorageTreeNodeInput } from './base'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'

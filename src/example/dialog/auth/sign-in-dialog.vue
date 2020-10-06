@@ -33,7 +33,7 @@
 
 <script lang="ts">
 import { AuthMessageView, EmailSignInView, EmailSignInViewResult } from '@/example/dialog/auth/base'
-import { AuthStatus } from '@/lib'
+import { AuthStatus } from '@/example/logic'
 import { BaseDialog } from '@/example/base'
 import { Component } from 'vue-property-decorator'
 import PasswordResetView from '@/example/dialog/auth/base/password-reset-view.vue'
