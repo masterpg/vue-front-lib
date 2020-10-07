@@ -1,4 +1,3 @@
-import {AuthProviderType} from '../../logic'
 <style lang="sass" scoped>
 @import 'src/example/styles/app.variables'
 

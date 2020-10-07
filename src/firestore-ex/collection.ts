@@ -16,10 +16,10 @@ import {
   Transaction,
   WhereFilterOp,
   WriteBatch,
-} from './types'
-import { Context } from './context'
-import { Converter } from './converter'
-import { Query } from './query'
+} from '@/firestore-ex/types'
+import { Context } from '@/firestore-ex/context'
+import { Converter } from '@/firestore-ex/converter'
+import { Query } from '@/firestore-ex/query'
 
 export class Collection<T, S = T> {
   //----------------------------------------------------------------------

@@ -24,8 +24,8 @@
 </template>
 
 <script lang="ts">
-import { AuthMessageView, ProviderListView } from '../base'
-import EmailSignUpView, { EmailSignUpViewResult } from './email-sign-up-view.vue'
+import { AuthMessageView, ProviderListView } from '@/example/dialog/auth/base'
+import EmailSignUpView, { EmailSignUpViewResult } from '@/example/dialog/auth/sign-up-dialog/email-sign-up-view.vue'
 import { AuthStatus } from '@/example/logic'
 import { BaseDialog } from '@/example/base'
 import { Component } from 'vue-property-decorator'

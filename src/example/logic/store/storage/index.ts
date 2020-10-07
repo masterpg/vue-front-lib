@@ -1,7 +1,7 @@
 import * as _path from 'path'
 import { StorageNode, StorageNodeType } from '@/example/logic/types'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
-import { BaseStore } from '../base'
+import { BaseStore } from '@/example/logic/store/base'
 import { Component } from 'vue-property-decorator'
 import { NoCache } from '@/example/base'
 import { sortStorageTree } from '@/example/logic/base'

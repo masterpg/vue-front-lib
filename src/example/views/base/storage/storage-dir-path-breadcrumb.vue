@@ -61,9 +61,9 @@
 import { BaseComponent, Resizable } from '@/example/base'
 import { StorageNode, StorageNodeType } from '@/example/logic'
 import { Component } from 'vue-property-decorator'
-import { StorageNodeActionEvent } from './base'
-import StorageNodePopupMenu from './storage-node-popup-menu.vue'
-import { StoragePageMixin } from './storage-page-mixin'
+import { StorageNodeActionEvent } from '@/example/views/base/storage/base'
+import StorageNodePopupMenu from '@/example/views/base/storage/storage-node-popup-menu.vue'
+import { StoragePageMixin } from '@/example/views/base/storage/storage-page-mixin'
 import { mixins } from 'vue-class-component'
 import { splitHierarchicalPaths } from 'web-base-lib'
 

@@ -1,4 +1,4 @@
-import { Firestore, Transaction, WriteBatch } from './types'
+import { Firestore, Transaction, WriteBatch } from '@/firestore-ex/types'
 
 export class Context {
   //----------------------------------------------------------------------

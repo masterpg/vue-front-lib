@@ -142,7 +142,7 @@ import { Component, Watch } from 'vue-property-decorator'
 import { CompImg } from '@/example/components'
 import MarkdownIt from 'markdown-it'
 import anime from 'animejs'
-import cheatSheet from './cheat-sheet.md'
+import cheatSheet from '@/example/views/components/markdown-it/cheat-sheet.md'
 import hljs from 'highlight.js'
 import { mixins } from 'vue-class-component'
 const debounce = require('lodash/debounce')

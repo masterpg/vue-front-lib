@@ -1,4 +1,4 @@
-import { DecodeFunc, DocumentSnapshot, EncodeFunc, EncodedObject, FieldValue, Timestamp, WriteOperationType } from './types'
+import { DecodeFunc, DocumentSnapshot, EncodeFunc, EncodedObject, FieldValue, Timestamp, WriteOperationType } from '@/firestore-ex/types'
 import dayjs from 'dayjs'
 
 export class Converter<T, S = T> {

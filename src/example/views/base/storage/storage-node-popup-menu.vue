@@ -19,9 +19,9 @@
 import { BaseComponent, NoCache } from '@/example/base'
 import { Component, Prop } from 'vue-property-decorator'
 import { StorageArticleNodeType, StorageNodeType } from '@/example/logic'
-import { StorageNodeActionEvent as _StorageNodeActionEvent, StorageNodeActionType as _StorageNodeActionType } from './base'
+import { StorageNodeActionEvent as _StorageNodeActionEvent, StorageNodeActionType as _StorageNodeActionType } from '@/example/views/base/storage/base'
 import { QMenu } from 'quasar'
-import { StoragePageMixin } from './storage-page-mixin'
+import { StoragePageMixin } from '@/example/views/base/storage/storage-page-mixin'
 import { mixins } from 'vue-class-component'
 
 interface Node {

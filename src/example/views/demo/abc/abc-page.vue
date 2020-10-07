@@ -66,9 +66,9 @@
 <script lang="ts">
 import { BaseComponent, Resizable } from '@/example/base'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import CustomCheckbox from './custom-checkbox.vue'
-import CustomInput from './custom-input.vue'
-import GreetMessage from './greet-message.vue'
+import CustomCheckbox from '@/example/views/demo/abc/custom-checkbox.vue'
+import CustomInput from '@/example/views/demo/abc/custom-input.vue'
+import GreetMessage from '@/example/views/demo/abc/greet-message.vue'
 import { mixins } from 'vue-class-component'
 
 interface Post {

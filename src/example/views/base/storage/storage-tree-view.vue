@@ -18,10 +18,10 @@ import {
 import { BaseComponent, NoCache, Resizable } from '@/example/base'
 import { CompTreeView, CompTreeViewEvent, CompTreeViewLazyLoadEvent, UploadEndedEvent } from '@/example/components'
 import { Component, Prop, Watch } from 'vue-property-decorator'
-import { StorageNodeActionEvent, StorageTreeNodeInput } from './base'
+import { StorageNodeActionEvent, StorageTreeNodeInput } from '@/example/views/base/storage/base'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
-import { StoragePageMixin } from './storage-page-mixin'
-import StorageTreeNode from './storage-tree-node.vue'
+import { StoragePageMixin } from '@/example/views/base/storage/storage-page-mixin'
+import StorageTreeNode from '@/example/views/base/storage/storage-tree-node.vue'
 import { mixins } from 'vue-class-component'
 
 @Component({

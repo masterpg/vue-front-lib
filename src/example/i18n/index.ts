@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueI18n from 'vue-i18n'
 import axios from 'axios'
-import { dateTimeFormats } from './date-time-formats'
+import { dateTimeFormats } from '@/example/i18n/date-time-formats'
 
 Vue.use(VueI18n)
 

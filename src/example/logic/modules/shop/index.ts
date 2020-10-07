@@ -1,6 +1,6 @@
-import { CartItem, Product } from '../../types'
-import { CartItemEditResponse, api } from '../../api'
-import { CheckoutStatus, store } from '../../store'
+import { CartItem, Product } from '@/example/logic/types'
+import { CartItemEditResponse, api } from '@/example/logic/api'
+import { CheckoutStatus, store } from '@/example/logic/store'
 import { Component, Watch } from 'vue-property-decorator'
 import { BaseLogic } from '@/example/logic/base'
 
@@ -252,4 +252,4 @@ class ShopLogicImpl extends BaseLogic implements ShopLogic {
 //========================================================================
 
 export { ShopLogic, ShopLogicImpl }
-export { CheckoutStatus } from '../../store'
+export { CheckoutStatus } from '@/example/logic/store'

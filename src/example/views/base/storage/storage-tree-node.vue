@@ -111,11 +111,11 @@
 import * as path from 'path'
 import { CompTreeNode, CompTreeNodeEditData } from '@/example/components'
 import { RequiredStorageNodeShareSettings, StorageArticleNodeType, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/example/logic'
-import { StorageNodeActionEvent, StorageTreeNodeData } from './base'
+import { StorageNodeActionEvent, StorageTreeNodeData } from '@/example/views/base/storage/base'
 import { Component } from 'vue-property-decorator'
 import { Dayjs } from 'dayjs'
 import { NoCache } from '@/example/base'
-import StorageNodePopupMenu from './storage-node-popup-menu.vue'
+import StorageNodePopupMenu from '@/example/views/base/storage/storage-node-popup-menu.vue'
 import { removeStartDirChars } from 'web-base-lib'
 
 @Component({

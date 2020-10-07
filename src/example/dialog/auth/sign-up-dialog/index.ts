@@ -1,3 +1,3 @@
-import SignUpDialog from './sign-up-dialog.vue'
+import SignUpDialog from '@/example/dialog/auth/sign-up-dialog/sign-up-dialog.vue'
 
 export { SignUpDialog }

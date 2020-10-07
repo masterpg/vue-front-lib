@@ -60,7 +60,7 @@
 </template>
 
 <script lang="ts">
-import { StorageDirTable, StorageDirTableRow, StorageDirView, StorageNodePopupMenu } from '../../base/storage'
+import { StorageDirTable, StorageDirTableRow, StorageDirView, StorageNodePopupMenu } from '@/example/views/base/storage'
 import { Component } from 'vue-property-decorator'
 import { StorageLogic } from '@/example/logic'
 import { config } from '@/example/config'

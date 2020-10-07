@@ -1,7 +1,7 @@
-import { BaseComponent } from './base-component'
+import { BaseComponent } from '@/example/base/component/base-component'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import { Resizable } from './resizable'
+import { Resizable } from '@/example/base/component/resizable'
 import Vue from 'vue'
 import { mixins } from 'vue-class-component'
 

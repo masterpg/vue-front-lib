@@ -1,5 +1,5 @@
 import * as _path from 'path'
-import { BaseRouter, ViewRoute, setRouter } from './base'
+import { BaseRouter, ViewRoute, setRouter } from '@/example/router/base'
 import { removeEndSlash } from 'web-base-lib'
 
 //========================================================================

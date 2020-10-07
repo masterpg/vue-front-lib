@@ -1,4 +1,4 @@
-import HistoryDialogManager, { EmailChange, SignIn, SignUp, UserDelete, UserEntry } from './history-dialog-manager.vue'
+import HistoryDialogManager, { EmailChange, SignIn, SignUp, UserDelete, UserEntry } from '@/example/dialog/history-dialog-manager.vue'
 
 //========================================================================
 //

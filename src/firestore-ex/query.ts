@@ -1,5 +1,5 @@
-import { DocumentSnapshot, FieldPath, Query as FirestoreQuery, OrderByDirection, QueryKey, QuerySnapshot, WhereFilterOp } from './types'
-import { Converter } from './converter'
+import { DocumentSnapshot, FieldPath, Query as FirestoreQuery, OrderByDirection, QueryKey, QuerySnapshot, WhereFilterOp } from '@/firestore-ex/types'
+import { Converter } from '@/firestore-ex/converter'
 
 export class Query<T, S> {
   //----------------------------------------------------------------------

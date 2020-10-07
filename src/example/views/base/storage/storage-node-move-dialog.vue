@@ -86,9 +86,9 @@ import { StorageArticleNodeType, StorageLogic, StorageNode, StorageNodeType } fr
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import { StoragePageMixin } from './storage-page-mixin'
-import StorageTreeNode from './storage-tree-node.vue'
-import { StorageTreeNodeData } from './base'
+import { StoragePageMixin } from '@/example/views/base/storage/storage-page-mixin'
+import StorageTreeNode from '@/example/views/base/storage/storage-tree-node.vue'
+import { StorageTreeNodeData } from '@/example/views/base/storage/base'
 import { mixins } from 'vue-class-component'
 
 @Component

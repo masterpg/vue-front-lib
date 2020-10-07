@@ -1,3 +1,3 @@
-export * from './dialog'
-export * from './base-component'
-export * from './resizable'
+export * from '@/example/base/component/dialog'
+export * from '@/example/base/component/base-component'
+export * from '@/example/base/component/resizable'

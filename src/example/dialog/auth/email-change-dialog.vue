@@ -89,7 +89,7 @@
 </template>
 
 <script lang="ts">
-import { AuthMessageView, EmailSignInView, EmailSignInViewResult } from './base'
+import { AuthMessageView, EmailSignInView, EmailSignInViewResult } from '@/example/dialog/auth/base'
 import { BaseDialog, NoCache } from '@/example/base'
 import { QDialog, QInput } from 'quasar'
 import { AuthStatus } from '@/example/logic'

@@ -90,7 +90,7 @@
 <script lang="ts">
 import { AuthProviderType, AuthStatus } from '@/example/logic'
 import { BaseDialog, NoCache } from '@/example/base'
-import { EmailSignInView, EmailSignInViewResult, ProviderListView } from './base'
+import { EmailSignInView, EmailSignInViewResult, ProviderListView } from '@/example/dialog/auth/base'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
 import { router } from '@/example/router'

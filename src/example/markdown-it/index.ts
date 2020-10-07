@@ -1,1 +1,1 @@
-export * from './plugins/vue-component'
+export * from '@/example/markdown-it/plugins/vue-component'

@@ -1,8 +1,8 @@
-import { DecodeFunc, EncodeFunc, Firestore, FirestoreExOptions, Transaction, WriteBatch } from './types'
-import { Collection } from './collection'
-import { Context } from './context'
-import { Converter } from './converter'
-import { Query } from './query'
+import { DecodeFunc, EncodeFunc, Firestore, FirestoreExOptions, Transaction, WriteBatch } from '@/firestore-ex/types'
+import { Collection } from '@/firestore-ex/collection'
+import { Context } from '@/firestore-ex/context'
+import { Converter } from '@/firestore-ex/converter'
+import { Query } from '@/firestore-ex/query'
 
 export class FirestoreEx {
   //----------------------------------------------------------------------

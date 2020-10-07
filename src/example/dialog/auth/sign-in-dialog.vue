@@ -40,7 +40,7 @@ import PasswordResetView from '@/example/dialog/auth/base/password-reset-view.vu
 import ProviderListView from '@/example/dialog/auth//base/provider-list-view.vue'
 import { QDialog } from 'quasar'
 import { UserEntry } from '@/example/dialog/history-dialog-manager.vue'
-import { dialogManager } from '..'
+import { dialogManager } from '@/example/dialog'
 import { router } from '@/example/router'
 
 @Component({

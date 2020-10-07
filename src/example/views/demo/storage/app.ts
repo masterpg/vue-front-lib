@@ -1,5 +1,5 @@
 import { Component, Prop } from 'vue-property-decorator'
-import { BaseStoragePage } from '../../base/storage'
+import { BaseStoragePage } from '@/example/views/base/storage'
 import { StorageType } from '@/example/logic'
 
 @Component

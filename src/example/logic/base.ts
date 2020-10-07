@@ -1,4 +1,4 @@
-import { AuthStatus, StorageNodeType } from './types'
+import { AuthStatus, StorageNodeType } from '@/example/logic/types'
 import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
 import { config } from '@/example/config'

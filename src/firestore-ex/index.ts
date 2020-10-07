@@ -4,9 +4,9 @@
  * rev: 9e85b7fbda339e549b01df772327c8a12cdfbda2
  */
 
-export { FirestoreEx, CollectionFactory } from './firestore-ex'
-export { Collection } from './collection'
-export { Query } from './query'
+export { FirestoreEx, CollectionFactory } from '@/firestore-ex/firestore-ex'
+export { Collection } from '@/firestore-ex/collection'
+export { Query } from '@/firestore-ex/query'
 export {
   DecodeFunc,
   DecodedObject,
@@ -26,4 +26,4 @@ export {
   TimestampEntity,
   Transaction,
   WriteBatch,
-} from './types'
+} from '@/firestore-ex/types'

@@ -1,6 +1,6 @@
-import { AppAPIContainer } from './base'
-import { AppGQLAPIContainer } from './gql'
-import { AppRESTAPIContainer } from './rest'
+import { AppAPIContainer } from '@/example/logic/api/base'
+import { AppGQLAPIContainer } from '@/example/logic/api/gql'
+import { AppRESTAPIContainer } from '@/example/logic/api/rest'
 
 //========================================================================
 //

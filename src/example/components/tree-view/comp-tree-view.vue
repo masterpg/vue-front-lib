@@ -33,7 +33,7 @@ import {
   CompTreeViewEvent,
   CompTreeViewLazyLoadDoneFunc,
   CompTreeViewLazyLoadEvent,
-} from './types'
+} from '@/example/components/tree-view/types'
 import CompTreeNode from '@/example/components/tree-view/comp-tree-node.vue'
 import { CompTreeViewUtils } from '@/example/components/tree-view/comp-tree-view-utils'
 import { Component } from 'vue-property-decorator'

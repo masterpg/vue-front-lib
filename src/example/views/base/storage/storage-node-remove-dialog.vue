@@ -40,7 +40,7 @@ import { BaseDialog, NoCache } from '@/example/base'
 import { StorageNode, StorageNodeType } from '@/example/logic'
 import { Component } from 'vue-property-decorator'
 import { QDialog } from 'quasar'
-import { StoragePageMixin } from './storage-page-mixin'
+import { StoragePageMixin } from '@/example/views/base/storage/storage-page-mixin'
 import { mixins } from 'vue-class-component'
 
 @Component
