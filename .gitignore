@@ -1,15 +1,23 @@
-**/*.log
-**/~$*
+.DS_Store
+node_modules
+/dist
 
-.cache/
-.firebase/
-.idea/
-dist/
-node_modules/
-screenshots/
-firebase.config.js
 
-src/**/*.js.map
+# local env files
+.env.local
+.env.*.local
 
-tests/**/*.js.map
-tests/**/*.tmp
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

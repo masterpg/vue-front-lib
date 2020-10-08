@@ -1,0 +1,93 @@
+PUT {{host}}/testData
+Content-Type: application/json
+
+{
+  "app": {
+    "name": "vue2-composition-api",
+    "version": "0.0.1"
+  },
+  "products": [
+    {
+      "id": "product5",
+      "title": "Surface Pro X - 13",
+      "price": 120610,
+      "stock": 50,
+      "createdAt": "2020-01-01T10:00:00.000Z",
+      "updatedAt": "2020-01-02T10:00:00.000Z"
+    }
+  ]
+}
+
+###
+
+GET {{host}}/products
+Content-Type: application/json
+
+###
+
+GET {{host}}/products?ids[]=product1&ids[]=product2
+Content-Type: application/json
+
+###
+
+GET {{host}}/cartItems
+Content-Type: application/json
+Authorization: Bearer {{idToken}}
+
+###
+
+GET {{host}}/cartItems?ids[]=cartItem1&ids[]=cartItem2
+Content-Type: application/json
+Authorization: Bearer {{idToken}}
+
+###
+
+POST {{host}}/cartItems
+Content-Type: application/json
+Authorization: Bearer {{idToken}}
+
+[
+  {
+    "productId": "product3",
+    "title": "MediaPad 10",
+    "price": 26400,
+    "quantity": 1
+  },
+  {
+    "productId": "product4",
+    "title": "Surface Go",
+    "price": 54290,
+    "quantity": 1
+  }
+]
+
+###
+
+PUT {{host}}/cartItems
+Content-Type: application/json
+Authorization: Bearer {{idToken}}
+
+[
+  {
+    "id": "cartItem1",
+    "quantity": 2
+  },
+  {
+    "id": "cartItem2",
+    "quantity": 1
+  }
+]
+
+###
+
+DELETE {{host}}/cartItems?ids[]=cartItem1&ids[]=cartItem2
+Content-Type: application/json
+Authorization: Bearer {{idToken}}
+
+###
+
+PUT {{host}}/cartItems/checkout
+Content-Type: application/json
+Authorization: Bearer {{idToken}}
+
+###

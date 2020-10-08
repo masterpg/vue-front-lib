@@ -6,14 +6,11 @@
     "jsx": "preserve",
     "importHelpers": true,
     "moduleResolution": "node",
-    "experimentalDecorators": true,
+    "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
-    "noImplicitAny": false,
-    "skipLibCheck":true,
-    "incremental": true,
     "types": [
       "webpack-env",
       "jest"

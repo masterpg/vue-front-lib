@@ -5,14 +5,21 @@ const prettierConfig = require('./prettier.config')
 const eslintConfig = merge(
   require('web-base-lib/conf/.eslintrc.base.js'),
   {
-    'extends': [
+    root: true,
+    env: {
+      node: true,
+    },
+    extends: [
       "plugin:vue/essential",
       "eslint:recommended",
       "@vue/typescript/recommended",
       "@vue/prettier",
-      "@vue/prettier/@typescript-eslint"
+      "@vue/prettier/@typescript-eslint",
     ],
-    'rules': {
+    parserOptions: {
+      ecmaVersion: 2020,
+    },
+    rules: {
       'prettier/prettier': ['error', prettierConfig],
       '@typescript-eslint/ban-ts-ignore': 'off',
       'no-console': 'off',
@@ -20,12 +27,19 @@ const eslintConfig = merge(
       'vue/max-attributes-per-line': 'off',
       'vue/singleline-html-element-content-newline': 'off',
     },
-    'env': {
-      'jest': true,
-    },
-    'globals': {
-      'firebase': false,
-      'td': false,
+    overrides: [
+      {
+        files: [
+          "**/__tests__/*.{j,t}s?(x)",
+          "**/tests/unit/**/*.spec.{j,t}s?(x)",
+        ],
+        env: {
+          jest: true,
+        }
+      }
+    ],
+    globals: {
+      td: false,
     },
   },
 )

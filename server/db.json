@@ -1,0 +1,68 @@
+{
+  "products": [
+    {
+      "id": "product1",
+      "title": "iPad 4 Mini",
+      "price": 39700,
+      "stock": 0,
+      "createdAt": "2020-01-01T00:00:00.000Z",
+      "updatedAt": "2020-10-08T06:38:55.724Z"
+    },
+    {
+      "id": "product2",
+      "title": "Fire HD 8 Tablet",
+      "price": 8980,
+      "stock": 4,
+      "createdAt": "2020-01-01T00:00:00.000Z",
+      "updatedAt": "2020-10-08T06:38:57.077Z"
+    },
+    {
+      "id": "product3",
+      "title": "MediaPad 10",
+      "price": 26400,
+      "stock": 9,
+      "createdAt": "2020-01-01T00:00:00.000Z",
+      "updatedAt": "2020-10-08T06:38:57.686Z"
+    },
+    {
+      "id": "product4",
+      "title": "Surface Go",
+      "price": 54290,
+      "stock": 0,
+      "createdAt": "2020-01-01T00:00:00.000Z",
+      "updatedAt": "2020-01-02T00:00:00.000Z"
+    }
+  ],
+  "cartItems": [
+    {
+      "id": "sBPCNVVt7bspzAPAUUIe",
+      "uid": "taro.yamada",
+      "productId": "product1",
+      "title": "iPad 4 Mini",
+      "price": 39700,
+      "quantity": 1,
+      "createdAt": "2020-10-08T06:38:55.724Z",
+      "updatedAt": "2020-10-08T06:38:55.724Z"
+    },
+    {
+      "id": "yg5qmJqWVgT6FiLggObv",
+      "uid": "taro.yamada",
+      "productId": "product2",
+      "title": "Fire HD 8 Tablet",
+      "price": 8980,
+      "quantity": 1,
+      "createdAt": "2020-10-08T06:38:57.072Z",
+      "updatedAt": "2020-10-08T06:38:57.072Z"
+    },
+    {
+      "id": "UaXWAle7ZUZniOFJGM2a",
+      "uid": "taro.yamada",
+      "productId": "product3",
+      "title": "MediaPad 10",
+      "price": 26400,
+      "quantity": 1,
+      "createdAt": "2020-10-08T06:38:57.686Z",
+      "updatedAt": "2020-10-08T06:38:57.686Z"
+    }
+  ]
+}

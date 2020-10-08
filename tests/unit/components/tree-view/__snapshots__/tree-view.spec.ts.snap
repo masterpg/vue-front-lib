@@ -1,0 +1,552 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TreeView buildTree() ベーシックケース 1`] = `
+<div
+  class="TreeView"
+  style="min-width: 0px;"
+>
+  <div
+    class="TreeNode"
+  >
+    <div
+      class="node-container layout horizontal center"
+    >
+      <div
+        class="icon-container"
+        style="display: none;"
+      >
+        <i
+          aria-hidden="true"
+          class="q-icon notranslate text-grey-6"
+          role="presentation"
+          style="font-size: 20px;"
+        >
+          <svg
+            style="enable-background: new 0 0 50 50;"
+            version="1.1"
+            viewBox="0 0 50 50"
+            x="0px"
+            xml:space="preserve"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            y="0px"
+          >
+            <path
+              d="M43.935,25.145c0-10.318-8.364-18.683-18.683-18.683c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615c8.072,0,14.615,6.543,14.615,14.615H43.935z"
+            >
+              <animatetransform
+                attributeName="transform"
+                attributeType="xml"
+                dur="0.6s"
+                from="0 25 25"
+                repeatCount="indefinite"
+                to="360 25 25"
+                type="rotate"
+              />
+            </path>
+          </svg>
+        </i>
+      </div>
+       
+      <div
+        class="icon-container"
+      >
+        <i
+          aria-hidden="true"
+          class="q-icon notranslate"
+          role="presentation"
+          style="font-size: 26px;"
+        />
+      </div>
+       
+      <div
+        class="layout horizontal center item-container"
+      >
+        <div
+          class="icon-container"
+        >
+          <svg
+            class="dot"
+            height="6px"
+            width="6px"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+          >
+            <circle
+              cx="3"
+              cy="3"
+              fill="#9b9b9b"
+              r="3"
+              stroke-width="0"
+            />
+          </svg>
+        </div>
+         
+        <div
+          class="item"
+        >
+          <span>
+            Node1
+          </span>
+        </div>
+      </div>
+    </div>
+     
+    <div
+      class="child-container"
+      style="display: block; height: 0px;"
+    >
+      <div
+        class="TreeNode"
+      >
+        <div
+          class="node-container layout horizontal center"
+        >
+          <div
+            class="icon-container"
+            style="display: none;"
+          >
+            <i
+              aria-hidden="true"
+              class="q-icon notranslate text-grey-6"
+              role="presentation"
+              style="font-size: 20px;"
+            >
+              <svg
+                style="enable-background: new 0 0 50 50;"
+                version="1.1"
+                viewBox="0 0 50 50"
+                x="0px"
+                xml:space="preserve"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                y="0px"
+              >
+                <path
+                  d="M43.935,25.145c0-10.318-8.364-18.683-18.683-18.683c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615c8.072,0,14.615,6.543,14.615,14.615H43.935z"
+                >
+                  <animatetransform
+                    attributeName="transform"
+                    attributeType="xml"
+                    dur="0.6s"
+                    from="0 25 25"
+                    repeatCount="indefinite"
+                    to="360 25 25"
+                    type="rotate"
+                  />
+                </path>
+              </svg>
+            </i>
+          </div>
+           
+          <div
+            class="icon-container"
+          >
+            <i
+              aria-hidden="true"
+              class="q-icon notranslate"
+              role="presentation"
+              style="font-size: 26px;"
+            />
+          </div>
+           
+          <div
+            class="layout horizontal center item-container"
+          >
+            <div
+              class="icon-container"
+            >
+              <svg
+                class="dot"
+                height="6px"
+                width="6px"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+              >
+                <circle
+                  cx="3"
+                  cy="3"
+                  fill="#9b9b9b"
+                  r="3"
+                  stroke-width="0"
+                />
+              </svg>
+            </div>
+             
+            <div
+              class="item"
+            >
+              <span>
+                Node1_1
+              </span>
+            </div>
+          </div>
+        </div>
+         
+        <div
+          class="child-container"
+          style="display: block; height: 0px;"
+        >
+          <div
+            class="TreeNode"
+          >
+            <div
+              class="node-container layout horizontal center"
+            >
+              <div
+                class="icon-container"
+                style="display: none;"
+              >
+                <i
+                  aria-hidden="true"
+                  class="q-icon notranslate text-grey-6"
+                  role="presentation"
+                  style="font-size: 20px;"
+                >
+                  <svg
+                    style="enable-background: new 0 0 50 50;"
+                    version="1.1"
+                    viewBox="0 0 50 50"
+                    x="0px"
+                    xml:space="preserve"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    y="0px"
+                  >
+                    <path
+                      d="M43.935,25.145c0-10.318-8.364-18.683-18.683-18.683c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615c8.072,0,14.615,6.543,14.615,14.615H43.935z"
+                    >
+                      <animatetransform
+                        attributeName="transform"
+                        attributeType="xml"
+                        dur="0.6s"
+                        from="0 25 25"
+                        repeatCount="indefinite"
+                        to="360 25 25"
+                        type="rotate"
+                      />
+                    </path>
+                  </svg>
+                </i>
+              </div>
+               
+              <div
+                class="icon-container"
+              >
+                <i
+                  aria-hidden="true"
+                  class="q-icon notranslate"
+                  role="presentation"
+                  style="font-size: 26px;"
+                />
+              </div>
+               
+              <div
+                class="layout horizontal center item-container selected"
+              >
+                <div
+                  class="icon-container"
+                >
+                  <i
+                    aria-hidden="true"
+                    class="material-icons q-icon notranslate text-"
+                    role="presentation"
+                    style="font-size: 24px;"
+                  >
+                    inbox
+                  </i>
+                </div>
+                 
+                <div
+                  class="item"
+                >
+                  <span>
+                    Node1_1_1
+                  </span>
+                </div>
+              </div>
+            </div>
+             
+            <div
+              class="child-container"
+            />
+          </div>
+          <div
+            class="TreeNode"
+          >
+            <div
+              class="node-container layout horizontal center"
+            >
+              <div
+                class="icon-container"
+                style="display: none;"
+              >
+                <i
+                  aria-hidden="true"
+                  class="q-icon notranslate text-grey-6"
+                  role="presentation"
+                  style="font-size: 20px;"
+                >
+                  <svg
+                    style="enable-background: new 0 0 50 50;"
+                    version="1.1"
+                    viewBox="0 0 50 50"
+                    x="0px"
+                    xml:space="preserve"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    y="0px"
+                  >
+                    <path
+                      d="M43.935,25.145c0-10.318-8.364-18.683-18.683-18.683c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615c8.072,0,14.615,6.543,14.615,14.615H43.935z"
+                    >
+                      <animatetransform
+                        attributeName="transform"
+                        attributeType="xml"
+                        dur="0.6s"
+                        from="0 25 25"
+                        repeatCount="indefinite"
+                        to="360 25 25"
+                        type="rotate"
+                      />
+                    </path>
+                  </svg>
+                </i>
+              </div>
+               
+              <div
+                class="icon-container"
+              >
+                <i
+                  aria-hidden="true"
+                  class="q-icon notranslate"
+                  role="presentation"
+                  style="font-size: 26px;"
+                />
+              </div>
+               
+              <div
+                class="layout horizontal center item-container unselectable"
+              >
+                <div
+                  class="icon-container"
+                >
+                  <svg
+                    class="dot"
+                    height="6px"
+                    width="6px"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                  >
+                    <circle
+                      cx="3"
+                      cy="3"
+                      fill="#9b9b9b"
+                      r="3"
+                      stroke-width="0"
+                    />
+                  </svg>
+                </div>
+                 
+                <div
+                  class="item"
+                >
+                  <span>
+                    Node1_1_2
+                  </span>
+                </div>
+              </div>
+            </div>
+             
+            <div
+              class="child-container"
+            />
+          </div>
+          <div
+            class="TreeNode"
+          >
+            <div
+              class="node-container layout horizontal center"
+            >
+              <div
+                class="icon-container"
+                style="display: none;"
+              >
+                <i
+                  aria-hidden="true"
+                  class="q-icon notranslate text-grey-6"
+                  role="presentation"
+                  style="font-size: 20px;"
+                >
+                  <svg
+                    style="enable-background: new 0 0 50 50;"
+                    version="1.1"
+                    viewBox="0 0 50 50"
+                    x="0px"
+                    xml:space="preserve"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    y="0px"
+                  >
+                    <path
+                      d="M43.935,25.145c0-10.318-8.364-18.683-18.683-18.683c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615c8.072,0,14.615,6.543,14.615,14.615H43.935z"
+                    >
+                      <animatetransform
+                        attributeName="transform"
+                        attributeType="xml"
+                        dur="0.6s"
+                        from="0 25 25"
+                        repeatCount="indefinite"
+                        to="360 25 25"
+                        type="rotate"
+                      />
+                    </path>
+                  </svg>
+                </i>
+              </div>
+               
+              <div
+                class="icon-container"
+              >
+                <i
+                  aria-hidden="true"
+                  class="q-icon notranslate"
+                  role="presentation"
+                  style="font-size: 26px;"
+                />
+              </div>
+               
+              <div
+                class="layout horizontal center item-container"
+              >
+                <div
+                  class="icon-container"
+                >
+                  <svg
+                    class="dot"
+                    height="6px"
+                    width="6px"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                  >
+                    <circle
+                      cx="3"
+                      cy="3"
+                      fill="#9b9b9b"
+                      r="3"
+                      stroke-width="0"
+                    />
+                  </svg>
+                </div>
+                 
+                <div
+                  class="item"
+                >
+                  <span>
+                    Node1_1_3
+                  </span>
+                </div>
+              </div>
+            </div>
+             
+            <div
+              class="child-container"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="TreeNode"
+  >
+    <div
+      class="node-container layout horizontal center"
+    >
+      <div
+        class="icon-container"
+        style="display: none;"
+      >
+        <i
+          aria-hidden="true"
+          class="q-icon notranslate text-grey-6"
+          role="presentation"
+          style="font-size: 20px;"
+        >
+          <svg
+            style="enable-background: new 0 0 50 50;"
+            version="1.1"
+            viewBox="0 0 50 50"
+            x="0px"
+            xml:space="preserve"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            y="0px"
+          >
+            <path
+              d="M43.935,25.145c0-10.318-8.364-18.683-18.683-18.683c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615c8.072,0,14.615,6.543,14.615,14.615H43.935z"
+            >
+              <animatetransform
+                attributeName="transform"
+                attributeType="xml"
+                dur="0.6s"
+                from="0 25 25"
+                repeatCount="indefinite"
+                to="360 25 25"
+                type="rotate"
+              />
+            </path>
+          </svg>
+        </i>
+      </div>
+       
+      <div
+        class="icon-container"
+      >
+        <i
+          aria-hidden="true"
+          class="q-icon notranslate"
+          role="presentation"
+          style="font-size: 26px;"
+        />
+      </div>
+       
+      <div
+        class="layout horizontal center item-container"
+      >
+        <div
+          class="icon-container"
+        >
+          <svg
+            class="dot"
+            height="6px"
+            width="6px"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+          >
+            <circle
+              cx="3"
+              cy="3"
+              fill="#9b9b9b"
+              r="3"
+              stroke-width="0"
+            />
+          </svg>
+        </div>
+         
+        <div
+          class="item"
+        >
+          <span>
+            Node2
+          </span>
+        </div>
+      </div>
+    </div>
+     
+    <div
+      class="child-container"
+    />
+  </div>
+</div>
+`;
