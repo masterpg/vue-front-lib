@@ -1,10 +1,11 @@
 import * as firebase from '@firebase/testing'
+import { Firestore } from '@/firestore-ex/types'
 const crypto = require('crypto')
 
 export class WebFirestoreTestUtil {
   projectId: string
   uid: string
-  db: firebase.firestore.Firestore
+  db: Firestore
 
   constructor() {
     // Use random projectId to separate emulator firestore namespace for concurrent testing
@@ -18,7 +19,7 @@ export class WebFirestoreTestUtil {
         projectId: this.projectId,
         auth: { uid: this.uid },
       })
-      .firestore()
+      .firestore() as Firestore
   }
 
   // Clear emulator Firestore data

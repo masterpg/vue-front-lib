@@ -4,6 +4,7 @@ import { clearProvidedDependency } from './helpers/app'
 import { createI18n } from '@/app/i18n'
 import { quasar } from '@/app/quasar'
 import td from 'testdouble'
+import * as firebase from '@firebase/testing'
 
 //
 // Jestの設定
@@ -26,6 +27,11 @@ require('testdouble-jest')(td, jest)
 // Quasarの設定
 //
 quasar.setup()
+
+//
+// Firebaseの設定
+//
+window.firebase = firebase
 
 beforeEach(async () => {
   const i18n = createI18n()
