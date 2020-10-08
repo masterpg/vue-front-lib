@@ -1,12 +1,12 @@
 import 'testdouble'
 import { DeepPartial } from 'web-base-lib'
-import _td from 'testdouble'
+import td from 'testdouble'
 
 declare global {
-  const td: typeof _td
+  const td: typeof td
 
   interface Window {
-    td: typeof _td
+    td: typeof td
   }
 }
 

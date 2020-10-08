@@ -6,3 +6,4 @@ public/
 package.json
 tsconfig.json
 vue.config.js
+*.snap
