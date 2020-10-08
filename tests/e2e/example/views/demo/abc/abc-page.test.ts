@@ -1,4 +1,4 @@
-import { VueSelector } from '../../../../../helpers/example/testcafe'
+import { VueSelector } from '../../../../../helpers/app/testcafe'
 declare const test: TestFn
 
 fixture`ABC Page`.page`http://localhost:5000/views/demo/abc`

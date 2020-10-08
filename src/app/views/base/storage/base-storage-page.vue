@@ -1,0 +1,819 @@
+<style lang="sass" scoped>
+@import 'src/app/styles/app.variables'
+
+.storage-page-main
+  height: 100%
+
+.splitter
+  height: 100%
+
+.tree-view-container
+  width: 100%
+  height: 100%
+  overflow: auto
+
+.tree-view
+  //--comp-tree-view-font-size: 26px
+  //--comp-tree-node-indent: 20px
+
+.content-container
+  height: 100%
+
+.view-container
+  overflow: hidden
+
+.dir-view
+  overflow: hidden
+
+.node-detail-view
+  width: 320px
+</style>
+
+<template>
+  <div class="storage-page-main">
+    <q-splitter v-model="splitterModel" unit="px" class="splitter">
+      <template v-slot:before>
+        <div ref="treeViewContainer" class="tree-view-container">
+          <storage-tree-view ref="treeView" class="tree-view" :storage-type="storageType" :node-filter="treeNodeFilter" />
+        </div>
+      </template>
+      <template v-slot:after>
+        <div class="content-container layout vertical">
+          <storage-dir-path-breadcrumb ref="pathDirBreadcrumb" :storage-type="storageType" />
+          <div class="view-container layout horizontal flex-1">
+            <storage-dir-view ref="dirView" class="dir-view flex-1" :storage-type="storageType" />
+            <storage-dir-detail-view
+              v-show="visibleDirDetailView"
+              ref="dirDetailView"
+              class="node-detail-view"
+              :storage-type="storageType"
+              @close="nodeDetailViewOnClose"
+            />
+            <storage-file-detail-view
+              v-show="visibleFileDetailView"
+              ref="fileDetailView"
+              class="node-detail-view"
+              :storage-type="storageType"
+              @close="nodeDetailViewOnClose"
+            />
+          </div>
+        </div>
+      </template>
+    </q-splitter>
+
+    <storage-dir-create-dialog ref="dirCreateDialog" :storage-type="storageType" />
+    <storage-node-move-dialog ref="nodeMoveDialog" :storage-type="storageType" />
+    <storage-node-rename-dialog ref="nodeRenameDialog" :storage-type="storageType" />
+    <storage-node-remove-dialog ref="nodeRemoveDialog" :storage-type="storageType" />
+    <storage-node-share-dialog ref="nodeShareDialog" :storage-type="storageType" />
+
+    <comp-storage-upload-progress-float
+      ref="uploadProgressFloat"
+      class="fixed-bottom-right"
+      :storage-type="storageType"
+      @upload-ends="uploadProgressFloatOnUploadEnds($event)"
+    />
+  </div>
+</template>
+
+<script lang="ts">
+import * as path from 'path'
+import { AuthStatus, CreateArticleTypeDirInput, StorageNode, StorageNodeShareSettings, StorageNodeType } from '@/app/logic'
+import { BaseComponent, Resizable } from '@/app/base'
+import { CompStorageUploadProgressFloat, CompTreeViewEvent, CompTreeViewLazyLoadEvent, UploadEndedEvent } from '@/app/components'
+import { Component, Watch } from 'vue-property-decorator'
+import { RawLocation, Route } from 'vue-router'
+import StorageDirView, { IStorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
+import { StoragePageMixin, StoragePageStore } from '@/app/views/base/storage/storage-page-mixin'
+import StorageDirCreateDialog from '@/app/views/base/storage/storage-dir-create-dialog.vue'
+import StorageDirDetailView from '@/app/views/base/storage/storage-dir-detail-view.vue'
+import StorageDirPathBreadcrumb from '@/app/views/base/storage/storage-dir-path-breadcrumb.vue'
+import StorageFileDetailView from '@/app/views/base/storage/storage-file-detail-view.vue'
+import { StorageNodeActionEvent } from '@/app/views/base/storage/base'
+import StorageNodeMoveDialog from '@/app/views/base/storage/storage-node-move-dialog.vue'
+import StorageNodeRemoveDialog from '@/app/views/base/storage/storage-node-remove-dialog.vue'
+import StorageNodeRenameDialog from '@/app/views/base/storage/storage-node-rename-dialog.vue'
+import StorageNodeShareDialog from '@/app/views/base/storage/storage-node-share-dialog.vue'
+import StorageTreeNode from '@/app/views/base/storage/storage-tree-node.vue'
+import StorageTreeView from '@/app/views/base/storage/storage-tree-view.vue'
+import Vue from 'vue'
+import anime from 'animejs'
+import { mixins } from 'vue-class-component'
+import { removeBothEndsSlash } from 'web-base-lib'
+
+@Component({
+  components: {
+    CompStorageUploadProgressFloat,
+    StorageDirCreateDialog,
+    StorageDirDetailView,
+    StorageDirPathBreadcrumb,
+    StorageDirView,
+    StorageFileDetailView,
+    StorageNodeMoveDialog,
+    StorageNodeRemoveDialog,
+    StorageNodeRenameDialog,
+    StorageNodeShareDialog,
+    StorageTreeView,
+  },
+})
+export default class BaseStoragePage extends mixins(BaseComponent, Resizable, StoragePageMixin) {
+  //----------------------------------------------------------------------
+  //
+  //  Lifecycle hooks
+  //
+  //----------------------------------------------------------------------
+
+  created() {
+    StoragePageStore.register(this.storageType, this)
+  }
+
+  destroyed() {
+    StoragePageStore.unregister(this.storageType)
+  }
+
+  async mounted() {
+    // 必要な要素の設定
+    this.setupElements()
+
+    // 初期ストレージノードの読み込みが既に行われている場合
+    // ※本ページから別ページに遷移し、その後本ページに戻ってきた場合がこの状況に当たる
+    if (this.pageStore.isInitialPull) {
+      const dirPath = this.treeView.selectedNode!.path
+      // 選択ノードのパスをURLに付与し、ページを更新
+      this.updatePage(dirPath)
+      // 選択ノードの祖先ノードを展開
+      this.openParentNode(dirPath, false)
+      // 選択ノードの位置までスクロールする
+      this.scrollToSelectedNode(dirPath, false)
+    }
+    // 初期ストレージノードの読み込みが行われていなく、かつユーザーがサインインしてる場合
+    else if (this.$logic.auth.isSignedIn) {
+      // ストレージの初期化
+      await this.initStorage()
+      // 初期ストレージノードの読み込み
+      await this.pullInitialNodes()
+    }
+  }
+
+  async beforeRouteUpdate(to: Route, from: Route, next: (to?: RawLocation | false | ((vm: Vue) => any) | void) => void) {
+    next()
+
+    // URLから選択ノードパスを取得(取得できなかった場合はルートノード)
+    const dirPath = this.storageRoute.getNodePath()
+    // ページの選択ノードを設定
+    this.changeDir(dirPath)
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //----------------------------------------------------------------------
+
+  treeView: StorageTreeView = null as any
+
+  //----------------------------------------------------------------------
+  //
+  //  Variables
+  //
+  //----------------------------------------------------------------------
+
+  /**
+   * ディレクトリ詳細ビューの表示フラグです。
+   */
+  protected visibleDirDetailView = false
+
+  /**
+   * ファイル詳細ビューの表示フラグです。
+   */
+  protected visibleFileDetailView = false
+
+  /**
+   * 左右のペインを隔てるスプリッターの左ペインの幅です。
+   */
+  protected splitterModel = 300
+
+  /**
+   * 選択ノードまでスクロールする必要があることを示すフラグです。
+   */
+  protected needScrollToSelectedNode = false
+
+  /**
+   * 選択ノードまでのスクロールするアニメーション(実行中のもの)です。
+   * アニメーションが完了するとnullが設定されます。
+   */
+  protected scrollAnime: anime.AnimeInstance | null = null
+
+  protected get selectedNode(): StorageTreeNode | null {
+    if (!this.treeView) return null
+    return this.treeView.selectedNode
+  }
+
+  protected treeNodeFilter = (node: StorageNode) => {
+    return node.nodeType === StorageNodeType.Dir
+  }
+
+  //--------------------------------------------------
+  //  Elements
+  //--------------------------------------------------
+
+  protected treeViewContainer: HTMLElement = null as any
+
+  protected pathDirBreadcrumb: StorageDirPathBreadcrumb = null as any
+
+  protected dirView: IStorageDirView = null as any
+
+  protected dirDetailView: StorageDirDetailView = null as any
+
+  protected fileDetailView: StorageFileDetailView = null as any
+
+  protected dirCreateDialog: StorageDirCreateDialog = null as any
+
+  protected nodeMoveDialog: StorageNodeMoveDialog = null as any
+
+  protected nodeRenameDialog: StorageNodeRenameDialog = null as any
+
+  protected nodeRemoveDialog: StorageNodeRemoveDialog = null as any
+
+  protected nodeShareDialog: StorageNodeShareDialog = null as any
+
+  protected uploadProgressFloat: CompStorageUploadProgressFloat = null as any
+
+  //----------------------------------------------------------------------
+  //
+  //  Internal methods
+  //
+  //----------------------------------------------------------------------
+
+  /**
+   * ストレージの初期化を行います。
+   */
+  protected async initStorage(): Promise<void> {
+    await this.storageLogic.fetchRoot()
+  }
+
+  /**
+   * 本コンポーネントで必要となる要素の設定を行います。
+   */
+  protected setupElements(): void {
+    if (!this.$refs.treeView) {
+      throw new Error(`The element with the reference name ref="treeView" does not exist.`)
+    }
+    this.treeView = this.$refs.treeView as StorageTreeView
+
+    if (!this.$refs.treeViewContainer) {
+      throw new Error('The element with the reference name ref="treeViewContainer" does not exist.')
+    }
+    this.treeViewContainer = this.$refs.treeViewContainer as HTMLElement
+
+    if (!this.$refs.pathDirBreadcrumb) {
+      throw new Error('The element with the reference name ref="pathDirBreadcrumb" does not exist.')
+    }
+    this.pathDirBreadcrumb = this.$refs.pathDirBreadcrumb as StorageDirPathBreadcrumb
+
+    if (!this.$refs.dirView) {
+      throw new Error('The element with the reference name ref="dirView" does not exist.')
+    }
+    this.dirView = this.$refs.dirView as IStorageDirView
+
+    if (!this.$refs.dirDetailView) {
+      throw new Error('The element with the reference name ref="dirDetailView" does not exist.')
+    }
+    this.dirDetailView = this.$refs.dirDetailView as StorageDirDetailView
+
+    if (!this.$refs.fileDetailView) {
+      throw new Error('The element with the reference name ref="fileDetailView" does not exist.')
+    }
+    this.fileDetailView = this.$refs.fileDetailView as StorageFileDetailView
+
+    if (!this.$refs.dirCreateDialog) {
+      throw new Error('The element with the reference name ref="dirCreateDialog" does not exist.')
+    }
+    this.dirCreateDialog = this.$refs.dirCreateDialog as StorageDirCreateDialog
+
+    if (!this.$refs.nodeMoveDialog) {
+      throw new Error('The element with the reference name ref="nodeMoveDialog" does not exist.')
+    }
+    this.nodeMoveDialog = this.$refs.nodeMoveDialog as StorageNodeMoveDialog
+
+    if (!this.$refs.nodeRenameDialog) {
+      throw new Error('The element with the reference name ref="nodeRenameDialog" does not exist.')
+    }
+    this.nodeRenameDialog = this.$refs.nodeRenameDialog as StorageNodeRenameDialog
+
+    if (!this.$refs.nodeRemoveDialog) {
+      throw new Error('The element with the reference name ref="nodeRemoveDialog" does not exist.')
+    }
+    this.nodeRemoveDialog = this.$refs.nodeRemoveDialog as StorageNodeRemoveDialog
+
+    if (!this.$refs.nodeShareDialog) {
+      throw new Error('The element with the reference name ref="nodeShareDialog" does not exist.')
+    }
+    this.nodeShareDialog = this.$refs.nodeShareDialog as StorageNodeShareDialog
+
+    if (!this.$refs.uploadProgressFloat) {
+      throw new Error('The element with the reference name ref="uploadProgressFloat" does not exist.')
+    }
+    this.uploadProgressFloat = this.$refs.uploadProgressFloat as CompStorageUploadProgressFloat
+
+    this.treeView.$on('select', e => {
+      // 初期読み込みが行われる前にルートノードのselectイベントが発生すると、
+      // URLでノードパスが指定されていてもルートノードが選択ノードになってしまい、
+      // URLで指定されたノードパスがクリアされてしまう。
+      // このため初期読み込みされるまではselectイベントに反応しないようにしている。
+      if (!this.pageStore.isInitialPull) return
+
+      this.treeViewOnSelect(e)
+    })
+    this.treeView.$on('lazy-load', e => this.treeViewOnLazyLoad(e))
+    this.treeView.$on('node-action', e => this.m_popupMenuOnNodeAction(e))
+    this.dirView.$on('select', e => this.dirViewOnSelect(e))
+    this.dirView.$on('deep-select', e => this.dirViewOnDeepSelect(e))
+    this.dirView.$on('node-action', e => this.m_popupMenuOnNodeAction(e))
+    this.pathDirBreadcrumb.$on('select', e => this.pathDirBreadcrumbOnSelect(e))
+    this.pathDirBreadcrumb.$on('node-action', e => this.m_popupMenuOnNodeAction(e))
+  }
+
+  /**
+   * ページ表示をクリアします。
+   */
+  protected clearPage(): void {
+    this.pageStore.isInitialPull = false
+    this.pathDirBreadcrumb.setSelectedNode(null)
+    this.dirView.setSelectedNode(null)
+    this.visibleDirDetailView = false
+    this.visibleFileDetailView = false
+  }
+
+  /**
+   * 初回に読み込むべきストレージノードの読み込みを行います。
+   */
+  protected async pullInitialNodes(): Promise<void> {
+    if (this.pageStore.isInitialPull) return
+
+    this.dirView.loading = true
+
+    // 現在の選択ノードを取得
+    // ※URLから取得したディレクトリまたは現在の選択ノード
+    const urlDirPath = this.storageRoute.getNodePath()
+    const dirPath = urlDirPath || this.treeView.selectedNode.path
+    // 初期ストレージノードの読み込み
+    await this.treeView.pullInitialNodes(dirPath)
+    // ページの選択ノードを設定
+    this.changeDir(dirPath)
+    // 選択ノードの祖先ノードを展開
+    this.openParentNode(dirPath, false)
+    // 選択ノードの位置までスクロールする
+    this.scrollToSelectedNode(dirPath, false)
+
+    this.dirView.loading = false
+
+    this.pageStore.isInitialPull = true
+  }
+
+  /**
+   * ページをロジックストアに格納されているストレージノードで最新化します。
+   * @param dirPath 選択ディレクトリを指定
+   */
+  protected updatePage(dirPath: string): void {
+    // ロジックストアに格納されているストレージノードをツリービューへマージ
+    this.treeView.mergeAllNodes(this.storageLogic.nodes)
+    // 指定ディレクトリへURL遷移
+    this.changeDirOnPage(dirPath)
+  }
+
+  /**
+   * 指定されたノードがディレクトリの場合はそのディレクトリへ移動し、
+   * 指定されたノードがディレクトリ以外の場合は親であるディレクトリへ移動します。
+   * @param nodePath
+   */
+  protected changeDir(nodePath: string): void {
+    const selectedNode = this.treeView.getNode(nodePath) || this.treeView.rootNode
+
+    // ノード詳細ビューを非表示にする
+    this.visibleDirDetailView = false
+    this.visibleFileDetailView = false
+    // 選択ノードを設定
+    this.treeView.setSelectedNode(selectedNode.path, true, true)
+    // パンくずに選択ノードを設定
+    this.pathDirBreadcrumb.setSelectedNode(selectedNode.path)
+    // ディレクトリビューに選択ノードを設定
+    this.dirView.setSelectedNode(selectedNode.path)
+  }
+
+  /**
+   * 指定ディレクトリのパスをURLへ付与してディレクトリを移動します。
+   * @param dirPath ディレクトリパス
+   */
+  protected changeDirOnPage(dirPath: string): void {
+    dirPath = removeBothEndsSlash(dirPath)
+
+    const urlDirPath = removeBothEndsSlash(this.storageRoute.getNodePath())
+    // 移動先が変わらない場合
+    // ※URLから取得したディレクトリと移動先のディレクトリが同じ場合
+    if (urlDirPath === dirPath) {
+      // 指定されたディレクトリをページの選択ノードとして設定
+      this.changeDir(dirPath)
+    }
+    // 移動先が変わる場合
+    else {
+      // 選択ディレクトリのパスをURLに付与
+      // ※ルーターによって本ページ内のbeforeRouteUpdate()が実行される
+      this.storageRoute.move(dirPath)
+    }
+  }
+
+  /**
+   * パンくずブロック、またはディレクトリビューでディレクトリが選択された際の処理を行います。
+   * @param dirPath
+   */
+  protected dirOnChange(dirPath: string): void {
+    dirPath = removeBothEndsSlash(dirPath)
+
+    this.needScrollToSelectedNode = true
+    // ツリービューの選択ノードに指定されたディレクトリを設定
+    // ※ツリービューのselectイベントが発火され、ディレクトリが切り替わる
+    this.treeView.setSelectedNode(dirPath, true, false)
+  }
+
+  /**
+   * 指定されたノードをページの選択ノードとして設定します。
+   * @param nodePath
+   */
+  protected showNodeDetail(nodePath: string): void {
+    this.visibleDirDetailView = false
+    this.visibleFileDetailView = false
+    const node = this.storageLogic.sgetNode({ path: nodePath })
+
+    switch (node.nodeType) {
+      case StorageNodeType.Dir: {
+        // ディレクトリ詳細ビューを表示
+        this.dirDetailView.setNodePath(node.path)
+        this.visibleDirDetailView = true
+        break
+      }
+      case StorageNodeType.File: {
+        // ファイル詳細ビューを表示
+        this.fileDetailView.setNodePath(node.path)
+        this.visibleFileDetailView = true
+        break
+      }
+    }
+  }
+
+  /**
+   * ディレクトリの作成を行います。
+   * @param dirPath 作成するディレクトリのパス
+   */
+  protected async createDir(dirPath: string): Promise<void> {
+    this.$q.loading.show()
+
+    // ディレクトリの作成を実行
+    await this.treeView.createStorageDir(dirPath)
+    const treeNode = this.treeView.getNode(dirPath)!
+
+    // 現在選択されているノードへURL遷移
+    this.changeDirOnPage(this.treeView.selectedNode.path)
+
+    this.$q.loading.hide()
+  }
+
+  /**
+   * ノードの削除を行います。
+   * @param nodePaths 削除するノード
+   */
+  protected async removeNodes(nodePaths: string[]): Promise<void> {
+    this.$q.loading.show()
+
+    // 削除後の遷移先ノードを取得
+    // ・選択ノードが削除された場合、親ノードへ遷移
+    // ・それ以外は現在の選択ノードへ遷移
+    let toNodePath = this.treeView.selectedNode.path
+    // 選択ノードが削除されるのかを取得
+    const selectedRemovingNodePath = nodePaths.find(nodePath => {
+      if (nodePath === this.treeView.selectedNode.path) return nodePath
+    })
+    // 選択ノードが削除される場合、親ノードへ遷移するよう準備
+    if (selectedRemovingNodePath) {
+      const removingCertainNode = this.storageLogic.sgetNode({ path: nodePaths[0] })
+      toNodePath = removingCertainNode.dir
+    }
+
+    // ノードの移動を実行
+    await this.treeView.removeStorageNodes(nodePaths)
+
+    // 上記で取得したノードへURL遷移
+    this.changeDirOnPage(toNodePath)
+
+    this.$q.loading.hide()
+  }
+
+  /**
+   * ノードの移動を行います。
+   * @param nodePaths 移動するノード
+   * @param toDirPath 移動先のディレクトリパス
+   */
+  protected async moveNodes(nodePaths: string[], toDirPath: string): Promise<void> {
+    this.$q.loading.show()
+
+    // ノードの移動を実行
+    await this.treeView.moveStorageNodes(nodePaths, toDirPath)
+
+    // 現在選択されているノードへURL遷移
+    this.changeDirOnPage(this.treeView.selectedNode.path)
+
+    this.$q.loading.hide()
+  }
+
+  /**
+   * ノードのリネームを行います。
+   * @param nodePath リネームするノード
+   * @param newName ノードの新しい名前
+   */
+  protected async renameNode(nodePath: string, newName: string): Promise<void> {
+    this.$q.loading.show()
+
+    // ノードのリネームを実行
+    await this.treeView.renameStorageNode(nodePath, newName)
+
+    // 現在選択されているノードへURL遷移
+    this.changeDirOnPage(this.treeView.selectedNode.path)
+
+    this.$q.loading.hide()
+  }
+
+  /**
+   * ノードの共有設定を行います。
+   * @param nodePaths 共有設定するノード
+   * @param input 共有設定の内容
+   */
+  protected async setShareSettings(nodePaths: string[], input: StorageNodeShareSettings): Promise<void> {
+    this.$q.loading.show()
+
+    // ノードの共有設定を実行
+    await this.treeView.setShareSettings(nodePaths, input)
+
+    // 現在選択されているノードへURL遷移
+    this.changeDirOnPage(this.treeView.selectedNode.path)
+
+    this.$q.loading.hide()
+  }
+
+  /**
+   * 記事系ディレクトリの作成を行います。
+   * @param input
+   */
+  protected async createArticleTypeDir(input: CreateArticleTypeDirInput): Promise<void> {
+    this.$q.loading.show()
+
+    // ディレクトリの作成を実行
+    await this.treeView.createArticleTypeDir(input)
+
+    // 現在選択されているノードへURL遷移
+    this.changeDirOnPage(this.treeView.selectedNode.path)
+
+    this.$q.loading.hide()
+  }
+
+  /**
+   * 指定されたノードの祖先ノードを展開します。
+   * @param nodePath
+   * @param animated
+   */
+  protected openParentNode(nodePath: string, animated: boolean): void {
+    const treeNode = this.treeView.getNode(nodePath)
+    if (!treeNode || !treeNode.parent) return
+
+    treeNode.parent.open(animated)
+    if (treeNode.parent) {
+      this.openParentNode(treeNode.parent.path, animated)
+    }
+  }
+
+  /**
+   * 指定ノードをツリービューの上下中央に位置するようスクロールします。
+   * @param nodePath
+   * @param animated
+   */
+  protected scrollToSelectedNode(nodePath: string, animated: boolean): void {
+    const treeNode = this.treeView.getNode(nodePath)
+    if (!treeNode) return
+
+    // 本ページのグローバルな上位置を取得
+    const globalTop = this.$el.getBoundingClientRect().top
+    // ツリービューの現スクロール位置を取得
+    const scrollTop = this.treeViewContainer.scrollTop
+    // 指定ノードの上位置を取得
+    const nodeTop = treeNode.$el.getBoundingClientRect().top - globalTop
+    // スクロール値の最大を取得
+    const maxScrollTop = this.treeView.$el.scrollHeight - this.treeViewContainer.clientHeight
+
+    // 指定ノードをツリービューの上下中央に位置するようスクロール(できるだけ)
+    let newScrollTop = scrollTop + nodeTop - this.treeViewContainer.clientHeight / 2
+    if (newScrollTop < 0) {
+      newScrollTop = 0
+    } else if (maxScrollTop < newScrollTop) {
+      newScrollTop = maxScrollTop
+    }
+
+    this.scrollAnime && this.scrollAnime.pause()
+    this.scrollAnime = anime({
+      targets: this.treeViewContainer,
+      scrollTop: newScrollTop,
+      duration: animated ? 750 : 0,
+      easing: 'easeOutQuart',
+      complete: () => {
+        this.scrollAnime = null
+      },
+    })
+
+    // console.log(JSON.stringify({ scrollTop, nodeTop, 'treeViewContainer.clientHeight / 2': this.treeViewContainer.clientHeight / 2, newScrollTop }, null, 2))
+  }
+
+  //----------------------------------------------------------------------
+  //
+  //  Event listeners
+  //
+  //----------------------------------------------------------------------
+
+  @Watch('$logic.auth.isSignedIn')
+  protected async isSignedInOnChange(newValue: AuthStatus, oldValue: AuthStatus) {
+    if (this.$logic.auth.isSignedIn) {
+      await this.initStorage()
+      await this.pullInitialNodes()
+    } else {
+      this.clearPage()
+    }
+  }
+
+  /**
+   * パンくずのブロックがクリックされた際のリスナです。
+   * @param nodePath
+   */
+  protected pathDirBreadcrumbOnSelect(nodePath: string) {
+    this.dirOnChange(nodePath)
+  }
+
+  /**
+   * アップロード進捗フロートでアップロードが終了した際のハンドラです。
+   * @param e
+   */
+  protected async uploadProgressFloatOnUploadEnds(e: UploadEndedEvent) {
+    // アップロードが行われた後のツリーの更新処理
+    await this.treeView.onUploaded(e)
+    // アップロード先のディレクトリへURL遷移
+    this.changeDirOnPage(e.uploadDirPath)
+
+    // アップロード先のディレクトリとその祖先を展開
+    const uploadDirNode = this.treeView.getNode(e.uploadDirPath)!
+    uploadDirNode.open()
+    this.openParentNode(uploadDirNode.path, true)
+  }
+
+  /**
+   * ポップアップメニューでアクションが選択された際のリスナです。
+   * @param e
+   */
+  protected async m_popupMenuOnNodeAction(e: StorageNodeActionEvent) {
+    switch (e.type) {
+      case 'reload': {
+        const dirPath = e.nodePaths[0]
+        await this.treeView.reloadDir(dirPath)
+        // ページの選択ノードを設定
+        // ※ディレクトリビューの更新
+        this.changeDir(this.treeView.selectedNode.path)
+        break
+      }
+      case 'createDir': {
+        const dirPath = e.nodePaths[0]
+        const pathData = await this.dirCreateDialog.open({ parentPath: dirPath })
+        if (pathData) {
+          await this.createDir(path.join(pathData.dir, pathData.name))
+        }
+        break
+      }
+      case 'uploadDir': {
+        const dirPath = e.nodePaths[0]
+        this.uploadProgressFloat.openDirSelectDialog(dirPath)
+        break
+      }
+      case 'uploadFiles': {
+        const dirPath = e.nodePaths[0]
+        this.uploadProgressFloat.openFilesSelectDialog(dirPath)
+        break
+      }
+      case 'move': {
+        const toDir = await this.nodeMoveDialog.open(e.nodePaths)
+        if (typeof toDir === 'string') {
+          await this.moveNodes(e.nodePaths, toDir)
+        }
+        break
+      }
+      case 'rename': {
+        const nodePath = e.nodePaths[0]
+        const newName = await this.nodeRenameDialog.open(nodePath)
+        if (newName) {
+          await this.renameNode(nodePath, newName)
+        }
+        break
+      }
+      case 'share': {
+        const input = await this.nodeShareDialog.open(e.nodePaths)
+        if (input) {
+          await this.setShareSettings(e.nodePaths, input)
+        }
+        break
+      }
+      case 'delete': {
+        const confirmed = await this.nodeRemoveDialog.open(e.nodePaths)
+        if (confirmed) {
+          await this.removeNodes(e.nodePaths)
+        }
+        break
+      }
+      case 'createArticleTypeDir': {
+        const articleNodeType = e.articleNodeType!
+        const dirPath = e.nodePaths[0]
+        const pathData = await this.dirCreateDialog.open({ parentPath: dirPath, articleNodeType })
+        if (pathData) {
+          await this.createArticleTypeDir({
+            dir: pathData.dir,
+            articleNodeName: pathData.name,
+            articleNodeType,
+          })
+        }
+        break
+      }
+    }
+  }
+
+  //--------------------------------------------------
+  //  ツリービュー
+  //--------------------------------------------------
+
+  /**
+   * ツリービューで遅延ロードが開始された際のリスナです。
+   * @param e
+   */
+  protected async treeViewOnLazyLoad(e: CompTreeViewLazyLoadEvent<StorageTreeNode>) {
+    this.dirView.loading = true
+
+    // 選択または展開されようとしているディレクトリ直下のノードをサーバーから取得
+    // ※done()が実行された後にselectイベントが発火し、ページが更新される
+    await this.treeView.pullChildren(e.node.path)
+    e.done()
+
+    this.dirView.loading = false
+  }
+
+  /**
+   * ツリービューでノードが選択された際のリスナです。
+   * @param e
+   */
+  protected async treeViewOnSelect(e: CompTreeViewEvent<StorageTreeNode>) {
+    const selectedNode = e.node
+
+    // 選択ノードまでスクロールするフラグが立っている場合
+    if (this.needScrollToSelectedNode) {
+      // 選択されたノードの祖先を展開（アニメーションなし）
+      this.openParentNode(selectedNode.path, false)
+      // 選択ノードの位置までスクロールする
+      this.scrollToSelectedNode(selectedNode.path, true)
+
+      this.needScrollToSelectedNode = false
+    }
+
+    // 選択ノードのパスをURLに付与
+    this.changeDirOnPage(selectedNode.path)
+  }
+
+  //--------------------------------------------------
+  //  ディレクトリビュー
+  //--------------------------------------------------
+
+  /**
+   * ディレクトリビューでノードが選択された際のリスナです。
+   * @param nodePath
+   */
+  protected dirViewOnSelect(nodePath: string) {
+    this.showNodeDetail(nodePath)
+  }
+
+  /**
+   * ディレクトリビューでノードがディープ選択された際のリスナです。
+   * @param dirPath
+   */
+  protected dirViewOnDeepSelect(dirPath: string) {
+    this.dirOnChange(dirPath)
+  }
+
+  //--------------------------------------------------
+  //  ノード詳細ビュー
+  //--------------------------------------------------
+
+  protected nodeDetailViewOnClose() {
+    this.visibleDirDetailView = false
+    this.visibleFileDetailView = false
+  }
+}
+</script>

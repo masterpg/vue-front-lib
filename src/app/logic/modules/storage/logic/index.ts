@@ -1,0 +1,5 @@
+export { StorageLogic, StorageType } from '@/app/logic/modules/storage/logic/base'
+export { AppStorageLogic } from '@/app/logic/modules/storage/logic/app'
+export { ArticleStorageLogic, ArticleStorageLogicImpl } from '@/app/logic/modules/storage/logic/article'
+export { SubStorageLogic } from '@/app/logic/modules/storage/logic/sub'
+export { UserStorageLogic } from '@/app/logic/modules/storage/logic/user'

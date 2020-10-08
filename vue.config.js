@@ -9,9 +9,9 @@ const publicPath = process.env.VUE_APP_BASE_URL
 const pages = {
   index: {
     // entry for the page
-    entry: 'src/example/index.ts',
+    entry: 'src/app/index.ts',
     // the source template
-    template: 'src/example/index.html',
+    template: 'src/app/index.html',
     // output as dist/playground.html
     filename: 'index.html',
     // template title tag needs to be <title><%= htmlWebpackPlugin.options.title %></title>
@@ -21,8 +21,8 @@ const pages = {
 if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
   Object.assign(pages, {
     playground: {
-      entry: 'src/example/playground.ts',
-      template: 'src/example/playground.html',
+      entry: 'src/app/playground.ts',
+      template: 'src/app/playground.html',
       filename: 'playground.html',
       title: 'vue-front-lib Playground',
     },
