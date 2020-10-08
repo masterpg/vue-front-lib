@@ -1,4 +1,4 @@
-# vue2-composition-api
+# vue-front-lib
 
 ## Project setup
 ```

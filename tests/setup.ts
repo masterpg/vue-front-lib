@@ -1,8 +1,8 @@
 import Vue from 'vue'
 import VueCompositionApi from '@vue/composition-api'
-import { clearProvidedDependency } from './helpers'
-import { createI18n } from '@/i18n'
-import { quasar } from '@/quasar'
+import { clearProvidedDependency } from './helpers/app'
+import { createI18n } from '@/app/i18n'
+import { quasar } from '@/app/quasar'
 import td from 'testdouble'
 
 //

@@ -7,13 +7,13 @@ const publicPath = process.env.VUE_APP_BASE_URL ?? ''
 const pages = {
   index: {
     // entry for the page
-    entry: 'src/index.ts',
+    entry: 'src/app/index.ts',
     // the source template
-    template: 'src/index.html',
+    template: 'src/app/index.html',
     // output as dist/index.html
     filename: 'index.html',
     // template title tag needs to be <title><%= htmlWebpackPlugin.options.title %></title>
-    title: 'vue2-composition-api',
+    title: 'vue-front-lib',
   },
 }
 
@@ -39,7 +39,7 @@ module.exports = {
   filenameHashing: false,
 
   pwa: {
-    name: 'vue2-composition-api',
+    name: 'vue-front-lib',
     iconPaths: {
       favicon32: 'img/icons/favicon-32x32.png',
       favicon16: 'img/icons/favicon-16x16.png',

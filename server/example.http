@@ -3,7 +3,7 @@ Content-Type: application/json
 
 {
   "app": {
-    "name": "vue2-composition-api",
+    "name": "vue-front-lib",
     "version": "0.0.1"
   },
   "products": [
