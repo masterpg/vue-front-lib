@@ -6,6 +6,15 @@ import { Entity } from '@/app/logic'
 //
 //========================================================================
 
+function generateFirestoreId(): string {
+  const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let autoId = ''
+  for (let i = 0; i < 20; i++) {
+    autoId += CHARS.charAt(Math.floor(Math.random() * CHARS.length))
+  }
+  return autoId
+}
+
 /**
  * 指定されたアイテムがコピーであることを検証します。
  * @param actual
@@ -29,4 +38,5 @@ function expectNotToBeCopyEntity<T extends Entity>(actual: T | T[], expected: T 
 //
 //========================================================================
 
-export { expectNotToBeCopyEntity }
+export { generateFirestoreId, expectNotToBeCopyEntity }
+export * from './api'

@@ -1,6 +1,7 @@
-import { CartItem, StoreUtil } from '@/app/logic'
+import { CartItem } from '@/demo/logic'
 import dayjs from 'dayjs'
-import { provideDependency } from '../../../../../helpers/app'
+import { generateFirestoreId } from '../../../../../helpers/app'
+import { provideDependency } from '../../../../../helpers/demo'
 
 //========================================================================
 //
@@ -174,8 +175,8 @@ describe('CartStore', () => {
         store.cart.setAll(CART_ITEMS)
       })
 
-      const cartItemX = StoreUtil.cloneCartItem(CART_ITEM_1)
-      cartItemX.id = StoreUtil.generateId()
+      const cartItemX = CartItem.clone(CART_ITEM_1)
+      cartItemX.id = generateFirestoreId()
       cartItemX.uid = 'userX'
       cartItemX.productId = 'productX'
       cartItemX.title = 'Product X'
@@ -196,8 +197,8 @@ describe('CartStore', () => {
         store.cart.setAll(CART_ITEMS)
       })
 
-      const cartItemX = StoreUtil.cloneCartItem(CART_ITEM_1)
-      cartItemX.id = StoreUtil.generateId()
+      const cartItemX = CartItem.clone(CART_ITEM_1)
+      cartItemX.id = generateFirestoreId()
       cartItemX.uid = 'userX'
       cartItemX.productId = 'productX'
       cartItemX.title = 'Product X'
@@ -241,7 +242,7 @@ describe('CartStore', () => {
         store.cart.setAll(CART_ITEMS)
       })
 
-      const cartItem1 = StoreUtil.cloneCartItem(CART_ITEM_1)
+      const cartItem1 = CartItem.clone(CART_ITEM_1)
       cartItem1.title = 'aaa'
 
       // テスト対象実行
@@ -259,7 +260,7 @@ describe('CartStore', () => {
         store.cart.setAll(CART_ITEMS)
       })
 
-      const cartItem1 = StoreUtil.cloneCartItem(CART_ITEM_1)
+      const cartItem1 = CartItem.clone(CART_ITEM_1)
 
       // テスト対象実行
       const actual = store.cart.set({

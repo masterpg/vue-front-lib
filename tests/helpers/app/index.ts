@@ -3,7 +3,7 @@ import { Config, ConfigKey, injectConfig, provideConfig } from '@/app/config'
 import { InternalLogic, InternalLogicKey, injectInternalLogic } from '@/app/logic/modules/internal'
 import { LogicContainer, LogicKey, injectLogic, provideLogic } from '@/app/logic'
 import { StoreContainer, StoreKey, injectStore } from '@/app/logic/store'
-import { TestAPIContainer, createTestAPI } from './logic/api'
+import { TestAPIContainer, createTestAPI } from './logic'
 import { provide } from '@vue/composition-api'
 import { shallowMount } from '@vue/test-utils'
 
@@ -40,7 +40,7 @@ let provided: ProvidedDependency | null
  *   モック設定を行ってください。引数の依存オブジェクトではなくモックオブジェクトをアプリケーション
  *   に登録したい場合、戻り値としてモックオブジェクトを返すようにしてください。
  */
-function provideDependency(setup?: (provided: ProvidedDependency) => Partial<ProvidedDependency> | void): ProvidedDependency {
+function provideDependency(setup?: SetupFunc): ProvidedDependency {
   const wrapper = shallowMount<ProvidedDependency & Vue>({
     template: '<div></div>',
     setup() {
@@ -70,7 +70,7 @@ function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
 
     provided = {
       config: injectConfig(),
-      api: injectAPI() as TestAPIContainer,
+      api: injectAPI() as ReturnType<typeof createTestAPI>,
       store: injectStore(),
       internal: injectInternalLogic(),
       logic: injectLogic(),
@@ -121,3 +121,5 @@ function clearProvidedDependency(): void {
 //========================================================================
 
 export { provideDependency, provideDependencyToVue, clearProvidedDependency, ProvidedDependency }
+export * from './logic'
+export * from './data'

@@ -1,6 +1,7 @@
-import { Product, StoreUtil } from '@/app/logic'
+import { Product } from '@/demo/logic'
 import dayjs from 'dayjs'
-import { provideDependency } from '../../../../../helpers/app'
+import { generateFirestoreId } from '../../../../../helpers/app'
+import { provideDependency } from '../../../../../helpers/demo'
 
 //========================================================================
 //
@@ -94,8 +95,8 @@ describe('ProductStore', () => {
         store.product.setAll(PRODUCTS)
       })
 
-      const productX = StoreUtil.cloneProduct(PRODUCT_1)
-      productX.id = StoreUtil.generateId()
+      const productX = Product.clone(PRODUCT_1)
+      productX.id = generateFirestoreId()
       productX.title = 'Product X'
       productX.price = 999
       productX.stock = 888
@@ -114,8 +115,8 @@ describe('ProductStore', () => {
         store.product.setAll(PRODUCTS)
       })
 
-      const productX = StoreUtil.cloneProduct(PRODUCTS[0])
-      productX.id = StoreUtil.generateId()
+      const productX = Product.clone(PRODUCTS[0])
+      productX.id = generateFirestoreId()
       productX.title = 'Product X'
       productX.price = 999
       productX.stock = 888
@@ -157,7 +158,7 @@ describe('ProductStore', () => {
         store.product.setAll(PRODUCTS)
       })
 
-      const product1 = StoreUtil.cloneProduct(PRODUCTS[0])
+      const product1 = Product.clone(PRODUCTS[0])
       product1.title = 'aaa'
 
       // テスト対象実行
@@ -175,7 +176,7 @@ describe('ProductStore', () => {
         store.product.setAll(PRODUCTS)
       })
 
-      const product1 = StoreUtil.cloneProduct(PRODUCT_1)
+      const product1 = Product.clone(PRODUCT_1)
 
       // テスト対象実行
       const actual = store.product.set({

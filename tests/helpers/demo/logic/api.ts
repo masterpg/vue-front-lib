@@ -1,4 +1,6 @@
-import { APIContainer, APIContainerImpl, createAPI } from '@/app/logic/api'
+import { DemoAPIContainerImpl, injectAPI, provideAPI } from '@/demo/logic/api'
+import { TestAPIContainer, setupTestAPI } from '../../app'
+import { injectConfig } from '@/app/config'
 
 //========================================================================
 //
@@ -6,9 +8,7 @@ import { APIContainer, APIContainerImpl, createAPI } from '@/app/logic/api'
 //
 //========================================================================
 
-interface TestAPIContainer extends APIContainer {
-  putTestData(testData: any): Promise<void>
-}
+interface DemoTestAPIContainer extends DemoAPIContainerImpl, TestAPIContainer {}
 
 //========================================================================
 //
@@ -16,17 +16,11 @@ interface TestAPIContainer extends APIContainer {
 //
 //========================================================================
 
-function createTestAPI(): TestAPIContainer {
-  const api = createAPI() as APIContainerImpl
-
-  const putTestData: TestAPIContainer['putTestData'] = async testData => {
-    await api.client.put('testData', testData)
-  }
-
-  return {
-    ...api,
-    putTestData,
-  }
+function createTestAPI(): DemoTestAPIContainer {
+  provideAPI()
+  const config = injectConfig()
+  const api = injectAPI() as DemoAPIContainerImpl
+  return setupTestAPI({ config, api })
 }
 
 //========================================================================
@@ -35,4 +29,4 @@ function createTestAPI(): TestAPIContainer {
 //
 //========================================================================
 
-export { TestAPIContainer, createTestAPI }
+export { DemoTestAPIContainer, createTestAPI }

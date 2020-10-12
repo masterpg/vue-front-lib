@@ -119,7 +119,7 @@ export default defineComponent({
     //----------------------------------------------------------------------
 
     function signInMenuItemOnClick() {
-      logic.auth.signIn()
+      // logic.auth.signIn()
     }
 
     function signOutMenuItemOnClick() {

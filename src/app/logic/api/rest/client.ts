@@ -1,5 +1,6 @@
 import { InjectionKey, inject, provide } from '@vue/composition-api'
 import axios, { Method, ResponseType } from 'axios'
+import { getIdToken } from '@/app/logic/api/base'
 import { injectConfig } from '@/app/config'
 
 //========================================================================
@@ -8,15 +9,15 @@ import { injectConfig } from '@/app/config'
 //
 //========================================================================
 
-interface APIClient {
-  request<T = any>(config: APIRequestInternalConfig): APIPromise<T>
-  get<T = any>(path: string, config?: APIRequestConfig): APIPromise<T>
-  post<T = any>(path: string, data?: any, config?: APIRequestConfig): APIPromise<T>
-  put<T = any>(path: string, data?: any, config?: APIRequestConfig): APIPromise<T>
-  delete<T = any>(path: string, config?: APIRequestConfig): APIPromise<T>
+interface RESTAPIClient {
+  request<T = any>(config: RESTAPIRequestInternalConfig): RESTAPIPromise<T>
+  get<T = any>(path: string, config?: RESTAPIRequestConfig): RESTAPIPromise<T>
+  post<T = any>(path: string, data?: any, config?: RESTAPIRequestConfig): RESTAPIPromise<T>
+  put<T = any>(path: string, data?: any, config?: RESTAPIRequestConfig): RESTAPIPromise<T>
+  delete<T = any>(path: string, config?: RESTAPIRequestConfig): RESTAPIPromise<T>
 }
 
-interface APIRequestConfig {
+interface RESTAPIRequestConfig {
   headers?: any
   params?: any
   paramsSerializer?: (params: any) => string
@@ -24,25 +25,25 @@ interface APIRequestConfig {
   isAuth?: boolean
 }
 
-interface APIResponse<T = any> {
+interface RESTAPIResponse<T = any> {
   data: T
   status: number
   statusText: string
   headers: any
-  config: APIRequestConfig
+  config: RESTAPIRequestConfig
   request?: any
 }
 
-interface APIError extends Error {
-  config: APIRequestConfig
+interface RESTAPIError extends Error {
+  config: RESTAPIRequestConfig
   code?: string
   request?: any
-  response?: APIResponse
+  response?: RESTAPIResponse
 }
 
-type APIPromise<T = any> = Promise<APIResponse<T>>
+type RESTAPIPromise<T = any> = Promise<RESTAPIResponse<T>>
 
-interface APIRequestInternalConfig extends APIRequestConfig {
+interface RESTAPIRequestInternalConfig extends RESTAPIRequestConfig {
   url: string
   method: Method
   data?: any
@@ -54,9 +55,9 @@ interface APIRequestInternalConfig extends APIRequestConfig {
 //
 //========================================================================
 
-const APIClientKey: InjectionKey<APIClient> = Symbol('APIClient')
+const RESTAPIClientKey: InjectionKey<RESTAPIClient> = Symbol('RESTAPIClient')
 
-function createAPIClient(): APIClient {
+function createRESTAPIClient(): RESTAPIClient {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -71,7 +72,7 @@ function createAPIClient(): APIClient {
   //
   //----------------------------------------------------------------------
 
-  const request: APIClient['request'] = async config => {
+  const request: RESTAPIClient['request'] = async config => {
     const axiosConfig = {
       ...config,
       baseURL: getRequestURL(),
@@ -89,7 +90,7 @@ function createAPIClient(): APIClient {
     return axios.request(axiosConfig)
   }
 
-  const get: APIClient['get'] = (path, config) => {
+  const get: RESTAPIClient['get'] = (path, config) => {
     return request({
       ...(config || {}),
       url: path,
@@ -97,7 +98,7 @@ function createAPIClient(): APIClient {
     })
   }
 
-  const post: APIClient['post'] = (path, data, config) => {
+  const post: RESTAPIClient['post'] = (path, data, config) => {
     return request({
       ...(config || {}),
       url: path,
@@ -106,7 +107,7 @@ function createAPIClient(): APIClient {
     })
   }
 
-  const put: APIClient['put'] = (path, data, config) => {
+  const put: RESTAPIClient['put'] = (path, data, config) => {
     return request({
       ...(config || {}),
       url: path,
@@ -115,7 +116,7 @@ function createAPIClient(): APIClient {
     })
   }
 
-  const del: APIClient['delete'] = (path, config) => {
+  const del: RESTAPIClient['delete'] = (path, config) => {
     return request({
       ...(config || {}),
       url: path,
@@ -130,20 +131,7 @@ function createAPIClient(): APIClient {
   //----------------------------------------------------------------------
 
   function getRequestURL(): string {
-    return `${config.api.baseURL}`
-  }
-
-  // TODO
-  //  この関数の戻り値はHTTPヘッダーの"Authorization: Bearer …"の｢…｣で使用されます。
-  //  ただし以下のコードで生成する値は非常に擬似的なもので、"Authorization"の仕様に適合
-  //  するものではありません。実装のアプリケーションではこの関数が必要かどうかを含め
-  //  認証ロジックを実装してください。
-  async function getIdToken(): Promise<string> {
-    const idToken = localStorage.getItem('idToken')
-    if (!idToken) {
-      throw new Error(`The 'idToken' could not be obtained. You may not have signed in.`)
-    }
-    return idToken
+    return `${config.api.baseURL}/rest`
   }
 
   //----------------------------------------------------------------------
@@ -161,24 +149,24 @@ function createAPIClient(): APIClient {
   }
 }
 
-function provideAPIClient(client?: APIClient | typeof createAPIClient): void {
-  let instance: APIClient
+function provideRESTAPIClient(client?: RESTAPIClient | typeof createRESTAPIClient): void {
+  let instance: RESTAPIClient
   if (!client) {
-    instance = createAPIClient()
+    instance = createRESTAPIClient()
   } else {
     instance = typeof client === 'function' ? client() : client
   }
-  provide(APIClientKey, instance)
+  provide(RESTAPIClientKey, instance)
 }
 
-function injectAPIClient(): APIClient {
-  validateAPIClientProvided()
-  return inject(APIClientKey)!
+function injectRESTAPIClient(): RESTAPIClient {
+  validateRESTAPIClientProvided()
+  return inject(RESTAPIClientKey)!
 }
 
-function validateAPIClientProvided(): void {
-  if (!inject(APIClientKey)) {
-    throw new Error(`${APIClientKey.description} is not provided`)
+function validateRESTAPIClientProvided(): void {
+  if (!inject(RESTAPIClientKey)) {
+    throw new Error(`${RESTAPIClientKey.description} is not provided`)
   }
 }
 
@@ -189,13 +177,13 @@ function validateAPIClientProvided(): void {
 //========================================================================
 
 export {
-  APIClient,
-  APIError,
-  APIPromise,
-  APIRequestConfig,
-  APIResponse,
-  createAPIClient,
-  injectAPIClient,
-  provideAPIClient,
-  validateAPIClientProvided,
+  RESTAPIClient,
+  RESTAPIError,
+  RESTAPIPromise,
+  RESTAPIRequestConfig,
+  RESTAPIResponse,
+  createRESTAPIClient,
+  injectRESTAPIClient,
+  provideRESTAPIClient,
+  validateRESTAPIClientProvided,
 }

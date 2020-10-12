@@ -1,6 +1,6 @@
-import { StatePartial, StoreUtil } from '@/app/logic/store/base'
 import { DeepReadonly } from 'web-base-lib'
-import { Product } from '@/app/logic/types'
+import { Product } from '@/demo/logic/base'
+import { StatePartial } from '@/app/logic/store/base'
 import { reactive } from '@vue/composition-api'
 
 //========================================================================
@@ -71,7 +71,7 @@ function createProductStore(): ProductStore {
   const setAll: ProductStore['setAll'] = products => {
     state.all.splice(0)
     for (const product of products) {
-      state.all.push(StoreUtil.cloneProduct(product))
+      state.all.push(Product.clone(product))
     }
   }
 
@@ -80,7 +80,7 @@ function createProductStore(): ProductStore {
       throw new Error(`The specified Product already exists: '${product.id}'`)
     }
 
-    const stateItem = StoreUtil.cloneProduct(product)
+    const stateItem = Product.clone(product)
     state.all.push(stateItem)
     return stateItem
   }
@@ -91,7 +91,7 @@ function createProductStore(): ProductStore {
       return
     }
 
-    return StoreUtil.populateProduct(product, stateItem)
+    return Product.populate(product, stateItem)
   }
 
   const decrementStock: ProductStore['decrementStock'] = productId => {

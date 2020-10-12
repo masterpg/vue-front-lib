@@ -17,7 +17,7 @@
 <template>
   <div class="GreetMessage layout horizontal center">
     <div v-show="state.isSignIn" class="message layout vertical">
-      <div>{{ t('abc.hello', { name: state.user.displayName }) }}</div>
+      <div>{{ t('abc.hello', { name: state.user.publicProfile.displayName }) }}</div>
       <div>{{ t('abc.today', { date: d(new Date(), 'dateSec') }) }}</div>
     </div>
     <div class="flex-1" />
@@ -82,7 +82,7 @@ namespace GreetMessage {
       const greet: GreetMessage['greet'] = () => {
         logic.auth.validateSignedIn()
 
-        const message = `Hi ${state.user.displayName}, ${props.message}.`
+        const message = `Hi ${state.user.publicProfile.displayName}, ${props.message}.`
         state.times++
         return message
       }
@@ -97,7 +97,7 @@ namespace GreetMessage {
         if (state.isSignIn) {
           await logic.auth.signOut()
         } else {
-          await logic.auth.signIn()
+          // await logic.auth.signIn()
         }
       }
 

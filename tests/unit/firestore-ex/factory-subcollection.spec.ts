@@ -1,3 +1,4 @@
+window.firebase = require('@firebase/testing')
 import { Collection, DecodeFunc, EncodeFunc, EncodedObject, Entity, FirestoreEx, Timestamp } from '@/firestore-ex'
 import dayjs, { Dayjs } from 'dayjs'
 import { WebFirestoreTestUtil } from './util'

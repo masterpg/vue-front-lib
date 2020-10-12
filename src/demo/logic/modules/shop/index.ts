@@ -1,9 +1,9 @@
-import { CartItem, Product } from '@/app/logic/types'
+import { CartItem, Product } from '@/demo/logic/base'
 import { ComputedRef, watch } from '@vue/composition-api'
 import { DeepReadonly } from 'web-base-lib'
-import { injectAPI } from '@/app/logic/api'
+import { injectAPI } from '@/demo/logic/api'
 import { injectInternalLogic } from '@/app/logic/modules/internal'
-import { injectStore } from '@/app/logic/store'
+import { injectStore } from '@/demo/logic/store'
 
 //========================================================================
 //

@@ -1,7 +1,7 @@
 import { ComputedRef, computed, reactive } from '@vue/composition-api'
-import { StatePartial, StoreUtil } from '@/app/logic/store/base'
-import { CartItem } from '@/app/logic/types'
+import { CartItem } from '@/demo/logic/base'
 import { DeepReadonly } from 'web-base-lib'
+import { StatePartial } from '@/app/logic/store/base'
 
 //========================================================================
 //
@@ -102,7 +102,7 @@ function createCartStore(): CartStore {
   const setAll: CartStore['setAll'] = items => {
     state.all.splice(0)
     for (const item of items) {
-      state.all.push(StoreUtil.cloneCartItem(item))
+      state.all.push(CartItem.clone(item))
     }
   }
 
@@ -111,7 +111,7 @@ function createCartStore(): CartStore {
       throw new Error(`The specified CartItem already exists: '${item.id}'`)
     }
 
-    const stateItem = StoreUtil.cloneCartItem(item)
+    const stateItem = CartItem.clone(item)
     state.all.push(stateItem)
     return stateItem
   }
@@ -122,7 +122,7 @@ function createCartStore(): CartStore {
       return
     }
 
-    return StoreUtil.populateCartItem(item, stateItem)
+    return CartItem.populate(item, stateItem)
   }
 
   const remove: CartStore['remove'] = cartItemId => {

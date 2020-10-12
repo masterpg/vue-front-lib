@@ -2,6 +2,7 @@ import { DeepPartial, removeEndSlash } from 'web-base-lib'
 import { InjectionKey, inject, provide, reactive } from '@vue/composition-api'
 import URI from 'urijs'
 import merge from 'lodash/merge'
+const firebaseConfig = require('../../../firebase.config')
 
 //========================================================================
 //
@@ -10,7 +11,19 @@ import merge from 'lodash/merge'
 //========================================================================
 
 interface Config {
+  firebase: FirebaseConfig
   api: APIConfig
+  storage: StorageConfig
+}
+
+interface FirebaseConfig {
+  apiKey: string
+  authDomain: string
+  databaseURL?: string
+  projectId?: string
+  storageBucket?: string
+  messagingSenderId?: string
+  appId: string
 }
 
 interface APIConfig {
@@ -21,8 +34,21 @@ interface APIConfig {
   baseURL: string
 }
 
-interface CreateConfigParam {
+interface StorageConfig {
+  user: {
+    rootName: string
+  }
+  article: {
+    rootName: string
+    fileName: string
+    assetsName: string
+  }
+}
+
+interface CreateConfigParams {
+  firebase?: DeepPartial<FirebaseConfig>
   api?: DeepPartial<Omit<APIConfig, 'baseURL'>>
+  storage?: DeepPartial<StorageConfig>
 }
 
 //========================================================================
@@ -31,7 +57,7 @@ interface CreateConfigParam {
 //
 //========================================================================
 
-const ConfigKey: InjectionKey<Config> = Symbol('Config')
+let initializedFirebase = false
 
 function getAPIConfig(apiConfig: Omit<APIConfig, 'baseURL'>): APIConfig {
   const baseURL = new URI()
@@ -50,7 +76,7 @@ function getAPIConfig(apiConfig: Omit<APIConfig, 'baseURL'>): APIConfig {
   }
 }
 
-function createConfig(param: CreateConfigParam = {}): Config {
+function createConfig(params: CreateConfigParams = {}): Config {
   //----------------------------------------------------------------------
   //
   //  Variables
@@ -58,6 +84,8 @@ function createConfig(param: CreateConfigParam = {}): Config {
   //----------------------------------------------------------------------
 
   const state = reactive({
+    firebase: merge(firebaseConfig, params.firebase),
+
     api: getAPIConfig(
       merge(
         {
@@ -66,10 +94,29 @@ function createConfig(param: CreateConfigParam = {}): Config {
           port: Number(process.env.VUE_APP_API_PORT),
           basePath: String(process.env.VUE_APP_API_BASE_PATH),
         },
-        param.api
+        params.api
       )
     ),
+
+    storage: merge(
+      {
+        user: {
+          rootName: 'users',
+        },
+        article: {
+          rootName: 'articles',
+          fileName: 'index.md',
+          assetsName: 'assets',
+        },
+      },
+      params.storage
+    ),
   })
+
+  if (!initializedFirebase) {
+    firebase.initializeApp(state.firebase)
+    initializedFirebase = true
+  }
 
   //----------------------------------------------------------------------
   //
@@ -78,12 +125,16 @@ function createConfig(param: CreateConfigParam = {}): Config {
   //----------------------------------------------------------------------
 
   return {
+    firebase: state.firebase,
     api: state.api,
+    storage: state.storage,
   }
 }
 
-function provideConfig(param: CreateConfigParam = {}): void {
-  provide(ConfigKey, createConfig(param))
+const ConfigKey: InjectionKey<Config> = Symbol('Config')
+
+function provideConfig(params: CreateConfigParams = {}): void {
+  provide(ConfigKey, createConfig(params))
 }
 
 function injectConfig(): Config {
@@ -104,4 +155,4 @@ function validateConfigProvided(): void {
 //
 //========================================================================
 
-export { Config, ConfigKey, APIConfig, provideConfig, injectConfig, validateConfigProvided }
+export { APIConfig, Config, ConfigKey, FirebaseConfig, StorageConfig, injectConfig, provideConfig, validateConfigProvided }

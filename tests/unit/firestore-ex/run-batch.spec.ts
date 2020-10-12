@@ -1,3 +1,4 @@
+window.firebase = require('@firebase/testing')
 import { Entity, FirestoreEx } from '@/firestore-ex'
 import { WebFirestoreTestUtil } from './util'
 

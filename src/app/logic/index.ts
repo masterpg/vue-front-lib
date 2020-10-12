@@ -2,7 +2,6 @@ import { APIContainer, createAPI, provideAPI } from '@/app/logic/api'
 import { AuthLogic, createAuthLogic } from '@/app/logic/modules/auth'
 import { InjectionKey, inject, provide } from '@vue/composition-api'
 import { InternalLogic, createInternalLogic, provideInternalLogic } from '@/app/logic/modules/internal'
-import { ShopLogic, createShopLogic } from '@/app/logic/modules/shop'
 import { StoreContainer, createStore, provideStore } from '@/app/logic/store'
 
 //========================================================================
@@ -13,7 +12,6 @@ import { StoreContainer, createStore, provideStore } from '@/app/logic/store'
 
 interface LogicContainer {
   readonly auth: AuthLogic
-  readonly shop: ShopLogic
 }
 
 //========================================================================
@@ -27,7 +25,6 @@ const LogicKey: InjectionKey<LogicContainer> = Symbol('Logic')
 function createLogic(): LogicContainer {
   return {
     auth: createAuthLogic(),
-    shop: createShopLogic(),
   }
 }
 
@@ -37,7 +34,7 @@ function provideLogic(options?: {
   internal?: InternalLogic | typeof createInternalLogic
   logic?: LogicContainer | typeof createLogic
 }): void {
-  provideAPI({ api: options?.api })
+  provideAPI(options?.api)
   provideStore(options?.store)
   provideInternalLogic(options?.internal)
 
@@ -67,6 +64,5 @@ function validateLogicProvided(): void {
 //
 //========================================================================
 
-export * from '@/app/logic/types'
-export { StoreUtil } from '@/app/logic/store'
-export { LogicContainer, LogicKey, provideLogic, injectLogic, validateLogicProvided }
+export { LogicContainer, LogicKey, createLogic, injectLogic, provideLogic, validateLogicProvided }
+export * from '@/app/logic/base'

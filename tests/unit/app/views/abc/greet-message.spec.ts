@@ -1,9 +1,9 @@
-import { LogicContainer, User } from '@/app/logic'
+import { LogicContainer, PublicProfile } from '@/app/logic'
 import VGreetMessage, { GreetMessage } from '@/app/views/abc/greet-message.vue'
-import { mount, shallowMount } from '@vue/test-utils'
 import { AuthLogic } from '@/app/logic/modules/auth'
 import { computed } from '@vue/composition-api'
 import { provideDependencyToVue } from '../../../../helpers/app'
+import { shallowMount } from '@vue/test-utils'
 
 describe('GreetMessage', () => {
   it('template', () => {
@@ -19,9 +19,7 @@ describe('GreetMessage', () => {
             'isSignedIn',
             computed(() => true)
           )
-          td.replace<AuthLogic, 'user'>(logic.auth, 'user', {
-            displayName: userName,
-          })
+          td.replace<PublicProfile, 'displayName'>(logic.auth.user.publicProfile, 'displayName', userName)
         })
       },
     })
@@ -40,7 +38,7 @@ describe('GreetMessage', () => {
       setup() {
         const { logic } = provideDependencyToVue(({ logic }) => {
           td.replace<AuthLogic, 'validateSignedIn'>(logic.auth, 'validateSignedIn')
-          td.replace<User, 'displayName'>(logic.auth.user, 'displayName', userName)
+          td.replace<PublicProfile, 'displayName'>(logic.auth.user.publicProfile, 'displayName', userName)
         })
         return { logic }
       },

@@ -1,10 +1,12 @@
+import * as firebase from 'firebase'
+import { TextEncoder } from 'util'
 import Vue from 'vue'
 import VueCompositionApi from '@vue/composition-api'
-import { clearProvidedDependency } from './helpers/app'
+import { clearProvidedDependency as clearProvidedDependency_app } from './helpers/app'
+import { clearProvidedDependency as clearProvidedDependency_demo } from './helpers/demo'
 import { createI18n } from '@/app/i18n'
 import { quasar } from '@/app/quasar'
 import td from 'testdouble'
-import * as firebase from '@firebase/testing'
 
 //
 // Jestの設定
@@ -33,12 +35,20 @@ quasar.setup()
 //
 window.firebase = firebase
 
+//
+// その他の設定
+//
+// ファイルアップロードで必要となる
+// https://github.com/facebook/jest/issues/9983#issuecomment-696427273
+window.TextEncoder = TextEncoder
+
 beforeEach(async () => {
   const i18n = createI18n()
   await i18n.load()
 })
 
 afterEach(function() {
-  clearProvidedDependency()
+  clearProvidedDependency_app()
+  clearProvidedDependency_demo()
   td.reset()
 })

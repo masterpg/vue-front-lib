@@ -1,6 +1,5 @@
-import { DeepReadonly } from 'web-base-lib'
-import { StoreUtil } from '@/app/logic/store/base'
-import { User } from '@/app/logic/types'
+import { DeepPartial, DeepReadonly } from 'web-base-lib'
+import { UserClaims, UserInfo } from '@/app/logic/base'
 import dayjs from 'dayjs'
 import { reactive } from '@vue/composition-api'
 
@@ -11,9 +10,10 @@ import { reactive } from '@vue/composition-api'
 //========================================================================
 
 interface UserStore {
-  value: DeepReadonly<User>
-  set(user: User): DeepReadonly<User>
+  value: DeepReadonly<UserInfo>
+  set(user: DeepPartial<UserInfo>): DeepReadonly<UserInfo>
   clear(): void
+  reflectCustomToken(): Promise<void>
 }
 
 //========================================================================
@@ -22,13 +22,21 @@ interface UserStore {
 //
 //========================================================================
 
-function createEmptyState(): User {
+function createEmptyState(): UserInfo {
   return {
     id: '',
     email: '',
-    displayName: '',
+    emailVerified: false,
+    isAppAdmin: false,
     createdAt: dayjs(0),
     updatedAt: dayjs(0),
+    publicProfile: {
+      id: '',
+      displayName: '',
+      photoURL: '',
+      createdAt: dayjs(0),
+      updatedAt: dayjs(0),
+    },
   }
 }
 
@@ -50,11 +58,17 @@ function createUserStore(): UserStore {
   //----------------------------------------------------------------------
 
   const set: UserStore['set'] = user => {
-    return StoreUtil.populateUser(user, state.value)
+    return UserInfo.populate(user, state.value)
   }
 
   const clear: UserStore['clear'] = () => {
     set(createEmptyState())
+  }
+
+  const reflectCustomToken: UserStore['reflectCustomToken'] = async () => {
+    const idToken = await firebase.auth().currentUser!.getIdTokenResult()
+    const { isAppAdmin } = idToken.claims as UserClaims
+    set({ isAppAdmin })
   }
 
   //----------------------------------------------------------------------
@@ -67,6 +81,7 @@ function createUserStore(): UserStore {
     value: state.value,
     set,
     clear,
+    reflectCustomToken,
   }
 }
 

@@ -1,6 +1,4 @@
-import { CartStore, createCartStore } from '@/app/logic/store/cart'
 import { InjectionKey, inject, provide } from '@vue/composition-api'
-import { ProductStore, createProductStore } from '@/app/logic/store/product'
 import { UserStore, createUserStore } from '@/app/logic/store/user'
 
 //========================================================================
@@ -11,8 +9,6 @@ import { UserStore, createUserStore } from '@/app/logic/store/user'
 
 interface StoreContainer {
   readonly user: UserStore
-  readonly product: ProductStore
-  readonly cart: CartStore
 }
 
 //========================================================================
@@ -26,8 +22,6 @@ const StoreKey: InjectionKey<StoreContainer> = Symbol('Store')
 function createStore(): StoreContainer {
   return {
     user: createUserStore(),
-    product: createProductStore(),
-    cart: createCartStore(),
   }
 }
 
@@ -59,5 +53,4 @@ function validateStoreProvided(): void {
 //
 //========================================================================
 
-export { StoreUtil } from '@/app/logic/store/base'
 export { StoreContainer, StoreKey, createStore, provideStore, injectStore, validateStoreProvided }

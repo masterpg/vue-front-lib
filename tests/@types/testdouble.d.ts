@@ -1,14 +1,17 @@
 import 'testdouble'
+import * as _firebase from 'firebase'
+import * as _firebaseTesting from '@firebase/testing'
 import { DeepPartial } from 'web-base-lib'
-import td from 'testdouble'
-import * as firebase from '@firebase/testing'
+import { TextEncoder as _TextEncoder } from 'util'
+import _td from 'testdouble'
 
 declare global {
-  const td: typeof td
+  const td: typeof _td
 
   interface Window {
-    td: typeof td
-    firebase: typeof firebase
+    td: typeof _td
+    firebase: _firebase | _firebaseTesting
+    TextEncoder: typeof _TextEncoder
   }
 }
 

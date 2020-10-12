@@ -100,7 +100,7 @@
 </template>
 
 <script lang="ts">
-import { CartItem, Product, injectLogic } from '@/app/logic'
+import { CartItem, Product, injectLogic } from '@/demo/logic'
 import { computed, defineComponent, onMounted, reactive } from '@vue/composition-api'
 import { Loading } from 'quasar'
 import { useI18n } from '@/app/i18n'

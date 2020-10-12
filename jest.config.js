@@ -1,8 +1,8 @@
 module.exports = {
   preset: '@vue/cli-plugin-unit-jest/presets/typescript-and-babel',
   testMatch: ['<rootDir>/tests/unit/**/*.spec.(js|jsx|ts|tsx)|<rootDir>/__tests__/*.(js|jsx|ts|tsx)'],
-  testEnvironment: '<rootDir>/tests/environment.ts',
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  // testURL: 'http://localhost:5000',
 
   // 次の設定はJestがQuasarをパースするよう指定している。(react-*の部分はサンプル)
   // Jestはデフォルトでnode_modulesをパースしないためQuasarもパースされず、JestはQuasarを解析できない。
