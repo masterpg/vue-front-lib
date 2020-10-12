@@ -73,11 +73,11 @@
 
 <script lang="ts">
 import { computed, defineComponent, onMounted, reactive, ref, watch, watchEffect } from '@vue/composition-api'
-import { CustomCheckbox } from '@/app/views/abc/custom-checkbox.vue'
-import { CustomInput } from '@/app/views/abc/custom-input.vue'
-import { GreetMessage } from '@/app/views/abc/greet-message.vue'
+import { CustomCheckbox } from '@/demo/views/abc/custom-checkbox.vue'
+import { CustomInput } from '@/demo/views/abc/custom-input.vue'
+import { GreetMessage } from '@/demo/views/abc/greet-message.vue'
 import { injectLogic } from '@/app/logic'
-import { useI18n } from '@/app/i18n'
+import { useI18n } from '@/demo/i18n'
 
 interface Props {
   propA: string

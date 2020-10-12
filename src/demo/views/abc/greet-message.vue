@@ -28,7 +28,7 @@
 <script lang="ts">
 import { computed, defineComponent, reactive } from '@vue/composition-api'
 import { injectLogic } from '@/app/logic'
-import { useI18n } from '@/app/i18n'
+import { useI18n } from '@/demo/i18n'
 
 interface Props {
   message: string

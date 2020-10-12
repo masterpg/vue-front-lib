@@ -71,8 +71,6 @@ const SUPPORT_LOCALES = [new LocaleData('ja-JP'), new LocaleData('en-US')]
 //
 //========================================================================
 
-let appI18n: AppI18n
-
 class AppI18nImpl extends VueI18n implements AppI18n {
   //----------------------------------------------------------------------
   //
@@ -117,7 +115,7 @@ class AppI18nImpl extends VueI18n implements AppI18n {
     // 対応する言語メッセージファイルがロードされていない場合、ロードを行う
     const language = localeData.language
     if (this.m_loadedLanguages.indexOf(language) === -1) {
-      this.setLocaleMessage(language, await this.m_loadLanguageFile(language))
+      this.setLocaleMessage(language, await this.loadLanguageFile(language))
     }
 
     // ロケールデータの設定
@@ -155,6 +153,14 @@ class AppI18nImpl extends VueI18n implements AppI18n {
   //----------------------------------------------------------------------
 
   /**
+   * 指定された言語に対応する言語メッセージファイルをロードします。
+   * @param language ロードする言語('en', 'ja', …)を指定します。
+   */
+  protected async loadLanguageFile(language: string): Promise<VueI18n.LocaleMessageObject> {
+    return (await import(/* webpackChunkName: "lang-[request]" */ `@/app/i18n/lang/${language}`)).default
+  }
+
+  /**
    * デフォルトのロケールを設定します。
    */
   private m_setupDefaultLocale() {
@@ -171,14 +177,6 @@ class AppI18nImpl extends VueI18n implements AppI18n {
     axios.defaults.headers.common['Accept-Language'] = localeData.language
     document.querySelector('html')!.setAttribute('lang', localeData.language)
     this.m_localeData = localeData
-  }
-
-  /**
-   * 指定された言語に対応する言語メッセージファイルをロードします。
-   * @param language ロードする言語('en', 'ja', …)を指定します。
-   */
-  private async m_loadLanguageFile(language: string): Promise<VueI18n.LocaleMessageObject> {
-    return (await import(/* webpackChunkName: "lang-[request]" */ `@/app/i18n/lang/${language}`)).default
   }
 
   /**
@@ -262,37 +260,41 @@ class AppI18nImpl extends VueI18n implements AppI18n {
   }
 }
 
-function createI18n(): AppI18n {
-  appI18n = new AppI18nImpl()
-  return appI18n
-}
+function useI18n(value?: AppI18n): AppI18nFuncs {
+  ;(useI18n as any).i18n = value ?? (useI18n as any).i18n
+  const i18n = (useI18n as any).i18n
 
-function useI18n(): AppI18nFuncs {
-  if (!appI18n) {
+  if (!i18n) {
     throw new Error(`An instance of VueI18n has not been created.`)
   }
 
   const t: AppI18nFuncs['t'] = (key: VueI18n.Path, ...values: any) => {
-    return appI18n.t(key, ...values)
+    return i18n.t(key, ...values)
   }
 
   const tc: AppI18nFuncs['tc'] = (key: VueI18n.Path, choice?: number, ...values: any) => {
-    return appI18n.tc(key, choice, ...values)
+    return i18n.tc(key, choice, ...values)
   }
 
   const te: AppI18nFuncs['te'] = (key: VueI18n.Path, locale?: VueI18n.Locale) => {
-    return appI18n.te(key, locale)
+    return i18n.te(key, locale)
   }
 
   const d: AppI18nFuncs['d'] = (value: number | Date, ...args: any) => {
-    return appI18n.d(value, ...args)
+    return i18n.d(value, ...args)
   }
 
   const n: AppI18nFuncs['n'] = (value: number, ...args: any) => {
-    return appI18n.n(value, ...args)
+    return i18n.n(value, ...args)
   }
 
-  return { i18n: appI18n, t, tc, te, d, n }
+  return { i18n, t, tc, te, d, n }
+}
+
+function createI18n(): AppI18n {
+  const i18n = new AppI18nImpl()
+  useI18n(i18n)
+  return i18n
 }
 
 //========================================================================
@@ -301,4 +303,4 @@ function useI18n(): AppI18nFuncs {
 //
 //========================================================================
 
-export { AppI18n, createI18n, useI18n }
+export { AppI18n, AppI18nImpl, createI18n, useI18n }

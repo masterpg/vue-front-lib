@@ -10,7 +10,7 @@
     "serve": "vue-cli-service serve --mode development",
     "serve:stg": "npm run build:stg && browser-sync 'dist' --port 5030 --no-open",
     "test": "vue-cli-service test:unit",
-    "test:app": "vue-cli-service test:unit /app/",
+    "test:app": "vue-cli-service test:unit /app/ /demo/",
     "test:firestore-ex": "export FIRESTORE_EMULATOR_HOST=localhost:5020 && vue-cli-service test:unit --runInBand /firestore-ex/",
     "lint": "./node_modules/web-base-lib/tools/lint.sh",
     "deploy": "firebase deploy --only hosting,storage",

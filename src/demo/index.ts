@@ -1,11 +1,11 @@
 import '@/app/styles/app.sass'
 
-import DemoPage from '@/demo/index.vue'
+import AppPage from '@/demo/index.vue'
 import Vue from 'vue'
 import VueCompositionApi from '@vue/composition-api'
-import { createI18n } from '@/app/i18n'
+import { createI18n } from '@/demo/i18n'
 import { quasar } from '@/app/quasar'
-import router from '@/app/router'
+import router from '@/demo/router'
 
 // Vueの設定
 Vue.config.productionTip = false
@@ -22,7 +22,7 @@ async function init() {
   new Vue({
     router,
     i18n,
-    render: h => h(DemoPage),
+    render: h => h(AppPage),
   }).$mount('#app')
 }
 init()

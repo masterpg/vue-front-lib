@@ -103,7 +103,7 @@
 import { CartItem, Product, injectLogic } from '@/demo/logic'
 import { computed, defineComponent, onMounted, reactive } from '@vue/composition-api'
 import { Loading } from 'quasar'
-import { useI18n } from '@/app/i18n'
+import { useI18n } from '@/demo/i18n'
 
 namespace ShopPage {
   export const clazz = defineComponent({

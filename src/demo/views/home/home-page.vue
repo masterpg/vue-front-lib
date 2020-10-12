@@ -23,7 +23,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from '@vue/composition-api'
-import { HelloWorld } from '@/app/components/hello-world'
+import { HelloWorld } from '@/demo/components/hello-world'
 
 namespace HomePage {
   export const clazz = defineComponent({

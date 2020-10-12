@@ -1,3 +1,4 @@
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 const path = require('path')
 
 // ベースURLの設定
@@ -16,6 +17,14 @@ const pages = {
     title: 'vue-front-lib',
   },
 }
+Object.assign(pages, {
+  demo: {
+    entry: 'src/demo/index.ts',
+    template: 'src/demo/index.html',
+    filename: 'demo.html',
+    title: 'vue-front-lib demo',
+  },
+})
 
 // Vue CLI Configuration Reference
 // https://cli.vuejs.org/config/
@@ -85,6 +94,23 @@ module.exports = {
       .use('yaml')
         .loader('yaml-loader')
         .end()
+
+    // 必要なリソースファイルのコピー
+    let copyFiles = [
+      { from: 'node_modules/firebase/firebase-*.js' },
+    ]
+    if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
+      copyFiles = [
+        ...copyFiles,
+        // その他必要であれば追記
+        // 例: { from: 'node_modules/aaa/bbb.css', to: 'node_modules/aaa' },
+      ]
+    }
+    config
+      .plugin('copy-prod')
+      // 参照: https://github.com/vuejs/vue-cli/blob/c76d2e691d8ea58b219394ca7799f50d873b8588/packages/%40vue/cli-service/lib/commands/build/resolveAppConfig.js#L7
+      .after('copy')
+      .use(CopyWebpackPlugin, [copyFiles])
   },
 
   devServer: {

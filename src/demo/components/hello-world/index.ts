@@ -1,5 +1,5 @@
-import { HelloWorld as _HelloWorld, setup } from '@/app/components/hello-world/script'
-import HelloWorldTemplate from '@/app/components/hello-world/template.vue'
+import { HelloWorld as _HelloWorld, setup } from '@/demo/components/hello-world/script'
+import HelloWorldTemplate from '@/demo/components/hello-world/template.vue'
 import { defineComponent } from '@vue/composition-api'
 
 type HelloWorld = _HelloWorld

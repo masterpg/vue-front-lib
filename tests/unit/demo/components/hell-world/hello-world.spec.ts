@@ -1,11 +1,11 @@
-import VHelloWorld, { HelloWorld } from '@/app/components/hello-world'
-import { mount, shallowMount } from '@vue/test-utils'
+import VHelloWorld, { HelloWorld } from '@/demo/components/hello-world'
+import { shallowMount } from '@vue/test-utils'
 
 describe('HelloWorld', () => {
   describe('template', () => {
     it('title', () => {
       const title = 'new title'
-      const wrapper = mount(VHelloWorld, {
+      const wrapper = shallowMount(VHelloWorld, {
         propsData: { title },
       })
 
@@ -15,7 +15,7 @@ describe('HelloWorld', () => {
 
   it('hello', () => {
     const title = 'Unit Test'
-    const wrapper = mount<HelloWorld>(VHelloWorld, {
+    const wrapper = shallowMount<HelloWorld>(VHelloWorld, {
       propsData: { title },
     })
     const helloWorld = wrapper.vm

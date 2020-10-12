@@ -9,6 +9,15 @@
     <link rel="icon" type="image/png" sizes="16x16" href="<%= BASE_URL %>img/icons/favicon-16x16.png" />
     <link rel="icon" href="<%= BASE_URL %>favicon.ico" />
     <title><%= htmlWebpackPlugin.options.title %></title>
+
+    <link href="node_modules/firebase/firebase-app.js" rel="preload" as="script">
+    <link href="node_modules/firebase/firebase-auth.js" rel="preload" as="script">
+    <link href="node_modules/firebase/firebase-storage.js" rel="preload" as="script">
+    <link href="node_modules/firebase/firebase-firestore.js" rel="preload" as="script">
+    <script src="node_modules/firebase/firebase-app.js"></script>
+    <script src="node_modules/firebase/firebase-auth.js"></script>
+    <script src="node_modules/firebase/firebase-storage.js"></script>
+    <script src="node_modules/firebase/firebase-firestore.js"></script>
   </head>
   <body>
     <noscript>

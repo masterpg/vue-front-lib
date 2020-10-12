@@ -1,5 +1,5 @@
 import VueRouter, { RouteConfig } from 'vue-router'
-import HomePage from '@/app/views/home'
+import HomePage from '@/demo/views/home'
 import Vue from 'vue'
 
 Vue.use(VueRouter)
@@ -16,17 +16,17 @@ const routes: Array<RouteConfig> = [
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '@/app/views/abc'),
+    component: () => import(/* webpackChunkName: "about" */ '@/demo/views/abc'),
   },
   {
     path: '/shop',
     name: 'Shop',
-    component: () => import(/* webpackChunkName: "about" */ '@/app/views/shop'),
+    component: () => import(/* webpackChunkName: "about" */ '@/demo/views/shop'),
   },
   {
     path: '/tree',
     name: 'TreeView',
-    component: () => import(/* webpackChunkName: "about" */ '@/app/views/tree-view'),
+    component: () => import(/* webpackChunkName: "about" */ '@/demo/views/tree-view'),
   },
   {
     path: '*',

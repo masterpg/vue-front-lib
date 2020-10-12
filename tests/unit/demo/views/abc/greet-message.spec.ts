@@ -1,5 +1,5 @@
 import { LogicContainer, PublicProfile } from '@/app/logic'
-import VGreetMessage, { GreetMessage } from '@/app/views/abc/greet-message.vue'
+import VGreetMessage, { GreetMessage } from '@/demo/views/abc/greet-message.vue'
 import { AuthLogic } from '@/app/logic/modules/auth'
 import { computed } from '@vue/composition-api'
 import { provideDependencyToVue } from '../../../../helpers/app'
@@ -24,7 +24,6 @@ describe('GreetMessage', () => {
       },
     })
 
-    console.log(wrapper.text())
     expect(wrapper.text()).toMatch(`Hi ${userName}!`)
     expect(wrapper.text()).toMatch(/Today is \d\d\/\d\d\/\d\d, \d\d:\d\d:\d\d (?:AM|PM)\./)
   })
