@@ -1,5 +1,5 @@
 import { AuthStatus, UserInfo, UserInfoInput } from '@/app/logic/base'
-import { ComputedRef, computed } from '@vue/composition-api'
+import { ComputedRef, computed, reactive } from '@vue/composition-api'
 import { DeepReadonly } from 'web-base-lib'
 import { Dialog } from 'quasar'
 import { injectAPI } from '@/app/logic/api'
@@ -19,6 +19,8 @@ interface AuthLogic {
   readonly status: ComputedRef<AuthStatus>
 
   readonly isSignedIn: ComputedRef<boolean>
+
+  readonly isSigningIn: ComputedRef<boolean>
 
   checkSingedIn(): Promise<void>
 
@@ -78,11 +80,18 @@ function createAuthLogic(): AuthLogic {
   const api = injectAPI()
   const { t } = useI18n()
 
+  const state = reactive({
+    isSigningIn: false,
+  })
+
   const googleProvider = new firebase.auth.GoogleAuthProvider()
   googleProvider.addScope('https://www.googleapis.com/auth/contacts.readonly')
 
   const facebookProvider = new firebase.auth.FacebookAuthProvider()
   facebookProvider.addScope('user_birthday')
+
+  // サインイン中フラグをオン
+  state.isSigningIn = true
 
   firebase.auth().onAuthStateChanged(firebaseOnAuthStateChanged)
 
@@ -95,6 +104,8 @@ function createAuthLogic(): AuthLogic {
   const status = computed(() => internal.auth.status.value)
 
   const isSignedIn = computed(() => internal.auth.isSignedIn.value)
+
+  const isSigningIn = computed(() => state.isSigningIn)
 
   //----------------------------------------------------------------------
   //
@@ -296,6 +307,10 @@ function createAuthLogic(): AuthLogic {
       }
       // 認証ステータスを設定
       internal.auth.status.value = authData.status
+      // サインインされたなら、サインイン中フラグをオフ
+      if (isSignedIn.value) {
+        state.isSigningIn = false
+      }
     }
     // ローカルに認証ユーザーがない場合
     else {
@@ -303,6 +318,8 @@ function createAuthLogic(): AuthLogic {
       store.user.clear()
       // 認証ステータスをクリア
       internal.auth.status.value = AuthStatus.None
+      // サインイン中フラグをオフ
+      state.isSigningIn = false
     }
   }
 
@@ -330,6 +347,7 @@ function createAuthLogic(): AuthLogic {
     user: store.user.value,
     status,
     isSignedIn,
+    isSigningIn,
     checkSingedIn,
     signInWithGoogle,
     signInWithFacebook,

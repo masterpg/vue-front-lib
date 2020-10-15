@@ -27,6 +27,8 @@
         </q-toolbar-title>
 
         <div class="app-mr-16">Quasar v{{ $q.version }}</div>
+
+        <LoadingSpinner v-if="state.isSigningIn" color="indigo-3" />
         <div v-show="state.isSignedIn" class="app-mr-16">{{ state.user.publicProfile.displayName }}</div>
 
         <q-btn flat round dense color="white" icon="more_vert">
@@ -80,6 +82,7 @@ import { defineComponent, reactive, ref, watch } from '@vue/composition-api'
 import { injectLogic, provideLogic } from '@/demo/logic'
 import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
 import { AuthStatus } from '@/app/logic'
+import { LoadingSpinner } from '@/app/components/loading-spinner'
 import { provideConfig } from '@/app/config'
 import router from '@/demo/router'
 import { useI18n } from '@/demo/i18n'
@@ -87,6 +90,7 @@ import { useI18n } from '@/demo/i18n'
 export default defineComponent({
   components: {
     Dialogs: Dialogs.clazz,
+    LoadingSpinner: LoadingSpinner.clazz,
   },
 
   setup(props, ctx) {
@@ -131,6 +135,8 @@ export default defineComponent({
       ] as { title: string; path: string }[],
 
       isSignedIn: logic.auth.isSignedIn,
+
+      isSigningIn: logic.auth.isSigningIn,
 
       user: logic.auth.user,
     })
