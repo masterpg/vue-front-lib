@@ -2,7 +2,7 @@ import { LogicContainer, PublicProfile } from '@/app/logic'
 import VGreetMessage, { GreetMessage } from '@/demo/views/abc/greet-message.vue'
 import { AuthLogic } from '@/app/logic/modules/auth'
 import { computed } from '@vue/composition-api'
-import { provideDependencyToVue } from '../../../../helpers/app'
+import { provideDependencyToVue } from '../../../../helpers/demo'
 import { shallowMount } from '@vue/test-utils'
 
 describe('GreetMessage', () => {

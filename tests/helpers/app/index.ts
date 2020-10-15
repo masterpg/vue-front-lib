@@ -1,5 +1,6 @@
 import { APIKey, injectAPI } from '@/app/logic/api'
 import { Config, ConfigKey, injectConfig, provideConfig } from '@/app/config'
+import { Dialogs, injectDialogs, provideDialogs } from '@/app/dialogs'
 import { InternalLogic, InternalLogicKey, injectInternalLogic } from '@/app/logic/modules/internal'
 import { LogicContainer, LogicKey, injectLogic, provideLogic } from '@/app/logic'
 import { StoreContainer, StoreKey, injectStore } from '@/app/logic/store'
@@ -19,6 +20,7 @@ interface ProvidedDependency {
   store: StoreContainer
   internal: InternalLogic
   logic: LogicContainer
+  dialogs: Dialogs
 }
 
 type SetupFunc = (provided: ProvidedDependency) => void | Partial<ProvidedDependency>
@@ -48,8 +50,8 @@ function provideDependency(setup?: SetupFunc): ProvidedDependency {
     },
   })
 
-  const { config, api, store, internal, logic } = wrapper.vm
-  return { config, api, store, internal, logic }
+  const { config, api, store, internal, logic, dialogs } = wrapper.vm
+  return { config, api, store, internal, logic, dialogs }
 }
 
 /**
@@ -67,6 +69,7 @@ function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
     provideLogic({
       api: createTestAPI,
     })
+    provideDialogs(td.object())
 
     provided = {
       config: injectConfig(),
@@ -74,6 +77,7 @@ function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
       store: injectStore(),
       internal: injectInternalLogic(),
       logic: injectLogic(),
+      dialogs: injectDialogs(),
     }
   }
 

@@ -1,6 +1,8 @@
 <style lang="sass">
 @import 'src/app/styles/app.variables'
 
+.DemoPage
+
 .header
   background-color: $indigo-5
 
@@ -15,7 +17,7 @@
 </style>
 
 <template>
-  <q-layout id="app" view="lHh Lpr lFf">
+  <q-layout id="app" class="DemoPage" view="lHh Lpr lFf">
     <q-header elevated class="glossy header">
       <q-toolbar>
         <q-btn flat dense round aria-label="Menu" icon="menu" @click="state.leftDrawerOpen = !state.leftDrawerOpen" />
@@ -24,8 +26,8 @@
           Vue2 Composition API
         </q-toolbar-title>
 
-        <div v-show="state.isSignedIn" class="app-mr-16">{{ state.user.displayName }}</div>
         <div class="app-mr-16">Quasar v{{ $q.version }}</div>
+        <div v-show="state.isSignedIn" class="app-mr-16">{{ state.user.publicProfile.displayName }}</div>
 
         <q-btn flat round dense color="white" icon="more_vert">
           <q-menu>
@@ -33,8 +35,17 @@
               <q-item v-show="!state.isSignedIn" v-close-popup clickable>
                 <q-item-section @click="signInMenuItemOnClick">{{ t('common.signIn') }}</q-item-section>
               </q-item>
+              <q-item v-show="!state.isSignedIn" v-close-popup clickable>
+                <q-item-section @click="signUpMenuItemOnClick">{{ t('common.signUp') }}</q-item-section>
+              </q-item>
               <q-item v-show="state.isSignedIn" v-close-popup clickable>
                 <q-item-section @click="signOutMenuItemOnClick">{{ t('common.signOut') }}</q-item-section>
+              </q-item>
+              <q-item v-show="state.isSignedIn" v-close-popup clickable>
+                <q-item-section @click="emailChangeMenuItemOnClick">{{ t('auth.changeEmail') }}</q-item-section>
+              </q-item>
+              <q-item v-show="state.isSignedIn" v-close-popup clickable>
+                <q-item-section @click="userDeleteMenuItemOnClick">{{ t('auth.deleteUser') }}</q-item-section>
               </q-item>
             </q-list>
           </q-menu>
@@ -57,21 +68,28 @@
     <q-page-container class="page">
       <router-view />
     </q-page-container>
+
+    <Dialogs ref="dialogsRef" />
   </q-layout>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive } from '@vue/composition-api'
+import { Dialogs, injectDialogs, provideDialogs } from '@/app/dialogs'
+import { Notify, Platform } from 'quasar'
+import { defineComponent, reactive, ref, watch } from '@vue/composition-api'
 import { injectLogic, provideLogic } from '@/demo/logic'
 import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
-import { Notify } from 'quasar'
-import { Platform } from 'quasar'
+import { AuthStatus } from '@/app/logic'
 import { provideConfig } from '@/app/config'
 import router from '@/demo/router'
 import { useI18n } from '@/demo/i18n'
 
 export default defineComponent({
-  setup() {
+  components: {
+    Dialogs: Dialogs.clazz,
+  },
+
+  setup(props, ctx) {
     //----------------------------------------------------------------------
     //
     //  Variables
@@ -85,6 +103,10 @@ export default defineComponent({
     const logic = injectLogic()
     const serviceWorker = injectServiceWorker()
     const { t } = useI18n()
+
+    const dialogsRef = ref<Dialogs>()
+    provideDialogs(dialogsRef)
+    const dialogs = injectDialogs()
 
     const state = reactive({
       leftDrawerOpen: Platform.is.desktop,
@@ -120,19 +142,40 @@ export default defineComponent({
     //----------------------------------------------------------------------
 
     function signInMenuItemOnClick() {
-      // logic.auth.signIn()
+      dialogs.signIn.open()
+    }
+
+    function signUpMenuItemOnClick() {
+      dialogs.signUp.open()
     }
 
     function signOutMenuItemOnClick() {
       logic.auth.signOut()
     }
 
+    function emailChangeMenuItemOnClick() {
+      dialogs.emailChange.open()
+    }
+
+    function userDeleteMenuItemOnClick() {
+      dialogs.userDelete.open()
+    }
+
+    watch(
+      () => logic.auth.status.value,
+      (newValue, oldValue) => {
+        if (newValue === AuthStatus.WaitForEntry) {
+          dialogs.userEntry.open()
+        }
+      }
+    )
+
     serviceWorker.addStateChangeListener(info => {
       if (info.state === 'updated') {
         Notify.create({
           icon: 'info',
           position: 'bottom-left',
-          message: String(t('app.updated')),
+          message: String(t('index.updated')),
           actions: [
             {
               label: t('common.reload'),
@@ -162,8 +205,12 @@ export default defineComponent({
     return {
       t,
       state,
+      dialogsRef,
       signInMenuItemOnClick,
+      signUpMenuItemOnClick,
       signOutMenuItemOnClick,
+      emailChangeMenuItemOnClick,
+      userDeleteMenuItemOnClick,
     }
   },
 })

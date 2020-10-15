@@ -353,4 +353,4 @@ function createAuthLogic(): AuthLogic {
 //
 //========================================================================
 
-export { AuthLogic, createAuthLogic }
+export { AuthLogic, AuthProviderType, createAuthLogic }

@@ -1843,6 +1843,11 @@
   resolved "https://registry.yarnpkg.com/@types/urijs/-/urijs-1.19.12.tgz#eee14a0c4e4a92c13a5d0a45c87353257d6370d5"
   integrity sha512-+BmVXyxXCmGuS177d6yj9zt3tBugh35ZIPgYTWctDf2/LwGirIWIyaH01dmTzxjro6LNiaYIIj3jveKetMmZ1A==
 
+"@types/validator@^13.1.0":
+  version "13.1.0"
+  resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.1.0.tgz#3d776127dbce7dd31fc06f86d3428b072e631eba"
+  integrity sha512-gHUHI6pJaANIO2r6WcbT7+WMgbL9GZooR4tWpuBOETpDIqFNxwaJluE+6rj6VGYe8k6OkfhbHz2Fkm8kl06Igw==
+
 "@types/webpack-dev-server@^3.11.0":
   version "3.11.0"
   resolved "https://registry.yarnpkg.com/@types/webpack-dev-server/-/webpack-dev-server-3.11.0.tgz#bcc3b85e7dc6ac2db25330610513f2228c2fcfb2"
@@ -2232,10 +2237,10 @@
   optionalDependencies:
     prettier "^1.18.2"
 
-"@vue/composition-api@^1.0.0-beta.13":
-  version "1.0.0-beta.14"
-  resolved "https://registry.yarnpkg.com/@vue/composition-api/-/composition-api-1.0.0-beta.14.tgz#b243d906ae5dcda7483e0b5a2b5ea1aa971a4e00"
-  integrity sha512-HYBe87RG//qpN/2+ZtgdhrIafdO8bYK/Tu1+/jMS4iNGYJi42XCbPydhEAiaRcTvsEJjZQEfP+hKKIuH+iPICg==
+"@vue/composition-api@^1.0.0-beta.16":
+  version "1.0.0-beta.16"
+  resolved "https://registry.yarnpkg.com/@vue/composition-api/-/composition-api-1.0.0-beta.16.tgz#9f7202125214e9398f68018c1162b57b14fd0bdc"
+  integrity sha512-FZgmL2qb2Hy3TGFKCEXHwaddFdTfG17GoA1YFCNGTg5mD3+GfWVchsKKR7XxHIAwOaXiHK/djWWsviSD1NeFFw==
   dependencies:
     tslib "^2.0.1"
 
@@ -12721,10 +12726,10 @@ vue-loader@^15.9.2:
     vue-hot-reload-api "^2.3.0"
     vue-style-loader "^4.1.0"
 
-vue-router@^3.2.0:
-  version "3.4.4"
-  resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.4.4.tgz#ad0c27f6353107ed527afa3afc5da69ce3ea3841"
-  integrity sha512-qFfwwLvxUYq+iDJ0UoE8HMnuZEDtIDA+p573brVMb7NZr0t1vhMeMWDTvgF2b8MqAFOc77bNOTSSwYcR4pCZlg==
+vue-router@^3.4.6:
+  version "3.4.6"
+  resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.4.6.tgz#f7bda2c9a43d39837621c9a02ba7789f5daa24b2"
+  integrity sha512-kaXnB3pfFxhAJl/Mp+XG1HJMyFqrL/xPqV7oXlpXn4AwMmm6VNgf0nllW8ksflmZANfI4kdo0bVn/FYSsAolPQ==
 
 vue-style-loader@^4.1.0, vue-style-loader@^4.1.2:
   version "4.1.2"

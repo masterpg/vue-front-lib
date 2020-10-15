@@ -1,0 +1,5 @@
+export { SignInDialog } from '@/app/dialogs/auth/sign-in-dialog.vue'
+export { SignUpDialog } from '@/app/dialogs/auth/sign-up-dialog'
+export { EmailChangeDialog } from '@/app/dialogs/auth/email-change-dialog.vue'
+export { UserDeleteDialog } from '@/app/dialogs/auth/user-delete-dialog.vue'
+export { UserEntryDialog } from '@/app/dialogs/auth/user-entry-dialog.vue'

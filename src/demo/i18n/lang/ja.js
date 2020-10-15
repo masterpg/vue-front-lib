@@ -16,13 +16,4 @@ export default merge(require('@/app/i18n/lang/ja').default, {
     total: '合計',
     checkout: 'チェックアウト',
   },
-  serviceWorker: {
-    ready: 'ServiceWorkerが起動しました。',
-    installing: 'ServiceWorkerをインストールしています。',
-    updating: 'ServiceWorkerを更新しています。',
-    installed: 'ServiceWorkerがインストールされました。',
-    updated: 'ServiceWorkerが更新されました。',
-    offline: 'サーバーへ接続できないため、ServiceWorkerはオフラインモードで実行しています。',
-    error: 'ServiceWorkerの登録でエラーが発生しました.',
-  },
 })

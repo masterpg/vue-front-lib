@@ -1,5 +1,5 @@
+import { Ref, ref } from '@vue/composition-api'
 import { QDialog } from 'quasar'
-import { ref } from '@vue/composition-api'
 
 //========================================================================
 //
@@ -10,7 +10,7 @@ import { ref } from '@vue/composition-api'
 /**
  * ダイアログのインタフェースです。
  */
-interface BaseDialog<PARAMS = void, RESULT = void> {
+interface Dialog<PARAMS = void, RESULT = void> {
   open(params: PARAMS): Promise<RESULT>
   close(result: RESULT): void
 }
@@ -21,15 +21,13 @@ interface BaseDialog<PARAMS = void, RESULT = void> {
 //
 //========================================================================
 
-namespace BaseDialog {
-  export function setup<RESULT = void>() {
+namespace Dialog {
+  export function setup<RESULT = void>(dialog: Ref<QDialog | undefined>) {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
-
-    const dialog = ref<QDialog>()
 
     const opened = ref(false)
 
@@ -83,4 +81,4 @@ namespace BaseDialog {
 //
 //========================================================================
 
-export { BaseDialog }
+export { Dialog }

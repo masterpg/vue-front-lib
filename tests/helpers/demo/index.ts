@@ -3,6 +3,7 @@ import { Config, ConfigKey, injectConfig, provideConfig } from '@/app/config'
 import { DemoLogicContainer, LogicKey, injectLogic, provideLogic } from '@/demo/logic'
 import { DemoStoreContainer, StoreKey, injectStore } from '@/demo/logic/store'
 import { DemoTestAPIContainer, createTestAPI } from './logic'
+import { Dialogs, injectDialogs, provideDialogs } from '@/app/dialogs'
 import { InternalLogic, InternalLogicKey, injectInternalLogic } from '@/app/logic/modules/internal'
 import { provide } from '@vue/composition-api'
 import { shallowMount } from '@vue/test-utils'
@@ -19,6 +20,7 @@ interface ProvidedDependency {
   store: DemoStoreContainer
   internal: InternalLogic
   logic: DemoLogicContainer
+  dialogs: Dialogs
 }
 
 type SetupFunc = (provided: ProvidedDependency) => void | Partial<ProvidedDependency>
@@ -48,8 +50,8 @@ function provideDependency(setup?: SetupFunc): ProvidedDependency {
     },
   })
 
-  const { config, api, store, internal, logic } = wrapper.vm
-  return { config, api, store, internal, logic }
+  const { config, api, store, internal, logic, dialogs } = wrapper.vm
+  return { config, api, store, internal, logic, dialogs }
 }
 
 /**
@@ -67,6 +69,7 @@ function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
     provideLogic({
       api: createTestAPI,
     })
+    provideDialogs(td.object())
 
     provided = {
       config: injectConfig(),
@@ -74,6 +77,7 @@ function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
       store: injectStore(),
       internal: injectInternalLogic(),
       logic: injectLogic(),
+      dialogs: injectDialogs(),
     }
   }
 

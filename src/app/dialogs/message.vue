@@ -1,7 +1,7 @@
 <style lang="sass" scoped>
 @import 'src/app/styles/app.variables'
 
-.AlertDialog
+.MessageDialog
 
 .container
   min-width: 300px
@@ -18,7 +18,7 @@
 </style>
 
 <template>
-  <q-dialog ref="dialog" v-model="opened" class="AlertDialog" :persistent="params.persistent" @hide="close(false)">
+  <q-dialog ref="dialog" v-model="opened" class="MessageDialog" :persistent="params.persistent" @hide="close(false)">
     <q-card class="container">
       <!-- タイトル -->
       <q-card-section v-if="Boolean(params.title)">
@@ -42,12 +42,13 @@
 </template>
 
 <script lang="ts">
-import { SetupContext, defineComponent, reactive, watch } from '@vue/composition-api'
-import { BaseDialog } from '@/app/components/dialogs/base'
+import { SetupContext, defineComponent, reactive, ref, watch } from '@vue/composition-api'
+import { Dialog } from '@/app/components/dialog/base'
+import { QDialog } from 'quasar'
 import merge from 'lodash/merge'
 import { useI18n } from '@/app/i18n'
 
-interface AlertDialog extends BaseDialog<Props | void, boolean>, Readonly<Props> {}
+interface MessageDialog extends Dialog<Props | void, boolean>, Readonly<Props> {}
 
 interface Props {
   value?: boolean
@@ -57,9 +58,9 @@ interface Props {
   persistent?: boolean
 }
 
-namespace AlertDialog {
+namespace MessageDialog {
   export const clazz = defineComponent({
-    name: 'AlertDialog',
+    name: 'MessageDialog',
 
     props: {
       value: { type: Boolean, default: false },
@@ -79,7 +80,8 @@ namespace AlertDialog {
     //
     //----------------------------------------------------------------------
 
-    const base = BaseDialog.setup<boolean>()
+    const dialog = ref<QDialog>()
+    const base = Dialog.setup<boolean>(dialog)
 
     const { t } = useI18n()
 
@@ -96,7 +98,7 @@ namespace AlertDialog {
     //
     //----------------------------------------------------------------------
 
-    const open: AlertDialog['open'] = p => {
+    const open: MessageDialog['open'] = p => {
       if (p) {
         const { type, title, message, persistent } = p
         merge(params, { type, title, message, persistent })
@@ -104,7 +106,7 @@ namespace AlertDialog {
       return base.open()
     }
 
-    const close: AlertDialog['close'] = isConfirmed => {
+    const close: MessageDialog['close'] = isConfirmed => {
       base.close(Boolean(isConfirmed))
     }
 
@@ -144,6 +146,6 @@ namespace AlertDialog {
   }
 }
 
-export default AlertDialog.clazz
-export { AlertDialog }
+export default MessageDialog.clazz
+export { MessageDialog }
 </script>

@@ -1,4 +1,4 @@
-import { InjectionKey, WritableComputedRef, computed, inject, provide, reactive } from '@vue/composition-api'
+import { ComputedRef, InjectionKey, WritableComputedRef, computed, inject, provide, reactive } from '@vue/composition-api'
 import { AuthStatus } from '@/app/logic'
 import { injectStore } from '@/app/logic/store'
 
@@ -12,7 +12,7 @@ interface InternalLogic {
   helper: {}
   auth: {
     status: WritableComputedRef<AuthStatus>
-    isSignedIn: WritableComputedRef<boolean>
+    isSignedIn: ComputedRef<boolean>
     validateSignedIn(): void
   }
 }
@@ -52,13 +52,10 @@ function createInternalAuthLogic(): InternalAuthLogic {
     set: value => (state.status = value),
   })
 
-  const isSignedIn = computed({
-    get: () => state.isSignedIn,
-    set: value => (state.isSignedIn = value),
-  })
+  const isSignedIn = computed(() => state.status === AuthStatus.Available)
 
   const validateSignedIn: InternalAuthLogic['validateSignedIn'] = () => {
-    if (!state.isSignedIn) {
+    if (!isSignedIn.value) {
       throw new Error(`The application is not yet signed in.`)
     }
   }

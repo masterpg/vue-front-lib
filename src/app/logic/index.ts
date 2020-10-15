@@ -66,3 +66,4 @@ function validateLogicProvided(): void {
 
 export { LogicContainer, LogicKey, createLogic, injectLogic, provideLogic, validateLogicProvided }
 export * from '@/app/logic/base'
+export { AuthProviderType } from '@/app/logic/modules/auth'

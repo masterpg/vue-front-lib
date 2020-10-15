@@ -1,6 +1,6 @@
 import '@/app/styles/app.sass'
 
-import AppPage from '@/demo/index.vue'
+import DemoPage from '@/demo/index.vue'
 import Vue from 'vue'
 import VueCompositionApi from '@vue/composition-api'
 import { createI18n } from '@/demo/i18n'
@@ -22,7 +22,7 @@ async function init() {
   new Vue({
     router,
     i18n,
-    render: h => h(AppPage),
+    render: h => h(DemoPage),
   }).$mount('#app')
 }
 init()
