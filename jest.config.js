@@ -8,7 +8,7 @@ module.exports = {
   // Jestはデフォルトでnode_modulesをパースしないためQuasarもパースされず、JestはQuasarを解析できない。
   // このためTypeScriptでインポートしたQuasarをJestが解析できるようにパースする必要がある。
   // 参考: https://jestjs.io/docs/en/tutorial-react-native#transformignorepatterns-customization
-  // transformIgnorePatterns: ['node_modules/(?!(quasar|react-native|react-native-button)/)'],
+  transformIgnorePatterns: ['node_modules/(?!(quasar|react-native|react-native-button)/)'],
 
   globals: {
     'ts-jest': {
