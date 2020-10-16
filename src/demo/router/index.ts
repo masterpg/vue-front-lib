@@ -10,24 +10,8 @@ Vue.use(VueRouter)
 //
 //========================================================================
 
-/**
- * `routePath`の中にある変数プレースホルダーを`params`で指定された値に置き換えます。
- * 例えば`routePath`に'/post/:year/:month'が指定された場合、':year'と':month'を`params`で置き換えます。
- * @param routePath
- * @param params
- */
-function replaceRouteParams(routePath: string, ...params: string[]): string {
-  let result = routePath
-  const pattern = /(:\w+)/
-  for (const param of params) {
-    result = result.replace(pattern, param)
-  }
-  return result
-}
-
 const home: RouteConfig & { getPath(): string } = {
   path: '/demo/home',
-  name: 'Home',
   component: HomePage,
   getPath(): string {
     return home.path
@@ -36,11 +20,10 @@ const home: RouteConfig & { getPath(): string } = {
 
 const abc: RouteConfig & { getPath(): string } = {
   path: '/demo/abc',
-  name: 'ABC',
   // route level code-splitting
   // this generates a separate chunk (about.[hash].js) for this route
   // which is lazy-loaded when the route is visited.
-  component: () => import(/* webpackChunkName: "about" */ '@/demo/views/abc'),
+  component: () => import(/* webpackChunkName: "demo/views/abc" */ '@/demo/views/abc'),
   getPath(): string {
     return abc.path
   },
@@ -48,8 +31,7 @@ const abc: RouteConfig & { getPath(): string } = {
 
 const shop: RouteConfig & { getPath(): string } = {
   path: '/demo/shop',
-  name: 'Shop',
-  component: () => import(/* webpackChunkName: "about" */ '@/demo/views/shop'),
+  component: () => import(/* webpackChunkName: "demo/views/shop" */ '@/demo/views/shop'),
   getPath(): string {
     return shop.path
   },
@@ -57,8 +39,7 @@ const shop: RouteConfig & { getPath(): string } = {
 
 const tree: RouteConfig & { getPath(): string } = {
   path: '/demo/tree',
-  name: 'TreeView',
-  component: () => import(/* webpackChunkName: "about" */ '@/demo/views/tree-view'),
+  component: () => import(/* webpackChunkName: "demo/views/tree-view" */ '@/demo/views/tree-view'),
   getPath(): string {
     return tree.path
   },

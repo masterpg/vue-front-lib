@@ -43,9 +43,10 @@ export default {
   index: {
     mainMenu: {
       siteAdmin: 'Site Admin',
-      articleAdmin: '記事',
+      articleAdmin: 'Article',
       userStorageAdmin: 'Storage',
-      appStorageAdmin: 'App Storage',
+      appAdmin: 'Application Admin',
+      appStorageAdmin: 'Storage',
     },
     updated: 'The site needs to be updated.',
   },

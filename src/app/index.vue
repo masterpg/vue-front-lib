@@ -57,13 +57,32 @@
 
     <q-drawer v-model="state.leftDrawerOpen" :width="300" :breakpoint="500" show-if-above bordered content-class="bg-grey-2">
       <q-scroll-area class="drawer-scroll-area">
-        <q-list padding>
-          <template v-for="(item, index) in state.pages">
-            <q-item :key="index" v-ripple :to="item.path" clickable>
-              <q-item-section>{{ item.title }}</q-item-section>
-            </q-item>
-          </template>
-        </q-list>
+        <!-- Site Admin -->
+        <q-expansion-item v-model="state.isSiteAdminExpanded" icon="fas fa-user-cog" :label="t('index.mainMenu.siteAdmin')" expand-separator>
+          <q-list padding>
+            <template v-for="(item, index) in state.siteAdminItems">
+              <q-item :key="index" v-ripple :to="item.path" class="app-ml-20" clickable>
+                <q-item-section>{{ item.title }}</q-item-section>
+              </q-item>
+            </template>
+          </q-list>
+        </q-expansion-item>
+        <!-- App Admin -->
+        <q-expansion-item
+          v-show="state.user.isAppAdmin"
+          v-model="state.isAppAdminExpanded"
+          icon="fas fa-cog"
+          :label="t('index.mainMenu.appAdmin')"
+          expand-separator
+        >
+          <q-list padding>
+            <template v-for="(item, index) in state.appAdminItems">
+              <q-item :key="index" v-ripple :to="item.path" class="app-ml-20" clickable>
+                <q-item-section>{{ item.title }}</q-item-section>
+              </q-item>
+            </template>
+          </q-list>
+        </q-expansion-item>
       </q-scroll-area>
     </q-drawer>
 
@@ -83,6 +102,7 @@ import { defineComponent, reactive, ref, watch } from '@vue/composition-api'
 import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
 import { provideConfig } from '@/app/config'
+import router from '@/app/router'
 import { useI18n } from '@/app/i18n'
 
 export default defineComponent({
@@ -113,24 +133,27 @@ export default defineComponent({
     const state = reactive({
       leftDrawerOpen: Platform.is.desktop,
 
-      pages: [
+      siteAdminItems: [
         {
-          title: 'Home',
-          path: '/home',
+          title: String(t('index.mainMenu.articleAdmin')),
+          path: router.views.siteAdmin.article.getPath(),
         },
         {
-          title: 'ABC',
-          path: '/abc',
-        },
-        {
-          title: 'Shop',
-          path: '/shop',
-        },
-        {
-          title: 'TreeView',
-          path: '/tree',
+          title: String(t('index.mainMenu.userStorageAdmin')),
+          path: router.views.siteAdmin.storage.getPath(),
         },
       ] as { title: string; path: string }[],
+
+      isSiteAdminExpanded: true,
+
+      appAdminItems: [
+        {
+          title: String(t('index.mainMenu.appStorageAdmin')),
+          path: router.views.appAdmin.storage.getPath(),
+        },
+      ] as { title: string; path: string }[],
+
+      isAppAdminExpanded: true,
 
       isSignedIn: logic.auth.isSignedIn,
 
