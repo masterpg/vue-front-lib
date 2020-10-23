@@ -1,6 +1,5 @@
-import { DeepPartial, removeEndSlash } from 'web-base-lib'
+import { DeepPartial, DeepReadonly } from 'web-base-lib'
 import dayjs, { Dayjs } from 'dayjs'
-import { injectConfig } from '@/app/config'
 import { useI18n } from '@/app/i18n'
 
 //========================================================================
@@ -145,7 +144,7 @@ interface StoragePaginationInput {
   pageToken?: string
 }
 
-interface StoragePaginationResult<NODE extends APIStorageNode = APIStorageNode> {
+interface StoragePaginationResult<NODE extends DeepReadonly<APIStorageNode> = APIStorageNode> {
   list: NODE[]
   nextPageToken?: string
 }
@@ -207,7 +206,7 @@ interface SortTreeNode<NODE extends SortStorageNode> {
 //========================================================================
 
 namespace UserInfo {
-  export function populate(from: DeepPartial<UserInfo>, to: DeepPartial<UserInfo>): UserInfo {
+  export function populate(from: DeepPartial<DeepReadonly<UserInfo>>, to: DeepPartial<UserInfo>): UserInfo {
     if (typeof from.id === 'string') to.id = from.id
     if (typeof from.email === 'string') to.email = from.email
     if (typeof from.emailVerified === 'boolean') to.emailVerified = from.emailVerified
@@ -225,8 +224,54 @@ namespace UserInfo {
     return to as UserInfo
   }
 
-  export function clone(source: UserInfo): UserInfo {
+  export function clone(source: DeepReadonly<UserInfo>): UserInfo {
     return populate(source, {})
+  }
+}
+
+namespace StorageNode {
+  export function populate(from: DeepPartial<DeepReadonly<StorageNode>>, to: DeepPartial<StorageNode>): StorageNode {
+    if (typeof from.id === 'string') to.id = from.id
+    if (typeof from.nodeType === 'string') to.nodeType = from.nodeType
+    if (typeof from.name === 'string') to.name = from.name
+    if (typeof from.dir === 'string') to.dir = from.dir
+    if (typeof from.path === 'string') to.path = from.path
+    if (typeof from.url === 'string') to.url = from.url
+    if (typeof from.contentType === 'string') to.contentType = from.contentType
+    if (typeof from.size === 'number') to.size = from.size
+    if (from.share) {
+      to.share = to.share ?? { isPublic: null, readUIds: null, writeUIds: null }
+      if (typeof from.share.isPublic === 'boolean' || from.share.isPublic === null) {
+        to.share.isPublic = from.share.isPublic
+      }
+      if (Array.isArray(from.share.readUIds) || from.share.readUIds === null) {
+        to.share!.readUIds = from.share.readUIds
+      }
+      if (Array.isArray(from.share.writeUIds) || from.share.writeUIds === null) {
+        to.share!.writeUIds = from.share.writeUIds
+      }
+    }
+    if (typeof from.articleNodeName === 'string' || from.articleNodeName === null) {
+      to.articleNodeName = from.articleNodeName
+    }
+    if (typeof from.articleNodeType === 'string' || from.articleNodeType === null) {
+      to.articleNodeType = from.articleNodeType
+    }
+    if (typeof from.articleSortOrder === 'number' || from.articleSortOrder === null) {
+      to.articleSortOrder = from.articleSortOrder
+    }
+    if (typeof from.version === 'number') to.version = from.version
+    if (dayjs.isDayjs(from.createdAt)) to.createdAt = from.createdAt
+    if (dayjs.isDayjs(from.updatedAt)) to.updatedAt = from.updatedAt
+    return to as StorageNode
+  }
+
+  export function clone<T extends StorageNode | StorageNode[]>(source: DeepReadonly<T>): T {
+    if (Array.isArray(source)) {
+      return (source as StorageNode[]).map(item => clone(item)) as T
+    } else {
+      return populate(source as DeepReadonly<StorageNode>, {}) as T
+    }
   }
 }
 
@@ -320,22 +365,6 @@ const storageChildrenSortFunc = <NODE extends SortStorageNode>(a: NODE, b: NODE)
   }
 }
 
-/**
- * ストレージノードにアクセスするための基準となるURLです。
- */
-function getBaseStorageURL(): string {
-  const config = injectConfig()
-  return `${removeEndSlash(config.api.baseURL)}/storage`
-}
-
-/**
- * ストレージノードのアクセス先となるURLを取得します。
- * @param nodeId
- */
-function getStorageNodeURL(nodeId: string): string {
-  return `${getBaseStorageURL()}/${nodeId}`
-}
-
 //========================================================================
 //
 //  Exports
@@ -365,4 +394,4 @@ export {
   UserInfo,
   UserInfoInput,
 }
-export { SortStorageNode, getBaseStorageURL, getStorageNodeURL, sortStorageTree, storageChildrenSortFunc }
+export { SortStorageNode, sortStorageTree, storageChildrenSortFunc }

@@ -291,7 +291,7 @@ function useI18n(value?: AppI18n): AppI18nFuncs {
   return { i18n, t, tc, te, d, n }
 }
 
-function createI18n(): AppI18n {
+function setupI18n(): AppI18n {
   const i18n = new AppI18nImpl()
   useI18n(i18n)
   return i18n
@@ -303,4 +303,4 @@ function createI18n(): AppI18n {
 //
 //========================================================================
 
-export { AppI18n, AppI18nImpl, createI18n, useI18n }
+export { AppI18n, AppI18nImpl, setupI18n, useI18n }

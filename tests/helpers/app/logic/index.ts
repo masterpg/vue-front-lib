@@ -1,4 +1,21 @@
-import { Entity } from '@/app/logic'
+import { AppStorageLogic, ArticleStorageLogic, UserStorageLogic } from '@/app/logic/modules/storage'
+import { Entity, LogicContainer } from '@/app/logic'
+
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
+
+interface TestLogicContainer extends LogicContainer {
+  readonly appStorage: TestAppStorageLogic
+  readonly userStorage: TestUserStorageLogic
+  readonly articleStorage: TestArticleStorageLogic
+}
+
+type TestAppStorageLogic = ReturnType<typeof AppStorageLogic.setup>
+type TestUserStorageLogic = ReturnType<typeof UserStorageLogic.setup>
+type TestArticleStorageLogic = ReturnType<typeof ArticleStorageLogic.setup>
 
 //========================================================================
 //
@@ -20,7 +37,7 @@ function generateFirestoreId(): string {
  * @param actual
  * @param expected
  */
-function expectNotToBeCopyEntity<T extends Entity>(actual: T | T[], expected: T | T[]): void {
+function expectToBeCopyEntity<T extends Entity>(actual: T | T[], expected: T | T[]): void {
   const actualItems = Array.isArray(actual) ? (actual as T[]) : [actual as T]
   const expectedItems = Array.isArray(expected) ? (expected as T[]) : [expected as T]
 
@@ -38,5 +55,7 @@ function expectNotToBeCopyEntity<T extends Entity>(actual: T | T[], expected: T 
 //
 //========================================================================
 
-export { generateFirestoreId, expectNotToBeCopyEntity }
+export { TestLogicContainer, TestAppStorageLogic, TestUserStorageLogic, TestArticleStorageLogic, generateFirestoreId, expectToBeCopyEntity }
 export * from './api'
+export * from './store'
+export * from './storage'

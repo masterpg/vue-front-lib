@@ -1,5 +1,4 @@
-import { DemoLogicContainer } from '@/demo/logic'
-import { TestLogicContainer } from '../../app/logic'
+import { DemoStoreContainer } from '@/demo/logic/store'
 
 //========================================================================
 //
@@ -7,7 +6,7 @@ import { TestLogicContainer } from '../../app/logic'
 //
 //========================================================================
 
-type TestDemoLogicContainer = DemoLogicContainer & TestLogicContainer
+interface TestDemoStoreContainer extends DemoStoreContainer {}
 
 //========================================================================
 //
@@ -15,6 +14,4 @@ type TestDemoLogicContainer = DemoLogicContainer & TestLogicContainer
 //
 //========================================================================
 
-export { TestDemoLogicContainer }
-export * from './api'
-export * from './store'
+export { TestDemoStoreContainer }

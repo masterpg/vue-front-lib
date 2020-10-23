@@ -11,6 +11,7 @@ import {
 import { APP_ADMIN_TOKEN, GENERAL_TOKEN, GENERAL_USER, provideDependency } from '../../../../helpers/app'
 import { OmitEntityTimestamp } from '@/firestore-ex'
 import { sleep } from 'web-base-lib'
+import { useConfig } from '@/app/config'
 
 //========================================================================
 //
@@ -43,7 +44,8 @@ function getAPIErrorResponse(error: any): { statusCode: number; error: string; m
 describe('Foundation API', () => {
   describe('getAppConfig', () => {
     it('疎通確認', async () => {
-      const { api, config } = provideDependency()
+      const config = useConfig()
+      const { api } = provideDependency()
       const actual = await api.getAppConfig()
 
       expect(actual.user).toMatchObject(config.storage.user)
@@ -720,7 +722,8 @@ describe('Storage API', () => {
     let articleRootPath: string
 
     async function setupArticleNodes(): Promise<void> {
-      const { api, config } = provideDependency()
+      const config = useConfig()
+      const { api } = provideDependency()
       api.setTestAuthToken(GENERAL_TOKEN)
 
       articleRootPath = `${config.storage.user.rootName}/${GENERAL_TOKEN.uid}/${config.storage.article.rootName}`
@@ -753,7 +756,8 @@ describe('Storage API', () => {
     let art1: APIStorageNode
 
     async function setupArticleNodes(): Promise<void> {
-      const { api, config } = provideDependency()
+      const config = useConfig()
+      const { api } = provideDependency()
       api.setTestAuthToken(GENERAL_TOKEN)
 
       articleRootPath = `${config.storage.user.rootName}/${GENERAL_TOKEN.uid}/${config.storage.article.rootName}`
@@ -794,7 +798,8 @@ describe('Storage API', () => {
     let bundle: APIStorageNode
 
     async function setupArticleNodes(): Promise<void> {
-      const { api, config } = provideDependency()
+      const config = useConfig()
+      const { api } = provideDependency()
       api.setTestAuthToken(GENERAL_TOKEN)
 
       articleRootPath = `${config.storage.user.rootName}/${GENERAL_TOKEN.uid}/${config.storage.article.rootName}`
@@ -831,7 +836,8 @@ describe('Storage API', () => {
     let bundle: APIStorageNode
 
     async function setupArticleNodes(): Promise<void> {
-      const { api, config } = provideDependency()
+      const config = useConfig()
+      const { api } = provideDependency()
       api.setTestAuthToken(GENERAL_TOKEN)
 
       articleRootPath = `${config.storage.user.rootName}/${GENERAL_TOKEN.uid}/${config.storage.article.rootName}`
@@ -880,7 +886,8 @@ describe('Storage API', () => {
     let art3: APIStorageNode
 
     async function setupArticleNodes(): Promise<void> {
-      const { api, config } = provideDependency()
+      const config = useConfig()
+      const { api } = provideDependency()
       api.setTestAuthToken(GENERAL_TOKEN)
 
       articleRootPath = `${config.storage.user.rootName}/${GENERAL_TOKEN.uid}/${config.storage.article.rootName}`

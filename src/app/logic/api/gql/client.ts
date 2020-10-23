@@ -5,8 +5,8 @@ import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { InjectionKey, inject, provide } from '@vue/composition-api'
 import { createHttpLink } from 'apollo-link-http'
 import { getIdToken } from '@/app/logic/api/base'
-import { injectConfig } from '@/app/config'
 import { setContext } from 'apollo-link-context'
+import { useConfig } from '@/app/config'
 
 //========================================================================
 //
@@ -34,7 +34,7 @@ function createGQLAPIClient(): GQLAPIClient {
   //
   //----------------------------------------------------------------------
 
-  const config = injectConfig()
+  const config = useConfig()
 
   //----------------------------------------------------------------------
   //

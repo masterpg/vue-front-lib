@@ -1,5 +1,5 @@
 import { CartItem, Product } from '@/demo/logic'
-import { DemoTestAPIContainer, provideDependency } from '../../../../../helpers/demo'
+import { TestDemoAPIContainer, provideDependency } from '../../../../../helpers/demo'
 import { CartItemEditResponse } from '@/demo/logic/api/base'
 import { InternalAuthLogic } from '@/app/logic/modules/internal'
 import dayjs from 'dayjs'
@@ -51,7 +51,7 @@ describe('ShopLogic', () => {
   it('fetchProducts', async () => {
     const { store, logic } = provideDependency(({ api }) => {
       // モック設定
-      const getProducts = td.replace<DemoTestAPIContainer, 'getProducts'>(api, 'getProducts')
+      const getProducts = td.replace<TestDemoAPIContainer, 'getProducts'>(api, 'getProducts')
       td.when(getProducts()).thenResolve(PRODUCTS)
     })
 
@@ -67,7 +67,7 @@ describe('ShopLogic', () => {
       const { store, internal, logic } = provideDependency(({ api, internal }) => {
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const getCartItems = td.replace<DemoTestAPIContainer, 'getCartItems'>(api, 'getCartItems')
+        const getCartItems = td.replace<TestDemoAPIContainer, 'getCartItems'>(api, 'getCartItems')
         td.when(getCartItems()).thenResolve(CART_ITEMS)
       })
 
@@ -88,7 +88,7 @@ describe('ShopLogic', () => {
       const { store, logic } = provideDependency(({ api, internal }) => {
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const getCartItems = td.replace<DemoTestAPIContainer, 'getCartItems'>(api, 'getCartItems')
+        const getCartItems = td.replace<TestDemoAPIContainer, 'getCartItems'>(api, 'getCartItems')
         td.when(getCartItems()).thenReject(expected)
       })
 
@@ -135,7 +135,7 @@ describe('ShopLogic', () => {
         store.product.setAll(products)
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const addCartItems = td.replace<DemoTestAPIContainer, 'addCartItems'>(api, 'addCartItems')
+        const addCartItems = td.replace<TestDemoAPIContainer, 'addCartItems'>(api, 'addCartItems')
         td.when(addCartItems(td.matchers.anything())).thenResolve([response])
       })
 
@@ -192,7 +192,7 @@ describe('ShopLogic', () => {
         store.cart.setAll(CART_ITEMS)
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const updateCartItems = td.replace<DemoTestAPIContainer, 'updateCartItems'>(api, 'updateCartItems')
+        const updateCartItems = td.replace<TestDemoAPIContainer, 'updateCartItems'>(api, 'updateCartItems')
         td.when(updateCartItems(td.matchers.anything())).thenResolve([response])
       })
 
@@ -232,7 +232,7 @@ describe('ShopLogic', () => {
         store.product.setAll(products)
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const addCartItems = td.replace<DemoTestAPIContainer, 'addCartItems'>(api, 'addCartItems')
+        const addCartItems = td.replace<TestDemoAPIContainer, 'addCartItems'>(api, 'addCartItems')
         td.when(addCartItems(td.matchers.anything())).thenReject(new Error())
       })
 
@@ -259,7 +259,7 @@ describe('ShopLogic', () => {
         store.product.setAll(PRODUCTS)
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const addCartItems = td.replace<DemoTestAPIContainer, 'addCartItems'>(api, 'addCartItems')
+        const addCartItems = td.replace<TestDemoAPIContainer, 'addCartItems'>(api, 'addCartItems')
         td.when(addCartItems(td.matchers.anything())).thenReject(expected)
       })
 
@@ -307,7 +307,7 @@ describe('ShopLogic', () => {
         store.cart.setAll(cartItems)
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const updateCartItems = td.replace<DemoTestAPIContainer, 'updateCartItems'>(api, 'updateCartItems')
+        const updateCartItems = td.replace<TestDemoAPIContainer, 'updateCartItems'>(api, 'updateCartItems')
         td.when(updateCartItems(td.matchers.anything())).thenResolve([response])
       })
 
@@ -364,7 +364,7 @@ describe('ShopLogic', () => {
         store.cart.setAll(cartItems)
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const removeCartItems = td.replace<DemoTestAPIContainer, 'removeCartItems'>(api, 'removeCartItems')
+        const removeCartItems = td.replace<TestDemoAPIContainer, 'removeCartItems'>(api, 'removeCartItems')
         td.when(removeCartItems(td.matchers.anything())).thenResolve([response])
       })
 
@@ -400,7 +400,7 @@ describe('ShopLogic', () => {
         store.cart.setAll(cartItems)
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const removeCartItems = td.replace<DemoTestAPIContainer, 'removeCartItems'>(api, 'removeCartItems')
+        const removeCartItems = td.replace<TestDemoAPIContainer, 'removeCartItems'>(api, 'removeCartItems')
         td.when(removeCartItems(td.matchers.anything())).thenReject(expected)
       })
 
@@ -427,7 +427,7 @@ describe('ShopLogic', () => {
         store.cart.setAll(CART_ITEMS)
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const checkoutCart = td.replace<DemoTestAPIContainer, 'checkoutCart'>(api, 'checkoutCart')
+        const checkoutCart = td.replace<TestDemoAPIContainer, 'checkoutCart'>(api, 'checkoutCart')
         td.when(checkoutCart()).thenResolve(true)
       })
 
@@ -447,7 +447,7 @@ describe('ShopLogic', () => {
         store.cart.setAll(CART_ITEMS)
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const checkoutCart = td.replace<DemoTestAPIContainer, 'checkoutCart'>(api, 'checkoutCart')
+        const checkoutCart = td.replace<TestDemoAPIContainer, 'checkoutCart'>(api, 'checkoutCart')
         td.when(checkoutCart()).thenReject(expected)
       })
 

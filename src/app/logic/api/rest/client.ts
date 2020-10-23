@@ -1,7 +1,7 @@
 import { InjectionKey, inject, provide } from '@vue/composition-api'
 import axios, { Method, ResponseType } from 'axios'
 import { getIdToken } from '@/app/logic/api/base'
-import { injectConfig } from '@/app/config'
+import { useConfig } from '@/app/config'
 
 //========================================================================
 //
@@ -64,7 +64,7 @@ function createRESTAPIClient(): RESTAPIClient {
   //
   //----------------------------------------------------------------------
 
-  const config = injectConfig()
+  const config = useConfig()
 
   //----------------------------------------------------------------------
   //

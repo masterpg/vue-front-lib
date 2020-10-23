@@ -28,25 +28,25 @@
 
         <div class="app-mr-16">Quasar v{{ $q.version }}</div>
 
-        <LoadingSpinner v-if="state.isSigningIn" color="indigo-3" />
-        <div v-show="state.isSignedIn" class="app-mr-16">{{ state.user.publicProfile.displayName }}</div>
+        <LoadingSpinner v-if="isSigningIn" color="indigo-3" />
+        <div v-show="isSignedIn" class="app-mr-16">{{ user.publicProfile.displayName }}</div>
 
         <q-btn flat round dense color="white" icon="more_vert">
           <q-menu>
             <q-list class="menu-list">
-              <q-item v-show="!state.isSignedIn" v-close-popup clickable>
+              <q-item v-show="!isSignedIn" v-close-popup clickable>
                 <q-item-section @click="signInMenuItemOnClick">{{ t('common.signIn') }}</q-item-section>
               </q-item>
-              <q-item v-show="!state.isSignedIn" v-close-popup clickable>
+              <q-item v-show="!isSignedIn" v-close-popup clickable>
                 <q-item-section @click="signUpMenuItemOnClick">{{ t('common.signUp') }}</q-item-section>
               </q-item>
-              <q-item v-show="state.isSignedIn" v-close-popup clickable>
+              <q-item v-show="isSignedIn" v-close-popup clickable>
                 <q-item-section @click="signOutMenuItemOnClick">{{ t('common.signOut') }}</q-item-section>
               </q-item>
-              <q-item v-show="state.isSignedIn" v-close-popup clickable>
+              <q-item v-show="isSignedIn" v-close-popup clickable>
                 <q-item-section @click="emailChangeMenuItemOnClick">{{ t('auth.changeEmail') }}</q-item-section>
               </q-item>
-              <q-item v-show="state.isSignedIn" v-close-popup clickable>
+              <q-item v-show="isSignedIn" v-close-popup clickable>
                 <q-item-section @click="userDeleteMenuItemOnClick">{{ t('auth.deleteUser') }}</q-item-section>
               </q-item>
             </q-list>
@@ -69,7 +69,7 @@
         </q-expansion-item>
         <!-- App Admin -->
         <q-expansion-item
-          v-show="state.user.isAppAdmin"
+          v-show="user.isAppAdmin"
           v-model="state.isAppAdminExpanded"
           icon="fas fa-cog"
           :label="t('index.mainMenu.appAdmin')"
@@ -101,7 +101,6 @@ import { Notify, Platform } from 'quasar'
 import { defineComponent, reactive, ref, watch } from '@vue/composition-api'
 import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
-import { provideConfig } from '@/app/config'
 import router from '@/app/router'
 import { useI18n } from '@/app/i18n'
 
@@ -118,7 +117,6 @@ export default defineComponent({
     //
     //----------------------------------------------------------------------
 
-    provideConfig()
     provideLogic()
     provideServiceWorker()
 
@@ -154,13 +152,10 @@ export default defineComponent({
       ] as { title: string; path: string }[],
 
       isAppAdminExpanded: true,
-
-      isSignedIn: logic.auth.isSignedIn,
-
-      isSigningIn: logic.auth.isSigningIn,
-
-      user: logic.auth.user,
     })
+
+    const isSignedIn = logic.auth.isSignedIn
+    const isSigningIn = logic.auth.isSigningIn
 
     //----------------------------------------------------------------------
     //
@@ -233,6 +228,9 @@ export default defineComponent({
       t,
       state,
       dialogsRef,
+      user: logic.auth.user,
+      isSignedIn,
+      isSigningIn,
       signInMenuItemOnClick,
       signUpMenuItemOnClick,
       signOutMenuItemOnClick,

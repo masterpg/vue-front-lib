@@ -1,6 +1,5 @@
 import { DemoAPIContainerImpl, injectAPI, provideAPI } from '@/demo/logic/api'
 import { TestAPIContainer, setupTestAPI } from '../../app'
-import { injectConfig } from '@/app/config'
 
 //========================================================================
 //
@@ -8,7 +7,7 @@ import { injectConfig } from '@/app/config'
 //
 //========================================================================
 
-interface DemoTestAPIContainer extends DemoAPIContainerImpl, TestAPIContainer {}
+interface TestDemoAPIContainer extends DemoAPIContainerImpl, TestAPIContainer {}
 
 //========================================================================
 //
@@ -16,11 +15,10 @@ interface DemoTestAPIContainer extends DemoAPIContainerImpl, TestAPIContainer {}
 //
 //========================================================================
 
-function createTestAPI(): DemoTestAPIContainer {
+function createTestAPI(): TestDemoAPIContainer {
   provideAPI()
-  const config = injectConfig()
   const api = injectAPI() as DemoAPIContainerImpl
-  return setupTestAPI({ config, api })
+  return setupTestAPI(api)
 }
 
 //========================================================================
@@ -29,4 +27,4 @@ function createTestAPI(): DemoTestAPIContainer {
 //
 //========================================================================
 
-export { DemoTestAPIContainer, createTestAPI }
+export { TestDemoAPIContainer, createTestAPI }

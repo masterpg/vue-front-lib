@@ -1,6 +1,5 @@
 import { APIContainer, APIContainerImpl, injectAPI, provideAPI } from '@/app/logic/api'
 import { AuthStatus, UserClaims, UserInfo, UserInfoInput } from '@/app/logic'
-import { Config, injectConfig } from '@/app/config'
 import { APP_ADMIN_TOKEN } from '../data'
 import { RawUser } from '@/app/logic/api/gql'
 import axios from 'axios'
@@ -8,6 +7,7 @@ import gql from 'graphql-tag'
 import path from 'path'
 import { removeStartDirChars } from 'web-base-lib'
 import { toTimestampEntity } from '@/app/logic/api/base'
+import { useConfig } from '@/app/config'
 
 //========================================================================
 //
@@ -69,13 +69,12 @@ type TestUserInput = TestFirebaseUserInput & UserInfoInput
 
 function createTestAPI(): TestAPIContainer {
   provideAPI()
-  const config = injectConfig()
   const api = injectAPI() as APIContainerImpl
-  return setupTestAPI({ config, api })
+  return setupTestAPI(api)
 }
 
-function setupTestAPI<T extends APIContainerImpl>(params: { config: Config; api: T }): T & TestAPIContainer {
-  const { config, api } = params
+function setupTestAPI<T extends APIContainerImpl>(api: T): T & TestAPIContainer {
+  const config = useConfig()
 
   const setTestAuthToken: TestAPIContainer['setTestAuthToken'] = token => {
     const tokenString = token ? JSON.stringify(token) : undefined

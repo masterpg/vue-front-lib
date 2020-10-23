@@ -13,7 +13,7 @@ class DemoI18nImpl extends AppI18nImpl {
   }
 }
 
-function createI18n(): AppI18n {
+function setupI18n(): AppI18n {
   const i18n = new DemoI18nImpl()
   useI18n(i18n)
   return i18n
@@ -25,4 +25,4 @@ function createI18n(): AppI18n {
 //
 //========================================================================
 
-export { AppI18n, createI18n, useI18n }
+export { AppI18n, setupI18n, useI18n }

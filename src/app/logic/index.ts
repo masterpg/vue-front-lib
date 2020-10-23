@@ -1,4 +1,5 @@
 import { APIContainer, createAPI, provideAPI } from '@/app/logic/api'
+import { AppStorageLogic, ArticleStorageLogic, StorageLogic, UserStorageLogic } from '@/app/logic/modules/storage'
 import { AuthLogic, createAuthLogic } from '@/app/logic/modules/auth'
 import { InjectionKey, inject, provide } from '@vue/composition-api'
 import { InternalLogic, createInternalLogic, provideInternalLogic } from '@/app/logic/modules/internal'
@@ -12,6 +13,9 @@ import { StoreContainer, createStore, provideStore } from '@/app/logic/store'
 
 interface LogicContainer {
   readonly auth: AuthLogic
+  readonly appStorage: StorageLogic
+  readonly userStorage: StorageLogic
+  readonly articleStorage: ArticleStorageLogic
 }
 
 //========================================================================
@@ -25,6 +29,9 @@ const LogicKey: InjectionKey<LogicContainer> = Symbol('Logic')
 function createLogic(): LogicContainer {
   return {
     auth: createAuthLogic(),
+    appStorage: AppStorageLogic.newInstance(),
+    userStorage: UserStorageLogic.newInstance(),
+    articleStorage: ArticleStorageLogic.newInstance(),
   }
 }
 
@@ -67,3 +74,4 @@ function validateLogicProvided(): void {
 export { LogicContainer, LogicKey, createLogic, injectLogic, provideLogic, validateLogicProvided }
 export * from '@/app/logic/base'
 export { AuthProviderType } from '@/app/logic/modules/auth'
+export { StorageType } from '@/app/logic/modules/storage'

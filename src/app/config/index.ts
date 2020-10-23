@@ -1,7 +1,7 @@
 import { DeepPartial, removeEndSlash } from 'web-base-lib'
-import { InjectionKey, inject, provide, reactive } from '@vue/composition-api'
 import URI from 'urijs'
 import merge from 'lodash/merge'
+import { reactive } from '@vue/composition-api'
 const firebaseConfig = require('../../../firebase.config')
 
 //========================================================================
@@ -56,6 +56,8 @@ interface CreateConfigParams {
 //  Implementation
 //
 //========================================================================
+
+let config: Config
 
 let initializedFirebase = false
 
@@ -131,22 +133,16 @@ function createConfig(params: CreateConfigParams = {}): Config {
   }
 }
 
-const ConfigKey: InjectionKey<Config> = Symbol('Config')
-
-function provideConfig(params: CreateConfigParams = {}): void {
-  provide(ConfigKey, createConfig(params))
+function setupConfig(): Config {
+  config = createConfig()
+  return config
 }
 
-function injectConfig(): Config {
-  validateConfigProvided()
-  return inject(ConfigKey)!
-}
-
-function validateConfigProvided(): void {
-  const value = inject(ConfigKey)
-  if (!value) {
-    throw new Error(`${ConfigKey.description} is not provided`)
+function useConfig(): Config {
+  if (!config) {
+    throw new Error('Config is not set up.')
   }
+  return config
 }
 
 //========================================================================
@@ -155,4 +151,4 @@ function validateConfigProvided(): void {
 //
 //========================================================================
 
-export { APIConfig, Config, ConfigKey, FirebaseConfig, StorageConfig, injectConfig, provideConfig, validateConfigProvided }
+export { APIConfig, Config, FirebaseConfig, StorageConfig, setupConfig, useConfig }

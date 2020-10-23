@@ -5,8 +5,9 @@ import VueCompositionApi from '@vue/composition-api'
 import { clearProvidedDependency as clearProvidedDependency_app } from './helpers/app'
 import { clearProvidedDependency as clearProvidedDependency_demo } from './helpers/demo'
 // demoにはappの言語リソースが全て含まれるのでdemoのi18nをインポートしている
-import { createI18n } from '@/demo/i18n'
 import { quasar } from '@/app/quasar'
+import { setupConfig } from '@/app/config'
+import { setupI18n } from '@/demo/i18n'
 import td from 'testdouble'
 
 //
@@ -44,7 +45,8 @@ window.firebase = firebase
 window.TextEncoder = TextEncoder
 
 beforeEach(async () => {
-  const i18n = createI18n()
+  setupConfig()
+  const i18n = setupI18n()
   await i18n.load()
 })
 

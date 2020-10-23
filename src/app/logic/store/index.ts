@@ -1,4 +1,5 @@
 import { InjectionKey, inject, provide } from '@vue/composition-api'
+import { StorageStore, createStorageStore } from '@/app/logic/store/storage'
 import { UserStore, createUserStore } from '@/app/logic/store/user'
 
 //========================================================================
@@ -9,6 +10,7 @@ import { UserStore, createUserStore } from '@/app/logic/store/user'
 
 interface StoreContainer {
   readonly user: UserStore
+  readonly storage: StorageStore
 }
 
 //========================================================================
@@ -22,6 +24,7 @@ const StoreKey: InjectionKey<StoreContainer> = Symbol('Store')
 function createStore(): StoreContainer {
   return {
     user: createUserStore(),
+    storage: createStorageStore(),
   }
 }
 

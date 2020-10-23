@@ -1,10 +1,10 @@
 import { APIKey, injectAPI } from '@/demo/logic/api'
-import { Config, ConfigKey, injectConfig, provideConfig } from '@/app/config'
-import { DemoLogicContainer, LogicKey, injectLogic, provideLogic } from '@/demo/logic'
-import { DemoStoreContainer, StoreKey, injectStore } from '@/demo/logic/store'
-import { DemoTestAPIContainer, createTestAPI } from './logic'
 import { Dialogs, injectDialogs, provideDialogs } from '@/app/dialogs'
 import { InternalLogic, InternalLogicKey, injectInternalLogic } from '@/app/logic/modules/internal'
+import { LogicKey, injectLogic, provideLogic } from '@/demo/logic'
+import { StoreKey, injectStore } from '@/demo/logic/store'
+import { TestDemoAPIContainer, TestDemoLogicContainer, createTestAPI } from './logic'
+import { TestDemoStoreContainer } from './logic'
 import { provide } from '@vue/composition-api'
 import { shallowMount } from '@vue/test-utils'
 
@@ -15,11 +15,10 @@ import { shallowMount } from '@vue/test-utils'
 //========================================================================
 
 interface ProvidedDependency {
-  config: Config
-  api: DemoTestAPIContainer
-  store: DemoStoreContainer
+  api: TestDemoAPIContainer
+  store: TestDemoStoreContainer
   internal: InternalLogic
-  logic: DemoLogicContainer
+  logic: TestDemoLogicContainer
   dialogs: Dialogs
 }
 
@@ -50,8 +49,8 @@ function provideDependency(setup?: SetupFunc): ProvidedDependency {
     },
   })
 
-  const { config, api, store, internal, logic, dialogs } = wrapper.vm
-  return { config, api, store, internal, logic, dialogs }
+  const { api, store, internal, logic, dialogs } = wrapper.vm
+  return { api, store, internal, logic, dialogs }
 }
 
 /**
@@ -65,18 +64,16 @@ function provideDependency(setup?: SetupFunc): ProvidedDependency {
  */
 function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
   if (!provided) {
-    provideConfig()
     provideLogic({
       api: createTestAPI,
     })
     provideDialogs(td.object())
 
     provided = {
-      config: injectConfig(),
-      api: injectAPI() as ReturnType<typeof createTestAPI>,
+      api: injectAPI() as TestDemoAPIContainer,
       store: injectStore(),
       internal: injectInternalLogic(),
-      logic: injectLogic(),
+      logic: injectLogic() as TestDemoLogicContainer,
       dialogs: injectDialogs(),
     }
   }
@@ -89,11 +86,7 @@ function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
   const setupResult = setup(provided)
   if (!setupResult) return provided
 
-  const { logic, internal, store, api, config } = setupResult
-  if (config) {
-    provided.config = config
-    provide(ConfigKey, provided.config)
-  }
+  const { logic, internal, store, api } = setupResult
   if (api) {
     provided.api = api
     provide(APIKey, provided.api)

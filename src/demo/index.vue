@@ -83,7 +83,6 @@ import { injectLogic, provideLogic } from '@/demo/logic'
 import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
 import { AuthStatus } from '@/app/logic'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
-import { provideConfig } from '@/app/config'
 import router from '@/demo/router'
 import { useI18n } from '@/demo/i18n'
 
@@ -100,7 +99,6 @@ export default defineComponent({
     //
     //----------------------------------------------------------------------
 
-    provideConfig()
     provideLogic()
     provideServiceWorker()
 
