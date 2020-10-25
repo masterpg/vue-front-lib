@@ -2,7 +2,7 @@ import { RESTAPIClient, createRESTAPIClient, injectRESTAPIClient, provideRESTAPI
 import { RESTAPIContainer, RESTAPIKey, createRESTAPI as _createRESTAPI, validateRESTAPIProvided } from '@/app/logic/api/rest'
 import { RawCartItem, RawCartItemEditResponse, RawProduct, ShopAPIContainer } from '@/demo/logic/api/base'
 import { inject, provide } from '@vue/composition-api'
-import { toTimestampEntities } from '@/app/logic/api/base'
+import { toEntity } from '@/app/logic/api/base'
 import { validateAPIProvided } from '@/app/logic/api'
 
 //========================================================================
@@ -44,14 +44,14 @@ function createRESTAPI(): RESTDemoAPIContainer {
       params: { ids: [id] },
     })
     if (response.data.length === 0) return
-    return toTimestampEntities(response.data)[0]
+    return toEntity(response.data)[0]
   }
 
   const getProducts: DemoRESTAPIContainerImpl['getProducts'] = async ids => {
     const response = await client.get<RawProduct[]>('products', {
       params: { ids },
     })
-    return toTimestampEntities(response.data)
+    return toEntity(response.data)
   }
 
   const getCartItem: DemoRESTAPIContainerImpl['getCartItem'] = async id => {
@@ -60,7 +60,7 @@ function createRESTAPI(): RESTDemoAPIContainer {
       params: { ids: [id] },
     })
     if (response.data.length === 0) return
-    return toTimestampEntities(response.data)[0]
+    return toEntity(response.data)[0]
   }
 
   const getCartItems: DemoRESTAPIContainerImpl['getCartItems'] = async ids => {
@@ -68,17 +68,17 @@ function createRESTAPI(): RESTDemoAPIContainer {
       isAuth: true,
       params: { ids },
     })
-    return toTimestampEntities(response.data)
+    return toEntity(response.data)
   }
 
   const addCartItems: DemoRESTAPIContainerImpl['addCartItems'] = async inputs => {
     const response = await client.post<RawCartItemEditResponse[]>('cartItems', inputs, { isAuth: true })
-    return toTimestampEntities(response.data)
+    return toEntity(response.data)
   }
 
   const updateCartItems: DemoRESTAPIContainerImpl['updateCartItems'] = async inputs => {
     const response = await client.put<RawCartItemEditResponse[]>('cartItems', inputs, { isAuth: true })
-    return toTimestampEntities(response.data)
+    return toEntity(response.data)
   }
 
   const removeCartItems: DemoRESTAPIContainerImpl['removeCartItems'] = async cartItemIds => {
@@ -86,7 +86,7 @@ function createRESTAPI(): RESTDemoAPIContainer {
       isAuth: true,
       params: { ids: cartItemIds },
     })
-    return toTimestampEntities(response.data)
+    return toEntity(response.data)
   }
 
   const checkoutCart: DemoRESTAPIContainerImpl['checkoutCart'] = async () => {

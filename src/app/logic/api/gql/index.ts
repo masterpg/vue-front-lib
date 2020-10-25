@@ -15,7 +15,7 @@ import {
 } from '@/app/logic/base'
 import { GQLAPIClient, createGQLAPIClient, injectGQLAPIClient, provideGQLAPIClient } from '@/app/logic/api/gql/client'
 import { InjectionKey, inject, provide } from '@vue/composition-api'
-import { ToRawTimestampEntity, toTimestampEntities, toTimestampEntity } from '@/app/logic/api/base'
+import { RawEntity, toEntity } from '@/app/logic/api/base'
 import { StorageConfig } from '@/app/config'
 import gql from 'graphql-tag'
 
@@ -140,17 +140,17 @@ interface RawAuthDataResult extends Omit<AuthDataResult, 'user'> {
   user: RawUser
 }
 
-interface RawUser extends ToRawTimestampEntity<Omit<UserInfo, 'publicProfile'>> {
+interface RawUser extends RawEntity<Omit<UserInfo, 'publicProfile'>> {
   publicProfile: RawPublicProfile
 }
 
-interface RawPublicProfile extends ToRawTimestampEntity<PublicProfile> {}
+interface RawPublicProfile extends RawEntity<PublicProfile> {}
 
 //--------------------------------------------------
 //  Storage
 //--------------------------------------------------
 
-interface RawStorageNode extends ToRawTimestampEntity<APIStorageNode> {}
+interface RawStorageNode extends RawEntity<APIStorageNode> {}
 
 interface RawStoragePaginationResult {
   list: RawStorageNode[]
@@ -239,8 +239,8 @@ function createGQLAPI(): GQLAPIContainer {
     return {
       ...others,
       user: {
-        ...toTimestampEntity(user),
-        publicProfile: toTimestampEntity(user.publicProfile),
+        ...toEntity(user),
+        publicProfile: toEntity(user.publicProfile),
       },
     }
   }
@@ -273,8 +273,8 @@ function createGQLAPI(): GQLAPIContainer {
 
     const user = response.data!.setOwnUserInfo
     return {
-      ...toTimestampEntity(user),
-      publicProfile: toTimestampEntity(user.publicProfile),
+      ...toEntity(user),
+      publicProfile: toEntity(user.publicProfile),
     }
   }
 
@@ -323,8 +323,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { input },
       isAuth: true,
     })
-    const apiNode = response.data.storageNode
-    return apiNode ? toTimestampEntity(apiNode) : undefined
+    return toEntity(response.data.storageNode)
   }
 
   const getStorageDirDescendants: GQLAPIContainerImpl['getStorageDirDescendants'] = async (dirPath, input) => {
@@ -360,7 +359,7 @@ function createGQLAPI(): GQLAPIContainer {
       isAuth: true,
     })
     return {
-      list: toTimestampEntities(response.data.storageDirDescendants.list),
+      list: toEntity(response.data.storageDirDescendants.list),
       nextPageToken: response.data.storageDirDescendants.nextPageToken || undefined,
     }
   }
@@ -398,7 +397,7 @@ function createGQLAPI(): GQLAPIContainer {
       isAuth: true,
     })
     return {
-      list: toTimestampEntities(response.data.storageDescendants.list),
+      list: toEntity(response.data.storageDescendants.list),
       nextPageToken: response.data.storageDescendants.nextPageToken || undefined,
     }
   }
@@ -436,7 +435,7 @@ function createGQLAPI(): GQLAPIContainer {
       isAuth: true,
     })
     return {
-      list: toTimestampEntities(response.data.storageDirChildren.list),
+      list: toEntity(response.data.storageDirChildren.list),
       nextPageToken: response.data.storageDirChildren.nextPageToken || undefined,
     }
   }
@@ -474,7 +473,7 @@ function createGQLAPI(): GQLAPIContainer {
       isAuth: true,
     })
     return {
-      list: toTimestampEntities(response.data.storageChildren.list),
+      list: toEntity(response.data.storageChildren.list),
       nextPageToken: response.data.storageChildren.nextPageToken || undefined,
     }
   }
@@ -508,7 +507,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { nodePath },
       isAuth: true,
     })
-    return toTimestampEntities(response.data!.storageHierarchicalNodes)
+    return toEntity(response.data!.storageHierarchicalNodes)
   }
 
   const getStorageAncestorDirs: GQLAPIContainerImpl['getStorageAncestorDirs'] = async nodePath => {
@@ -540,7 +539,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { nodePath },
       isAuth: true,
     })
-    return toTimestampEntities(response.data!.storageAncestorDirs)
+    return toEntity(response.data!.storageAncestorDirs)
   }
 
   const createStorageDir: GQLAPIContainerImpl['createStorageDir'] = async (dirPath, input) => {
@@ -572,7 +571,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { dirPath, input },
       isAuth: true,
     })
-    return toTimestampEntity(response.data!.createStorageDir)
+    return toEntity(response.data!.createStorageDir)
   }
 
   const createStorageHierarchicalDirs: GQLAPIContainerImpl['createStorageHierarchicalDirs'] = async dirPaths => {
@@ -604,7 +603,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { dirPaths },
       isAuth: true,
     })
-    return toTimestampEntities(response.data!.createStorageHierarchicalDirs)
+    return toEntity(response.data!.createStorageHierarchicalDirs)
   }
 
   const removeStorageDir: GQLAPIContainerImpl['removeStorageDir'] = async (dirPath, input) => {
@@ -640,7 +639,7 @@ function createGQLAPI(): GQLAPIContainer {
       isAuth: true,
     })
     return {
-      list: toTimestampEntities(response.data!.removeStorageDir.list),
+      list: toEntity(response.data!.removeStorageDir.list),
       nextPageToken: response.data!.removeStorageDir.nextPageToken || undefined,
     }
   }
@@ -674,8 +673,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { filePath },
       isAuth: true,
     })
-    const apiNode = response.data!.removeStorageFile
-    return apiNode ? toTimestampEntity(apiNode) : undefined
+    return toEntity(response.data!.removeStorageFile)
   }
 
   const moveStorageDir: GQLAPIContainerImpl['moveStorageDir'] = async (fromDirPath, toDirPath, input) => {
@@ -711,7 +709,7 @@ function createGQLAPI(): GQLAPIContainer {
       isAuth: true,
     })
     return {
-      list: toTimestampEntities(response.data!.moveStorageDir.list),
+      list: toEntity(response.data!.moveStorageDir.list),
       nextPageToken: response.data!.moveStorageDir.nextPageToken || undefined,
     }
   }
@@ -745,7 +743,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { fromFilePath, toFilePath },
       isAuth: true,
     })
-    return toTimestampEntity(response.data!.moveStorageFile)
+    return toEntity(response.data!.moveStorageFile)
   }
 
   const renameStorageDir: GQLAPIContainerImpl['renameStorageDir'] = async (dirPath, newName, input) => {
@@ -781,7 +779,7 @@ function createGQLAPI(): GQLAPIContainer {
       isAuth: true,
     })
     return {
-      list: toTimestampEntities(response.data!.renameStorageDir.list),
+      list: toEntity(response.data!.renameStorageDir.list),
       nextPageToken: response.data!.renameStorageDir.nextPageToken || undefined,
     }
   }
@@ -815,7 +813,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { filePath, newName },
       isAuth: true,
     })
-    return toTimestampEntity(response.data!.renameStorageFile)
+    return toEntity(response.data!.renameStorageFile)
   }
 
   const setStorageDirShareSettings: GQLAPIContainerImpl['setStorageDirShareSettings'] = async (dirPath, input) => {
@@ -847,7 +845,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { dirPath, input },
       isAuth: true,
     })
-    return toTimestampEntity(response.data!.setStorageDirShareSettings)
+    return toEntity(response.data!.setStorageDirShareSettings)
   }
 
   const handleUploadedFile: GQLAPIContainerImpl['handleUploadedFile'] = async filePath => {
@@ -879,7 +877,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { filePath },
       isAuth: true,
     })
-    return toTimestampEntity(response.data!.handleUploadedFile)
+    return toEntity(response.data!.handleUploadedFile)
   }
 
   const setStorageFileShareSettings: GQLAPIContainerImpl['setStorageFileShareSettings'] = async (filePath, input) => {
@@ -911,7 +909,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { filePath, input },
       isAuth: true,
     })
-    return toTimestampEntity(response.data!.setStorageFileShareSettings)
+    return toEntity(response.data!.setStorageFileShareSettings)
   }
 
   const getSignedUploadUrls: GQLAPIContainerImpl['getSignedUploadUrls'] = async inputs => {
@@ -960,7 +958,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { input },
       isAuth: true,
     })
-    return toTimestampEntity(response.data!.createArticleTypeDir)
+    return toEntity(response.data!.createArticleTypeDir)
   }
 
   const createArticleGeneralDir: GQLAPIContainerImpl['createArticleGeneralDir'] = async dirPath => {
@@ -992,7 +990,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { dirPath },
       isAuth: true,
     })
-    return toTimestampEntity(response.data!.createArticleGeneralDir)
+    return toEntity(response.data!.createArticleGeneralDir)
   }
 
   const renameArticleNode: GQLAPIContainerImpl['renameArticleNode'] = async (nodePath, newName) => {
@@ -1024,7 +1022,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { nodePath, newName },
       isAuth: true,
     })
-    return toTimestampEntity(response.data!.renameArticleNode)
+    return toEntity(response.data!.renameArticleNode)
   }
 
   const setArticleSortOrder: GQLAPIContainerImpl['setArticleSortOrder'] = async (nodePath, input) => {
@@ -1056,7 +1054,7 @@ function createGQLAPI(): GQLAPIContainer {
       variables: { nodePath, input },
       isAuth: true,
     })
-    return toTimestampEntity(response.data!.setArticleSortOrder)
+    return toEntity(response.data!.setArticleSortOrder)
   }
 
   const getArticleChildren: GQLAPIContainerImpl['getArticleChildren'] = async (dirPath, articleTypes, input) => {
@@ -1092,7 +1090,7 @@ function createGQLAPI(): GQLAPIContainer {
       isAuth: true,
     })
     return {
-      list: toTimestampEntities(response.data.articleChildren.list),
+      list: toEntity(response.data.articleChildren.list),
       nextPageToken: response.data.articleChildren.nextPageToken || undefined,
     }
   }
@@ -1205,4 +1203,4 @@ function validateGQLAPIProvided(): void {
 //
 //========================================================================
 
-export { GQLAPIContainer, GQLAPIContainerImpl, GQLAPIKey, RawUser, createGQLAPI, injectGQLAPI, provideGQLAPI, validateGQLAPIProvided }
+export { GQLAPIContainer, GQLAPIContainerImpl, GQLAPIKey, RawUser, createGQLAPI, injectGQLAPI, provideGQLAPI, validateGQLAPIProvided, RawStorageNode }

@@ -1,7 +1,6 @@
 import { CartItem, Product } from '@/demo/logic/base'
 import { APIContainer } from '@/app/logic/api'
-import { OmitEntityTimestamp } from '@/firestore-ex'
-import { RawTimestampEntity } from '@/app/logic/api/base'
+import { RawEntity } from '@/app/logic/api/base'
 import { WritableComputedRef } from '@vue/composition-api'
 
 //========================================================================
@@ -48,11 +47,11 @@ interface CartItemEditResponse extends CartItem {
   product: Pick<Product, 'id' | 'stock' | 'createdAt' | 'updatedAt'>
 }
 
-interface RawProduct extends OmitEntityTimestamp<Product>, RawTimestampEntity {}
+interface RawProduct extends RawEntity<Product> {}
 
-interface RawCartItem extends OmitEntityTimestamp<CartItem>, RawTimestampEntity {}
+interface RawCartItem extends RawEntity<CartItem> {}
 
-interface RawCartItemEditResponse extends OmitEntityTimestamp<CartItemEditResponse>, RawTimestampEntity {}
+interface RawCartItemEditResponse extends RawEntity<CartItemEditResponse> {}
 
 //========================================================================
 //

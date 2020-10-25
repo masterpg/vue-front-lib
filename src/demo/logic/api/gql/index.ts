@@ -1,7 +1,7 @@
 import { CartItemAddInput, CartItemEditResponse, CartItemUpdateInput, RawCartItem, RawProduct, ShopAPIContainer } from '@/demo/logic/api/base'
 import { GQLAPIClient, createGQLAPIClient, injectGQLAPIClient, provideGQLAPIClient } from '@/app/logic/api/gql/client'
 import { GQLAPIContainer, GQLAPIKey, createGQLAPI as _createGQLAPI, validateGQLAPIProvided } from '@/app/logic/api/gql'
-import { ToRawTimestampEntity, toTimestampEntities, toTimestampEntity } from '@/app/logic/api/base'
+import { RawEntity, toEntity } from '@/app/logic/api/base'
 import { inject, provide } from '@vue/composition-api'
 import gql from 'graphql-tag'
 
@@ -17,8 +17,8 @@ interface DemoGQLAPIContainerImpl extends DemoGQLAPIContainer {
   client: GQLAPIClient
 }
 
-interface RawCartItemEditResponse extends ToRawTimestampEntity<Omit<CartItemEditResponse, 'product'>> {
-  product: ToRawTimestampEntity<CartItemEditResponse['product']>
+interface RawCartItemEditResponse extends RawEntity<Omit<CartItemEditResponse, 'product'>> {
+  product: RawEntity<CartItemEditResponse['product']>
 }
 
 //========================================================================
@@ -65,7 +65,7 @@ function createGQLAPI(): DemoGQLAPIContainer {
       variables: { ids },
     })
 
-    return toTimestampEntities(response.data.products)
+    return toEntity(response.data.products)
   }
 
   const getCartItem: DemoGQLAPIContainerImpl['getCartItem'] = async id => {
@@ -92,7 +92,7 @@ function createGQLAPI(): DemoGQLAPIContainer {
       variables: { ids },
       isAuth: true,
     })
-    return toTimestampEntities(response.data.cartItems)
+    return toEntity(response.data.cartItems)
   }
 
   const addCartItems: DemoGQLAPIContainerImpl['addCartItems'] = async inputs => {
@@ -131,8 +131,8 @@ function createGQLAPI(): DemoGQLAPIContainer {
     })
 
     return response.data!.addCartItems.map(item => {
-      const product = toTimestampEntity(item.product)
-      const cartItem = toTimestampEntity(item)
+      const product = toEntity(item.product)
+      const cartItem = toEntity(item)
       return { ...cartItem, product }
     })
   }
@@ -171,8 +171,8 @@ function createGQLAPI(): DemoGQLAPIContainer {
     })
 
     return response.data!.updateCartItems.map(item => {
-      const product = toTimestampEntity(item.product)
-      const cartItem = toTimestampEntity(item)
+      const product = toEntity(item.product)
+      const cartItem = toEntity(item)
       return { ...cartItem, product }
     })
   }
@@ -204,8 +204,8 @@ function createGQLAPI(): DemoGQLAPIContainer {
     })
 
     return response.data!.removeCartItems.map(item => {
-      const product = toTimestampEntity(item.product)
-      const cartItem = toTimestampEntity(item)
+      const product = toEntity(item.product)
+      const cartItem = toEntity(item)
       return { ...cartItem, product }
     })
   }

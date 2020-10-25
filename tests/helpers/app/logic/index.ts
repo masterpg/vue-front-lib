@@ -1,5 +1,6 @@
 import { AppStorageLogic, ArticleStorageLogic, UserStorageLogic } from '@/app/logic/modules/storage'
-import { Entity, LogicContainer } from '@/app/logic'
+import { Entity } from '@/firestore-ex'
+import { LogicContainer } from '@/app/logic'
 
 //========================================================================
 //

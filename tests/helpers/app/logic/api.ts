@@ -6,7 +6,7 @@ import axios from 'axios'
 import gql from 'graphql-tag'
 import path from 'path'
 import { removeStartDirChars } from 'web-base-lib'
-import { toTimestampEntity } from '@/app/logic/api/base'
+import { toEntity } from '@/app/logic/api/base'
 import { useConfig } from '@/app/config'
 
 //========================================================================
@@ -231,8 +231,8 @@ function setupTestAPI<T extends APIContainerImpl>(api: T): T & TestAPIContainer 
     const testUsers = response.data!.setTestUsers
     return testUsers.map(user => {
       return {
-        ...toTimestampEntity(user),
-        publicProfile: toTimestampEntity(user.publicProfile),
+        ...toEntity(user),
+        publicProfile: toEntity(user.publicProfile),
       }
     })
   }

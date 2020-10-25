@@ -1,4 +1,5 @@
 import { DeepPartial, DeepReadonly } from 'web-base-lib'
+import { Entity, OmitEntityTimestamp } from '@/firestore-ex'
 import dayjs, { Dayjs } from 'dayjs'
 import { useI18n } from '@/app/i18n'
 
@@ -8,15 +9,12 @@ import { useI18n } from '@/app/i18n'
 //
 //========================================================================
 
-interface Entity {
-  id: string
-}
-
-interface TimestampEntity {
-  id: string
-  createdAt: Dayjs
-  updatedAt: Dayjs
-}
+type TimestampEntity<T = {}> = Entity &
+  OmitEntityTimestamp<T> & {
+    id: string
+    createdAt: Dayjs
+    updatedAt: Dayjs
+  }
 
 interface UserClaims {
   isAppAdmin?: boolean
@@ -376,7 +374,6 @@ export {
   AuthStatus,
   CreateArticleTypeDirInput,
   CreateStorageNodeInput,
-  Entity,
   IdToken,
   PublicProfile,
   RequiredStorageNodeShareSettings,
