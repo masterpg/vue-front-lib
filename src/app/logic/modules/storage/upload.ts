@@ -1,5 +1,6 @@
 import { ComputedRef, UnwrapRef, computed, reactive } from '@vue/composition-api'
 import { removeBothEndsSlash, splitHierarchicalPaths } from 'web-base-lib'
+import { LogicDependency } from '@/app/logic/base'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import _path from 'path'
 import { extendedMethod } from '@/app/base'
@@ -134,6 +135,10 @@ interface StorageFileUploader {
   cancel(): void
 }
 
+interface StorageUploaderDependency extends LogicDependency {
+  storageLogic: StorageLogic
+}
+
 //========================================================================
 //
 //  Implementation
@@ -141,16 +146,18 @@ interface StorageFileUploader {
 //========================================================================
 
 namespace StorageUploader {
-  export function newInstance(storageLogic: StorageLogic, owner: Element): StorageUploader {
-    return setup(storageLogic, owner)
+  export function newInstance(dependency: StorageUploaderDependency, owner: Element): StorageUploader {
+    return newRawInstance(dependency, owner)
   }
 
-  export function setup(storageLogic: StorageLogic, owner: Element) {
+  export function newRawInstance(dependency: StorageUploaderDependency, owner: Element) {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
+
+    const { storageLogic } = dependency
 
     const state = reactive({
       status: 'none' as 'none' | 'running' | 'ends',
@@ -253,7 +260,7 @@ namespace StorageUploader {
       const result: UnwrapRef<StorageFileUploader>[] = []
       for (const file of files) {
         const fileUploader = reactive(
-          StorageFileUploader.newInstance(storageLogic, {
+          StorageFileUploader.newInstance(dependency, {
             data: file,
             name: file.name,
             dir: removeBothEndsSlash(getUploadDirPath(file)),
@@ -352,7 +359,7 @@ namespace StorageUploader {
     //
     //----------------------------------------------------------------------
 
-    const instance: StorageUploader = {
+    return {
       fileUploaders,
       uploadedNum,
       uploadNum,
@@ -364,10 +371,6 @@ namespace StorageUploader {
       clear,
       openFilesSelectDialog,
       openDirSelectDialog,
-    }
-
-    return {
-      ...instance,
       getUploadDirPath,
       createUploadingFiles,
     }
@@ -375,16 +378,18 @@ namespace StorageUploader {
 }
 
 namespace StorageFileUploader {
-  export function newInstance(storageLogic: StorageLogic, uploadParam: UploadFileParam): StorageFileUploader {
-    return setup(storageLogic, uploadParam)
+  export function newInstance(dependency: StorageUploaderDependency, uploadParam: UploadFileParam): StorageFileUploader {
+    return newRawInstance(dependency, uploadParam)
   }
 
-  export function setup(storageLogic: StorageLogic, uploadParam: UploadFileParam) {
+  export function newRawInstance(dependency: StorageUploaderDependency, uploadParam: UploadFileParam) {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
+
+    const { storageLogic } = dependency
 
     const state = reactive({
       status: 'none' as 'none' | 'running' | 'ends',
@@ -543,4 +548,4 @@ namespace StorageFileUploader {
 //
 //========================================================================
 
-export { UploadFileParam, StorageUploader, StorageFileUploader }
+export { UploadFileParam, StorageUploader, StorageFileUploader, StorageUploaderDependency }

@@ -1,17 +1,11 @@
 import { CartItem, Product } from '@/demo/logic/base'
-import { APIContainer } from '@/app/logic/api'
 import { RawEntity } from '@/app/logic/api/base'
-import { WritableComputedRef } from '@vue/composition-api'
 
 //========================================================================
 //
 //  Interfaces
 //
 //========================================================================
-
-interface DemoAPIContainer extends APIContainer, ShopAPIContainer {
-  type: WritableComputedRef<'gql' | 'rest'>
-}
 
 interface ShopAPIContainer {
   getProduct(id: string): Promise<Product | undefined>
@@ -59,13 +53,4 @@ interface RawCartItemEditResponse extends RawEntity<CartItemEditResponse> {}
 //
 //========================================================================
 
-export {
-  CartItemAddInput,
-  CartItemEditResponse,
-  CartItemUpdateInput,
-  DemoAPIContainer,
-  RawProduct,
-  RawCartItem,
-  RawCartItemEditResponse,
-  ShopAPIContainer,
-}
+export { CartItemAddInput, CartItemEditResponse, CartItemUpdateInput, RawCartItem, RawCartItemEditResponse, RawProduct, ShopAPIContainer }

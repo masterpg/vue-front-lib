@@ -1,8 +1,7 @@
 import { CartItemAddInput, CartItemEditResponse, CartItemUpdateInput, RawCartItem, RawProduct, ShopAPIContainer } from '@/demo/logic/api/base'
-import { GQLAPIClient, createGQLAPIClient, injectGQLAPIClient, provideGQLAPIClient } from '@/app/logic/api/gql/client'
-import { GQLAPIContainer, GQLAPIKey, createGQLAPI as _createGQLAPI, validateGQLAPIProvided } from '@/app/logic/api/gql'
 import { RawEntity, toEntity } from '@/app/logic/api/base'
-import { inject, provide } from '@vue/composition-api'
+import { GQLAPIClient } from '@/app/logic/api/gql/client'
+import { GQLAPIContainer } from '@/app/logic/api/gql'
 import gql from 'graphql-tag'
 
 //========================================================================
@@ -12,10 +11,6 @@ import gql from 'graphql-tag'
 //========================================================================
 
 interface DemoGQLAPIContainer extends GQLAPIContainer, ShopAPIContainer {}
-
-interface DemoGQLAPIContainerImpl extends DemoGQLAPIContainer {
-  client: GQLAPIClient
-}
 
 interface RawCartItemEditResponse extends RawEntity<Omit<CartItemEditResponse, 'product'>> {
   product: RawEntity<CartItemEditResponse['product']>
@@ -27,236 +22,224 @@ interface RawCartItemEditResponse extends RawEntity<Omit<CartItemEditResponse, '
 //
 //========================================================================
 
-function createGQLAPI(): DemoGQLAPIContainer {
-  //----------------------------------------------------------------------
-  //
-  //  Variables
-  //
-  //----------------------------------------------------------------------
-
-  const base = _createGQLAPI()
-  const client = injectGQLAPIClient()
-
-  //----------------------------------------------------------------------
-  //
-  //  Methods
-  //
-  //----------------------------------------------------------------------
-
-  const getProduct: DemoGQLAPIContainerImpl['getProduct'] = async id => {
-    const products = await getProducts([id])
-    return products.length === 1 ? products[0] : undefined
+namespace DemoGQLAPIContainer {
+  export function newInstance(): DemoGQLAPIContainer {
+    return newRawInstance()
   }
 
-  const getProducts: DemoGQLAPIContainerImpl['getProducts'] = async ids => {
-    const response = await client.query<{ products: RawProduct[] }>({
-      query: gql`
-        query GetProducts($ids: [ID!]) {
-          products(ids: $ids) {
-            id
-            title
-            price
-            stock
-            createdAt
-            updatedAt
-          }
-        }
-      `,
-      variables: { ids },
-    })
+  export function newRawInstance(client?: GQLAPIClient) {
+    //----------------------------------------------------------------------
+    //
+    //  Variables
+    //
+    //----------------------------------------------------------------------
 
-    return toEntity(response.data.products)
-  }
+    const c = client ?? GQLAPIClient.newInstance()
+    const base = GQLAPIContainer.newRawInstance(c)
 
-  const getCartItem: DemoGQLAPIContainerImpl['getCartItem'] = async id => {
-    const items = await getCartItems([id])
-    return items.length === 1 ? items[0] : undefined
-  }
+    //----------------------------------------------------------------------
+    //
+    //  Methods
+    //
+    //----------------------------------------------------------------------
 
-  const getCartItems: DemoGQLAPIContainerImpl['getCartItems'] = async ids => {
-    const response = await client.query<{ cartItems: RawCartItem[] }>({
-      query: gql`
-        query GetCartItems($ids: [ID!]) {
-          cartItems(ids: $ids) {
-            id
-            uid
-            productId
-            title
-            price
-            quantity
-            createdAt
-            updatedAt
-          }
-        }
-      `,
-      variables: { ids },
-      isAuth: true,
-    })
-    return toEntity(response.data.cartItems)
-  }
+    const getProduct: DemoGQLAPIContainer['getProduct'] = async id => {
+      const products = await getProducts([id])
+      return products.length === 1 ? products[0] : undefined
+    }
 
-  const addCartItems: DemoGQLAPIContainerImpl['addCartItems'] = async inputs => {
-    const response = await client.mutate<{ addCartItems: RawCartItemEditResponse[] }>({
-      mutation: gql`
-        mutation AddCartItems($inputs: [CartItemAddInput!]!) {
-          addCartItems(inputs: $inputs) {
-            id
-            uid
-            productId
-            title
-            price
-            quantity
-            product {
+    const getProducts: DemoGQLAPIContainer['getProducts'] = async ids => {
+      const response = await c.query<{ products: RawProduct[] }>({
+        query: gql`
+          query GetProducts($ids: [ID!]) {
+            products(ids: $ids) {
               id
+              title
+              price
               stock
               createdAt
               updatedAt
             }
-            createdAt
-            updatedAt
           }
-        }
-      `,
-      variables: {
-        inputs: inputs.map(item => {
-          return {
-            productId: item.productId,
-            title: item.title,
-            price: item.price,
-            quantity: item.quantity,
-          } as CartItemAddInput
-        }),
-      },
-      isAuth: true,
-    })
+        `,
+        variables: { ids },
+      })
 
-    return response.data!.addCartItems.map(item => {
-      const product = toEntity(item.product)
-      const cartItem = toEntity(item)
-      return { ...cartItem, product }
-    })
-  }
+      return toEntity(response.data.products)
+    }
 
-  const updateCartItems: DemoGQLAPIContainerImpl['updateCartItems'] = async inputs => {
-    const response = await client.mutate<{ updateCartItems: RawCartItemEditResponse[] }>({
-      mutation: gql`
-        mutation UpdateCartItems($inputs: [CartItemUpdateInput!]!) {
-          updateCartItems(inputs: $inputs) {
-            id
-            uid
-            productId
-            title
-            price
-            quantity
-            product {
+    const getCartItem: DemoGQLAPIContainer['getCartItem'] = async id => {
+      const items = await getCartItems([id])
+      return items.length === 1 ? items[0] : undefined
+    }
+
+    const getCartItems: DemoGQLAPIContainer['getCartItems'] = async ids => {
+      const response = await c.query<{ cartItems: RawCartItem[] }>({
+        query: gql`
+          query GetCartItems($ids: [ID!]) {
+            cartItems(ids: $ids) {
               id
-              stock
+              uid
+              productId
+              title
+              price
+              quantity
               createdAt
               updatedAt
             }
-            createdAt
-            updatedAt
           }
-        }
-      `,
-      variables: {
-        inputs: inputs.map(item => {
-          return {
-            id: item.id,
-            quantity: item.quantity,
-          } as CartItemUpdateInput
-        }),
-      },
-      isAuth: true,
-    })
+        `,
+        variables: { ids },
+        isAuth: true,
+      })
+      return toEntity(response.data.cartItems)
+    }
 
-    return response.data!.updateCartItems.map(item => {
-      const product = toEntity(item.product)
-      const cartItem = toEntity(item)
-      return { ...cartItem, product }
-    })
-  }
-
-  const removeCartItems: DemoGQLAPIContainerImpl['removeCartItems'] = async ids => {
-    const response = await client.mutate<{ removeCartItems: RawCartItemEditResponse[] }>({
-      mutation: gql`
-        mutation RemoveCartItems($ids: [ID!]!) {
-          removeCartItems(ids: $ids) {
-            id
-            uid
-            productId
-            title
-            price
-            quantity
-            product {
+    const addCartItems: DemoGQLAPIContainer['addCartItems'] = async inputs => {
+      const response = await c.mutate<{ addCartItems: RawCartItemEditResponse[] }>({
+        mutation: gql`
+          mutation AddCartItems($inputs: [CartItemAddInput!]!) {
+            addCartItems(inputs: $inputs) {
               id
-              stock
+              uid
+              productId
+              title
+              price
+              quantity
+              product {
+                id
+                stock
+                createdAt
+                updatedAt
+              }
               createdAt
               updatedAt
             }
-            createdAt
-            updatedAt
           }
-        }
-      `,
-      variables: { ids },
-      isAuth: true,
-    })
+        `,
+        variables: {
+          inputs: inputs.map(item => {
+            return {
+              productId: item.productId,
+              title: item.title,
+              price: item.price,
+              quantity: item.quantity,
+            } as CartItemAddInput
+          }),
+        },
+        isAuth: true,
+      })
 
-    return response.data!.removeCartItems.map(item => {
-      const product = toEntity(item.product)
-      const cartItem = toEntity(item)
-      return { ...cartItem, product }
-    })
+      return response.data!.addCartItems.map(item => {
+        const product = toEntity(item.product)
+        const cartItem = toEntity(item)
+        return { ...cartItem, product }
+      })
+    }
+
+    const updateCartItems: DemoGQLAPIContainer['updateCartItems'] = async inputs => {
+      const response = await c.mutate<{ updateCartItems: RawCartItemEditResponse[] }>({
+        mutation: gql`
+          mutation UpdateCartItems($inputs: [CartItemUpdateInput!]!) {
+            updateCartItems(inputs: $inputs) {
+              id
+              uid
+              productId
+              title
+              price
+              quantity
+              product {
+                id
+                stock
+                createdAt
+                updatedAt
+              }
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: {
+          inputs: inputs.map(item => {
+            return {
+              id: item.id,
+              quantity: item.quantity,
+            } as CartItemUpdateInput
+          }),
+        },
+        isAuth: true,
+      })
+
+      return response.data!.updateCartItems.map(item => {
+        const product = toEntity(item.product)
+        const cartItem = toEntity(item)
+        return { ...cartItem, product }
+      })
+    }
+
+    const removeCartItems: DemoGQLAPIContainer['removeCartItems'] = async ids => {
+      const response = await c.mutate<{ removeCartItems: RawCartItemEditResponse[] }>({
+        mutation: gql`
+          mutation RemoveCartItems($ids: [ID!]!) {
+            removeCartItems(ids: $ids) {
+              id
+              uid
+              productId
+              title
+              price
+              quantity
+              product {
+                id
+                stock
+                createdAt
+                updatedAt
+              }
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: { ids },
+        isAuth: true,
+      })
+
+      return response.data!.removeCartItems.map(item => {
+        const product = toEntity(item.product)
+        const cartItem = toEntity(item)
+        return { ...cartItem, product }
+      })
+    }
+
+    const checkoutCart: DemoGQLAPIContainer['checkoutCart'] = async () => {
+      const response = await c.mutate<{ checkoutCart: boolean }>({
+        mutation: gql`
+          mutation CheckoutCart {
+            checkoutCart
+          }
+        `,
+        isAuth: true,
+      })
+      return response.data!.checkoutCart
+    }
+
+    //----------------------------------------------------------------------
+    //
+    //  Result
+    //
+    //----------------------------------------------------------------------
+
+    return {
+      ...base,
+      getProduct,
+      getProducts,
+      getCartItem,
+      getCartItems,
+      addCartItems,
+      updateCartItems,
+      removeCartItems,
+      checkoutCart,
+    }
   }
-
-  const checkoutCart: DemoGQLAPIContainerImpl['checkoutCart'] = async () => {
-    const response = await client.mutate<{ checkoutCart: boolean }>({
-      mutation: gql`
-        mutation CheckoutCart {
-          checkoutCart
-        }
-      `,
-      isAuth: true,
-    })
-    return response.data!.checkoutCart
-  }
-
-  //----------------------------------------------------------------------
-  //
-  //  Result
-  //
-  //----------------------------------------------------------------------
-
-  return {
-    ...base,
-    getProduct,
-    getProducts,
-    getCartItem,
-    getCartItems,
-    addCartItems,
-    updateCartItems,
-    removeCartItems,
-    checkoutCart,
-    client,
-  } as DemoGQLAPIContainerImpl
-}
-
-function provideGQLAPI(options?: { api?: DemoGQLAPIContainer | typeof createGQLAPI; client?: GQLAPIClient | typeof createGQLAPIClient }): void {
-  provideGQLAPIClient(options?.client)
-
-  let instance: DemoGQLAPIContainer
-  if (!options?.api) {
-    instance = createGQLAPI()
-  } else {
-    instance = typeof options.api === 'function' ? options.api() : options.api
-  }
-  provide(GQLAPIKey, instance)
-}
-
-function injectGQLAPI(): DemoGQLAPIContainer {
-  validateGQLAPIProvided()
-  return inject(GQLAPIKey)! as DemoGQLAPIContainer
 }
 
 //========================================================================
@@ -265,4 +248,4 @@ function injectGQLAPI(): DemoGQLAPIContainer {
 //
 //========================================================================
 
-export { DemoGQLAPIContainer, DemoGQLAPIContainerImpl, GQLAPIKey, createGQLAPI, injectGQLAPI, provideGQLAPI, validateGQLAPIProvided }
+export { DemoGQLAPIContainer }

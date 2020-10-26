@@ -1,9 +1,10 @@
-import { DemoAPIContainer, createAPI, provideAPI } from '@/demo/logic/api'
-import { DemoStoreContainer, createStore, provideStore } from '@/demo/logic/store'
-import { InternalLogic, createInternalLogic, provideInternalLogic } from '@/app/logic/modules/internal'
-import { LogicContainer, LogicKey, createLogic as _createLogic, validateLogicProvided } from '@/app/logic'
-import { ShopLogic, createShopLogic } from '@/demo/logic/modules/shop'
+import { LogicContainer, LogicKey, validateLogicProvided } from '@/app/logic'
 import { inject, provide } from '@vue/composition-api'
+import { DemoAPIContainer } from '@/demo/logic/api'
+import { DemoLogicDependency } from '@/demo/logic/base'
+import { DemoStoreContainer } from '@/demo/logic/store'
+import { InternalLogic } from '@/app/logic/modules/internal'
+import { ShopLogic } from '@/demo/logic/modules/shop'
 
 //========================================================================
 //
@@ -21,31 +22,34 @@ interface DemoLogicContainer extends LogicContainer {
 //
 //========================================================================
 
-function createLogic(): DemoLogicContainer {
-  const base = _createLogic()
+namespace DemoLogicContainer {
+  export function newInstance(): DemoLogicContainer {
+    return newRawInstance()
+  }
 
-  return {
-    ...base,
-    shop: createShopLogic(),
+  export function newRawInstance(options?: Partial<DemoLogicDependency>) {
+    const api = options?.api ?? DemoAPIContainer.newInstance()
+    const store = options?.store ?? DemoStoreContainer.newInstance()
+    const internal = options?.internal ?? InternalLogic.newInstance({ api, store })
+    const dependency = { api, store, internal }
+
+    const base = LogicContainer.newRawInstance(dependency)
+
+    return {
+      ...base,
+      shop: ShopLogic.newRawInstance(dependency),
+    }
   }
 }
 
-function provideLogic(options?: {
-  api?: DemoAPIContainer | typeof createAPI
-  store?: DemoStoreContainer | typeof createStore
-  internal?: InternalLogic | typeof createInternalLogic
-  logic?: DemoLogicContainer | typeof createLogic
-}): void {
-  provideAPI(options?.api)
-  provideStore(options?.store)
-  provideInternalLogic(options?.internal)
+//========================================================================
+//
+//  Dependency Injection
+//
+//========================================================================
 
-  let instance: DemoLogicContainer
-  if (!options?.logic) {
-    instance = createLogic()
-  } else {
-    instance = typeof options.logic === 'function' ? options.logic() : options.logic
-  }
+function provideLogic(instance?: DemoLogicContainer): void {
+  instance = instance ?? DemoLogicContainer.newInstance()
   provide(LogicKey, instance)
 }
 
@@ -60,5 +64,5 @@ function injectLogic(): DemoLogicContainer {
 //
 //========================================================================
 
-export { DemoLogicContainer, LogicKey, createLogic, injectLogic, provideLogic, validateLogicProvided }
+export { DemoLogicContainer, LogicKey, injectLogic, provideLogic, validateLogicProvided }
 export * from '@/demo/logic/base'

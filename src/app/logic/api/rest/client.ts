@@ -1,4 +1,3 @@
-import { InjectionKey, inject, provide } from '@vue/composition-api'
 import axios, { Method, ResponseType } from 'axios'
 import { getIdToken } from '@/app/logic/api/base'
 import { useConfig } from '@/app/config'
@@ -55,118 +54,101 @@ interface RESTAPIRequestInternalConfig extends RESTAPIRequestConfig {
 //
 //========================================================================
 
-const RESTAPIClientKey: InjectionKey<RESTAPIClient> = Symbol('RESTAPIClient')
+namespace RESTAPIClient {
+  export function newInstance(): RESTAPIClient {
+    return newRawInstance()
+  }
 
-function createRESTAPIClient(): RESTAPIClient {
-  //----------------------------------------------------------------------
-  //
-  //  Variables
-  //
-  //----------------------------------------------------------------------
+  export function newRawInstance() {
+    //----------------------------------------------------------------------
+    //
+    //  Variables
+    //
+    //----------------------------------------------------------------------
 
-  const config = useConfig()
+    const config = useConfig()
 
-  //----------------------------------------------------------------------
-  //
-  //  Methods
-  //
-  //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    //
+    //  Methods
+    //
+    //----------------------------------------------------------------------
 
-  const request: RESTAPIClient['request'] = async config => {
-    const axiosConfig = {
-      ...config,
-      baseURL: getRequestURL(),
-    }
-    delete axiosConfig.isAuth
-
-    if (config.isAuth) {
-      const idToken = await getIdToken()
-      axiosConfig.headers = {
-        ...(axiosConfig.headers || {}),
-        Authorization: `Bearer ${idToken}`,
+    const request: RESTAPIClient['request'] = async config => {
+      const axiosConfig = {
+        ...config,
+        baseURL: getRequestURL(),
       }
+      delete axiosConfig.isAuth
+
+      if (config.isAuth) {
+        const idToken = await getIdToken()
+        axiosConfig.headers = {
+          ...(axiosConfig.headers || {}),
+          Authorization: `Bearer ${idToken}`,
+        }
+      }
+
+      return axios.request(axiosConfig)
     }
 
-    return axios.request(axiosConfig)
-  }
+    const get: RESTAPIClient['get'] = (path, config) => {
+      return request({
+        ...(config || {}),
+        url: path,
+        method: 'get',
+      })
+    }
 
-  const get: RESTAPIClient['get'] = (path, config) => {
-    return request({
-      ...(config || {}),
-      url: path,
-      method: 'get',
-    })
-  }
+    const post: RESTAPIClient['post'] = (path, data, config) => {
+      return request({
+        ...(config || {}),
+        url: path,
+        method: 'post',
+        data,
+      })
+    }
 
-  const post: RESTAPIClient['post'] = (path, data, config) => {
-    return request({
-      ...(config || {}),
-      url: path,
-      method: 'post',
-      data,
-    })
-  }
+    const put: RESTAPIClient['put'] = (path, data, config) => {
+      return request({
+        ...(config || {}),
+        url: path,
+        method: 'put',
+        data,
+      })
+    }
 
-  const put: RESTAPIClient['put'] = (path, data, config) => {
-    return request({
-      ...(config || {}),
-      url: path,
-      method: 'put',
-      data,
-    })
-  }
+    const del: RESTAPIClient['delete'] = (path, config) => {
+      return request({
+        ...(config || {}),
+        url: path,
+        method: 'delete',
+      })
+    }
 
-  const del: RESTAPIClient['delete'] = (path, config) => {
-    return request({
-      ...(config || {}),
-      url: path,
-      method: 'delete',
-    })
-  }
+    //----------------------------------------------------------------------
+    //
+    //  Internal methods
+    //
+    //----------------------------------------------------------------------
 
-  //----------------------------------------------------------------------
-  //
-  //  Internal methods
-  //
-  //----------------------------------------------------------------------
+    function getRequestURL(): string {
+      return `${config.api.baseURL}/rest`
+    }
 
-  function getRequestURL(): string {
-    return `${config.api.baseURL}/rest`
-  }
+    //----------------------------------------------------------------------
+    //
+    //  Result
+    //
+    //----------------------------------------------------------------------
 
-  //----------------------------------------------------------------------
-  //
-  //  Result
-  //
-  //----------------------------------------------------------------------
-
-  return {
-    request,
-    get,
-    post,
-    put,
-    delete: del,
-  }
-}
-
-function provideRESTAPIClient(client?: RESTAPIClient | typeof createRESTAPIClient): void {
-  let instance: RESTAPIClient
-  if (!client) {
-    instance = createRESTAPIClient()
-  } else {
-    instance = typeof client === 'function' ? client() : client
-  }
-  provide(RESTAPIClientKey, instance)
-}
-
-function injectRESTAPIClient(): RESTAPIClient {
-  validateRESTAPIClientProvided()
-  return inject(RESTAPIClientKey)!
-}
-
-function validateRESTAPIClientProvided(): void {
-  if (!inject(RESTAPIClientKey)) {
-    throw new Error(`${RESTAPIClientKey.description} is not provided`)
+    return {
+      request,
+      get,
+      post,
+      put,
+      delete: del,
+    }
   }
 }
 
@@ -176,14 +158,4 @@ function validateRESTAPIClientProvided(): void {
 //
 //========================================================================
 
-export {
-  RESTAPIClient,
-  RESTAPIError,
-  RESTAPIPromise,
-  RESTAPIRequestConfig,
-  RESTAPIResponse,
-  createRESTAPIClient,
-  injectRESTAPIClient,
-  provideRESTAPIClient,
-  validateRESTAPIClientProvided,
-}
+export { RESTAPIClient, RESTAPIError, RESTAPIPromise, RESTAPIRequestConfig, RESTAPIResponse }

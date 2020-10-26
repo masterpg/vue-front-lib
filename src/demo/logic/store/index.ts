@@ -1,7 +1,6 @@
-import { CartStore, createCartStore } from '@/demo/logic/store/cart'
-import { ProductStore, createProductStore } from '@/demo/logic/store/product'
-import { StoreContainer, StoreKey, createStore as _createStore, validateStoreProvided } from '@/app/logic/store'
-import { inject, provide } from '@vue/composition-api'
+import { CartStore } from '@/demo/logic/store/cart'
+import { ProductStore } from '@/demo/logic/store/product'
+import { StoreContainer } from '@/app/logic/store'
 
 //========================================================================
 //
@@ -20,29 +19,20 @@ interface DemoStoreContainer extends StoreContainer {
 //
 //========================================================================
 
-function createStore(): DemoStoreContainer {
-  const base = _createStore()
-
-  return {
-    ...base,
-    product: createProductStore(),
-    cart: createCartStore(),
+namespace DemoStoreContainer {
+  export function newInstance(): DemoStoreContainer {
+    return newRawInstance()
   }
-}
 
-function provideStore(store?: DemoStoreContainer | typeof createStore): void {
-  let instance: DemoStoreContainer
-  if (!store) {
-    instance = createStore()
-  } else {
-    instance = typeof store === 'function' ? store() : store
+  export function newRawInstance() {
+    const base = StoreContainer.newRawInstance()
+
+    return {
+      ...base,
+      product: ProductStore.newRawInstance(),
+      cart: CartStore.newRawInstance(),
+    }
   }
-  provide(StoreKey, instance)
-}
-
-function injectStore(): DemoStoreContainer {
-  validateStoreProvided()
-  return inject(StoreKey)! as DemoStoreContainer
 }
 
 //========================================================================
@@ -51,4 +41,4 @@ function injectStore(): DemoStoreContainer {
 //
 //========================================================================
 
-export { DemoStoreContainer, StoreKey, createStore, provideStore, injectStore, validateStoreProvided }
+export { DemoStoreContainer }

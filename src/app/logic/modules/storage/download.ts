@@ -1,7 +1,7 @@
 import { ComputedRef, UnwrapRef, computed, reactive } from '@vue/composition-api'
+import { LogicDependency, StorageNodeType } from '@/app/logic/base'
 import axios, { AxiosResponse, Canceler } from 'axios'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
-import { StorageNodeType } from '@/app/logic'
 import path from 'path'
 import { removeBothEndsSlash } from 'web-base-lib'
 
@@ -135,6 +135,10 @@ interface StorageFileDownloader {
   cancel(): void
 }
 
+interface StorageDownloaderDependency extends LogicDependency {
+  storageLogic: StorageLogic
+}
+
 //========================================================================
 //
 //  Implementation
@@ -142,12 +146,14 @@ interface StorageFileDownloader {
 //========================================================================
 
 namespace StorageDownloader {
-  export function newInstance(storageLogic: StorageLogic): StorageDownloader {
+  export function newInstance(dependency: StorageDownloaderDependency): StorageDownloader {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
+
+    const { storageLogic } = dependency
 
     const state = reactive({
       status: 'none' as 'none' | 'running' | 'ends',
@@ -294,7 +300,7 @@ namespace StorageFileDownloader {
     }
   }
 
-  export function setup(storageLogic: StorageLogic, filePath: string) {
+  export function newBaseInstance(storageLogic: StorageLogic, filePath: string) {
     //----------------------------------------------------------------------
     //
     //  Variables
@@ -426,7 +432,7 @@ namespace StorageFileFirebaseDownloader {
     //
     //----------------------------------------------------------------------
 
-    const base = StorageFileDownloader.setup(storageLogic, filePath)
+    const base = StorageFileDownloader.newBaseInstance(storageLogic, filePath)
 
     let canceler: Canceler | null = null
 
@@ -506,7 +512,7 @@ namespace StorageFileHTTPDownloader {
     //
     //----------------------------------------------------------------------
 
-    const base = StorageFileDownloader.setup(storageLogic, filePath)
+    const base = StorageFileDownloader.newBaseInstance(storageLogic, filePath)
 
     let canceler: Canceler | null = null
 

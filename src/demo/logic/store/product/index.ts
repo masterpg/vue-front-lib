@@ -35,107 +35,113 @@ interface ProductStore {
 //
 //========================================================================
 
-function createProductStore(): ProductStore {
-  //----------------------------------------------------------------------
-  //
-  //  Variables
-  //
-  //----------------------------------------------------------------------
-
-  const state = reactive({
-    all: [] as Product[],
-  })
-
-  //----------------------------------------------------------------------
-  //
-  //  Methods
-  //
-  //----------------------------------------------------------------------
-
-  const exists: ProductStore['exists'] = productId => {
-    return Boolean(getStateProductById(productId))
+namespace ProductStore {
+  export function newInstance(): ProductStore {
+    return newRawInstance()
   }
 
-  const getById: ProductStore['getById'] = productId => {
-    return getStateProductById(productId)
-  }
+  export function newRawInstance() {
+    //----------------------------------------------------------------------
+    //
+    //  Variables
+    //
+    //----------------------------------------------------------------------
 
-  const sgetById: ProductStore['sgetById'] = productId => {
-    const result = getById(productId)
-    if (!result) {
-      throw new Error(`The specified Product was not found: '${productId}'`)
-    }
-    return result
-  }
+    const state = reactive({
+      all: [] as Product[],
+    })
 
-  const setAll: ProductStore['setAll'] = products => {
-    state.all.splice(0)
-    for (const product of products) {
-      state.all.push(Product.clone(product))
-    }
-  }
+    //----------------------------------------------------------------------
+    //
+    //  Methods
+    //
+    //----------------------------------------------------------------------
 
-  const add: ProductStore['add'] = product => {
-    if (exists(product.id)) {
-      throw new Error(`The specified Product already exists: '${product.id}'`)
+    const exists: ProductStore['exists'] = productId => {
+      return Boolean(getStateProductById(productId))
     }
 
-    const stateItem = Product.clone(product)
-    state.all.push(stateItem)
-    return stateItem
-  }
-
-  const set: ProductStore['set'] = product => {
-    const stateItem = getStateProductById(product.id)
-    if (!stateItem) {
-      return
+    const getById: ProductStore['getById'] = productId => {
+      return getStateProductById(productId)
     }
 
-    return Product.populate(product, stateItem)
-  }
-
-  const decrementStock: ProductStore['decrementStock'] = productId => {
-    const product = state.all.find(item => item.id === productId)
-    if (!product) {
-      throw new Error(`The specified Product was not found: '${productId}'`)
+    const sgetById: ProductStore['sgetById'] = productId => {
+      const result = getById(productId)
+      if (!result) {
+        throw new Error(`The specified Product was not found: '${productId}'`)
+      }
+      return result
     }
-    product.stock--
-  }
 
-  const incrementStock: ProductStore['incrementStock'] = productId => {
-    const product = state.all.find(item => item.id === productId)
-    if (!product) {
-      throw new Error(`The specified Product was not found: '${productId}'`)
+    const setAll: ProductStore['setAll'] = products => {
+      state.all.splice(0)
+      for (const product of products) {
+        state.all.push(Product.clone(product))
+      }
     }
-    product.stock++
-  }
 
-  //----------------------------------------------------------------------
-  //
-  //  Internal methods
-  //
-  //----------------------------------------------------------------------
+    const add: ProductStore['add'] = product => {
+      if (exists(product.id)) {
+        throw new Error(`The specified Product already exists: '${product.id}'`)
+      }
 
-  function getStateProductById(productId: string): Product | undefined {
-    return state.all.find(item => item.id === productId)
-  }
+      const stateItem = Product.clone(product)
+      state.all.push(stateItem)
+      return stateItem
+    }
 
-  //----------------------------------------------------------------------
-  //
-  //  Result
-  //
-  //----------------------------------------------------------------------
+    const set: ProductStore['set'] = product => {
+      const stateItem = getStateProductById(product.id)
+      if (!stateItem) {
+        return
+      }
 
-  return {
-    all: state.all,
-    exists,
-    getById,
-    sgetById,
-    setAll,
-    set,
-    add,
-    decrementStock,
-    incrementStock,
+      return Product.populate(product, stateItem)
+    }
+
+    const decrementStock: ProductStore['decrementStock'] = productId => {
+      const product = state.all.find(item => item.id === productId)
+      if (!product) {
+        throw new Error(`The specified Product was not found: '${productId}'`)
+      }
+      product.stock--
+    }
+
+    const incrementStock: ProductStore['incrementStock'] = productId => {
+      const product = state.all.find(item => item.id === productId)
+      if (!product) {
+        throw new Error(`The specified Product was not found: '${productId}'`)
+      }
+      product.stock++
+    }
+
+    //----------------------------------------------------------------------
+    //
+    //  Internal methods
+    //
+    //----------------------------------------------------------------------
+
+    function getStateProductById(productId: string): Product | undefined {
+      return state.all.find(item => item.id === productId)
+    }
+
+    //----------------------------------------------------------------------
+    //
+    //  Result
+    //
+    //----------------------------------------------------------------------
+
+    return {
+      all: state.all,
+      exists,
+      getById,
+      sgetById,
+      setAll,
+      set,
+      add,
+      decrementStock,
+      incrementStock,
+    }
   }
 }
 
@@ -145,4 +151,4 @@ function createProductStore(): ProductStore {
 //
 //========================================================================
 
-export { ProductStore, createProductStore }
+export { ProductStore }

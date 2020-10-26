@@ -1,6 +1,9 @@
 import { AppStorageLogic, ArticleStorageLogic, UserStorageLogic } from '@/app/logic/modules/storage'
+import { LogicContainer, LogicDependency } from '@/app/logic'
 import { Entity } from '@/firestore-ex'
-import { LogicContainer } from '@/app/logic'
+import { InternalLogic } from '@/app/logic/modules/internal'
+import { TestAPIContainer } from './api'
+import { TestStoreContainer } from './store'
 
 //========================================================================
 //
@@ -14,15 +17,36 @@ interface TestLogicContainer extends LogicContainer {
   readonly articleStorage: TestArticleStorageLogic
 }
 
-type TestAppStorageLogic = ReturnType<typeof AppStorageLogic.setup>
-type TestUserStorageLogic = ReturnType<typeof UserStorageLogic.setup>
-type TestArticleStorageLogic = ReturnType<typeof ArticleStorageLogic.setup>
+type TestAppStorageLogic = ReturnType<typeof AppStorageLogic.newRawInstance>
+type TestUserStorageLogic = ReturnType<typeof UserStorageLogic.newRawInstance>
+type TestArticleStorageLogic = ReturnType<typeof ArticleStorageLogic.newRawInstance>
+
+interface TestLogicDependency extends LogicDependency {
+  api: TestAPIContainer
+  store: TestStoreContainer
+}
 
 //========================================================================
 //
 //  Implementation
 //
 //========================================================================
+
+namespace TestLogicContainer {
+  export function newInstance(): TestLogicContainer & { readonly dependency: TestLogicDependency } {
+    const api = TestAPIContainer.newInstance()
+    const store = TestStoreContainer.newInstance()
+    const internal = InternalLogic.newInstance({ api, store })
+    const dependency = { api, store, internal }
+
+    const base = LogicContainer.newRawInstance(dependency)
+
+    return {
+      ...base,
+      dependency,
+    }
+  }
+}
 
 function generateFirestoreId(): string {
   const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -59,4 +83,4 @@ function expectToBeCopyEntity<T extends Entity>(actual: T | T[], expected: T | T
 export { TestLogicContainer, TestAppStorageLogic, TestUserStorageLogic, TestArticleStorageLogic, generateFirestoreId, expectToBeCopyEntity }
 export * from './api'
 export * from './store'
-export * from './storage'
+export * from './modules/storage'

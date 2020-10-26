@@ -1,5 +1,5 @@
-import { APIContainer, APIContainerImpl, injectAPI, provideAPI } from '@/app/logic/api'
 import { AuthStatus, UserClaims, UserInfo, UserInfoInput } from '@/app/logic'
+import { APIContainer } from '@/app/logic/api'
 import { APP_ADMIN_TOKEN } from '../data'
 import { RawUser } from '@/app/logic/api/gql'
 import axios from 'axios'
@@ -61,250 +61,253 @@ interface TestFirebaseUserInput {
 
 type TestUserInput = TestFirebaseUserInput & UserInfoInput
 
+type APIContainerImpl = ReturnType<typeof APIContainer['newRawInstance']>
+
 //========================================================================
 //
 //  Implementation
 //
 //========================================================================
 
-function createTestAPI(): TestAPIContainer {
-  provideAPI()
-  const api = injectAPI() as APIContainerImpl
-  return setupTestAPI(api)
-}
-
-function setupTestAPI<T extends APIContainerImpl>(api: T): T & TestAPIContainer {
-  const config = useConfig()
-
-  const setTestAuthToken: TestAPIContainer['setTestAuthToken'] = token => {
-    const tokenString = token ? JSON.stringify(token) : undefined
-    _setTestAuthToken(tokenString)
+namespace TestAPIContainer {
+  export function newInstance(): TestAPIContainer {
+    const api = APIContainer.newRawInstance()
+    return mix(api)
   }
 
-  const putTestStoreData: TestAPIContainer['putTestStoreData'] = async inputs => {
-    await api.gql.client.mutate<{ putTestStoreData: boolean }>({
-      mutation: gql`
-        mutation PutTestStoreData($inputs: [PutTestStoreDataInput!]!) {
-          putTestStoreData(inputs: $inputs)
-        }
-      `,
-      variables: { inputs },
-    })
-  }
+  export function mix<T extends APIContainerImpl>(api: T): TestAPIContainer & T {
+    const config = useConfig()
 
-  const uploadTestFiles: TestAPIContainer['uploadTestFiles'] = async uploadList => {
-    const tokenBackup = await _getTestAuthToken()
-    setTestAuthToken(APP_ADMIN_TOKEN)
-
-    const _uploadList = uploadList as (TestUploadFileItem & { signedUploadUrl: string })[]
-
-    const signedUploadUrls = await api.getSignedUploadUrls(
-      _uploadList.map(item => {
-        return { filePath: item.filePath, contentType: item.contentType }
-      })
-    )
-    signedUploadUrls.forEach((url, index) => {
-      _uploadList[index].signedUploadUrl = url
-    })
-
-    for (const uploadItem of _uploadList) {
-      const data = await readAsArrayBuffer(uploadItem.fileData)
-      await axios.request({
-        url: uploadItem.signedUploadUrl,
-        method: 'put',
-        data,
-        headers: {
-          'content-type': 'application/octet-stream',
-        },
-      })
-      const parentPath = removeStartDirChars(path.dirname(uploadItem.filePath))
-      await api.createStorageHierarchicalDirs([parentPath])
-      await api.handleUploadedFile(uploadItem.filePath)
+    const setTestAuthToken: TestAPIContainer['setTestAuthToken'] = token => {
+      const tokenString = token ? JSON.stringify(token) : undefined
+      _setTestAuthToken(tokenString)
     }
 
-    _setTestAuthToken(tokenBackup)
-  }
-
-  const uploadTestUserFiles: TestAPIContainer['uploadTestUserFiles'] = async (user, uploadList) => {
-    await uploadTestFiles(
-      uploadList.map(uploadItem => {
-        uploadItem.filePath = path.join(toUserStorageBasePath(user), uploadItem.filePath)
-        return uploadItem
+    const putTestStoreData: TestAPIContainer['putTestStoreData'] = async inputs => {
+      await api.gql.client.mutate<{ putTestStoreData: boolean }>({
+        mutation: gql`
+          mutation PutTestStoreData($inputs: [PutTestStoreDataInput!]!) {
+            putTestStoreData(inputs: $inputs)
+          }
+        `,
+        variables: { inputs },
       })
-    )
-  }
-
-  const removeTestDir: TestAPIContainer['removeTestDir'] = async dirPaths => {
-    const tokenBackup = await _getTestAuthToken()
-    setTestAuthToken(APP_ADMIN_TOKEN)
-
-    for (const dirPath of dirPaths) {
-      await api.callStoragePaginationAPI(api.removeStorageDir, dirPath)
     }
 
-    _setTestAuthToken(tokenBackup)
-  }
+    const uploadTestFiles: TestAPIContainer['uploadTestFiles'] = async uploadList => {
+      const tokenBackup = await _getTestAuthToken()
+      setTestAuthToken(APP_ADMIN_TOKEN)
 
-  const removeTestUserDir: TestAPIContainer['removeTestUserDir'] = async user => {
-    const tokenBackup = await _getTestAuthToken()
-    setTestAuthToken(APP_ADMIN_TOKEN)
+      const _uploadList = uploadList as (TestUploadFileItem & { signedUploadUrl: string })[]
 
-    await removeTestDir([toUserStorageBasePath(user)])
-
-    _setTestAuthToken(tokenBackup)
-  }
-
-  const removeTestUserDirs: TestAPIContainer['removeTestUserDirs'] = async (user, dirPaths) => {
-    await removeTestDir(
-      dirPaths.map(dirPath => {
-        return path.join(toUserStorageBasePath(user), dirPath)
+      const signedUploadUrls = await api.getSignedUploadUrls(
+        _uploadList.map(item => {
+          return { filePath: item.filePath, contentType: item.contentType }
+        })
+      )
+      signedUploadUrls.forEach((url, index) => {
+        _uploadList[index].signedUploadUrl = url
       })
-    )
-  }
 
-  const removeTestFiles: TestAPIContainer['removeTestFiles'] = async filePaths => {
-    const tokenBackup = await _getTestAuthToken()
-    setTestAuthToken(APP_ADMIN_TOKEN)
+      for (const uploadItem of _uploadList) {
+        const data = await readAsArrayBuffer(uploadItem.fileData)
+        await axios.request({
+          url: uploadItem.signedUploadUrl,
+          method: 'put',
+          data,
+          headers: {
+            'content-type': 'application/octet-stream',
+          },
+        })
+        const parentPath = removeStartDirChars(path.dirname(uploadItem.filePath))
+        await api.createStorageHierarchicalDirs([parentPath])
+        await api.handleUploadedFile(uploadItem.filePath)
+      }
 
-    for (const filePath of filePaths) {
-      await api.removeStorageFile(filePath)
+      _setTestAuthToken(tokenBackup)
     }
 
-    _setTestAuthToken(tokenBackup)
-  }
+    const uploadTestUserFiles: TestAPIContainer['uploadTestUserFiles'] = async (user, uploadList) => {
+      await uploadTestFiles(
+        uploadList.map(uploadItem => {
+          uploadItem.filePath = path.join(toUserStorageBasePath(user), uploadItem.filePath)
+          return uploadItem
+        })
+      )
+    }
 
-  const removeTestUserFiles: TestAPIContainer['removeTestUserFiles'] = async (user, filePaths) => {
-    await removeTestFiles(
-      filePaths.map(filePath => {
-        return path.join(toUserStorageBasePath(user), filePath)
+    const removeTestDir: TestAPIContainer['removeTestDir'] = async dirPaths => {
+      const tokenBackup = await _getTestAuthToken()
+      setTestAuthToken(APP_ADMIN_TOKEN)
+
+      for (const dirPath of dirPaths) {
+        await api.callStoragePaginationAPI(api.removeStorageDir, dirPath)
+      }
+
+      _setTestAuthToken(tokenBackup)
+    }
+
+    const removeTestUserDir: TestAPIContainer['removeTestUserDir'] = async user => {
+      const tokenBackup = await _getTestAuthToken()
+      setTestAuthToken(APP_ADMIN_TOKEN)
+
+      await removeTestDir([toUserStorageBasePath(user)])
+
+      _setTestAuthToken(tokenBackup)
+    }
+
+    const removeTestUserDirs: TestAPIContainer['removeTestUserDirs'] = async (user, dirPaths) => {
+      await removeTestDir(
+        dirPaths.map(dirPath => {
+          return path.join(toUserStorageBasePath(user), dirPath)
+        })
+      )
+    }
+
+    const removeTestFiles: TestAPIContainer['removeTestFiles'] = async filePaths => {
+      const tokenBackup = await _getTestAuthToken()
+      setTestAuthToken(APP_ADMIN_TOKEN)
+
+      for (const filePath of filePaths) {
+        await api.removeStorageFile(filePath)
+      }
+
+      _setTestAuthToken(tokenBackup)
+    }
+
+    const removeTestUserFiles: TestAPIContainer['removeTestUserFiles'] = async (user, filePaths) => {
+      await removeTestFiles(
+        filePaths.map(filePath => {
+          return path.join(toUserStorageBasePath(user), filePath)
+        })
+      )
+    }
+
+    const setTestFirebaseUsers: TestAPIContainer['setTestFirebaseUsers'] = async users => {
+      await api.gql.client.mutate<{ setTestFirebaseUsers: boolean }>({
+        mutation: gql`
+          mutation SetTestFirebaseUsers($users: [TestFirebaseUserInput!]!) {
+            setTestFirebaseUsers(users: $users)
+          }
+        `,
+        variables: { users },
       })
-    )
-  }
+    }
 
-  const setTestFirebaseUsers: TestAPIContainer['setTestFirebaseUsers'] = async users => {
-    await api.gql.client.mutate<{ setTestFirebaseUsers: boolean }>({
-      mutation: gql`
-        mutation SetTestFirebaseUsers($users: [TestFirebaseUserInput!]!) {
-          setTestFirebaseUsers(users: $users)
-        }
-      `,
-      variables: { users },
-    })
-  }
+    const deleteTestFirebaseUsers: TestAPIContainer['deleteTestFirebaseUsers'] = async uids => {
+      await api.gql.client.mutate<{ deleteTestFirebaseUsers: boolean }>({
+        mutation: gql`
+          mutation DeleteTestFirebaseUsers($uids: [String!]!) {
+            deleteTestFirebaseUsers(uids: $uids)
+          }
+        `,
+        variables: { uids },
+      })
+    }
 
-  const deleteTestFirebaseUsers: TestAPIContainer['deleteTestFirebaseUsers'] = async uids => {
-    await api.gql.client.mutate<{ deleteTestFirebaseUsers: boolean }>({
-      mutation: gql`
-        mutation DeleteTestFirebaseUsers($uids: [String!]!) {
-          deleteTestFirebaseUsers(uids: $uids)
-        }
-      `,
-      variables: { uids },
-    })
-  }
-
-  const setTestUsers: TestAPIContainer['setTestUsers'] = async users => {
-    const response = await api.gql.client.mutate<{ setTestUsers: RawUser[] }>({
-      mutation: gql`
-        mutation SetTestUsers($users: [TestUserInput!]!) {
-          setTestUsers(users: $users) {
-            id
-            fullName
-            email
-            emailVerified
-            isAppAdmin
-            createdAt
-            updatedAt
-            publicProfile {
+    const setTestUsers: TestAPIContainer['setTestUsers'] = async users => {
+      const response = await api.gql.client.mutate<{ setTestUsers: RawUser[] }>({
+        mutation: gql`
+          mutation SetTestUsers($users: [TestUserInput!]!) {
+            setTestUsers(users: $users) {
               id
-              displayName
-              photoURL
+              fullName
+              email
+              emailVerified
+              isAppAdmin
               createdAt
               updatedAt
+              publicProfile {
+                id
+                displayName
+                photoURL
+                createdAt
+                updatedAt
+              }
             }
           }
+        `,
+        variables: { users },
+      })
+
+      const testUsers = response.data!.setTestUsers
+      return testUsers.map(user => {
+        return {
+          ...toEntity(user),
+          publicProfile: toEntity(user.publicProfile),
         }
-      `,
-      variables: { users },
-    })
+      })
+    }
 
-    const testUsers = response.data!.setTestUsers
-    return testUsers.map(user => {
-      return {
-        ...toEntity(user),
-        publicProfile: toEntity(user.publicProfile),
-      }
-    })
-  }
+    const deleteTestUsers: TestAPIContainer['deleteTestUsers'] = async uids => {
+      await api.gql.client.mutate<{ deleteTestUsers: boolean }>({
+        mutation: gql`
+          mutation DeleteTestUsers($uids: [String!]!) {
+            deleteTestUsers(uids: $uids)
+          }
+        `,
+        variables: { uids },
+      })
+    }
 
-  const deleteTestUsers: TestAPIContainer['deleteTestUsers'] = async uids => {
-    await api.gql.client.mutate<{ deleteTestUsers: boolean }>({
-      mutation: gql`
-        mutation DeleteTestUsers($uids: [String!]!) {
-          deleteTestUsers(uids: $uids)
+    //----------------------------------------------------------------------
+    //
+    //  Internal methods
+    //
+    //----------------------------------------------------------------------
+
+    function _setTestAuthToken(token: string | undefined): void {
+      td.replace(require('@/app/logic/api/base'), 'getIdToken', () => token)
+    }
+
+    async function _getTestAuthToken(): Promise<string | undefined> {
+      let idToken: string | undefined
+      try {
+        idToken = await require('@/app/logic/api/base').getIdToken()
+      } catch {}
+      return idToken
+    }
+
+    function toUserStorageBasePath(user: TestAuthToken): string {
+      return path.join(config.storage.user.rootName, user.uid)
+    }
+
+    function readAsArrayBuffer(fileData: string | Blob | Uint8Array | ArrayBuffer | File): Promise<ArrayBuffer> {
+      return new Promise<ArrayBuffer>((resolve, reject) => {
+        if (typeof fileData === 'string') {
+          const enc = new TextEncoder()
+          resolve(enc.encode(fileData))
+        } else if (fileData instanceof Blob) {
+          const reader = new FileReader()
+          reader.onload = () => {
+            resolve(reader.result as ArrayBuffer)
+          }
+          reader.onerror = err => {
+            reject(err)
+          }
+          reader.readAsArrayBuffer(fileData)
+        } else {
+          resolve(fileData)
         }
-      `,
-      variables: { uids },
-    })
-  }
+      })
+    }
 
-  //----------------------------------------------------------------------
-  //
-  //  Internal methods
-  //
-  //----------------------------------------------------------------------
-
-  function _setTestAuthToken(token: string | undefined): void {
-    td.replace(require('@/app/logic/api/base'), 'getIdToken', () => token)
-  }
-
-  async function _getTestAuthToken(): Promise<string | undefined> {
-    let idToken: string | undefined
-    try {
-      idToken = await require('@/app/logic/api/base').getIdToken()
-    } catch {}
-    return idToken
-  }
-
-  function toUserStorageBasePath(user: TestAuthToken): string {
-    return path.join(config.storage.user.rootName, user.uid)
-  }
-
-  function readAsArrayBuffer(fileData: string | Blob | Uint8Array | ArrayBuffer | File): Promise<ArrayBuffer> {
-    return new Promise<ArrayBuffer>((resolve, reject) => {
-      if (typeof fileData === 'string') {
-        const enc = new TextEncoder()
-        resolve(enc.encode(fileData))
-      } else if (fileData instanceof Blob) {
-        const reader = new FileReader()
-        reader.onload = () => {
-          resolve(reader.result as ArrayBuffer)
-        }
-        reader.onerror = err => {
-          reject(err)
-        }
-        reader.readAsArrayBuffer(fileData)
-      } else {
-        resolve(fileData)
-      }
-    })
-  }
-
-  return {
-    ...api,
-    setTestAuthToken,
-    putTestStoreData,
-    uploadTestFiles,
-    uploadTestUserFiles,
-    removeTestDir,
-    removeTestUserDir,
-    removeTestUserDirs,
-    removeTestFiles,
-    removeTestUserFiles,
-    setTestFirebaseUsers,
-    deleteTestFirebaseUsers,
-    setTestUsers,
-    deleteTestUsers,
+    return {
+      ...api,
+      setTestAuthToken,
+      putTestStoreData,
+      uploadTestFiles,
+      uploadTestUserFiles,
+      removeTestDir,
+      removeTestUserDir,
+      removeTestUserDirs,
+      removeTestFiles,
+      removeTestUserFiles,
+      setTestFirebaseUsers,
+      deleteTestFirebaseUsers,
+      setTestUsers,
+      deleteTestUsers,
+    }
   }
 }
 
@@ -314,4 +317,4 @@ function setupTestAPI<T extends APIContainerImpl>(api: T): T & TestAPIContainer 
 //
 //========================================================================
 
-export { TestCollectionData, TestAPIContainer, TestAuthToken, TestFirebaseUserInput, TestUserInput, TestUploadFileItem, createTestAPI, setupTestAPI }
+export { TestCollectionData, TestAPIContainer, TestAuthToken, TestFirebaseUserInput, TestUserInput, TestUploadFileItem }

@@ -1,10 +1,7 @@
-import { APIKey, injectAPI } from '@/app/logic/api'
 import { Dialogs, injectDialogs, provideDialogs } from '@/app/dialogs'
-import { InternalLogic, InternalLogicKey, injectInternalLogic } from '@/app/logic/modules/internal'
-import { LogicKey, injectLogic, provideLogic } from '@/app/logic'
-import { StoreKey, injectStore } from '@/app/logic/store'
-import { TestAPIContainer, TestLogicContainer, TestStoreContainer, createTestAPI } from './logic'
-import { provide } from '@vue/composition-api'
+import { TestAPIContainer, TestLogicContainer, TestStoreContainer } from './logic'
+import { InternalLogic } from '@/app/logic/modules/internal'
+import { provideLogic } from '@/app/logic'
 import { shallowMount } from '@vue/test-utils'
 
 //========================================================================
@@ -63,16 +60,18 @@ function provideDependency(setup?: SetupFunc): ProvidedDependency {
  */
 function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
   if (!provided) {
-    provideLogic({
-      api: createTestAPI,
-    })
+    const {
+      dependency: { api, store, internal },
+      ...logic
+    } = TestLogicContainer.newInstance()
+    provideLogic(logic)
     provideDialogs(td.object())
 
     provided = {
-      api: injectAPI() as TestAPIContainer,
-      store: injectStore() as TestStoreContainer,
-      internal: injectInternalLogic(),
-      logic: injectLogic() as TestLogicContainer,
+      api,
+      store,
+      internal,
+      logic,
       dialogs: injectDialogs(),
     }
   }
@@ -81,27 +80,15 @@ function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
   if (!setup) return provided
 
   // setup関数を実行して戻り値がなかった場合、providedをそのまま返す
-  // ※setup関数が実行されるとprovidedの中身の依存オブジェクトが更新される
+  // ※setup関数を実行するとprovidedの依存オブジェクトが更新されてくる
   const setupResult = setup(provided)
   if (!setupResult) return provided
 
   const { logic, internal, store, api } = setupResult
-  if (api) {
-    provided.api = api
-    provide(APIKey, provided.api)
-  }
-  if (store) {
-    provided.store = store
-    provide(StoreKey, provided.store)
-  }
-  if (internal) {
-    provided.internal = internal
-    provide(InternalLogicKey, provided.internal)
-  }
-  if (logic) {
-    provided.logic = logic
-    provide(LogicKey, provided.logic)
-  }
+  if (api) provided.api = Object.assign(provided.api, api)
+  if (store) provided.store = Object.assign(provided.store, store)
+  if (internal) provided.internal = Object.assign(provided.internal, internal)
+  if (logic) provided.logic = Object.assign(provided.logic, logic)
 
   return provided
 }

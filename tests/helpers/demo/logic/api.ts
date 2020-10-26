@@ -1,5 +1,5 @@
-import { DemoAPIContainerImpl, injectAPI, provideAPI } from '@/demo/logic/api'
-import { TestAPIContainer, setupTestAPI } from '../../app'
+import { DemoAPIContainer } from '@/demo/logic/api'
+import { TestAPIContainer } from '../../app'
 
 //========================================================================
 //
@@ -7,7 +7,7 @@ import { TestAPIContainer, setupTestAPI } from '../../app'
 //
 //========================================================================
 
-interface TestDemoAPIContainer extends DemoAPIContainerImpl, TestAPIContainer {}
+interface TestDemoAPIContainer extends DemoAPIContainer, TestAPIContainer {}
 
 //========================================================================
 //
@@ -15,10 +15,11 @@ interface TestDemoAPIContainer extends DemoAPIContainerImpl, TestAPIContainer {}
 //
 //========================================================================
 
-function createTestAPI(): TestDemoAPIContainer {
-  provideAPI()
-  const api = injectAPI() as DemoAPIContainerImpl
-  return setupTestAPI(api)
+namespace TestDemoAPIContainer {
+  export function newInstance(): TestDemoAPIContainer {
+    const api = DemoAPIContainer.newRawInstance()
+    return TestAPIContainer.mix(api)
+  }
 }
 
 //========================================================================
@@ -27,4 +28,4 @@ function createTestAPI(): TestDemoAPIContainer {
 //
 //========================================================================
 
-export { TestDemoAPIContainer, createTestAPI }
+export { TestDemoAPIContainer }

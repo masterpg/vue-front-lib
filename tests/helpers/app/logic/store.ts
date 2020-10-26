@@ -1,5 +1,6 @@
-import { StorageStoreImpl } from '@/app/logic/store/storage'
+import { StorageStore } from '@/app/logic/store/storage'
 import { StoreContainer } from '@/app/logic/store'
+import { UserStore } from '@/app/logic/store/user'
 
 //========================================================================
 //
@@ -8,7 +9,23 @@ import { StoreContainer } from '@/app/logic/store'
 //========================================================================
 
 interface TestStoreContainer extends StoreContainer {
-  readonly storage: StorageStoreImpl
+  readonly user: ReturnType<typeof UserStore['newRawInstance']>
+  readonly storage: ReturnType<typeof StorageStore['newRawInstance']>
+}
+
+//========================================================================
+//
+//  Implementation
+//
+//========================================================================
+
+namespace TestStoreContainer {
+  export function newInstance(): TestStoreContainer {
+    const base = StoreContainer.newRawInstance()
+    return {
+      ...base,
+    }
+  }
 }
 
 //========================================================================

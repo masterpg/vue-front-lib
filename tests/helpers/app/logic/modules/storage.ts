@@ -1,6 +1,6 @@
 import { DeepPartial, removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { StorageNode, StorageNodeShareSettings, StorageNodeType } from '@/app/logic'
-import { TestLogicContainer, generateFirestoreId } from './index'
+import { TestLogicContainer, generateFirestoreId } from '../index'
 import { cloneDeep, merge } from 'lodash'
 import { StorageLogic } from '@/app/logic/modules/storage'
 import _path from 'path'
