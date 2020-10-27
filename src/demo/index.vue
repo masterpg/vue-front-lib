@@ -76,12 +76,12 @@
 </template>
 
 <script lang="ts">
-import { Dialogs, injectDialogs, provideDialogs } from '@/app/dialogs'
 import { Notify, Platform } from 'quasar'
 import { defineComponent, reactive, ref, watch } from '@vue/composition-api'
 import { injectLogic, provideLogic } from '@/demo/logic'
 import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
 import { AuthStatus } from '@/app/logic'
+import { Dialogs } from '@/app/dialogs'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
 import router from '@/demo/router'
 import { useI18n } from '@/demo/i18n'
@@ -107,8 +107,7 @@ export default defineComponent({
     const { t } = useI18n()
 
     const dialogsRef = ref<Dialogs>()
-    provideDialogs(dialogsRef)
-    const dialogs = injectDialogs()
+    Dialogs.provide(dialogsRef)
 
     const state = reactive({
       leftDrawerOpen: Platform.is.desktop,
@@ -146,11 +145,11 @@ export default defineComponent({
     //----------------------------------------------------------------------
 
     function signInMenuItemOnClick() {
-      dialogs.signIn.open()
+      Dialogs.signIn.open()
     }
 
     function signUpMenuItemOnClick() {
-      dialogs.signUp.open()
+      Dialogs.signUp.open()
     }
 
     function signOutMenuItemOnClick() {
@@ -158,18 +157,18 @@ export default defineComponent({
     }
 
     function emailChangeMenuItemOnClick() {
-      dialogs.emailChange.open()
+      Dialogs.emailChange.open()
     }
 
     function userDeleteMenuItemOnClick() {
-      dialogs.userDelete.open()
+      Dialogs.userDelete.open()
     }
 
     watch(
       () => logic.auth.status.value,
       (newValue, oldValue) => {
         if (newValue === AuthStatus.WaitForEntry) {
-          dialogs.userEntry.open()
+          Dialogs.userEntry.open()
         }
       }
     )

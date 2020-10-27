@@ -98,7 +98,7 @@ import { Loading, QDialog, QInput } from 'quasar'
 import { SetupContext, computed, defineComponent, nextTick, reactive, ref } from '@vue/composition-api'
 import { AuthMessageView } from '@/app/dialogs/auth/parts/auth-message-view.vue'
 import { Dialog } from '@/app/components/dialog'
-import { injectDialogs } from '@/app/dialogs'
+import { Dialogs } from '@/app/dialogs'
 import isEmail from 'validator/lib/isEmail'
 import { useI18n } from '@/app/i18n'
 
@@ -128,7 +128,6 @@ namespace EmailChangeDialog {
     const dialog = ref<QDialog>()
     const base = Dialog.setup<void>(dialog)
     const logic = injectLogic()
-    const dialogs = injectDialogs()
     const { t } = useI18n()
 
     const emailInput = ref<QInput>()
@@ -153,7 +152,7 @@ namespace EmailChangeDialog {
 
     const open: EmailChangeDialog['open'] = async () => {
       if (!logic.auth.isSignedIn) {
-        dialogs.clearQuery()
+        Dialogs.clearQuery()
         return
       }
       state.currentEmail = logic.auth.user.email
@@ -202,7 +201,7 @@ namespace EmailChangeDialog {
       // 変更されたメールアドレスに確認メールを送信
       await logic.auth.sendEmailVerification(window.location.origin)
       // URLからダイアログクエリを削除
-      dialogs.clearQuery()
+      Dialogs.clearQuery()
       // 画面をメールアドレス検証中へ変更
       state.viewType = 'emailVerifying'
 

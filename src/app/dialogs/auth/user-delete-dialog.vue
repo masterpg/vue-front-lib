@@ -92,8 +92,8 @@ import { EmailSignInView, EmailSignInViewResult } from '@/app/dialogs/auth/parts
 import { Loading, QDialog } from 'quasar'
 import { SetupContext, computed, defineComponent, reactive, ref } from '@vue/composition-api'
 import { Dialog } from '@/app/components/dialog'
+import { Dialogs } from '@/app/dialogs'
 import { ProviderListView } from '@/app/dialogs/auth/parts/provider-list-view.vue'
-import { injectDialogs } from '@/app/dialogs'
 import { useI18n } from '@/app/i18n'
 
 interface UserDeleteDialog extends Dialog<void, void> {}
@@ -122,7 +122,6 @@ namespace UserDeleteDialog {
     const dialog = ref<QDialog>()
     const base = Dialog.setup<void>(dialog)
     const logic = injectLogic()
-    const dialogs = injectDialogs()
     const { t } = useI18n()
 
     const state = reactive({
@@ -143,7 +142,7 @@ namespace UserDeleteDialog {
 
     const open: UserDeleteDialog['open'] = async () => {
       if (!logic.auth.isSignedIn) {
-        dialogs.clearQuery()
+        Dialogs.clearQuery()
         return
       }
       state.currentEmail = logic.auth.user.email

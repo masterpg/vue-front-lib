@@ -27,7 +27,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, reactive } from '@vue/composition-api'
-import { injectDialogs } from '@/app/dialogs'
+import { Dialogs } from '@/app/dialogs'
 import { injectLogic } from '@/app/logic'
 import { useI18n } from '@/demo/i18n'
 
@@ -56,7 +56,6 @@ namespace GreetMessage {
       //----------------------------------------------------------------------
 
       const logic = injectLogic()
-      const dialogs = injectDialogs()
       const { t, d } = useI18n()
 
       const state = reactive({
@@ -99,7 +98,7 @@ namespace GreetMessage {
         if (state.isSignIn) {
           await logic.auth.signOut()
         } else {
-          await dialogs.signIn.open()
+          await Dialogs.signIn.open()
         }
       }
 

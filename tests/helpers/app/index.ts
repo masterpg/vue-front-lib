@@ -1,5 +1,5 @@
-import { Dialogs, injectDialogs, provideDialogs } from '@/app/dialogs'
 import { TestAPIContainer, TestLogicContainer, TestStoreContainer } from './logic'
+import { Dialogs } from '@/app/dialogs'
 import { InternalLogic } from '@/app/logic/modules/internal'
 import { provideLogic } from '@/app/logic'
 import { shallowMount } from '@vue/test-utils'
@@ -15,7 +15,6 @@ interface ProvidedDependency {
   store: TestStoreContainer
   internal: InternalLogic
   logic: TestLogicContainer
-  dialogs: Dialogs
 }
 
 type SetupFunc = (provided: ProvidedDependency) => void
@@ -45,8 +44,8 @@ function provideDependency(setup?: SetupFunc): ProvidedDependency {
     },
   })
 
-  const { api, store, internal, logic, dialogs } = wrapper.vm
-  return { api, store, internal, logic, dialogs }
+  const { api, store, internal, logic } = wrapper.vm
+  return { api, store, internal, logic }
 }
 
 /**
@@ -65,14 +64,13 @@ function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
       ...logic
     } = TestLogicContainer.newInstance()
     provideLogic(logic)
-    provideDialogs(td.object())
+    Dialogs.provide(td.object())
 
     provided = {
       api,
       store,
       internal,
       logic,
-      dialogs: injectDialogs(),
     }
   }
 

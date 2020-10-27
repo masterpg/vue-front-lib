@@ -33,9 +33,9 @@ import { EmailSignUpView, EmailSignUpViewResult } from '@/app/dialogs/auth/sign-
 import { SetupContext, defineComponent, reactive, ref } from '@vue/composition-api'
 import { AuthMessageView } from '@/app/dialogs/auth/parts/auth-message-view.vue'
 import { Dialog } from '@/app/components/dialog'
+import { Dialogs } from '@/app/dialogs'
 import { ProviderListView } from '@/app/dialogs/auth/parts/provider-list-view.vue'
 import { QDialog } from 'quasar'
-import { injectDialogs } from '@/app/dialogs'
 import { useI18n } from '@/app/i18n'
 
 interface SignUpDialog extends Dialog<void, void> {}
@@ -65,7 +65,6 @@ namespace SignUpDialog {
     const dialog = ref<QDialog>()
     const base = Dialog.setup<void>(dialog)
     const logic = injectLogic()
-    const dialogs = injectDialogs()
     const { t } = useI18n()
 
     const state = reactive({
@@ -96,12 +95,12 @@ namespace SignUpDialog {
     //----------------------------------------------------------------------
 
     async function selectGoogle(): Promise<void> {
-      dialogs.clearQuery()
+      Dialogs.clearQuery()
       await logic.auth.signInWithGoogle()
     }
 
     async function selectFacebook(): Promise<void> {
-      dialogs.clearQuery()
+      Dialogs.clearQuery()
       await logic.auth.signInWithFacebook()
     }
 
@@ -116,7 +115,7 @@ namespace SignUpDialog {
           state.email = closeResult.email
           state.viewType = 'emailVerifying'
           // URLからダイアログクエリを削除
-          dialogs.clearQuery()
+          Dialogs.clearQuery()
           break
         }
         case 'cancel': {

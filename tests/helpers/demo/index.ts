@@ -1,5 +1,5 @@
-import { Dialogs, injectDialogs, provideDialogs } from '@/app/dialogs'
 import { TestDemoAPIContainer, TestDemoLogicContainer } from './logic'
+import { Dialogs } from '@/app/dialogs'
 import { InternalLogic } from '@/app/logic/modules/internal'
 import { TestDemoStoreContainer } from './logic'
 import { provideLogic } from '@/app/logic'
@@ -16,7 +16,6 @@ interface ProvidedDependency {
   store: TestDemoStoreContainer
   internal: InternalLogic
   logic: TestDemoLogicContainer
-  dialogs: Dialogs
 }
 
 type SetupFunc = (provided: ProvidedDependency) => void
@@ -46,8 +45,8 @@ function provideDependency(setup?: SetupFunc): ProvidedDependency {
     },
   })
 
-  const { api, store, internal, logic, dialogs } = wrapper.vm
-  return { api, store, internal, logic, dialogs }
+  const { api, store, internal, logic } = wrapper.vm
+  return { api, store, internal, logic }
 }
 
 /**
@@ -66,14 +65,13 @@ function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
       ...logic
     } = TestDemoLogicContainer.newInstance()
     provideLogic(logic)
-    provideDialogs(td.object())
+    Dialogs.provide(td.object())
 
     provided = {
       api,
       store,
       internal,
       logic,
-      dialogs: injectDialogs(),
     }
   }
 
