@@ -1,7 +1,7 @@
 import { ComputedRef, UnwrapRef, computed, reactive } from '@vue/composition-api'
-import { LogicDependency, StorageNodeType } from '@/app/logic/base'
 import axios, { AxiosResponse, Canceler } from 'axios'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
+import { StorageNodeType } from '@/app/logic/base'
 import path from 'path'
 import { removeBothEndsSlash } from 'web-base-lib'
 
@@ -135,10 +135,6 @@ interface StorageFileDownloader {
   cancel(): void
 }
 
-interface StorageDownloaderDependency extends LogicDependency {
-  storageLogic: StorageLogic
-}
-
 //========================================================================
 //
 //  Implementation
@@ -146,14 +142,12 @@ interface StorageDownloaderDependency extends LogicDependency {
 //========================================================================
 
 namespace StorageDownloader {
-  export function newInstance(dependency: StorageDownloaderDependency): StorageDownloader {
+  export function newInstance(storageLogic: StorageLogic): StorageDownloader {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
-
-    const { storageLogic } = dependency
 
     const state = reactive({
       status: 'none' as 'none' | 'running' | 'ends',

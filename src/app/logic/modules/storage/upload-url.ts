@@ -1,7 +1,9 @@
-import { StorageFileUploader, StorageUploader, StorageUploaderDependency, UploadFileParam } from '@/app/logic/modules/storage/upload'
+import { StorageFileUploader, StorageUploader, UploadFileParam } from '@/app/logic/modules/storage/upload'
 import { UnwrapRef, reactive } from '@vue/composition-api'
 import axios, { Canceler } from 'axios'
+import { StorageLogic } from '@/app/logic/modules/storage/base'
 import _path from 'path'
+import { injectAPI } from '@/app/logic/api'
 import { removeBothEndsSlash } from 'web-base-lib'
 
 //========================================================================
@@ -11,14 +13,14 @@ import { removeBothEndsSlash } from 'web-base-lib'
 //========================================================================
 
 namespace StorageURLUploader {
-  export function newInstance(dependency: StorageUploaderDependency, owner: Element): StorageUploader {
-    const base = StorageUploader.newRawInstance(dependency, owner)
+  export function newInstance(storageLogic: StorageLogic, owner: Element): StorageUploader {
+    const base = StorageUploader.newRawInstance(storageLogic, owner)
 
     base.createUploadingFiles.value = files => {
       const result: UnwrapRef<StorageFileUploader>[] = []
       for (const file of files) {
         const fileUploader = reactive(
-          StorageURLFileUploader.newInstance(dependency, {
+          StorageURLFileUploader.newInstance(storageLogic, {
             data: file,
             name: file.name,
             dir: base.getUploadDirPath(file),
@@ -37,15 +39,15 @@ namespace StorageURLUploader {
 }
 
 namespace StorageURLFileUploader {
-  export function newInstance(dependency: StorageUploaderDependency, uploadParam: UploadFileParam): StorageFileUploader {
+  export function newInstance(storageLogic: StorageLogic, uploadParam: UploadFileParam): StorageFileUploader {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
 
-    const base = StorageFileUploader.newRawInstance(dependency, uploadParam)
-    const { api, storageLogic } = dependency
+    const base = StorageFileUploader.newRawInstance(storageLogic, uploadParam)
+    const api = injectAPI()
 
     let canceler: Canceler | null = null
 

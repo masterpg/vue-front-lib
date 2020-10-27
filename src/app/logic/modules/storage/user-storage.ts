@@ -1,6 +1,7 @@
 import { AppStorageLogic } from '@/app/logic/modules/storage/app-storage'
-import { LogicDependency } from '@/app/logic/base'
 import _path from 'path'
+import { injectInternalLogic } from '@/app/logic/modules/internal'
+import { injectStore } from '@/app/logic/store'
 import { useConfig } from '@/app/config'
 import { watch } from '@vue/composition-api'
 
@@ -11,15 +12,16 @@ import { watch } from '@vue/composition-api'
 //========================================================================
 
 namespace UserStorageLogic {
-  export function newInstance(dependency: LogicDependency): AppStorageLogic {
-    return newRawInstance(dependency)
+  export function newInstance(): AppStorageLogic {
+    return newRawInstance()
   }
 
-  export function newRawInstance(dependency: LogicDependency) {
-    const base = AppStorageLogic.newRawInstance(dependency)
+  export function newRawInstance() {
+    const base = AppStorageLogic.newRawInstance()
 
     const config = useConfig()
-    const { store, internal } = dependency
+    const store = injectStore()
+    const internal = injectInternalLogic()
 
     watch(
       () => internal.auth.isSignedIn.value,

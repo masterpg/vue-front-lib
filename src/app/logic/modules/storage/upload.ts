@@ -1,6 +1,5 @@
 import { ComputedRef, UnwrapRef, computed, reactive } from '@vue/composition-api'
 import { removeBothEndsSlash, splitHierarchicalPaths } from 'web-base-lib'
-import { LogicDependency } from '@/app/logic/base'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import _path from 'path'
 import { extendedMethod } from '@/app/base'
@@ -135,10 +134,6 @@ interface StorageFileUploader {
   cancel(): void
 }
 
-interface StorageUploaderDependency extends LogicDependency {
-  storageLogic: StorageLogic
-}
-
 //========================================================================
 //
 //  Implementation
@@ -146,18 +141,16 @@ interface StorageUploaderDependency extends LogicDependency {
 //========================================================================
 
 namespace StorageUploader {
-  export function newInstance(dependency: StorageUploaderDependency, owner: Element): StorageUploader {
-    return newRawInstance(dependency, owner)
+  export function newInstance(storageLogic: StorageLogic, owner: Element): StorageUploader {
+    return newRawInstance(storageLogic, owner)
   }
 
-  export function newRawInstance(dependency: StorageUploaderDependency, owner: Element) {
+  export function newRawInstance(storageLogic: StorageLogic, owner: Element) {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
-
-    const { storageLogic } = dependency
 
     const state = reactive({
       status: 'none' as 'none' | 'running' | 'ends',
@@ -260,7 +253,7 @@ namespace StorageUploader {
       const result: UnwrapRef<StorageFileUploader>[] = []
       for (const file of files) {
         const fileUploader = reactive(
-          StorageFileUploader.newInstance(dependency, {
+          StorageFileUploader.newInstance(storageLogic, {
             data: file,
             name: file.name,
             dir: removeBothEndsSlash(getUploadDirPath(file)),
@@ -378,18 +371,16 @@ namespace StorageUploader {
 }
 
 namespace StorageFileUploader {
-  export function newInstance(dependency: StorageUploaderDependency, uploadParam: UploadFileParam): StorageFileUploader {
-    return newRawInstance(dependency, uploadParam)
+  export function newInstance(storageLogic: StorageLogic, uploadParam: UploadFileParam): StorageFileUploader {
+    return newRawInstance(storageLogic, uploadParam)
   }
 
-  export function newRawInstance(dependency: StorageUploaderDependency, uploadParam: UploadFileParam) {
+  export function newRawInstance(storageLogic: StorageLogic, uploadParam: UploadFileParam) {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
-
-    const { storageLogic } = dependency
 
     const state = reactive({
       status: 'none' as 'none' | 'running' | 'ends',
@@ -548,4 +539,4 @@ namespace StorageFileUploader {
 //
 //========================================================================
 
-export { UploadFileParam, StorageUploader, StorageFileUploader, StorageUploaderDependency }
+export { UploadFileParam, StorageUploader, StorageFileUploader }

@@ -1,7 +1,5 @@
-import { LogicDependency, TimestampEntity } from '@/app/logic'
 import { DeepPartial } from 'web-base-lib'
-import { DemoAPIContainer } from '@/demo/logic/api'
-import { DemoStoreContainer } from '@/demo/logic/store'
+import { TimestampEntity } from '@/app/logic'
 import dayjs from 'dayjs'
 
 //========================================================================
@@ -9,11 +7,6 @@ import dayjs from 'dayjs'
 //  Interfaces
 //
 //========================================================================
-
-interface DemoLogicDependency extends LogicDependency {
-  api: DemoAPIContainer
-  store: DemoStoreContainer
-}
 
 interface Product extends TimestampEntity {
   title: string
@@ -83,4 +76,4 @@ namespace CartItem {
 //
 //========================================================================
 
-export { DemoLogicDependency, Product, CartItem }
+export { Product, CartItem }

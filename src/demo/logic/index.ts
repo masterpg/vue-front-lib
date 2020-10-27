@@ -1,7 +1,5 @@
-import { LogicContainer, LogicKey, validateLogicProvided } from '@/app/logic'
-import { inject, provide } from '@vue/composition-api'
+import { LogicContainer, injectLogic as _injectLogic, provideLogic as _provideLogic } from '@/app/logic'
 import { DemoAPIContainer } from '@/demo/logic/api'
-import { DemoLogicDependency } from '@/demo/logic/base'
 import { DemoStoreContainer } from '@/demo/logic/store'
 import { InternalLogic } from '@/app/logic/modules/internal'
 import { ShopLogic } from '@/demo/logic/modules/shop'
@@ -27,17 +25,17 @@ namespace DemoLogicContainer {
     return newRawInstance()
   }
 
-  export function newRawInstance(options?: Partial<DemoLogicDependency>) {
+  export function newRawInstance(options?: { api?: DemoAPIContainer; store?: DemoStoreContainer; internal?: InternalLogic }) {
     const api = options?.api ?? DemoAPIContainer.newInstance()
     const store = options?.store ?? DemoStoreContainer.newInstance()
-    const internal = options?.internal ?? InternalLogic.newInstance({ api, store })
+    const internal = options?.internal ?? InternalLogic.newInstance()
     const dependency = { api, store, internal }
 
     const base = LogicContainer.newRawInstance(dependency)
 
     return {
       ...base,
-      shop: ShopLogic.newRawInstance(dependency),
+      shop: ShopLogic.newRawInstance(),
     }
   }
 }
@@ -50,12 +48,11 @@ namespace DemoLogicContainer {
 
 function provideLogic(instance?: DemoLogicContainer): void {
   instance = instance ?? DemoLogicContainer.newInstance()
-  provide(LogicKey, instance)
+  _provideLogic(instance)
 }
 
 function injectLogic(): DemoLogicContainer {
-  validateLogicProvided()
-  return inject(LogicKey)! as DemoLogicContainer
+  return _injectLogic() as DemoLogicContainer
 }
 
 //========================================================================
@@ -64,5 +61,5 @@ function injectLogic(): DemoLogicContainer {
 //
 //========================================================================
 
-export { DemoLogicContainer, LogicKey, injectLogic, provideLogic, validateLogicProvided }
+export { DemoLogicContainer, injectLogic, provideLogic }
 export * from '@/demo/logic/base'

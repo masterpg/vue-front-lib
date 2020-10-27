@@ -32,8 +32,27 @@ namespace StoreContainer {
 
 //========================================================================
 //
+//  Dependency Injection
+//
+//========================================================================
+
+let instance: StoreContainer
+
+function provideStore(store: StoreContainer): void {
+  instance = store
+}
+
+function injectStore(): StoreContainer {
+  if (!instance) {
+    throw new Error(`'StoreContainer' is not provided`)
+  }
+  return instance
+}
+
+//========================================================================
+//
 //  Export
 //
 //========================================================================
 
-export { StoreContainer }
+export { StoreContainer, provideStore, injectStore }

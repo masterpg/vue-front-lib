@@ -1,7 +1,6 @@
 import {
   APIStorageNode,
   CreateStorageNodeInput,
-  LogicDependency,
   RequiredStorageNodeShareSettings,
   StorageNode,
   StorageNodeKeyInput,
@@ -14,6 +13,8 @@ import { StorageLogic } from '@/app/logic/modules/storage/base'
 import { StorageURLUploader } from '@/app/logic/modules/storage/upload-url'
 import { StorageUploader } from '@/app/logic/modules/storage/upload'
 import { extendedMethod } from '@/app/base'
+import { injectAPI } from '@/app/logic/api'
+import { injectStore } from '@/app/logic/store'
 
 //========================================================================
 //
@@ -111,18 +112,19 @@ interface AppStorageLogic extends StorageLogic {
 //========================================================================
 
 namespace AppStorageLogic {
-  export function newInstance(dependency: LogicDependency): AppStorageLogic {
-    return newRawInstance(dependency)
+  export function newInstance(): AppStorageLogic {
+    return newRawInstance()
   }
 
-  export function newRawInstance(dependency: LogicDependency) {
+  export function newRawInstance() {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
 
-    const { api, store } = dependency
+    const api = injectAPI()
+    const store = injectStore()
 
     const state = reactive({
       basePath: '',
@@ -452,15 +454,15 @@ namespace AppStorageLogic {
     }
 
     const newUploader: AppStorageLogic['newUploader'] = owner => {
-      return StorageUploader.newInstance({ ...dependency, storageLogic: instance }, owner)
+      return StorageUploader.newInstance(instance, owner)
     }
 
     const newUrlUploader: AppStorageLogic['newUrlUploader'] = owner => {
-      return StorageURLUploader.newInstance({ ...dependency, storageLogic: instance }, owner)
+      return StorageURLUploader.newInstance(instance, owner)
     }
 
     const newDownloader: AppStorageLogic['newDownloader'] = () => {
-      return StorageDownloader.newInstance({ ...dependency, storageLogic: instance })
+      return StorageDownloader.newInstance(instance)
     }
 
     const newFileDownloader: AppStorageLogic['newFileDownloader'] = (type, filePath) => {

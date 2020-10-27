@@ -1,6 +1,5 @@
 import {
   CreateArticleTypeDirInput,
-  LogicDependency,
   SetArticleSortOrderInput,
   StorageArticleNodeType,
   StorageNode,
@@ -11,6 +10,9 @@ import { AppStorageLogic } from '@/app/logic/modules/storage/app-storage'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import _path from 'path'
 import { extendedMethod } from '@/app/base'
+import { injectAPI } from '@/app/logic/api'
+import { injectInternalLogic } from '@/app/logic/modules/internal'
+import { injectStore } from '@/app/logic/store'
 import { useConfig } from '@/app/config'
 import { watch } from '@vue/composition-api'
 
@@ -37,21 +39,23 @@ interface ArticleStorageLogic extends StorageLogic {
 //========================================================================
 
 namespace ArticleStorageLogic {
-  export function newInstance(dependency: LogicDependency): ArticleStorageLogic {
-    return newRawInstance(dependency)
+  export function newInstance(): ArticleStorageLogic {
+    return newRawInstance()
   }
 
-  export function newRawInstance(dependency: LogicDependency) {
+  export function newRawInstance() {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
 
-    const base = AppStorageLogic.newRawInstance(dependency)
+    const base = AppStorageLogic.newRawInstance()
 
     const config = useConfig()
-    const { api, store, internal } = dependency
+    const api = injectAPI()
+    const store = injectStore()
+    const internal = injectInternalLogic()
 
     watch(
       () => internal.auth.isSignedIn.value,

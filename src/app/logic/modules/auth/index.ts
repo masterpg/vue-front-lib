@@ -1,7 +1,10 @@
-import { AuthStatus, LogicDependency, UserInfo, UserInfoInput } from '@/app/logic/base'
+import { AuthStatus, UserInfo, UserInfoInput } from '@/app/logic/base'
 import { ComputedRef, computed, reactive } from '@vue/composition-api'
 import { DeepReadonly } from 'web-base-lib'
 import { Dialog } from 'quasar'
+import { injectAPI } from '@/app/logic/api'
+import { injectInternalLogic } from '@/app/logic/modules/internal'
+import { injectStore } from '@/app/logic/store'
 import { useI18n } from '@/app/i18n'
 
 //========================================================================
@@ -66,18 +69,20 @@ enum AuthProviderType {
 //========================================================================
 
 namespace AuthLogic {
-  export function newInstance(dependency: LogicDependency): AuthLogic {
-    return newRawInstance(dependency)
+  export function newInstance(): AuthLogic {
+    return newRawInstance()
   }
 
-  export function newRawInstance(dependency: LogicDependency) {
+  export function newRawInstance() {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
 
-    const { api, store, internal } = dependency
+    const api = injectAPI()
+    const store = injectStore()
+    const internal = injectInternalLogic()
     const { t } = useI18n()
 
     const state = reactive({

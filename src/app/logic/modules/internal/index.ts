@@ -1,7 +1,5 @@
 import { ComputedRef, WritableComputedRef, computed, reactive } from '@vue/composition-api'
-import { APIContainer } from '@/app/logic/api'
 import { AuthStatus } from '@/app/logic'
-import { StoreContainer } from '@/app/logic/store'
 
 //========================================================================
 //
@@ -22,11 +20,6 @@ interface InternalAuthLogic {
   validateSignedIn(): void
 }
 
-interface InternalLogicDependency {
-  api: APIContainer
-  store: StoreContainer
-}
-
 //========================================================================
 //
 //  Implementation
@@ -38,7 +31,7 @@ interface InternalLogicDependency {
 //--------------------------------------------------
 
 namespace InternalHelperLogic {
-  export function newInstance(dependency: InternalLogicDependency): InternalHelperLogic {
+  export function newInstance(): InternalHelperLogic {
     return {}
   }
 }
@@ -48,7 +41,7 @@ namespace InternalHelperLogic {
 //--------------------------------------------------
 
 namespace InternalAuthLogic {
-  export function newInstance(dependency: InternalLogicDependency): InternalAuthLogic {
+  export function newInstance(): InternalAuthLogic {
     const state = reactive({
       status: AuthStatus.None,
       isSignedIn: false,
@@ -76,13 +69,13 @@ namespace InternalAuthLogic {
 }
 
 namespace InternalLogic {
-  export function newInstance(dependency: InternalLogicDependency): InternalLogic {
-    return newRawInstance(dependency)
+  export function newInstance(): InternalLogic {
+    return newRawInstance()
   }
 
-  export function newRawInstance(dependency: InternalLogicDependency, options?: { helper?: InternalHelperLogic; auth?: InternalAuthLogic }) {
-    const helper = options?.helper ?? InternalHelperLogic.newInstance(dependency)
-    const auth = options?.auth ?? InternalAuthLogic.newInstance(dependency)
+  export function newRawInstance(options?: { helper?: InternalHelperLogic; auth?: InternalAuthLogic }) {
+    const helper = options?.helper ?? InternalHelperLogic.newInstance()
+    const auth = options?.auth ?? InternalAuthLogic.newInstance()
 
     return {
       helper,
@@ -93,8 +86,27 @@ namespace InternalLogic {
 
 //========================================================================
 //
+//  Dependency Injection
+//
+//========================================================================
+
+let instance: InternalLogic
+
+function provideInternalLogic(internal: InternalLogic): void {
+  instance = internal
+}
+
+function injectInternalLogic(): InternalLogic {
+  if (!instance) {
+    throw new Error(`'InternalLogic' is not provided`)
+  }
+  return instance
+}
+
+//========================================================================
+//
 //  Export
 //
 //========================================================================
 
-export { InternalAuthLogic, InternalHelperLogic, InternalLogic }
+export { InternalAuthLogic, InternalHelperLogic, InternalLogic, provideInternalLogic, injectInternalLogic }

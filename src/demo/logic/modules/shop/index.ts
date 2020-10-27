@@ -1,6 +1,9 @@
-import { CartItem, DemoLogicDependency, Product } from '@/demo/logic/base'
+import { CartItem, Product } from '@/demo/logic/base'
 import { ComputedRef, watch } from '@vue/composition-api'
 import { DeepReadonly } from 'web-base-lib'
+import { injectAPI } from '@/demo/logic/api'
+import { injectInternalLogic } from '@/app/logic/modules/internal'
+import { injectStore } from '@/demo/logic/store'
 
 //========================================================================
 //
@@ -33,18 +36,20 @@ interface ShopLogic {
 //========================================================================
 
 namespace ShopLogic {
-  export function newInstance(dependency: DemoLogicDependency): ShopLogic {
-    return newRawInstance(dependency)
+  export function newInstance(): ShopLogic {
+    return newRawInstance()
   }
 
-  export function newRawInstance(dependency: DemoLogicDependency) {
+  export function newRawInstance() {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
 
-    const { api, store, internal } = dependency
+    const api = injectAPI()
+    const store = injectStore()
+    const internal = injectInternalLogic()
 
     //----------------------------------------------------------------------
     //

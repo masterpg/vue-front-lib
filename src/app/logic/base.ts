@@ -1,9 +1,6 @@
 import { DeepPartial, DeepReadonly } from 'web-base-lib'
 import { Entity, OmitEntityTimestamp } from '@/firestore-ex'
 import dayjs, { Dayjs } from 'dayjs'
-import { APIContainer } from '@/app/logic/api'
-import { InternalLogic } from '@/app/logic/modules/internal'
-import { StoreContainer } from '@/app/logic/store'
 import { useI18n } from '@/app/i18n'
 
 //========================================================================
@@ -23,12 +20,6 @@ interface UserClaims {
 }
 
 interface IdToken extends firebase.auth.IdTokenResult, UserClaims {}
-
-interface LogicDependency {
-  api: APIContainer
-  store: StoreContainer
-  internal: InternalLogic
-}
 
 //--------------------------------------------------
 //  User
@@ -383,7 +374,6 @@ export {
   CreateArticleTypeDirInput,
   CreateStorageNodeInput,
   IdToken,
-  LogicDependency,
   PublicProfile,
   RequiredStorageNodeShareSettings,
   SetArticleSortOrderInput,

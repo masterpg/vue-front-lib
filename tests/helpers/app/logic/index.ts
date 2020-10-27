@@ -1,7 +1,7 @@
 import { AppStorageLogic, ArticleStorageLogic, UserStorageLogic } from '@/app/logic/modules/storage'
-import { LogicContainer, LogicDependency } from '@/app/logic'
 import { Entity } from '@/firestore-ex'
 import { InternalLogic } from '@/app/logic/modules/internal'
+import { LogicContainer } from '@/app/logic'
 import { TestAPIContainer } from './api'
 import { TestStoreContainer } from './store'
 
@@ -21,9 +21,10 @@ type TestAppStorageLogic = ReturnType<typeof AppStorageLogic.newRawInstance>
 type TestUserStorageLogic = ReturnType<typeof UserStorageLogic.newRawInstance>
 type TestArticleStorageLogic = ReturnType<typeof ArticleStorageLogic.newRawInstance>
 
-interface TestLogicDependency extends LogicDependency {
+interface TestLogicDependency {
   api: TestAPIContainer
   store: TestStoreContainer
+  internal: InternalLogic
 }
 
 //========================================================================
@@ -36,7 +37,7 @@ namespace TestLogicContainer {
   export function newInstance(): TestLogicContainer & { readonly dependency: TestLogicDependency } {
     const api = TestAPIContainer.newInstance()
     const store = TestStoreContainer.newInstance()
-    const internal = InternalLogic.newInstance({ api, store })
+    const internal = InternalLogic.newInstance()
     const dependency = { api, store, internal }
 
     const base = LogicContainer.newRawInstance(dependency)

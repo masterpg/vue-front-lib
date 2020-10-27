@@ -1,6 +1,6 @@
+import { StoreContainer, injectStore as _injectStore, provideStore as _provideStore } from '@/app/logic/store'
 import { CartStore } from '@/demo/logic/store/cart'
 import { ProductStore } from '@/demo/logic/store/product'
-import { StoreContainer } from '@/app/logic/store'
 
 //========================================================================
 //
@@ -37,8 +37,22 @@ namespace DemoStoreContainer {
 
 //========================================================================
 //
+//  Dependency Injection
+//
+//========================================================================
+
+function provideStore(store: DemoStoreContainer): void {
+  _provideStore(store)
+}
+
+function injectStore(): DemoStoreContainer {
+  return _injectStore() as DemoStoreContainer
+}
+
+//========================================================================
+//
 //  Export
 //
 //========================================================================
 
-export { DemoStoreContainer }
+export { DemoStoreContainer, provideStore, injectStore }

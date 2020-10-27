@@ -40,8 +40,27 @@ namespace APIContainer {
 
 //========================================================================
 //
+//  Dependency Injection
+//
+//========================================================================
+
+let instance: APIContainer
+
+function provideAPI(api: APIContainer): void {
+  instance = api
+}
+
+function injectAPI(): APIContainer {
+  if (!instance) {
+    throw new Error(`'APIContainer' is not provided`)
+  }
+  return instance
+}
+
+//========================================================================
+//
 //  Export
 //
 //========================================================================
 
-export { APIContainer }
+export { APIContainer, provideAPI, injectAPI }

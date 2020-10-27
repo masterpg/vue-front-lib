@@ -1,5 +1,5 @@
+import { APIContainer, injectAPI as _injectAPI, provideAPI as _provideAPI } from '@/app/logic/api'
 import { WritableComputedRef, computed, reactive } from '@vue/composition-api'
-import { APIContainer } from '@/app/logic/api'
 import { DemoGQLAPIContainer } from '@/demo/logic/api/gql'
 import { DemoRESTAPIContainer } from '@/demo/logic/api/rest'
 import { GQLAPIClient } from '@/app/logic/api/gql/client'
@@ -116,8 +116,22 @@ namespace DemoAPIContainer {
 
 //========================================================================
 //
+//  Dependency Injection
+//
+//========================================================================
+
+function provideAPI(api: DemoAPIContainer): void {
+  _provideAPI(api)
+}
+
+function injectAPI(): DemoAPIContainer {
+  return _injectAPI() as DemoAPIContainer
+}
+
+//========================================================================
+//
 //  Exports
 //
 //========================================================================
 
-export { DemoAPIContainer }
+export { DemoAPIContainer, provideAPI, injectAPI }

@@ -11,7 +11,7 @@
 
 <script lang="ts">
 import { EmailChangeDialog, SignInDialog, SignUpDialog, UserDeleteDialog, UserEntryDialog } from '@/app/dialogs/auth'
-import { InjectionKey, Ref, SetupContext, defineComponent, inject, onMounted, provide, ref, watch } from '@vue/composition-api'
+import { Ref, SetupContext, defineComponent, onMounted, ref, watch } from '@vue/composition-api'
 import { Dialog } from '@/app/components/dialog'
 import { MessageDialog } from '@/app/dialogs/message.vue'
 import { Route } from 'vue-router'
@@ -289,7 +289,7 @@ namespace Dialogs {
 //
 //========================================================================
 
-const DialogsKey: InjectionKey<Dialogs> = Symbol('Dialogs')
+let instance: Dialogs
 
 function provideDialogs(dialogsRef: Ref<Dialogs | undefined>): void {
   const dialogsWrapper = ((dialogsRef: Ref<Dialogs | undefined>) => {
@@ -365,19 +365,14 @@ function provideDialogs(dialogsRef: Ref<Dialogs | undefined>): void {
     return result
   })(dialogsRef)
 
-  provide(DialogsKey, dialogsWrapper)
+  instance = dialogsWrapper
 }
 
 function injectDialogs(): Dialogs {
-  validateDialogsRefProvided()
-  return inject(DialogsKey)!
-}
-
-function validateDialogsRefProvided(): void {
-  const value = inject(DialogsKey)
-  if (!value) {
-    throw new Error(`${DialogsKey.description} is not provided`)
+  if (!instance) {
+    throw new Error(`'Dialogs' is not provided`)
   }
+  return instance
 }
 
 //========================================================================
@@ -387,5 +382,5 @@ function validateDialogsRefProvided(): void {
 //========================================================================
 
 export default Dialogs.clazz
-export { Dialogs, DialogsKey, injectDialogs, provideDialogs, validateDialogsRefProvided }
+export { Dialogs, injectDialogs, provideDialogs }
 </script>
