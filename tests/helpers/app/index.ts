@@ -18,7 +18,7 @@ interface ProvidedDependency {
   dialogs: Dialogs
 }
 
-type SetupFunc = (provided: ProvidedDependency) => void | Partial<ProvidedDependency>
+type SetupFunc = (provided: ProvidedDependency) => void
 
 //========================================================================
 //
@@ -79,16 +79,9 @@ function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
   // setup関数が指定されていなかった場合、providedを返す
   if (!setup) return provided
 
-  // setup関数を実行して戻り値がなかった場合、providedをそのまま返す
-  // ※setup関数を実行するとprovidedの依存オブジェクトが更新されてくる
-  const setupResult = setup(provided)
-  if (!setupResult) return provided
-
-  const { logic, internal, store, api } = setupResult
-  if (api) provided.api = Object.assign(provided.api, api)
-  if (store) provided.store = Object.assign(provided.store, store)
-  if (internal) provided.internal = Object.assign(provided.internal, internal)
-  if (logic) provided.logic = Object.assign(provided.logic, logic)
+  // setup関数を実行
+  // ※setup関数を実行するとprovidedの依存オブジェクトがモック化される
+  setup(provided)
 
   return provided
 }
