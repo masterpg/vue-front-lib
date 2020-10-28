@@ -51,7 +51,7 @@
         <div class="title-text">{{ t('shop.products') }}</div>
       </div>
       <hr style="width: 100%;" />
-      <div v-for="product in state.products" :key="product.id" class="layout horizontal center product-item">
+      <div v-for="product in products" :key="product.id" class="layout horizontal center product-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
           <div class="detail">
@@ -60,17 +60,17 @@
           </div>
         </div>
         <div class="flex-1"></div>
-        <q-btn v-show="state.isSignedIn" round color="primary" size="xs" icon="add" @click="addButtonOnClick(product)" />
+        <q-btn v-show="isSignedIn" round color="primary" size="xs" icon="add" @click="addButtonOnClick(product)" />
       </div>
     </div>
 
-    <div v-show="!state.cartIsEmpty" class="app-mt-20">
+    <div v-show="!cartIsEmpty" class="app-mt-20">
       <div class="layout horizontal center">
         <div class="title-text">{{ t('shop.yourCurt') }}</div>
         <div class="flex-1"></div>
       </div>
       <hr style="width: 100%;" />
-      <div v-for="cartItem in state.cartItems" :key="cartItem.id" class="layout horizontal center cart-item">
+      <div v-for="cartItem in cartItems" :key="cartItem.id" class="layout horizontal center cart-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ cartItem.title }}</div>
           <div class="detail">
@@ -82,7 +82,7 @@
       </div>
     </div>
 
-    <div v-show="!state.cartIsEmpty" class="app-mt-20">
+    <div v-show="!cartIsEmpty" class="app-mt-20">
       <div class="layout horizontal center">
         <div class="title-text">{{ t('shop.total') }}</div>
         <div class="flex-1"></div>
@@ -90,10 +90,10 @@
       <hr style="width: 100%;" />
       <div class="layout horizontal center">
         <div class="total-amount layout horizontal center">
-          <div class="detail">¥{{ state.cartTotalPrice }}</div>
+          <div class="detail">¥{{ cartTotalPrice }}</div>
         </div>
         <div class="flex-1"></div>
-        <q-btn v-show="!state.cartIsEmpty" :label="t('shop.checkout')" color="primary" @click="checkoutButtonOnClick" />
+        <q-btn v-show="!cartIsEmpty" :label="t('shop.checkout')" color="primary" @click="checkoutButtonOnClick" />
       </div>
     </div>
   </div>
@@ -119,20 +119,8 @@ namespace ShopPage {
       const logic = injectLogic()
       const { t } = useI18n()
 
-      // @ts-ignore
-      // TS7022: 'state' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
-      const state = reactive({
-        isSignedIn: logic.auth.isSignedIn,
-
-        products: logic.shop.products,
-
-        cartItems: logic.shop.cartItems,
-
-        cartTotalPrice: logic.shop.cartTotalPrice,
-
-        cartIsEmpty: computed(() => {
-          return state.cartItems.length === 0
-        }),
+      const cartIsEmpty = computed(() => {
+        return logic.shop.cartItems.value.length === 0
       })
 
       //----------------------------------------------------------------------
@@ -179,7 +167,11 @@ namespace ShopPage {
 
       return {
         t,
-        state,
+        isSignedIn: logic.auth.isSignedIn,
+        products: logic.shop.products,
+        cartItems: logic.shop.cartItems,
+        cartTotalPrice: logic.shop.cartTotalPrice,
+        cartIsEmpty,
         addButtonOnClick,
         removeButtonOnClick,
         checkoutButtonOnClick,

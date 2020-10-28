@@ -1,7 +1,7 @@
+import { ComputedRef, computed, reactive } from '@vue/composition-api'
 import { DeepReadonly } from 'web-base-lib'
 import { Product } from '@/demo/logic/base'
 import { StatePartial } from '@/app/logic/store/base'
-import { reactive } from '@vue/composition-api'
 
 //========================================================================
 //
@@ -10,7 +10,7 @@ import { reactive } from '@vue/composition-api'
 //========================================================================
 
 interface ProductStore {
-  readonly all: DeepReadonly<Product>[]
+  readonly all: ComputedRef<DeepReadonly<Product>[]>
 
   getById(productId: string): DeepReadonly<Product> | undefined
 
@@ -53,6 +53,14 @@ namespace ProductStore {
 
     //----------------------------------------------------------------------
     //
+    //  Properties
+    //
+    //----------------------------------------------------------------------
+
+    const all = computed(() => [...state.all])
+
+    //----------------------------------------------------------------------
+    //
     //  Methods
     //
     //----------------------------------------------------------------------
@@ -62,7 +70,7 @@ namespace ProductStore {
     }
 
     const getById: ProductStore['getById'] = productId => {
-      return getStateProductById(productId)
+      return Product.clone(getStateProductById(productId))
     }
 
     const sgetById: ProductStore['sgetById'] = productId => {
@@ -87,7 +95,7 @@ namespace ProductStore {
 
       const stateItem = Product.clone(product)
       state.all.push(stateItem)
-      return stateItem
+      return Product.clone(stateItem)
     }
 
     const set: ProductStore['set'] = product => {
@@ -96,7 +104,7 @@ namespace ProductStore {
         return
       }
 
-      return Product.populate(product, stateItem)
+      return Product.clone(Product.populate(product, stateItem))
     }
 
     const decrementStock: ProductStore['decrementStock'] = productId => {
@@ -132,7 +140,7 @@ namespace ProductStore {
     //----------------------------------------------------------------------
 
     return {
-      all: state.all,
+      all,
       exists,
       getById,
       sgetById,
@@ -141,6 +149,7 @@ namespace ProductStore {
       add,
       decrementStock,
       incrementStock,
+      state,
     }
   }
 }

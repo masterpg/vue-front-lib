@@ -263,11 +263,14 @@ namespace StorageNode {
     return to as StorageNode
   }
 
-  export function clone<T extends StorageNode | StorageNode[]>(source: DeepReadonly<T>): T {
+  export function clone<T extends StorageNode | StorageNode[] | undefined | null>(source?: DeepReadonly<T>): T {
+    if (!source) return source as T
     if (Array.isArray(source)) {
-      return (source as StorageNode[]).map(item => clone(item)) as T
+      const list = source as DeepReadonly<StorageNode>[]
+      return list.map(item => clone(item)) as T
     } else {
-      return populate(source as DeepReadonly<StorageNode>, {}) as T
+      const item = source as DeepReadonly<StorageNode>
+      return populate(item, {}) as T
     }
   }
 }

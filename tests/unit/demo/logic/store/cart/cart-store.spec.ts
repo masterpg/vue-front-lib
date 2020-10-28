@@ -1,7 +1,7 @@
+import { provideDependency, toBeCopyCartItem } from '../../../../../helpers/demo'
 import { CartItem } from '@/demo/logic'
 import dayjs from 'dayjs'
 import { generateFirestoreId } from '../../../../../helpers/app'
-import { provideDependency } from '../../../../../helpers/demo'
 
 //========================================================================
 //
@@ -47,7 +47,7 @@ describe('CartStore', () => {
     })
 
     // テスト対象実行
-    const actual = store.cart.all
+    const actual = store.cart.all.value
 
     expect(actual).toEqual(CART_ITEMS)
   })
@@ -70,9 +70,10 @@ describe('CartStore', () => {
       })
 
       // テスト対象実行
-      const actual = store.cart.getById(CART_ITEM_1.id)
+      const actual = store.cart.getById(CART_ITEM_1.id)!
 
       expect(actual).toEqual(CART_ITEM_1)
+      toBeCopyCartItem(store, actual)
     })
 
     it('存在しないカートアイテムIDを指定した場合', () => {
@@ -97,6 +98,7 @@ describe('CartStore', () => {
       const actual = store.cart.sgetById(CART_ITEM_1.id)
 
       expect(actual).toEqual(CART_ITEM_1)
+      toBeCopyCartItem(store, actual)
     })
 
     it('存在しないカートアイテムIDを指定した場合', () => {
@@ -123,9 +125,10 @@ describe('CartStore', () => {
       })
 
       // テスト対象実行
-      const actual = store.cart.getByProductId(CART_ITEM_1.productId)
+      const actual = store.cart.getByProductId(CART_ITEM_1.productId)!
 
       expect(actual).toEqual(CART_ITEM_1)
+      toBeCopyCartItem(store, actual)
     })
 
     it('存在しない商品IDを指定した場合', () => {
@@ -150,6 +153,7 @@ describe('CartStore', () => {
       const actual = store.cart.sgetByProductId(CART_ITEM_1.productId)
 
       expect(actual).toEqual(CART_ITEM_1)
+      toBeCopyCartItem(store, actual)
     })
 
     it('存在しない商品IDを指定した場合', () => {
@@ -187,6 +191,7 @@ describe('CartStore', () => {
       const actual = store.cart.add(cartItemX)
 
       expect(actual).toEqual(cartItemX)
+      toBeCopyCartItem(store, actual)
 
       const added = store.cart.sgetById(cartItemX.id)
       expect(added).toEqual(cartItemX)
@@ -213,6 +218,7 @@ describe('CartStore', () => {
 
       expect(actual).toEqual(cartItemX)
       expect(actual).not.toHaveProperty('zzz')
+      toBeCopyCartItem(store, actual)
 
       const added = store.cart.sgetById(cartItemX.id)
       expect(added).toEqual(cartItemX)
@@ -250,9 +256,10 @@ describe('CartStore', () => {
       const actual = store.cart.set({
         id: cartItem1.id,
         title: cartItem1.title,
-      })
+      })!
 
       expect(actual).toEqual(cartItem1)
+      toBeCopyCartItem(store, actual)
     })
 
     it('余分なプロパティを含んだ場合', () => {
@@ -266,10 +273,11 @@ describe('CartStore', () => {
       const actual = store.cart.set({
         ...cartItem1,
         zzz: 'zzz',
-      } as any)
+      } as any)!
 
       expect(actual).toEqual(cartItem1)
       expect(actual).not.toHaveProperty('zzz')
+      toBeCopyCartItem(store, actual)
 
       const updated = store.cart.sgetById(cartItem1.id)
       expect(updated).toEqual(cartItem1)
@@ -298,9 +306,10 @@ describe('CartStore', () => {
       })
 
       // テスト対象実行
-      const actual = store.cart.remove(CART_ITEM_1.id)
+      const actual = store.cart.remove(CART_ITEM_1.id)!
 
       expect(actual).toEqual(CART_ITEM_1)
+      toBeCopyCartItem(store, actual)
     })
 
     it('存在しないカートアイテムIDを指定した場合', () => {
@@ -324,7 +333,7 @@ describe('CartStore', () => {
       // テスト対象実行
       store.cart.clear()
 
-      expect(store.cart.all.length).toBe(0)
+      expect(store.cart.all.value.length).toBe(0)
     })
   })
 })

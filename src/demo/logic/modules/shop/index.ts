@@ -12,15 +12,15 @@ import { injectStore } from '@/demo/logic/store'
 //========================================================================
 
 interface ShopLogic {
-  readonly products: DeepReadonly<Product>[]
+  readonly products: ComputedRef<DeepReadonly<Product>[]>
 
-  readonly cartItems: DeepReadonly<CartItem>[]
+  readonly cartItems: ComputedRef<DeepReadonly<CartItem>[]>
 
   readonly cartTotalPrice: ComputedRef<number>
 
-  fetchProducts(): Promise<DeepReadonly<Product>[]>
+  fetchProducts(): Promise<Product[]>
 
-  fetchCartItems(): Promise<DeepReadonly<CartItem>[]>
+  fetchCartItems(): Promise<CartItem[]>
 
   addItemToCart(productId: string): Promise<void>
 
@@ -60,7 +60,7 @@ namespace ShopLogic {
     const fetchProducts: ShopLogic['fetchProducts'] = async () => {
       const products = await api.getProducts()
       store.product.setAll(products)
-      return store.product.all
+      return Product.clone(store.product.all.value)
     }
 
     const fetchCartItems: ShopLogic['fetchCartItems'] = async () => {
@@ -68,7 +68,7 @@ namespace ShopLogic {
 
       const cartItems = await api.getCartItems()
       store.cart.setAll(cartItems)
-      return store.cart.all
+      return CartItem.clone(store.cart.all.value)
     }
 
     const addItemToCart: ShopLogic['addItemToCart'] = async productId => {

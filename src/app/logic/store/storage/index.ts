@@ -100,10 +100,7 @@ namespace StorageStore {
 
     const get: StorageStore['get'] = key => {
       const stateNode = getStateNode(key)
-      if (stateNode) {
-        return StorageNode.clone(stateNode)
-      }
-      return undefined
+      return StorageNode.clone(stateNode)
     }
 
     const getChildren: StorageStore['getChildren'] = dirPath => {
@@ -230,7 +227,7 @@ namespace StorageStore {
           result.push(node)
         }
       }
-      return result
+      return StorageNode.clone(result)
     }
 
     const move: StorageStore['move'] = (fromPath, toPath) => {

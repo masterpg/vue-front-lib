@@ -1,4 +1,8 @@
+import { CartItem, Product } from '@/demo/logic'
+import { CartStore } from '@/demo/logic/store/cart'
+import { DeepReadonly } from 'web-base-lib'
 import { DemoStoreContainer } from '@/demo/logic/store'
+import { ProductStore } from '@/demo/logic/store/product'
 
 //========================================================================
 //
@@ -6,7 +10,10 @@ import { DemoStoreContainer } from '@/demo/logic/store'
 //
 //========================================================================
 
-interface TestDemoStoreContainer extends DemoStoreContainer {}
+interface TestDemoStoreContainer extends DemoStoreContainer {
+  readonly product: ReturnType<typeof ProductStore['newRawInstance']>
+  readonly cart: ReturnType<typeof CartStore['newRawInstance']>
+}
 
 //========================================================================
 //
@@ -23,10 +30,44 @@ namespace TestDemoStoreContainer {
   }
 }
 
+//--------------------------------------------------
+//  Product
+//--------------------------------------------------
+
+/**
+ * 指定されたアイテムがストアのコピーであることを検証します。
+ * @param store
+ * @param actual
+ */
+function toBeCopyProduct<T extends DeepReadonly<Product>>(store: TestDemoStoreContainer, actual: T | T[]): void {
+  const items = Array.isArray(actual) ? (actual as T[]) : [actual as T]
+  for (const item of items) {
+    const stateItem = store.cart.state.all.find(stateItem => stateItem.id === item.id)
+    expect(item).not.toBe(stateItem)
+  }
+}
+
+//--------------------------------------------------
+//  CartItem
+//--------------------------------------------------
+
+/**
+ * 指定されたアイテムがストアのコピーであることを検証します。
+ * @param store
+ * @param actual
+ */
+function toBeCopyCartItem<T extends DeepReadonly<CartItem>>(store: TestDemoStoreContainer, actual: T | T[]): void {
+  const items = Array.isArray(actual) ? (actual as T[]) : [actual as T]
+  for (const item of items) {
+    const stateItem = store.cart.state.all.find(stateItem => stateItem.id === item.id)
+    expect(item).not.toBe(stateItem)
+  }
+}
+
 //========================================================================
 //
 //  Exports
 //
 //========================================================================
 
-export { TestDemoStoreContainer }
+export { TestDemoStoreContainer, toBeCopyCartItem, toBeCopyProduct }

@@ -10,27 +10,27 @@ import { StatePartial } from '@/app/logic/store/base'
 //========================================================================
 
 interface CartStore {
-  readonly all: DeepReadonly<CartItem>[]
+  readonly all: ComputedRef<DeepReadonly<CartItem>[]>
 
   readonly totalPrice: ComputedRef<number>
 
-  getById(cartItemId: string): DeepReadonly<CartItem> | undefined
+  getById(cartItemId: string): CartItem | undefined
 
-  sgetById(cartItemId: string): DeepReadonly<CartItem>
+  sgetById(cartItemId: string): CartItem
 
-  getByProductId(productId: string): DeepReadonly<CartItem> | undefined
+  getByProductId(productId: string): CartItem | undefined
 
-  sgetByProductId(productId: string): DeepReadonly<CartItem>
+  sgetByProductId(productId: string): CartItem
 
   exists(productId: string): boolean
 
   setAll(items: CartItem[]): void
 
-  add(item: CartItem): DeepReadonly<CartItem>
+  add(item: CartItem): CartItem
 
-  set(item: StatePartial<Omit<CartItem, 'uid' | 'productId'>>): DeepReadonly<CartItem> | undefined
+  set(item: StatePartial<Omit<CartItem, 'uid' | 'productId'>>): CartItem | undefined
 
-  remove(cartItemId: string): DeepReadonly<CartItem> | undefined
+  remove(cartItemId: string): CartItem | undefined
 
   clear(): void
 }
@@ -63,6 +63,8 @@ namespace CartStore {
     //
     //----------------------------------------------------------------------
 
+    const all = computed(() => [...state.all])
+
     const totalPrice = computed(() => {
       const result = state.all.reduce((result, item) => {
         return result + item.price * item.quantity
@@ -81,7 +83,7 @@ namespace CartStore {
     }
 
     const getById: CartStore['getById'] = cartItemId => {
-      return getStateCartItemById(cartItemId)
+      return CartItem.clone(getStateCartItemById(cartItemId))
     }
 
     const sgetById: CartStore['sgetById'] = cartItemId => {
@@ -93,7 +95,8 @@ namespace CartStore {
     }
 
     const getByProductId: CartStore['getByProductId'] = productId => {
-      return state.all.find(item => item.productId === productId)
+      const stateItem = state.all.find(item => item.productId === productId)
+      return CartItem.clone(stateItem)
     }
 
     const sgetByProductId: CartStore['sgetByProductId'] = productId => {
@@ -118,7 +121,7 @@ namespace CartStore {
 
       const stateItem = CartItem.clone(item)
       state.all.push(stateItem)
-      return stateItem
+      return CartItem.clone(stateItem)
     }
 
     const set: CartStore['set'] = item => {
@@ -127,7 +130,7 @@ namespace CartStore {
         return
       }
 
-      return CartItem.populate(item, stateItem)
+      return CartItem.clone(CartItem.populate(item, stateItem))
     }
 
     const remove: CartStore['remove'] = cartItemId => {
@@ -140,9 +143,9 @@ namespace CartStore {
         return false
       })
       if (foundIndex >= 0) {
-        const result = state.all[foundIndex]
+        const stateItem = state.all[foundIndex]
         state.all.splice(foundIndex, 1)
-        return result
+        return CartItem.clone(stateItem)
       }
       return undefined
     }
@@ -168,7 +171,7 @@ namespace CartStore {
     //----------------------------------------------------------------------
 
     return {
-      all: state.all,
+      all,
       totalPrice,
       exists,
       getById,
@@ -180,6 +183,7 @@ namespace CartStore {
       add,
       remove,
       clear,
+      state,
     }
   }
 }

@@ -1,7 +1,7 @@
+import { provideDependency, toBeCopyProduct } from '../../../../../helpers/demo'
 import { Product } from '@/demo/logic'
 import dayjs from 'dayjs'
 import { generateFirestoreId } from '../../../../../helpers/app'
-import { provideDependency } from '../../../../../helpers/demo'
 
 //========================================================================
 //
@@ -31,7 +31,7 @@ describe('ProductStore', () => {
     })
 
     // テスト対象実行
-    const actual = store.product.all
+    const actual = store.product.all.value
 
     expect(actual).toEqual(PRODUCTS)
   })
@@ -43,9 +43,10 @@ describe('ProductStore', () => {
       })
 
       // テスト対象実行
-      const actual = store.product.getById(PRODUCT_1.id)
+      const actual = store.product.getById(PRODUCT_1.id)!
 
       expect(actual).toEqual(PRODUCT_1)
+      toBeCopyProduct(store, actual)
     })
 
     it('存在しない商品IDを指定した場合', () => {
@@ -70,6 +71,7 @@ describe('ProductStore', () => {
       const actual = store.product.sgetById(PRODUCT_1.id)
 
       expect(actual).toEqual(PRODUCT_1)
+      toBeCopyProduct(store, actual)
     })
 
     it('存在しない商品IDを指定した場合', () => {
@@ -105,6 +107,7 @@ describe('ProductStore', () => {
       const actual = store.product.add(productX)
 
       expect(actual).toEqual(productX)
+      toBeCopyProduct(store, actual)
 
       const added = store.product.sgetById(productX.id)
       expect(added).toEqual(productX)
@@ -129,6 +132,7 @@ describe('ProductStore', () => {
 
       expect(actual).toEqual(productX)
       expect(actual).not.toHaveProperty('zzz')
+      toBeCopyProduct(store, actual)
 
       const added = store.product.sgetById(productX.id)
       expect(added).toEqual(productX)
@@ -166,9 +170,10 @@ describe('ProductStore', () => {
       const actual = store.product.set({
         id: product1.id,
         title: product1.title,
-      })
+      })!
 
       expect(actual).toEqual(product1)
+      toBeCopyProduct(store, actual)
     })
 
     it('余分なプロパティを含んだ場合', () => {
@@ -182,10 +187,11 @@ describe('ProductStore', () => {
       const actual = store.product.set({
         ...product1,
         zzz: 'zzz',
-      } as any)
+      } as any)!
 
       expect(actual).toEqual(product1)
       expect(actual).not.toHaveProperty('zzz')
+      toBeCopyProduct(store, actual)
 
       const updated = store.product.sgetById(product1.id)
       expect(updated).toEqual(product1)
