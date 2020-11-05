@@ -1623,6 +1623,11 @@
     "@types/connect" "*"
     "@types/node" "*"
 
+"@types/bytes@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@types/bytes/-/bytes-3.1.0.tgz#835a3e4aea3b4d7604aca216a78de372bff3ecc3"
+  integrity sha512-5YG1AiIC8HPPXRvYAIa7ehK3YMAwd0DWiPCtpuL9sgKceWLyWsVtLRA+lT4NkoanDNF9slwQ66lPizWDpgRlWA==
+
 "@types/color-name@^1.1.1":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@types/color-name/-/color-name-1.1.1.tgz#1c1261bbeaa10a8055bbc5d8ab84b7b2afc846a0"
@@ -2237,10 +2242,10 @@
   optionalDependencies:
     prettier "^1.18.2"
 
-"@vue/composition-api@^1.0.0-beta.16":
-  version "1.0.0-beta.16"
-  resolved "https://registry.yarnpkg.com/@vue/composition-api/-/composition-api-1.0.0-beta.16.tgz#9f7202125214e9398f68018c1162b57b14fd0bdc"
-  integrity sha512-FZgmL2qb2Hy3TGFKCEXHwaddFdTfG17GoA1YFCNGTg5mD3+GfWVchsKKR7XxHIAwOaXiHK/djWWsviSD1NeFFw==
+"@vue/composition-api@^1.0.0-beta.18":
+  version "1.0.0-beta.18"
+  resolved "https://registry.yarnpkg.com/@vue/composition-api/-/composition-api-1.0.0-beta.18.tgz#9c91ed2fc297e643defee95f16c551d457384239"
+  integrity sha512-5Ins/G+un8rZoXRllMquvuihHYUMz7EKxgCPTvJiBRml0gRrOz2eRisQbjzj8fuTC6yeURjySpOKXdVkTV4HJA==
   dependencies:
     tslib "^2.0.1"
 
@@ -3581,7 +3586,7 @@ bytes@3.0.0:
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.0.0.tgz#d32815404d689699f85a4ea4fa8755dd13a96048"
   integrity sha1-0ygVQE1olpn4Wk6k+odV3ROpYEg=
 
-bytes@3.1.0:
+bytes@3.1.0, bytes@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.1.0.tgz#f6cf7933a360e0588fa9fde85651cdc7f805d1f6"
   integrity sha512-zauLjrfCG+xvoyaqLoV8bLVXXNGC4JqlxFCutSDWA6fJrTo2ZuvLYTqZ7aHBLZSMOopbzwv8f+wZcVzfVTI2Dg==
@@ -12726,10 +12731,10 @@ vue-loader@^15.9.2:
     vue-hot-reload-api "^2.3.0"
     vue-style-loader "^4.1.0"
 
-vue-router@^3.4.6:
-  version "3.4.6"
-  resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.4.6.tgz#f7bda2c9a43d39837621c9a02ba7789f5daa24b2"
-  integrity sha512-kaXnB3pfFxhAJl/Mp+XG1HJMyFqrL/xPqV7oXlpXn4AwMmm6VNgf0nllW8ksflmZANfI4kdo0bVn/FYSsAolPQ==
+vue-router@^3.4.8:
+  version "3.4.8"
+  resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.4.8.tgz#2c06261d35d8075893470352d42d70b6287b8194"
+  integrity sha512-3BsR84AqarcmweXjItxw3jwQsiYNssYg090yi4rlzTnCJxmHtkyCvhNz9Z7qRSOkmiV485KkUCReTp5AjNY4wg==
 
 vue-style-loader@^4.1.0, vue-style-loader@^4.1.2:
   version "4.1.2"

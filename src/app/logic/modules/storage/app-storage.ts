@@ -243,8 +243,6 @@ namespace AppStorageLogic {
     })
 
     const fetchHierarchicalNodes: AppStorageLogic['fetchHierarchicalNodes'] = async nodePath => {
-      validateNotBucketRoot('nodePath', nodePath)
-
       // APIノードをストアへ反映
       const apiNodes = await getHierarchicalNodesAPI(toFullPath(nodePath))
       const result = setAPINodesToStore(apiNodes)
@@ -264,8 +262,6 @@ namespace AppStorageLogic {
     }
 
     const fetchAncestorDirs: AppStorageLogic['fetchAncestorDirs'] = async nodePath => {
-      validateNotBucketRoot('nodePath', nodePath)
-
       // APIノードをストアへ反映
       const apiNodes = await getAncestorDirsAPI(toFullPath(nodePath))
       const result = setAPINodesToStore(apiNodes)

@@ -18,7 +18,9 @@ const EMPTY_SHARE_SETTINGS: StorageNodeShareSettings = {
   writeUIds: null,
 }
 
-function newTestStorageDirNode(dirPath: string, data?: DeepPartial<Omit<StorageNode, 'name' | 'dir' | 'path' | 'nodeType'>>): StorageNode {
+type NewTestStorageNodeData = DeepPartial<Omit<StorageNode, 'name' | 'dir' | 'path' | 'nodeType'>>
+
+function newTestStorageDirNode(dirPath: string, data?: NewTestStorageNodeData): StorageNode {
   dirPath = removeBothEndsSlash(dirPath)
   data = data || {}
   const name = _path.basename(dirPath)
@@ -49,7 +51,7 @@ function newTestStorageDirNode(dirPath: string, data?: DeepPartial<Omit<StorageN
   return result
 }
 
-function newTestStorageFileNode(filePath: string, data?: DeepPartial<Omit<StorageNode, 'name' | 'dir' | 'path' | 'nodeType'>>): StorageNode {
+function newTestStorageFileNode(filePath: string, data?: NewTestStorageNodeData): StorageNode {
   filePath = removeBothEndsSlash(filePath)
   data = data || {}
   const name = _path.basename(filePath)
@@ -116,4 +118,11 @@ function mockStorageLogicAPIMethods(params: Pick<TestLogicContainer, 'appStorage
 //
 //========================================================================
 
-export { EMPTY_SHARE_SETTINGS, cloneTestStorageNode, mockStorageLogicAPIMethods, newTestStorageDirNode, newTestStorageFileNode }
+export {
+  EMPTY_SHARE_SETTINGS,
+  NewTestStorageNodeData,
+  cloneTestStorageNode,
+  mockStorageLogicAPIMethods,
+  newTestStorageDirNode,
+  newTestStorageFileNode,
+}

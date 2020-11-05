@@ -14,8 +14,9 @@
   height: 1.5em
   margin-right: 6px
   .toggle-icon
-    transition: transform .5s
     cursor: pointer
+    &.anime
+      transition: transform .5s
 
 .item-container
   height: var(--tree-line-height, 26px)
@@ -59,7 +60,14 @@
       <div v-show="lazyLoadStatus !== 'loading'" class="icon-container">
         <!-- トグルアイコン有り -->
         <template v-if="hasChildren">
-          <q-icon name="arrow_right" size="26px" color="grey-6" class="toggle-icon" :class="[opened ? 'rotate-90' : '']" @click="toggleIconOnClick" />
+          <q-icon
+            name="arrow_right"
+            size="26px"
+            color="grey-6"
+            class="toggle-icon"
+            :class="[opened ? 'rotate-90' : '', hasToggleAnime ? 'anime' : '']"
+            @click="toggleIconOnClick"
+          />
         </template>
         <!-- トグルアイコン無し -->
         <template v-else>
@@ -72,7 +80,7 @@
         class="layout horizontal center item-container"
         :class="{ selected, unselectable }"
         @click="itemContainerOnClick"
-        @click.right="m_itemOnRightClick"
+        @click.right="itemOnRightClick"
       >
         <!-- 指定アイコン -->
         <div v-if="!!icon" class="icon-container">
@@ -89,13 +97,13 @@
           <span ref="itemLabel">{{ label }}</span>
         </div>
         <!-- コンテキストメニュー -->
-        <storage-node-popup-menu
+        <StorageNodePopupMenu
           :storage-type="storageType"
-          :node="{ path: value, nodeType, articleNodeType }"
-          :is-root="m_isRoot"
+          :node="{ path, nodeType, articleNodeType }"
+          :is-root="isRoot"
           :disabled="disableContextMenu"
           context-menu
-          @select="m_popupMenuOnNodeAction"
+          @select="popupMenuOnNodeAction"
         />
       </div>
     </div>
@@ -106,11 +114,16 @@
 </template>
 
 <script lang="ts">
+import { ComputedRef, SetupContext, computed, defineComponent, reactive } from '@vue/composition-api'
 import { RequiredStorageNodeShareSettings, StorageArticleNodeType, StorageNodeShareSettings, StorageNodeType } from '@/app/logic'
+import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'
+import { TreeNode, TreeNodeEditData, TreeNodeImpl } from '@/app/components/tree-view'
 import { Dayjs } from 'dayjs'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
-import { TreeNode } from '@/app/components/tree-view'
-import { defineComponent } from '@vue/composition-api'
+import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'
+import _path from 'path'
+import { removeStartDirChars } from 'web-base-lib'
+import { useI18n } from '@/app/i18n'
 
 //========================================================================
 //
@@ -118,7 +131,7 @@ import { defineComponent } from '@vue/composition-api'
 //
 //========================================================================
 
-interface StorageTreeNode extends TreeNode {
+interface StorageTreeNodeMembers {
   readonly storageType: StorageNodeType
   readonly id: string
   readonly name: string
@@ -138,6 +151,13 @@ interface StorageTreeNode extends TreeNode {
   readonly inheritedShare: RequiredStorageNodeShareSettings
 }
 
+interface StorageTreeNode extends TreeNode<StorageTreeNodeData>, StorageTreeNodeMembers {}
+
+interface StorageTreeNodeImpl extends TreeNodeImpl<StorageTreeNodeData>, StorageTreeNodeMembers {
+  getIsPublic(): boolean
+  getReadUIds(): string[]
+}
+
 //========================================================================
 //
 //  Implementation
@@ -150,10 +170,258 @@ namespace StorageTreeNode {
 
     components: {
       LoadingSpinner: LoadingSpinner.clazz,
+      StorageNodePopupMenu: StorageNodePopupMenu.clazz,
     },
 
-    setup(props: {}, ctx) {},
+    setup: (props: {}, ctx) => setup(props, ctx),
   })
+
+  export function setup(props: {}, ctx: SetupContext) {
+    //----------------------------------------------------------------------
+    //
+    //  Variables
+    //
+    //----------------------------------------------------------------------
+
+    const base = TreeNode.setup(props, ctx)
+    const nodeData = computed(() => base.nodeData.value) as ComputedRef<StorageTreeNodeData>
+    const { tc } = useI18n()
+
+    base.extraEventNames.value.push('node-action')
+
+    const isRoot = computed(() => {
+      return base.parent.value === null
+    })
+
+    //----------------------------------------------------------------------
+    //
+    //  Properties
+    //
+    //----------------------------------------------------------------------
+
+    const storageType = computed(() => {
+      return nodeData.value.storageType
+    })
+
+    const id = computed(() => {
+      return nodeData.value.id
+    })
+
+    const name = computed(() => {
+      return _path.basename(nodeData.value.value)
+    })
+
+    const dir = computed(() => {
+      return removeStartDirChars(_path.dirname(nodeData.value.value))
+    })
+
+    const path = computed(() => {
+      return nodeData.value.value
+    })
+
+    const nodeType = computed(() => {
+      return nodeData.value.nodeType
+    })
+
+    const nodeTypeName = computed(() => {
+      if (nodeData.value.nodeType === StorageNodeType.Dir) {
+        return String(tc('common.folder', 1))
+      } else {
+        return String(tc('common.file', 1))
+      }
+    })
+
+    const contentType = computed(() => {
+      return nodeData.value.contentType
+    })
+
+    const size = computed(() => {
+      return nodeData.value.size
+    })
+
+    const share = computed(() => {
+      return nodeData.value.share
+    })
+
+    const articleNodeName = computed(() => {
+      return nodeData.value.articleNodeName
+    })
+
+    const articleNodeType = computed(() => {
+      return nodeData.value.articleNodeType
+    })
+
+    const articleSortOrder = computed(() => {
+      return nodeData.value.articleSortOrder
+    })
+
+    const url = computed(() => {
+      return nodeData.value.url
+    })
+
+    const createdAt = computed(() => {
+      return nodeData.value.createdAt
+    })
+
+    const updatedAt = computed(() => {
+      return nodeData.value.updatedAt
+    })
+
+    const disableContextMenu = computed(() => {
+      return nodeData.value.disableContextMenu
+    })
+
+    const _inheritedShare = reactive({
+      isPublic: false,
+      readUIds: [] as string[],
+      writeUIds: [] as string[],
+    })
+    const inheritedShare = computed(() => {
+      _inheritedShare.isPublic = getIsPublic()
+      _inheritedShare.readUIds.splice(0)
+      _inheritedShare.readUIds.push(...getReadUIds())
+      return _inheritedShare
+    })
+
+    //----------------------------------------------------------------------
+    //
+    //  Internal methods
+    //
+    //----------------------------------------------------------------------
+
+    base.setNodeData_sub.value = (editData: TreeNodeEditData<StorageTreeNodeData>) => {
+      if (typeof editData.id === 'string') {
+        nodeData.value.id = editData.id
+      }
+      if (typeof editData.contentType === 'string') {
+        nodeData.value.contentType = editData.contentType
+      }
+      if (typeof editData.size === 'number') {
+        nodeData.value.size = editData.size
+      }
+      if (editData.share) {
+        nodeData.value.share.isPublic = editData.share.isPublic
+        nodeData.value.share.readUIds = editData.share.readUIds
+        nodeData.value.share.writeUIds = editData.share.writeUIds
+      }
+      if (typeof editData.articleNodeName === 'string' || editData.articleNodeName === null) {
+        nodeData.value.articleNodeName = editData.articleNodeName
+      }
+      if (typeof editData.articleNodeType === 'string' || editData.articleNodeType === null) {
+        nodeData.value.articleNodeType = editData.articleNodeType
+      }
+      if (typeof editData.articleSortOrder === 'number' || editData.articleSortOrder === null) {
+        nodeData.value.articleSortOrder = editData.articleSortOrder
+      }
+      if (typeof editData.url === 'string') {
+        nodeData.value.url = editData.url
+      }
+      if (editData.createdAt) {
+        nodeData.value.createdAt = editData.createdAt
+      }
+      if (editData.updatedAt) {
+        nodeData.value.updatedAt = editData.updatedAt
+      }
+      if (typeof editData.disableContextMenu === 'boolean') {
+        nodeData.value.disableContextMenu = editData.disableContextMenu
+      }
+    }
+
+    /**
+     * 上位ディレクトリの共有設定を加味した公開フラグを取得します。
+     */
+    const getIsPublic: StorageTreeNodeImpl['getIsPublic'] = () => {
+      if (typeof nodeData.value.share.isPublic === 'boolean') {
+        return nodeData.value.share.isPublic
+      } else {
+        if (base.parent.value) {
+          const parent = base.parent.value as StorageTreeNodeImpl
+          if (typeof parent.share.isPublic === 'boolean') {
+            return parent.share.isPublic
+          } else {
+            return parent.getIsPublic()
+          }
+        } else {
+          return Boolean(nodeData.value.share.isPublic)
+        }
+      }
+    }
+
+    /**
+     * 上位ディレクトリの共有設定を加味した読み込み権限を取得します。
+     */
+    const getReadUIds: StorageTreeNodeImpl['getReadUIds'] = () => {
+      if (nodeData.value.share.readUIds) {
+        return nodeData.value.share.readUIds
+      } else {
+        if (base.parent.value) {
+          const parent = base.parent.value as StorageTreeNodeImpl
+          if (parent.share.readUIds) {
+            return parent.share.readUIds
+          } else {
+            return parent.getReadUIds()
+          }
+        } else {
+          return []
+        }
+      }
+    }
+
+    //----------------------------------------------------------------------
+    //
+    //  Event listeners
+    //
+    //----------------------------------------------------------------------
+
+    /**
+     * ポップアップメニューでアクションが選択された際のリスナです。
+     * @param e
+     */
+    function popupMenuOnNodeAction(e: StorageNodeActionEvent) {
+      base.dispatchExtraEvent('node-action', e)
+    }
+
+    function itemOnRightClick() {
+      // 右クリック時にラベルの文字を選択状態にするサンプル
+      // const range = document.createRange()
+      // range.selectNodeContents(this.m_itemLabel)
+      // const sel = window.getSelection()!
+      // sel.removeAllRanges()
+      // sel.addRange(range)
+    }
+
+    //----------------------------------------------------------------------
+    //
+    //  Result
+    //
+    //----------------------------------------------------------------------
+
+    return {
+      ...base,
+      isRoot,
+      storageType,
+      id,
+      name,
+      dir,
+      path,
+      nodeType,
+      contentType,
+      size,
+      share,
+      articleNodeName,
+      articleNodeType,
+      articleSortOrder,
+      url,
+      createdAt,
+      updatedAt,
+      disableContextMenu,
+      inheritedShare,
+      getIsPublic,
+      getReadUIds,
+      popupMenuOnNodeAction,
+      itemOnRightClick,
+    }
+  }
 }
 
 //========================================================================

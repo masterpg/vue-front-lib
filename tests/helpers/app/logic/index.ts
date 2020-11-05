@@ -1,4 +1,5 @@
 import { AppStorageLogic, ArticleStorageLogic, UserStorageLogic } from '@/app/logic/modules/storage'
+import { AuthLogic } from '@/app/logic/modules/auth'
 import { Entity } from '@/firestore-ex'
 import { InternalLogic } from '@/app/logic/modules/internal'
 import { LogicContainer } from '@/app/logic'
@@ -12,11 +13,13 @@ import { TestStoreContainer } from './store'
 //========================================================================
 
 interface TestLogicContainer extends LogicContainer {
+  readonly auth: TestAuthLogic
   readonly appStorage: TestAppStorageLogic
   readonly userStorage: TestUserStorageLogic
   readonly articleStorage: TestArticleStorageLogic
 }
 
+type TestAuthLogic = ReturnType<typeof AuthLogic.newRawInstance>
 type TestAppStorageLogic = ReturnType<typeof AppStorageLogic.newRawInstance>
 type TestUserStorageLogic = ReturnType<typeof UserStorageLogic.newRawInstance>
 type TestArticleStorageLogic = ReturnType<typeof ArticleStorageLogic.newRawInstance>

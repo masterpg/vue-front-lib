@@ -1,6 +1,7 @@
 import { StorageArticleNodeType, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/logic'
 import { TreeNodeData, TreeViewLazyLoadStatus } from '@/app/components/tree-view'
 import { Dayjs } from 'dayjs'
+import { RequiredAre } from 'web-base-lib'
 import { useI18n } from '@/app/i18n'
 
 //========================================================================
@@ -9,9 +10,8 @@ import { useI18n } from '@/app/i18n'
 //
 //========================================================================
 
-interface StorageTreeNodeData extends TreeNodeData {
+interface StorageTreeNodeData extends RequiredAre<TreeNodeData, 'icon' | 'opened' | 'lazy' | 'lazyLoadStatus' | 'sortFunc' | 'selected'> {
   storageType: StorageType
-  icon: string
   id: string
   nodeType: StorageNodeType
   contentType: string

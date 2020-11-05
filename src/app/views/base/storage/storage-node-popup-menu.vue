@@ -3,12 +3,12 @@
 </style>
 
 <template>
-  <q-menu ref="menu" class="StorageNodePopupMenu" :touch-position="contextMenu" :context-menu="contextMenu" @before-show="m_menuOnBeforeShow">
+  <q-menu ref="menu" class="StorageNodePopupMenu" :touch-position="contextMenu" :context-menu="contextMenu" @before-show="menuOnBeforeShow">
     <q-list dense style="min-width: 100px;">
-      <template v-for="(menuItem, index) in m_menuItems">
+      <template v-for="(menuItem, index) in menuItems">
         <q-separator v-if="menuItem.type === 'separator'" :key="index" />
         <q-item v-else :key="index" v-close-popup clickable>
-          <q-item-section @click="m_menuItemOnClick(menuItem)">{{ menuItem.label }}</q-item-section>
+          <q-item-section @click="menuItemOnClick(menuItem)">{{ menuItem.label }}</q-item-section>
         </q-item>
       </template>
     </q-list>
@@ -16,13 +16,36 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api'
+import { StorageArticleNodeType, StorageNodeType, StorageType } from '@/app/logic'
+import { StorageNodeActionEvent as _StorageNodeActionEvent, StorageNodeActionType as _StorageNodeActionType } from '@/app/views/base/storage/base'
+import { computed, defineComponent, ref } from '@vue/composition-api'
+import { QMenu } from 'quasar'
+import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 
 //========================================================================
 //
 //  Interfaces
 //
 //========================================================================
+
+interface Node {
+  path: string
+  nodeType: StorageNodeType
+  articleNodeType: StorageArticleNodeType
+}
+
+type StorageNodeActionType = _StorageNodeActionType | 'separator'
+
+class StorageNodeActionEvent extends _StorageNodeActionEvent<StorageNodeActionType> {}
+
+interface Props {
+  storageType: StorageType
+  node: Node
+  selectedNodes: Node[] | null
+  isRoot: boolean
+  disabled: boolean
+  contextMenu: boolean
+}
 
 //========================================================================
 //
@@ -34,7 +57,294 @@ namespace StorageNodePopupMenu {
   export const clazz = defineComponent({
     name: 'StorageNodePopupMenu',
 
-    setup(props: {}, ctx) {},
+    props: {
+      storageType: { type: String, require: true },
+      node: { type: Object, require: true },
+      selectedNodes: { type: Array, default: null },
+      isRoot: { type: Boolean, default: false },
+      disabled: { type: Boolean, default: false },
+      contextMenu: { type: Boolean, default: false },
+    },
+
+    setup(props: Props, ctx) {
+      //----------------------------------------------------------------------
+      //
+      //  Variables
+      //
+      //----------------------------------------------------------------------
+
+      const menu = ref<QMenu>()
+
+      const pageLogic = StoragePageLogic.getInstance(props.storageType)
+
+      const menuItems = computed(() => {
+        // ストレージ系メニュー
+        if (isStorage.value) {
+          // 複数選択用メニュー
+          if (isMulti.value) {
+            return [
+              new StorageNodeActionEvent('move', selectedNodePaths.value),
+              new StorageNodeActionEvent('share', selectedNodePaths.value),
+              new StorageNodeActionEvent('delete', selectedNodePaths.value),
+            ]
+          }
+          // ルートノード用メニュー
+          else if (props.isRoot) {
+            return [
+              new StorageNodeActionEvent('createDir', selectedNodePaths.value),
+              new StorageNodeActionEvent('uploadDir', selectedNodePaths.value),
+              new StorageNodeActionEvent('uploadFiles', selectedNodePaths.value),
+              new StorageNodeActionEvent('reload', selectedNodePaths.value),
+            ]
+          }
+          // フォルダ用メニュー
+          else if (isStorageDir.value) {
+            return [
+              new StorageNodeActionEvent('createDir', selectedNodePaths.value),
+              new StorageNodeActionEvent('uploadDir', selectedNodePaths.value),
+              new StorageNodeActionEvent('uploadFiles', selectedNodePaths.value),
+              new StorageNodeActionEvent('move', selectedNodePaths.value),
+              new StorageNodeActionEvent('rename', selectedNodePaths.value),
+              new StorageNodeActionEvent('share', selectedNodePaths.value),
+              new StorageNodeActionEvent('delete', selectedNodePaths.value),
+              new StorageNodeActionEvent('reload', selectedNodePaths.value),
+            ]
+          }
+          // ファイル用メニュー
+          else if (isStorageFile.value) {
+            return [
+              new StorageNodeActionEvent('move', selectedNodePaths.value),
+              new StorageNodeActionEvent('rename', selectedNodePaths.value),
+              new StorageNodeActionEvent('share', selectedNodePaths.value),
+              new StorageNodeActionEvent('delete', selectedNodePaths.value),
+            ]
+          }
+        }
+        // 記事系メニュー
+        else {
+          // 複数選択用メニュー
+          if (isMulti.value) {
+            const result = [
+              new StorageNodeActionEvent('move', selectedNodePaths.value),
+              new StorageNodeActionEvent('share', selectedNodePaths.value),
+              new StorageNodeActionEvent('delete', selectedNodePaths.value),
+            ]
+            if (containsBundle(props.selectedNodes!)) {
+              const index = result.findIndex(e => e.type === 'move')
+              index >= 0 && result.splice(index, 1)
+            }
+            if (containsAssetsDir(props.selectedNodes!)) {
+              const index = result.findIndex(e => e.type === 'delete')
+              index >= 0 && result.splice(index, 1)
+            }
+            return result
+          }
+          // 記事ルート用メニュー
+          else if (props.isRoot) {
+            return [
+              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, StorageArticleNodeType.ListBundle),
+              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, StorageArticleNodeType.CategoryBundle),
+            ]
+          }
+          // リストバンドル用メニュー
+          else if (isListBundle.value) {
+            return [
+              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, StorageArticleNodeType.Article),
+              new StorageNodeActionEvent('separator', selectedNodePaths.value),
+              new StorageNodeActionEvent('rename', selectedNodePaths.value),
+              new StorageNodeActionEvent('share', selectedNodePaths.value),
+              new StorageNodeActionEvent('delete', selectedNodePaths.value),
+              new StorageNodeActionEvent('reload', selectedNodePaths.value),
+            ]
+          }
+          // カテゴリバンドル用メニュー
+          else if (isCategoryBundle.value) {
+            return [
+              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, StorageArticleNodeType.Category),
+              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, StorageArticleNodeType.Article),
+              new StorageNodeActionEvent('separator', selectedNodePaths.value),
+              new StorageNodeActionEvent('rename', selectedNodePaths.value),
+              new StorageNodeActionEvent('share', selectedNodePaths.value),
+              new StorageNodeActionEvent('delete', selectedNodePaths.value),
+              new StorageNodeActionEvent('reload', selectedNodePaths.value),
+            ]
+          }
+          // カテゴリ用メニュー
+          else if (isCategory.value) {
+            return [
+              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, StorageArticleNodeType.Category),
+              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, StorageArticleNodeType.Article),
+              new StorageNodeActionEvent('separator', selectedNodePaths.value),
+              new StorageNodeActionEvent('rename', selectedNodePaths.value),
+              new StorageNodeActionEvent('share', selectedNodePaths.value),
+              new StorageNodeActionEvent('delete', selectedNodePaths.value),
+              new StorageNodeActionEvent('reload', selectedNodePaths.value),
+            ]
+          }
+          // 記事用メニュー
+          else if (isArticle.value) {
+            return [
+              new StorageNodeActionEvent('createDir', selectedNodePaths.value),
+              new StorageNodeActionEvent('uploadDir', selectedNodePaths.value),
+              new StorageNodeActionEvent('uploadFiles', selectedNodePaths.value),
+              new StorageNodeActionEvent('move', selectedNodePaths.value),
+              new StorageNodeActionEvent('rename', selectedNodePaths.value),
+              new StorageNodeActionEvent('share', selectedNodePaths.value),
+              new StorageNodeActionEvent('delete', selectedNodePaths.value),
+              new StorageNodeActionEvent('reload', selectedNodePaths.value),
+            ]
+          }
+          // フォルダ用メニュー
+          else if (isStorageDir.value) {
+            if (isAssetsDir.value) {
+              return [
+                new StorageNodeActionEvent('createDir', selectedNodePaths.value),
+                new StorageNodeActionEvent('uploadDir', selectedNodePaths.value),
+                new StorageNodeActionEvent('uploadFiles', selectedNodePaths.value),
+                new StorageNodeActionEvent('reload', selectedNodePaths.value),
+              ]
+            } else {
+              return [
+                new StorageNodeActionEvent('createDir', selectedNodePaths.value),
+                new StorageNodeActionEvent('uploadDir', selectedNodePaths.value),
+                new StorageNodeActionEvent('uploadFiles', selectedNodePaths.value),
+                new StorageNodeActionEvent('move', selectedNodePaths.value),
+                new StorageNodeActionEvent('rename', selectedNodePaths.value),
+                new StorageNodeActionEvent('share', selectedNodePaths.value),
+                new StorageNodeActionEvent('delete', selectedNodePaths.value),
+                new StorageNodeActionEvent('reload', selectedNodePaths.value),
+              ]
+            }
+          }
+          // ファイル用メニュー
+          else if (isStorageFile.value) {
+            return [
+              new StorageNodeActionEvent('move', selectedNodePaths.value),
+              new StorageNodeActionEvent('rename', selectedNodePaths.value),
+              new StorageNodeActionEvent('share', selectedNodePaths.value),
+              new StorageNodeActionEvent('delete', selectedNodePaths.value),
+            ]
+          }
+        }
+
+        return []
+      })
+
+      const selectedNodePaths = computed(() => {
+        return props.selectedNodes ? props.selectedNodes.map(node => node.path) : [props.node.path]
+      })
+
+      const isStorage = computed(() => {
+        switch (props.storageType) {
+          case 'app':
+          case 'user':
+            return true
+          default:
+            return false
+        }
+      })
+
+      const isMulti = computed(() => {
+        if (props.selectedNodes) {
+          return props.selectedNodes.length > 1
+        } else {
+          return false
+        }
+      })
+
+      const isStorageDir = computed(() => {
+        return !props.isRoot && !isMulti.value && props.node.nodeType === StorageNodeType.Dir
+      })
+
+      const isStorageFile = computed(() => {
+        return !props.isRoot && !isMulti.value && props.node.nodeType === StorageNodeType.File
+      })
+
+      const isListBundle = computed(() => {
+        return !props.isRoot && !isMulti.value && pageLogic.isListBundle(props.node)
+      })
+
+      const isCategoryBundle = computed(() => {
+        return !props.isRoot && !isMulti.value && pageLogic.isCategoryBundle(props.node)
+      })
+
+      const isCategory = computed(() => {
+        return !props.isRoot && !isMulti.value && pageLogic.isCategory(props.node)
+      })
+
+      const isArticle = computed(() => {
+        return !props.isRoot && !isMulti.value && pageLogic.isArticle(props.node)
+      })
+
+      const isAssetsDir = computed(() => {
+        return !props.isRoot && !isMulti.value && pageLogic.isAssetsDir(props.node)
+      })
+
+      const enabled = computed(() => {
+        if (props.disabled) return false
+        if (!pageLogic.isSignedIn.value) return false
+
+        if (props.selectedNodes) {
+          return props.selectedNodes.length > 0 && props.selectedNodes.includes(props.node)
+        } else {
+          return true
+        }
+      })
+
+      //----------------------------------------------------------------------
+      //
+      //  Internal methods
+      //
+      //----------------------------------------------------------------------
+
+      function containsBundle(nodes: Node[]): boolean {
+        for (const node of nodes) {
+          if (pageLogic.isListBundle(node) || pageLogic.isCategoryBundle(node)) {
+            return true
+          }
+        }
+        return false
+      }
+
+      function containsAssetsDir(nodes: Node[]): boolean {
+        for (const node of nodes) {
+          if (pageLogic.isAssetsDir(node)) {
+            return true
+          }
+        }
+        return false
+      }
+
+      //----------------------------------------------------------------------
+      //
+      //  Event listeners
+      //
+      //----------------------------------------------------------------------
+
+      function menuOnBeforeShow() {
+        if (!enabled.value) {
+          menu.value!.hide()
+        }
+      }
+
+      function menuItemOnClick(e: StorageNodeActionEvent) {
+        ctx.emit('select', e)
+      }
+
+      //----------------------------------------------------------------------
+      //
+      //  Result
+      //
+      //----------------------------------------------------------------------
+
+      return {
+        menu,
+        menuItems,
+        containsBundle,
+        menuOnBeforeShow,
+        menuItemOnClick,
+      }
+    },
   })
 }
 

@@ -1,16 +1,9 @@
-<style lang="sass" scoped>
-@import 'src/app/styles/app.variables'
-
-.AppStoragePage
-</style>
-
-<template>
-  <div>
-    AppStoragePage
-  </div>
-</template>
-
 <script lang="ts">
+import { StoragePage, StoragePageTemplate } from '@/app/views/base/storage'
+import { StorageDirPathBreadcrumb } from '@/app/views/base/storage/storage-dir-path-breadcrumb.vue'
+import { StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
+import { StorageType } from '@/app/logic'
+import { TreeView } from '@/app/components/tree-view/tree-view.vue'
 import { defineComponent } from '@vue/composition-api'
 
 interface Props {}
@@ -18,6 +11,36 @@ interface Props {}
 namespace AppStoragePage {
   export const clazz = defineComponent({
     name: 'AppStoragePage',
+
+    components: {
+      TreeView: TreeView.clazz,
+      StorageDirPathBreadcrumb: StorageDirPathBreadcrumb.clazz,
+      StorageDirView: StorageDirView.clazz,
+    },
+
+    mixins: [StoragePageTemplate],
+
+    setup(props: Props, ctx) {
+      //----------------------------------------------------------------------
+      //
+      //  Variables
+      //
+      //----------------------------------------------------------------------
+
+      const storageType: StorageType = 'app'
+
+      const base = StoragePage.setup({ props, ctx, storageType })
+
+      //----------------------------------------------------------------------
+      //
+      //  Result
+      //
+      //----------------------------------------------------------------------
+
+      return {
+        ...base,
+      }
+    },
   })
 }
 

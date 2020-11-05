@@ -501,21 +501,6 @@ describe('AppStorageLogic', () => {
       expect(actual).toEqual([dA, dB])
       expect(appStorage.getAllNodes()).toEqual([dA, dB])
     })
-
-    it('バケットルートを指定した場合', async () => {
-      const {
-        logic: { appStorage },
-      } = provideDependency()
-
-      let actual!: Error
-      try {
-        await appStorage.fetchHierarchicalNodes('')
-      } catch (err) {
-        actual = err
-      }
-
-      expect(actual.message).toBe(`Bucket root is set for 'nodePath'.`)
-    })
   })
 
   describe('fetchAncestorDirs', () => {
@@ -573,21 +558,6 @@ describe('AppStorageLogic', () => {
       //   └dB
       expect(actual).toEqual([dA, dB])
       expect(appStorage.getAllNodes()).toEqual([dA, dB])
-    })
-
-    it('バケットルートを指定した場合', async () => {
-      const {
-        logic: { appStorage },
-      } = provideDependency()
-
-      let actual!: Error
-      try {
-        await appStorage.fetchAncestorDirs('')
-      } catch (err) {
-        actual = err
-      }
-
-      expect(actual.message).toBe(`Bucket root is set for 'nodePath'.`)
     })
   })
 

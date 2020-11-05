@@ -3,6 +3,7 @@ import {
   RequiredStorageNodeShareSettings,
   SortStorageNode,
   StorageNode,
+  StorageNodeKeyInput,
   StorageNodeShareSettingsInput,
   sortStorageTree,
   storageChildrenSortFunc,
@@ -26,10 +27,6 @@ interface StorageLogic {
    * このロジックで扱うノードはこのベースパスを基準とした相対パスになります。
    */
   readonly basePath: ComputedRef<string>
-  // /**
-  //  * ストアに格納されたベースパスルート配下のノードを階層構造でソートした配列です。
-  //  */
-  // readonly nodes: ComputedRef<DeepReadonly<StorageNode>[]>
   /**
    * ベースパスルート配下のノードをストアから取得します。
    */
@@ -38,13 +35,13 @@ interface StorageLogic {
    * 指定ノードをストアから取得します。
    * @param key
    */
-  getNode(key: { id?: string; path?: string }): StorageNode | undefined
+  getNode(key: StorageNodeKeyInput): StorageNode | undefined
   /**
    * 指定ノードをストアから取得します。
    * ノードが存在しない場合は例外がスローされます。
    * @param key
    */
-  sgetNode(key: { id?: string; path?: string }): StorageNode
+  sgetNode(key: StorageNodeKeyInput): StorageNode
   /**
    * 指定ディレクトリとその配下のノードをストアから取得します。
    * @param dirPath 対象となるディレクトリを指定します。
