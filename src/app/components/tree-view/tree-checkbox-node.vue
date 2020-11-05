@@ -1,8 +1,6 @@
 <style lang="sass" scoped>
 @import 'src/app/styles/app.variables'
 
-.TreeCheckboxNode
-
 .node-container
   padding-top: var(--tree-distance, 6px)
   &.eldest
@@ -16,8 +14,9 @@
   height: 1.5em
   margin-right: 6px
   .toggle-icon
-    transition: transform .5s
     cursor: pointer
+    &.anime
+      transition: transform .5s
 
 .item-container
   height: var(--tree-line-height, 26px)
@@ -55,7 +54,14 @@
       <div v-show="lazyLoadStatus !== 'loading'" class="icon-container">
         <!-- トグルアイコン有り -->
         <template v-if="hasChildren">
-          <q-icon name="arrow_right" size="26px" color="grey-6" class="toggle-icon" :class="[opened ? 'rotate-90' : '']" @click="toggleIconOnClick" />
+          <q-icon
+            name="arrow_right"
+            size="26px"
+            color="grey-6"
+            class="toggle-icon"
+            :class="[opened ? 'rotate-90' : '', hasToggleAnime ? 'anime' : '']"
+            @click="toggleIconOnClick"
+          />
         </template>
         <!-- トグルアイコン無し -->
         <template v-else>
@@ -77,7 +83,7 @@
         </div>
         <!-- アイテム -->
         <div class="item">
-          <q-checkbox v-model="checked" />
+          <q-checkbox v-show="useCheckbox" v-model="checked" />
           <span>{{ label }}</span>
         </div>
       </div>
@@ -100,12 +106,12 @@ import { TreeNodeData } from '@/app/components/tree-view/base'
 //
 //========================================================================
 
-interface TreeCheckboxNode extends TreeNode<TreeCheckboxNode> {
-  checked: boolean
+interface TreeCheckboxNode extends TreeNode<TreeCheckboxNodeData> {
+  checked: boolean | null
 }
 
 interface TreeCheckboxNodeData extends TreeNodeData {
-  checked?: boolean
+  checked?: boolean | null
 }
 
 //========================================================================
@@ -124,28 +130,31 @@ namespace TreeCheckboxNode {
 
     setup(props: {}, context) {
       const base = TreeNode.setup(props, context)
-      const nodeData = computed<TreeCheckboxNodeData>(() => base.state.nodeData)
+      const nodeData = computed<TreeCheckboxNodeData>(() => base.nodeData.value)
 
-      base.extraEventNames.push('checked-change')
+      base.extraEventNames.value.push('checked-change')
 
       base.init_sub.value = (nodeData: TreeCheckboxNodeData) => {
-        set(nodeData, 'checked', Boolean(nodeData.checked))
+        set(nodeData, 'checked', typeof nodeData.checked === 'boolean' ? nodeData.checked : null)
       }
 
-      const checked = computed({
-        get: () => nodeData.value.checked,
+      const checked = computed<boolean | null>({
+        get: () => (typeof nodeData.value.checked === 'boolean' ? nodeData.value.checked : null),
         set: value => {
           const changed = nodeData.value.checked !== value
           nodeData.value.checked = value
-          if (changed) {
+          if (useCheckbox.value && changed) {
             base.dispatchExtraEvent('checked-change')
           }
         },
       })
 
+      const useCheckbox = computed(() => typeof nodeData.value.checked === 'boolean')
+
       return {
         ...base,
         checked,
+        useCheckbox,
       }
     },
   })

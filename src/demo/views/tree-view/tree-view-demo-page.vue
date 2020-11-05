@@ -78,7 +78,7 @@ namespace TreeViewDemoPage {
       //
       //----------------------------------------------------------------------
 
-      const treeView = ref<TreeView>()
+      const treeView = ref<TreeView<TreeCheckboxNode, TreeCheckboxNodeData>>()
 
       const state = reactive({
         editedInput: {
@@ -111,52 +111,55 @@ namespace TreeViewDemoPage {
       //----------------------------------------------------------------------
 
       onMounted(() => {
-        treeView.value!.buildTree([
-          {
-            label: 'node1',
-            value: 'node1',
-            opened: false,
-            icon: 'folder',
-            iconColor: 'purple-5',
-            children: [
-              {
-                label: 'node1-1',
-                value: 'node1-1',
-                opened: true,
-                icon: 'folder',
-                children: [
-                  { label: 'node1-1-1', value: 'node1-1-1', checked: true, nodeClass: TreeCheckboxNode.clazz },
-                  { label: 'node1-1-2', value: 'node1-1-2', nodeClass: TreeCheckboxNode.clazz },
-                ],
-              },
-              {
-                label: 'node1-2',
-                value: 'node1-2',
-                unselectable: true,
-                icon: 'folder',
-                children: [
-                  { label: 'node1-2-1', value: 'node1-2-1' },
-                  {
-                    label: 'node1-2-2',
-                    value: 'node1-2-2',
-                    children: [
-                      {
-                        label: 'node1-2-2-1',
-                        value: 'node1-2-2-1',
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            label: 'node2',
-            value: 'node2',
-            opened: true,
-            icon: 'folder',
-          },
-        ] as TreeCheckboxNodeData[])
+        treeView.value!.buildTree(
+          [
+            {
+              label: 'node1',
+              value: 'node1',
+              opened: false,
+              icon: 'folder',
+              iconColor: 'purple-5',
+              children: [
+                {
+                  label: 'node1-1',
+                  value: 'node1-1',
+                  opened: true,
+                  icon: 'folder',
+                  children: [
+                    { label: 'node1-1-1', value: 'node1-1-1', checked: true },
+                    { label: 'node1-1-2', value: 'node1-1-2', checked: false },
+                  ],
+                },
+                {
+                  label: 'node1-2',
+                  value: 'node1-2',
+                  unselectable: true,
+                  icon: 'folder',
+                  children: [
+                    { label: 'node1-2-1', value: 'node1-2-1' },
+                    {
+                      label: 'node1-2-2',
+                      value: 'node1-2-2',
+                      children: [
+                        {
+                          label: 'node1-2-2-1',
+                          value: 'node1-2-2-1',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              label: 'node2',
+              value: 'node2',
+              opened: true,
+              icon: 'folder',
+            },
+          ],
+          { nodeClass: TreeCheckboxNode.clazz }
+        )
       })
 
       //----------------------------------------------------------------------

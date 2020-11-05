@@ -1,6 +1,5 @@
-import { TreeNode, TreeNodeIntl } from '@/app/components/tree-view/tree-node.vue'
+import { TreeNode, TreeNodeImpl } from '@/app/components/tree-view/tree-node.vue'
 import { Constructor } from 'web-base-lib'
-import { TreeViewIntl } from '@/app/components/tree-view/tree-view.vue'
 import Vue from 'vue'
 
 //========================================================================
@@ -43,10 +42,6 @@ interface TreeNodeData {
    */
   iconColor?: string
   /**
-   * TreeNodeを拡張した場合、拡張したノードのクラスを指定します。
-   */
-  nodeClass?: Constructor
-  /**
    * 子ノードを指定します。
    */
   children?: this[]
@@ -64,7 +59,7 @@ interface TreeNodeData {
   sortFunc?: ChildrenSortFunc<any> | null
 }
 
-type TreeNodeEditData<T> = Partial<Omit<T, 'nodeClass' | 'children'>>
+type TreeNodeEditData<T> = Partial<Omit<T, 'children'>>
 
 type ChildrenSortFunc<N extends TreeNode = TreeNode> = (a: N, b: N) => number
 
@@ -85,22 +80,6 @@ interface TreeViewLazyLoadEvent<N extends TreeNode = TreeNode> {
 //  tree-view Internal
 //--------------------------------------------------
 
-interface TreeNodeParent<FAMILY_NODE extends TreeNodeIntl = TreeNodeIntl> {
-  readonly el: HTMLElement
-  readonly children: FAMILY_NODE[]
-  readonly childContainer: HTMLElement
-  getSortFunc<N extends TreeNode = FAMILY_NODE>(): ChildrenSortFunc<N> | null
-  sortChildren(): void
-  /**
-   * 指定ノードの親コンテナ内における配置位置を再設定します。
-   * この関数は以下の条件に一致する場合に呼び出す必要があります。
-   * + 親ノードがソート関数によって子ノードの並びを決定している場合
-   * + 指定ノードのプロパティ変更がソート関数に影響を及ぼす場合
-   * @param node
-   */
-  resetNodePositionInParent(node: FAMILY_NODE): void
-}
-
 interface NodePropertyChangeDetail {
   property: 'value' | 'label'
   oldValue: any
@@ -116,11 +95,12 @@ interface NodePropertyChangeDetail {
 /**
  * ノードを作成します。
  * @param nodeData
+ * @param nodeClass TreeNodeを拡張した場合、拡張したノードのクラスを指定します。
  */
-function newTreeNode<N extends TreeNode = TreeNodeIntl>(nodeData: TreeNodeData): N {
+function newTreeNode<N extends TreeNode = TreeNodeImpl>(nodeData: TreeNodeData, nodeClass?: Constructor): N {
   // プログラム的にコンポーネントのインスタンスを生成
   // https://css-tricks.com/creating-vue-js-component-instances-programmatically/
-  const NodeClass = Vue.extend(nodeData.nodeClass || TreeNode.clazz)
+  const NodeClass = Vue.extend(nodeClass || TreeNode.clazz)
   const node = new NodeClass() as any
   node.init(nodeData)
   node.$mount()
@@ -131,7 +111,7 @@ function newTreeNode<N extends TreeNode = TreeNodeIntl>(nodeData: TreeNodeData):
  * 指定されたノードの子孫を配列で取得します。
  * @param node
  */
-function getDescendants<N extends TreeNode = TreeNodeIntl>(node: TreeNode): N[] {
+function getDescendants<N extends TreeNode>(node: N): N[] {
   const getChildren = (node: N) => {
     const result: N[] = []
     for (const child of (node as any).children) {
@@ -153,7 +133,7 @@ function getDescendants<N extends TreeNode = TreeNodeIntl>(node: TreeNode): N[] 
  * 指定されたノードの子孫をマップで取得します。
  * @param node
  */
-function getDescendantDict<N extends TreeNode = TreeNodeIntl>(node: TreeNode): { [value: string]: N } {
+function getDescendantDict<N extends TreeNode>(node: N): { [value: string]: N } {
   const getChildren = (node: N, result: { [value: string]: N }) => {
     for (const child of (node as any).children) {
       result[child.value] = child
@@ -175,7 +155,7 @@ function getDescendantDict<N extends TreeNode = TreeNodeIntl>(node: TreeNode): {
  * @param node
  * @param detail
  */
-function dispatchNodePropertyChange(node: TreeNodeIntl, detail: NodePropertyChangeDetail): void {
+function dispatchNodePropertyChange(node: TreeNodeImpl, detail: NodePropertyChangeDetail): void {
   node.el.dispatchEvent(
     new CustomEvent('node-property-change', {
       bubbles: true,
@@ -190,7 +170,7 @@ function dispatchNodePropertyChange(node: TreeNodeIntl, detail: NodePropertyChan
  * ノードが追加された旨を通知するイベントを発火します。
  * @param node
  */
-function dispatchNodeAdd(node: TreeNodeIntl): void {
+function dispatchNodeAdd(node: TreeNodeImpl): void {
   node.el.dispatchEvent(
     new CustomEvent('node-add', {
       bubbles: true,
@@ -206,7 +186,7 @@ function dispatchNodeAdd(node: TreeNodeIntl): void {
  * @param parent
  * @param child
  */
-function dispatchBeforeNodeRemove(parent: TreeViewIntl | TreeNodeIntl, child: TreeNode): void {
+function dispatchBeforeNodeRemove(parent: { el: HTMLElement }, child: TreeNodeImpl): void {
   parent.el.dispatchEvent(
     new CustomEvent('before-node-remove', {
       bubbles: true,
@@ -222,7 +202,7 @@ function dispatchBeforeNodeRemove(parent: TreeViewIntl | TreeNodeIntl, child: Tr
  * @param parent
  * @param child
  */
-function dispatchNodeRemove(parent: TreeViewIntl | TreeNodeIntl, child: TreeNode): void {
+function dispatchNodeRemove(parent: { el: HTMLElement }, child: TreeNodeImpl): void {
   parent.el.dispatchEvent(
     new CustomEvent('node-remove', {
       bubbles: true,
@@ -238,7 +218,7 @@ function dispatchNodeRemove(parent: TreeViewIntl | TreeNodeIntl, child: TreeNode
  * @param node
  * @param silent
  */
-function dispatchSelectChange(node: TreeNodeIntl, silent: boolean): void {
+function dispatchSelectChange(node: TreeNodeImpl, silent: boolean): void {
   node.el.dispatchEvent(
     new CustomEvent('select-change', {
       bubbles: true,
@@ -254,7 +234,7 @@ function dispatchSelectChange(node: TreeNodeIntl, silent: boolean): void {
  * @param node
  * @param silent
  */
-function dispatchSelect(node: TreeNodeIntl, silent: boolean): void {
+function dispatchSelect(node: TreeNodeImpl, silent: boolean): void {
   node.el.dispatchEvent(
     new CustomEvent('select', {
       bubbles: true,
@@ -269,7 +249,7 @@ function dispatchSelect(node: TreeNodeIntl, silent: boolean): void {
  * ノードの開閉が変更された旨を通知するイベントを発火します。
  * @param node
  */
-function dispatchOpenChange(node: TreeNodeIntl): void {
+function dispatchOpenChange(node: TreeNodeImpl): void {
   node.el.dispatchEvent(
     new CustomEvent('open-change', {
       bubbles: true,
@@ -285,7 +265,7 @@ function dispatchOpenChange(node: TreeNodeIntl): void {
  * @param node
  * @param done
  */
-function dispatchLazyLoad(node: TreeNodeIntl, done: TreeViewLazyLoadDoneFunc): void {
+function dispatchLazyLoad(node: TreeNodeImpl, done: TreeViewLazyLoadDoneFunc): void {
   node.el.dispatchEvent(
     new CustomEvent('lazy-load', {
       bubbles: true,
@@ -302,7 +282,7 @@ function dispatchLazyLoad(node: TreeNodeIntl, done: TreeViewLazyLoadDoneFunc): v
  * @param extraEventName
  * @param detail
  */
-function dispatchExtraEvent<T>(node: TreeNodeIntl, extraEventName: string, detail?: T): void {
+function dispatchExtraEvent<T>(node: TreeNodeImpl, extraEventName: string, detail?: T): void {
   node.el.dispatchEvent(
     new CustomEvent(extraEventName, {
       bubbles: true,
@@ -445,7 +425,6 @@ export {
   NodePropertyChangeDetail,
   TreeNodeData,
   TreeNodeEditData,
-  TreeNodeParent,
   TreeViewEvent,
   TreeViewLazyLoadDoneFunc,
   TreeViewLazyLoadEvent,
