@@ -1,5 +1,5 @@
 import { ArticleStorageLogic, StorageLogic } from '@/app/logic/modules/storage'
-import { ComputedRef, Ref, WritableComputedRef, computed, reactive, ref, watch } from '@vue/composition-api'
+import { ComputedRef, Ref, WritableComputedRef, computed, ref, watch } from '@vue/composition-api'
 import {
   CreateArticleTypeDirInput,
   RequiredStorageNodeShareSettings,
@@ -17,8 +17,10 @@ import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchica
 import router, { StorageRoute } from '@/app/router'
 import { Notify } from 'quasar'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
+import { UploadEndedEvent } from '@/app/components/storage/storage-upload-progress-float.vue'
 import _path from 'path'
 import dayjs from 'dayjs'
+import { extendedMethod } from '@/app/base'
 import { useConfig } from '@/app/config'
 import { useI18n } from '@/app/i18n'
 
@@ -180,6 +182,11 @@ interface StoragePageLogic {
    * @param input 共有設定の内容
    */
   setStorageNodeShareSettings(nodePaths: string[], input: StorageNodeShareSettings): Promise<void>
+  /**
+   * アップロードが行われた後のツリーの更新処理を行います。
+   * @param e
+   */
+  onUploaded(e: UploadEndedEvent): Promise<void>
 
   //--------------------------------------------------
   //  Helper methods
@@ -508,7 +515,7 @@ namespace StoragePageLogic {
       dirTreeNode.lazyLoadStatus = 'loaded'
     }
 
-    const reloadStorageDir: StoragePageLogic['reloadStorageDir'] = async dirPath => {
+    const reloadStorageDir = extendedMethod<StoragePageLogic['reloadStorageDir']>(async dirPath => {
       dirPath = removeBothEndsSlash(dirPath)
 
       // 引数ディレクトリを遅延ロード中に設定
@@ -559,7 +566,7 @@ namespace StoragePageLogic {
 
       // 引数ディレクトリを遅延ロード済みに設定
       dirTreeNode.lazyLoadStatus = 'loaded'
-    }
+    })
 
     const setAllTreeNodes: StoragePageLogic['setAllTreeNodes'] = nodes => {
       // ツリービューからルートノードを削除
@@ -997,6 +1004,63 @@ namespace StoragePageLogic {
       setTreeNodes(processedDirNodes)
     }
 
+    const onUploaded: StoragePageLogic['onUploaded'] = async e => {
+      const uploadDirTreeNode = getTreeNode(e.uploadDirPath)
+      if (!uploadDirTreeNode) {
+        throw new Error(`The specified node could not be found: '${e.uploadDirPath}'`)
+      }
+
+      // アップロードディレクトリ直下のアップロードノードを取得
+      // 引数イベントが次のような場合:
+      //   e: {
+      //     uploadDirPath: 'd1',
+      //     uploadFiles: [
+      //       { path: 'd1/d11/d111/fileA.txt', … },
+      //       { path: 'd1/d11/fileB.txt', … },
+      //       { path: 'd1/d12/fileC.txt', … },
+      //       { path: 'd1/fileD.txt', … },
+      //     ]
+      //   }
+      // 次のようなパスが取得される:
+      //   ['d1/d11', 'd1/d12', 'd1/fileD.txt']
+      const childNodePaths = e.uploadedFiles.reduce((result, item) => {
+        const childNodePath = (() => {
+          const uploadDirPath = e.uploadDirPath ? _path.join(e.uploadDirPath, '/') : ''
+          const workPath = item.path.replace(uploadDirPath, '')
+          const childNodeName = workPath.split('/')[0]
+          return _path.join(e.uploadDirPath, childNodeName)
+        })()
+        if (!result.includes(childNodePath)) {
+          result.push(childNodePath)
+        }
+        return result
+      }, [] as string[])
+
+      // ロジックストア(サーバー)からアップロードディレクトリ直下のノードを取得
+      const storeChildDirNodes = (await storageLogic.fetchChildren(e.uploadDirPath)).filter(nodeFilter)
+
+      // ロジックストアのノードで、アップロードされたノードをツリービューに反映
+      for (const storeDirNode of storeChildDirNodes) {
+        const treeNode = getTreeNode(storeDirNode.path)
+        // 次の場合リロードが必要
+        // ・今回アップロードされたノードがツリービューに既に存在
+        // ・そのディレクトリが子ノードを読み込み済み
+        // ・そのディレクトリがアップロード先ディレクトリの直下に存在する
+        const needReload = treeNode && treeNode.lazyLoadStatus === 'loaded' && childNodePaths.includes(treeNode.path)
+        // リロードが必要な場合
+        if (needReload) {
+          await reloadStorageDir(treeNode!.path)
+        }
+        // リロードが必要ない場合
+        else {
+          setTreeNode(storeDirNode)
+        }
+      }
+
+      // 引数ディレクトリを遅延ロード済みに設定
+      uploadDirTreeNode.lazyLoadStatus = 'loaded'
+    }
+
     //--------------------------------------------------
     //  Helper methods
     //--------------------------------------------------
@@ -1291,6 +1355,7 @@ namespace StoragePageLogic {
       moveStorageNodes,
       renameStorageNode,
       setStorageNodeShareSettings,
+      onUploaded,
       showNotification,
       getInheritedShare,
       createRootNodeData,

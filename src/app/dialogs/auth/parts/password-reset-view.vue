@@ -3,7 +3,7 @@
 
 .PasswordResetView
   width: 340px
-  body.screen--lg &, body.screen--xl & body.screen--md &
+  body.screen--lg &, body.screen--xl &, body.screen--md &
     width: 340px
   body.screen--xs &, body.screen--sm &
     width: 270px

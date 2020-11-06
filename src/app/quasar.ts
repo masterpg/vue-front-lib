@@ -6,7 +6,7 @@ export namespace quasar {
     Vue.use(Quasar, {
       components: {
         QAvatar: require('quasar').QAvatar,
-        QBar: require('quasar').QBadge,
+        QBar: require('quasar').QBar,
         QBreadcrumbs: require('quasar').QBreadcrumbs,
         QBreadcrumbsEl: require('quasar').QBreadcrumbsEl,
         QBtn: require('quasar').QBtn,

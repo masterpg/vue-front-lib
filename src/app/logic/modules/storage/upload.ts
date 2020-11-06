@@ -1,4 +1,4 @@
-import { ComputedRef, UnwrapRef, computed, reactive } from '@vue/composition-api'
+import { ComputedRef, Ref, UnwrapRef, computed, reactive, ref, watch } from '@vue/composition-api'
 import { removeBothEndsSlash, splitHierarchicalPaths } from 'web-base-lib'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import _path from 'path'
@@ -141,11 +141,11 @@ interface StorageFileUploader {
 //========================================================================
 
 namespace StorageUploader {
-  export function newInstance(storageLogic: StorageLogic, owner: Element): StorageUploader {
+  export function newInstance(storageLogic: StorageLogic, owner: Ref<Element | undefined>): StorageUploader {
     return newRawInstance(storageLogic, owner)
   }
 
-  export function newRawInstance(storageLogic: StorageLogic, owner: Element) {
+  export function newRawInstance(storageLogic: StorageLogic, owner: Ref<Element | undefined>) {
     //----------------------------------------------------------------------
     //
     //  Variables
@@ -154,15 +154,10 @@ namespace StorageUploader {
 
     const state = reactive({
       status: 'none' as 'none' | 'running' | 'ends',
-      fileUploaders: [] as StorageFileUploader[],
       uploadDirPath: '',
     })
 
-    const uploadFileInput = document.createElement('input')
-    uploadFileInput.style.display = 'none'
-    uploadFileInput.setAttribute('type', 'file')
-    uploadFileInput.addEventListener('change', uploadFileInputOnChange)
-    owner.appendChild(uploadFileInput)
+    let uploadFileInput: HTMLInputElement = null as any
 
     //----------------------------------------------------------------------
     //
@@ -170,26 +165,27 @@ namespace StorageUploader {
     //
     //----------------------------------------------------------------------
 
-    const fileUploaders = computed(() => [...state.fileUploaders])
+    const _fileUploaders = ref<StorageFileUploader[]>([])
+    const fileUploaders = computed(() => _fileUploaders.value)
 
-    const uploadNum = computed(() => state.fileUploaders.length)
+    const uploadNum = computed(() => fileUploaders.value.length)
 
     const uploadedNum = computed(() => {
-      return state.fileUploaders.reduce((result, file) => {
+      return fileUploaders.value.reduce((result, file) => {
         result += file.completed ? 1 : 0
         return result
       }, 0)
     })
 
     const totalSize = computed(() => {
-      return state.fileUploaders.reduce((result, file) => {
+      return fileUploaders.value.reduce((result, file) => {
         result += file.size
         return result
       }, 0)
     })
 
     const uploadedSize = computed(() => {
-      return state.fileUploaders.reduce((result, file) => {
+      return fileUploaders.value.reduce((result, file) => {
         result += file.uploadedSize
         return result
       }, 0)
@@ -216,7 +212,7 @@ namespace StorageUploader {
 
     const clear: StorageUploader['clear'] = () => {
       uploadFileInput.value = ''
-      state.fileUploaders.splice(0)
+      fileUploaders.value.splice(0)
       state.uploadDirPath = ''
       state.status = 'none'
     }
@@ -288,6 +284,17 @@ namespace StorageUploader {
     //
     //----------------------------------------------------------------------
 
+    watch(
+      () => owner.value,
+      () => {
+        uploadFileInput = document.createElement('input')
+        uploadFileInput.style.display = 'none'
+        uploadFileInput.setAttribute('type', 'file')
+        uploadFileInput.addEventListener('change', uploadFileInputOnChange)
+        owner.value!.appendChild(uploadFileInput)
+      }
+    )
+
     /**
      * OSのファイルまたはフォルダ選択ダイアログで変更があった際のリスナです。
      * @param e
@@ -301,10 +308,10 @@ namespace StorageUploader {
       state.status = 'none'
 
       // ファイルアップローダーを作成(まだアップロードは実行しない)
-      state.fileUploaders.push(...createUploadingFiles.value(files))
+      fileUploaders.value.push(...createUploadingFiles.value(files))
 
       // ファイルアップローダー配列をソート
-      state.fileUploaders.sort((a, b) => {
+      fileUploaders.value.sort((a, b) => {
         if (a.ends && !b.ends) {
           return 1
         } else if (!a.ends && b.ends) {
@@ -318,7 +325,7 @@ namespace StorageUploader {
       state.status = 'running'
 
       // アップロードファイルを格納するディレクトリを作成
-      const dirPaths = splitHierarchicalPaths(...state.fileUploaders.map(item => item.dir)).filter(dir => {
+      const dirPaths = splitHierarchicalPaths(...fileUploaders.value.map(item => item.dir)).filter(dir => {
         if (state.uploadDirPath) {
           return dir.startsWith(_path.join(state.uploadDirPath, '/'))
         } else {
@@ -330,7 +337,7 @@ namespace StorageUploader {
       }
 
       // 実際にアップロードを実行
-      for (const uploadingFile of state.fileUploaders) {
+      for (const uploadingFile of fileUploaders.value) {
         if (uploadingFile.completed) continue
         try {
           // ファイルアップロード
@@ -468,7 +475,7 @@ namespace StorageFileUploader {
 
       // ファイルノードの新バージョン番号を取得
       const node = storageLogic.getNode({ path: path.value })
-      const version = String(!node || !node.version ? 0 : node.version + 1) // バージョン番号をインクリメント
+      const version = node ? String(node.version + 1) : '1'
 
       // アップロード先の参照を取得
       const basePath = removeBothEndsSlash(storageLogic.basePath.value)

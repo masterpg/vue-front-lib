@@ -5,7 +5,7 @@
 
 .container
   min-width: 300px
-  body.screen--lg &, body.screen--xl & body.screen--md &
+  body.screen--lg &, body.screen--xl &, body.screen--md &
     max-width: 70vw
   body.screen--xs &, body.screen--sm &
     max-width: 90vw
@@ -48,7 +48,7 @@ import { QDialog } from 'quasar'
 import merge from 'lodash/merge'
 import { useI18n } from '@/app/i18n'
 
-interface MessageDialog extends Dialog<Props | void, boolean>, Readonly<Props> {}
+interface MessageDialog extends Dialog<Props | void, boolean>, Props {}
 
 interface Props {
   value?: boolean
@@ -73,7 +73,7 @@ namespace MessageDialog {
     setup: (props: Props, ctx) => setup(props, ctx),
   })
 
-  export function setup(props: Props, ctx: SetupContext) {
+  export function setup(props: Readonly<Props>, ctx: SetupContext) {
     //----------------------------------------------------------------------
     //
     //  Variables

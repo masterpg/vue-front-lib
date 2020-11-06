@@ -1,4 +1,4 @@
-import { ComputedRef, UnwrapRef, computed, reactive } from '@vue/composition-api'
+import { ComputedRef, UnwrapRef, computed, reactive, ref } from '@vue/composition-api'
 import axios, { AxiosResponse, Canceler } from 'axios'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import { StorageNodeType } from '@/app/logic/base'
@@ -151,7 +151,6 @@ namespace StorageDownloader {
 
     const state = reactive({
       status: 'none' as 'none' | 'running' | 'ends',
-      fileDownloaders: [] as StorageFileDownloader[],
     })
 
     //----------------------------------------------------------------------
@@ -160,7 +159,8 @@ namespace StorageDownloader {
     //
     //----------------------------------------------------------------------
 
-    const fileDownloaders = computed(() => [...state.fileDownloaders])
+    const _fileDownloaders = ref<StorageFileDownloader[]>([])
+    const fileDownloaders = computed(() => _fileDownloaders.value)
 
     const downloadNum = computed(() => fileDownloaders.value.length)
 

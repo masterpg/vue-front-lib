@@ -1,7 +1,7 @@
 <style lang="sass" scoped>
 @import 'src/app/styles/app.variables'
 
-.shop-page
+.ShopPage
   padding: 12px
   body.screen--lg &, body.screen--xl &
     margin: 48px
@@ -45,7 +45,7 @@
 </style>
 
 <template>
-  <div class="shop-page layout vertical">
+  <div class="ShopPage layout vertical">
     <div>
       <div class="layout horizontal center">
         <div class="title-text">{{ t('shop.products') }}</div>

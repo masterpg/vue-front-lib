@@ -1,5 +1,5 @@
+import { Ref, UnwrapRef, reactive } from '@vue/composition-api'
 import { StorageFileUploader, StorageUploader, UploadFileParam } from '@/app/logic/modules/storage/upload'
-import { UnwrapRef, reactive } from '@vue/composition-api'
 import axios, { Canceler } from 'axios'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import _path from 'path'
@@ -13,7 +13,7 @@ import { removeBothEndsSlash } from 'web-base-lib'
 //========================================================================
 
 namespace StorageURLUploader {
-  export function newInstance(storageLogic: StorageLogic, owner: Element): StorageUploader {
+  export function newInstance(storageLogic: StorageLogic, owner: Ref<Element | undefined>): StorageUploader {
     const base = StorageUploader.newRawInstance(storageLogic, owner)
 
     base.createUploadingFiles.value = files => {

@@ -64,5 +64,14 @@
         </div>
       </template>
     </q-splitter>
+
+    <StorageNodeRemoveDialog ref="nodeRemoveDialog" :storage-type="storageType" />
+
+    <StorageUploadProgressFloat
+      ref="uploadProgressFloat"
+      class="fixed-bottom-right"
+      :storage-type="storageType"
+      @upload-ends="uploadProgressFloatOnUploadEnds($event)"
+    />
   </div>
 </template>

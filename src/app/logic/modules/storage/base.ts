@@ -1,3 +1,4 @@
+import { ComputedRef, Ref } from '@vue/composition-api'
 import {
   CreateStorageNodeInput,
   RequiredStorageNodeShareSettings,
@@ -10,7 +11,6 @@ import {
 } from '@/app/logic/base'
 import { DeepReadonly, removeBothEndsSlash, removeEndSlash, removeStartDirChars } from 'web-base-lib'
 import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from '@/app/logic/modules/storage/download'
-import { ComputedRef } from '@vue/composition-api'
 import { StorageUploader } from '@/app/logic/modules/storage/upload'
 import _path from 'path'
 import { useConfig } from '@/app/config'
@@ -238,11 +238,11 @@ interface StorageLogic {
    */
   setFileShareSettings(filePath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode>
 
-  newUploader(owner: Element): StorageUploader
+  newUploader(owner: Ref<Element | undefined>): StorageUploader
 
   newDownloader(): StorageDownloader
 
-  newUrlUploader(owner: Element): StorageUploader
+  newUrlUploader(owner: Ref<Element | undefined>): StorageUploader
 
   newFileDownloader(type: StorageFileDownloaderType, filePath: string): StorageFileDownloader
 

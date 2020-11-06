@@ -1,9 +1,12 @@
 import { SetupContext, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
 import { StorageNode, StorageType } from '@/app/logic'
 import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'
+import { StorageUploadProgressFloat, UploadEndedEvent } from '@/app/components/storage/storage-upload-progress-float.vue'
 import { TreeView, TreeViewEvent, TreeViewLazyLoadEvent } from '@/app/components/tree-view'
+import { Loading } from 'quasar'
 import { StorageDirPathBreadcrumb } from '@/app/views/base/storage/storage-dir-path-breadcrumb.vue'
 import { StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
+import { StorageNodeRemoveDialog } from '@/app/views/base/storage/storage-node-remove-dialog.vue'
 import { StoragePageLogic } from '@/app/views/base/storage'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
 import anime from 'animejs'
@@ -38,6 +41,8 @@ namespace StoragePage {
     const treeViewRef = ref<TreeView<StorageTreeNode, StorageTreeNodeData>>()
     const pathDirBreadcrumb = ref<StorageDirPathBreadcrumb>()
     const dirView = ref<StorageDirView>()
+    const nodeRemoveDialog = ref<StorageNodeRemoveDialog>()
+    const uploadProgressFloat = ref<StorageUploadProgressFloat>()
 
     const pageLogic = StoragePageLogic.newInstance({ storageType, treeViewRef, nodeFilter })
 
@@ -217,6 +222,36 @@ namespace StoragePage {
       // console.log(JSON.stringify({ scrollTop, nodeTop, 'treeViewContainer.clientHeight / 2': treeViewContainer.value!.clientHeight / 2, newScrollTop }, null, 2))
     }
 
+    /**
+     * ノードの削除を行います。
+     * @param nodePaths 削除するノード
+     */
+    async function removeNodes(nodePaths: string[]): Promise<void> {
+      Loading.show()
+
+      // 削除後の遷移先ノードを取得
+      // ・選択ノードが削除された場合、親ノードへ遷移
+      // ・それ以外は現在の選択ノードへ遷移
+      let toNodePath = pageLogic.selectedTreeNodePath.value
+      // 選択ノードが削除されるのかを取得
+      const selectedRemovingNodePath = nodePaths.find(nodePath => {
+        if (nodePath === pageLogic.selectedTreeNodePath.value) return nodePath
+      })
+      // 選択ノードが削除される場合、親ノードへ遷移するよう準備
+      if (selectedRemovingNodePath) {
+        const removingCertainNode = pageLogic.sgetStorageNode({ path: nodePaths[0] })
+        toNodePath = removingCertainNode.dir
+      }
+
+      // ノードの移動を実行
+      await pageLogic.removeStorageNodes(nodePaths)
+
+      // 上記で取得したノードへURL遷移
+      changeDirOnPage(toNodePath)
+
+      Loading.hide()
+    }
+
     //----------------------------------------------------------------------
     //
     //  Event listeners
@@ -249,6 +284,22 @@ namespace StoragePage {
     }
 
     /**
+     * アップロード進捗フロートでアップロードが終了した際のハンドラです。
+     * @param e
+     */
+    async function uploadProgressFloatOnUploadEnds(e: UploadEndedEvent) {
+      // アップロードが行われた後のツリーの更新処理
+      await pageLogic.onUploaded(e)
+      // アップロード先のディレクトリへURL遷移
+      changeDirOnPage(e.uploadDirPath)
+
+      // アップロード先のディレクトリとその祖先を展開
+      const uploadDirNode = pageLogic.getTreeNode(e.uploadDirPath)!
+      uploadDirNode.open()
+      openParentNode(uploadDirNode.path, true)
+    }
+
+    /**
      * ポップアップメニューでアクションが選択された際のリスナです。
      * @param e
      */
@@ -271,13 +322,13 @@ namespace StoragePage {
           break
         }
         case 'uploadDir': {
-          // const dirPath = e.nodePaths[0]
-          // this.uploadProgressFloat.openDirSelectDialog(dirPath)
+          const dirPath = e.nodePaths[0]
+          uploadProgressFloat.value!.openDirSelectDialog(dirPath)
           break
         }
         case 'uploadFiles': {
-          // const dirPath = e.nodePaths[0]
-          // this.uploadProgressFloat.openFilesSelectDialog(dirPath)
+          const dirPath = e.nodePaths[0]
+          uploadProgressFloat.value!.openFilesSelectDialog(dirPath)
           break
         }
         case 'move': {
@@ -303,10 +354,10 @@ namespace StoragePage {
           break
         }
         case 'delete': {
-          // const confirmed = await this.nodeRemoveDialog.open(e.nodePaths)
-          // if (confirmed) {
-          //   await this.removeNodes(e.nodePaths)
-          // }
+          const confirmed = await nodeRemoveDialog.value!.open(e.nodePaths)
+          if (confirmed) {
+            await removeNodes(e.nodePaths)
+          }
           break
         }
         case 'createArticleTypeDir': {
@@ -403,11 +454,14 @@ namespace StoragePage {
       treeViewContainer,
       treeViewRef,
       pathDirBreadcrumb,
+      nodeRemoveDialog,
+      uploadProgressFloat,
       dirView,
       visibleDirDetailView,
       visibleFileDetailView,
       splitterModel,
       pathDirBreadcrumbOnSelect,
+      uploadProgressFloatOnUploadEnds,
       popupMenuOnNodeAction,
       treeViewOnSelect,
       treeViewOnLazyLoad,

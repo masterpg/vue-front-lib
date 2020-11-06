@@ -1,3 +1,4 @@
+import 'animate.css/animate.css'
 import '@/app/styles/app.sass'
 
 import DemoPage from '@/demo/index.vue'
