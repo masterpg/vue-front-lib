@@ -168,14 +168,14 @@ namespace StorageDirPathBreadcrumb {
             const dirNode = pageLogic.sgetStorageNode({ path: dirPath })
             result.push({
               ...dirNode,
-              label: pageLogic.getDisplayName(dirNode),
+              label: pageLogic.getDisplayNodeName(dirNode),
               last: i === hierarchicalDirPaths.length - 1,
               isRoot: false,
             })
           }
         }
 
-        const treeRootNode = pageLogic.getTreeRootNode()
+        const treeRootNode = pageLogic.getRootTreeNode()
         result.unshift({
           label: treeRootNode.label,
           path: treeRootNode.value,

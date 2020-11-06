@@ -150,7 +150,7 @@ namespace StorageDirTableRow {
     })
 
     const label = computed(() => {
-      const nodeLabel = pageLogic.getDisplayName(node)
+      const nodeLabel = pageLogic.getDisplayNodeName(node)
       return nodeType.value === StorageNodeType.Dir ? `${nodeLabel}/` : nodeLabel
     })
 

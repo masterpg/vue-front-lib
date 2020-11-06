@@ -1,3 +1,5 @@
+import { ArticleStorageLogic, StorageLogic } from '@/app/logic/modules/storage'
+import { CreateArticleTypeDirInput, StorageArticleNodeType, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/logic'
 import {
   EMPTY_SHARE_SETTINGS,
   NewTestStorageNodeData,
@@ -7,10 +9,8 @@ import {
   newTestStorageFileNode,
 } from '../../../../../helpers/app'
 import { Ref, ref } from '@vue/composition-api'
-import { StorageArticleNodeType, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/logic'
 import { StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/storage/base'
 import { TreeNode, TreeView, TreeViewImpl } from '@/app/components/tree-view'
-import { StorageLogic } from '@/app/logic/modules/storage'
 import { StoragePageLogic } from '@/app/views/base/storage'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
 import { VueRouter } from 'vue-router/types/router'
@@ -81,7 +81,7 @@ function newStoragePageLogic(
   const pageLogic = StoragePageLogic.newInstance({ storageType, nodeFilter, treeViewRef }) as RawStoragePageLogic
 
   // ストレージノードの初回｢未｣読み込みに設定
-  pageLogic.isPulledInitialNodes.value = false
+  pageLogic.isFetchedInitialStorage.value = false
 
   // サインイン済みに設定
   td.replace(logic.auth.isSignedIn, 'value', true)
@@ -271,12 +271,880 @@ function newCategoryBundleFamilyNodes() {
 //========================================================================
 
 describe('StoragePageLogic', () => {
-  describe('pullInitialNodes', () => {
+  describe('getAllTreeNodes', () => {
+    it('ベーシックケース', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const d12 = newTreeDirNodeInput(`d1/d12`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      const d21 = newTreeDirNodeInput(`d2/d21`)
+      const f211 = newTreeFileNodeInput(`d2/d21/f211.txt`)
+      const f1 = newTreeFileNodeInput(`f1.txt`)
+      pageLogic.setAllTreeNodes([d1, d11, f111, d12, d2, d21, f211, f1])
+
+      const actual = pageLogic.getAllTreeNodes()
+
+      expect(actual.length).toBe(9)
+      expect(actual[0].path).toBe(``)
+      expect(actual[1].path).toBe(`d1`)
+      expect(actual[2].path).toBe(`d1/d11`)
+      expect(actual[3].path).toBe(`d1/d11/f111.txt`)
+      expect(actual[4].path).toBe(`d1/d12`)
+      expect(actual[5].path).toBe(`d2`)
+      expect(actual[6].path).toBe(`d2/d21`)
+      expect(actual[7].path).toBe(`d2/d21/f211.txt`)
+      expect(actual[8].path).toBe(`f1.txt`)
+    })
+  })
+
+  describe('getTreeNode', () => {
+    it('ベーシックケース', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      pageLogic.setAllTreeNodes([d1, d2])
+
+      const actual = pageLogic.getTreeNode(`d1`)!
+
+      expect(actual.path).toBe(`d1`)
+    })
+
+    it('ルートノードを取得', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      pageLogic.setAllTreeNodes([d1, d2])
+
+      const actual = pageLogic.getTreeNode(``)!
+
+      expect(actual.path).toBe(``)
+    })
+  })
+
+  describe('setAllTreeNodes', () => {
+    it('ソートされていないノードリストを渡した場合', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      // root
+      // ├d1
+      // │├d11
+      // ││└f111.txt
+      // │└d12
+      // ├d2
+      // │└d21
+      // │  └f211.txt
+      // └f1.txt
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const d12 = newTreeDirNodeInput(`d1/d12`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      const d21 = newTreeDirNodeInput(`d2/d21`)
+      const f211 = newTreeFileNodeInput(`d2/d21/f211.txt`)
+      const f1 = newTreeFileNodeInput(`f1.txt`)
+
+      pageLogic.setAllTreeNodes(shuffleArray([d1, d11, f111, d12, d2, d21, f211, f1]))
+      const actual = pageLogic.getAllTreeNodes()
+
+      expect(actual.length).toBe(9)
+      expect(actual[0].path).toBe(``)
+      expect(actual[1].path).toBe(`d1`)
+      expect(actual[2].path).toBe(`d1/d11`)
+      expect(actual[3].path).toBe(`d1/d11/f111.txt`)
+      expect(actual[4].path).toBe(`d1/d12`)
+      expect(actual[5].path).toBe(`d2`)
+      expect(actual[6].path).toBe(`d2/d21`)
+      expect(actual[7].path).toBe(`d2/d21/f211.txt`)
+      expect(actual[8].path).toBe(`f1.txt`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+  })
+
+  describe('mergeAllTreeNodes', () => {
+    it('ベーシックケース', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      // root
+      // ├d1
+      // │├d11
+      // ││└f111.txt
+      // │└d12
+      // └d2
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const d12 = newTreeDirNodeInput(`d1/d12`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      pageLogic.setAllTreeNodes([d1, d11, f111, d12, d2])
+
+      // 以下の状態のノードリストを引数に設定する
+      // ・'d1/d11/f111.txt'が'fA.txt'へ移動+リネームされた
+      // ・'d1/d11/f11A.txt'が追加された
+      // ・'d1/d12'が削除された
+      const fA = cloneTreeNodeInput(f111, { dir: ``, path: `fA.txt` })
+      const f11A = newTreeFileNodeInput(`d1/d11/f11A.txt`)
+      pageLogic.mergeAllTreeNodes([d1, d11, f11A, fA, d2])
+      const actual = pageLogic.getAllTreeNodes()
+
+      // root
+      // ├d1
+      // │└d11
+      // │  └f11A.txt
+      // ├d2
+      // └fA.txt
+      expect(actual.length).toBe(6)
+      expect(actual[0].path).toBe(``)
+      expect(actual[1].path).toBe(`d1`)
+      expect(actual[2].path).toBe(`d1/d11`)
+      expect(actual[3].path).toBe(`d1/d11/f11A.txt`)
+      expect(actual[4].path).toBe(`d2`)
+      expect(actual[5].path).toBe(`fA.txt`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+  })
+
+  describe('mergeTreeDirDescendants', () => {
+    it('ベーシックケース', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      // root
+      // ├d1 ← 対象ノードに指定
+      // │├d11
+      // ││└f111.txt
+      // │└d12
+      // │  └f121.txt
+      // └d2
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const f112 = newTreeFileNodeInput(`d1/d11/f112.txt`)
+      const d12 = newTreeDirNodeInput(`d1/d12`)
+      const f121 = newTreeFileNodeInput(`d1/d12/f121.txt`)
+      const f11 = newTreeFileNodeInput(`d1/f11.txt`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      pageLogic.setAllTreeNodes([d1, d11, f111, d12, f121, d2])
+
+      // ロジックストアから以下の状態のノードリストが取得される
+      // ・'d1/d11/f112.txt'が追加された
+      // ・'d1/f11.txt'が追加された
+      // ・'d1/d12'が削除(または移動)された
+      td.when(storageLogic.getDirDescendants(d1.path)).thenReturn(toStorageNode([d1, d11, f111, f112, f11]))
+
+      pageLogic.mergeTreeDirDescendants(d1.path)
+      const actual = pageLogic.getAllTreeNodes()
+
+      // root
+      // ├d1
+      // │├d11
+      // ││├f111.txt
+      // ││└f112.txt
+      // │└f11.txt
+      // └d2
+      expect(actual.length).toBe(7)
+      expect(actual[0].path).toBe(``)
+      expect(actual[1].path).toBe(`d1`)
+      expect(actual[2].path).toBe(`d1/d11`)
+      expect(actual[3].path).toBe(`d1/d11/f111.txt`)
+      expect(actual[4].path).toBe(`d1/d11/f112.txt`)
+      expect(actual[5].path).toBe(`d1/f11.txt`)
+      expect(actual[6].path).toBe(`d2`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('引数ディレクトリが削除されていた', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      // root
+      // ├d1 ← 対象ノードに指定
+      // │└d11
+      // │  └f111.txt
+      // └d2
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      pageLogic.setAllTreeNodes([d1, d11, f111, d2])
+
+      // ロジックストアから以下の状態のノードリストが取得される
+      // ・'d1'が削除された
+      td.when(storageLogic.getDirDescendants(d1.path)).thenReturn([])
+
+      pageLogic.mergeTreeDirDescendants(d1.path)
+      const actual = pageLogic.getAllTreeNodes()
+
+      // root
+      // └d2
+      expect(actual.length).toBe(2)
+      expect(actual[0].path).toBe(``)
+      expect(actual[1].path).toBe(`d2`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('nodeFilterが機能しているか検証', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: dirNodeFilter })
+
+      // root
+      // └d1 ← 対象ノードに指定
+      //   └d11
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      pageLogic.setAllTreeNodes([d1, d11])
+
+      // ロジックストアから以下の状態のノードリストが取得される
+      // ・'d1/d11/f111.txt'が追加された
+      td.when(storageLogic.getDirDescendants(d1.path)).thenReturn(toStorageNode([d1, d11, f111]))
+
+      pageLogic.mergeTreeDirDescendants(d1.path)
+      const actual = pageLogic.getAllTreeNodes()
+
+      // root
+      // └d1
+      //   └d11
+      //      └f111.txt ← nodeFilterで除外されるのでツリーには存在しない
+      expect(actual.length).toBe(3)
+      expect(actual[0].path).toBe(``)
+      expect(actual[1].path).toBe(`d1`)
+      expect(actual[2].path).toBe(`d1/d11`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+  })
+
+  describe('mergeTreeDirChildren', () => {
+    it('ベーシックケース', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      // root
+      // ├d1 ← 対象ノードに指定
+      // │├d11
+      // ││└f111.txt
+      // │└d12
+      // │  └f121.txt
+      // └d2
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const f112 = newTreeFileNodeInput(`d1/d11/f112.txt`)
+      const d12 = newTreeDirNodeInput(`d1/d12`)
+      const f121 = newTreeFileNodeInput(`d1/d12/f121.txt`)
+      const f11 = newTreeFileNodeInput(`d1/f11.txt`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      pageLogic.setAllTreeNodes([d1, d11, f111, d12, f121, d2])
+
+      // ロジックストアから以下の状態のノードリストが取得される
+      // ・'d1/d11/f112.txt'が追加された
+      // ・'d1/f11.txt'が追加された
+      // ・'d1/d12'が削除された
+      td.when(storageLogic.getDirChildren(d1.path)).thenReturn(toStorageNode([d1, d11, f112, f11]))
+
+      pageLogic.mergeTreeDirChildren(d1.path)
+      const actual = pageLogic.getAllTreeNodes()
+
+      // root
+      // ├d1
+      // │├d11
+      // ││├f111.txt
+      // ││└f112.txt
+      // │└f11.txt
+      // └d2
+      expect(actual.length).toBe(7)
+      expect(actual[0].path).toBe(``)
+      expect(actual[1].path).toBe(`d1`)
+      expect(actual[2].path).toBe(`d1/d11`)
+      expect(actual[3].path).toBe(`d1/d11/f111.txt`)
+      expect(actual[4].path).toBe(`d1/d11/f112.txt`)
+      expect(actual[5].path).toBe(`d1/f11.txt`)
+      expect(actual[6].path).toBe(`d2`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('引数ディレクトリが削除されていた', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      // root
+      // ├d1 ← 対象ノードに指定
+      // │└d11
+      // │  └f111.txt
+      // └d2
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      pageLogic.setAllTreeNodes([d1, d11, f111, d2])
+
+      // ロジックストアから以下の状態のノードリストが取得される
+      // ・'d1'が削除(または移動)された
+      td.when(storageLogic.getDirChildren(d1.path)).thenReturn([])
+
+      pageLogic.mergeTreeDirChildren(d1.path)
+      const actual = pageLogic.getAllTreeNodes()
+
+      // root
+      // └d2
+      expect(actual.length).toBe(2)
+      expect(actual[0].path).toBe(``)
+      expect(actual[1].path).toBe(`d2`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('nodeFilterが機能しているか検証', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: dirNodeFilter })
+
+      // root
+      // └d1 ← 対象ノードに指定
+      //   └d11
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f11 = newTreeFileNodeInput(`d1/f11.txt`)
+      pageLogic.setAllTreeNodes([d1, d11])
+
+      // ロジックストアから以下の状態のノードリストが取得される
+      // ・'d1/f11.txt'が追加された
+      td.when(storageLogic.getDirChildren(d1.path)).thenReturn(toStorageNode([d1, d11, f11]))
+
+      pageLogic.mergeTreeDirChildren(d1.path)
+      const actual = pageLogic.getAllTreeNodes()
+
+      // root
+      // └d1
+      //   ├d11
+      //   └f1.txt ← nodeFilterで除外されるのでツリーには存在しない
+      expect(actual.length).toBe(3)
+      expect(actual[0].path).toBe(``)
+      expect(actual[1].path).toBe(`d1`)
+      expect(actual[2].path).toBe(`d1/d11`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+  })
+
+  describe('setTreeNode + setTreeNodes', () => {
+    it('ツリーに存在しないノードの設定', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      pageLogic.setAllTreeNodes([])
+
+      const d1 = newTreeDirNodeInput('d1')
+      const d11 = newTreeDirNodeInput('d1/d11')
+      const f111 = newTreeFileNodeInput('d1/d11/f111.txt')
+      pageLogic.setTreeNodes([d1, d11, f111])
+
+      // ノードが追加されたことを検証
+      expect(pageLogic.getTreeNode(`d1/d11`)!.path).toBe(`d1/d11`)
+      expect(pageLogic.getTreeNode(`d1/d11/f111.txt`)!.path).toBe(`d1/d11/f111.txt`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('ツリーに存在するノードの設定', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      pageLogic.setAllTreeNodes([d1, d11, f111, d2])
+
+      const createdAt = dayjs('2019-12-01')
+      const updatedAt = dayjs('2019-12-02')
+      const updatingD11 = Object.assign({}, d11, { createdAt, updatedAt })
+      const updatingFileA = Object.assign({}, f111, { createdAt, updatedAt })
+
+      pageLogic.setTreeNodes([updatingD11, updatingFileA])
+
+      expect(pageLogic.getTreeNode(`d1/d11`)!.createdAt).toEqual(createdAt)
+      expect(pageLogic.getTreeNode(`d1/d11`)!.updatedAt).toEqual(updatedAt)
+      expect(pageLogic.getTreeNode(`d1/d11/f111.txt`)!.createdAt).toEqual(createdAt)
+      expect(pageLogic.getTreeNode(`d1/d11/f111.txt`)!.updatedAt).toEqual(updatedAt)
+    })
+
+    it('ツリーに存在するノードの設定 - 親が変わっていた場合', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      pageLogic.setAllTreeNodes([d1, d11, f111, d2])
+
+      // 'd1/d11'が移動+リネームで'd2/d21'となった
+      const updatedAt = dayjs()
+      const d21_from_d11 = cloneTreeNodeInput(d11, { name: `d21`, dir: `d2`, path: `d2/d21`, updatedAt })
+      const f211_from_f111 = cloneTreeNodeInput(f111, { name: `f211.txt`, dir: `d2/d21`, path: `d2/d21/f211.txt`, updatedAt })
+      pageLogic.setTreeNodes([d21_from_d11, f211_from_f111])
+
+      const _d21 = pageLogic.getTreeNode(`d2/d21`)!
+      expect(_d21.parent!.path).toBe(`d2`)
+      expect(_d21.updatedAt).toEqual(updatedAt)
+      const _f211 = pageLogic.getTreeNode(`d2/d21/f211.txt`)!
+      expect(_f211.parent!.path).toBe(`d2/d21`)
+      expect(_f211.updatedAt).toEqual(updatedAt)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('ツリーに存在するノードの設定 - リネームされていた場合', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const f112 = newTreeFileNodeInput(`d1/d11/f112.txt`)
+      pageLogic.setAllTreeNodes([d1, d11, f111, f112])
+
+      // 'd1/d11/f112.txt'がリネームされて'd1/d11/f110.txt'となった
+      const updatedAt = dayjs()
+      const f110_from_f112 = cloneTreeNodeInput(f112, { name: `f110.txt`, dir: `d1/d11`, path: `d1/d11/f110.txt`, updatedAt })
+      pageLogic.setTreeNodes([f110_from_f112])
+
+      const _d11 = treeView.getNode(`d1/d11`)!
+      const [_f110, _f111] = _d11.children as StorageTreeNode[]
+      expect(_f110.path).toBe(`d1/d11/f110.txt`)
+      expect(_f110.name).toBe(`f110.txt`)
+      expect(_f110.updatedAt).toEqual(updatedAt)
+      expect(_f111.path).toBe(`d1/d11/f111.txt`)
+      expect(_f111.name).toBe(`f111.txt`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('ディレクトリ削除後また同じディレクトリに同じ名前のディレクトリが作成された場合', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      pageLogic.setAllTreeNodes([d1, d11])
+
+      // 'd1/d11'が削除後また同じディレクトリに同じ名前で作成された
+      const created_d11 = cloneTreeNodeInput(d11, { id: generateFirestoreId(), createdAt: dayjs(), updatedAt: dayjs() })
+      pageLogic.setTreeNodes([created_d11])
+
+      const _d11 = pageLogic.getTreeNode(`d1/d11`)!
+      expect(_d11.id).toEqual(created_d11.id)
+      expect(_d11.createdAt).toEqual(created_d11.createdAt)
+      expect(_d11.updatedAt).toEqual(created_d11.updatedAt)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('ファイル削除後また同じディレクトリに同じ名前でファイルがアップロードされた場合', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const f112 = newTreeFileNodeInput(`d1/d11/f112.txt`)
+      pageLogic.setAllTreeNodes([d1, d11, f111, f112])
+
+      // 'd1/d11/f111.txt'が削除後また同じディレクトリに同じ名前でアップロードされた
+      const created_f111 = cloneTreeNodeInput(f111, { id: generateFirestoreId(), createdAt: dayjs(), updatedAt: dayjs() })
+      pageLogic.setTreeNodes([created_f111])
+
+      const _f111 = pageLogic.getTreeNode(`d1/d11/f111.txt`)!
+      expect(_f111.id).toEqual(created_f111.id)
+      expect(_f111.createdAt).toEqual(created_f111.createdAt)
+      expect(_f111.updatedAt).toEqual(created_f111.updatedAt)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('ソートされていないノードリストを渡した場合', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      pageLogic.setAllTreeNodes([])
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const d12 = newTreeDirNodeInput(`d1/d12`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      const d21 = newTreeDirNodeInput(`d2/d21`)
+      const f211 = newTreeFileNodeInput(`d2/d21/f211.txt`)
+      const f1 = newTreeFileNodeInput(`f1.txt`)
+      pageLogic.setTreeNodes(shuffleArray([d1, d11, f111, d12, d2, d21, f211, f1]))
+      const actual = pageLogic.getAllTreeNodes()
+
+      expect(actual.length).toBe(9)
+      expect(actual[0].path).toBe(``)
+      expect(actual[1].path).toBe(`d1`)
+      expect(actual[2].path).toBe(`d1/d11`)
+      expect(actual[3].path).toBe(`d1/d11/f111.txt`)
+      expect(actual[4].path).toBe(`d1/d12`)
+      expect(actual[5].path).toBe(`d2`)
+      expect(actual[6].path).toBe(`d2/d21`)
+      expect(actual[7].path).toBe(`d2/d21/f211.txt`)
+      expect(actual[8].path).toBe(`f1.txt`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+  })
+
+  describe('removeTreeNodes', () => {
+    it('ベーシックケース', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      const d21 = newTreeDirNodeInput(`d2/d21`)
+      const f211 = newTreeFileNodeInput(`d2/d21/f211.txt`)
+      pageLogic.setAllTreeNodes([d1, d11, f111, d2, d21, f211])
+
+      pageLogic.removeTreeNodes([`d1/d11`, `d2/d21/f211.txt`])
+
+      expect(pageLogic.getTreeNode(`d1/d11`)).toBeUndefined()
+      expect(pageLogic.getTreeNode(`d1/d11/f111.txt`)).toBeUndefined()
+      expect(pageLogic.getTreeNode(`d2/d21/f211.txt`)).toBeUndefined()
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it(`'d1/d11'と親である'd1'を同時に指定した場合`, () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const d12 = newTreeDirNodeInput(`d1/d12`)
+      pageLogic.setAllTreeNodes([d1, d11, f111, d12])
+
+      pageLogic.removeTreeNodes([`d1/d11`, `d1`])
+
+      expect(pageLogic.getTreeNode(`d1`)).toBeUndefined()
+      expect(pageLogic.getTreeNode(`d1/d11`)).toBeUndefined()
+      expect(pageLogic.getTreeNode(`d1/d11/f111.txt`)).toBeUndefined()
+      expect(pageLogic.getTreeNode(`d1/d12`)).toBeUndefined()
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('存在しないパスを指定した場合', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      pageLogic.setAllTreeNodes([d1, d2])
+
+      // 何も起こらない
+      pageLogic.removeTreeNodes([`dXXX`])
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('削除により選択ノードがなくなった場合', () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      pageLogic.setAllTreeNodes([d1, d11, f111])
+      // 'd1/d11/f111.txt'を選択ノードに設定
+      pageLogic.selectedTreeNode.value = pageLogic.getTreeNode(f111.path)!
+
+      pageLogic.removeTreeNodes([`d1/d11`])
+
+      expect(pageLogic.getTreeNode(`d1/d11`)).toBeUndefined()
+      expect(pageLogic.getTreeNode(`d1/d11/f111.txt`)).toBeUndefined()
+      // 選択ノードがルートノードになっていることを検証
+      expect(pageLogic.selectedTreeNode.value).toBe(pageLogic.getRootTreeNode())
+
+      verifyParentChildRelationForTree(treeView)
+    })
+  })
+
+  describe('moveTreeNode', () => {
+    it('ディレクトリの移動', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      // root
+      // ├dev
+      // │└projects ← workへ移動
+      // │  └blog
+      // │    └src
+      // │      └index.html
+      // └work
+      //   ├assets
+      //   └users
+      const dev = newTreeDirNodeInput(`dev`)
+      const projects = newTreeDirNodeInput(`dev/projects`)
+      const blog = newTreeDirNodeInput(`dev/projects/blog`)
+      const src = newTreeDirNodeInput(`dev/projects/blog/src`)
+      const index = newTreeFileNodeInput(`dev/projects/blog/src/index.html`)
+      const work = newTreeDirNodeInput(`work`)
+      const assets = newTreeDirNodeInput(`work/assets`)
+      const users = newTreeDirNodeInput(`work/users`)
+      pageLogic.setAllTreeNodes([dev, projects, blog, src, index, work, assets, users])
+
+      // 'dev/projects'を'work'へ移動
+      await pageLogic.moveTreeNode(`dev/projects`, `work/projects`)
+
+      // root
+      // ├dev
+      // └work
+      //   ├assets
+      //   ├projects
+      //   │└blog
+      //   │  └src
+      //   │    └index.html
+      //   └users
+
+      const _dev = pageLogic.getTreeNode(`dev`)!
+      expect(_dev.getDescendants().length).toBe(0)
+
+      const _work = pageLogic.getTreeNode(`work`)!
+      const _work_descendants = _work.getDescendants()
+      const [_assets, _projects, _blog, _src, _index, _users] = _work_descendants
+      expect(_work_descendants.length).toBe(6)
+      expect(_assets.path).toBe(`work/assets`)
+      expect(_projects.path).toBe(`work/projects`)
+      expect(_blog.path).toBe(`work/projects/blog`)
+      expect(_src.path).toBe(`work/projects/blog/src`)
+      expect(_index.path).toBe(`work/projects/blog/src/index.html`)
+      expect(_users.path).toBe(`work/users`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('ファイルの移動', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      // root
+      // ├d1
+      // │├fileA.txt
+      // │└fileC.txt
+      // └fileB.txt ← d1へ移動
+      const d1 = newTreeDirNodeInput(`d1`)
+      const fileA = newTreeFileNodeInput(`d1/fileA.txt`)
+      const fileC = newTreeFileNodeInput(`d1/fileC.txt`)
+      const fileB = newTreeFileNodeInput(`fileB.txt`)
+      pageLogic.setAllTreeNodes([d1, fileA, fileC, fileB])
+
+      // 'fileB.txt'を'd1'へ移動
+      await pageLogic.moveTreeNode(`fileB.txt`, `d1/fileB.txt`)
+
+      // root
+      // └d1
+      //  ├fileA.txt
+      //  ├fileB.txt
+      //  └fileC.txt
+      const _d1 = pageLogic.getTreeNode(`d1`)!
+      const _d1_descendants = _d1.getDescendants()
+      const [_fileA, _fileB, _fileC] = _d1_descendants
+      expect(_d1_descendants.length).toBe(3)
+      expect(_fileA.path).toBe(`d1/fileA.txt`)
+      expect(_fileB.path).toBe(`d1/fileB.txt`)
+      expect(_fileC.path).toBe(`d1/fileC.txt`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('ディレクトリのリネーム', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      // root
+      // ├d1
+      // ├d2
+      // └d3 ← d0へリネーム
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      const d3 = newTreeDirNodeInput(`d3`)
+      pageLogic.setAllTreeNodes([d1, d2, d3])
+
+      // 'd3'を'd0'へリネーム
+      await pageLogic.moveTreeNode(`d3`, `d0`)
+
+      // root
+      // ├d0
+      // ├d1
+      // └d2
+      const [_d0, _d1, _d2] = pageLogic.getRootTreeNode().getDescendants()
+      expect(_d0.path).toBe(`d0`)
+      expect(_d1.path).toBe(`d1`)
+      expect(_d2.path).toBe(`d2`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('ファイルのリネーム', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      // root
+      // ├file1.txt
+      // ├file2.txt
+      // └file3.txt ← file0.txtへリネーム
+      const file1 = newTreeDirNodeInput(`file1.txt`)
+      const file2 = newTreeDirNodeInput(`file2.txt`)
+      const file3 = newTreeDirNodeInput(`file3.txt`)
+      pageLogic.setAllTreeNodes([file1, file2, file3])
+
+      // 'file3.txt'を'file0.txt'へリネーム
+      await pageLogic.moveTreeNode(`file3.txt`, `file0.txt`)
+
+      // root
+      // ├file0.txt
+      // ├file1.txt
+      // └file2.txt
+      const [_file0, _file1, _file2] = pageLogic.getRootTreeNode().getDescendants()
+      expect(_file0.path).toBe(`file0.txt`)
+      expect(_file1.path).toBe(`file1.txt`)
+      expect(_file2.path).toBe(`file2.txt`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('ルートディレクトリへ移動', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      // root
+      // └dB
+      //   ├dA
+      //   │└fileA.txt
+      //   └fileB.txt
+      const dB = newTreeDirNodeInput(`dB`)
+      const dA = newTreeDirNodeInput(`dB/dA`)
+      const fileA = newTreeFileNodeInput(`dB/dA/fileA.txt`)
+      const fileB = newTreeFileNodeInput(`dB/fileB.txt`)
+      pageLogic.setAllTreeNodes([dB, dA, fileA, fileB])
+
+      // 'dB/dA'をルートノードへ移動
+      await pageLogic.moveTreeNode(`dB/dA`, `dA`)
+
+      // root
+      // ├dA
+      // │└fileA.txt
+      // └dB
+      //   └fileB.txt
+      const _root = pageLogic.getTreeNode(``)!
+      const [_dA, _fileA, _dB, _fileB] = _root.getDescendants()
+      expect(_root.getDescendants().length).toBe(4)
+      expect(_dA.path).toBe(`dA`)
+      expect(_fileA.path).toBe(`dA/fileA.txt`)
+      expect(_dB.path).toBe(`dB`)
+      expect(_fileB.path).toBe(`dB/fileB.txt`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('移動先に同名のディレクトリまたはファイルが存在する場合', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+      // root
+      // ├dA
+      // │└d1 ← 移動するノード
+      // │  ├d11
+      // │  │└d111
+      // │  │  ├fileA.txt
+      // │  │  └fileB.txt
+      // │  ├d12
+      // │  ├fileX.txt
+      // │  └fileY.txt
+      // └dB
+      //   └d1 ← ここへ上書き移動
+      //     ├d11
+      //     │└d111
+      //     │  ├fileA.txt
+      //     │  └fileC.txt
+      //     ├d13
+      //     ├fileX.txt
+      //     └fileZ.txt
+      const dA = newTreeDirNodeInput(`dA`)
+      const dA_d1 = newTreeDirNodeInput(`dA/d1`)
+      const dA_d11 = newTreeDirNodeInput(`dA/d1/d11`)
+      const dA_d111 = newTreeDirNodeInput(`dA/d1/d11/d111`)
+      const dA_fileA = newTreeFileNodeInput(`dA/d1/d11/d111/fileA.txt`)
+      const dA_fileB = newTreeFileNodeInput(`dA/d1/d11/d111/fileB.txt`)
+      const dA_d12 = newTreeDirNodeInput(`dA/d1/d12`)
+      const dA_fileX = newTreeFileNodeInput(`dA/d1/fileX.txt`)
+      const dA_fileY = newTreeFileNodeInput(`dA/d1/fileY.txt`)
+      const dB = newTreeDirNodeInput(`dB`)
+      const dB_d1 = newTreeDirNodeInput(`dB/d1`)
+      const dB_d11 = newTreeDirNodeInput(`dB/d1/d11`)
+      const dB_d111 = newTreeDirNodeInput(`dB/d1/d11/d111`)
+      const dB_fileA = newTreeFileNodeInput(`dB/d1/d11/d111/fileA.txt`)
+      const dB_fileC = newTreeFileNodeInput(`dB/d1/d11/d111/fileC.txt`)
+      const dB_d13 = newTreeDirNodeInput(`dB/d1/d13`)
+      const dB_fileX = newTreeFileNodeInput(`dB/d1/fileX.txt`)
+      const dB_fileZ = newTreeFileNodeInput(`dB/d1/fileZ.txt`)
+      pageLogic.setAllTreeNodes([
+        dA,
+        dA_d1,
+        dA_d11,
+        dA_d111,
+        dA_fileA,
+        dA_fileB,
+        dA_d12,
+        dA_fileX,
+        dA_fileY,
+        dB,
+        dB_d1,
+        dB_d11,
+        dB_d111,
+        dB_fileA,
+        dB_fileC,
+        dB_d13,
+        dB_fileX,
+        dB_fileZ,
+      ])
+
+      // 'dA/d1'を'dB'へ移動
+      await pageLogic.moveTreeNode(`dA/d1`, `dB/d1`)
+
+      // root
+      // ├dA
+      // └dB
+      //   └d1
+      //     ├d11
+      //     │└d111
+      //     │  ├fileA.txt
+      //     │  ├fileB.txt
+      //     │  └fileC.txt
+      //     ├d12
+      //     ├d13
+      //     ├fileX.txt
+      //     ├fileY.txt
+      //     └fileZ.txt
+
+      const _dA = pageLogic.getTreeNode(`dA`)!
+      expect(_dA.getDescendants().length).toBe(0)
+
+      const _dB = pageLogic.getTreeNode(`dB`)!
+      const [_d1, _d11, _d111, _fileA, _fileB, _fileC, _d12, _d13, _fileX, _fileY, _fileZ] = _dB.getDescendants()
+      expect(_dB.getDescendants().length).toBe(11)
+      expect(_d1.path).toBe(`dB/d1`)
+      expect(_d11.path).toBe(`dB/d1/d11`)
+      expect(_d111.path).toBe(`dB/d1/d11/d111`)
+      expect(_fileA.path).toBe(`dB/d1/d11/d111/fileA.txt`)
+      expect(_fileB.path).toBe(`dB/d1/d11/d111/fileB.txt`)
+      expect(_fileC.path).toBe(`dB/d1/d11/d111/fileC.txt`)
+      expect(_d12.path).toBe(`dB/d1/d12`)
+      expect(_d13.path).toBe(`dB/d1/d13`)
+      expect(_fileX.path).toBe(`dB/d1/fileX.txt`)
+      expect(_fileY.path).toBe(`dB/d1/fileY.txt`)
+      expect(_fileZ.path).toBe(`dB/d1/fileZ.txt`)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+  })
+
+  describe('fetchInitialStorage', () => {
     it('ストレージの初期読み込みが行われていない場合', async () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
       // ストレージの初期読み込みが行われていない状態に設定
-      pageLogic.isPulledInitialNodes.value = false
+      pageLogic.isFetchedInitialStorage.value = false
 
       // root
       // ├[d1]
@@ -297,8 +1165,8 @@ describe('StoragePageLogic', () => {
       td.when(storageLogic.fetchChildren(d1.path)).thenResolve(toStorageNode([d11]))
       td.when(storageLogic.fetchChildren(d11.path)).thenResolve(toStorageNode([f111]))
 
-      await pageLogic.pullInitialNodes(d11.path)
-      const actual = pageLogic.getAllNodes()
+      await pageLogic.fetchInitialStorage(d11.path)
+      const actual = pageLogic.getAllTreeNodes()
 
       // root
       // ├d1
@@ -340,7 +1208,7 @@ describe('StoragePageLogic', () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
       // ストレージの初期読み込みが行われている状態に設定
-      pageLogic.isPulledInitialNodes.value = true
+      pageLogic.isFetchedInitialStorage.value = true
 
       // root
       // ├d1
@@ -361,8 +1229,8 @@ describe('StoragePageLogic', () => {
       td.when(storageLogic.getChildren(d1.path)).thenReturn(toStorageNode([d11]))
       td.when(storageLogic.getChildren(d11.path)).thenReturn(toStorageNode([f111]))
 
-      await pageLogic.pullInitialNodes(d11.path)
-      const actual = pageLogic.getAllNodes()
+      await pageLogic.fetchInitialStorage(d11.path)
+      const actual = pageLogic.getAllTreeNodes()
 
       // root
       // ├d1
@@ -416,8 +1284,8 @@ describe('StoragePageLogic', () => {
       // ・'f1.txt'
       td.when(storageLogic.fetchChildren(``)).thenResolve(toStorageNode([d1, f1]))
 
-      await pageLogic.pullInitialNodes()
-      const actual = pageLogic.getAllNodes()
+      await pageLogic.fetchInitialStorage()
+      const actual = pageLogic.getAllTreeNodes()
 
       // root
       // ├d1
@@ -430,7 +1298,7 @@ describe('StoragePageLogic', () => {
     })
   })
 
-  describe('pullChildren', () => {
+  describe('fetchStorageChildren', () => {
     it('対象ノードを指定した場合 - ルートノードを指定', async () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
@@ -440,15 +1308,15 @@ describe('StoragePageLogic', () => {
       const d1 = newTreeDirNodeInput(`d1`)
       const d2 = newTreeDirNodeInput(`d2`)
       const d3 = newTreeDirNodeInput(`d3`)
-      pageLogic.setAllNodes([d1, d3])
+      pageLogic.setAllTreeNodes([d1, d3])
 
       // APIから以下の状態のノードリストが取得される
       // ・'d2'が追加された
       // ・'d3'が削除(または移動)された
       td.when(storageLogic.fetchChildren(``)).thenResolve(toStorageNode([d1, d2]))
 
-      await pageLogic.pullChildren(``)
-      const actual = pageLogic.getAllNodes()
+      await pageLogic.fetchStorageChildren(``)
+      const actual = pageLogic.getAllTreeNodes()
       const [_root, _d1, _d2] = actual
 
       // root
@@ -477,15 +1345,15 @@ describe('StoragePageLogic', () => {
       const d11 = newTreeDirNodeInput(`d1/d11`)
       const d12 = newTreeDirNodeInput(`d1/d12`)
       const d13 = newTreeDirNodeInput(`d1/d13`)
-      pageLogic.setAllNodes([d1, d11, d13])
+      pageLogic.setAllTreeNodes([d1, d11, d13])
 
       // APIから以下の状態のノードリストが取得される
       // ・'d12'が追加された
       // ・'d13'が削除(または移動)された
       td.when(storageLogic.fetchChildren(d1.path)).thenResolve(toStorageNode([d11, d12]))
 
-      await pageLogic.pullChildren(d1.path)
-      const actual = pageLogic.getAllNodes()
+      await pageLogic.fetchStorageChildren(d1.path)
+      const actual = pageLogic.getAllTreeNodes()
       const [_root, _d1, _d11, _d12] = actual
 
       // root
@@ -512,14 +1380,14 @@ describe('StoragePageLogic', () => {
       // └d1
       const d1 = newTreeDirNodeInput(`d1`)
       const f1 = newTreeFileNodeInput(`f1.txt`)
-      pageLogic.setAllNodes([d1])
+      pageLogic.setAllTreeNodes([d1])
 
       // APIから以下の状態のノードリストが取得される
       // ・'f1.txt'が追加された
       td.when(storageLogic.fetchChildren(``)).thenResolve(toStorageNode([d1, f1]))
 
-      await pageLogic.pullChildren(``)
-      const actual = pageLogic.getAllNodes()
+      await pageLogic.fetchStorageChildren(``)
+      const actual = pageLogic.getAllTreeNodes()
       const [_root, _d1] = actual
 
       // root
@@ -533,7 +1401,7 @@ describe('StoragePageLogic', () => {
     })
   })
 
-  describe('reloadDir', () => {
+  describe('reloadStorageDir', () => {
     it('対象ノードにルートノードを指定', async () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
@@ -549,7 +1417,7 @@ describe('StoragePageLogic', () => {
       const f112 = newTestStorageFileNode(`d1/d11/f112.txt`)
       const d12 = newTreeDirNodeInput(`d1/d12`, { lazyLoadStatus: 'none' })
       const d2 = newTreeDirNodeInput(`d2`, { lazyLoadStatus: 'none' })
-      pageLogic.setAllNodes([d1, d11, f111, d12, d2])
+      pageLogic.setAllTreeNodes([d1, d11, f111, d12, d2])
 
       // 以下の状態のノードリストを再現する
       // ・'d1/d11/f111.txt'が'f1.txt'へ移動+リネームされた
@@ -560,8 +1428,8 @@ describe('StoragePageLogic', () => {
       td.when(storageLogic.getDirDescendants(``)).thenReturn(toStorageNode([d1, d11, f112, d2, renamed_f1]))
 
       // ルートノードを指定して実行
-      await pageLogic.reloadDir(``)
-      const actual = pageLogic.getAllNodes()
+      await pageLogic.reloadStorageDir(``)
+      const actual = pageLogic.getAllTreeNodes()
       const [_root, _d1, _d11, _f112, _d2, _f1] = actual
 
       // root
@@ -610,7 +1478,7 @@ describe('StoragePageLogic', () => {
       const f112 = newTreeFileNodeInput(`d1/d11/f112.txt`)
       const d12 = newTreeDirNodeInput(`d1/d12`, { lazyLoadStatus: 'none' })
       const d2 = newTreeDirNodeInput(`d2`, { lazyLoadStatus: 'none' })
-      pageLogic.setAllNodes([d1, d11, d111, f1111, f111, d12, d2])
+      pageLogic.setAllTreeNodes([d1, d11, d111, f1111, f111, d12, d2])
 
       // 以下の状態のノードリストを再現する
       // ・'d1/d11/d111'が削除された
@@ -623,8 +1491,8 @@ describe('StoragePageLogic', () => {
       td.when(storageLogic.getDirDescendants(d11.path)).thenReturn(toStorageNode([d11, updated_f111, f112]))
 
       // 'd1/d11'を指定して実行
-      await pageLogic.reloadDir(d11.path)
-      const actual = pageLogic.getAllNodes()
+      await pageLogic.reloadStorageDir(d11.path)
+      const actual = pageLogic.getAllTreeNodes()
       const [_root, _d1, _d11, _f111, _f112, _d12, _d2] = actual
 
       // root
@@ -675,7 +1543,7 @@ describe('StoragePageLogic', () => {
       const f1111 = newTreeFileNodeInput(`d1/d11/d111/f1111.txt`)
       const d12 = newTreeDirNodeInput(`d1/d12`, { lazyLoadStatus: 'none' })
       const d2 = newTreeDirNodeInput(`d2`, { lazyLoadStatus: 'none' })
-      pageLogic.setAllNodes([d1, d11, d111, f1111, d12, d2])
+      pageLogic.setAllTreeNodes([d1, d11, d111, f1111, d12, d2])
 
       // 以下の状態のノードリストを再現する
       // ・'d1/d11/d111'が削除され存在しない
@@ -687,8 +1555,8 @@ describe('StoragePageLogic', () => {
       td.when(storageLogic.getDirDescendants(d111.path)).thenReturn([])
 
       // 'd1/d11/d111'を指定して実行
-      await pageLogic.reloadDir(d111.path)
-      const actual = pageLogic.getAllNodes()
+      await pageLogic.reloadStorageDir(d111.path)
+      const actual = pageLogic.getAllTreeNodes()
       const [_root, _d1, _d11, _d12, _d2] = actual
 
       // root
@@ -731,7 +1599,7 @@ describe('StoragePageLogic', () => {
       const f1111 = newTreeFileNodeInput(`d1/d11/d111/f1111.txt`)
       const d12 = newTreeDirNodeInput(`d1/d12`, { lazyLoadStatus: 'none' })
       const d2 = newTreeDirNodeInput(`d2`, { lazyLoadStatus: 'none' })
-      pageLogic.setAllNodes([d1, d11, d111, f1111, d12, d2])
+      pageLogic.setAllTreeNodes([d1, d11, d111, f1111, d12, d2])
 
       // 以下の状態のノードリストを再現する
       // ・'d1/d11'が削除され存在しない
@@ -743,8 +1611,8 @@ describe('StoragePageLogic', () => {
       td.when(storageLogic.getDirDescendants(d111.path)).thenReturn([])
 
       // 'd1/d11/d111'を指定して実行
-      await pageLogic.reloadDir(d111.path)
-      const actual = pageLogic.getAllNodes()
+      await pageLogic.reloadStorageDir(d111.path)
+      const actual = pageLogic.getAllTreeNodes()
       const [_root, _d1, _d12, _d2] = actual
 
       // root
@@ -775,7 +1643,7 @@ describe('StoragePageLogic', () => {
       // └d1
       const d1 = newTreeDirNodeInput(`d1`)
       const f1 = newTreeFileNodeInput(`f1.txt`)
-      pageLogic.setAllNodes([d1])
+      pageLogic.setAllTreeNodes([d1])
 
       // 以下の状態のノードリストを再現する
       // ・'f1.txt'が追加された
@@ -783,8 +1651,8 @@ describe('StoragePageLogic', () => {
       td.when(storageLogic.getDirDescendants(``)).thenReturn([d1, f1])
 
       // ルートノードを指定して実行
-      await pageLogic.reloadDir(``)
-      const actual = pageLogic.getAllNodes()
+      await pageLogic.reloadStorageDir(``)
+      const actual = pageLogic.getAllTreeNodes()
       const [_root, _d1] = actual
 
       // root
@@ -793,874 +1661,6 @@ describe('StoragePageLogic', () => {
       expect(actual.length).toBe(2)
       expect(_root.path).toBe(``)
       expect(_d1.path).toBe(`d1`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-  })
-
-  describe('getAllNodes', () => {
-    it('ベーシックケース', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const d12 = newTreeDirNodeInput(`d1/d12`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      const d21 = newTreeDirNodeInput(`d2/d21`)
-      const f211 = newTreeFileNodeInput(`d2/d21/f211.txt`)
-      const f1 = newTreeFileNodeInput(`f1.txt`)
-      pageLogic.setAllNodes([d1, d11, f111, d12, d2, d21, f211, f1])
-
-      const actual = pageLogic.getAllNodes()
-
-      expect(actual.length).toBe(9)
-      expect(actual[0].path).toBe(``)
-      expect(actual[1].path).toBe(`d1`)
-      expect(actual[2].path).toBe(`d1/d11`)
-      expect(actual[3].path).toBe(`d1/d11/f111.txt`)
-      expect(actual[4].path).toBe(`d1/d12`)
-      expect(actual[5].path).toBe(`d2`)
-      expect(actual[6].path).toBe(`d2/d21`)
-      expect(actual[7].path).toBe(`d2/d21/f211.txt`)
-      expect(actual[8].path).toBe(`f1.txt`)
-    })
-  })
-
-  describe('getNode', () => {
-    it('ベーシックケース', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d1, d2])
-
-      const actual = pageLogic.getNode(`d1`)!
-
-      expect(actual.path).toBe(`d1`)
-    })
-
-    it('ルートノードを取得', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d1, d2])
-
-      const actual = pageLogic.getNode(``)!
-
-      expect(actual.path).toBe(``)
-    })
-  })
-
-  describe('setAllNodes', () => {
-    it('ソートされていないノードリストを渡した場合', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      // root
-      // ├d1
-      // │├d11
-      // ││└f111.txt
-      // │└d12
-      // ├d2
-      // │└d21
-      // │  └f211.txt
-      // └f1.txt
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const d12 = newTreeDirNodeInput(`d1/d12`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      const d21 = newTreeDirNodeInput(`d2/d21`)
-      const f211 = newTreeFileNodeInput(`d2/d21/f211.txt`)
-      const f1 = newTreeFileNodeInput(`f1.txt`)
-
-      pageLogic.setAllNodes(shuffleArray([d1, d11, f111, d12, d2, d21, f211, f1]))
-      const actual = pageLogic.getAllNodes()
-
-      expect(actual.length).toBe(9)
-      expect(actual[0].path).toBe(``)
-      expect(actual[1].path).toBe(`d1`)
-      expect(actual[2].path).toBe(`d1/d11`)
-      expect(actual[3].path).toBe(`d1/d11/f111.txt`)
-      expect(actual[4].path).toBe(`d1/d12`)
-      expect(actual[5].path).toBe(`d2`)
-      expect(actual[6].path).toBe(`d2/d21`)
-      expect(actual[7].path).toBe(`d2/d21/f211.txt`)
-      expect(actual[8].path).toBe(`f1.txt`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-  })
-
-  describe('mergeAllNodes', () => {
-    it('ベーシックケース', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      // root
-      // ├d1
-      // │├d11
-      // ││└f111.txt
-      // │└d12
-      // └d2
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const d12 = newTreeDirNodeInput(`d1/d12`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d1, d11, f111, d12, d2])
-
-      // 以下の状態のノードリストを引数に設定する
-      // ・'d1/d11/f111.txt'が'fA.txt'へ移動+リネームされた
-      // ・'d1/d11/f11A.txt'が追加された
-      // ・'d1/d12'が削除された
-      const fA = cloneTreeNodeInput(f111, { dir: ``, path: `fA.txt` })
-      const f11A = newTreeFileNodeInput(`d1/d11/f11A.txt`)
-      pageLogic.mergeAllNodes([d1, d11, f11A, fA, d2])
-      const actual = pageLogic.getAllNodes()
-
-      // root
-      // ├d1
-      // │└d11
-      // │  └f11A.txt
-      // ├d2
-      // └fA.txt
-      expect(actual.length).toBe(6)
-      expect(actual[0].path).toBe(``)
-      expect(actual[1].path).toBe(`d1`)
-      expect(actual[2].path).toBe(`d1/d11`)
-      expect(actual[3].path).toBe(`d1/d11/f11A.txt`)
-      expect(actual[4].path).toBe(`d2`)
-      expect(actual[5].path).toBe(`fA.txt`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-  })
-
-  describe('mergeDirDescendants', () => {
-    it('ベーシックケース', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      // root
-      // ├d1 ← 対象ノードに指定
-      // │├d11
-      // ││└f111.txt
-      // │└d12
-      // │  └f121.txt
-      // └d2
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const f112 = newTreeFileNodeInput(`d1/d11/f112.txt`)
-      const d12 = newTreeDirNodeInput(`d1/d12`)
-      const f121 = newTreeFileNodeInput(`d1/d12/f121.txt`)
-      const f11 = newTreeFileNodeInput(`d1/f11.txt`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d1, d11, f111, d12, f121, d2])
-
-      // ロジックストアから以下の状態のノードリストが取得される
-      // ・'d1/d11/f112.txt'が追加された
-      // ・'d1/f11.txt'が追加された
-      // ・'d1/d12'が削除(または移動)された
-      td.when(storageLogic.getDirDescendants(d1.path)).thenReturn(toStorageNode([d1, d11, f111, f112, f11]))
-
-      pageLogic.mergeDirDescendants(d1.path)
-      const actual = pageLogic.getAllNodes()
-
-      // root
-      // ├d1
-      // │├d11
-      // ││├f111.txt
-      // ││└f112.txt
-      // │└f11.txt
-      // └d2
-      expect(actual.length).toBe(7)
-      expect(actual[0].path).toBe(``)
-      expect(actual[1].path).toBe(`d1`)
-      expect(actual[2].path).toBe(`d1/d11`)
-      expect(actual[3].path).toBe(`d1/d11/f111.txt`)
-      expect(actual[4].path).toBe(`d1/d11/f112.txt`)
-      expect(actual[5].path).toBe(`d1/f11.txt`)
-      expect(actual[6].path).toBe(`d2`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('引数ディレクトリが削除されていた', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      // root
-      // ├d1 ← 対象ノードに指定
-      // │└d11
-      // │  └f111.txt
-      // └d2
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d1, d11, f111, d2])
-
-      // ロジックストアから以下の状態のノードリストが取得される
-      // ・'d1'が削除された
-      td.when(storageLogic.getDirDescendants(d1.path)).thenReturn([])
-
-      pageLogic.mergeDirDescendants(d1.path)
-      const actual = pageLogic.getAllNodes()
-
-      // root
-      // └d2
-      expect(actual.length).toBe(2)
-      expect(actual[0].path).toBe(``)
-      expect(actual[1].path).toBe(`d2`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('nodeFilterが機能しているか検証', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: dirNodeFilter })
-
-      // root
-      // └d1 ← 対象ノードに指定
-      //   └d11
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      pageLogic.setAllNodes([d1, d11])
-
-      // ロジックストアから以下の状態のノードリストが取得される
-      // ・'d1/d11/f111.txt'が追加された
-      td.when(storageLogic.getDirDescendants(d1.path)).thenReturn(toStorageNode([d1, d11, f111]))
-
-      pageLogic.mergeDirDescendants(d1.path)
-      const actual = pageLogic.getAllNodes()
-
-      // root
-      // └d1
-      //   └d11
-      //      └f111.txt ← nodeFilterで除外されるのでツリーには存在しない
-      expect(actual.length).toBe(3)
-      expect(actual[0].path).toBe(``)
-      expect(actual[1].path).toBe(`d1`)
-      expect(actual[2].path).toBe(`d1/d11`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-  })
-
-  describe('mergeDirChildren', () => {
-    it('ベーシックケース', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      // root
-      // ├d1 ← 対象ノードに指定
-      // │├d11
-      // ││└f111.txt
-      // │└d12
-      // │  └f121.txt
-      // └d2
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const f112 = newTreeFileNodeInput(`d1/d11/f112.txt`)
-      const d12 = newTreeDirNodeInput(`d1/d12`)
-      const f121 = newTreeFileNodeInput(`d1/d12/f121.txt`)
-      const f11 = newTreeFileNodeInput(`d1/f11.txt`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d1, d11, f111, d12, f121, d2])
-
-      // ロジックストアから以下の状態のノードリストが取得される
-      // ・'d1/d11/f112.txt'が追加された
-      // ・'d1/f11.txt'が追加された
-      // ・'d1/d12'が削除された
-      td.when(storageLogic.getDirChildren(d1.path)).thenReturn(toStorageNode([d1, d11, f112, f11]))
-
-      pageLogic.mergeDirChildren(d1.path)
-      const actual = pageLogic.getAllNodes()
-
-      // root
-      // ├d1
-      // │├d11
-      // ││├f111.txt
-      // ││└f112.txt
-      // │└f11.txt
-      // └d2
-      expect(actual.length).toBe(7)
-      expect(actual[0].path).toBe(``)
-      expect(actual[1].path).toBe(`d1`)
-      expect(actual[2].path).toBe(`d1/d11`)
-      expect(actual[3].path).toBe(`d1/d11/f111.txt`)
-      expect(actual[4].path).toBe(`d1/d11/f112.txt`)
-      expect(actual[5].path).toBe(`d1/f11.txt`)
-      expect(actual[6].path).toBe(`d2`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('引数ディレクトリが削除されていた', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      // root
-      // ├d1 ← 対象ノードに指定
-      // │└d11
-      // │  └f111.txt
-      // └d2
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d1, d11, f111, d2])
-
-      // ロジックストアから以下の状態のノードリストが取得される
-      // ・'d1'が削除(または移動)された
-      td.when(storageLogic.getDirChildren(d1.path)).thenReturn([])
-
-      pageLogic.mergeDirChildren(d1.path)
-      const actual = pageLogic.getAllNodes()
-
-      // root
-      // └d2
-      expect(actual.length).toBe(2)
-      expect(actual[0].path).toBe(``)
-      expect(actual[1].path).toBe(`d2`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('nodeFilterが機能しているか検証', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: dirNodeFilter })
-
-      // root
-      // └d1 ← 対象ノードに指定
-      //   └d11
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f11 = newTreeFileNodeInput(`d1/f11.txt`)
-      pageLogic.setAllNodes([d1, d11])
-
-      // ロジックストアから以下の状態のノードリストが取得される
-      // ・'d1/f11.txt'が追加された
-      td.when(storageLogic.getDirChildren(d1.path)).thenReturn(toStorageNode([d1, d11, f11]))
-
-      pageLogic.mergeDirChildren(d1.path)
-      const actual = pageLogic.getAllNodes()
-
-      // root
-      // └d1
-      //   ├d11
-      //   └f1.txt ← nodeFilterで除外されるのでツリーには存在しない
-      expect(actual.length).toBe(3)
-      expect(actual[0].path).toBe(``)
-      expect(actual[1].path).toBe(`d1`)
-      expect(actual[2].path).toBe(`d1/d11`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-  })
-
-  describe('setNode + setNodes', () => {
-    it('ツリーに存在しないノードの設定', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      pageLogic.setAllNodes([])
-
-      const d1 = newTreeDirNodeInput('d1')
-      const d11 = newTreeDirNodeInput('d1/d11')
-      const f111 = newTreeFileNodeInput('d1/d11/f111.txt')
-      pageLogic.setNodes([d1, d11, f111])
-
-      // ノードが追加されたことを検証
-      expect(pageLogic.getNode(`d1/d11`)!.path).toBe(`d1/d11`)
-      expect(pageLogic.getNode(`d1/d11/f111.txt`)!.path).toBe(`d1/d11/f111.txt`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('ツリーに存在するノードの設定', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d1, d11, f111, d2])
-
-      const createdAt = dayjs('2019-12-01')
-      const updatedAt = dayjs('2019-12-02')
-      const updatingD11 = Object.assign({}, d11, { createdAt, updatedAt })
-      const updatingFileA = Object.assign({}, f111, { createdAt, updatedAt })
-
-      pageLogic.setNodes([updatingD11, updatingFileA])
-
-      expect(pageLogic.getNode(`d1/d11`)!.createdAt).toEqual(createdAt)
-      expect(pageLogic.getNode(`d1/d11`)!.updatedAt).toEqual(updatedAt)
-      expect(pageLogic.getNode(`d1/d11/f111.txt`)!.createdAt).toEqual(createdAt)
-      expect(pageLogic.getNode(`d1/d11/f111.txt`)!.updatedAt).toEqual(updatedAt)
-    })
-
-    it('ツリーに存在するノードの設定 - 親が変わっていた場合', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d1, d11, f111, d2])
-
-      // 'd1/d11'が移動+リネームで'd2/d21'となった
-      const updatedAt = dayjs()
-      const d21_from_d11 = cloneTreeNodeInput(d11, { name: `d21`, dir: `d2`, path: `d2/d21`, updatedAt })
-      const f211_from_f111 = cloneTreeNodeInput(f111, { name: `f211.txt`, dir: `d2/d21`, path: `d2/d21/f211.txt`, updatedAt })
-      pageLogic.setNodes([d21_from_d11, f211_from_f111])
-
-      const _d21 = pageLogic.getNode(`d2/d21`)!
-      expect(_d21.parent!.path).toBe(`d2`)
-      expect(_d21.updatedAt).toEqual(updatedAt)
-      const _f211 = pageLogic.getNode(`d2/d21/f211.txt`)!
-      expect(_f211.parent!.path).toBe(`d2/d21`)
-      expect(_f211.updatedAt).toEqual(updatedAt)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('ツリーに存在するノードの設定 - リネームされていた場合', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const f112 = newTreeFileNodeInput(`d1/d11/f112.txt`)
-      pageLogic.setAllNodes([d1, d11, f111, f112])
-
-      // 'd1/d11/f112.txt'がリネームされて'd1/d11/f110.txt'となった
-      const updatedAt = dayjs()
-      const f110_from_f112 = cloneTreeNodeInput(f112, { name: `f110.txt`, dir: `d1/d11`, path: `d1/d11/f110.txt`, updatedAt })
-      pageLogic.setNodes([f110_from_f112])
-
-      const _d11 = treeView.getNode(`d1/d11`)!
-      const [_f110, _f111] = _d11.children as StorageTreeNode[]
-      expect(_f110.path).toBe(`d1/d11/f110.txt`)
-      expect(_f110.name).toBe(`f110.txt`)
-      expect(_f110.updatedAt).toEqual(updatedAt)
-      expect(_f111.path).toBe(`d1/d11/f111.txt`)
-      expect(_f111.name).toBe(`f111.txt`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('ディレクトリ削除後また同じディレクトリに同じ名前のディレクトリが作成された場合', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      pageLogic.setAllNodes([d1, d11])
-
-      // 'd1/d11'が削除後また同じディレクトリに同じ名前で作成された
-      const created_d11 = cloneTreeNodeInput(d11, { id: generateFirestoreId(), createdAt: dayjs(), updatedAt: dayjs() })
-      pageLogic.setNodes([created_d11])
-
-      const _d11 = pageLogic.getNode(`d1/d11`)!
-      expect(_d11.id).toEqual(created_d11.id)
-      expect(_d11.createdAt).toEqual(created_d11.createdAt)
-      expect(_d11.updatedAt).toEqual(created_d11.updatedAt)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('ファイル削除後また同じディレクトリに同じ名前でファイルがアップロードされた場合', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const f112 = newTreeFileNodeInput(`d1/d11/f112.txt`)
-      pageLogic.setAllNodes([d1, d11, f111, f112])
-
-      // 'd1/d11/f111.txt'が削除後また同じディレクトリに同じ名前でアップロードされた
-      const created_f111 = cloneTreeNodeInput(f111, { id: generateFirestoreId(), createdAt: dayjs(), updatedAt: dayjs() })
-      pageLogic.setNodes([created_f111])
-
-      const _f111 = pageLogic.getNode(`d1/d11/f111.txt`)!
-      expect(_f111.id).toEqual(created_f111.id)
-      expect(_f111.createdAt).toEqual(created_f111.createdAt)
-      expect(_f111.updatedAt).toEqual(created_f111.updatedAt)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('ソートされていないノードリストを渡した場合', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      pageLogic.setAllNodes([])
-
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const d12 = newTreeDirNodeInput(`d1/d12`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      const d21 = newTreeDirNodeInput(`d2/d21`)
-      const f211 = newTreeFileNodeInput(`d2/d21/f211.txt`)
-      const f1 = newTreeFileNodeInput(`f1.txt`)
-      pageLogic.setNodes(shuffleArray([d1, d11, f111, d12, d2, d21, f211, f1]))
-      const actual = pageLogic.getAllNodes()
-
-      expect(actual.length).toBe(9)
-      expect(actual[0].path).toBe(``)
-      expect(actual[1].path).toBe(`d1`)
-      expect(actual[2].path).toBe(`d1/d11`)
-      expect(actual[3].path).toBe(`d1/d11/f111.txt`)
-      expect(actual[4].path).toBe(`d1/d12`)
-      expect(actual[5].path).toBe(`d2`)
-      expect(actual[6].path).toBe(`d2/d21`)
-      expect(actual[7].path).toBe(`d2/d21/f211.txt`)
-      expect(actual[8].path).toBe(`f1.txt`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-  })
-
-  describe('removeNodes', () => {
-    it('ベーシックケース', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      const d21 = newTreeDirNodeInput(`d2/d21`)
-      const f211 = newTreeFileNodeInput(`d2/d21/f211.txt`)
-      pageLogic.setAllNodes([d1, d11, f111, d2, d21, f211])
-
-      pageLogic.removeNodes([`d1/d11`, `d2/d21/f211.txt`])
-
-      expect(pageLogic.getNode(`d1/d11`)).toBeUndefined()
-      expect(pageLogic.getNode(`d1/d11/f111.txt`)).toBeUndefined()
-      expect(pageLogic.getNode(`d2/d21/f211.txt`)).toBeUndefined()
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it(`'d1/d11'と親である'd1'を同時に指定した場合`, () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const d12 = newTreeDirNodeInput(`d1/d12`)
-      pageLogic.setAllNodes([d1, d11, f111, d12])
-
-      pageLogic.removeNodes([`d1/d11`, `d1`])
-
-      expect(pageLogic.getNode(`d1`)).toBeUndefined()
-      expect(pageLogic.getNode(`d1/d11`)).toBeUndefined()
-      expect(pageLogic.getNode(`d1/d11/f111.txt`)).toBeUndefined()
-      expect(pageLogic.getNode(`d1/d12`)).toBeUndefined()
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('存在しないパスを指定した場合', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d1, d2])
-
-      // 何も起こらない
-      pageLogic.removeNodes([`dXXX`])
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('削除により選択ノードがなくなった場合', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d11 = newTreeDirNodeInput(`d1/d11`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      pageLogic.setAllNodes([d1, d11, f111])
-      // 'd1/d11/f111.txt'を選択ノードに設定
-      pageLogic.selectedNode.value = pageLogic.getNode(f111.path)!
-
-      pageLogic.removeNodes([`d1/d11`])
-
-      expect(pageLogic.getNode(`d1/d11`)).toBeUndefined()
-      expect(pageLogic.getNode(`d1/d11/f111.txt`)).toBeUndefined()
-      // 選択ノードがルートノードになっていることを検証
-      expect(pageLogic.selectedNode.value).toBe(pageLogic.getTreeRootNode())
-
-      verifyParentChildRelationForTree(treeView)
-    })
-  })
-
-  describe('moveNode', () => {
-    it('ディレクトリの移動', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      // root
-      // ├dev
-      // │└projects ← workへ移動
-      // │  └blog
-      // │    └src
-      // │      └index.html
-      // └work
-      //   ├assets
-      //   └users
-      const dev = newTreeDirNodeInput(`dev`)
-      const projects = newTreeDirNodeInput(`dev/projects`)
-      const blog = newTreeDirNodeInput(`dev/projects/blog`)
-      const src = newTreeDirNodeInput(`dev/projects/blog/src`)
-      const index = newTreeFileNodeInput(`dev/projects/blog/src/index.html`)
-      const work = newTreeDirNodeInput(`work`)
-      const assets = newTreeDirNodeInput(`work/assets`)
-      const users = newTreeDirNodeInput(`work/users`)
-      pageLogic.setAllNodes([dev, projects, blog, src, index, work, assets, users])
-
-      // 'dev/projects'を'work'へ移動
-      await pageLogic.moveNode(`dev/projects`, `work/projects`)
-
-      // root
-      // ├dev
-      // └work
-      //   ├assets
-      //   ├projects
-      //   │└blog
-      //   │  └src
-      //   │    └index.html
-      //   └users
-
-      const _dev = pageLogic.getNode(`dev`)!
-      expect(_dev.getDescendants().length).toBe(0)
-
-      const _work = pageLogic.getNode(`work`)!
-      const _work_descendants = _work.getDescendants()
-      const [_assets, _projects, _blog, _src, _index, _users] = _work_descendants
-      expect(_work_descendants.length).toBe(6)
-      expect(_assets.path).toBe(`work/assets`)
-      expect(_projects.path).toBe(`work/projects`)
-      expect(_blog.path).toBe(`work/projects/blog`)
-      expect(_src.path).toBe(`work/projects/blog/src`)
-      expect(_index.path).toBe(`work/projects/blog/src/index.html`)
-      expect(_users.path).toBe(`work/users`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('ファイルの移動', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      // root
-      // ├d1
-      // │├fileA.txt
-      // │└fileC.txt
-      // └fileB.txt ← d1へ移動
-      const d1 = newTreeDirNodeInput(`d1`)
-      const fileA = newTreeFileNodeInput(`d1/fileA.txt`)
-      const fileC = newTreeFileNodeInput(`d1/fileC.txt`)
-      const fileB = newTreeFileNodeInput(`fileB.txt`)
-      pageLogic.setAllNodes([d1, fileA, fileC, fileB])
-
-      // 'fileB.txt'を'd1'へ移動
-      await pageLogic.moveNode(`fileB.txt`, `d1/fileB.txt`)
-
-      // root
-      // └d1
-      //  ├fileA.txt
-      //  ├fileB.txt
-      //  └fileC.txt
-      const _d1 = pageLogic.getNode(`d1`)!
-      const _d1_descendants = _d1.getDescendants()
-      const [_fileA, _fileB, _fileC] = _d1_descendants
-      expect(_d1_descendants.length).toBe(3)
-      expect(_fileA.path).toBe(`d1/fileA.txt`)
-      expect(_fileB.path).toBe(`d1/fileB.txt`)
-      expect(_fileC.path).toBe(`d1/fileC.txt`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('ディレクトリのリネーム', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      // root
-      // ├d1
-      // ├d2
-      // └d3 ← d0へリネーム
-      const d1 = newTreeDirNodeInput(`d1`)
-      const d2 = newTreeDirNodeInput(`d2`)
-      const d3 = newTreeDirNodeInput(`d3`)
-      pageLogic.setAllNodes([d1, d2, d3])
-
-      // 'd3'を'd0'へリネーム
-      await pageLogic.moveNode(`d3`, `d0`)
-
-      // root
-      // ├d0
-      // ├d1
-      // └d2
-      const [_d0, _d1, _d2] = pageLogic.getTreeRootNode().getDescendants()
-      expect(_d0.path).toBe(`d0`)
-      expect(_d1.path).toBe(`d1`)
-      expect(_d2.path).toBe(`d2`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('ファイルのリネーム', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      // root
-      // ├file1.txt
-      // ├file2.txt
-      // └file3.txt ← file0.txtへリネーム
-      const file1 = newTreeDirNodeInput(`file1.txt`)
-      const file2 = newTreeDirNodeInput(`file2.txt`)
-      const file3 = newTreeDirNodeInput(`file3.txt`)
-      pageLogic.setAllNodes([file1, file2, file3])
-
-      // 'file3.txt'を'file0.txt'へリネーム
-      await pageLogic.moveNode(`file3.txt`, `file0.txt`)
-
-      // root
-      // ├file0.txt
-      // ├file1.txt
-      // └file2.txt
-      const [_file0, _file1, _file2] = pageLogic.getTreeRootNode().getDescendants()
-      expect(_file0.path).toBe(`file0.txt`)
-      expect(_file1.path).toBe(`file1.txt`)
-      expect(_file2.path).toBe(`file2.txt`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('ルートディレクトリへ移動', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      // root
-      // └dB
-      //   ├dA
-      //   │└fileA.txt
-      //   └fileB.txt
-      const dB = newTreeDirNodeInput(`dB`)
-      const dA = newTreeDirNodeInput(`dB/dA`)
-      const fileA = newTreeFileNodeInput(`dB/dA/fileA.txt`)
-      const fileB = newTreeFileNodeInput(`dB/fileB.txt`)
-      pageLogic.setAllNodes([dB, dA, fileA, fileB])
-
-      // 'dB/dA'をルートノードへ移動
-      await pageLogic.moveNode(`dB/dA`, `dA`)
-
-      // root
-      // ├dA
-      // │└fileA.txt
-      // └dB
-      //   └fileB.txt
-      const _root = pageLogic.getNode(``)!
-      const [_dA, _fileA, _dB, _fileB] = _root.getDescendants()
-      expect(_root.getDescendants().length).toBe(4)
-      expect(_dA.path).toBe(`dA`)
-      expect(_fileA.path).toBe(`dA/fileA.txt`)
-      expect(_dB.path).toBe(`dB`)
-      expect(_fileB.path).toBe(`dB/fileB.txt`)
-
-      verifyParentChildRelationForTree(treeView)
-    })
-
-    it('移動先に同名のディレクトリまたはファイルが存在する場合', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
-
-      // root
-      // ├dA
-      // │└d1 ← 移動するノード
-      // │  ├d11
-      // │  │└d111
-      // │  │  ├fileA.txt
-      // │  │  └fileB.txt
-      // │  ├d12
-      // │  ├fileX.txt
-      // │  └fileY.txt
-      // └dB
-      //   └d1 ← ここへ上書き移動
-      //     ├d11
-      //     │└d111
-      //     │  ├fileA.txt
-      //     │  └fileC.txt
-      //     ├d13
-      //     ├fileX.txt
-      //     └fileZ.txt
-      const dA = newTreeDirNodeInput(`dA`)
-      const dA_d1 = newTreeDirNodeInput(`dA/d1`)
-      const dA_d11 = newTreeDirNodeInput(`dA/d1/d11`)
-      const dA_d111 = newTreeDirNodeInput(`dA/d1/d11/d111`)
-      const dA_fileA = newTreeFileNodeInput(`dA/d1/d11/d111/fileA.txt`)
-      const dA_fileB = newTreeFileNodeInput(`dA/d1/d11/d111/fileB.txt`)
-      const dA_d12 = newTreeDirNodeInput(`dA/d1/d12`)
-      const dA_fileX = newTreeFileNodeInput(`dA/d1/fileX.txt`)
-      const dA_fileY = newTreeFileNodeInput(`dA/d1/fileY.txt`)
-      const dB = newTreeDirNodeInput(`dB`)
-      const dB_d1 = newTreeDirNodeInput(`dB/d1`)
-      const dB_d11 = newTreeDirNodeInput(`dB/d1/d11`)
-      const dB_d111 = newTreeDirNodeInput(`dB/d1/d11/d111`)
-      const dB_fileA = newTreeFileNodeInput(`dB/d1/d11/d111/fileA.txt`)
-      const dB_fileC = newTreeFileNodeInput(`dB/d1/d11/d111/fileC.txt`)
-      const dB_d13 = newTreeDirNodeInput(`dB/d1/d13`)
-      const dB_fileX = newTreeFileNodeInput(`dB/d1/fileX.txt`)
-      const dB_fileZ = newTreeFileNodeInput(`dB/d1/fileZ.txt`)
-      pageLogic.setAllNodes([
-        dA,
-        dA_d1,
-        dA_d11,
-        dA_d111,
-        dA_fileA,
-        dA_fileB,
-        dA_d12,
-        dA_fileX,
-        dA_fileY,
-        dB,
-        dB_d1,
-        dB_d11,
-        dB_d111,
-        dB_fileA,
-        dB_fileC,
-        dB_d13,
-        dB_fileX,
-        dB_fileZ,
-      ])
-
-      // 'dA/d1'を'dB'へ移動
-      await pageLogic.moveNode(`dA/d1`, `dB/d1`)
-
-      // root
-      // ├dA
-      // └dB
-      //   └d1
-      //     ├d11
-      //     │└d111
-      //     │  ├fileA.txt
-      //     │  ├fileB.txt
-      //     │  └fileC.txt
-      //     ├d12
-      //     ├d13
-      //     ├fileX.txt
-      //     ├fileY.txt
-      //     └fileZ.txt
-
-      const _dA = pageLogic.getNode(`dA`)!
-      expect(_dA.getDescendants().length).toBe(0)
-
-      const _dB = pageLogic.getNode(`dB`)!
-      const [_d1, _d11, _d111, _fileA, _fileB, _fileC, _d12, _d13, _fileX, _fileY, _fileZ] = _dB.getDescendants()
-      expect(_dB.getDescendants().length).toBe(11)
-      expect(_d1.path).toBe(`dB/d1`)
-      expect(_d11.path).toBe(`dB/d1/d11`)
-      expect(_d111.path).toBe(`dB/d1/d11/d111`)
-      expect(_fileA.path).toBe(`dB/d1/d11/d111/fileA.txt`)
-      expect(_fileB.path).toBe(`dB/d1/d11/d111/fileB.txt`)
-      expect(_fileC.path).toBe(`dB/d1/d11/d111/fileC.txt`)
-      expect(_d12.path).toBe(`dB/d1/d12`)
-      expect(_d13.path).toBe(`dB/d1/d13`)
-      expect(_fileX.path).toBe(`dB/d1/fileX.txt`)
-      expect(_fileY.path).toBe(`dB/d1/fileY.txt`)
-      expect(_fileZ.path).toBe(`dB/d1/fileZ.txt`)
 
       verifyParentChildRelationForTree(treeView)
     })
@@ -1675,7 +1675,7 @@ describe('StoragePageLogic', () => {
       //   └d12
       const d1 = newTreeDirNodeInput(`d1`)
       const d12 = newTreeDirNodeInput(`d1/d12`)
-      pageLogic.setAllNodes([d1, d12])
+      pageLogic.setAllTreeNodes([d1, d12])
 
       // モック設定
       {
@@ -1690,7 +1690,7 @@ describe('StoragePageLogic', () => {
       // root
       // └d1
       //   └d11
-      const _d1 = pageLogic.getNode(`d1`)!
+      const _d1 = pageLogic.getTreeNode(`d1`)!
       const _d1_descendants = _d1.getDescendants()
       const [_d11, _d12] = _d1_descendants
       expect(_d1_descendants.length).toBe(2)
@@ -1708,7 +1708,7 @@ describe('StoragePageLogic', () => {
       // root
       // └d2
       const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d2])
+      pageLogic.setAllTreeNodes([d2])
 
       // モック設定
       {
@@ -1723,7 +1723,7 @@ describe('StoragePageLogic', () => {
       // root
       // ├d1
       // └d2
-      const _root = pageLogic.getNode(``)!
+      const _root = pageLogic.getTreeNode(``)!
       const _root_descendants = _root.getDescendants()
       const [_d1, _d2] = _root_descendants
       expect(_root_descendants.length).toBe(2)
@@ -1738,14 +1738,208 @@ describe('StoragePageLogic', () => {
     it('APIでエラーが発生した場合', async () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
-      pageLogic.setAllNodes([])
+      pageLogic.setAllTreeNodes([])
 
       td.when(storageLogic.createDir(`dA`)).thenReject(new Error())
 
       await pageLogic.createStorageDir(`dA`)
 
       // ノードリストに変化がないことを検証
-      expect(pageLogic.getAllNodes()).toEqual([pageLogic.getTreeRootNode()])
+      expect(pageLogic.getAllTreeNodes()).toEqual([pageLogic.getRootTreeNode()])
+    })
+  })
+
+  describe('createArticleTypeDir', () => {
+    it('バンドルの作成', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ storageType: 'article' })
+      const articleLogic = storageLogic as ArticleStorageLogic
+
+      // articles
+      // └[バンドル]
+      const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+        articleNodeType: StorageArticleNodeType.CategoryBundle,
+        articleNodeName: 'バンドル',
+        articleSortOrder: 123,
+        lazyLoadStatus: 'none',
+      })
+      pageLogic.setAllTreeNodes([])
+
+      const bundleInput: CreateArticleTypeDirInput = {
+        dir: bundle.dir,
+        articleNodeType: bundle.articleNodeType!,
+        articleNodeName: bundle.articleNodeName!,
+      }
+
+      // モック設定
+      td.when(articleLogic.createArticleTypeDir(bundleInput)).thenResolve(toStorageNode(bundle))
+
+      // 'バンドル'を作成
+      await pageLogic.createArticleTypeDir(bundleInput)
+
+      // articles
+      // └バンドル
+      const _bundle = pageLogic.getTreeNode(bundle.path)!
+      expect(_bundle.path).toBe(bundle.path)
+
+      expect(_bundle.lazyLoadStatus).toBe('loaded')
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('カテゴリの作成', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ storageType: 'article' })
+      const articleLogic = storageLogic as ArticleStorageLogic
+
+      // articles
+      // └バンドル
+      //   └[カテゴリ1]
+      const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+        articleNodeType: StorageArticleNodeType.CategoryBundle,
+        articleNodeName: 'バンドル',
+        articleSortOrder: 123,
+        lazyLoadStatus: 'loaded',
+      })
+      const cat1 = newTreeDirNodeInput(`${bundle.path}/${generateFirestoreId()}`, {
+        articleNodeType: StorageArticleNodeType.Category,
+        articleNodeName: 'カテゴリ1',
+        articleSortOrder: 123,
+        lazyLoadStatus: 'none',
+      })
+      pageLogic.setAllTreeNodes([bundle])
+
+      const cat1Input: CreateArticleTypeDirInput = {
+        dir: cat1.dir,
+        articleNodeType: cat1.articleNodeType!,
+        articleNodeName: cat1.articleNodeName!,
+      }
+
+      // モック設定
+      td.when(articleLogic.createArticleTypeDir(cat1Input)).thenResolve(toStorageNode(cat1))
+
+      // 'バンドル/カテゴリ1'を作成
+      await pageLogic.createArticleTypeDir(cat1Input)
+
+      // articles
+      // └バンドル
+      //   └カテゴリ1
+      const _bundle = pageLogic.getTreeNode(bundle.path)!
+      const _bundle_descendants = _bundle.getDescendants()
+      const [_cat1] = _bundle_descendants
+      expect(_bundle_descendants.length).toBe(1)
+      expect(_cat1.path).toBe(cat1.path)
+
+      expect(_bundle.lazyLoadStatus).toBe('loaded')
+      expect(_cat1.lazyLoadStatus).toBe('loaded')
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('記事の作成', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ storageType: 'article' })
+      const articleLogic = storageLogic as ArticleStorageLogic
+      const config = useConfig()
+      const articleFileName = config.storage.article.fileName
+
+      // articles
+      // └バンドル
+      //   └[記事1]
+      //     └[index1.md]
+      const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+        articleNodeType: StorageArticleNodeType.CategoryBundle,
+        articleNodeName: 'バンドル',
+        articleSortOrder: 123,
+        lazyLoadStatus: 'loaded',
+      })
+      const art1 = newTreeDirNodeInput(`${bundle.path}/${generateFirestoreId()}`, {
+        articleNodeType: StorageArticleNodeType.Article,
+        articleNodeName: '記事1',
+        articleSortOrder: 123,
+        lazyLoadStatus: 'none',
+      })
+      const art1_index = newTreeFileNodeInput(`${art1.path}/${articleFileName}`)
+      pageLogic.setAllTreeNodes([bundle])
+
+      const art1Input: CreateArticleTypeDirInput = {
+        dir: art1.dir,
+        articleNodeType: art1.articleNodeType!,
+        articleNodeName: art1.articleNodeName!,
+      }
+
+      // モック設定
+      td.when(articleLogic.createArticleTypeDir(art1Input)).thenResolve(toStorageNode(art1))
+      td.when(articleLogic.getChildren(art1.path)).thenReturn(toStorageNode([art1_index]))
+
+      // 'バンドル/記事1'を作成
+      await pageLogic.createArticleTypeDir(art1Input)
+
+      // articles
+      // └バンドル
+      //   └カテゴリ1
+      //     └index1.md
+      const _bundle = pageLogic.getTreeNode(bundle.path)!
+      const _bundle_descendants = _bundle.getDescendants()
+      const [_art1, _art1_index] = _bundle_descendants
+      expect(_bundle_descendants.length).toBe(2)
+      expect(_art1.path).toBe(art1.path)
+      expect(_art1_index.path).toBe(art1_index.path)
+
+      expect(_bundle.lazyLoadStatus).toBe('loaded')
+      expect(_art1.lazyLoadStatus).toBe('loaded')
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('APIでエラーが発生した場合', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ storageType: 'article' })
+      const articleLogic = storageLogic as ArticleStorageLogic
+
+      const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+        articleNodeType: StorageArticleNodeType.CategoryBundle,
+        articleNodeName: 'バンドル',
+        articleSortOrder: 123,
+        lazyLoadStatus: 'none',
+      })
+      pageLogic.setAllTreeNodes([])
+
+      const bundleInput: CreateArticleTypeDirInput = {
+        dir: bundle.dir,
+        articleNodeType: bundle.articleNodeType!,
+        articleNodeName: bundle.articleNodeName!,
+      }
+
+      td.when(articleLogic.createArticleTypeDir(bundleInput)).thenReject(new Error())
+
+      await pageLogic.createArticleTypeDir(bundleInput)
+
+      // ノードリストに変化がないことを検証
+      expect(pageLogic.getAllTreeNodes()).toEqual([pageLogic.getRootTreeNode()])
+    })
+
+    it('ストレージタイプが｢記事｣以外で実行した場合', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ storageType: 'app' })
+
+      const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+        articleNodeType: StorageArticleNodeType.CategoryBundle,
+        articleNodeName: 'バンドル',
+        articleSortOrder: 123,
+        lazyLoadStatus: 'none',
+      })
+      pageLogic.setAllTreeNodes([])
+
+      const bundleInput: CreateArticleTypeDirInput = {
+        dir: bundle.dir,
+        articleNodeType: bundle.articleNodeType!,
+        articleNodeName: bundle.articleNodeName!,
+      }
+
+      let actual!: Error
+      try {
+        await pageLogic.createArticleTypeDir(bundleInput)
+      } catch (err) {
+        actual = err
+      }
+
+      expect(actual.message).toBe(`This method cannot be executed by storageType 'app'.`)
     })
   })
 
@@ -1768,7 +1962,7 @@ describe('StoragePageLogic', () => {
       const index = newTreeFileNodeInput(`dev/projects/blog/src/index.html`)
       const memo = newTreeFileNodeInput(`dev/memo.txt`)
       const work = newTreeDirNodeInput(`work`)
-      pageLogic.setAllNodes([dev, projects, blog, src, index, memo, work])
+      pageLogic.setAllTreeNodes([dev, projects, blog, src, index, memo, work])
 
       // モック設定
       td.when(storageLogic.sgetNode({ path: `dev/projects` })).thenReturn(toStorageNode(projects))
@@ -1780,7 +1974,7 @@ describe('StoragePageLogic', () => {
       // root
       // ├dev
       // └work
-      const _roo_descendants = pageLogic.getTreeRootNode().getDescendants()
+      const _roo_descendants = pageLogic.getRootTreeNode().getDescendants()
       expect(_roo_descendants.length).toBe(2)
       expect(_roo_descendants[0].path).toBe(`dev`)
       expect(_roo_descendants[1].path).toBe(`work`)
@@ -1811,7 +2005,7 @@ describe('StoragePageLogic', () => {
       const index = newTreeFileNodeInput(`dev/projects/blog/src/index.html`)
       const memo = newTreeFileNodeInput(`dev/memo.txt`)
       const work = newTreeDirNodeInput(`work`)
-      pageLogic.setAllNodes([dev, projects, blog, src, index, memo, work])
+      pageLogic.setAllTreeNodes([dev, projects, blog, src, index, memo, work])
 
       // モック設定
       td.when(storageLogic.sgetNode({ path: `dev` })).thenReturn(toStorageNode(dev))
@@ -1821,7 +2015,7 @@ describe('StoragePageLogic', () => {
 
       // root
       // └work
-      const _roo_descendants = pageLogic.getTreeRootNode().getDescendants()
+      const _roo_descendants = pageLogic.getRootTreeNode().getDescendants()
       expect(_roo_descendants.length).toBe(1)
       expect(_roo_descendants[0].path).toBe(`work`)
 
@@ -1834,7 +2028,7 @@ describe('StoragePageLogic', () => {
     it('存在しないパスを指定した場合', async () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
-      pageLogic.setAllNodes([])
+      pageLogic.setAllTreeNodes([])
 
       // モック設定
       const expected = new Error()
@@ -1868,7 +2062,7 @@ describe('StoragePageLogic', () => {
       const index = newTreeFileNodeInput(`dev/projects/blog/src/index.html`)
       const memo = newTreeFileNodeInput(`dev/memo.txt`)
       const work = newTreeDirNodeInput(`work`)
-      pageLogic.setAllNodes([dev, projects, blog, src, index, memo, work])
+      pageLogic.setAllTreeNodes([dev, projects, blog, src, index, memo, work])
 
       // モック設定
       {
@@ -1889,13 +2083,13 @@ describe('StoragePageLogic', () => {
       // │    └src
       // │      └index.html
       // └work
-      const _root_children = pageLogic.getTreeRootNode().children
+      const _root_children = pageLogic.getRootTreeNode().children
       expect(_root_children[0].path).toBe(`dev`)
       expect(_root_children[1].path).toBe(`work`)
 
       // 'dev/projects'は削除されていないことを検証
       // ※'dev/memo.txt'は削除されている
-      const _projects = pageLogic.getNode(`dev/projects`)!
+      const _projects = pageLogic.getTreeNode(`dev/projects`)!
       const _projects_descendants = _projects.getDescendants()
       expect(_projects_descendants.length).toBe(3)
       expect(_projects_descendants[0].path).toBe(`dev/projects/blog`)
@@ -1925,7 +2119,7 @@ describe('StoragePageLogic', () => {
       const index = newTreeFileNodeInput(`dev/projects/blog/src/index.html`)
       const memo = newTreeFileNodeInput(`dev/memo.txt`)
       const work = newTreeDirNodeInput(`work`)
-      pageLogic.setAllNodes([dev, projects, blog, src, index, memo])
+      pageLogic.setAllTreeNodes([dev, projects, blog, src, index, memo])
 
       // モック設定
       {
@@ -1961,13 +2155,13 @@ describe('StoragePageLogic', () => {
 
       // 'dev'の階層構造の検証
       {
-        const _dev = pageLogic.getNode(`dev`)!
+        const _dev = pageLogic.getTreeNode(`dev`)!
         // 子孫ノードの検証
         expect(_dev.getDescendants().length).toBe(0)
       }
       // 'work'の階層構造の検証
       {
-        const _work = pageLogic.getNode(`work`)!
+        const _work = pageLogic.getTreeNode(`work`)!
         // 子孫ノードの検証
         const _work_descendants = _work.getDescendants()
         const [_projects, _blog, _src, _index, _memo] = _work_descendants
@@ -1998,7 +2192,7 @@ describe('StoragePageLogic', () => {
       const dA = newTreeDirNodeInput(`dB/dA`)
       const fileA = newTreeFileNodeInput(`dB/dA/fileA.txt`)
       const fileB = newTreeFileNodeInput(`dB/fileB.txt`)
-      pageLogic.setAllNodes([dB, dA, fileA, fileB])
+      pageLogic.setAllTreeNodes([dB, dA, fileA, fileB])
 
       // モック設定
       {
@@ -2029,7 +2223,7 @@ describe('StoragePageLogic', () => {
 
       // 'root'の階層構造の検証
       {
-        const _root = pageLogic.getNode(``)!
+        const _root = pageLogic.getTreeNode(``)!
         // 子孫ノードの検証
         expect(_root.children.length).toBe(3)
         const [_dA, _dB, _fileB] = _root.children
@@ -2039,7 +2233,7 @@ describe('StoragePageLogic', () => {
       }
       // 'dA'の階層構造の検証
       {
-        const _dA = pageLogic.getNode(`dA`)!
+        const _dA = pageLogic.getTreeNode(`dA`)!
         // 子孫ノードの検証
         expect(_dA.children.length).toBe(1)
         const [_fileA] = _dA.children
@@ -2049,7 +2243,7 @@ describe('StoragePageLogic', () => {
       }
       // 'dB'の階層構造の検証
       {
-        const _dB = pageLogic.getNode(`dB`)!
+        const _dB = pageLogic.getTreeNode(`dB`)!
         // 子孫ノードの検証
         expect(_dB.children.length).toBe(0)
       }
@@ -2097,7 +2291,7 @@ describe('StoragePageLogic', () => {
       const dB_d13 = newTreeDirNodeInput(`dB/d1/d13`)
       const dB_fileX = newTreeFileNodeInput(`dB/d1/fileX.txt`)
       const dB_fileZ = newTreeFileNodeInput(`dB/d1/fileZ.txt`)
-      pageLogic.setAllNodes([
+      pageLogic.setAllTreeNodes([
         dA,
         dA_d1,
         dA_d11,
@@ -2161,13 +2355,13 @@ describe('StoragePageLogic', () => {
 
       // 'dA'の階層構造の検証
       {
-        const _dA = pageLogic.getNode(`dA`)!
+        const _dA = pageLogic.getTreeNode(`dA`)!
         // 子孫ノードの検証
         expect(_dA.getDescendants().length).toBe(0)
       }
       // 'dB'の階層構造の検証
       {
-        const _dB = pageLogic.getNode(`dB`)!
+        const _dB = pageLogic.getTreeNode(`dB`)!
         // 子孫ノードの検証
         const _dB_descendants = _dB.getDescendants()
         const [_d1, _d11, _d111, _fileA, _fileB, _fileC, _d12, _d13, _fileX, _fileY, _fileZ] = _dB_descendants
@@ -2199,7 +2393,7 @@ describe('StoragePageLogic', () => {
 
       const d1 = newTreeDirNodeInput(`d1`)
       const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d1, d2])
+      pageLogic.setAllTreeNodes([d1, d2])
 
       let actual!: Error
       try {
@@ -2215,7 +2409,7 @@ describe('StoragePageLogic', () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
       const tmp = newTreeDirNodeInput(`tmp`)
-      pageLogic.setAllNodes([tmp])
+      pageLogic.setAllTreeNodes([tmp])
 
       // モック設定
       const expected = new Error()
@@ -2236,7 +2430,7 @@ describe('StoragePageLogic', () => {
 
       const d1 = newTreeDirNodeInput(`d1`)
       const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d1, d2])
+      pageLogic.setAllTreeNodes([d1, d2])
 
       // モック設定
       td.when(storageLogic.sgetNode({ path: `d1` })).thenReturn(toStorageNode(d1))
@@ -2269,7 +2463,7 @@ describe('StoragePageLogic', () => {
       const index = newTreeFileNodeInput(`dev/projects/blog/src/index.html`)
       const memo = newTreeFileNodeInput(`dev/memo.txt`)
       const work = newTreeDirNodeInput(`work`)
-      pageLogic.setAllNodes([dev, projects, blog, src, index, memo, work])
+      pageLogic.setAllTreeNodes([dev, projects, blog, src, index, memo, work])
 
       // モック設定
       {
@@ -2302,7 +2496,7 @@ describe('StoragePageLogic', () => {
 
       // 'dev'の階層構造の検証
       {
-        const _dev = pageLogic.getNode(`dev`)!
+        const _dev = pageLogic.getTreeNode(`dev`)!
         // 子孫ノードの検証
         const _dev_descendants = _dev.getDescendants()
         const [_projects, _blog, _src, _index, _memo] = _dev_descendants
@@ -2314,7 +2508,7 @@ describe('StoragePageLogic', () => {
       }
       // 'work'の階層構造の検証
       {
-        const _work = pageLogic.getNode(`work`)!
+        const _work = pageLogic.getTreeNode(`work`)!
         // 子孫ノードの検証
         const _work_descendants = _work.getDescendants()
         const [_memo] = _work_descendants
@@ -2337,7 +2531,7 @@ describe('StoragePageLogic', () => {
       const projects = newTreeDirNodeInput(`dev/projects`)
       const memo = newTreeFileNodeInput(`dev/memo.txt`)
       const work = newTreeDirNodeInput(`work`)
-      pageLogic.setAllNodes([dev, projects])
+      pageLogic.setAllTreeNodes([dev, projects])
 
       // モック設定
       {
@@ -2367,13 +2561,13 @@ describe('StoragePageLogic', () => {
 
       // 'dev'の階層構造の検証
       {
-        const _dev = pageLogic.getNode(`dev`)!
+        const _dev = pageLogic.getTreeNode(`dev`)!
         // 子孫ノードの検証
         expect(_dev.getDescendants().length).toBe(0)
       }
       // 'work'の階層構造の検証
       {
-        const _work = pageLogic.getNode(`work`)!
+        const _work = pageLogic.getTreeNode(`work`)!
         // 子孫ノードの検証
         const _work_descendants = _work.getDescendants()
         const [_projects] = _work_descendants
@@ -2402,12 +2596,12 @@ describe('StoragePageLogic', () => {
       const fileA = newTreeFileNodeInput(`dA/d1/d11/fileA.txt`)
       const d12 = newTreeDirNodeInput(`dA/d1/d12`)
       const fileB = newTreeFileNodeInput(`dA/d1/fileB.txt`)
-      pageLogic.setAllNodes([dA, d1, d11, fileA, d12, fileB])
+      pageLogic.setAllTreeNodes([dA, d1, d11, fileA, d12, fileB])
 
       // ディレクトリの子ノード読み込みの検証準備
-      pageLogic.getNode(`dA/d1`)!.lazyLoadStatus = 'loaded'
-      pageLogic.getNode(`dA/d1/d11`)!.lazyLoadStatus = 'loaded'
-      pageLogic.getNode(`dA/d1/d12`)!.lazyLoadStatus = 'none'
+      pageLogic.getTreeNode(`dA/d1`)!.lazyLoadStatus = 'loaded'
+      pageLogic.getTreeNode(`dA/d1/d11`)!.lazyLoadStatus = 'loaded'
+      pageLogic.getTreeNode(`dA/d1/d12`)!.lazyLoadStatus = 'none'
 
       // モック設定
       {
@@ -2434,7 +2628,7 @@ describe('StoragePageLogic', () => {
       //     │└fileA.txt
       //     ├d12
       //     └fileB.txt
-      const _x1 = pageLogic.getNode(`dA/x1`)!
+      const _x1 = pageLogic.getTreeNode(`dA/x1`)!
       const _x1_descendants = _x1.getDescendants()
       const [_d11, _fileA, _d12, _fileB] = _x1_descendants
 
@@ -2468,7 +2662,7 @@ describe('StoragePageLogic', () => {
       const fileA = newTreeFileNodeInput(`dA/d1/d11/fileA.txt`)
       const d12 = newTreeDirNodeInput(`dA/d1/d12`)
       const fileB = newTreeFileNodeInput(`dA/d1/fileB.txt`)
-      pageLogic.setAllNodes([dA, d1, d11, fileA, d12, fileB])
+      pageLogic.setAllTreeNodes([dA, d1, d11, fileA, d12, fileB])
 
       // モック設定
       {
@@ -2495,7 +2689,7 @@ describe('StoragePageLogic', () => {
       //     │└fileA.txt
       //     ├d12
       //     └fileB.txt
-      const _d1XXX = pageLogic.getNode(`dA/d1XXX`)!
+      const _d1XXX = pageLogic.getTreeNode(`dA/d1XXX`)!
       const _d1XXX_descendants = _d1XXX.getDescendants()
       const [_d11, _fileA, _d12, _fileB] = _d1XXX_descendants
 
@@ -2525,7 +2719,7 @@ describe('StoragePageLogic', () => {
       const fileA = newTreeFileNodeInput(`dA/fileA.txt`)
       const dB = newTreeDirNodeInput(`dB`)
       const fileB = newTreeFileNodeInput(`dB/fileB.txt`)
-      pageLogic.setAllNodes([dA, fileA, dB, fileB])
+      pageLogic.setAllTreeNodes([dA, fileA, dB, fileB])
 
       // モック設定
       {
@@ -2546,7 +2740,7 @@ describe('StoragePageLogic', () => {
       // │└fileX.txt
       // └dB
       //   └fileB.txt
-      const actual = pageLogic.getNode(`dA/fileX.txt`)!
+      const actual = pageLogic.getTreeNode(`dA/fileX.txt`)!
       expect(actual.path).toBe(`dA/fileX.txt`)
 
       verifyParentChildRelationForTree(treeView)
@@ -2564,12 +2758,12 @@ describe('StoragePageLogic', () => {
       const fileA = newTreeFileNodeInput(`dA/fileA.txt`)
       const dB = newTreeDirNodeInput(`dB`)
       const fileB = newTreeFileNodeInput(`dB/fileB.txt`)
-      pageLogic.setAllNodes([dA, fileA, dB, fileB])
+      pageLogic.setAllTreeNodes([dA, fileA, dB, fileB])
 
       // ディレクトリの子ノード読み込みの検証準備
       // 詳細な検証は他のテストケースで行うため、
       // ここではエラーが発生しないようなモック化を行う
-      td.replace(pageLogic, 'pullChildren')
+      td.replace(pageLogic, 'fetchStorageChildren')
 
       // モック設定
       {
@@ -2591,7 +2785,7 @@ describe('StoragePageLogic', () => {
       // │└fileB.txt
       // └dX
       //   └fileA.txt
-      const _dX = pageLogic.getNode(`dX`)!
+      const _dX = pageLogic.getTreeNode(`dX`)!
       const _dX_descendants = _dX.getDescendants()
       const [_fileA] = _dX_descendants
 
@@ -2606,7 +2800,7 @@ describe('StoragePageLogic', () => {
 
       const d1 = newTreeDirNodeInput(`d1`)
       const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d1, d2])
+      pageLogic.setAllTreeNodes([d1, d2])
 
       let actual!: Error
       try {
@@ -2621,7 +2815,7 @@ describe('StoragePageLogic', () => {
     it('存在しないパスを指定した場合', async () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
-      pageLogic.setAllNodes([])
+      pageLogic.setAllTreeNodes([])
 
       // モック設定
       const expected = new Error()
@@ -2647,7 +2841,7 @@ describe('StoragePageLogic', () => {
       const dA = newTreeDirNodeInput(`dA`)
       const d1 = newTreeDirNodeInput(`dA/d1`)
       const fileA = newTreeFileNodeInput(`dA/d1/fileA.txt`)
-      pageLogic.setAllNodes([dA, d1, fileA])
+      pageLogic.setAllTreeNodes([dA, d1, fileA])
 
       // モック設定
       {
@@ -2668,7 +2862,7 @@ describe('StoragePageLogic', () => {
       // └dA
       //   └d1 ← リネームされなかった
       //     └fileA.txt
-      const _d1 = pageLogic.getNode(`dA/d1`)!
+      const _d1 = pageLogic.getTreeNode(`dA/d1`)!
       const _d1_descendants = _d1.getDescendants()
       const [_fileA] = _d1_descendants
 
@@ -2679,7 +2873,7 @@ describe('StoragePageLogic', () => {
     })
   })
 
-  describe('setShareSettings', () => {
+  describe('setStorageNodeShareSettings', () => {
     const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
       isPublic: true,
       readUIds: ['ichiro'],
@@ -2702,7 +2896,7 @@ describe('StoragePageLogic', () => {
       const fileA = newTreeFileNodeInput(`dA/d1/d11/fileA.txt`)
       const fileB = newTreeFileNodeInput(`dA/fileB.txt`)
       const fileC = newTreeFileNodeInput(`dA/fileC.txt`)
-      pageLogic.setAllNodes([dA, d1, d11, fileA, fileB, fileC])
+      pageLogic.setAllTreeNodes([dA, d1, d11, fileA, fileB, fileC])
 
       // モック設定
       {
@@ -2717,9 +2911,9 @@ describe('StoragePageLogic', () => {
       }
 
       // 'dA/d1'と'dA/fileB.txt'に共有設定
-      await pageLogic.setShareSettings([`dA/d1`, `dA/fileB.txt`], NEW_SHARE_SETTINGS)
+      await pageLogic.setStorageNodeShareSettings([`dA/d1`, `dA/fileB.txt`], NEW_SHARE_SETTINGS)
 
-      const _dA = pageLogic.getNode(`dA`)!
+      const _dA = pageLogic.getTreeNode(`dA`)!
       const _dA_descendants = _dA.getDescendants()
       const [_d1, _d11, _fileA, _fileB, _fileC] = _dA_descendants
       expect(_dA_descendants.length).toBe(5)
@@ -2737,11 +2931,11 @@ describe('StoragePageLogic', () => {
 
       const d1 = newTreeDirNodeInput(`d1`)
       const d2 = newTreeDirNodeInput(`d2`)
-      pageLogic.setAllNodes([d1, d2])
+      pageLogic.setAllTreeNodes([d1, d2])
 
       let actual!: Error
       try {
-        await pageLogic.setShareSettings([``], NEW_SHARE_SETTINGS)
+        await pageLogic.setStorageNodeShareSettings([``], NEW_SHARE_SETTINGS)
       } catch (err) {
         actual = err
       }
@@ -2752,7 +2946,7 @@ describe('StoragePageLogic', () => {
     it('存在しないパスを指定した場合', async () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
-      pageLogic.setAllNodes([])
+      pageLogic.setAllTreeNodes([])
 
       // モック設定
       const expected = new Error()
@@ -2760,7 +2954,7 @@ describe('StoragePageLogic', () => {
 
       let actual!: Error
       try {
-        await pageLogic.setShareSettings([`dXXX`], NEW_SHARE_SETTINGS)
+        await pageLogic.setStorageNodeShareSettings([`dXXX`], NEW_SHARE_SETTINGS)
       } catch (err) {
         actual = err
       }
@@ -2784,7 +2978,7 @@ describe('StoragePageLogic', () => {
       const fileA = newTreeFileNodeInput(`dA/d1/d11/fileA.txt`)
       const fileB = newTreeFileNodeInput(`dA/fileB.txt`)
       const fileC = newTreeFileNodeInput(`dA/fileC.txt`)
-      pageLogic.setAllNodes([dA, d1, d11, fileA, fileB, fileC])
+      pageLogic.setAllTreeNodes([dA, d1, d11, fileA, fileB, fileC])
 
       // モック設定
       {
@@ -2800,7 +2994,7 @@ describe('StoragePageLogic', () => {
       }
 
       // 'dA/d1'と'dA/fileB.txt'に共有設定
-      await pageLogic.setShareSettings([`dA/d1`, `dA/fileB.txt`], NEW_SHARE_SETTINGS)
+      await pageLogic.setStorageNodeShareSettings([`dA/d1`, `dA/fileB.txt`], NEW_SHARE_SETTINGS)
 
       // root
       // └dA
@@ -2809,7 +3003,7 @@ describe('StoragePageLogic', () => {
       //   │  └fileA.txt
       //   ├fileB.txt ← 設定された
       //   └fileC.txt
-      const _dA = pageLogic.getNode(`dA`)!
+      const _dA = pageLogic.getTreeNode(`dA`)!
       const _dA_descendants = _dA.getDescendants()
       const [_d1, _d11, _fileA, _fileB, _fileC] = _dA_descendants
       expect(_dA_descendants.length).toBe(5)
@@ -2830,7 +3024,7 @@ describe('StoragePageLogic', () => {
       // └f1.txt ← 設定対象 - nodeFilterで除外されるのでツリーには存在しない
       const d1 = newTreeDirNodeInput(`d1`)
       const f1 = newTreeFileNodeInput(`f1.txt`)
-      pageLogic.setAllNodes([d1])
+      pageLogic.setAllTreeNodes([d1])
 
       // モック設定
       {
@@ -2845,12 +3039,12 @@ describe('StoragePageLogic', () => {
       }
 
       // 'd1'と'f1.txt'に共有設定
-      await pageLogic.setShareSettings([`d1`, `f1.txt`], NEW_SHARE_SETTINGS)
+      await pageLogic.setStorageNodeShareSettings([`d1`, `f1.txt`], NEW_SHARE_SETTINGS)
 
       // root
       // ├d1
       // └f1.txt ← nodeFilterで除外されるのでツリーには存在しない
-      const _descendants = pageLogic.getTreeRootNode().getDescendants()
+      const _descendants = pageLogic.getRootTreeNode().getDescendants()
       const [_d1] = _descendants
       expect(_descendants.length).toBe(1)
       expect(_d1.share).toEqual(NEW_SHARE_SETTINGS)
@@ -2859,7 +3053,7 @@ describe('StoragePageLogic', () => {
     })
   })
 
-  describe('getDisplayName', () => {
+  describe('getDisplayNodeName', () => {
     it('一般ノードの場合', () => {
       const { pageLogic } = newStoragePageLogic()
 
@@ -2867,7 +3061,7 @@ describe('StoragePageLogic', () => {
       // └d1 ← 対象ノードに指定
       const d1 = newTestStorageDirNode(`d1`)
 
-      const actual = pageLogic.getDisplayName(d1)
+      const actual = pageLogic.getDisplayNodeName(d1)
 
       expect(actual).toBe(d1.name)
     })
@@ -2879,7 +3073,7 @@ describe('StoragePageLogic', () => {
       // └ブログ ← 対象ノードに指定
       const { blog } = newListBundleFamilyNodes()
 
-      const actual = pageLogic.getDisplayName(blog)
+      const actual = pageLogic.getDisplayNodeName(blog)
 
       expect(actual).toBe(blog.articleNodeName)
     })
@@ -2894,7 +3088,7 @@ describe('StoragePageLogic', () => {
       // └アセット ← 対象ノードに指定
       const assets = newTestStorageDirNode(`${config.storage.article.assetsName}`)
 
-      const actual = pageLogic.getDisplayName(assets)
+      const actual = pageLogic.getDisplayNodeName(assets)
 
       expect(actual).toBe(assets.name)
     })
@@ -2910,13 +3104,13 @@ describe('StoragePageLogic', () => {
       // └アセット ← 対象ノードに指定
       const assets = newTestStorageDirNode(`${config.storage.article.assetsName}`)
 
-      const actual = pageLogic.getDisplayName(assets)
+      const actual = pageLogic.getDisplayNodeName(assets)
 
       expect(actual).toBe(String(tc('storage.asset', 2)))
     })
   })
 
-  describe('getDisplayPath', () => {
+  describe('getDisplayNodePath', () => {
     it('ストレージタイプが｢記事｣以外の場合', () => {
       const { pageLogic, storageLogic } = newStoragePageLogic()
 
@@ -2930,7 +3124,7 @@ describe('StoragePageLogic', () => {
       td.when(storageLogic.getNode({ path: `${fileA.path}` })).thenReturn(fileA)
       td.when(storageLogic.getHierarchicalNodes(`${fileA.path}`)).thenReturn([d1, fileA])
 
-      const actual = pageLogic.getDisplayPath({ path: fileA.path })
+      const actual = pageLogic.getDisplayNodePath({ path: fileA.path })
 
       expect(actual).toBe(`${d1.name}/${fileA.name}`)
     })
@@ -2947,7 +3141,7 @@ describe('StoragePageLogic', () => {
       td.when(storageLogic.getNode({ path: `${art1.path}` })).thenReturn(art1)
       td.when(storageLogic.getHierarchicalNodes(`${art1.path}`)).thenReturn([blog, art1])
 
-      const actual = pageLogic.getDisplayPath({ path: art1.path })
+      const actual = pageLogic.getDisplayNodePath({ path: art1.path })
 
       expect(actual).toBe(`${blog.articleNodeName}/${art1.articleNodeName}`)
     })

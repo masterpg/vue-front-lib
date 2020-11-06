@@ -38,41 +38,89 @@ interface StoragePageLogic {
    */
   route: StorageRoute
   /**
-   * ストレージノードの初期読み込みが既に行われているか否かのフラグです。
-   */
-  isPulledInitialNodes: ComputedRef<boolean>
-  /**
    * ツリービューの選択ノードのパスです。
    */
-  selectedNodePath: WritableComputedRef<string>
+  selectedTreeNodePath: WritableComputedRef<string>
   /**
    * ツリービューの選択ノードです。
    */
-  selectedNode: WritableComputedRef<StorageTreeNode | null>
+  selectedTreeNode: WritableComputedRef<StorageTreeNode | null>
   /**
    * 指定されたノードの選択状態を設定します。
    * @param value ノードを特定するための値を指定
    * @param selected 選択状態を指定
    * @param silent 選択イベントを発火したくない場合はtrueを指定
    */
-  setSelectedNode(value: string, selected: boolean, silent: boolean): void
+  setSelectedTreeNode(value: string, selected: boolean, silent: boolean): void
   /**
    * ツリービューのルートノードです。
    */
-  getTreeRootNode: () => StorageTreeNode
+  getRootTreeNode: () => StorageTreeNode
   /**
    * ツリービューの全てのツリーノードを取得します。
    */
-  getAllNodes(): StorageTreeNode[]
+  getAllTreeNodes(): StorageTreeNode[]
   /**
    * 指定されたパスと一致するツリーノードを取得します。
    * @param path
    */
-  getNode(path: string): StorageTreeNode | undefined
+  getTreeNode(path: string): StorageTreeNode | undefined
   /**
    * ストレージノードを取得します。
    */
   getStorageNode: StorageLogic['getNode']
+  /**
+   * ツリービューにあるノードを全て削除し、指定されたノードに置き換えます。
+   * @param nodes
+   */
+  setAllTreeNodes(nodes: StorageTreeNodeInput[]): void
+  /**
+   * 指定されたノードをツリービューに設定します。
+   * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
+   * @param node
+   */
+  setTreeNode(node: StorageTreeNodeInput): void
+  /**
+   * 指定されたノードリストをツリービューに設定します。
+   * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
+   * @param nodes
+   */
+  setTreeNodes(nodes: StorageTreeNodeInput[]): void
+  /**
+   * 指定されたパスと一致するツリーノードを削除します。
+   * @param path
+   */
+  removeTreeNode(path: string): void
+  /**
+   * 指定されたパスと一致するツリーノードを削除します。
+   * @param paths
+   */
+  removeTreeNodes(paths: string[]): void
+  /**
+   * ノードの移動を行います。
+   * @param fromNodePath 移動するノードパス。例: 'home/development'
+   * @param toNodePath 移動後のノードパス。例: 'work/dev'
+   */
+  moveTreeNode(fromNodePath: string, toNodePath: string): void
+  /**
+   * ツリービューのノードと指定されたノードをマージしてツリービューに反映します。
+   * @param nodes
+   */
+  mergeAllTreeNodes(nodes: StorageTreeNodeInput[]): void
+  /**
+   * 指定されたノード＋配下ノードをロジックストアから取得し、ツリービューにマージします。
+   * @param dirPath
+   */
+  mergeTreeDirDescendants(dirPath: string): void
+  /**
+   * ツリービューのノードと指定されたノード＋直下ノードをロジックストアから取得し、ツリービューにマージします。
+   * @param dirPath
+   */
+  mergeTreeDirChildren(dirPath: string): void
+  /**
+   * ストレージノードの初期読み込みが既に行われているか否かのフラグです。
+   */
+  isFetchedInitialStorage: ComputedRef<boolean>
   /**
    * ストレージノードを取得します。
    * ノードが存在しない場合は例外がスローされます。
@@ -87,65 +135,17 @@ interface StoragePageLogic {
    * 指定されたディレクトリを基準にその祖先と直下の子ノードがサーバーから読み込まれます。
    * @param dirPath
    */
-  pullInitialNodes(dirPath?: string): Promise<void>
+  fetchInitialStorage(dirPath?: string): Promise<void>
   /**
    * 指定されたディレクトリ直下の子ノードをサーバーから読み込みます。
    * @param dirPath
    */
-  pullChildren(dirPath: string): Promise<void>
+  fetchStorageChildren(dirPath: string): Promise<void>
   /**
    * 指定されたディレクトリの再読み込みを行います。
    * @param dirPath
    */
-  reloadDir(dirPath: string): Promise<void>
-  /**
-   * ツリービューにあるノードを全て削除し、指定されたノードに置き換えます。
-   * @param nodes
-   */
-  setAllNodes(nodes: StorageTreeNodeInput[]): void
-  /**
-   * 指定されたノードをツリービューに設定します。
-   * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
-   * @param node
-   */
-  setNode(node: StorageTreeNodeInput): void
-  /**
-   * 指定されたノードリストをツリービューに設定します。
-   * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
-   * @param nodes
-   */
-  setNodes(nodes: StorageTreeNodeInput[]): void
-  /**
-   * 指定されたパスと一致するツリーノードを削除します。
-   * @param path
-   */
-  removeNode(path: string): void
-  /**
-   * 指定されたパスと一致するツリーノードを削除します。
-   * @param paths
-   */
-  removeNodes(paths: string[]): void
-  /**
-   * ノードの移動を行います。
-   * @param fromNodePath 移動するノードパス。例: 'home/development'
-   * @param toNodePath 移動後のノードパス。例: 'work/dev'
-   */
-  moveNode(fromNodePath: string, toNodePath: string): void
-  /**
-   * ツリービューのノードと指定されたノードをマージしてツリービューに反映します。
-   * @param nodes
-   */
-  mergeAllNodes(nodes: StorageTreeNodeInput[]): void
-  /**
-   * 指定されたノード＋配下ノードをロジックストアから取得し、ツリービューにマージします。
-   * @param dirPath
-   */
-  mergeDirDescendants(dirPath: string): void
-  /**
-   * ツリービューのノードと指定されたノード＋直下ノードをロジックストアから取得し、ツリービューにマージします。
-   * @param dirPath
-   */
-  mergeDirChildren(dirPath: string): void
+  reloadStorageDir(dirPath: string): Promise<void>
   /**
    * ディレクトリの作成を行います。
    * @param dirPath 作成するディレクトリのパス
@@ -179,7 +179,7 @@ interface StoragePageLogic {
    * @param nodePaths 共有設定するノードのパス
    * @param input 共有設定の内容
    */
-  setShareSettings(nodePaths: string[], input: StorageNodeShareSettings): Promise<void>
+  setStorageNodeShareSettings(nodePaths: string[], input: StorageNodeShareSettings): Promise<void>
 
   //--------------------------------------------------
   //  Helper methods
@@ -210,7 +210,7 @@ interface StoragePageLogic {
    * ノードの表示用の名前を取得します。
    * @param node
    */
-  getDisplayName(node: {
+  getDisplayNodeName(node: {
     path: StorageNode['path']
     name: StorageNode['name']
     articleNodeName: StorageNode['articleNodeName']
@@ -220,7 +220,7 @@ interface StoragePageLogic {
    * ノードの表示用パスを取得します。
    * @param key
    */
-  getDisplayPath(key: StorageNodeKeyInput): string
+  getDisplayNodePath(key: StorageNodeKeyInput): string
   /**
    * ノードのアイコンを取得します。
    * @param node
@@ -274,8 +274,8 @@ interface StoragePageLogic {
 }
 
 interface StoragePageStore {
-  isPulledInitialNodes: Ref<boolean>
-  selectedNodePath: Ref<string>
+  isFetchedInitialStorage: Ref<boolean>
+  selectedTreeNodePath: Ref<string>
 }
 
 //========================================================================
@@ -367,12 +367,12 @@ namespace StoragePageLogic {
       }
     })()
 
-    const selectedNodePath = computed({
-      get: () => pageStore.selectedNodePath.value,
-      set: value => (pageStore.selectedNodePath.value = value),
+    const selectedTreeNodePath = computed({
+      get: () => pageStore.selectedTreeNodePath.value,
+      set: value => (pageStore.selectedTreeNodePath.value = value),
     })
 
-    const selectedNode = computed({
+    const selectedTreeNode = computed({
       get: () => {
         return treeViewRef.value?.selectedNode ?? null
       },
@@ -388,7 +388,7 @@ namespace StoragePageLogic {
       },
     })
 
-    const setSelectedNode: StoragePageLogic['setSelectedNode'] = (value, selected, silent) => {
+    const setSelectedTreeNode: StoragePageLogic['setSelectedTreeNode'] = (value, selected, silent) => {
       getTreeView().setSelectedNode(value, selected, silent)
     }
 
@@ -398,19 +398,19 @@ namespace StoragePageLogic {
     //
     //----------------------------------------------------------------------
 
-    let _treeRootNode: StorageTreeNode | null = null
-    const getTreeRootNode: StoragePageLogic['getTreeRootNode'] = () => {
-      if (!_treeRootNode) {
-        _treeRootNode = newTreeNode<StorageTreeNode>(_createRootNodeData(storageType), StorageTreeNode.clazz)
+    let _rootTreeNode: StorageTreeNode | null = null
+    const getRootTreeNode: StoragePageLogic['getRootTreeNode'] = () => {
+      if (!_rootTreeNode) {
+        _rootTreeNode = newTreeNode<StorageTreeNode>(_createRootNodeData(storageType), StorageTreeNode.clazz)
       }
-      return _treeRootNode!
+      return _rootTreeNode!
     }
 
-    const getAllNodes: StoragePageLogic['getAllNodes'] = () => {
+    const getAllTreeNodes: StoragePageLogic['getAllTreeNodes'] = () => {
       return getTreeView().getAllNodes()
     }
 
-    const getNode: StoragePageLogic['getNode'] = path => {
+    const getTreeNode: StoragePageLogic['getTreeNode'] = path => {
       return getTreeView().getNode(path)
     }
 
@@ -426,32 +426,32 @@ namespace StoragePageLogic {
       return storageLogic.getChildren(dirPath)
     }
 
-    const pullInitialNodes: StoragePageLogic['pullInitialNodes'] = async dirPath => {
+    const fetchInitialStorage: StoragePageLogic['fetchInitialStorage'] = async dirPath => {
       dirPath = removeBothEndsSlash(dirPath)
       if (!treeViewRef.value) return
       if (!isSignedIn.value) return
 
       // ツリービューにルートノードを追加
-      getTreeRootNode().open(false)
-      getTreeRootNode().lazy = true
-      getTreeRootNode().lazyLoadStatus = 'loading'
-      getTreeView().addNode(getTreeRootNode())
+      getRootTreeNode().open(false)
+      getRootTreeNode().lazy = true
+      getRootTreeNode().lazyLoadStatus = 'loading'
+      getTreeView().addNode(getRootTreeNode())
 
       // 引数ディレクトリとその上位ディレクトリのパス
       const dirPaths = splitHierarchicalPaths(dirPath)
       // ストアにある最新のストレージノードを格納
       let storageDirNodes: StorageNode[] = []
 
-      if (!pageStore.isPulledInitialNodes.value) {
+      if (!pageStore.isFetchedInitialStorage.value) {
         // ルートノードを読み込み
         await storageLogic.fetchRoot()
         // 引数ディレクトリを含め、階層構造を形成する各ディレクトリの子ノードをサーバーから取得
-        for (const iDirPath of [getTreeRootNode().path, ...dirPaths]) {
+        for (const iDirPath of [getRootTreeNode().path, ...dirPaths]) {
           storageDirNodes.push(...(await storageLogic.fetchChildren(iDirPath)))
         }
       } else {
         // 引数ディレクトリを含め、階層構造を形成する各ディレクトリの子ノードをサーバーから取得
-        for (const iDirPath of [getTreeRootNode().path, ...dirPaths]) {
+        for (const iDirPath of [getRootTreeNode().path, ...dirPaths]) {
           storageDirNodes.push(...storageLogic.getChildren(iDirPath))
         }
       }
@@ -480,22 +480,22 @@ namespace StoragePageLogic {
       }
 
       // ストアから取得された最新のストレージノードをツリービューに設定
-      setNodes(storageDirNodes)
+      setTreeNodes(storageDirNodes)
 
       // ルートノードを遅延ロード済みに設定
-      getTreeRootNode().lazyLoadStatus = 'loaded'
+      getRootTreeNode().lazyLoadStatus = 'loaded'
 
       // ストレージノードの初回読み込み済みを設定
-      pageStore.isPulledInitialNodes.value = true
+      pageStore.isFetchedInitialStorage.value = true
     }
 
-    const pullChildren: StoragePageLogic['pullChildren'] = async dirPath => {
+    const fetchStorageChildren: StoragePageLogic['fetchStorageChildren'] = async dirPath => {
       const storeChildDirNodes = (await storageLogic.fetchChildren(dirPath)).filter(nodeFilter)
 
       // ロジックストアのノードをツリービューに反映
-      setNodes(storeChildDirNodes)
+      setTreeNodes(storeChildDirNodes)
 
-      const dirTreeNode = getNode(dirPath)
+      const dirTreeNode = getTreeNode(dirPath)
       if (!dirTreeNode) {
         throw new Error(`The specified node was not found: '${dirPath}'`)
       }
@@ -508,11 +508,11 @@ namespace StoragePageLogic {
       dirTreeNode.lazyLoadStatus = 'loaded'
     }
 
-    const reloadDir: StoragePageLogic['reloadDir'] = async dirPath => {
+    const reloadStorageDir: StoragePageLogic['reloadStorageDir'] = async dirPath => {
       dirPath = removeBothEndsSlash(dirPath)
 
       // 引数ディレクトリを遅延ロード中に設定
-      const dirTreeNode = getNode(dirPath)!
+      const dirTreeNode = getTreeNode(dirPath)!
       dirTreeNode.lazyLoadStatus = 'loading'
 
       // 引数ディレクトリのパスを構成する各ディレクトリと配下ノードをサーバーから取得
@@ -526,20 +526,20 @@ namespace StoragePageLogic {
         // 祖先ディレクトリをツリービューに反映
         const storeDirNode = storageLogic.getNode({ path: ancestorDirPath })
         if (storeDirNode) {
-          setNode(storeDirNode)
+          setTreeNode(storeDirNode)
         } else {
-          removeNode(ancestorDirPath)
+          removeTreeNode(ancestorDirPath)
         }
       })
 
       // ロジックストアのノードをツリービューに反映
       // ※引数ディレクトリと配下ノードが対象
-      mergeDirDescendants(dirPath)
+      mergeTreeDirDescendants(dirPath)
 
       // 引数ディレクトリ配下にあるディレクトリの遅延ロード状態を済みに設定
       let treeDescendants: StorageTreeNode[] = []
-      if (dirPath === getTreeRootNode().path) {
-        treeDescendants = getAllNodes()
+      if (dirPath === getRootTreeNode().path) {
+        treeDescendants = getAllTreeNodes()
       } else {
         const dirTreeNode = getTreeView().getNode(dirPath)
         if (dirTreeNode) {
@@ -553,25 +553,25 @@ namespace StoragePageLogic {
       }
 
       // 選択ノードがなくなってしまった場合
-      if (!selectedNode.value) {
-        selectedNode.value = getTreeRootNode()
+      if (!selectedTreeNode.value) {
+        selectedTreeNode.value = getRootTreeNode()
       }
 
       // 引数ディレクトリを遅延ロード済みに設定
       dirTreeNode.lazyLoadStatus = 'loaded'
     }
 
-    const setAllNodes: StoragePageLogic['setAllNodes'] = nodes => {
+    const setAllTreeNodes: StoragePageLogic['setAllTreeNodes'] = nodes => {
       // ツリービューからルートノードを削除
-      getTreeView().removeNode(getTreeRootNode().path)
-      _treeRootNode = null
+      getTreeView().removeNode(getRootTreeNode().path)
+      _rootTreeNode = null
       // ツリービューに新しいルートノードを追加
-      getTreeView().addNode(getTreeRootNode())
+      getTreeView().addNode(getRootTreeNode())
       // 引数で指定されたノードを追加
-      setNodes(nodes)
+      setTreeNodes(nodes)
     }
 
-    const setNode: StoragePageLogic['setNode'] = node => {
+    const setTreeNode: StoragePageLogic['setTreeNode'] = node => {
       // id検索が必要な理由:
       //   他端末でノード移動するとidは変わらないがpathは変化する。
       //   この状況でpath検索を行うと、対象のノードを見つけられないためid検索する必要がある。
@@ -579,61 +579,61 @@ namespace StoragePageLogic {
       //   他端末で'd1/d11'を削除してからまた同じパスの'd1/d11'が作成された場合、
       //   元のidと再作成されたidが異なり、パスは同じでもidが異なる状況が発生する。
       //   この場合id検索しても対象ノードが見つからないため、path検索する必要がある。
-      let treeNode = getNodeById(node.id) || getNode(node.path)
+      let treeNode = getNodeById(node.id) || getTreeNode(node.path)
 
       // ツリービューに引数ノードが既に存在する場合
       if (treeNode) {
         // パスに変更がある場合(移動またはリネームされていた場合)
         if (treeNode.path !== node.path) {
-          moveNode(treeNode.path, node.path)
+          moveTreeNode(treeNode.path, node.path)
           // `moveNode()`によって`treeNode`が削除されるケースがあるので取得し直している
           // ※移動先に同名ノードがあると、移動ノードが移動先ノードを上書きし、その後移動ノードは削除される。
           //   これにより`treeNode`はツリービューには存在しないノードとなるため取得し直す必要がある。
-          treeNode = getNode(node.path)!
+          treeNode = getTreeNode(node.path)!
         }
         treeNode.setNodeData(nodeToTreeData(storageType, node))
       }
       // ツリービューに引数ノードがまだ存在しない場合
       else {
         getTreeView().addNode(nodeToTreeData(storageType, node), {
-          parent: node.dir || getTreeRootNode().path,
+          parent: node.dir || getRootTreeNode().path,
         })
       }
     }
 
-    const setNodes: StoragePageLogic['setNodes'] = nodes => {
+    const setTreeNodes: StoragePageLogic['setTreeNodes'] = nodes => {
       nodes = StorageLogic.sortTree([...nodes])
 
       for (const node of nodes) {
-        setNode(node)
+        setTreeNode(node)
       }
     }
 
-    const removeNode: StoragePageLogic['removeNode'] = path => {
-      removeNodes([path])
+    const removeTreeNode: StoragePageLogic['removeTreeNode'] = path => {
+      removeTreeNodes([path])
     }
 
-    const removeNodes: StoragePageLogic['removeNodes'] = paths => {
+    const removeTreeNodes: StoragePageLogic['removeTreeNodes'] = paths => {
       for (const path of paths) {
         getTreeView().removeNode(path)
       }
 
       // 選択ノードがなくなってしまった場合
-      if (!selectedNode.value) {
-        selectedNode.value = getTreeRootNode()
+      if (!selectedTreeNode.value) {
+        selectedTreeNode.value = getRootTreeNode()
       }
     }
 
-    const moveNode: StoragePageLogic['moveNode'] = (fromNodePath, toNodePath) => {
+    const moveTreeNode: StoragePageLogic['moveTreeNode'] = (fromNodePath, toNodePath) => {
       fromNodePath = removeBothEndsSlash(fromNodePath)
       toNodePath = removeBothEndsSlash(toNodePath)
 
       // ツリービューから移動するノードとその配下のノードを取得
-      const targetTreeTopNode = getNode(fromNodePath)!
+      const targetTreeTopNode = getTreeNode(fromNodePath)!
       const targetTreeNodes = [targetTreeTopNode, ...targetTreeTopNode.getDescendants()]
 
       // ツリービューから移動先のノードを取得
-      const existsTreeTopNode = getNode(toNodePath)
+      const existsTreeTopNode = getTreeNode(toNodePath)
 
       // 移動ノード＋配下ノードのパスを移動先パスへ書き換え
       for (const targetTreeNode of targetTreeNodes) {
@@ -648,7 +648,7 @@ namespace StoragePageLogic {
       // 移動ノードと同名のノードが移動先に存在しない場合
       if (!existsTreeTopNode) {
         const parentPath = removeStartDirChars(_path.dirname(toNodePath))
-        const parentTreeNode = getNode(parentPath)!
+        const parentTreeNode = getTreeNode(parentPath)!
         parentTreeNode.addChild(targetTreeTopNode)
       }
       // 移動ノードと同名のノードが移動先に存在する場合
@@ -682,7 +682,7 @@ namespace StoragePageLogic {
       }
     }
 
-    const mergeAllNodes: StoragePageLogic['mergeAllNodes'] = nodes => {
+    const mergeAllTreeNodes: StoragePageLogic['mergeAllTreeNodes'] = nodes => {
       let filteredNodes = nodes.filter(nodeFilter)
       filteredNodes = StorageLogic.sortTree([...filteredNodes])
 
@@ -690,31 +690,31 @@ namespace StoragePageLogic {
 
       // 新ノードリストにないのにツリーには存在するノードを削除
       // ※他の端末で削除、移動、リネームされたノードが削除される
-      for (const treeNode of getAllNodes()) {
+      for (const treeNode of getAllTreeNodes()) {
         // ツリーのルートノードは新ノードリストには存在しないので無視
-        if (treeNode === getTreeRootNode()) continue
+        if (treeNode === getRootTreeNode()) continue
 
         const node = nodeDict[treeNode.path]
-        !node && removeNode(treeNode.path)
+        !node && removeTreeNode(treeNode.path)
       }
 
       // 新ノードリストをツリービューへ反映
       for (const newDirNode of Object.values(nodeDict)) {
-        setNode(newDirNode)
+        setTreeNode(newDirNode)
       }
     }
 
-    const mergeDirDescendants: StoragePageLogic['mergeDirDescendants'] = dirPath => {
+    const mergeTreeDirDescendants: StoragePageLogic['mergeTreeDirDescendants'] = dirPath => {
       // ロジックストアから引数ディレクトリと配下のノードを取得
       const storeDirDescendants = storageLogic.getDirDescendants(dirPath).filter(nodeFilter)
       const storeDirDescendantIdDict = arrayToDict(storeDirDescendants, 'id')
       const storeDirDescendantPathDict = arrayToDict(storeDirDescendants, 'path')
 
       // ロジックストアのノードリストをツリービューへ反映
-      setNodes(storeDirDescendants)
+      setTreeNodes(storeDirDescendants)
 
       // ツリービューから引数ディレクトリと配下のノードを取得
-      const dirTreeNode = getNode(dirPath)
+      const dirTreeNode = getTreeNode(dirPath)
       const driTreeDescendants: StorageTreeNode[] = []
       if (dirTreeNode) {
         driTreeDescendants.push(dirTreeNode)
@@ -725,24 +725,24 @@ namespace StoragePageLogic {
       // ※他の端末で削除、移動、リネームされたノードが削除される
       for (const treeNode of driTreeDescendants) {
         // ツリーのルートノードはロジックストアには存在しないので無視
-        if (treeNode === getTreeRootNode()) continue
+        if (treeNode === getRootTreeNode()) continue
 
         const exists = Boolean(storeDirDescendantIdDict[treeNode.id] || storeDirDescendantPathDict[treeNode.path])
-        !exists && removeNode(treeNode.path)
+        !exists && removeTreeNode(treeNode.path)
       }
     }
 
-    const mergeDirChildren: StoragePageLogic['mergeDirChildren'] = dirPath => {
+    const mergeTreeDirChildren: StoragePageLogic['mergeTreeDirChildren'] = dirPath => {
       // ロジックストアから引数ディレクトリと直下のノードを取得
       const storeDirChildren = storageLogic.getDirChildren(dirPath).filter(nodeFilter)
       const storeDirChildrenIdDict = arrayToDict(storeDirChildren, 'id')
       const storeDirChildrenPathDict = arrayToDict(storeDirChildren, 'path')
 
       // ロジックストアのノードリストをツリービューへ反映
-      setNodes(storeDirChildren)
+      setTreeNodes(storeDirChildren)
 
       // ツリービューから引数ディレクトリと直下のノードを取得
-      const dirTreeNode = getNode(dirPath)
+      const dirTreeNode = getTreeNode(dirPath)
       const dirTreeChildren: StorageTreeNode[] = []
       if (dirTreeNode) {
         dirTreeChildren.push(dirTreeNode)
@@ -753,10 +753,10 @@ namespace StoragePageLogic {
       // ※他の端末で削除、移動、リネームされたノードが削除される
       for (const treeNode of dirTreeChildren) {
         // ツリーのルートノードはロジックストアには存在しないので無視
-        if (treeNode === getTreeRootNode()) continue
+        if (treeNode === getRootTreeNode()) continue
 
         const exists = Boolean(storeDirChildrenIdDict[treeNode.id] || storeDirChildrenPathDict[treeNode.path])
-        !exists && removeNode(treeNode.path)
+        !exists && removeTreeNode(treeNode.path)
       }
     }
 
@@ -774,8 +774,8 @@ namespace StoragePageLogic {
       }
 
       // ツリービューに作成したディレクトリノードを追加
-      setNode(dirNode)
-      const dirTreeNode = getNode(dirPath)!
+      setTreeNode(dirNode)
+      const dirTreeNode = getTreeNode(dirPath)!
       // 作成したディレクトリの遅延ロード状態を済みに設定
       dirTreeNode.lazyLoadStatus = 'loaded'
     }
@@ -804,8 +804,8 @@ namespace StoragePageLogic {
       }
 
       // ツリービューに作成したディレクトリノードを追加
-      setNodes([dirNode, ...dirChildren])
-      const dirTreeNode = getNode(dirNode.path)!
+      setTreeNodes([dirNode, ...dirChildren])
+      const dirTreeNode = getTreeNode(dirNode.path)!
       // 作成したディレクトリの遅延ロード状態を済みに設定
       dirTreeNode.lazyLoadStatus = 'loaded'
 
@@ -817,7 +817,7 @@ namespace StoragePageLogic {
 
       // 引数チェック
       for (const nodePath of nodePaths) {
-        if (nodePath === getTreeRootNode().path) {
+        if (nodePath === getRootTreeNode().path) {
           throw new Error(`The root node cannot be renamed.`)
         }
         // ストレージストアに指定ノードが存在するかチェック
@@ -847,7 +847,7 @@ namespace StoragePageLogic {
       }
 
       // ツリービューから引数ノードを削除
-      removeNodes(removedNodePaths)
+      removeTreeNodes(removedNodePaths)
     }
 
     const moveStorageNodes: StoragePageLogic['moveStorageNodes'] = async (fromNodePaths, toDirPath) => {
@@ -857,7 +857,7 @@ namespace StoragePageLogic {
       // 引数チェック
       for (const fromNodePath of fromNodePaths) {
         // 移動ノードがルートノードでないことを確認
-        if (fromNodePath === getTreeRootNode().path) {
+        if (fromNodePath === getRootTreeNode().path) {
           throw new Error(`The root node cannot be moved.`)
         }
 
@@ -904,13 +904,13 @@ namespace StoragePageLogic {
       // 2. 移動先ディレクトリの上位ディレクトリ階層の作成
       //
       const hierarchicalNodes = await storageLogic.fetchHierarchicalNodes(toDirPath)
-      setNodes(hierarchicalNodes)
+      setTreeNodes(hierarchicalNodes)
 
       //
       // 3. 移動ノードをツリービューに反映
       //
       const movedDirNodes = movedNodes.filter(nodeFilter)
-      setNodes(
+      setTreeNodes(
         movedDirNodes.map(storeNode => {
           if (storeNode.nodeType === StorageNodeType.Dir) {
             return Object.assign({}, storeNode, { lazyLoadStatus: 'loaded' })
@@ -924,7 +924,7 @@ namespace StoragePageLogic {
     const renameStorageNode: StoragePageLogic['renameStorageNode'] = async (nodePath, newName) => {
       nodePath = removeBothEndsSlash(nodePath)
 
-      if (nodePath === getTreeRootNode().path) {
+      if (nodePath === getRootTreeNode().path) {
         throw new Error(`The root node cannot be renamed.`)
       }
 
@@ -952,7 +952,7 @@ namespace StoragePageLogic {
       // 2. リネームノードをツリービューに反映
       //
       const renamedDirNodes = renamedNodes.filter(nodeFilter)
-      setNodes(
+      setTreeNodes(
         renamedDirNodes.map(storeNode => {
           if (storeNode.nodeType === StorageNodeType.Dir) {
             return Object.assign({}, storeNode, { lazyLoadStatus: 'loaded' })
@@ -963,12 +963,12 @@ namespace StoragePageLogic {
       )
     }
 
-    const setShareSettings: StoragePageLogic['setShareSettings'] = async (nodePaths, input) => {
+    const setStorageNodeShareSettings: StoragePageLogic['setStorageNodeShareSettings'] = async (nodePaths, input) => {
       nodePaths = nodePaths.map(fromNodePath => removeBothEndsSlash(fromNodePath))
 
       // 引数チェック
       for (const nodePath of nodePaths) {
-        if (nodePath === getTreeRootNode().path) {
+        if (nodePath === getRootTreeNode().path) {
           throw new Error(`The root node cannot be set share settings.`)
         }
 
@@ -994,7 +994,7 @@ namespace StoragePageLogic {
 
       // ツリービューに処理内容を反映
       const processedDirNodes = processedNodes.filter(nodeFilter)
-      setNodes(processedDirNodes)
+      setTreeNodes(processedDirNodes)
     }
 
     //--------------------------------------------------
@@ -1022,7 +1022,7 @@ namespace StoragePageLogic {
       const result = {
         storageType,
         value: removeBothEndsSlash(source.path),
-        label: getDisplayName(source),
+        label: getDisplayNodeName(source),
         icon: getNodeIcon(source),
         lazy: source.nodeType === StorageNodeType.Dir,
         sortFunc: StorageLogic.childrenSortFunc,
@@ -1057,7 +1057,7 @@ namespace StoragePageLogic {
       return result
     }
 
-    const getDisplayName: StoragePageLogic['getDisplayName'] = node => {
+    const getDisplayNodeName: StoragePageLogic['getDisplayNodeName'] = node => {
       // ページのストレージタイプが｢記事｣かつ、指定されたノードがアセットディレクトリの場合
       if (storageType === 'article' && node.path === config.storage.article.assetsName) {
         return String(tc('storage.asset', 2))
@@ -1068,13 +1068,13 @@ namespace StoragePageLogic {
       return node.name
     }
 
-    const getDisplayPath: StoragePageLogic['getDisplayPath'] = key => {
+    const getDisplayNodePath: StoragePageLogic['getDisplayNodePath'] = key => {
       const node = storageLogic.getNode(key)
       if (!node) return ''
 
       const hierarchicalNodes = storageLogic.getHierarchicalNodes(node.path)
       return hierarchicalNodes.reduce((result, node) => {
-        const name = getDisplayName(node)
+        const name = getDisplayNodeName(node)
         return result ? `${result}/${name}` : name
       }, '')
     }
@@ -1227,7 +1227,7 @@ namespace StoragePageLogic {
         !exists && removingNodes.push(treeNode.path)
       }
 
-      removeNodes(removingNodes)
+      removeTreeNodes(removingNodes)
     }
 
     //----------------------------------------------------------------------
@@ -1241,16 +1241,16 @@ namespace StoragePageLogic {
       isSignedIn => {
         if (!isSignedIn) {
           // 表示中のルートノード配下全ノードを削除し、ルートノードを選択ノードにする
-          getTreeRootNode().removeAllChildren()
-          selectedNode.value = getTreeRootNode()
+          getRootTreeNode().removeAllChildren()
+          selectedTreeNode.value = getRootTreeNode()
         }
       }
     )
 
     watch(
-      () => selectedNode.value,
+      () => selectedTreeNode.value,
       newValue => {
-        selectedNodePath.value = newValue?.path ?? getTreeRootNode().path
+        selectedTreeNodePath.value = newValue?.path ?? getRootTreeNode().path
       }
     )
 
@@ -1263,40 +1263,40 @@ namespace StoragePageLogic {
     return {
       isSignedIn,
       route,
-      isPulledInitialNodes: pageStore.isPulledInitialNodes,
-      selectedNodePath,
-      selectedNode,
-      setSelectedNode,
-      getTreeRootNode,
-      getAllNodes,
-      getNode,
+      selectedTreeNodePath,
+      selectedTreeNode,
+      setSelectedTreeNode,
+      getAllTreeNodes,
+      getRootTreeNode,
+      getTreeNode,
+      setAllTreeNodes,
+      setTreeNode,
+      setTreeNodes,
+      removeTreeNode,
+      removeTreeNodes,
+      moveTreeNode,
+      mergeAllTreeNodes,
+      mergeTreeDirDescendants,
+      mergeTreeDirChildren,
+      isFetchedInitialStorage: pageStore.isFetchedInitialStorage,
       getStorageNode,
       sgetStorageNode,
       getStorageChildren,
-      pullInitialNodes,
-      pullChildren,
-      reloadDir,
-      setAllNodes,
-      setNode,
-      setNodes,
-      removeNode,
-      removeNodes,
-      moveNode,
-      mergeAllNodes,
-      mergeDirDescendants,
-      mergeDirChildren,
+      fetchInitialStorage,
+      fetchStorageChildren,
+      reloadStorageDir,
       createStorageDir,
       createArticleTypeDir,
       removeStorageNodes,
       moveStorageNodes,
       renameStorageNode,
-      setShareSettings,
+      setStorageNodeShareSettings,
       showNotification,
       getInheritedShare,
       createRootNodeData,
       nodeToTreeData,
-      getDisplayName,
-      getDisplayPath,
+      getDisplayNodeName,
+      getDisplayNodePath,
       getNodeIcon,
       getNodeTypeIcon,
       getNodeTypeLabel,
@@ -1377,13 +1377,13 @@ namespace StoragePageStore {
   }
 
   export function newRawInstance() {
-    const isPulledInitialNodes = ref(false)
+    const isFetchedInitialStorage = ref(false)
 
-    const selectedNodePath = ref('')
+    const selectedTreeNodePath = ref('')
 
     return {
-      isPulledInitialNodes,
-      selectedNodePath,
+      isFetchedInitialStorage,
+      selectedTreeNodePath,
     }
   }
 }

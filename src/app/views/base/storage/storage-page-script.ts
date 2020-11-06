@@ -91,15 +91,15 @@ namespace StoragePage {
      * 初回に読み込むべきストレージノードの読み込みを行います。
      */
     async function pullInitialNodes(): Promise<void> {
-      if (!pageLogic.isPulledInitialNodes) return
+      if (!pageLogic.isFetchedInitialStorage) return
 
       dirView.value!.loading = true
 
       // 現在の選択ノードを取得
       // ※URLから取得したディレクトリまたは現在の選択ノード
-      const dirPath = pageLogic.route.getNodePath() || pageLogic.selectedNodePath.value
+      const dirPath = pageLogic.route.getNodePath() || pageLogic.selectedTreeNodePath.value
       // 初期ストレージノードの読み込み
-      await pageLogic.pullInitialNodes(dirPath)
+      await pageLogic.fetchInitialStorage(dirPath)
       // ページの選択ノードを設定
       changeDirOnPage(dirPath)
       // // 選択ノードの祖先ノードを展開
@@ -116,13 +116,13 @@ namespace StoragePage {
      * @param nodePath
      */
     function changeDir(nodePath: string): void {
-      const selectedNodePath = pageLogic.getNode(nodePath)?.path ?? pageLogic.getTreeRootNode().path
+      const selectedNodePath = pageLogic.getTreeNode(nodePath)?.path ?? pageLogic.getRootTreeNode().path
 
       // ノード詳細ビューを非表示にする
       visibleDirDetailView.value = false
       visibleFileDetailView.value = false
       // 選択ノードを設定
-      pageLogic.setSelectedNode(selectedNodePath, true, true)
+      pageLogic.setSelectedTreeNode(selectedNodePath, true, true)
       // パンくずに選択ノードを設定
       pathDirBreadcrumb.value!.setSelectedNode(selectedNodePath)
       // ディレクトリビューに選択ノードを設定
@@ -161,7 +161,7 @@ namespace StoragePage {
       needScrollToSelectedNode.value = true
       // ツリービューの選択ノードに指定されたディレクトリを設定
       // ※ツリービューのselectイベントが発火され、ディレクトリが切り替わる
-      pageLogic.setSelectedNode(dirPath, true, false)
+      pageLogic.setSelectedTreeNode(dirPath, true, false)
     }
 
     /**
@@ -170,7 +170,7 @@ namespace StoragePage {
      * @param animate
      */
     function openParentNode(nodePath: string, animate: boolean): void {
-      const treeNode = pageLogic.getNode(nodePath)
+      const treeNode = pageLogic.getTreeNode(nodePath)
       if (!treeNode?.parent) return
 
       treeNode.parent.open(animate)
@@ -183,7 +183,7 @@ namespace StoragePage {
      * @param animate
      */
     function scrollToSelectedNode(nodePath: string, animate: boolean): void {
-      const treeNode = pageLogic.getNode(nodePath)
+      const treeNode = pageLogic.getTreeNode(nodePath)
       if (!treeNode) return
 
       // 本ページのグローバルな上位置を取得
@@ -256,10 +256,10 @@ namespace StoragePage {
       switch (e.type) {
         case 'reload': {
           const dirPath = e.nodePaths[0]
-          await pageLogic.reloadDir(dirPath)
+          await pageLogic.reloadStorageDir(dirPath)
           // ページの選択ノードを設定
           // ※ディレクトリビューの更新
-          changeDir(pageLogic.selectedNodePath.value)
+          changeDir(pageLogic.selectedTreeNodePath.value)
           break
         }
         case 'createDir': {
@@ -338,7 +338,7 @@ namespace StoragePage {
 
       // 選択または展開されようとしているディレクトリ直下のノードをサーバーから取得
       // ※done()が実行された後にselectイベントが発火し、ページが更新される
-      await pageLogic.pullChildren(e.node.path)
+      await pageLogic.fetchStorageChildren(e.node.path)
       e.done()
 
       dirView.value!.loading = false
@@ -353,7 +353,7 @@ namespace StoragePage {
       // URLでノードパスが指定されていてもルートノードが選択ノードになってしまい、
       // URLで指定されたノードパスがクリアされてしまう。
       // このため初期読み込みされるまではselectイベントに反応しないようにしている。
-      if (!pageLogic.isPulledInitialNodes.value) return
+      if (!pageLogic.isFetchedInitialStorage.value) return
 
       const selectedNode = e.node
 

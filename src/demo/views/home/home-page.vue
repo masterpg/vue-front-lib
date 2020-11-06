@@ -16,14 +16,23 @@
 </style>
 
 <template>
-  <div class="HomePage layout vertical center">
+  <div class="HomePage layout vertical center" @click="onClick">
     <HelloWorld ref="helloWorld" class="hello-world" title="Welcome to Your Vue2 + Composition API" message="Taro Yamada" />
+    <div>{{ JSON.stringify(state.persons) }}</div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from '@vue/composition-api'
+import { defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
 import { HelloWorld } from '@/demo/components/hello-world'
+
+class Person {
+  constructor(public first: string, public last: string) {
+    this.fullName = `${first} ${last}`
+  }
+
+  readonly fullName: string
+}
 
 namespace HomePage {
   export const clazz = defineComponent({
@@ -35,14 +44,23 @@ namespace HomePage {
 
     setup() {
       const helloWorld = ref<HelloWorld>()
+      const state = reactive({
+        persons: [new Person('Masaaki', 'Hojo')] as Person[],
+      })
 
       onMounted(() => {
         const message = helloWorld.value!.hello()
         console.log(message)
       })
 
+      function onClick() {
+        state.persons[0].first = 'Yuki'
+      }
+
       return {
         helloWorld,
+        onClick,
+        state,
       }
     },
   })
