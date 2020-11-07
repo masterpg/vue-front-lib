@@ -95,7 +95,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, set } from '@vue/composition-api'
+import { ComputedRef, computed, defineComponent, set } from '@vue/composition-api'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
 import { TreeNode } from '@/app/components/tree-view/tree-node.vue'
 import { TreeNodeData } from '@/app/components/tree-view/base'
@@ -130,7 +130,7 @@ namespace TreeCheckboxNode {
 
     setup(props: {}, context) {
       const base = TreeNode.setup(props, context)
-      const nodeData = computed<TreeCheckboxNodeData>(() => base.nodeData.value)
+      const nodeData = base.nodeData as ComputedRef<TreeCheckboxNodeData>
 
       base.extraEventNames.value.push('checked-change')
 

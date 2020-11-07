@@ -96,7 +96,7 @@
 <script lang="ts">
 import * as util from './base'
 import { ChildrenSortFunc, TreeNodeData, TreeNodeEditData, TreeViewLazyLoadStatus } from '@/app/components/tree-view/base'
-import { SetupContext, computed, defineComponent, getCurrentInstance, nextTick, reactive, ref, set } from '@vue/composition-api'
+import { Ref, SetupContext, computed, defineComponent, getCurrentInstance, nextTick, reactive, ref, set } from '@vue/composition-api'
 import { TreeView, TreeViewImpl } from '@/app/components/tree-view/tree-view.vue'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
 import Vue from 'vue'
@@ -248,7 +248,6 @@ interface TreeNodeImpl<DATA extends TreeNodeData = TreeNodeData> extends TreeNod
   setTreeView(value: TreeViewImpl | null): void
   readonly el: HTMLElement
   readonly childContainer: HTMLElement
-  readonly treeView: TreeViewImpl
   readonly nodeData: Required<DATA>
   readonly extraEventNames: string[]
   init(nodeData: DATA): void
@@ -294,30 +293,23 @@ namespace TreeNode {
     const lazyLoadIcon = ref<HTMLElement>()
 
     const state = reactive({
-      nodeData: {},
-      treeView: null,
       isEldest: false,
-      parent: null,
-      children: [] as any[],
       minWidth: 0,
-      toggleAnime: null,
-      extraEventNames: [] as any[],
-    }) as {
-      nodeData: Required<TreeNodeData>
-      treeView: TreeViewImpl | null
-      isEldest: boolean
-      parent: TreeNodeImpl | null
-      children: TreeNodeImpl[]
-      minWidth: number
-      toggleAnime: { resolve: () => void; anime: anime.AnimeInstance } | null
-      extraEventNames: string[]
-    }
+      toggleAnime: null as { resolve: () => void; anime: anime.AnimeInstance } | null,
+      extraEventNames: [] as string[],
+    })
 
-    // この変数は`getTreeView()`でのみ使用される。
-    // それ以外の場所では次を使用すること。
-    // + getTreeView()
-    // + setTreeView()
-    const treeView = computed(() => state.treeView)
+    const _nodeData: Ref<Required<TreeNodeData>> = ref({} as any)
+    const nodeData = computed({
+      get: () => _nodeData.value,
+      set: value => (_nodeData.value = value),
+    })
+
+    const _treeView: Ref<TreeViewImpl | null> = ref(null)
+    const treeView = computed({
+      get: () => _treeView.value,
+      set: value => (_treeView.value = value),
+    })
 
     /**
      * ノードが発火する標準のイベントとは別に、独自で発火するイベント名のリストです。
@@ -348,10 +340,10 @@ namespace TreeNode {
     //----------------------------------------------------------------------
 
     const label = computed({
-      get: () => state.nodeData.label,
+      get: () => nodeData.value.label,
       set: value => {
-        const oldValue = state.nodeData.label
-        state.nodeData.label = value
+        const oldValue = nodeData.value.label
+        nodeData.value.label = value
         util.dispatchNodePropertyChange(self, { property: 'label', newValue: value, oldValue })
         resetNodePositionInParentDebounce(self)
 
@@ -362,19 +354,19 @@ namespace TreeNode {
     })
 
     const value = computed({
-      get: () => state.nodeData.value,
+      get: () => nodeData.value.value,
       set: value => {
-        const oldValue = state.nodeData.value
-        state.nodeData.value = value
+        const oldValue = nodeData.value.value
+        nodeData.value.value = value
         util.dispatchNodePropertyChange(self, { property: 'value', newValue: value, oldValue })
         resetNodePositionInParentDebounce(self)
       },
     })
 
-    const opened = computed(() => state.nodeData.opened)
+    const opened = computed(() => nodeData.value.opened)
 
     const selected = computed({
-      get: () => state.nodeData.selected,
+      get: () => nodeData.value.selected,
       set: value => {
         setSelectedImpl(value, { silent: false })
         resetNodePositionInParentDebounce(self)
@@ -387,9 +379,9 @@ namespace TreeNode {
     }
 
     const unselectable = computed({
-      get: () => state.nodeData.unselectable,
+      get: () => nodeData.value.unselectable,
       set: value => {
-        state.nodeData.unselectable = value
+        nodeData.value.unselectable = value
         if (value) {
           selected.value = false
         }
@@ -397,41 +389,42 @@ namespace TreeNode {
       },
     })
 
+    const _parent: Ref<TreeNodeImpl | null> = ref(null)
     const parent = computed({
-      get: () => state.parent,
-      set: value => (state.parent = value),
+      get: () => _parent.value,
+      set: value => (_parent.value = value),
     })
 
-    const children = computed(() => state.children)
+    const children: Ref<TreeNodeImpl[]> = ref([])
 
     const icon = computed({
-      get: () => state.nodeData.icon,
+      get: () => nodeData.value.icon,
       set: value => {
-        state.nodeData.icon = value
+        nodeData.value.icon = value
         resetNodePositionInParentDebounce(self)
       },
     })
 
     const iconColor = computed({
-      get: () => state.nodeData.iconColor,
+      get: () => nodeData.value.iconColor,
       set: value => {
-        state.nodeData.iconColor = value
+        nodeData.value.iconColor = value
         resetNodePositionInParentDebounce(self)
       },
     })
 
     const lazy = computed({
-      get: () => state.nodeData.lazy,
+      get: () => nodeData.value.lazy,
       set: value => {
-        state.nodeData.lazy = value
+        nodeData.value.lazy = value
         resetNodePositionInParentDebounce(self)
       },
     })
 
     const lazyLoadStatus = computed({
-      get: () => state.nodeData.lazyLoadStatus,
+      get: () => nodeData.value.lazyLoadStatus,
       set: value => {
-        state.nodeData.lazyLoadStatus = value
+        nodeData.value.lazyLoadStatus = value
         resetNodePositionInParentDebounce(self)
       },
     })
@@ -476,8 +469,8 @@ namespace TreeNode {
     //----------------------------------------------------------------------
 
     const getSortFunc: TreeNodeImpl['getSortFunc'] = () => {
-      if (state.nodeData.sortFunc) {
-        return state.nodeData.sortFunc
+      if (nodeData.value.sortFunc) {
+        return nodeData.value.sortFunc
       }
 
       const treeView = getTreeView()
@@ -486,7 +479,7 @@ namespace TreeNode {
     }
 
     const setSortFunc: TreeNodeImpl['setSortFunc'] = value => {
-      state.nodeData.sortFunc = value ?? null
+      nodeData.value.sortFunc = value ?? null
       if (children.value.length) {
         sortChildren()
       }
@@ -494,7 +487,11 @@ namespace TreeNode {
 
     const getTreeView: TreeNodeImpl['getTreeView'] = () => {
       const rootNode = getRootNode()
-      return rootNode.treeView
+      if (self === rootNode) {
+        return treeView.value
+      } else {
+        return rootNode.getTreeView()
+      }
     }
 
     const getRootNode: TreeNodeImpl['getRootNode'] = () => {
@@ -515,7 +512,7 @@ namespace TreeNode {
         throw new Error(`A 'treeView' is about to be set when it is not the root node.`)
       }
 
-      state.treeView = value
+      treeView.value = value
     }
 
     const setNodeData: TreeNodeImpl['setNodeData'] = editData => {
@@ -606,12 +603,12 @@ namespace TreeNode {
     }
 
     const open: TreeNodeImpl['open'] = (animate = true) => {
-      if (state.nodeData.opened) return
+      if (nodeData.value.opened) return
       toggleImpl(true, animate)
     }
 
     const close: TreeNodeImpl['close'] = (animate = true) => {
-      if (!state.nodeData.opened) return
+      if (!nodeData.value.opened) return
       toggleImpl(false, animate)
     }
 
@@ -623,25 +620,25 @@ namespace TreeNode {
 
     /**
      * ノードの初期化を行います。
-     * @param nodeData
+     * @param data
      */
-    const init: TreeNodeImpl['init'] = nodeData => {
+    const init: TreeNodeImpl['init'] = data => {
       // 任意項目は値が設定されていないとリアクティブにならないのでここで初期化
-      set(nodeData, 'icon', nodeData.icon || '')
-      set(nodeData, 'iconColor', nodeData.iconColor || '')
-      set(nodeData, 'opened', Boolean(nodeData.opened))
-      set(nodeData, 'unselectable', Boolean(nodeData.unselectable))
-      set(nodeData, 'selected', Boolean(nodeData.selected))
-      set(nodeData, 'children', nodeData.children || [])
-      set(nodeData, 'lazy', Boolean(nodeData.lazy))
-      set(nodeData, 'lazyLoadStatus', nodeData.lazyLoadStatus || 'none')
-      set(nodeData, 'sortFunc', nodeData.sortFunc || null)
-      state.nodeData = nodeData as Required<TreeNodeData>
+      set(data, 'icon', data.icon || '')
+      set(data, 'iconColor', data.iconColor || '')
+      set(data, 'opened', Boolean(data.opened))
+      set(data, 'unselectable', Boolean(data.unselectable))
+      set(data, 'selected', Boolean(data.selected))
+      set(data, 'children', data.children || [])
+      set(data, 'lazy', Boolean(data.lazy))
+      set(data, 'lazyLoadStatus', data.lazyLoadStatus || 'none')
+      set(data, 'sortFunc', data.sortFunc || null)
+      nodeData.value = data as Required<TreeNodeData>
 
       // サブクラスで必要な処理を実行
-      init_sub.value(nodeData)
+      init_sub.value(nodeData.value)
 
-      setSelectedImpl(state.nodeData.selected, { initializing: true })
+      setSelectedImpl(nodeData.value.selected, { initializing: true })
     }
 
     /**
@@ -672,7 +669,7 @@ namespace TreeNode {
         isDispatchEvent && util.dispatchBeforeNodeRemove(self, childNode)
         childNode.parent = null
         children.value.splice(index, 1)
-        state.nodeData.children.splice(index, 1)
+        nodeData.value.children.splice(index, 1)
         removeChildFromContainer(childNode)
         refreshChildContainerHeight()
         isDispatchEvent && util.dispatchNodeRemove(self, childNode)
@@ -865,14 +862,14 @@ namespace TreeNode {
     function setSelectedImpl(value: boolean, options: { initializing?: boolean; silent?: boolean } = {}): void {
       const initializing = typeof options.initializing === 'boolean' ? options.initializing : false
       const silent = typeof options.silent === 'boolean' ? options.silent : false
-      const changed = state.nodeData.selected !== value
+      const changed = nodeData.value.selected !== value
 
       // 選択不可の場合
       if (unselectable.value) {
         // 選択解除に変更された場合
         // ※選択不可ノードを選択状態へ変更しようとしてもこのブロックには入らない
         if (changed && !value) {
-          state.nodeData.selected = false
+          nodeData.value.selected = false
           !initializing && util.dispatchSelectChange(self, silent)
         }
       }
@@ -884,7 +881,7 @@ namespace TreeNode {
           // ※遅延ロードが指定され、かつまだロードが開始されていない場合
           if (lazy.value && lazyLoadStatus.value === 'none') {
             startLazyLoad(() => {
-              state.nodeData.selected = value
+              nodeData.value.selected = value
               // ①select-change
               // > ノードが選択された場合:
               // >   このイベントをTreeViewが受け取り、そこでノード選択が｢再度｣行われ、③selectが発火される
@@ -893,7 +890,7 @@ namespace TreeNode {
           }
           // 遅延ロードの必要がない場合
           else {
-            state.nodeData.selected = value
+            nodeData.value.selected = value
             // ②select-change
             // > ノードが選択された場合:
             // >   このイベントをTreeViewが受け取り、そこでノード選択が｢再度｣行われ、③selectが発火される
@@ -939,8 +936,8 @@ namespace TreeNode {
       // ノードの親子関係を設定
       childNode.parent = self
       children.value.splice(insertIndex, 0, childNode)
-      if (!state.nodeData.children.find(data => data.value === childNode.value)) {
-        state.nodeData.children.splice(insertIndex, 0, childNode.nodeData)
+      if (!nodeData.value.children.find(data => data.value === childNode.value)) {
+        nodeData.value.children.splice(insertIndex, 0, childNode.nodeData)
       }
 
       // 親ノードのコンテナの高さを設定
@@ -1014,8 +1011,8 @@ namespace TreeNode {
       // ノードの親子関係を設定
       childNode.parent = self
       children.value!.splice(insertIndex, 0, childNode)
-      if (!state.nodeData.children.find(data => data.value === childNode.value)) {
-        state.nodeData.children.splice(insertIndex, 0, childNode.nodeData)
+      if (!nodeData.value.children.find(data => data.value === childNode.value)) {
+        nodeData.value.children.splice(insertIndex, 0, childNode.nodeData)
       }
 
       // 親ノードのコンテナの高さを設定
@@ -1077,7 +1074,7 @@ namespace TreeNode {
       // 上記以外の場合
       else {
         const changed = opened.value !== newOpened
-        state.nodeData.opened = newOpened
+        nodeData.value.opened = newOpened
 
         if (animate) {
           refreshChildContainerHeightWithAnimation()
@@ -1177,8 +1174,7 @@ namespace TreeNode {
       setTreeView,
       el,
       childContainer,
-      treeView,
-      nodeData: computed(() => state.nodeData),
+      nodeData,
       extraEventNames,
       init,
       sortChildren,

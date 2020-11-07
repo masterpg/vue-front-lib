@@ -34,7 +34,7 @@ import {
   TreeViewLazyLoadDoneFunc,
   TreeViewLazyLoadEvent,
 } from '@/app/components/tree-view/base'
-import { SetupContext, computed, defineComponent, getCurrentInstance, reactive, ref } from '@vue/composition-api'
+import { Ref, SetupContext, computed, defineComponent, getCurrentInstance, ref } from '@vue/composition-api'
 import { TreeNode, TreeNodeImpl } from '@/app/components/tree-view/tree-node.vue'
 import { Constructor } from 'web-base-lib'
 import Vue from 'vue'
@@ -183,21 +183,11 @@ namespace TreeView {
     const el = ref<HTMLElement>()
     const childContainer = el
 
-    const state = reactive({
-      children: [] as TreeNodeImpl[],
-      /**
-       * ツリービューが管理する全ノードのマップです。
-       * key: ノードを特定するための値, value: ノード
-       */
-      allNodeDict: {},
-      selectedNode: null,
-      sortFunc: null,
-    }) as {
-      children: TreeNodeImpl[]
-      allNodeDict: { [key: string]: TreeNodeImpl }
-      selectedNode: TreeNodeImpl | null
-      sortFunc: ChildrenSortFunc<any> | null
-    }
+    /**
+     * ツリービューが管理する全ノードのマップです。
+     * key: ノードを特定するための値, value: ノード
+     */
+    const allNodeDict: { [key: string]: TreeNodeImpl } = {}
 
     /**
      * ツリービューの最小幅です。
@@ -212,18 +202,21 @@ namespace TreeView {
       return result + util.getElementFrameWidth(childContainer.value!)
     })
 
+    let sortFunc: ChildrenSortFunc<any> | null = null
+
     //----------------------------------------------------------------------
     //
     //  Properties
     //
     //----------------------------------------------------------------------
 
-    const children = computed(() => state.children)
+    const children: Ref<TreeNodeImpl[]> = ref([])
 
+    const _selectedNode: Ref<TreeNodeImpl | null> = ref(null)
     const selectedNode = computed({
-      get: () => state.selectedNode,
+      get: () => _selectedNode.value,
       set: node => {
-        const currentSelectedNode = state.selectedNode
+        const currentSelectedNode = _selectedNode.value
 
         // 選択ノードが指定された場合
         if (node) {
@@ -234,7 +227,7 @@ namespace TreeView {
           }
           // 指定されたノードを選択状態に設定
           node.selected = true
-          state.selectedNode = node
+          _selectedNode.value = node
         }
         // 選択ノードが指定されたなかった場合
         else {
@@ -242,7 +235,7 @@ namespace TreeView {
           if (currentSelectedNode) {
             currentSelectedNode.selected = false
           }
-          state.selectedNode = null
+          _selectedNode.value = null
         }
       },
     })
@@ -251,7 +244,7 @@ namespace TreeView {
       const node = getNode(value)
       if (!node) return
 
-      const currentSelectedNode = selectedNode.value
+      const currentSelectedNode = _selectedNode.value
 
       // 選択状態にする場合
       if (selected) {
@@ -262,14 +255,14 @@ namespace TreeView {
         }
         // 指定されたノードを選択状態に設定
         node.setSelected(true, silent)
-        state.selectedNode = node
+        _selectedNode.value = node
       }
       // 非選択状態にする場合
       else {
         // 指定されたノードを非選択にする
         node.setSelected(false, silent)
         if (currentSelectedNode === node) {
-          state.selectedNode = null
+          _selectedNode.value = null
         }
       }
     }
@@ -294,12 +287,12 @@ namespace TreeView {
     //----------------------------------------------------------------------
 
     const getNode: TreeViewImpl['getNode'] = value => {
-      return state.allNodeDict[value] as any
+      return allNodeDict[value] as any
     }
 
     const getAllNodes: TreeViewImpl['getAllNodes'] = () => {
       const result: TreeNodeImpl[] = []
-      for (const child of state.children) {
+      for (const child of children.value) {
         result.push(child)
         result.push(...util.getDescendants(child))
       }
@@ -307,7 +300,7 @@ namespace TreeView {
     }
 
     const getSortFunc: TreeViewImpl['getSortFunc'] = () => {
-      return state.sortFunc
+      return sortFunc
     }
 
     const setSortFunc: TreeViewImpl['setSortFunc'] = value => {
@@ -318,12 +311,12 @@ namespace TreeView {
         }
       }
 
-      state.sortFunc = value
+      sortFunc = value
       _sortChildren(self)
     }
 
     const buildTree: TreeViewImpl['buildTree'] = (nodeDataList, options) => {
-      state.sortFunc = options?.sortFunc ?? null
+      sortFunc = options?.sortFunc ?? null
       let insertIndex = options?.insertIndex
       options?.nodeClass && setNodeClass(options.nodeClass)
 
@@ -384,7 +377,7 @@ namespace TreeView {
     }
 
     const removeAllNodes: TreeViewImpl['removeAllNodes'] = () => {
-      for (const node of Object.values(state.allNodeDict)) {
+      for (const node of Object.values(allNodeDict)) {
         removeNode(node.value)
       }
     }
@@ -424,7 +417,7 @@ namespace TreeView {
     function addNodeByNode(node: TreeNodeImpl, options?: { insertIndex?: number | null }): TreeNodeImpl {
       // 追加ノードの親が自身のツリービューの場合
       // ※自身のツリービューの子として追加ノードが既に存在する場合
-      if (!node.parent && node.treeView === self) {
+      if (!node.parent && node.getTreeView() === self) {
         const newInsertIndex = getInsertIndex(node, options)
         const currentIndex = children.value.indexOf(node)
         // 現在の位置と新しい挿入位置が同じ場合
@@ -445,7 +438,7 @@ namespace TreeView {
         node.parent.removeChild(node)
       } else {
         // 親ノードがない場合ツリービューが親となるので、ツリービューから自ノードを削除
-        node.treeView && node.treeView.removeNode(node.value)
+        node.getTreeView()?.removeNode(node.value)
       }
 
       // ノード挿入位置を決定
@@ -595,7 +588,7 @@ namespace TreeView {
      * 最年長ノードフラグを再設定します。
      */
     function restIsEldest(): void {
-      state.children.forEach((node, index) => {
+      children.value.forEach((node, index) => {
         node.isEldest = index === 0
       })
     }
@@ -617,8 +610,8 @@ namespace TreeView {
       const detail = e.detail as NodePropertyChangeDetail
 
       if (detail.property === 'value') {
-        delete state.allNodeDict[detail.oldValue]
-        state.allNodeDict[detail.newValue] = node
+        delete allNodeDict[detail.oldValue]
+        allNodeDict[detail.newValue] = node
       }
     }
 
@@ -630,7 +623,7 @@ namespace TreeView {
       e.stopImmediatePropagation()
 
       const node = e.detail.node as TreeNodeImpl
-      state.allNodeDict[node.value] = node
+      allNodeDict[node.value] = node
 
       // ノードが発火する独自イベントの設定
       for (const eventName of node.extraEventNames) {
@@ -669,9 +662,9 @@ namespace TreeView {
 
       const node = e.detail.node as TreeNodeImpl
       for (const descendant of util.getDescendants(node)) {
-        delete state.allNodeDict[descendant.value]
+        delete allNodeDict[descendant.value]
       }
-      delete state.allNodeDict[node.value]
+      delete allNodeDict[node.value]
     }
 
     /**

@@ -184,7 +184,7 @@ namespace StorageTreeNode {
     //----------------------------------------------------------------------
 
     const base = TreeNode.setup(props, ctx)
-    const nodeData = computed(() => base.nodeData.value) as ComputedRef<StorageTreeNodeData>
+    const nodeData = base.nodeData as ComputedRef<StorageTreeNodeData>
     const { tc } = useI18n()
 
     base.extraEventNames.value.push('node-action')
