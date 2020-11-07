@@ -65,6 +65,7 @@
       </template>
     </q-splitter>
 
+    <StorageDirCreateDialog ref="dirCreateDialog" :storage-type="storageType" />
     <StorageNodeRemoveDialog ref="nodeRemoveDialog" :storage-type="storageType" />
 
     <StorageUploadProgressFloat

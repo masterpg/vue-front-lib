@@ -1,5 +1,6 @@
 <script lang="ts">
 import { StoragePage, StoragePageTemplate } from '@/app/views/base/storage'
+import { StorageDirCreateDialog } from '@/app/views/base/storage/storage-dir-create-dialog.vue'
 import { StorageDirPathBreadcrumb } from '@/app/views/base/storage/storage-dir-path-breadcrumb.vue'
 import { StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
 import { StorageNodeRemoveDialog } from '@/app/views/base/storage/storage-node-remove-dialog.vue'
@@ -19,6 +20,7 @@ namespace AppStoragePage {
       StorageDirPathBreadcrumb: StorageDirPathBreadcrumb.clazz,
       StorageDirView: StorageDirView.clazz,
       StorageUploadProgressFloat: StorageUploadProgressFloat.clazz,
+      StorageDirCreateDialog: StorageDirCreateDialog.clazz,
       StorageNodeRemoveDialog: StorageNodeRemoveDialog.clazz,
     },
 

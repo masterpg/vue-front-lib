@@ -4,11 +4,13 @@ import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/st
 import { StorageUploadProgressFloat, UploadEndedEvent } from '@/app/components/storage/storage-upload-progress-float.vue'
 import { TreeView, TreeViewEvent, TreeViewLazyLoadEvent } from '@/app/components/tree-view'
 import { Loading } from 'quasar'
+import { StorageDirCreateDialog } from '@/app/views/base/storage/storage-dir-create-dialog.vue'
 import { StorageDirPathBreadcrumb } from '@/app/views/base/storage/storage-dir-path-breadcrumb.vue'
 import { StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
 import { StorageNodeRemoveDialog } from '@/app/views/base/storage/storage-node-remove-dialog.vue'
 import { StoragePageLogic } from '@/app/views/base/storage'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
+import _path from 'path'
 import anime from 'animejs'
 import { removeBothEndsSlash } from 'web-base-lib'
 
@@ -41,6 +43,7 @@ namespace StoragePage {
     const treeViewRef = ref<TreeView<StorageTreeNode, StorageTreeNodeData>>()
     const pathDirBreadcrumb = ref<StorageDirPathBreadcrumb>()
     const dirView = ref<StorageDirView>()
+    const dirCreateDialog = ref<StorageDirCreateDialog>()
     const nodeRemoveDialog = ref<StorageNodeRemoveDialog>()
     const uploadProgressFloat = ref<StorageUploadProgressFloat>()
 
@@ -223,6 +226,22 @@ namespace StoragePage {
     }
 
     /**
+     * ディレクトリの作成を行います。
+     * @param dirPath 作成するディレクトリのパス
+     */
+    async function createDir(dirPath: string): Promise<void> {
+      Loading.show()
+
+      // ディレクトリの作成を実行
+      await pageLogic.createStorageDir(dirPath)
+
+      // 現在選択されているノードへURL遷移 ※ページ更新
+      changeDirOnPage(pageLogic.selectedTreeNode.value!.path)
+
+      Loading.hide()
+    }
+
+    /**
      * ノードの削除を行います。
      * @param nodePaths 削除するノード
      */
@@ -315,10 +334,10 @@ namespace StoragePage {
         }
         case 'createDir': {
           const dirPath = e.nodePaths[0]
-          // const pathData = await this.dirCreateDialog.open({ parentPath: dirPath })
-          // if (pathData) {
-          //   await this.createDir(path.join(pathData.dir, pathData.name))
-          // }
+          const pathData = await dirCreateDialog.value!.open({ parentPath: dirPath })
+          if (pathData) {
+            await createDir(_path.join(pathData.dir, pathData.name))
+          }
           break
         }
         case 'uploadDir': {
@@ -454,6 +473,7 @@ namespace StoragePage {
       treeViewContainer,
       treeViewRef,
       pathDirBreadcrumb,
+      dirCreateDialog,
       nodeRemoveDialog,
       uploadProgressFloat,
       dirView,
