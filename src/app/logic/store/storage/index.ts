@@ -302,7 +302,7 @@ namespace StorageStore {
 
     function getStateNode(key: { id?: string; path?: string }): StorageNode | undefined {
       if (!key.id && !key.path) {
-        throw new Error(`Either the 'id' or the 'path' must be specified.`)
+        return undefined
       }
 
       key.path = removeBothEndsSlash(key.path)

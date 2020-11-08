@@ -151,14 +151,17 @@ describe('StorageStore', () => {
     it('idとpath両方指定しなかった場合', () => {
       const { store } = provideDependency()
 
-      let actual!: Error
-      try {
-        store.storage.get({})
-      } catch (err) {
-        actual = err
-      }
+      const actual = store.storage.get({})
 
-      expect(actual.message).toBe(`Either the 'id' or the 'path' must be specified.`)
+      expect(actual).toBeUndefined()
+    })
+
+    it('pathに空文字を指定した場合', () => {
+      const { store } = provideDependency()
+
+      const actual = store.storage.get({ path: '' })
+
+      expect(actual).toBeUndefined()
     })
   })
 
