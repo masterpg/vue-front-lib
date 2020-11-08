@@ -7,6 +7,7 @@ import { Loading } from 'quasar'
 import { StorageDirCreateDialog } from '@/app/views/base/storage/storage-dir-create-dialog.vue'
 import { StorageDirPathBreadcrumb } from '@/app/views/base/storage/storage-dir-path-breadcrumb.vue'
 import { StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
+import { StorageNodeMoveDialog } from '@/app/views/base/storage/storage-node-move-dialog.vue'
 import { StorageNodeRemoveDialog } from '@/app/views/base/storage/storage-node-remove-dialog.vue'
 import { StoragePageLogic } from '@/app/views/base/storage'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
@@ -44,6 +45,7 @@ namespace StoragePage {
     const pathDirBreadcrumb = ref<StorageDirPathBreadcrumb>()
     const dirView = ref<StorageDirView>()
     const dirCreateDialog = ref<StorageDirCreateDialog>()
+    const nodeMoveDialog = ref<StorageNodeMoveDialog>()
     const nodeRemoveDialog = ref<StorageNodeRemoveDialog>()
     const uploadProgressFloat = ref<StorageUploadProgressFloat>()
 
@@ -242,6 +244,23 @@ namespace StoragePage {
     }
 
     /**
+     * ノードの移動を行います。
+     * @param nodePaths 移動するノード
+     * @param toDirPath 移動先のディレクトリパス
+     */
+    async function moveNodes(nodePaths: string[], toDirPath: string): Promise<void> {
+      Loading.show()
+
+      // ノードの移動を実行
+      await pageLogic.moveStorageNodes(nodePaths, toDirPath)
+
+      // 現在選択されているノードへURL遷移 ※ページ更新
+      changeDirOnPage(pageLogic.selectedTreeNode.value!.path)
+
+      Loading.hide()
+    }
+
+    /**
      * ノードの削除を行います。
      * @param nodePaths 削除するノード
      */
@@ -351,10 +370,10 @@ namespace StoragePage {
           break
         }
         case 'move': {
-          // const toDir = await this.nodeMoveDialog.open(e.nodePaths)
-          // if (typeof toDir === 'string') {
-          //   await this.moveNodes(e.nodePaths, toDir)
-          // }
+          const toDir = await nodeMoveDialog.value!.open(e.nodePaths)
+          if (typeof toDir === 'string') {
+            await moveNodes(e.nodePaths, toDir)
+          }
           break
         }
         case 'rename': {
@@ -474,6 +493,7 @@ namespace StoragePage {
       treeViewRef,
       pathDirBreadcrumb,
       dirCreateDialog,
+      nodeMoveDialog,
       nodeRemoveDialog,
       uploadProgressFloat,
       dirView,
