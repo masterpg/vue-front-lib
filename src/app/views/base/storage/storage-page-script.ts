@@ -1,5 +1,5 @@
 import { SetupContext, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
-import { StorageNode, StorageType } from '@/app/logic'
+import { StorageNode, StorageNodeShareSettings, StorageType } from '@/app/logic'
 import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'
 import { StorageUploadProgressFloat, UploadEndedEvent } from '@/app/components/storage/storage-upload-progress-float.vue'
 import { TreeView, TreeViewEvent, TreeViewLazyLoadEvent } from '@/app/components/tree-view'
@@ -9,6 +9,7 @@ import { StorageDirPathBreadcrumb } from '@/app/views/base/storage/storage-dir-p
 import { StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
 import { StorageNodeMoveDialog } from '@/app/views/base/storage/storage-node-move-dialog.vue'
 import { StorageNodeRemoveDialog } from '@/app/views/base/storage/storage-node-remove-dialog.vue'
+import { StorageNodeShareDialog } from '@/app/views/base/storage/storage-node-share-dialog.vue'
 import { StoragePageLogic } from '@/app/views/base/storage'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
 import _path from 'path'
@@ -47,6 +48,7 @@ namespace StoragePage {
     const dirCreateDialog = ref<StorageDirCreateDialog>()
     const nodeMoveDialog = ref<StorageNodeMoveDialog>()
     const nodeRemoveDialog = ref<StorageNodeRemoveDialog>()
+    const nodeShareDialog = ref<StorageNodeShareDialog>()
     const uploadProgressFloat = ref<StorageUploadProgressFloat>()
 
     const pageLogic = StoragePageLogic.newInstance({ storageType, treeViewRef, nodeFilter })
@@ -261,6 +263,23 @@ namespace StoragePage {
     }
 
     /**
+     * ノードの共有設定を行います。
+     * @param nodePaths 共有設定するノード
+     * @param input 共有設定の内容
+     */
+    async function setShareSettings(nodePaths: string[], input: StorageNodeShareSettings): Promise<void> {
+      Loading.show()
+
+      // ノードの共有設定を実行
+      await pageLogic.setStorageNodeShareSettings(nodePaths, input)
+
+      // 現在選択されているノードへURL遷移 ※ページ更新
+      changeDirOnPage(pageLogic.selectedTreeNodePath.value)
+
+      Loading.hide()
+    }
+
+    /**
      * ノードの削除を行います。
      * @param nodePaths 削除するノード
      */
@@ -385,10 +404,10 @@ namespace StoragePage {
           break
         }
         case 'share': {
-          // const input = await this.nodeShareDialog.open(e.nodePaths)
-          // if (input) {
-          //   await this.setShareSettings(e.nodePaths, input)
-          // }
+          const input = await nodeShareDialog.value!.open(e.nodePaths)
+          if (input) {
+            await setShareSettings(e.nodePaths, input)
+          }
           break
         }
         case 'delete': {
@@ -495,6 +514,7 @@ namespace StoragePage {
       dirCreateDialog,
       nodeMoveDialog,
       nodeRemoveDialog,
+      nodeShareDialog,
       uploadProgressFloat,
       dirView,
       visibleDirDetailView,

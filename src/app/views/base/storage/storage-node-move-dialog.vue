@@ -43,7 +43,7 @@
               <q-icon :name="movingNodeIcon" />
             </template>
           </q-input>
-          <div class="app-mb-10">{{ $t('storage.move.selectDestPrompt') }}</div>
+          <div class="app-mb-10">{{ t('storage.move.selectDestPrompt') }}</div>
           <TreeView ref="treeView" class="tree-view" @select-change="treeViewOnSelectChange($event)" @lazy-load="treeViewOnLazyLoad($event)" />
         </q-card-section>
 
@@ -55,9 +55,9 @@
         <!-- ボタンエリア -->
         <q-card-actions class="layout horizontal center end-justified">
           <!-- CANCELボタン -->
-          <q-btn flat rounded color="primary" :label="$t('common.cancel')" @click="close()" />
+          <q-btn flat rounded color="primary" :label="t('common.cancel')" @click="close()" />
           <!-- OKボタン -->
-          <q-btn flat rounded color="primary" :label="$t('common.ok')" @click="move()" />
+          <q-btn flat rounded color="primary" :label="t('common.ok')" @click="move()" />
         </q-card-actions>
       </q-card>
     </q-dialog>

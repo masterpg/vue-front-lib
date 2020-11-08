@@ -31,9 +31,9 @@
       <!-- ボタンエリア -->
       <q-card-actions class="layout horizontal center end-justified">
         <!-- CANCELボタン -->
-        <q-btn flat rounded color="primary" :label="$t('common.cancel')" @click="close()" />
+        <q-btn flat rounded color="primary" :label="t('common.cancel')" @click="close()" />
         <!-- CREATEボタン -->
-        <q-btn flat rounded color="primary" :label="$t('common.create')" @click="create()" />
+        <q-btn flat rounded color="primary" :label="t('common.create')" @click="create()" />
       </q-card-actions>
     </q-card>
   </q-dialog>
