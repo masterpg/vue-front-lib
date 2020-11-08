@@ -5,6 +5,7 @@ import { StorageDirPathBreadcrumb } from '@/app/views/base/storage/storage-dir-p
 import { StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
 import { StorageNodeMoveDialog } from '@/app/views/base/storage/storage-node-move-dialog.vue'
 import { StorageNodeRemoveDialog } from '@/app/views/base/storage/storage-node-remove-dialog.vue'
+import { StorageNodeRenameDialog } from '@/app/views/base/storage/storage-node-rename-dialog.vue'
 import { StorageNodeShareDialog } from '@/app/views/base/storage/storage-node-share-dialog.vue'
 import { StorageType } from '@/app/logic'
 import { StorageUploadProgressFloat } from '@/app/components/storage/storage-upload-progress-float.vue'
@@ -25,6 +26,7 @@ namespace AppStoragePage {
       StorageDirCreateDialog: StorageDirCreateDialog.clazz,
       StorageNodeMoveDialog: StorageNodeMoveDialog.clazz,
       StorageNodeRemoveDialog: StorageNodeRemoveDialog.clazz,
+      StorageNodeRenameDialog: StorageNodeRenameDialog.clazz,
       StorageNodeShareDialog: StorageNodeShareDialog.clazz,
     },
 

@@ -9,6 +9,7 @@ import { StorageDirPathBreadcrumb } from '@/app/views/base/storage/storage-dir-p
 import { StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
 import { StorageNodeMoveDialog } from '@/app/views/base/storage/storage-node-move-dialog.vue'
 import { StorageNodeRemoveDialog } from '@/app/views/base/storage/storage-node-remove-dialog.vue'
+import { StorageNodeRenameDialog } from '@/app/views/base/storage/storage-node-rename-dialog.vue'
 import { StorageNodeShareDialog } from '@/app/views/base/storage/storage-node-share-dialog.vue'
 import { StoragePageLogic } from '@/app/views/base/storage'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
@@ -48,6 +49,7 @@ namespace StoragePage {
     const dirCreateDialog = ref<StorageDirCreateDialog>()
     const nodeMoveDialog = ref<StorageNodeMoveDialog>()
     const nodeRemoveDialog = ref<StorageNodeRemoveDialog>()
+    const nodeRenameDialog = ref<StorageNodeRenameDialog>()
     const nodeShareDialog = ref<StorageNodeShareDialog>()
     const uploadProgressFloat = ref<StorageUploadProgressFloat>()
 
@@ -240,7 +242,7 @@ namespace StoragePage {
       await pageLogic.createStorageDir(dirPath)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageLogic.selectedTreeNode.value!.path)
+      changeDirOnPage(pageLogic.selectedTreeNodePath.value)
 
       Loading.hide()
     }
@@ -257,7 +259,24 @@ namespace StoragePage {
       await pageLogic.moveStorageNodes(nodePaths, toDirPath)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageLogic.selectedTreeNode.value!.path)
+      changeDirOnPage(pageLogic.selectedTreeNodePath.value)
+
+      Loading.hide()
+    }
+
+    /**
+     * ノードのリネームを行います。
+     * @param nodePath リネームするノード
+     * @param newName ノードの新しい名前
+     */
+    async function renameNode(nodePath: string, newName: string): Promise<void> {
+      Loading.show()
+
+      // ノードのリネームを実行
+      await pageLogic.renameStorageNode(nodePath, newName)
+
+      // 現在選択されているノードへURL遷移
+      changeDirOnPage(pageLogic.selectedTreeNodePath.value)
 
       Loading.hide()
     }
@@ -396,11 +415,11 @@ namespace StoragePage {
           break
         }
         case 'rename': {
-          // const nodePath = e.nodePaths[0]
-          // const newName = await this.nodeRenameDialog.open(nodePath)
-          // if (newName) {
-          //   await this.renameNode(nodePath, newName)
-          // }
+          const nodePath = e.nodePaths[0]
+          const newName = await nodeRenameDialog.value!.open(nodePath)
+          if (newName) {
+            await renameNode(nodePath, newName)
+          }
           break
         }
         case 'share': {
@@ -514,6 +533,7 @@ namespace StoragePage {
       dirCreateDialog,
       nodeMoveDialog,
       nodeRemoveDialog,
+      nodeRenameDialog,
       nodeShareDialog,
       uploadProgressFloat,
       dirView,
