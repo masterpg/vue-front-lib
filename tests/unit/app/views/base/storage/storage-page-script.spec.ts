@@ -3059,57 +3059,53 @@ describe('StoragePageLogic', () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
       // root
-      // └d1 ← アップロードディレクトリ
-      //   ├d11 ← 今回アップロード、子ノード読み込み済み(アップロード前は子ノードが存在しなかった)
-      //   │├d111 ← 今回アップロード
-      //   ││└fileA.txt ← 今回アップロード
-      //   │└fileB.txt ← 今回アップロード
-      //   ├d12 ← 今回アップロード、子ノード未読み込み
-      //   │└fileC.txt ← 今回アップロード
-      //   ├d13 ← 以前アップロード、ツリーにまだ存在しない
-      //   │├…
-      //   └fileD.txt ← 今回アップロード
-      const d1 = newTreeDirNodeInput(`d1`, { lazyLoadStatus: 'none' })
+      // └d1 ← 今回アップロード ※既に存在するディレクトリをアップロード
+      //   ├d11
+      //   │├[d111] ← 今回アップロード
+      //   ││└[fileA.txt] ← 今回アップロード
+      //   │└fileB.txt
+      //   ├[d12] ← 今回アップロード
+      //   │└[fileC.txt] ← 今回アップロード
+      //   └[fileD.txt] ← 今回アップロード
+      const d1 = newTreeDirNodeInput(`d1`, { lazyLoadStatus: 'loaded' })
       const d11 = newTreeDirNodeInput(`d1/d11`, { lazyLoadStatus: 'loaded' })
-      const d111 = newTreeDirNodeInput(`d1/d11/d111`)
+      const d111 = newTreeDirNodeInput(`d1/d11/d111`, { lazyLoadStatus: 'none' })
       const fileA = newTreeFileNodeInput(`d1/d11/d111/fileA.txt`)
       const fileB = newTreeFileNodeInput(`d1/d11/fileB.txt`)
       const d12 = newTreeDirNodeInput(`d1/d12`, { lazyLoadStatus: 'none' })
       const fileC = newTreeFileNodeInput(`d1/d12/fileC.txt`)
-      const d13 = newTreeDirNodeInput(`d1/d13`)
       const fileD = newTreeFileNodeInput(`d1/fileD.txt`)
-      pageLogic.setAllTreeNodes([d1, d11, d12])
+      pageLogic.setAllTreeNodes([d1, d11, fileB, d12])
 
       const e: UploadEndedEvent = {
         uploadDirPath: d1.path,
-        uploadedFiles: [fileA, fileB, fileC, fileD],
+        uploadedFiles: [fileA, fileC, fileD],
       }
 
-      //
       // モック設定
-      //
-      // ロジックストア(サーバー)からアップロードディレクトリ直下のノードを取得
-      td.when(storageLogic.fetchChildren(e.uploadDirPath)).thenResolve(toStorageNode([d11, d12, d13, fileD]))
-      // リロード時の挙動をモック化
-      pageLogic.reloadStorageDir.value = async dirPath => {
-        pageLogic.setTreeNodes(toStorageNode([d11, d111, fileA, fileB]))
-      }
+      td.when(storageLogic.sgetNode({ path: d1.path })).thenReturn(toStorageNode(d1))
+      td.when(storageLogic.sgetNode({ path: d11.path })).thenReturn(toStorageNode(d11))
+      td.when(storageLogic.sgetNode({ path: d111.path })).thenReturn(toStorageNode(d111))
+      td.when(storageLogic.sgetNode({ path: fileA.path })).thenReturn(toStorageNode(fileA))
+      td.when(storageLogic.sgetNode({ path: d12.path })).thenReturn(toStorageNode(d12))
+      td.when(storageLogic.sgetNode({ path: fileC.path })).thenReturn(toStorageNode(fileC))
+      td.when(storageLogic.sgetNode({ path: fileD.path })).thenReturn(toStorageNode(fileD))
 
       // アップロードが行われた後のツリーの更新処理を実行
       await pageLogic.onUploaded(e)
 
       // root
       // └d1
-      //   ├d11 ← 子ノードが読み込み済みだったので、リロードにより配下ノードも読み込まれた
+      //   ├d11
       //   │├d111
       //   ││└fileA.txt
       //   │└fileB.txt
-      //   ├d12 ← 子ノードが未読み込みだったので、リロードされず配下ノードも読み込まれない
-      //   ├d13 ← ツリーに存在しなかったが追加された(配下ノードは読み込まれない)
+      //   ├d12
+      //   │└fileC.txt
       //   └fileD.txt
       const actual = pageLogic.getAllTreeNodes()
-      const [_root, _d1, _d11, _d111, _fileA, _fileB, _d12, _d13, _fileD] = actual
       expect(actual.length).toBe(9)
+      const [_root, _d1, _d11, _d111, _fileA, _fileB, _d12, _fileC, _fileD] = actual
       expect(_root.path).toBe(``)
       expect(_d1.path).toBe(`d1`)
       expect(_d11.path).toBe(`d1/d11`)
@@ -3117,10 +3113,13 @@ describe('StoragePageLogic', () => {
       expect(_fileA.path).toBe(`d1/d11/d111/fileA.txt`)
       expect(_fileB.path).toBe(`d1/d11/fileB.txt`)
       expect(_d12.path).toBe(`d1/d12`)
-      expect(_d13.path).toBe(`d1/d13`)
+      expect(_fileC.path).toBe(`d1/d12/fileC.txt`)
       expect(_fileD.path).toBe(`d1/fileD.txt`)
       // アップロードディレクトリの遅延ロード状態の検証
       expect(_d1.lazyLoadStatus).toBe('loaded')
+      expect(_d11.lazyLoadStatus).toBe('loaded')
+      expect(_d111.lazyLoadStatus).toBe('none')
+      expect(_d12.lazyLoadStatus).toBe('none')
 
       verifyParentChildRelationForTree(treeView)
     })
@@ -3129,43 +3128,38 @@ describe('StoragePageLogic', () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
       // root ← アップロードディレクトリ
-      // ├d1 ← 今回アップロード、子ノード読み込み済み(アップロード前は子ノードが存在しなかった)
-      // │└d11 ← 今回アップロード
-      // │  └fileA.txt ← 今回アップロード
-      // └fileB.txt ← 今回アップロード
-      pageLogic.getRootTreeNode().lazyLoadStatus = 'none'
-      const d1 = newTreeDirNodeInput(`d1`, { lazyLoadStatus: 'loaded' })
-      const d11 = newTreeDirNodeInput(`d1/d11`)
+      // └[d1] ← 今回アップロード
+      //   ├[d11] ← 今回アップロード
+      //   │└[fileA.txt] ← 今回アップロード
+      //   └[fileB.txt] ← 今回アップロード
+      const d1 = newTreeDirNodeInput(`d1`, { lazyLoadStatus: 'none' })
+      const d11 = newTreeDirNodeInput(`d1/d11`, { lazyLoadStatus: 'none' })
       const fileA = newTreeFileNodeInput(`d1/d11/fileA.txt`)
       const fileB = newTreeFileNodeInput(`fileB.txt`)
-      pageLogic.setAllTreeNodes([d1])
+      pageLogic.setAllTreeNodes([d1], { lazyLoadStatus: 'loaded' })
 
       const e: UploadEndedEvent = {
         uploadDirPath: ``,
         uploadedFiles: [fileA, fileB],
       }
 
-      //
       // モック設定
-      //
-      // ロジックストア(サーバー)からアップロードディレクトリ直下のノードを取得
-      td.when(storageLogic.fetchChildren(e.uploadDirPath)).thenResolve(toStorageNode([d1, fileB]))
-      // リロード時の挙動をモック化
-      pageLogic.reloadStorageDir.value = async dirPath => {
-        pageLogic.setTreeNodes(toStorageNode([d11, fileA]))
-      }
+      td.when(storageLogic.sgetNode({ path: d1.path })).thenReturn(toStorageNode(d1))
+      td.when(storageLogic.sgetNode({ path: d11.path })).thenReturn(toStorageNode(d11))
+      td.when(storageLogic.sgetNode({ path: fileA.path })).thenReturn(toStorageNode(fileA))
+      td.when(storageLogic.sgetNode({ path: fileB.path })).thenReturn(toStorageNode(fileB))
 
       // アップロードが行われた後のツリーの更新処理を実行
       await pageLogic.onUploaded(e)
 
       // root
-      // └d1 ← リロードにより配下ノードも読み込まれた
-      // │└d11
-      // │  └fileA.txt
-      // └fileB.txt
+      // └d1
+      //   ├d11
+      //   │└fileA.txt
+      //   └fileB.txt
       const actual = pageLogic.getAllTreeNodes()
-      const [_root, _d1, _d11, _fileA, _fileB] = actual
       expect(actual.length).toBe(5)
+      const [_root, _d1, _d11, _fileA, _fileB] = actual
       expect(_root.path).toBe(``)
       expect(_d1.path).toBe(`d1`)
       expect(_d11.path).toBe(`d1/d11`)
@@ -3173,6 +3167,8 @@ describe('StoragePageLogic', () => {
       expect(_fileB.path).toBe(`fileB.txt`)
       // アップロードディレクトリの遅延ロード状態の検証
       expect(_root.lazyLoadStatus).toBe('loaded')
+      expect(_d1.lazyLoadStatus).toBe('none')
+      expect(_d11.lazyLoadStatus).toBe('none')
 
       verifyParentChildRelationForTree(treeView)
     })
@@ -3191,12 +3187,9 @@ describe('StoragePageLogic', () => {
         uploadedFiles: [fileA],
       }
 
-      //
       // モック設定
-      //
-      // ロジックストア(サーバー)からアップロードディレクトリ直下のノードを取得
-      // ・'fileA.txt'がアップロードされた
-      td.when(storageLogic.fetchChildren(e.uploadDirPath)).thenResolve(toStorageNode([d1, fileA]))
+      td.when(storageLogic.sgetNode({ path: d1.path })).thenReturn(toStorageNode(d1))
+      td.when(storageLogic.sgetNode({ path: fileA.path })).thenReturn(toStorageNode(fileA))
 
       // アップロードが行われた後のツリーの更新処理を実行
       await pageLogic.onUploaded(e)
@@ -3205,8 +3198,8 @@ describe('StoragePageLogic', () => {
       // ├d1
       // └fileA.txt ← nodeFilterで除外されるのでツリーには存在しない
       const actual = pageLogic.getAllTreeNodes()
-      const [_root, _d1] = actual
       expect(actual.length).toBe(2)
+      const [_root, _d1] = actual
       expect(_root.path).toBe(``)
       expect(_d1.path).toBe(`d1`)
 

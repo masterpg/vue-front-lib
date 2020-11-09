@@ -237,6 +237,11 @@ interface StorageLogic {
    * @param input
    */
   setFileShareSettings(filePath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode>
+  /**
+   * ファイルアップロードの後に必要な処理を行います。
+   * @param filePath
+   */
+  handleUploadedFile(filePath: string): Promise<StorageNode>
 
   newUploader(owner: Ref<Element | undefined>): StorageUploader
 

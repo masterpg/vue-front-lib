@@ -134,7 +134,7 @@ namespace StorageUploadProgressFloat {
       switch (props.storageType) {
         case 'user':
           uploader = logic.userStorage.newUploader(el)
-          // state.uploader = logic.userStorage.newUrlUploader(el.value!)
+          // uploader = logic.userStorage.newUrlUploader(el)
           break
         case 'article':
           uploader = logic.articleStorage.newUploader(el)

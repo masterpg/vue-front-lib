@@ -449,6 +449,13 @@ namespace AppStorageLogic {
       return toBasePathNode(node)
     }
 
+    const handleUploadedFile: AppStorageLogic['handleUploadedFile'] = async filePath => {
+      const apiNode = await handleUploadedFileAPI(toFullPath(filePath))
+      const node = setAPINodesToStore([apiNode])[0]
+
+      return toBasePathNode(node)
+    }
+
     const newUploader: AppStorageLogic['newUploader'] = owner => {
       return StorageUploader.newInstance(instance, owner)
     }
@@ -718,6 +725,7 @@ namespace AppStorageLogic {
       renameFile,
       setDirShareSettings,
       setFileShareSettings,
+      handleUploadedFile,
       newUploader,
       newDownloader,
       newUrlUploader,

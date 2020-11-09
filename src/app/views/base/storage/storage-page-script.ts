@@ -32,6 +32,18 @@ interface Props {}
 //========================================================================
 
 namespace StoragePage {
+  export const components = {
+    TreeView: TreeView.clazz,
+    StorageDirPathBreadcrumb: StorageDirPathBreadcrumb.clazz,
+    StorageDirView: StorageDirView.clazz,
+    StorageUploadProgressFloat: StorageUploadProgressFloat.clazz,
+    StorageDirCreateDialog: StorageDirCreateDialog.clazz,
+    StorageNodeMoveDialog: StorageNodeMoveDialog.clazz,
+    StorageNodeRemoveDialog: StorageNodeRemoveDialog.clazz,
+    StorageNodeRenameDialog: StorageNodeRenameDialog.clazz,
+    StorageNodeShareDialog: StorageNodeShareDialog.clazz,
+  }
+
   export function setup(params: { props: Props; ctx: SetupContext; storageType: StorageType; nodeFilter?: (node: StorageNode) => boolean }) {
     const { props, ctx, storageType, nodeFilter } = params
 
@@ -366,13 +378,8 @@ namespace StoragePage {
     async function uploadProgressFloatOnUploadEnds(e: UploadEndedEvent) {
       // アップロードが行われた後のツリーの更新処理
       await pageLogic.onUploaded(e)
-      // アップロード先のディレクトリへURL遷移
-      changeDirOnPage(e.uploadDirPath)
-
-      // アップロード先のディレクトリとその祖先を展開
-      const uploadDirNode = pageLogic.getTreeNode(e.uploadDirPath)!
-      uploadDirNode.open()
-      openParentNode(uploadDirNode.path, true)
+      // 現在選択されているノードへURL遷移 ※ページ更新
+      changeDirOnPage(pageLogic.selectedTreeNodePath.value)
     }
 
     /**

@@ -343,7 +343,7 @@ namespace StorageUploader {
           // ファイルアップロード
           await uploadingFile.execute()
           // ファイルアップロード後に必要な処理を実行
-          await storageLogic.handleUploadedFileAPI(uploadingFile.path)
+          await storageLogic.handleUploadedFile(uploadingFile.path)
         } catch (err) {
           console.error(err)
         }

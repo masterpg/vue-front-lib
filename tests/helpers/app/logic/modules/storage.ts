@@ -103,6 +103,7 @@ function mockStorageLogicAPIMethods(params: Pick<TestLogicContainer, 'appStorage
     storageLogic.renameFileAPI.value = td.func() as any
     storageLogic.setDirShareSettingsAPI.value = td.func() as any
     storageLogic.setFileShareSettingsAPI.value = td.func() as any
+    storageLogic.handleUploadedFileAPI.value = td.func() as any
   }
 
   articleStorage.createArticleTypeDirAPI.value = td.func() as any

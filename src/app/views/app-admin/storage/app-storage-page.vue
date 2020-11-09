@@ -1,15 +1,6 @@
 <script lang="ts">
 import { StoragePage, StoragePageTemplate } from '@/app/views/base/storage'
-import { StorageDirCreateDialog } from '@/app/views/base/storage/storage-dir-create-dialog.vue'
-import { StorageDirPathBreadcrumb } from '@/app/views/base/storage/storage-dir-path-breadcrumb.vue'
-import { StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
-import { StorageNodeMoveDialog } from '@/app/views/base/storage/storage-node-move-dialog.vue'
-import { StorageNodeRemoveDialog } from '@/app/views/base/storage/storage-node-remove-dialog.vue'
-import { StorageNodeRenameDialog } from '@/app/views/base/storage/storage-node-rename-dialog.vue'
-import { StorageNodeShareDialog } from '@/app/views/base/storage/storage-node-share-dialog.vue'
 import { StorageType } from '@/app/logic'
-import { StorageUploadProgressFloat } from '@/app/components/storage/storage-upload-progress-float.vue'
-import { TreeView } from '@/app/components/tree-view/tree-view.vue'
 import { defineComponent } from '@vue/composition-api'
 
 interface Props {}
@@ -18,40 +9,14 @@ namespace AppStoragePage {
   export const clazz = defineComponent({
     name: 'AppStoragePage',
 
-    components: {
-      TreeView: TreeView.clazz,
-      StorageDirPathBreadcrumb: StorageDirPathBreadcrumb.clazz,
-      StorageDirView: StorageDirView.clazz,
-      StorageUploadProgressFloat: StorageUploadProgressFloat.clazz,
-      StorageDirCreateDialog: StorageDirCreateDialog.clazz,
-      StorageNodeMoveDialog: StorageNodeMoveDialog.clazz,
-      StorageNodeRemoveDialog: StorageNodeRemoveDialog.clazz,
-      StorageNodeRenameDialog: StorageNodeRenameDialog.clazz,
-      StorageNodeShareDialog: StorageNodeShareDialog.clazz,
-    },
+    components: { ...StoragePage.components },
 
     mixins: [StoragePageTemplate],
 
     setup(props: Props, ctx) {
-      //----------------------------------------------------------------------
-      //
-      //  Variables
-      //
-      //----------------------------------------------------------------------
-
       const storageType: StorageType = 'app'
-
       const base = StoragePage.setup({ props, ctx, storageType })
-
-      //----------------------------------------------------------------------
-      //
-      //  Result
-      //
-      //----------------------------------------------------------------------
-
-      return {
-        ...base,
-      }
+      return { ...base }
     },
   })
 }

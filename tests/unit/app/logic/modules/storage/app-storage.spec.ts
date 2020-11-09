@@ -1864,6 +1864,54 @@ describe('AppStorageLogic', () => {
     })
   })
 
+  describe('handleUploadedFile', () => {
+    it('ベーシックケース', async () => {
+      // bucketRoot
+      // └d1
+      //   └d11
+      //     └[f111.txt] ← アップロード後の処理が必要
+      const d1 = newTestStorageDirNode(`d1`)
+      const d11 = newTestStorageDirNode(`d1/d11`)
+      const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
+      const {
+        logic: { appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([d1, d11])
+      })
+
+      td.when(appStorage.handleUploadedFileAPI(f111.path)).thenResolve(f111)
+
+      const actual = await appStorage.handleUploadedFile(f111.path)
+
+      // bucketRoot
+      // └d1
+      //   └d11
+      //     └f111.txt
+      expect(actual).toEqual(f111)
+      expect(appStorage.getAllNodes()).toEqual([d1, d11, f111])
+    })
+
+    it('APIでエラーが発生した場合', async () => {
+      const d1 = newTestStorageDirNode(`d1`)
+      const d11 = newTestStorageDirNode(`d1/d11`)
+      const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
+      const {
+        logic: { appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([d1, d11])
+      })
+
+      td.when(appStorage.handleUploadedFileAPI(f111.path)).thenReject(new Error())
+
+      try {
+        await appStorage.handleUploadedFile(f111.path)
+      } catch (err) {}
+
+      // ノードリストに変化がないことを検証
+      expect(appStorage.getAllNodes()).toEqual([d1, d11])
+    })
+  })
+
   describe('setAPINodesToStore', () => {
     it('ベーシックケース', async () => {
       // bucketRoot

@@ -12,7 +12,7 @@ import {
   injectLogic,
 } from '@/app/logic'
 import { StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/storage/base'
-import { TreeView, newTreeNode } from '@/app/components/tree-view'
+import { TreeView, TreeViewLazyLoadStatus, newTreeNode } from '@/app/components/tree-view'
 import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
 import router, { StorageRoute } from '@/app/router'
 import { Notify } from 'quasar'
@@ -74,8 +74,9 @@ interface StoragePageLogic {
   /**
    * ツリービューにあるノードを全て削除し、指定されたノードに置き換えます。
    * @param nodes
+   * @param rootNodeOptions
    */
-  setAllTreeNodes(nodes: StorageTreeNodeInput[]): void
+  setAllTreeNodes(nodes: StorageTreeNodeInput[], rootNodeOptions?: { opened?: boolean; lazyLoadStatus?: TreeViewLazyLoadStatus }): void
   /**
    * 指定されたノードをツリービューに設定します。
    * 対象のツリーノードがなかった場合、指定されたノードをもとにツリーノードを作成します。
@@ -568,12 +569,15 @@ namespace StoragePageLogic {
       dirTreeNode.lazyLoadStatus = 'loaded'
     })
 
-    const setAllTreeNodes: StoragePageLogic['setAllTreeNodes'] = nodes => {
+    const setAllTreeNodes: StoragePageLogic['setAllTreeNodes'] = (nodes, rootNodeOptions) => {
       // ツリービューからルートノードを削除
       getTreeView().removeNode(getRootTreeNode().path)
       _rootTreeNode = null
       // ツリービューに新しいルートノードを追加
-      getTreeView().addNode(getRootTreeNode())
+      const rootTreeNode = getRootTreeNode()
+      rootNodeOptions?.opened && rootTreeNode.open(false)
+      rootNodeOptions?.lazyLoadStatus && (rootTreeNode.lazyLoadStatus = rootNodeOptions.lazyLoadStatus)
+      getTreeView().addNode(rootTreeNode)
       // 引数で指定されたノードを追加
       setTreeNodes(nodes)
     }
@@ -1010,7 +1014,7 @@ namespace StoragePageLogic {
         throw new Error(`The specified node could not be found: '${e.uploadDirPath}'`)
       }
 
-      // アップロードディレクトリ直下のアップロードノードを取得
+      // アップロードされたディレクトリ階層とファイルのパスを取得
       // 引数イベントが次のような場合:
       //   e: {
       //     uploadDirPath: 'd1',
@@ -1022,43 +1026,22 @@ namespace StoragePageLogic {
       //     ]
       //   }
       // 次のようなパスが取得される:
-      //   ['d1/d11', 'd1/d12', 'd1/fileD.txt']
-      const childNodePaths = e.uploadedFiles.reduce((result, item) => {
-        const childNodePath = (() => {
-          const uploadDirPath = e.uploadDirPath ? _path.join(e.uploadDirPath, '/') : ''
-          const workPath = item.path.replace(uploadDirPath, '')
-          const childNodeName = workPath.split('/')[0]
-          return _path.join(e.uploadDirPath, childNodeName)
-        })()
-        if (!result.includes(childNodePath)) {
-          result.push(childNodePath)
-        }
-        return result
-      }, [] as string[])
+      //   ['d1', 'd1/d11', 'd1/d12', 'd1/fileD.txt']
+      const uploadedNodePaths = splitHierarchicalPaths(...e.uploadedFiles.map(item => item.path))
 
-      // ロジックストア(サーバー)からアップロードディレクトリ直下のノードを取得
-      const storeChildDirNodes = (await storageLogic.fetchChildren(e.uploadDirPath)).filter(nodeFilter)
+      // 上記で取得したパスのノードを取得
+      const uploadedNodes = uploadedNodePaths
+        .map(uploadedNodePath => {
+          return sgetStorageNode({ path: uploadedNodePath })
+        })
+        .filter(nodeFilter)
 
-      // ロジックストアのノードで、アップロードされたノードをツリービューに反映
-      for (const storeDirNode of storeChildDirNodes) {
-        const treeNode = getTreeNode(storeDirNode.path)
-        // 次の場合リロードが必要
-        // ・今回アップロードされたノードがツリービューに既に存在
-        // ・そのディレクトリが子ノードを読み込み済み
-        // ・そのディレクトリがアップロード先ディレクトリの直下に存在する
-        const needReload = treeNode && treeNode.lazyLoadStatus === 'loaded' && childNodePaths.includes(treeNode.path)
-        // リロードが必要な場合
-        if (needReload) {
-          await reloadStorageDir(treeNode!.path)
-        }
-        // リロードが必要ない場合
-        else {
-          setTreeNode(storeDirNode)
-        }
+      // 上記で取得したノードをツリービューに反映
+      for (const uploadedNode of uploadedNodes) {
+        // アップロード前に必要なディレクトリは作成されるため、
+        // 対象ノードの親ツリーノードは必ず存在する想定
+        setTreeNode(uploadedNode)
       }
-
-      // 引数ディレクトリを遅延ロード済みに設定
-      uploadDirTreeNode.lazyLoadStatus = 'loaded'
     }
 
     //--------------------------------------------------
