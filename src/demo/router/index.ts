@@ -45,6 +45,14 @@ const tree: RouteConfig & { getPath(): string } = {
   },
 }
 
+const img: RouteConfig & { getPath(): string } = {
+  path: '/demo/img',
+  component: () => import(/* webpackChunkName: "demo/views/img" */ '@/demo/views/img'),
+  getPath(): string {
+    return img.path
+  },
+}
+
 const fallback: RouteConfig = {
   path: '/demo/*',
   redirect: '/demo/home',
@@ -55,11 +63,11 @@ const router = new (class extends VueRouter {
     super({
       mode: 'history',
       base: process.env.BASE_URL,
-      routes: [home, abc, shop, tree, fallback],
+      routes: [home, abc, shop, tree, img, fallback],
     })
   }
 
-  readonly views = { home, abc, shop, tree, fallback }
+  readonly views = { home, abc, shop, tree, img, fallback }
 })()
 
 //========================================================================

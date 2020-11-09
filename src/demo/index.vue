@@ -129,6 +129,10 @@ export default defineComponent({
           title: 'TreeView',
           path: router.views.tree.getPath(),
         },
+        {
+          title: 'Img',
+          path: router.views.img.getPath(),
+        },
       ] as { title: string; path: string }[],
 
       isSignedIn: logic.auth.isSignedIn,

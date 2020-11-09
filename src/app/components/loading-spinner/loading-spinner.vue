@@ -35,11 +35,11 @@
 import { defineComponent } from '@vue/composition-api'
 
 interface Props {
-  readonly size: string
-  readonly color: string
+  size: string
+  color: string
 }
 
-interface LoadingSpinner extends Readonly<Props> {}
+interface LoadingSpinner extends Props {}
 
 namespace LoadingSpinner {
   export const clazz = defineComponent({
@@ -50,7 +50,7 @@ namespace LoadingSpinner {
       color: { type: String, default: 'grey-6' },
     },
 
-    setup(props: Props, context) {},
+    setup(props: Readonly<Props>, ctx) {},
   })
 }
 
