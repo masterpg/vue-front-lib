@@ -74,7 +74,7 @@
 <script lang="ts">
 import { StorageFileUploader, StorageUploader } from '@/app/logic/modules/storage'
 import { StorageType, injectLogic } from '@/app/logic'
-import { computed, defineComponent, onMounted, reactive, ref, watch } from '@vue/composition-api'
+import { computed, defineComponent, reactive, ref, watch } from '@vue/composition-api'
 import { useI18n } from '@/app/i18n'
 
 interface StorageUploadProgressFloat {
@@ -95,12 +95,12 @@ interface UploadEndedEvent {
   uploadedFiles: { name: string; dir: string; path: string; size: number }[]
 }
 
-interface Props {
-  storageType: StorageType
-}
-
 namespace StorageUploadProgressFloat {
   export const UPLOAD_ENDS = 'upload-ends'
+
+  export interface Props {
+    storageType: StorageType
+  }
 
   export const clazz = defineComponent({
     name: 'StorageUploadProgressFloat',

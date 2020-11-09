@@ -13,8 +13,8 @@
   overflow: auto
 
 .tree-view
-//--comp-tree-view-font-size: 26px
-//--comp-tree-node-indent: 20px
+  //--tree-view-font-size: 26px
+  //--tree-node-indent: 20px
 
 .content-container
   height: 100%
@@ -26,7 +26,7 @@
   overflow: hidden
 
 .node-detail-view
-  width: 320px
+  width: 320px !important
 </style>
 
 <template>
@@ -59,6 +59,20 @@
               @select="dirViewOnSelect($event)"
               @deep-select="dirViewOnDeepSelect($event)"
               @node-action="popupMenuOnNodeAction($event)"
+            />
+            <StorageDirDetailView
+              v-show="visibleDirDetailView"
+              ref="dirDetailView"
+              class="node-detail-view"
+              :storage-type="storageType"
+              @close="nodeDetailViewOnClose"
+            />
+            <StorageFileDetailView
+              v-show="visibleFileDetailView"
+              ref="fileDetailView"
+              class="node-detail-view"
+              :storage-type="storageType"
+              @close="nodeDetailViewOnClose"
             />
           </div>
         </div>

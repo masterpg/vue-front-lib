@@ -1,18 +1,21 @@
 import { SetupContext, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
-import { StorageNode, StorageNodeShareSettings, StorageType } from '@/app/logic'
+import { StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/logic'
 import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'
-import { StorageUploadProgressFloat, UploadEndedEvent } from '@/app/components/storage/storage-upload-progress-float.vue'
 import { TreeView, TreeViewEvent, TreeViewLazyLoadEvent } from '@/app/components/tree-view'
 import { Loading } from 'quasar'
 import { StorageDirCreateDialog } from '@/app/views/base/storage/storage-dir-create-dialog.vue'
+import { StorageDirDetailView } from '@/app/views/base/storage/storage-dir-detail-view.vue'
 import { StorageDirPathBreadcrumb } from '@/app/views/base/storage/storage-dir-path-breadcrumb.vue'
 import { StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
+import { StorageFileDetailView } from '@/app/views/base/storage/storage-file-detail-view.vue'
 import { StorageNodeMoveDialog } from '@/app/views/base/storage/storage-node-move-dialog.vue'
 import { StorageNodeRemoveDialog } from '@/app/views/base/storage/storage-node-remove-dialog.vue'
 import { StorageNodeRenameDialog } from '@/app/views/base/storage/storage-node-rename-dialog.vue'
 import { StorageNodeShareDialog } from '@/app/views/base/storage/storage-node-share-dialog.vue'
 import { StoragePageLogic } from '@/app/views/base/storage'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
+import { StorageUploadProgressFloat } from '@/app/components/storage/storage-upload-progress-float.vue'
+import { UploadEndedEvent } from '@/app/components/storage'
 import _path from 'path'
 import anime from 'animejs'
 import { removeBothEndsSlash } from 'web-base-lib'
@@ -36,6 +39,8 @@ namespace StoragePage {
     TreeView: TreeView.clazz,
     StorageDirPathBreadcrumb: StorageDirPathBreadcrumb.clazz,
     StorageDirView: StorageDirView.clazz,
+    StorageDirDetailView: StorageDirDetailView.clazz,
+    StorageFileDetailView: StorageFileDetailView.clazz,
     StorageUploadProgressFloat: StorageUploadProgressFloat.clazz,
     StorageDirCreateDialog: StorageDirCreateDialog.clazz,
     StorageNodeMoveDialog: StorageNodeMoveDialog.clazz,
@@ -58,6 +63,8 @@ namespace StoragePage {
     const treeViewRef = ref<TreeView<StorageTreeNode, StorageTreeNodeData>>()
     const pathDirBreadcrumb = ref<StorageDirPathBreadcrumb>()
     const dirView = ref<StorageDirView>()
+    const dirDetailView = ref<StorageDirDetailView>()
+    const fileDetailView = ref<StorageFileDetailView>()
     const dirCreateDialog = ref<StorageDirCreateDialog>()
     const nodeMoveDialog = ref<StorageNodeMoveDialog>()
     const nodeRemoveDialog = ref<StorageNodeRemoveDialog>()
@@ -241,6 +248,31 @@ namespace StoragePage {
       })
 
       // console.log(JSON.stringify({ scrollTop, nodeTop, 'treeViewContainer.clientHeight / 2': treeViewContainer.value!.clientHeight / 2, newScrollTop }, null, 2))
+    }
+
+    /**
+     * 指定されたノードをページの選択ノードとして設定します。
+     * @param nodePath
+     */
+    function showNodeDetail(nodePath: string): void {
+      visibleDirDetailView.value = false
+      visibleFileDetailView.value = false
+      const node = pageLogic.sgetStorageNode({ path: nodePath })
+
+      switch (node.nodeType) {
+        case StorageNodeType.Dir: {
+          // ディレクトリ詳細ビューを表示
+          dirDetailView.value!.setNodePath(node.path)
+          visibleDirDetailView.value = true
+          break
+        }
+        case StorageNodeType.File: {
+          // ファイル詳細ビューを表示
+          fileDetailView.value!.setNodePath(node.path)
+          visibleFileDetailView.value = true
+          break
+        }
+      }
     }
 
     /**
@@ -514,7 +546,7 @@ namespace StoragePage {
      * @param nodePath
      */
     function dirViewOnSelect(nodePath: string) {
-      // showNodeDetail(nodePath)
+      showNodeDetail(nodePath)
     }
 
     /**
@@ -523,6 +555,15 @@ namespace StoragePage {
      */
     function dirViewOnDeepSelect(dirPath: string) {
       dirOnChange(dirPath)
+    }
+
+    //--------------------------------------------------
+    //  ノード詳細ビュー
+    //--------------------------------------------------
+
+    function nodeDetailViewOnClose() {
+      visibleDirDetailView.value = false
+      visibleFileDetailView.value = false
     }
 
     //----------------------------------------------------------------------
@@ -544,6 +585,8 @@ namespace StoragePage {
       nodeShareDialog,
       uploadProgressFloat,
       dirView,
+      dirDetailView,
+      fileDetailView,
       visibleDirDetailView,
       visibleFileDetailView,
       splitterModel,
@@ -554,6 +597,7 @@ namespace StoragePage {
       treeViewOnLazyLoad,
       dirViewOnSelect,
       dirViewOnDeepSelect,
+      nodeDetailViewOnClose,
     }
   }
 }

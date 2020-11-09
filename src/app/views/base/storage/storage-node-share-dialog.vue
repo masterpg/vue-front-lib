@@ -19,10 +19,6 @@
   padding: 0 0 16px 0
   margin: 0 16px
 
-.tree-view
-  height: 100%
-  --comp-tree-padding: 0
-
 .error-message
   @extend %text-caption
   color: $text-error-color

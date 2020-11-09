@@ -1,4 +1,4 @@
-import { ArticleStorageLogic, StorageLogic } from '@/app/logic/modules/storage'
+import { ArticleStorageLogic, StorageDownloader, StorageFileDownloader, StorageFileDownloaderType, StorageLogic } from '@/app/logic/modules/storage'
 import { ComputedRef, Ref, WritableComputedRef, computed, ref, watch } from '@vue/composition-api'
 import {
   CreateArticleTypeDirInput,
@@ -17,7 +17,7 @@ import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchica
 import router, { StorageRoute } from '@/app/router'
 import { Notify } from 'quasar'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
-import { UploadEndedEvent } from '@/app/components/storage/storage-upload-progress-float.vue'
+import { UploadEndedEvent } from '@/app/components/storage'
 import _path from 'path'
 import dayjs from 'dayjs'
 import { extendedMethod } from '@/app/base'
@@ -188,6 +188,16 @@ interface StoragePageLogic {
    * @param e
    */
   onUploaded(e: UploadEndedEvent): Promise<void>
+  /**
+   * ファイルまたはディレクトリのダウンロード管理を行うダウンローダーを生成します。
+   */
+  newDownloader(): StorageDownloader
+  /**
+   * 単一ファイルダウンロードの管理を行うダウンローダーを生成します。
+   * @param type
+   * @param filePath
+   */
+  newFileDownloader(type: StorageFileDownloaderType, filePath: string): StorageFileDownloader
 
   //--------------------------------------------------
   //  Helper methods
@@ -1044,6 +1054,14 @@ namespace StoragePageLogic {
       }
     }
 
+    const newDownloader: StoragePageLogic['newDownloader'] = () => {
+      return storageLogic.newDownloader()
+    }
+
+    const newFileDownloader: StoragePageLogic['newFileDownloader'] = (type, filePath) => {
+      return storageLogic.newFileDownloader(type, filePath)
+    }
+
     //--------------------------------------------------
     //  Helper methods
     //--------------------------------------------------
@@ -1339,6 +1357,8 @@ namespace StoragePageLogic {
       renameStorageNode,
       setStorageNodeShareSettings,
       onUploaded,
+      newDownloader,
+      newFileDownloader,
       showNotification,
       getInheritedShare,
       createRootNodeData,

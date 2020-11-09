@@ -13,7 +13,7 @@ import { StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/stor
 import { TreeNode, TreeView, TreeViewImpl } from '@/app/components/tree-view'
 import { StoragePageLogic } from '@/app/views/base/storage'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
-import { UploadEndedEvent } from '@/app/components/storage/storage-upload-progress-float.vue'
+import { UploadEndedEvent } from '@/app/components/storage'
 import { VueRouter } from 'vue-router/types/router'
 import { cloneDeep } from 'lodash'
 import dayjs from 'dayjs'
