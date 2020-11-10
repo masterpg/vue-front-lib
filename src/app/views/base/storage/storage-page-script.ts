@@ -1,5 +1,5 @@
 import { SetupContext, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
-import { StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/logic'
+import { StorageArticleNodeType, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/logic'
 import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'
 import { TreeView, TreeViewEvent, TreeViewLazyLoadEvent } from '@/app/components/tree-view'
 import { Loading } from 'quasar'
@@ -18,15 +18,8 @@ import { StorageUploadProgressFloat } from '@/app/components/storage/storage-upl
 import { UploadEndedEvent } from '@/app/components/storage'
 import _path from 'path'
 import anime from 'animejs'
+import { extendedMethod } from '@/app/base'
 import { removeBothEndsSlash } from 'web-base-lib'
-
-//========================================================================
-//
-//  Interfaces
-//
-//========================================================================
-
-interface Props {}
 
 //========================================================================
 //
@@ -49,8 +42,22 @@ namespace StoragePage {
     StorageNodeShareDialog: StorageNodeShareDialog.clazz,
   }
 
-  export function setup(params: { props: Props; ctx: SetupContext; storageType: StorageType; nodeFilter?: (node: StorageNode) => boolean }) {
-    const { props, ctx, storageType, nodeFilter } = params
+  export function setup(params: { ctx: SetupContext; storageType: StorageType; nodeFilter?: (node: StorageNode) => boolean }) {
+    const { ctx, storageType, nodeFilter } = params
+
+    //----------------------------------------------------------------------
+    //
+    //  Lifecycle hooks
+    //
+    //----------------------------------------------------------------------
+
+    onMounted(async () => {
+      await fetchInitialNodes()
+    })
+
+    onUnmounted(() => {
+      StoragePageLogic.deleteInstance(storageType)
+    })
 
     //----------------------------------------------------------------------
     //
@@ -102,20 +109,6 @@ namespace StoragePage {
 
     //----------------------------------------------------------------------
     //
-    //  Lifecycle hooks
-    //
-    //----------------------------------------------------------------------
-
-    onMounted(async () => {
-      await pullInitialNodes()
-    })
-
-    onUnmounted(() => {
-      StoragePageLogic.deleteInstance(storageType)
-    })
-
-    //----------------------------------------------------------------------
-    //
     //  Internal methods
     //
     //----------------------------------------------------------------------
@@ -123,7 +116,7 @@ namespace StoragePage {
     /**
      * 初回に読み込むべきストレージノードの読み込みを行います。
      */
-    async function pullInitialNodes(): Promise<void> {
+    async function fetchInitialNodes(): Promise<void> {
       if (!pageLogic.isFetchedInitialStorage) return
 
       dirView.value!.loading = true
@@ -372,6 +365,26 @@ namespace StoragePage {
       Loading.hide()
     }
 
+    /**
+     * 記事系ディレクトリの作成を行います。
+     * @param input
+     */
+    async function createArticleTypeDir(input: { dir: string; name: string; articleNodeType: StorageArticleNodeType }): Promise<void> {
+      Loading.show()
+
+      // 記事系ディレクトリの作成
+      await pageLogic.createArticleTypeDir({
+        dir: input.dir,
+        articleNodeName: input.name,
+        articleNodeType: input.articleNodeType,
+      })
+
+      // 現在選択されているノードへURL遷移 ※ページ更新
+      changeDirOnPage(pageLogic.selectedTreeNodePath.value)
+
+      Loading.hide()
+    }
+
     //----------------------------------------------------------------------
     //
     //  Event listeners
@@ -381,7 +394,7 @@ namespace StoragePage {
     watch(
       () => pageLogic.isSignedIn.value,
       async isSignedIn => {
-        if (isSignedIn) await pullInitialNodes()
+        if (isSignedIn) await fetchInitialNodes()
       }
     )
 
@@ -476,16 +489,12 @@ namespace StoragePage {
           break
         }
         case 'createArticleTypeDir': {
-          // const articleNodeType = e.articleNodeType!
-          // const dirPath = e.nodePaths[0]
-          // const pathData = await this.dirCreateDialog.open({ parentPath: dirPath, articleNodeType })
-          // if (pathData) {
-          //   await this.createArticleTypeDir({
-          //     dir: pathData.dir,
-          //     articleNodeName: pathData.name,
-          //     articleNodeType,
-          //   })
-          // }
+          const articleNodeType = e.articleNodeType!
+          const dirPath = e.nodePaths[0]
+          const pathData = await dirCreateDialog.value!.open({ parentPath: dirPath, articleNodeType })
+          if (pathData) {
+            await createArticleTypeDir({ ...pathData, articleNodeType })
+          }
           break
         }
       }
@@ -514,13 +523,7 @@ namespace StoragePage {
      * ツリービューでノードが選択された際のリスナです。
      * @param e
      */
-    async function treeViewOnSelect(e: TreeViewEvent<StorageTreeNode>) {
-      // 初期読み込みが行われる前にルートノードのselectイベントが発生すると、
-      // URLでノードパスが指定されていてもルートノードが選択ノードになってしまい、
-      // URLで指定されたノードパスがクリアされてしまう。
-      // このため初期読み込みされるまではselectイベントに反応しないようにしている。
-      if (!pageLogic.isFetchedInitialStorage.value) return
-
+    const treeViewOnSelect = extendedMethod<(e: TreeViewEvent<StorageTreeNode>) => void | Promise<void>>(e => {
       const selectedNode = e.node
 
       // 選択ノードまでスクロールするフラグが立っている場合
@@ -535,7 +538,7 @@ namespace StoragePage {
 
       // 選択ノードのパスをURLに付与
       changeDirOnPage(selectedNode.path)
-    }
+    })
 
     //--------------------------------------------------
     //  ディレクトリビュー
@@ -590,6 +593,11 @@ namespace StoragePage {
       visibleDirDetailView,
       visibleFileDetailView,
       splitterModel,
+      needScrollToSelectedNode,
+      changeDirOnPage,
+      openParentNode,
+      scrollToSelectedNode,
+      showNodeDetail,
       pathDirBreadcrumbOnSelect,
       uploadProgressFloatOnUploadEnds,
       popupMenuOnNodeAction,

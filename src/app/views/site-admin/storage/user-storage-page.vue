@@ -3,8 +3,6 @@ import { StoragePage, StoragePageTemplate } from '@/app/views/base/storage'
 import { StorageType } from '@/app/logic'
 import { defineComponent } from '@vue/composition-api'
 
-interface Props {}
-
 namespace UserStoragePage {
   export const clazz = defineComponent({
     name: 'UserStoragePage',
@@ -13,9 +11,9 @@ namespace UserStoragePage {
 
     mixins: [StoragePageTemplate],
 
-    setup(props: Props, ctx) {
+    setup(props, ctx) {
       const storageType: StorageType = 'user'
-      const base = StoragePage.setup({ props, ctx, storageType })
+      const base = StoragePage.setup({ ctx, storageType })
       return { ...base }
     },
   })

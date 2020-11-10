@@ -12,7 +12,7 @@
 </style>
 
 <template>
-  <div>
+  <div class="StorageDirView">
     <StorageDirTable
       ref="table"
       :data="dirChildNodes"
@@ -57,8 +57,8 @@
 </template>
 
 <script lang="ts">
+import { Ref, SetupContext, computed, defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
 import { StorageNode, StorageNodeType, StorageType } from '@/app/logic'
-import { computed, defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
 import { QTableColumn } from 'quasar'
 import { StorageDirTable } from '@/app/views/base/storage/storage-dir-table.vue'
 import { StorageNodeActionEvent } from '@/app/views/base/storage/base'
@@ -66,6 +66,7 @@ import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popu
 import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import { arrayToDict } from 'web-base-lib'
 import bytes from 'bytes'
+import { extendedMethod } from '@/app/base'
 import { useI18n } from '@/app/i18n'
 
 //========================================================================
@@ -74,11 +75,7 @@ import { useI18n } from '@/app/i18n'
 //
 //========================================================================
 
-interface Props {
-  storageType: StorageType
-}
-
-interface StorageDirView extends Props {
+interface StorageDirView extends StorageDirView.Props {
   /**
    * 選択されているノードを設定します。
    * 選択ノードがディレクトリの場合、そのディレクトリの子ノード一覧が表示されます。
@@ -102,7 +99,7 @@ interface StorageDirTableRow {
   readonly type: string
   readonly label: string
   readonly id: string
-  readonly nodeType: string
+  readonly nodeType: StorageNodeType
   readonly name: string
   readonly dir: string
   readonly path: string
@@ -224,6 +221,14 @@ namespace StorageDirTableRow {
 }
 
 namespace StorageDirView {
+  export interface Props {
+    storageType: StorageType
+  }
+
+  export const props = {
+    storageType: { type: String, required: true },
+  }
+
   export const clazz = defineComponent({
     name: 'StorageDirView',
 
@@ -232,264 +237,257 @@ namespace StorageDirView {
       StorageNodePopupMenu: StorageNodePopupMenu.clazz,
     },
 
-    props: {
-      storageType: { type: String, required: true },
-    },
+    props,
 
-    setup(props: Readonly<Props>, ctx) {
-      //----------------------------------------------------------------------
-      //
-      //  Lifecycle hooks
-      //
-      //----------------------------------------------------------------------
+    setup: (props: Readonly<Props>, ctx) => setup(props, ctx),
+  })
 
-      onMounted(() => {
-        const labelCol = columns[0]
-        table.value!.sort(labelCol)
-      })
+  export function setup(props: Readonly<Props>, ctx: SetupContext) {
+    //----------------------------------------------------------------------
+    //
+    //  Lifecycle hooks
+    //
+    //----------------------------------------------------------------------
 
-      //----------------------------------------------------------------------
-      //
-      //  Variables
-      //
-      //----------------------------------------------------------------------
+    onMounted(() => {
+      const labelCol = columns.value[0]
+      table.value!.sort(labelCol)
+    })
 
-      const table = ref<StorageDirTable<StorageDirTableRow>>()
+    //----------------------------------------------------------------------
+    //
+    //  Variables
+    //
+    //----------------------------------------------------------------------
 
-      const pageLogic = StoragePageLogic.getInstance(props.storageType)
-      const { t } = useI18n()
+    const table = ref<StorageDirTable<StorageDirTableRow>>()
 
-      const state = reactive({
-        loading: false,
-        dirPath: null as string | null,
-        dirSelectedNodes: [] as StorageDirTableRow[],
-        dirChildNodes: [] as StorageDirTableRow[],
-      })
+    const pageLogic = StoragePageLogic.getInstance(props.storageType)
+    const { t } = useI18n()
 
-      const targetDir = computed(() => {
-        if (!state.dirPath) return null
-        return pageLogic.getStorageNode({ path: state.dirPath }) ?? null
-      })
+    const state = reactive({
+      loading: false,
+      dirPath: null as string | null,
+    })
 
-      const columns: QTableColumn[] = [
-        { name: 'label', align: 'left', label: String(t('storage.nodeDetail.name')), field: 'label', sortable: true },
-        { name: 'type', align: 'left', label: String(t('storage.nodeDetail.type')), field: 'type', sortable: true },
-        { name: 'size', align: 'right', label: String(t('storage.nodeDetail.size')), field: 'size', sortable: true },
-        { name: 'share', align: 'center', label: String(t('storage.nodeDetail.share')), field: 'share', sortable: true },
-        { name: 'updatedAt', align: 'left', label: String(t('storage.nodeDetail.updatedAt')), field: 'updatedAt', sortable: true },
-      ]
+    const dirSelectedNodes: Ref<StorageDirTableRow[]> = ref([])
 
-      const dirSelectedNodes = computed({
-        get: () => state.dirSelectedNodes,
-        set: value => (state.dirSelectedNodes = value),
-      })
+    const dirChildNodes: Ref<StorageDirTableRow[]> = ref([])
 
-      const dirChildNodes = computed(() => state.dirChildNodes)
+    const targetDir = computed(() => {
+      if (!state.dirPath) return null
+      return pageLogic.getStorageNode({ path: state.dirPath }) ?? null
+    })
 
-      //----------------------------------------------------------------------
-      //
-      //  Properties
-      //
-      //----------------------------------------------------------------------
+    const columns: Ref<QTableColumn[]> = ref([
+      { name: 'label', align: 'left', label: String(t('storage.nodeDetail.name')), field: 'label', sortable: true },
+      { name: 'type', align: 'left', label: String(t('storage.nodeDetail.type')), field: 'type', sortable: true },
+      { name: 'size', align: 'right', label: String(t('storage.nodeDetail.size')), field: 'size', sortable: true },
+      { name: 'share', align: 'center', label: String(t('storage.nodeDetail.share')), field: 'share', sortable: true },
+      { name: 'updatedAt', align: 'left', label: String(t('storage.nodeDetail.updatedAt')), field: 'updatedAt', sortable: true },
+    ])
 
-      const loading = computed({
-        get: () => state.loading,
-        set: value => (state.loading = value),
-      })
+    //----------------------------------------------------------------------
+    //
+    //  Properties
+    //
+    //----------------------------------------------------------------------
 
-      //----------------------------------------------------------------------
-      //
-      //  Methods
-      //
-      //----------------------------------------------------------------------
+    const loading = computed({
+      get: () => state.loading,
+      set: value => (state.loading = value),
+    })
 
-      const setSelectedNode: StorageDirView['setSelectedNode'] = selectedNodePath => {
-        const clear = () => {
-          state.dirPath = null
-          dirChildNodes.value.splice(0)
-          // 選択状態を初期化
-          table.value!.selected && table.value!.selected.splice(0)
-          // スクロール位置を先頭へ初期化
-          table.value!.setScrollTop(0)
-        }
+    //----------------------------------------------------------------------
+    //
+    //  Methods
+    //
+    //----------------------------------------------------------------------
 
-        // 選択ノードにnullが渡された場合、テーブルをクリアして終了
-        if (selectedNodePath === null) {
-          clear()
-          return
-        }
-
-        let dirPath!: string
-        // 選択ノードがルートノードの場合
-        if (!selectedNodePath) {
-          dirPath = selectedNodePath
-        }
-        // 選択ノードがルートノード配下のノードの場合
-        else {
-          const selectedNode = pageLogic.sgetStorageNode({ path: selectedNodePath })
-          dirPath = selectedNode.nodeType === StorageNodeType.Dir ? selectedNode.path : selectedNode.dir
-        }
-
-        // 前回と今回で対象となるディレクトリが異なる場合
-        if (state.dirPath !== dirPath) {
-          // テーブルをクリア
-          clear()
-        }
-
-        state.dirPath = dirPath
-
-        buildDirChildNodes(dirPath)
+    const setSelectedNode: StorageDirView['setSelectedNode'] = selectedNodePath => {
+      const clear = () => {
+        state.dirPath = null
+        dirChildNodes.value.splice(0)
+        // 選択状態を初期化
+        table.value!.selected && table.value!.selected.splice(0)
+        // スクロール位置を先頭へ初期化
+        table.value!.setScrollTop(0)
       }
 
-      //----------------------------------------------------------------------
-      //
-      //  Internal methods
-      //
-      //----------------------------------------------------------------------
+      // 選択ノードにnullが渡された場合、テーブルをクリアして終了
+      if (selectedNodePath === null) {
+        clear()
+        return
+      }
 
-      /**
-       * `StorageNode`を`StorageDirTableRow`へ変換します。
-       * @param node
-       */
-      function toTableRow(node: StorageNode): StorageDirTableRow {
-        return StorageDirTableRow.newInstance({
-          storageType: props.storageType,
-          node,
-          table: table.value!,
+      let dirPath!: string
+      // 選択ノードがルートノードの場合
+      if (!selectedNodePath) {
+        dirPath = selectedNodePath
+      }
+      // 選択ノードがルートノード配下のノードの場合
+      else {
+        const selectedNode = pageLogic.sgetStorageNode({ path: selectedNodePath })
+        dirPath = selectedNode.nodeType === StorageNodeType.Dir ? selectedNode.path : selectedNode.dir
+      }
+
+      // 前回と今回で対象となるディレクトリが異なる場合
+      if (state.dirPath !== dirPath) {
+        // テーブルをクリア
+        clear()
+      }
+
+      state.dirPath = dirPath
+
+      buildDirChildNodes(dirPath)
+    }
+
+    //----------------------------------------------------------------------
+    //
+    //  Internal methods
+    //
+    //----------------------------------------------------------------------
+
+    /**
+     * `StorageNode`を`StorageDirTableRow`へ変換します。
+     * @param node
+     */
+    function toTableRow(node: StorageNode): StorageDirTableRow {
+      return StorageDirTableRow.newInstance({
+        storageType: props.storageType,
+        node,
+        table: table.value!,
+      })
+    }
+
+    /**
+     * 子ノードをソートするための関数です。
+     * @param rows
+     * @param sortBy
+     * @param descending
+     */
+    const sortChildNodesMethod = extendedMethod<
+      (rows: StorageDirTableRow[], sortBy: 'label' | 'type' | 'size' | 'share' | 'updatedAt', descending: boolean) => StorageDirTableRow[]
+    >((rows, sortBy, descending) => {
+      const data = [...rows]
+
+      if (sortBy) {
+        data.sort((a, b) => {
+          const x = descending ? b : a
+          const y = descending ? a : b
+
+          if (sortBy === 'label') {
+            if (x.nodeType === StorageNodeType.Dir && y.nodeType === StorageNodeType.File) {
+              return -1
+            } else if (x.nodeType === StorageNodeType.File && y.nodeType === StorageNodeType.Dir) {
+              return 1
+            }
+            return x[sortBy] > y[sortBy] ? 1 : x[sortBy] < y[sortBy] ? -1 : 0
+          } else if (sortBy === 'updatedAt') {
+            return x.updatedAtNum - y.updatedAtNum
+          } else {
+            return x[sortBy] > y[sortBy] ? 1 : x[sortBy] < y[sortBy] ? -1 : 0
+          }
         })
       }
 
-      /**
-       * 子ノードをソートするための関数です。
-       * @param rows
-       * @param sortBy
-       * @param descending
-       */
-      function sortChildNodesMethod(
-        rows: StorageDirTableRow[],
-        sortBy: 'label' | 'type' | 'size' | 'share' | 'updatedAt',
-        descending: boolean
-      ): StorageDirTableRow[] {
-        const data = [...rows]
+      return data
+    })
 
-        if (sortBy) {
-          data.sort((a, b) => {
-            const x = descending ? b : a
-            const y = descending ? a : b
-
-            if (sortBy === 'label') {
-              if (x.nodeType === StorageNodeType.Dir && y.nodeType === StorageNodeType.File) {
-                return -1
-              } else if (x.nodeType === StorageNodeType.File && y.nodeType === StorageNodeType.Dir) {
-                return 1
-              }
-              return x[sortBy] > y[sortBy] ? 1 : x[sortBy] < y[sortBy] ? -1 : 0
-            } else if (sortBy === 'updatedAt') {
-              return x.updatedAtNum - y.updatedAtNum
-            } else {
-              return x[sortBy] > y[sortBy] ? 1 : x[sortBy] < y[sortBy] ? -1 : 0
-            }
-          })
-        }
-
-        return data
+    function buildDirChildNodes(dirPath: string): void {
+      // ロジックストアから最新の子ノードを取得
+      const latestChildNodes: StorageNode[] = []
+      const latestChildDict: { [path: string]: StorageNode } = {}
+      for (const child of pageLogic.getStorageChildren(dirPath)) {
+        latestChildNodes.push(child)
+        latestChildDict[child.path] = child
       }
 
-      function buildDirChildNodes(dirPath: string): void {
-        // ロジックストアから最新の子ノードを取得
-        const latestChildNodes: StorageNode[] = []
-        const latestChildDict: { [path: string]: StorageNode } = {}
-        for (const child of pageLogic.getStorageChildren(dirPath)) {
-          latestChildNodes.push(child)
-          latestChildDict[child.path] = child
-        }
+      const childDict = arrayToDict(dirChildNodes.value, 'path')
 
-        const childDict = arrayToDict(dirChildNodes.value, 'path')
-
-        // 最新データにはないがビューには存在するノードを削除
-        for (let i = 0; i < dirChildNodes.value.length; i++) {
-          const child = dirChildNodes.value[i]
-          const latestChild = latestChildDict[child.path]
-          if (!latestChild) {
-            // 最新データにはないビューノードを削除
-            dirChildNodes.value.splice(i--, 1)
-            delete childDict[child.path]
-            // 選択ノードを格納している配列から最新データにないビューノードを削除
-            if (table.value!.selected) {
-              const selectedIndex = table.value!.selected.findIndex((row: StorageDirTableRow) => {
-                return row.path === child.path
-              })
-              selectedIndex >= 0 && table.value!.selected.splice(selectedIndex, 1)
-            }
-          }
-        }
-
-        // 最新データをビューに反映
-        for (const latestChild of latestChildNodes) {
-          const child = childDict[latestChild.path]
-          if (child) {
-            child.populate(latestChild)
-          } else {
-            const row = toTableRow(latestChild)
-            dirChildNodes.value.push(row)
+      // 最新データにはないがビューには存在するノードを削除
+      for (let i = 0; i < dirChildNodes.value.length; i++) {
+        const child = dirChildNodes.value[i]
+        const latestChild = latestChildDict[child.path]
+        if (!latestChild) {
+          // 最新データにはないビューノードを削除
+          dirChildNodes.value.splice(i--, 1)
+          delete childDict[child.path]
+          // 選択ノードを格納している配列から最新データにないビューノードを削除
+          if (table.value!.selected) {
+            const selectedIndex = table.value!.selected.findIndex((row: StorageDirTableRow) => {
+              return row.path === child.path
+            })
+            selectedIndex >= 0 && table.value!.selected.splice(selectedIndex, 1)
           }
         }
       }
 
-      //----------------------------------------------------------------------
-      //
-      //  Event listeners
-      //
-      //----------------------------------------------------------------------
-
-      /**
-       * テーブル行のがクリックされた際のリスナです。
-       * @param row
-       */
-      function rowOnClick(row: StorageDirTableRow) {
-        ctx.emit('select', row.path)
+      // 最新データをビューに反映
+      for (const latestChild of latestChildNodes) {
+        const child = childDict[latestChild.path]
+        if (child) {
+          child.populate(latestChild)
+        } else {
+          const row = toTableRow(latestChild)
+          dirChildNodes.value.push(row)
+        }
       }
+    }
 
-      /**
-       * テーブル行の名称セルがクリックされた際のリスナです。
-       * @param row
-       * @param e
-       */
-      function nameCellOnClick(row: StorageDirTableRow, e: Event) {
-        e.stopImmediatePropagation()
-        ctx.emit('deep-select', row.path)
-      }
+    //----------------------------------------------------------------------
+    //
+    //  Event listeners
+    //
+    //----------------------------------------------------------------------
 
-      /**
-       * ポップアップメニューでアクションが選択された際のリスナです。
-       * @param e
-       */
-      function popupMenuOnNodeAction(e: StorageNodeActionEvent) {
-        ctx.emit('node-action', e)
-      }
+    /**
+     * テーブル行のがクリックされた際のリスナです。
+     * @param row
+     */
+    function rowOnClick(row: StorageDirTableRow) {
+      ctx.emit('select', row.path)
+    }
 
-      //----------------------------------------------------------------------
-      //
-      //  Result
-      //
-      //----------------------------------------------------------------------
+    /**
+     * テーブル行の名称セルがクリックされた際のリスナです。
+     * @param row
+     * @param e
+     */
+    function nameCellOnClick(row: StorageDirTableRow, e: Event) {
+      e.stopImmediatePropagation()
+      ctx.emit('deep-select', row.path)
+    }
 
-      return {
-        table,
-        state,
-        targetDir,
-        columns,
-        dirSelectedNodes,
-        dirChildNodes,
-        loading,
-        setSelectedNode,
-        sortChildNodesMethod,
-        rowOnClick,
-        nameCellOnClick,
-        popupMenuOnNodeAction,
-      }
-    },
-  })
+    /**
+     * ポップアップメニューでアクションが選択された際のリスナです。
+     * @param e
+     */
+    function popupMenuOnNodeAction(e: StorageNodeActionEvent) {
+      ctx.emit('node-action', e)
+    }
+
+    //----------------------------------------------------------------------
+    //
+    //  Result
+    //
+    //----------------------------------------------------------------------
+
+    return {
+      table,
+      state,
+      targetDir,
+      columns,
+      dirSelectedNodes,
+      dirChildNodes,
+      loading,
+      setSelectedNode,
+      sortChildNodesMethod,
+      rowOnClick,
+      nameCellOnClick,
+      popupMenuOnNodeAction,
+    }
+  }
 }
 
 //========================================================================
@@ -499,5 +497,5 @@ namespace StorageDirView {
 //========================================================================
 
 export default StorageDirView.clazz
-export { StorageDirView }
+export { StorageDirView, StorageDirTableRow }
 </script>

@@ -450,10 +450,11 @@ namespace StoragePageLogic {
       if (!isSignedIn.value) return
 
       // ツリービューにルートノードを追加
+      getTreeView().addNode(getRootTreeNode())
+      getRootTreeNode().setSelected(true, true)
       getRootTreeNode().open(false)
       getRootTreeNode().lazy = true
       getRootTreeNode().lazyLoadStatus = 'loading'
-      getTreeView().addNode(getRootTreeNode())
 
       // 引数ディレクトリとその上位ディレクトリのパス
       const dirPaths = splitHierarchicalPaths(dirPath)
@@ -1411,7 +1412,7 @@ namespace StoragePageLogic {
       lazy: false,
       lazyLoadStatus: 'none',
       sortFunc: StorageLogic.childrenSortFunc,
-      selected: true,
+      selected: false,
       id: '',
       nodeType: StorageNodeType.Dir,
       contentType: '',
