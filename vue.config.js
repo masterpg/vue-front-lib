@@ -111,6 +111,14 @@ module.exports = {
       // 参照: https://github.com/vuejs/vue-cli/blob/c76d2e691d8ea58b219394ca7799f50d873b8588/packages/%40vue/cli-service/lib/commands/build/resolveAppConfig.js#L7
       .after('copy')
       .use(CopyWebpackPlugin, [copyFiles])
+
+    // テキストファイルのインポート
+    config.module
+      .rule('raw')
+      .test(/\.txt|.md$/i)
+      .use('raw-loader')
+        .loader('raw-loader')
+        .end()
   },
 
   devServer: {
