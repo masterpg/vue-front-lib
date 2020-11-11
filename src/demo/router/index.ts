@@ -53,6 +53,22 @@ const img: RouteConfig & { getPath(): string } = {
   },
 }
 
+const markdown: RouteConfig & { getPath(): string } = {
+  path: '/demo/markdown',
+  component: () => import(/* webpackChunkName: "demo/views/markdown" */ '@/demo/views/markdown'),
+  getPath(): string {
+    return markdown.path
+  },
+}
+
+const markdownIt: RouteConfig & { getPath(): string } = {
+  path: '/demo/markdownIt',
+  component: () => import(/* webpackChunkName: "demo/views/markdown-it" */ '@/demo/views/markdown-it'),
+  getPath(): string {
+    return markdownIt.path
+  },
+}
+
 const fallback: RouteConfig = {
   path: '/demo/*',
   redirect: '/demo/home',
@@ -63,11 +79,11 @@ const router = new (class extends VueRouter {
     super({
       mode: 'history',
       base: process.env.BASE_URL,
-      routes: [home, abc, shop, tree, img, fallback],
+      routes: [home, abc, shop, tree, img, markdown, markdownIt, fallback],
     })
   }
 
-  readonly views = { home, abc, shop, tree, img, fallback }
+  readonly views = { home, abc, shop, tree, img, markdown, markdownIt, fallback }
 })()
 
 //========================================================================

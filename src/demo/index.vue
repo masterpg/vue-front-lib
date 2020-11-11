@@ -133,6 +133,14 @@ export default defineComponent({
           title: 'Img',
           path: router.views.img.getPath(),
         },
+        {
+          title: 'Markdown',
+          path: router.views.markdown.getPath(),
+        },
+        {
+          title: 'markdown-it',
+          path: router.views.markdownIt.getPath(),
+        },
       ] as { title: string; path: string }[],
 
       isSignedIn: logic.auth.isSignedIn,

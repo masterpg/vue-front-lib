@@ -32,6 +32,7 @@ export namespace quasar {
         QMenu: require('quasar').QMenu,
         QPage: require('quasar').QPage,
         QPageContainer: require('quasar').QPageContainer,
+        QResizeObserver: require('quasar').QResizeObserver,
         QRouteTab: require('quasar').QRouteTab,
         QScrollArea: require('quasar').QScrollArea,
         QSeparator: require('quasar').QSeparator,
