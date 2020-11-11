@@ -116,7 +116,7 @@ import anime from 'animejs'
 import { removeBothEndsSlash } from 'web-base-lib'
 import { useI18n } from '@/app/i18n'
 
-interface StorageFileDetailView extends Dialog<string[], boolean> {
+interface StorageFileDetailView extends Dialog<string[], boolean>, StorageFileDetailView.Props {
   /**
    * ビューに表示するファイルのパスを設定します。
    * @param filePath
@@ -124,11 +124,11 @@ interface StorageFileDetailView extends Dialog<string[], boolean> {
   setNodePath(filePath: string): void
 }
 
-interface Props {
-  storageType: StorageType
-}
-
 namespace StorageFileDetailView {
+  export interface Props {
+    storageType: StorageType
+  }
+
   export const clazz = defineComponent({
     name: 'StorageFileDetailView',
 

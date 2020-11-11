@@ -79,13 +79,13 @@ import { StorageTreeNodeData } from '@/app/views/base/storage/base'
 import _path from 'path'
 import { useI18n } from '@/app/i18n'
 
-interface StorageNodeMoveDialog extends Dialog<string[], string | undefined> {}
-
-interface Props {
-  storageType: StorageType
-}
+interface StorageNodeMoveDialog extends Dialog<string[], string | undefined>, StorageNodeMoveDialog.Props {}
 
 namespace StorageNodeMoveDialog {
+  export interface Props {
+    storageType: StorageType
+  }
+
   export const clazz = defineComponent({
     name: 'StorageNodeMoveDialog',
 

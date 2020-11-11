@@ -1,7 +1,7 @@
 <style lang="sass">
 // 以下CSSクラスの詳細は次を参考:
 //   https://quasar.dev/vue-components/table#Sticky-header%2Fcolumn
-.storage-dir-table__q-table
+.StorageDirTable__q-table
   height: 100%
 
   /* max height is important */
@@ -36,6 +36,7 @@
 <template>
   <q-table
     ref="table"
+    class="StorageDirTable StorageDirTable__q-table table"
     :data="data"
     :columns="columns"
     :sort-method="sortMethod"
@@ -49,7 +50,6 @@
     virtual-scroll
     :pagination.sync="pagination"
     :rows-per-page-options="[0]"
-    class="storage-dir-table__q-table table"
     @selection="onSelection"
   >
     <template v-slot:body="tr">
@@ -62,22 +62,22 @@
 import { LooseDictionary, QTable, QTableColumn } from 'quasar'
 import { computed, defineComponent, reactive, ref, watch } from '@vue/composition-api'
 
-interface Props<T = any> {
-  columns: QTableColumn[]
-  data: T[]
-  selected: T[]
-  syncSelected: T[]
-  loading: boolean
-  rowKey: string
-  sortMethod: (rows: T[], sortBy: string, descending: boolean) => T[]
-}
-
-interface StorageDirTable<T = any> extends Props<T> {
+interface StorageDirTable<T = any> extends StorageDirTable.Props<T> {
   sort(col: string | LooseDictionary): void
   setScrollTop(value: number): void
 }
 
 namespace StorageDirTable {
+  export interface Props<T = any> {
+    columns: QTableColumn[]
+    data: T[]
+    selected: T[]
+    syncSelected: T[]
+    loading: boolean
+    rowKey: string
+    sortMethod: (rows: T[], sortBy: string, descending: boolean) => T[]
+  }
+
   export const clazz = defineComponent({
     name: 'StorageDirTable',
 

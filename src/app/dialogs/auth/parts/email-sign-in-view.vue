@@ -88,12 +88,7 @@ import { Dialogs } from '@/app/dialogs'
 import isEmail from 'validator/lib/isEmail'
 import { useI18n } from '@/app/i18n'
 
-interface Props {
-  title: string
-  email: string | null
-  passwordReset: boolean
-  readonlyEmail: boolean
-}
+interface EmailSignInView extends EmailSignInView.Props {}
 
 type EmailSignInViewResult = {
   status: EmailSignInViewStatus
@@ -103,6 +98,13 @@ type EmailSignInViewResult = {
 type EmailSignInViewStatus = AuthStatus.WaitForEmailVerified | AuthStatus.WaitForEntry | AuthStatus.Available | 'passwordReset' | 'cancel'
 
 namespace EmailSignInView {
+  export interface Props {
+    title: string
+    email: string | null
+    passwordReset: boolean
+    readonlyEmail: boolean
+  }
+
   export const clazz = defineComponent({
     name: 'EmailSignInView',
 
@@ -113,7 +115,22 @@ namespace EmailSignInView {
       readonlyEmail: { type: Boolean, default: false },
     },
 
-    setup(props: Props, ctx) {
+    setup(props: Readonly<Props>, ctx) {
+      //----------------------------------------------------------------------
+      //
+      //  Lifecycle hooks
+      //
+      //----------------------------------------------------------------------
+
+      onMounted(() => {
+        state.email = props.email
+        if (props.readonlyEmail) {
+          passwordInput.value.focus()
+        } else {
+          emailInput.value.focus()
+        }
+      })
+
       //----------------------------------------------------------------------
       //
       //  Variables
@@ -137,21 +154,6 @@ namespace EmailSignInView {
       const isEmailError = computed(() => validateEmail(state.email))
       const isPasswordError = computed(() => validatePassword(state.password))
       const isError = computed(() => Boolean(state.errorMessage))
-
-      //----------------------------------------------------------------------
-      //
-      //  Lifecycle hooks
-      //
-      //----------------------------------------------------------------------
-
-      onMounted(() => {
-        state.email = props.email
-        if (props.readonlyEmail) {
-          passwordInput.value.focus()
-        } else {
-          emailInput.value.focus()
-        }
-      })
 
       //----------------------------------------------------------------------
       //

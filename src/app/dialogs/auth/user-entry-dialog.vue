@@ -1,8 +1,6 @@
 <style lang="sass" scoped>
 @import 'src/app/styles/app.variables'
 
-.UserEntryDialog
-
 .container
   width: 340px
   body.screen--lg &, body.screen--xl &, body.screen--md &
@@ -19,7 +17,7 @@
 </style>
 
 <template>
-  <q-dialog ref="dialog" v-model="opened" persistent class="UserEntryDialog">
+  <q-dialog ref="dialog" class="UserEntryDialog" v-model="opened" persistent>
     <!-- ユーザー情報ビュー -->
     <q-card class="container">
       <!-- タイトル -->
@@ -76,16 +74,16 @@ import { useI18n } from '@/app/i18n'
 
 interface UserEntryDialog extends Dialog<void, void> {}
 
-interface Props {}
-
 namespace UserEntryDialog {
+  export interface Props {}
+
   export const clazz = defineComponent({
     name: 'UserEntryDialog',
 
-    setup: (props: Props, ctx) => setup(props, ctx),
+    setup: (props: Readonly<Props>, ctx) => setup(props, ctx),
   })
 
-  export function setup(props: Props, ctx: SetupContext) {
+  export function setup(props: Readonly<Props>, ctx: SetupContext) {
     //----------------------------------------------------------------------
     //
     //  Variables

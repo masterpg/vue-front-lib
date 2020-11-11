@@ -1,11 +1,9 @@
 <style lang="sass" scoped>
 @import 'src/app/styles/app.variables'
-
-.SignUpDialog
 </style>
 
 <template>
-  <q-dialog ref="dialog" v-model="opened" persistent class="SignUpDialog">
+  <q-dialog ref="dialog" class="SignUpDialog" v-model="opened" persistent>
     <!-- プロバイダリストビュー -->
     <ProviderListView
       v-if="state.viewType === 'providerList'"
@@ -38,11 +36,11 @@ import { ProviderListView } from '@/app/dialogs/auth/parts/provider-list-view.vu
 import { QDialog } from 'quasar'
 import { useI18n } from '@/app/i18n'
 
-interface SignUpDialog extends Dialog<void, void> {}
-
-interface Props {}
+interface SignUpDialog extends Dialog<void, void>, SignUpDialog.Props {}
 
 namespace SignUpDialog {
+  export interface Props {}
+
   export const clazz = defineComponent({
     name: 'SignUpDialog',
 
@@ -52,10 +50,10 @@ namespace SignUpDialog {
       AuthMessageView: AuthMessageView.clazz,
     },
 
-    setup: (props: Props, ctx) => setup(props, ctx),
+    setup: (props: Readonly<Props>, ctx) => setup(props, ctx),
   })
 
-  export function setup(props: Props, ctx: SetupContext) {
+  export function setup(props: Readonly<Props>, ctx: SetupContext) {
     //----------------------------------------------------------------------
     //
     //  Variables

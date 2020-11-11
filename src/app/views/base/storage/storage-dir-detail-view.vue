@@ -105,7 +105,7 @@ import anime from 'animejs'
 import { removeBothEndsSlash } from 'web-base-lib'
 import { useI18n } from '@/app/i18n'
 
-interface StorageDirDetailView extends Dialog<string[], boolean> {
+interface StorageDirDetailView extends Dialog<string[], boolean>, StorageDirDetailView.Props {
   /**
    * ビューに表示するディレクトリのパスを設定します。
    * @param dirPath
@@ -113,11 +113,11 @@ interface StorageDirDetailView extends Dialog<string[], boolean> {
   setNodePath(dirPath: string): void
 }
 
-interface Props {
-  storageType: StorageType
-}
-
 namespace StorageDirDetailView {
+  export interface Props {
+    storageType: StorageType
+  }
+
   export const clazz = defineComponent({
     name: 'StorageDirDetailView',
 

@@ -39,17 +39,6 @@ namespace Img {
   export function setup(props: Readonly<Props>, ctx: SetupContext) {
     //----------------------------------------------------------------------
     //
-    //  Variables
-    //
-    //----------------------------------------------------------------------
-
-    const container = ref<HTMLElement>()
-    const el = container
-    const img = ref<HTMLImageElement>()
-    const spinnerContainer = ref<HTMLElement>()
-
-    //----------------------------------------------------------------------
-    //
     //  Lifecycle hooks
     //
     //----------------------------------------------------------------------
@@ -59,6 +48,17 @@ namespace Img {
       hAlignChanged(props.hAlign)
       vAlignChanged(props.vAlign)
     })
+
+    //----------------------------------------------------------------------
+    //
+    //  Variables
+    //
+    //----------------------------------------------------------------------
+
+    const container = ref<HTMLElement>()
+    const el = container
+    const img = ref<HTMLImageElement>()
+    const spinnerContainer = ref<HTMLElement>()
 
     //----------------------------------------------------------------------
     //

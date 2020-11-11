@@ -85,9 +85,7 @@ import { Dialogs } from '@/app/dialogs'
 import isEmail from 'validator/lib/isEmail'
 import { useI18n } from '@/app/i18n'
 
-interface Props {
-  title: string
-}
+interface EmailSignUpView extends EmailSignUpView.Props {}
 
 type EmailSignUpViewResult = {
   status: EmailSignUpViewStatus
@@ -97,6 +95,10 @@ type EmailSignUpViewResult = {
 type EmailSignUpViewStatus = AuthStatus.WaitForEmailVerified | 'cancel'
 
 namespace EmailSignUpView {
+  export interface Props {
+    title: string
+  }
+
   export const clazz = defineComponent({
     name: 'EmailSignUpView',
 
@@ -104,7 +106,18 @@ namespace EmailSignUpView {
       title: { type: String, required: true },
     },
 
-    setup(props: Props, ctx) {
+    setup(props: Readonly<Props>, ctx) {
+      //----------------------------------------------------------------------
+      //
+      //  Lifecycle hooks
+      //
+      //----------------------------------------------------------------------
+
+      onMounted(() => {
+        clear()
+        emailInput.value.focus()
+      })
+
       //----------------------------------------------------------------------
       //
       //  Variables
@@ -128,17 +141,6 @@ namespace EmailSignUpView {
       const isEmailError = computed(() => validateEmail(state.email))
       const isPasswordError = computed(() => validatePassword(state.password))
       const isError = computed(() => Boolean(state.errorMessage))
-
-      //----------------------------------------------------------------------
-      //
-      //  Lifecycle hooks
-      //
-      //----------------------------------------------------------------------
-
-      onMounted(() => {
-        clear()
-        emailInput.value.focus()
-      })
 
       //----------------------------------------------------------------------
       //

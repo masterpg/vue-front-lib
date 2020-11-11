@@ -1,8 +1,6 @@
 <style lang="sass" scoped>
 @import 'src/app/styles/app.variables'
 
-.UserDeleteDialog
-
 .container
   width: 340px
   body.screen--lg &, body.screen--xl &, body.screen--md &
@@ -19,7 +17,7 @@
 </style>
 
 <template>
-  <q-dialog ref="dialog" v-model="opened" persistent class="UserDeleteDialog">
+  <q-dialog ref="dialog" class="UserDeleteDialog" v-model="opened" persistent>
     <!--
       アカウント削除ビュー
     -->
@@ -98,9 +96,9 @@ import { useI18n } from '@/app/i18n'
 
 interface UserDeleteDialog extends Dialog<void, void> {}
 
-interface Props {}
-
 namespace UserDeleteDialog {
+  export interface Props {}
+
   export const clazz = defineComponent({
     name: 'UserDeleteDialog',
 
@@ -109,10 +107,10 @@ namespace UserDeleteDialog {
       EmailSignInView: EmailSignInView.clazz,
     },
 
-    setup: (props: Props, ctx) => setup(props, ctx),
+    setup: (props: Readonly<Props>, ctx) => setup(props, ctx),
   })
 
-  export function setup(props: Props, ctx: SetupContext) {
+  export function setup(props: Readonly<Props>, ctx: SetupContext) {
     //----------------------------------------------------------------------
     //
     //  Variables

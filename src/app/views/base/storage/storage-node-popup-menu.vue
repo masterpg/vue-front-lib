@@ -28,6 +28,8 @@ import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 //
 //========================================================================
 
+interface StorageNodePopupMenu extends StorageNodePopupMenu.Props {}
+
 interface Node {
   path: string
   nodeType: StorageNodeType
@@ -38,15 +40,6 @@ type StorageNodeActionType = _StorageNodeActionType | 'separator'
 
 class StorageNodeActionEvent extends _StorageNodeActionEvent<StorageNodeActionType> {}
 
-interface Props {
-  storageType: StorageType
-  node: Node
-  selectedNodes: Node[] | null
-  isRoot: boolean
-  disabled: boolean
-  contextMenu: boolean
-}
-
 //========================================================================
 //
 //  Implementation
@@ -54,6 +47,15 @@ interface Props {
 //========================================================================
 
 namespace StorageNodePopupMenu {
+  export interface Props {
+    storageType: StorageType
+    node: Node
+    selectedNodes: Node[] | null
+    isRoot: boolean
+    disabled: boolean
+    contextMenu: boolean
+  }
+
   export const clazz = defineComponent({
     name: 'StorageNodePopupMenu',
 
@@ -66,7 +68,7 @@ namespace StorageNodePopupMenu {
       contextMenu: { type: Boolean, default: false },
     },
 
-    setup(props: Props, ctx) {
+    setup(props: Readonly<Props>, ctx) {
       //----------------------------------------------------------------------
       //
       //  Variables

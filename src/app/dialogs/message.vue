@@ -1,8 +1,6 @@
 <style lang="sass" scoped>
 @import 'src/app/styles/app.variables'
 
-.MessageDialog
-
 .container
   min-width: 300px
   body.screen--lg &, body.screen--xl &, body.screen--md &
@@ -18,7 +16,7 @@
 </style>
 
 <template>
-  <q-dialog ref="dialog" v-model="opened" class="MessageDialog" :persistent="params.persistent" @hide="close(false)">
+  <q-dialog ref="dialog" class="MessageDialog" v-model="opened" :persistent="params.persistent" @hide="close(false)">
     <q-card class="container">
       <!-- タイトル -->
       <q-card-section v-if="Boolean(params.title)">
@@ -48,17 +46,17 @@ import { QDialog } from 'quasar'
 import merge from 'lodash/merge'
 import { useI18n } from '@/app/i18n'
 
-interface MessageDialog extends Dialog<Props | void, boolean>, Props {}
-
-interface Props {
-  value?: boolean
-  type?: 'alert' | 'confirm'
-  title?: string
-  message?: string
-  persistent?: boolean
-}
+interface MessageDialog extends Dialog<MessageDialog.Props | void, boolean>, MessageDialog.Props {}
 
 namespace MessageDialog {
+  export interface Props {
+    value?: boolean
+    type?: 'alert' | 'confirm'
+    title?: string
+    message?: string
+    persistent?: boolean
+  }
+
   export const clazz = defineComponent({
     name: 'MessageDialog',
 
@@ -70,7 +68,7 @@ namespace MessageDialog {
       persistent: { type: Boolean, default: false },
     },
 
-    setup: (props: Props, ctx) => setup(props, ctx),
+    setup: (props: Readonly<Props>, ctx) => setup(props, ctx),
   })
 
   export function setup(props: Readonly<Props>, ctx: SetupContext) {

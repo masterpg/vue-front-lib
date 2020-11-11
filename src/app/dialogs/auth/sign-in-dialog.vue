@@ -5,7 +5,7 @@
 </style>
 
 <template>
-  <q-dialog ref="dialog" v-model="opened" persistent class="SignInDialog">
+  <q-dialog ref="dialog" class="SignInDialog" v-model="opened" persistent>
     <!-- プロバイダリストビュー -->
     <ProviderListView
       v-if="state.viewType === 'providerList'"
@@ -45,9 +45,9 @@ import { useI18n } from '@/app/i18n'
 
 interface SignInDialog extends Dialog<void, void> {}
 
-interface Props {}
-
 namespace SignInDialog {
+  export interface Props {}
+
   export const clazz = defineComponent({
     name: 'SignInDialog',
 
@@ -58,10 +58,10 @@ namespace SignInDialog {
       AuthMessageView: AuthMessageView.clazz,
     },
 
-    setup: (props: Props, ctx) => setup(props, ctx),
+    setup: (props: Readonly<Props>, ctx) => setup(props, ctx),
   })
 
-  export function setup(props: Props, ctx: SetupContext) {
+  export function setup(props: Readonly<Props>, ctx: SetupContext) {
     //----------------------------------------------------------------------
     //
     //  Variables

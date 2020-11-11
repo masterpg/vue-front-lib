@@ -31,11 +31,13 @@
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api'
 
-interface Props {
-  title: string
-}
+interface AuthMessageView extends AuthMessageView.Props {}
 
 namespace AuthMessageView {
+  export interface Props {
+    title: string
+  }
+
   export const clazz = defineComponent({
     name: 'AuthMessageView',
 
@@ -43,7 +45,7 @@ namespace AuthMessageView {
       title: { type: String, required: true },
     },
 
-    setup(props: Props, ctx) {},
+    setup(props: Readonly<Props>, ctx) {},
   })
 }
 

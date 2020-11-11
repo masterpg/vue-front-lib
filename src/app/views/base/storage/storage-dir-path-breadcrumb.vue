@@ -65,10 +65,6 @@ import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popu
 import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import { splitHierarchicalPaths } from 'web-base-lib'
 
-interface Props {
-  storageType: StorageType
-}
-
 interface PathBlock {
   label: string
   path: string
@@ -77,7 +73,7 @@ interface PathBlock {
   isRoot: boolean
 }
 
-interface StorageDirPathBreadcrumb extends Props {
+interface StorageDirPathBreadcrumb extends StorageDirPathBreadcrumb.Props {
   /**
    * 選択されているノードを設定します。
    * @param selectedNodePath
@@ -86,6 +82,10 @@ interface StorageDirPathBreadcrumb extends Props {
 }
 
 namespace StorageDirPathBreadcrumb {
+  export interface Props {
+    storageType: StorageType
+  }
+
   export const clazz = defineComponent({
     name: 'StorageDirPathBreadcrumb',
 

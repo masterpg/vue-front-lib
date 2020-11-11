@@ -3,7 +3,7 @@
 </style>
 
 <template>
-  <q-icon :color="color" :size="size">
+  <q-icon class="LoadingSpinner" :color="color" :size="size">
     <svg
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
@@ -34,14 +34,14 @@
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api'
 
-interface Props {
-  size: string
-  color: string
-}
-
-interface LoadingSpinner extends Props {}
+interface LoadingSpinner extends LoadingSpinner.Props {}
 
 namespace LoadingSpinner {
+  export interface Props {
+    size: string
+    color: string
+  }
+
   export const clazz = defineComponent({
     name: 'LoadingSpinner',
 

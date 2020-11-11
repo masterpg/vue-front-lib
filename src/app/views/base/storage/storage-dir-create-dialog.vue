@@ -48,7 +48,7 @@ import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import _path from 'path'
 import { useI18n } from '@/app/i18n'
 
-interface StorageDirCreateDialog extends Dialog<DialogParams, DialogResult | undefined> {}
+interface StorageDirCreateDialog extends Dialog<DialogParams, DialogResult | undefined>, StorageDirCreateDialog.Props {}
 
 interface DialogParams {
   parentPath: string
@@ -60,11 +60,11 @@ interface DialogResult {
   name: string
 }
 
-interface Props {
-  storageType: StorageType
-}
-
 namespace StorageDirCreateDialog {
+  export interface Props {
+    storageType: StorageType
+  }
+
   export const clazz = defineComponent({
     name: 'StorageDirCreateDialog',
 

@@ -1,8 +1,6 @@
 <style lang="sass" scoped>
 @import 'src/app/styles/app.variables'
 
-.ProviderListView
-
 .sign-in-button
   width: 280px
   height: 40px
@@ -91,13 +89,15 @@ import { computed, defineComponent } from '@vue/composition-api'
 import { AuthProviderType } from '@/app/logic'
 import { useI18n } from '@/app/i18n'
 
-interface Props {
-  title: string
-  type: 'signIn' | 'signUp'
-  visibleProviders: AuthProviderType[]
-}
+interface ProviderListView extends ProviderListView.Props {}
 
 namespace ProviderListView {
+  export interface Props {
+    title: string
+    type: 'signIn' | 'signUp'
+    visibleProviders: AuthProviderType[]
+  }
+
   export const clazz = defineComponent({
     name: 'ProviderListView',
 
@@ -110,7 +110,7 @@ namespace ProviderListView {
       },
     },
 
-    setup(props: Props, ctx) {
+    setup(props: Readonly<Props>, ctx) {
       //----------------------------------------------------------------------
       //
       //  Variables

@@ -3,7 +3,7 @@
 </style>
 
 <template>
-  <div class="layout horizontal center">
+  <div class="CustomCheckbox  layout horizontal center">
     <span class="app-mr-4">CustomCheckbox:</span>
     <input type="checkbox" v-model="state.inputChecked" />
   </div>
@@ -11,10 +11,6 @@
 
 <script lang="ts">
 import { defineComponent, reactive, watch } from '@vue/composition-api'
-
-interface Props {
-  checked: boolean
-}
 
 /**
  * ■ v-modelを使ったコンポーネントのカスタマイズ
@@ -31,7 +27,13 @@ interface Props {
  * ・プロパティ名: 'checked'
  * ・イベント名: 'change'
  */
+interface CustomCheckbox extends CustomCheckbox.Props {}
+
 namespace CustomCheckbox {
+  export interface Props {
+    checked: boolean
+  }
+
   export const clazz = defineComponent({
     name: 'CustomCheckbox',
 
@@ -44,7 +46,7 @@ namespace CustomCheckbox {
       checked: { type: Boolean, default: false },
     },
 
-    setup(props: Props, context) {
+    setup(props: Readonly<Props>, context) {
       const state = reactive({
         inputChecked: props.checked,
       })

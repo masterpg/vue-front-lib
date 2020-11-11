@@ -1,8 +1,6 @@
 <style lang="sass" scoped>
 @import 'src/app/styles/app.variables'
 
-.GreetMessage
-
 .title
   @extend %text-subtitle1
   font-weight: map_get($text-weights, "medium")
@@ -31,16 +29,16 @@ import { Dialogs } from '@/app/dialogs'
 import { injectLogic } from '@/app/logic'
 import { useI18n } from '@/demo/i18n'
 
-interface Props {
-  message: string
-}
-
-interface GreetMessage extends Vue, Readonly<Props> {
+interface GreetMessage extends Vue, GreetMessage.Props {
   readonly times: number
   greet: () => string
 }
 
 namespace GreetMessage {
+  export interface Props {
+    message: string
+  }
+
   export const clazz = defineComponent({
     name: 'GreetMessage',
 
@@ -48,7 +46,7 @@ namespace GreetMessage {
       message: { type: String, required: true },
     },
 
-    setup(props) {
+    setup(props: Readonly<Props>) {
       //----------------------------------------------------------------------
       //
       //  Variables

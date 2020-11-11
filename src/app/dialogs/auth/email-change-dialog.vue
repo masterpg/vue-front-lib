@@ -20,7 +20,7 @@
 </style>
 
 <template>
-  <q-dialog ref="dialog" v-model="opened" persistent class="EmailChangeDialog">
+  <q-dialog ref="dialog" class="EmailChangeDialog" v-model="opened" persistent>
     <!--
       サインインビュー
     -->
@@ -104,9 +104,9 @@ import { useI18n } from '@/app/i18n'
 
 interface EmailChangeDialog extends Dialog<void, void> {}
 
-interface Props {}
-
 namespace EmailChangeDialog {
+  export interface Props {}
+
   export const clazz = defineComponent({
     name: 'EmailChangeDialog',
 
@@ -115,10 +115,10 @@ namespace EmailChangeDialog {
       AuthMessageView: AuthMessageView.clazz,
     },
 
-    setup: (props: Props, ctx) => setup(props, ctx),
+    setup: (props: Readonly<Props>, ctx) => setup(props, ctx),
   })
 
-  export function setup(props: Props, ctx: SetupContext) {
+  export function setup(props: Readonly<Props>, ctx: SetupContext) {
     //----------------------------------------------------------------------
     //
     //  Variables

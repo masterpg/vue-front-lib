@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="Dialogs">
     <MessageDialog ref="messageDialog" />
     <SignInDialog ref="signInDialog" />
     <SignUpDialog ref="signUpDialog" />
@@ -23,7 +23,7 @@ import { VueRouter } from 'vue-router/types/router'
 //
 //========================================================================
 
-interface Dialogs {
+interface Dialogs extends Dialogs.Props {
   getQuery(): { dialogName: DialogNames; dialogParams?: any } | undefined
   clearQuery(): void
   readonly message: { open: MessageDialog['open'] }
@@ -36,8 +36,6 @@ interface Dialogs {
 
 type DialogNames = 'message' | 'signIn' | 'signUp' | 'emailChange' | 'userDelete' | 'userEntry'
 
-interface Props {}
-
 //========================================================================
 //
 //  Implementation
@@ -45,6 +43,8 @@ interface Props {}
 //========================================================================
 
 namespace Dialogs {
+  export interface Props {}
+
   //--------------------------------------------------
   //  Component definition
   //--------------------------------------------------
@@ -61,7 +61,17 @@ namespace Dialogs {
       UserEntryDialog: UserEntryDialog.clazz,
     },
 
-    setup: (props: Props, ctx) => {
+    setup: (props: Readonly<Props>, ctx) => {
+      //----------------------------------------------------------------------
+      //
+      //  Lifecycle hooks
+      //
+      //----------------------------------------------------------------------
+
+      onMounted(() => {
+        openDialogByCurrentRoute()
+      })
+
       //----------------------------------------------------------------------
       //
       //  Variables
@@ -85,16 +95,6 @@ namespace Dialogs {
         userDelete: userDeleteDialog,
         userEntry: userEntryDialog,
       }
-
-      //----------------------------------------------------------------------
-      //
-      //  Lifecycle hooks
-      //
-      //----------------------------------------------------------------------
-
-      onMounted(() => {
-        openDialogByCurrentRoute()
-      })
 
       //----------------------------------------------------------------------
       //

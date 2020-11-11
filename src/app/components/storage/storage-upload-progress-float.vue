@@ -77,7 +77,7 @@ import { StorageType, injectLogic } from '@/app/logic'
 import { computed, defineComponent, reactive, ref, watch } from '@vue/composition-api'
 import { useI18n } from '@/app/i18n'
 
-interface StorageUploadProgressFloat {
+interface StorageUploadProgressFloat extends StorageUploadProgressFloat.Props {
   /**
    * OSのファイル選択ダイアログを表示します。
    * @param uploadDirPath
@@ -109,7 +109,7 @@ namespace StorageUploadProgressFloat {
       storageType: { type: String, required: true },
     },
 
-    setup(props: Props, ctx) {
+    setup(props: Readonly<Props>, ctx) {
       //----------------------------------------------------------------------
       //
       //  Variables

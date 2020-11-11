@@ -79,17 +79,17 @@ import { GreetMessage } from '@/demo/views/abc/greet-message.vue'
 import { injectLogic } from '@/app/logic'
 import { useI18n } from '@/demo/i18n'
 
-interface Props {
-  propA: string
-  propB: string
-}
-
 interface Post {
   message: string
   times: number
 }
 
 namespace AbcPage {
+  export interface Props {
+    propA: string
+    propB: string
+  }
+
   export const clazz = defineComponent({
     name: 'AbcPage',
 
@@ -104,7 +104,17 @@ namespace AbcPage {
       propB: { type: String, default: 'prop value B' },
     },
 
-    setup(props: Props, context) {
+    setup(props: Readonly<Props>, context) {
+      //----------------------------------------------------------------------
+      //
+      //  Lifecycle hooks
+      //
+      //----------------------------------------------------------------------
+
+      onMounted(() => {
+        state.message = 'onMounted'
+      })
+
       //----------------------------------------------------------------------
       //
       //  Variables
@@ -143,16 +153,6 @@ namespace AbcPage {
       const isSignIn = logic.auth.isSignedIn
 
       const greetTimes = computed(() => greetMessage.value?.times)
-
-      //----------------------------------------------------------------------
-      //
-      //  Lifecycle hooks
-      //
-      //----------------------------------------------------------------------
-
-      onMounted(() => {
-        state.message = 'onMounted'
-      })
 
       //----------------------------------------------------------------------
       //

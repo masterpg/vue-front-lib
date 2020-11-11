@@ -6,17 +6,13 @@
 </style>
 
 <template>
-  <div>
+  <div class="CustomInput">
     <q-input v-model="state.inputValue" class="input" label="CustomInput Value" dense />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, reactive, watch } from '@vue/composition-api'
-
-interface Props {
-  value: string
-}
 
 /**
  * ■ コンポーネントでv-modelを使う
@@ -26,7 +22,13 @@ interface Props {
  * ・`value`プロパティの値は直接変更できない。例: props.value = 'hoge'
  * ・`value`プロパティの値を変更するには`input`イベントに新しい値を設定してイベントを発火する必要がある。
  */
+interface CustomInput extends CustomInput.Props {}
+
 namespace CustomInput {
+  export interface Props {
+    value: string
+  }
+
   export const clazz = defineComponent({
     name: 'CustomInput',
 
@@ -34,7 +36,7 @@ namespace CustomInput {
       value: { type: String, default: '' },
     },
 
-    setup(props: Props, context) {
+    setup(props: Readonly<Props>, context) {
       const state = reactive({
         inputValue: '',
       })

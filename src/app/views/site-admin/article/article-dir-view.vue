@@ -71,6 +71,8 @@ import { defineComponent } from '@vue/composition-api'
 import { useConfig } from '@/app/config'
 import { useI18n } from '@/app/i18n'
 
+interface ArticleDirView extends ArticleDirView.Props {}
+
 namespace ArticleDirView {
   export interface Props extends StorageDirView.Props {}
 

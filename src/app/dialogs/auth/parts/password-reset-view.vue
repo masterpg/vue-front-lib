@@ -72,13 +72,25 @@ import { injectLogic } from '@/app/logic'
 import isEmail from 'validator/lib/isEmail'
 import { useI18n } from '@/app/i18n'
 
-interface Props {}
+interface PasswordResetView extends PasswordResetView.Props {}
 
 namespace PasswordResetView {
+  export interface Props {}
+
   export const clazz = defineComponent({
     name: 'PasswordResetView',
 
-    setup(props: Props, ctx) {
+    setup(props: Readonly<Props>, ctx) {
+      //----------------------------------------------------------------------
+      //
+      //  Lifecycle hooks
+      //
+      //----------------------------------------------------------------------
+
+      onMounted(() => {
+        emailInput.value.focus()
+      })
+
       //----------------------------------------------------------------------
       //
       //  Variables
@@ -99,16 +111,6 @@ namespace PasswordResetView {
 
       const isEmailError = computed(() => validateEmail(state.email))
       const isError = computed(() => Boolean(state.errorMessage))
-
-      //----------------------------------------------------------------------
-      //
-      //  Lifecycle hooks
-      //
-      //----------------------------------------------------------------------
-
-      onMounted(() => {
-        emailInput.value.focus()
-      })
 
       //----------------------------------------------------------------------
       //

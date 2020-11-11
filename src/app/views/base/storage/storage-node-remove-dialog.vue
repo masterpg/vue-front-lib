@@ -43,13 +43,13 @@ import { QDialog } from 'quasar'
 import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import { useI18n } from '@/app/i18n'
 
-interface StorageNodeRemoveDialog extends Dialog<string[], boolean> {}
-
-interface Props {
-  storageType: StorageType
-}
+interface StorageNodeRemoveDialog extends Dialog<string[], boolean>, StorageNodeRemoveDialog.Props {}
 
 namespace StorageNodeRemoveDialog {
+  export interface Props {
+    storageType: StorageType
+  }
+
   export const clazz = defineComponent({
     name: 'StorageNodeRemoveDialog',
 

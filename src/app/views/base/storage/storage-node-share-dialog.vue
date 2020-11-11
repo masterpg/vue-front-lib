@@ -77,13 +77,13 @@ import { QDialog } from 'quasar'
 import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import { useI18n } from '@/app/i18n'
 
-interface StorageNodeShareDialog extends Dialog<string[], StorageNodeShareSettings | undefined> {}
-
-interface Props {
-  storageType: StorageType
-}
+interface StorageNodeShareDialog extends Dialog<string[], StorageNodeShareSettings | undefined>, StorageNodeShareDialog.Props {}
 
 namespace StorageNodeShareDialog {
+  export interface Props {
+    storageType: StorageType
+  }
+
   export const clazz = defineComponent({
     name: 'StorageNodeShareDialog',
 

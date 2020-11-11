@@ -58,13 +58,13 @@ import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import _path from 'path'
 import { useI18n } from '@/app/i18n'
 
-interface StorageNodeRenameDialog extends Dialog<string, string | undefined> {}
-
-interface Props {
-  storageType: StorageType
-}
+interface StorageNodeRenameDialog extends Dialog<string, string | undefined>, StorageNodeRenameDialog.Props {}
 
 namespace StorageNodeRenameDialog {
+  export interface Props {
+    storageType: StorageType
+  }
+
   export const clazz = defineComponent({
     name: 'StorageNodeRenameDialog',
 

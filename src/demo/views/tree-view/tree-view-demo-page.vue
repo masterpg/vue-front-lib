@@ -74,38 +74,6 @@ namespace TreeViewDemoPage {
     setup(props, context) {
       //----------------------------------------------------------------------
       //
-      //  Variables
-      //
-      //----------------------------------------------------------------------
-
-      const treeView = ref<TreeView<TreeCheckboxNode, TreeCheckboxNodeData>>()
-
-      const state = reactive({
-        editedInput: {
-          nodeValue: '',
-          nodeLabel: '',
-        },
-
-        addedInput: {
-          nodeValue: 'node2-1',
-          nodeLabel: 'node2-1',
-          parentValue: 'node2',
-          insertIndex: null,
-        },
-
-        removedInput: {
-          nodeValue: '',
-        },
-
-        movedInput: {
-          nodeValue: '',
-          parentValue: '',
-          insertIndex: null,
-        },
-      })
-
-      //----------------------------------------------------------------------
-      //
       //  Lifecycle hooks
       //
       //----------------------------------------------------------------------
@@ -160,6 +128,38 @@ namespace TreeViewDemoPage {
           ],
           { nodeClass: TreeCheckboxNode.clazz }
         )
+      })
+
+      //----------------------------------------------------------------------
+      //
+      //  Variables
+      //
+      //----------------------------------------------------------------------
+
+      const treeView = ref<TreeView<TreeCheckboxNode, TreeCheckboxNodeData>>()
+
+      const state = reactive({
+        editedInput: {
+          nodeValue: '',
+          nodeLabel: '',
+        },
+
+        addedInput: {
+          nodeValue: 'node2-1',
+          nodeLabel: 'node2-1',
+          parentValue: 'node2',
+          insertIndex: null,
+        },
+
+        removedInput: {
+          nodeValue: '',
+        },
+
+        movedInput: {
+          nodeValue: '',
+          parentValue: '',
+          insertIndex: null,
+        },
       })
 
       //----------------------------------------------------------------------
