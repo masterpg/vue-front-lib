@@ -851,24 +851,25 @@ namespace TreeNode {
     }
 
     /**
-     * selectedの設定を行います。
-     * @param value selectedの設定値を指定
+     * 選択状態の設定を行います。
+     * @param selected
      * @param options
      * <ul>
      *   <li>initializing 初期化中か否かを指定</li>
      *   <li>silent 選択イベントを発火したくない場合はtrueを指定</li>
      * </ul>
      */
-    function setSelectedImpl(value: boolean, options: { initializing?: boolean; silent?: boolean } = {}): void {
+    function setSelectedImpl(selected: boolean, options: { initializing?: boolean; silent?: boolean } = {}): void {
       const initializing = typeof options.initializing === 'boolean' ? options.initializing : false
       const silent = typeof options.silent === 'boolean' ? options.silent : false
-      const changed = nodeData.value.selected !== value
+      const changed = nodeData.value.selected !== selected
+      const oldNode = getTreeView()?.selectedNode
 
       // 選択不可の場合
       if (unselectable.value) {
         // 選択解除に変更された場合
         // ※選択不可ノードを選択状態へ変更しようとしてもこのブロックには入らない
-        if (changed && !value) {
+        if (changed && !selected) {
           nodeData.value.selected = false
           !initializing && util.dispatchSelectChange(self, silent)
         }
@@ -877,30 +878,31 @@ namespace TreeNode {
       else {
         // 選択状態が変更された場合
         if (changed) {
+          function onChanged(): void {
+            // 自ノードが選択状態へ変更されるので、古い選択ノードの選択は解除
+            !initializing && selected && oldNode?.setSelected(false, silent)
+
+            nodeData.value.selected = selected
+            // select-changeイベントを発火
+            !initializing && util.dispatchSelectChange(self, silent)
+            // 自ノードが選択状態へ変更される場合に限り、selectイベントを発火
+            !initializing && selected && util.dispatchSelect(self, oldNode, silent)
+          }
+
           // 遅延ロードが必要な場合
           // ※遅延ロードが指定され、かつまだロードが開始されていない場合
           if (lazy.value && lazyLoadStatus.value === 'none') {
-            startLazyLoad(() => {
-              nodeData.value.selected = value
-              // ①select-change
-              // > ノードが選択された場合:
-              // >   このイベントをTreeViewが受け取り、そこでノード選択が｢再度｣行われ、③selectが発火される
-              !initializing && util.dispatchSelectChange(self, silent)
-            })
+            startLazyLoad(onChanged)
           }
           // 遅延ロードの必要がない場合
           else {
-            nodeData.value.selected = value
-            // ②select-change
-            // > ノードが選択された場合:
-            // >   このイベントをTreeViewが受け取り、そこでノード選択が｢再度｣行われ、③selectが発火される
-            !initializing && util.dispatchSelectChange(self, silent)
+            onChanged()
           }
         }
         // 選択状態が変更されなかった場合
         else {
-          // ③select
-          value && !initializing && util.dispatchSelect(self, silent)
+          // 自ノードが選択状態へ変更される場合に限り、selectイベントを発火
+          !initializing && selected && util.dispatchSelect(self, oldNode, silent)
         }
       }
     }

@@ -9,6 +9,7 @@ import {
   TreeViewImpl,
   TreeViewLazyLoadEvent,
   TreeViewLazyLoadStatus,
+  TreeViewSelectEvent,
 } from '@/app/components/tree-view'
 import { Wrapper, mount } from '@vue/test-utils'
 import { cloneDeep, merge } from 'lodash'
@@ -682,7 +683,6 @@ describe('TreeView', () => {
       expect(selectChangeEmitted.length).toBe(1)
       expect(selectChangeEvent.node).toBe(node1_1_1)
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(treeView.selectedNode).toBeNull()
@@ -711,7 +711,6 @@ describe('TreeView', () => {
       expect(selectChangeEmitted.length).toBe(1)
       expect(selectChangeEvent.node).toBe(node1_1_1)
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(treeView.selectedNode).toBeNull()
@@ -813,6 +812,7 @@ describe('TreeView', () => {
 
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBeTruthy()
+      expect(treeView.selectedNode).toBe(node1_1_1)
       await clearEmitted(wrapper)
 
       treeView.selectedNode = node1_1_1
@@ -821,16 +821,36 @@ describe('TreeView', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       const selectEmitted = wrapper.emitted('select')!
-      const selectEvent: TreeViewEvent = selectEmitted[0][0]
+      const selectEvent: TreeViewSelectEvent = selectEmitted[0][0]
       expect(selectEmitted.length).toBe(1)
       expect(selectEvent.node).toBe(node1_1_1)
+      expect(selectEvent.oldNode).toBe(node1_1_1)
       // ノードの選択状態を検証
       expect(treeView.selectedNode).toBe(node1_1_1)
       expect(node1_1_1.selected).toBeTruthy()
 
       verifyTreeView(treeView)
+    })
+
+    it('aaa', async () => {
+      const wrapper = mount<TreeViewImpl>(TreeView.clazz)
+      const treeView = wrapper.vm
+      treeView.buildTree([
+        {
+          label: 'Node1',
+          value: 'node1',
+          opened: true,
+          selected: false,
+          children: [],
+        },
+      ])
+
+      const node1 = treeView.getNode('node1')!
+      node1.selected = true
+
+      const actual = treeView.selectedNode!
+      expect(actual.value).toBe('node1')
     })
 
     it('現在選択されているノードと別のノードを設定', async () => {
@@ -840,6 +860,7 @@ describe('TreeView', () => {
 
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBeTruthy()
+      expect(treeView.selectedNode).toBe(node1_1_1)
       const node1_1_3 = treeView.getNode('node1_1_3')!
       expect(node1_1_3.selected).toBeFalsy()
       await clearEmitted(wrapper)
@@ -855,11 +876,11 @@ describe('TreeView', () => {
       expect(selectChangeEvent1.node).toBe(node1_1_1)
       expect(selectChangeEvent2.node).toBe(node1_1_3)
       // ・select
-      await sleep(100)
       const selectEmitted = wrapper.emitted('select')!
-      const selectEvent: TreeViewEvent = selectEmitted[0][0]
+      const selectEvent: TreeViewSelectEvent = selectEmitted[0][0]
       expect(selectEmitted.length).toBe(1)
       expect(selectEvent.node).toBe(node1_1_3)
+      expect(selectEvent.oldNode).toBe(node1_1_1)
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeFalsy()
       expect(treeView.selectedNode).toBe(node1_1_3)
@@ -880,7 +901,6 @@ describe('TreeView', () => {
       treeView.selectedNode = null
 
       // イベント発火を検証
-      await sleep(100)
       // ・select
       expect(wrapper.emitted('select')).toBeUndefined()
       // ・select-change
@@ -904,6 +924,7 @@ describe('TreeView', () => {
 
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBeTruthy()
+      expect(treeView.selectedNode).toBe(node1_1_1)
       await clearEmitted(wrapper)
 
       treeView.setSelectedNode(node1_1_1.value, true)
@@ -912,11 +933,11 @@ describe('TreeView', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       const selectEmitted = wrapper.emitted('select')!
-      const selectEvent: TreeViewEvent = selectEmitted[0][0]
+      const selectEvent: TreeViewSelectEvent = selectEmitted[0][0]
       expect(selectEmitted.length).toBe(1)
       expect(selectEvent.node).toBe(node1_1_1)
+      expect(selectEvent.oldNode).toBe(node1_1_1)
       // ノードの選択状態を検証
       expect(treeView.selectedNode).toBe(node1_1_1)
       expect(node1_1_1.selected).toBeTruthy()
@@ -931,6 +952,7 @@ describe('TreeView', () => {
 
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBeTruthy()
+      expect(treeView.selectedNode).toBe(node1_1_1)
       const node1_1_3 = treeView.getNode('node1_1_3')!
       expect(node1_1_3.selected).toBeFalsy()
       await clearEmitted(wrapper)
@@ -946,11 +968,11 @@ describe('TreeView', () => {
       expect(selectChangeEvent1.node).toBe(node1_1_1)
       expect(selectChangeEvent2.node).toBe(node1_1_3)
       // ・select
-      await sleep(100)
       const selectEmitted = wrapper.emitted('select')!
-      const selectEvent: TreeViewEvent = selectEmitted[0][0]
+      const selectEvent: TreeViewSelectEvent = selectEmitted[0][0]
       expect(selectEmitted.length).toBe(1)
       expect(selectEvent.node).toBe(node1_1_3)
+      expect(selectEvent.oldNode).toBe(node1_1_1)
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeFalsy()
       expect(treeView.selectedNode).toBe(node1_1_3)
@@ -971,7 +993,6 @@ describe('TreeView', () => {
       treeView.setSelectedNode(node1_1_1.value, false)
 
       // イベント発火を検証
-      await sleep(100)
       // ・select
       expect(wrapper.emitted('select')).toBeUndefined()
       // ・select-change
@@ -1003,7 +1024,6 @@ describe('TreeView', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
 
       verifyTreeView(treeView)
@@ -1024,7 +1044,6 @@ describe('TreeView', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
 
       verifyTreeView(treeView)
@@ -1455,7 +1474,6 @@ describe('TreeNode', () => {
       expect(selectChangeEmitted.length).toBe(1)
       expect(selectChangeEvent.node).toBe(node1_1_1)
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(treeView.selectedNode).toBeNull()
@@ -1484,7 +1502,6 @@ describe('TreeNode', () => {
       expect(selectChangeEmitted.length).toBe(1)
       expect(selectChangeEvent.node).toBe(node1_1_1)
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(treeView.selectedNode).toBeNull()
@@ -1625,6 +1642,7 @@ describe('TreeNode', () => {
       // 閉じている中のノードは未選択である
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBe(false)
+      expect(treeView.selectedNode).toBeNull()
       await clearEmitted(wrapper)
 
       // 閉じている中のノードは選択する
@@ -1640,9 +1658,10 @@ describe('TreeNode', () => {
       expect(selectChangeEvent.node).toBe(node1_1_1)
       // ・select
       const selectEmitted = wrapper.emitted('select')!
-      const selectEvent: TreeViewEvent = selectEmitted[0][0]
+      const selectEvent: TreeViewSelectEvent = selectEmitted[0][0]
       expect(selectEmitted.length).toBe(1)
       expect(selectEvent.node).toBe(node1_1_1)
+      expect(selectEvent.oldNode).toBeUndefined()
       // ノードの選択状態を検証
       expect(treeView.selectedNode).toBe(node1_1_1)
       expect(node1_1_1.selected).toBeTruthy()
@@ -1702,6 +1721,7 @@ describe('TreeNode', () => {
 
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBe(true)
+      expect(treeView.selectedNode).toBe(node1_1_1)
 
       await clearEmitted(wrapper)
 
@@ -1727,9 +1747,10 @@ describe('TreeNode', () => {
         expect(selectChangeEvent2.node).toBe(node1_1)
         // ・select
         const selectEmitted = wrapper.emitted('select')!
-        const selectEvent: TreeViewEvent = selectEmitted[0][0]
+        const selectEvent: TreeViewSelectEvent = selectEmitted[0][0]
         expect(selectEmitted.length).toBe(1)
         expect(selectEvent.node).toBe(node1_1)
+        expect(selectEvent.oldNode).toBe(node1_1_1)
         // ノードの選択状態を検証
         expect(node1_1_1.selected).toBeFalsy()
         expect(getNodeData(nodeDataList, node1_1_1.value)!.selected).toBeFalsy()
@@ -2242,7 +2263,6 @@ describe('TreeNode', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.unselectable).toBeTruthy()
@@ -2270,7 +2290,6 @@ describe('TreeNode', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.unselectable).toBeTruthy()
@@ -2298,7 +2317,6 @@ describe('TreeNode', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.unselectable).toBeFalsy()
@@ -2326,7 +2344,6 @@ describe('TreeNode', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.unselectable).toBeFalsy()
@@ -2357,7 +2374,6 @@ describe('TreeNode', () => {
       expect(selectChangeEmitted.length).toBe(1)
       expect(selectChangeEvent.node).toBe(node1_1_1)
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.unselectable).toBeTruthy()
@@ -2388,7 +2404,6 @@ describe('TreeNode', () => {
       expect(selectChangeEmitted.length).toBe(1)
       expect(selectChangeEvent.node).toBe(node1_1_1)
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.unselectable).toBeTruthy()
@@ -2408,6 +2423,7 @@ describe('TreeNode', () => {
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeFalsy()
+      expect(treeView.selectedNode).toBeNull()
       await clearEmitted(wrapper)
 
       node1_1_1.selected = true
@@ -2419,11 +2435,11 @@ describe('TreeNode', () => {
       expect(selectChangeEmitted.length).toBe(1)
       expect(selectChangeEvent.node).toBe(node1_1_1)
       // ・select
-      await sleep(100)
       const selectEmitted = wrapper.emitted('select')!
-      const selectEvent: TreeViewEvent = selectEmitted[0][0]
+      const selectEvent: TreeViewSelectEvent = selectEmitted[0][0]
       expect(selectEmitted.length).toBe(1)
       expect(selectEvent.node).toBe(node1_1_1)
+      expect(selectEvent.oldNode).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeTruthy()
       expect(getNodeData(nodeDataList, node1_1_1.value)!.selected).toBeTruthy()
@@ -2440,6 +2456,7 @@ describe('TreeNode', () => {
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeFalsy()
+      expect(treeView.selectedNode).toBeNull()
       await clearEmitted(wrapper)
 
       node1_1_1.setNodeData({ selected: true })
@@ -2451,11 +2468,11 @@ describe('TreeNode', () => {
       expect(selectChangeEmitted.length).toBe(1)
       expect(selectChangeEvent.node).toBe(node1_1_1)
       // ・select
-      await sleep(100)
       const selectEmitted = wrapper.emitted('select')!
-      const selectEvent: TreeViewEvent = selectEmitted[0][0]
+      const selectEvent: TreeViewSelectEvent = selectEmitted[0][0]
       expect(selectEmitted.length).toBe(1)
       expect(selectEvent.node).toBe(node1_1_1)
+      expect(selectEvent.oldNode).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeTruthy()
       expect(getNodeData(nodeDataList, node1_1_1.value)!.selected).toBeTruthy()
@@ -2480,7 +2497,6 @@ describe('TreeNode', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeTruthy()
@@ -2498,6 +2514,7 @@ describe('TreeNode', () => {
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeTruthy()
+      expect(treeView.selectedNode).toBe(node1_1_1)
       await clearEmitted(wrapper)
 
       node1_1_1.selected = true
@@ -2506,11 +2523,11 @@ describe('TreeNode', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       const selectEmitted = wrapper.emitted('select')!
-      const selectEvent: TreeViewEvent = selectEmitted[0][0]
+      const selectEvent: TreeViewSelectEvent = selectEmitted[0][0]
       expect(selectEmitted.length).toBe(1)
       expect(selectEvent.node).toBe(node1_1_1)
+      expect(selectEvent.oldNode).toBe(node1_1_1)
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeTruthy()
       expect(getNodeData(nodeDataList, node1_1_1.value)!.selected).toBeTruthy()
@@ -2527,6 +2544,7 @@ describe('TreeNode', () => {
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeTruthy()
+      expect(treeView.selectedNode).toBe(node1_1_1)
       await clearEmitted(wrapper)
 
       node1_1_1.setNodeData({ selected: true })
@@ -2535,11 +2553,11 @@ describe('TreeNode', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined
       // ・select
-      await sleep(100)
       const selectEmitted = wrapper.emitted('select')!
-      const selectEvent: TreeViewEvent = selectEmitted[0][0]
+      const selectEvent: TreeViewSelectEvent = selectEmitted[0][0]
       expect(selectEmitted.length).toBe(1)
       expect(selectEvent.node).toBe(node1_1_1)
+      expect(selectEvent.oldNode).toBe(node1_1_1)
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeTruthy()
       expect(getNodeData(nodeDataList, node1_1_1.value)!.selected).toBeTruthy()
@@ -2564,7 +2582,6 @@ describe('TreeNode', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeTruthy()
@@ -2593,7 +2610,6 @@ describe('TreeNode', () => {
       expect(selectChangeEmitted.length).toBe(1)
       expect(selectChangeEvent.node).toBe(node1_1_1)
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeFalsy()
@@ -2622,7 +2638,6 @@ describe('TreeNode', () => {
       expect(selectChangeEmitted.length).toBe(1)
       expect(selectChangeEvent.node).toBe(node1_1_1)
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeFalsy()
@@ -2648,7 +2663,6 @@ describe('TreeNode', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeFalsy()
@@ -2665,6 +2679,7 @@ describe('TreeNode', () => {
 
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBeTruthy()
+      expect(treeView.selectedNode).toBe(node1_1_1)
       const node1_1_3 = treeView.getNode('node1_1_3')!
       expect(node1_1_3.selected).toBeFalsy()
       await clearEmitted(wrapper)
@@ -2680,11 +2695,11 @@ describe('TreeNode', () => {
       expect(selectChangeEvent1.node).toBe(node1_1_1)
       expect(selectChangeEvent2.node).toBe(node1_1_3)
       // ・select
-      await sleep(100)
       const selectEmitted = wrapper.emitted('select')!
-      const selectEvent: TreeViewEvent = selectEmitted[0][0]
+      const selectEvent: TreeViewSelectEvent = selectEmitted[0][0]
       expect(selectEmitted.length).toBe(1)
       expect(selectEvent.node).toBe(node1_1_3)
+      expect(selectEvent.oldNode).toBe(node1_1_1)
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeFalsy()
       expect(getNodeData(nodeDataList, node1_1_1.value)!.selected).toBeFalsy()
@@ -2702,6 +2717,7 @@ describe('TreeNode', () => {
 
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBeTruthy()
+      expect(treeView.selectedNode).toBe(node1_1_1)
       const node1_1_3 = treeView.getNode('node1_1_3')!
       expect(node1_1_3.selected).toBeFalsy()
       await clearEmitted(wrapper)
@@ -2717,11 +2733,11 @@ describe('TreeNode', () => {
       expect(selectChangeEvent1.node).toBe(node1_1_1)
       expect(selectChangeEvent2.node).toBe(node1_1_3)
       // ・select
-      await sleep(100)
       const selectEmitted = wrapper.emitted('select')!
-      const selectEvent: TreeViewEvent = selectEmitted[0][0]
+      const selectEvent: TreeViewSelectEvent = selectEmitted[0][0]
       expect(selectEmitted.length).toBe(1)
       expect(selectEvent.node).toBe(node1_1_3)
+      expect(selectEvent.oldNode).toBe(node1_1_1)
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeFalsy()
       expect(getNodeData(nodeDataList, node1_1_1.value)!.selected).toBeFalsy()
@@ -2749,7 +2765,6 @@ describe('TreeNode', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeFalsy()
@@ -2777,7 +2792,6 @@ describe('TreeNode', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeFalsy()
@@ -2803,7 +2817,6 @@ describe('TreeNode', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeFalsy()
@@ -2829,7 +2842,6 @@ describe('TreeNode', () => {
       // ・select-change
       expect(wrapper.emitted('select-change')).toBeUndefined()
       // ・select
-      await sleep(100)
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
       expect(node1_1_1.selected).toBeFalsy()

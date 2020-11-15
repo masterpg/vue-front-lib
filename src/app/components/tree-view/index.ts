@@ -9,5 +9,6 @@ export {
   TreeViewLazyLoadDoneFunc,
   TreeViewLazyLoadEvent,
   TreeViewLazyLoadStatus,
+  TreeViewSelectEvent,
   newTreeNode,
 } from '@/app/components/tree-view/base'

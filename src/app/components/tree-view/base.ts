@@ -67,6 +67,11 @@ interface TreeViewEvent<N extends TreeNode = TreeNode> {
   node: N
 }
 
+interface TreeViewSelectEvent<N extends TreeNode = TreeNode> {
+  node: N
+  oldNode?: N
+}
+
 type TreeViewLazyLoadStatus = 'none' | 'loading' | 'loaded'
 
 type TreeViewLazyLoadDoneFunc = () => void
@@ -232,15 +237,17 @@ function dispatchSelectChange(node: TreeNodeImpl, silent: boolean): void {
 /**
  * ノードの選択された旨を通知するイベントを発火します。
  * @param node
+ * @param oldNode
  * @param silent
  */
-function dispatchSelect(node: TreeNodeImpl, silent: boolean): void {
+function dispatchSelect(node: TreeNodeImpl, oldNode: TreeNodeImpl | undefined | null, silent: boolean): void {
+  oldNode = oldNode || undefined
   node.el.dispatchEvent(
     new CustomEvent('select', {
       bubbles: true,
       cancelable: true,
       composed: true,
-      detail: { node, silent },
+      detail: { node, oldNode, silent },
     })
   )
 }
@@ -429,6 +436,7 @@ export {
   TreeViewLazyLoadDoneFunc,
   TreeViewLazyLoadEvent,
   TreeViewLazyLoadStatus,
+  TreeViewSelectEvent,
   dispatchBeforeNodeRemove,
   dispatchExtraEvent,
   dispatchLazyLoad,

@@ -18,7 +18,7 @@
     @before-node-remove="onBeforeNodeRemove"
     @node-remove="onNodeRemove"
     @select-change="allNodesOnSelectChange"
-    @select="allNodesOnSelectDebounce"
+    @select="allNodesOnSelect"
     @open-change="allNodesOnOpenChange"
     @lazy-load="allNodesOnLazyLoad"
   ></div>
@@ -33,6 +33,7 @@ import {
   TreeViewEvent,
   TreeViewLazyLoadDoneFunc,
   TreeViewLazyLoadEvent,
+  TreeViewSelectEvent,
 } from '@/app/components/tree-view/base'
 import { Ref, SetupContext, computed, defineComponent, getCurrentInstance, ref } from '@vue/composition-api'
 import { TreeNode, TreeNodeImpl } from '@/app/components/tree-view/tree-node.vue'
@@ -216,25 +217,16 @@ namespace TreeView {
     const selectedNode = computed({
       get: () => _selectedNode.value,
       set: node => {
-        const currentSelectedNode = _selectedNode.value
-
         // 選択ノードが指定された場合
         if (node) {
-          // 現在の選択ノードと指定されたノードが違う場合
-          if (currentSelectedNode && currentSelectedNode !== node) {
-            // 現在の選択ノードを非選択にする
-            currentSelectedNode.selected = false
-          }
           // 指定されたノードを選択状態に設定
           node.selected = true
           _selectedNode.value = node
         }
-        // 選択ノードが指定されたなかった場合
+        // 選択ノードが指定されなかった場合
         else {
           // 現在の選択ノードを非選択にする
-          if (currentSelectedNode) {
-            currentSelectedNode.selected = false
-          }
+          _selectedNode.value && (_selectedNode.value.selected = false)
           _selectedNode.value = null
         }
       },
@@ -244,15 +236,8 @@ namespace TreeView {
       const node = getNode(value)
       if (!node) return
 
-      const currentSelectedNode = _selectedNode.value
-
       // 選択状態にする場合
       if (selected) {
-        // 現在の選択ノードと指定されたノードが違う場合
-        if (currentSelectedNode && currentSelectedNode !== node) {
-          // 現在の選択ノードを非選択にする
-          currentSelectedNode.setSelected(false, silent)
-        }
         // 指定されたノードを選択状態に設定
         node.setSelected(true, silent)
         _selectedNode.value = node
@@ -260,10 +245,8 @@ namespace TreeView {
       // 非選択状態にする場合
       else {
         // 指定されたノードを非選択にする
-        node.setSelected(false, silent)
-        if (currentSelectedNode === node) {
-          _selectedNode.value = null
-        }
+        _selectedNode.value && _selectedNode.value.setSelected(false, silent)
+        _selectedNode.value = null
       }
     }
 
@@ -679,16 +662,16 @@ namespace TreeView {
 
       // ノードが選択された場合
       if (node.selected) {
-        setSelectedNode(node.value, true, silent)
+        // 新しい選択ノードを設定
+        _selectedNode.value = node
       }
       // ノードの選択が解除された場合
       else {
-        if (selectedNode.value === node) {
-          setSelectedNode(node.value, false, silent)
-        }
+        // 選択ノードをクリア
+        _selectedNode.value = null
       }
 
-      !silent && ctx.emit('select-change', { node } as TreeViewEvent)
+      !silent && ctx.emit('select-change', { node } as TreeViewSelectEvent)
     }
 
     /**
@@ -699,12 +682,11 @@ namespace TreeView {
       e.stopImmediatePropagation()
 
       const node = e.detail.node as TreeNodeImpl
+      const oldNode = e.detail.oldNode as TreeNodeImpl | undefined
       const silent = e.detail.silent
 
-      !silent && ctx.emit('select', { node } as TreeViewEvent)
+      !silent && ctx.emit('select', { node, oldNode } as TreeViewEvent)
     }
-
-    const allNodesOnSelectDebounce: (e: any) => void | Promise<void> = debounce(allNodesOnSelect, 0)
 
     /**
      * ノードでopen-changeイベントが発火した際のリスナです。
@@ -790,7 +772,7 @@ namespace TreeView {
       onBeforeNodeRemove,
       onNodeRemove,
       allNodesOnSelectChange,
-      allNodesOnSelectDebounce,
+      allNodesOnSelect,
       allNodesOnOpenChange,
       allNodesOnLazyLoad,
     }
