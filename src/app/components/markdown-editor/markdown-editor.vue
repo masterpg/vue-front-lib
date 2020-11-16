@@ -21,22 +21,33 @@
 .editor-container
   overflow: hidden
 
-.result-container
+.preview-container
   height: 100%
   overflow: hidden
 
-  .result-html
+  .preview-html
     height: 100%
     padding: 2px 10px
     overflow: auto
     background-color: white
+
+.control-bar
+  height: 34px
+  background-color: $grey-3
+  border-bottom: 1px solid #e3e3e2
+  padding: 0 4px
 </style>
 
 <template>
-  <q-splitter v-model="splitterModel" class="MarkdownEditor splitter">
-    <!-- Markdown入力エリア -->
+  <q-splitter v-model="splitterModel" class="MarkdownEditor splitter" :limits="[0, 100]">
+    <!-- エディターエリア -->
     <template v-slot:before>
       <div class="layout vertical full-height">
+        <div class="control-bar layout horizontal center">
+          <div class="flex-1" />
+          <q-btn v-show="viewType === 'editor'" icon="chevron_left" color="primary" size="sm" padding="xs" flat @click="splitButtonOnClick" />
+          <q-btn v-show="viewType === 'editor'" icon="first_page" color="primary" size="sm" padding="xs" flat @click="previewButtonOnClick" />
+        </div>
         <div
           ref="editorContainer"
           class="editor-container flex-1"
@@ -47,16 +58,22 @@
         </div>
       </div>
     </template>
-    <!-- Markdown出力エリア -->
+    <!-- プレビューエリア -->
     <template v-slot:after>
       <div class="layout vertical full-height">
-        <div class="result-container">
+        <div class="control-bar layout horizontal center">
+          <q-btn v-show="viewType === 'split'" icon="chevron_left" color="primary" size="sm" padding="xs" flat @click="previewButtonOnClick" />
+          <q-btn v-show="viewType === 'split'" icon="chevron_right" color="primary" size="sm" padding="xs" flat @click="editorButtonOnClick" />
+          <q-btn v-show="viewType === 'preview'" icon="chevron_right" color="primary" size="sm" padding="xs" flat @click="splitButtonOnClick" />
+          <q-btn v-show="viewType === 'preview'" icon="last_page" color="primary" size="sm" padding="xs" flat @click="editorButtonOnClick" />
+        </div>
+        <div class="preview-container">
           <div
-            ref="resultHTML"
-            class="result-html markdown-body"
-            @mouseover="resultHTMLOnStartScroll"
-            @touchstart="resultHTMLOnStartScroll"
-            @wheel="resultHTMLOnStartScroll"
+            ref="previewHTML"
+            class="preview-html markdown-body"
+            @mouseover="previewHTMLOnStartScroll"
+            @touchstart="previewHTMLOnStartScroll"
+            @wheel="previewHTMLOnStartScroll"
           />
         </div>
       </div>
@@ -79,10 +96,11 @@
 
 import 'highlight.js/styles/github.css'
 import * as monaco from 'monaco-editor'
-import { Ref, defineComponent, onMounted, ref } from '@vue/composition-api'
+import { Ref, computed, defineComponent, onMounted, ref } from '@vue/composition-api'
 import { Img } from '@/app/components/img/img.vue'
 import MarkdownIt from 'markdown-it'
 import { MarkdownItVueComponent } from '@/markdown-it'
+import { QSplitter } from 'quasar'
 import { RenderRule } from 'markdown-it/lib/renderer'
 import cheatSheet from '@/demo/views/markdown/cheat-sheet.md'
 import debounce from 'lodash/debounce'
@@ -92,16 +110,18 @@ import twemoji from 'twemoji'
 interface MarkdownEditor extends MarkdownEditor.Props {}
 
 /**
- * エディタエリアと結果エリアのスクロール情報を格納するデータクラスです。
+ * エディタ領域とプレビュー領域のスクロール情報を格納するデータクラスです。
  */
 interface ScrollLineItem {
   // 行番号
   line: number
   // エディタ行のトップ位置
   editorTop: number
-  // Markdown結果行のトップ位置
-  resultTop: number
+  // プレビュー行のトップ位置
+  previewTop: number
 }
+
+type ViewType = 'editor' | 'preview' | 'split'
 
 namespace MarkdownEditor {
   export interface Props {
@@ -138,8 +158,14 @@ namespace MarkdownEditor {
       //
       //----------------------------------------------------------------------
 
+      /**
+       * エディター要素、プレビュー要素の最小幅の定数です。
+       * ※厳密な最小幅ではなく補正値を含んだ値です。
+       */
+      const VIEW_MIN_WITH = 20
+
       const editorContainer = ref<HTMLElement>()
-      const resultHTML = ref<HTMLDivElement>()
+      const previewHTML = ref<HTMLDivElement>()
 
       let editor: monaco.editor.IStandaloneCodeEditor | null = null
 
@@ -149,17 +175,30 @@ namespace MarkdownEditor {
 
       let scrollLineItems: ScrollLineItem[] | null = null
 
-      let syncEditorScrollDisposable: monaco.IDisposable | null = null
+      let syncPreviewScrollToEditorDisposable: monaco.IDisposable | null = null
 
       /**
-       * Markdownのエディタエリアと結果エリアのどちらがアクティブかを示す変数
+       * エディタ領域とプレビュー領域のどちらがアクティブかを示す変数
        */
-      const activeArea: Ref<'editor' | 'result' | null> = ref(null)
+      const activeArea: Ref<'editor' | 'preview' | null> = ref(null)
 
       /**
        * 左右のペインを隔てるスプリッターの左ペインの幅(%)
        */
       const splitterModel = ref(50)
+
+      /**
+       * ビューのタイプ (プレビュー, スプリット, エディター)
+       */
+      const viewType = computed<ViewType>(() => {
+        if (splitterModel.value === 0) {
+          return 'preview'
+        } else if (splitterModel.value === 100) {
+          return 'editor'
+        } else {
+          return 'split'
+        }
+      })
 
       //----------------------------------------------------------------------
       //
@@ -169,8 +208,8 @@ namespace MarkdownEditor {
 
       function init(): void {
         updateResult = debounce(updateResultFunc, 300, { maxWait: 500 })
-        syncResultScroll = debounce(syncResultScrollFunc, 50, { maxWait: 50 })
-        syncEditorScroll = debounce(syncEditorScrollFunc, 50, { maxWait: 50 })
+        syncEditorScrollToPreview = debounce(syncEditorScrollToPreviewFunc, 50, { maxWait: 50 })
+        syncPreviewScrollToEditor = debounce(syncPreviewScrollToEditorFunc, 50, { maxWait: 50 })
 
         //
         // Monacoエディタの生成
@@ -255,7 +294,7 @@ namespace MarkdownEditor {
         //   return twemoji.parse(token[idx].content)
         // }
 
-        // エディタエリアのスクロールに結果エリアを同期させるため、
+        // エディタ領域のスクロールにプレビュー領域を同期させるため、
         // <p>, <h1>-<h6>要素の属性に行番号を付与する
         const injectLineNumbers: RenderRule = (tokens, idx, options, env, slf) => {
           if (tokens[idx].map && tokens[idx].level === 0) {
@@ -271,7 +310,7 @@ namespace MarkdownEditor {
       }
 
       /**
-       * 入力されたMarkdownテキストをパースして結果エリアへ出力します。
+       * 入力されたMarkdownテキストをパースしてプレビュー領域へ出力します。
        */
       let updateResult!: () => void
 
@@ -279,13 +318,13 @@ namespace MarkdownEditor {
         if (!editor) return
 
         const source = editor.getValue()
-        resultHTML.value!.innerHTML = md.render(source)
+        previewHTML.value!.innerHTML = md.render(source)
 
         scrollLineItems = null
       }
 
       /**
-       * エディタエリアまたは結果エリアをスクロールした際にスクロールを
+       * エディタ領域またはプレビュー領域をスクロールした際にスクロールを
        * 同期させるためのデータを作成します。
        */
       function buildScrollLineItems(): ScrollLineItem[] | null {
@@ -296,17 +335,17 @@ namespace MarkdownEditor {
 
         const result: ScrollLineItem[] = []
 
-        // エディタエリアの行数分ループ
+        // エディタ領域の行数分ループ
         for (let i = 0; i < editorModel.getLineCount(); i++) {
           const line = i + 1
-          const lineItem: ScrollLineItem = { line, editorTop: -1, resultTop: -1 }
+          const lineItem: ScrollLineItem = { line, editorTop: -1, previewTop: -1 }
           result[i] = lineItem
-          // エディタエリアのトップから指定行までの距離を取得
+          // エディタ領域のトップから指定行までの距離を取得
           lineItem.editorTop = editor.getTopForLineNumber(line)
         }
 
-        // 結果エリアに出力された'.line'CSSクラスが付与された要素を取得しループ
-        const resultLinesEl = Array.from<HTMLElement>(resultHTML.value!.querySelectorAll('.line'))
+        // プレビュー領域に出力された'.line'CSSクラスが付与された要素を取得しループ
+        const resultLinesEl = Array.from<HTMLElement>(previewHTML.value!.querySelectorAll('.line'))
         for (const resultLineEl of resultLinesEl) {
           // 行要素から'data-line'属性の値(行番号)を取得
           const resultLineStr = resultLineEl.getAttribute('data-line')
@@ -316,22 +355,22 @@ namespace MarkdownEditor {
           const lineItem = result[resultLineIndex]
           if (!lineItem) continue
 
-          // 結果エリアのトップから行要素までの距離を取得
-          const resultHTMLStyle = window.getComputedStyle(resultHTML.value!)
-          const offsetTop = Math.round(parseFloat(resultHTMLStyle.paddingTop || '0')) + resultHTML.value!.offsetTop
-          lineItem.resultTop = Math.round(resultLineEl.offsetTop - offsetTop)
+          // プレビュー領域のトップから行要素までの距離を取得
+          const resultHTMLStyle = window.getComputedStyle(previewHTML.value!)
+          const offsetTop = Math.round(parseFloat(resultHTMLStyle.paddingTop || '0')) + previewHTML.value!.offsetTop
+          lineItem.previewTop = Math.round(resultLineEl.offsetTop - offsetTop)
         }
 
         // ｢先頭行｣と｢末尾行｣のMarkdown結果トップ位置を設定
-        result[0].resultTop = 0
-        result[result.length - 1].resultTop = resultHTML.value!.scrollHeight
+        result[0].previewTop = 0
+        result[result.length - 1].previewTop = previewHTML.value!.scrollHeight
 
         // 指定行インデックスより前にあるスクロールアイテムで、
-        // 結果エリアのトップ位置が設定されているものを取得する関数
+        // プレビュー領域のトップ位置が設定されているものを取得する関数
         const getPrevScrollItem = (currentIndex: number) => {
           for (let i = currentIndex - 1; i >= 0; i--) {
-            const resultTop = result[i].resultTop
-            if (resultTop !== -1) return result[i]
+            const previewTop = result[i].previewTop
+            if (previewTop !== -1) return result[i]
           }
           throw new Error('Unreachable code reached.')
         }
@@ -340,22 +379,22 @@ namespace MarkdownEditor {
         // 結果トップエリアの位置が設定されているものを取得する関数
         const getFollowScrollItem = (currentIndex: number) => {
           for (let i = currentIndex + 1; i < result.length; i++) {
-            const resultTop = result[i].resultTop
-            if (resultTop !== -1) return result[i]
+            const previewTop = result[i].previewTop
+            if (previewTop !== -1) return result[i]
           }
           throw new Error('Unreachable code reached.')
         }
 
-        // 結果エリアのトップ位置が設定されていないスクロールアイテムの補正値を設定
+        // プレビュー領域のトップ位置が設定されていないスクロールアイテムの補正値を設定
         for (let i = 0; i < editorModel.getLineCount(); i++) {
           const lineItem = result[i]
-          if (lineItem.resultTop === -1) {
+          if (lineItem.previewTop === -1) {
             const prev = getPrevScrollItem(i)
             const follow = getFollowScrollItem(i)
-            const distance = follow.resultTop - prev.resultTop // スクロールアイテム間の距離
+            const distance = follow.previewTop - prev.previewTop // スクロールアイテム間の距離
             const numer = lineItem.line - prev.line // 分子
             const denom = follow.line - prev.line // 分母
-            lineItem.resultTop = Math.round(prev.resultTop + (distance / denom) * numer)
+            lineItem.previewTop = Math.round(prev.previewTop + (distance / denom) * numer)
           }
         }
 
@@ -363,11 +402,12 @@ namespace MarkdownEditor {
       }
 
       /**
-       * エディタエリアのスクロールに結果エリアを同期させる処理を行います。
+       * エディター領域のスクロールとプレビュー領域を同期させるための処理を行います。
+       * ※この関数はパフォーマンスを重視しており、スクロールイベントに紐付けられます。
        */
-      let syncResultScroll!: () => void
+      let syncEditorScrollToPreview!: () => void
 
-      function syncResultScrollFunc(): void {
+      function syncEditorScrollToPreviewFunc(): void {
         if (!editor) return
 
         if (!scrollLineItems) {
@@ -382,20 +422,30 @@ namespace MarkdownEditor {
           const nextLine = i === lastIndex ? null : scrollLineItems[i + 1]
 
           if (nextLine === null) {
-            resultHTML.value!.scrollTop = scrollLineItems[lastIndex].resultTop
+            previewHTML.value!.scrollTop = scrollLineItems[lastIndex].previewTop
           } else if (currentLine.editorTop <= scrollTop && scrollTop < nextLine.editorTop) {
-            resultHTML.value!.scrollTop = currentLine.resultTop
+            previewHTML.value!.scrollTop = currentLine.previewTop
             break
           }
         }
       }
 
       /**
-       * 結果エリアのスクロールにエディタエリアを同期させる処理を行います。
+       * エディター領域のスクロールとプレビュー領域を同期させるための処理を行います。
        */
-      let syncEditorScroll!: () => void
+      function updateEditorScrollToPreview(): void {
+        updateResult()
+        scrollLineItems = null
+        syncEditorScrollToPreviewFunc()
+      }
 
-      function syncEditorScrollFunc(): void {
+      /**
+       * プレビュー領域のスクロールとエディター領域を同期させるための処理を行います。
+       * ※この関数はパフォーマンスを重視しており、スクロールイベントに紐付けられます。
+       */
+      let syncPreviewScrollToEditor!: () => void
+
+      function syncPreviewScrollToEditorFunc(): void {
         if (!editor) return
 
         if (!scrollLineItems) {
@@ -403,7 +453,7 @@ namespace MarkdownEditor {
         }
         if (!scrollLineItems) return
 
-        const scrollTop = resultHTML.value!.scrollTop
+        const scrollTop = previewHTML.value!.scrollTop
         for (let i = 0; i < scrollLineItems.length; i++) {
           const lastIndex = scrollLineItems.length - 1
           const currentLine = scrollLineItems[i]
@@ -411,11 +461,75 @@ namespace MarkdownEditor {
 
           if (nextLine === null) {
             editor.setScrollTop(scrollLineItems[lastIndex].editorTop)
-          } else if (currentLine.resultTop <= scrollTop && scrollTop < nextLine.resultTop) {
+          } else if (currentLine.previewTop <= scrollTop && scrollTop < nextLine.previewTop) {
             editor.setScrollTop(currentLine.editorTop)
             break
           }
         }
+      }
+
+      /**
+       * プレビュー領域のスクロールとエディター領域を同期させるための処理を行います。
+       */
+      function updatePreviewScrollToEditor(): void {
+        updateResult()
+        scrollLineItems = null
+        syncPreviewScrollToEditorFunc()
+      }
+
+      /**
+       * エディター領域のスクロールにプレビュー領域を同期させるためのイベントリスナーを登録します。
+       */
+      function addEditorScrollLister(): void {
+        if (!syncPreviewScrollToEditorDisposable) {
+          syncPreviewScrollToEditorDisposable = editor!.onDidScrollChange(syncEditorScrollToPreview)
+        }
+      }
+
+      /**
+       * エディター領域のスクロールにプレビュー領域を同期させるためのイベントリスナーを解除します。
+       */
+      function removeEditorScrollLister(): void {
+        if (syncPreviewScrollToEditorDisposable) {
+          syncPreviewScrollToEditorDisposable.dispose()
+          syncPreviewScrollToEditorDisposable = null
+        }
+      }
+
+      /**
+       * プレビュー領域のスクロールにエディター領域を同期させるためのイベントリスナーを登録します。
+       */
+      function addPreviewScrollLister(): void {
+        removeEditorScrollLister()
+        previewHTML.value!.addEventListener('scroll', syncPreviewScrollToEditor)
+      }
+
+      /**
+       * プレビュー領域のスクロールにエディター領域を同期させるためのイベントリスナーを解除します。
+       */
+      function removePreviewScrollLister(): void {
+        previewHTML.value!.removeEventListener('scroll', syncPreviewScrollToEditor)
+      }
+
+      /**
+       * 指定された関数をインターバルごとに実行します。
+       * 指定された関数が`true`を返す、または規定回数実行されると終了します。
+       * @param fn インターバルごとに実行される関数を指定します。
+       */
+      function updateInterval(fn: () => boolean | void): void {
+        let count = 0
+        const intervalId = setInterval(() => {
+          count++
+          if (count >= 100) {
+            clearInterval(intervalId)
+            return
+          }
+
+          const result = fn()
+          if (result === true) {
+            clearInterval(intervalId)
+          }
+        }, 10)
       }
 
       function myParseInt(value: string): number {
@@ -448,31 +562,98 @@ namespace MarkdownEditor {
       }
 
       /**
-       * エディタエリアのスクロールが開始される際のリスナです。
+       * エディタ領域のスクロールが開始される際のリスナです。
        */
       function editorContainerOnStartScroll() {
         if (activeArea.value === 'editor') return
         activeArea.value = 'editor'
 
-        resultHTML.value!.removeEventListener('scroll', syncEditorScroll)
-        if (!syncEditorScrollDisposable) {
-          syncEditorScrollDisposable = editor!.onDidScrollChange(syncResultScroll)
-        }
+        removePreviewScrollLister()
+        addEditorScrollLister()
       }
 
       /**
-       * 結果エリアのスクロールが開始される際のリスナです。
+       * プレビュー領域のスクロールが開始される際のリスナです。
        */
-      function resultHTMLOnStartScroll() {
-        if (activeArea.value === 'result') return
-        activeArea.value = 'result'
+      function previewHTMLOnStartScroll() {
+        if (activeArea.value === 'preview') return
+        activeArea.value = 'preview'
 
-        if (syncEditorScrollDisposable) {
-          syncEditorScrollDisposable.dispose()
-          syncEditorScrollDisposable = null
-        }
-        resultHTML.value!.removeEventListener('scroll', syncEditorScroll)
-        resultHTML.value!.addEventListener('scroll', syncEditorScroll)
+        removeEditorScrollLister()
+        addPreviewScrollLister()
+      }
+
+      //--------------------------------------------------
+      //  ビュータイプの切り替え
+      //--------------------------------------------------
+
+      /**
+       * プレビューボタンがクリックされた際のリスナーです。
+       */
+      function editorButtonOnClick() {
+        // プレビュー領域のスクロールとエディター領域を同期させるリスナーを解除
+        removePreviewScrollLister()
+
+        splitterModel.value = 100
+        editor!.focus()
+      }
+
+      /**
+       * エディターボタンがクリックされた際のリスナーです。
+       */
+      function previewButtonOnClick() {
+        // エディター領域のスクロールとプレビュー領域を同期させるリスナーを解除
+        removeEditorScrollLister()
+
+        splitterModel.value = 0
+
+        updateInterval(() => {
+          const width = editor!.getLayoutInfo().width
+          if (width > VIEW_MIN_WITH) return false
+
+          updateEditorScrollToPreview()
+          return true
+        })
+      }
+
+      /**
+       * スプリットボタンがクリックされた際のハンドラです。
+       */
+      function splitButtonOnClick() {
+        const oldViewType = viewType.value
+
+        // エディター領域とプレビュー領域のスクロール同期リスナーを解除
+        // ※スプリッターの値を変えることで左右の領域の幅が変わる。
+        //   これが起因してスクロール位置が変化するので、この後の処理に影響が出てしまう。
+        //   このためリスナーを解除する必要がある。
+        removeEditorScrollLister()
+        removePreviewScrollLister()
+
+        // スプリッターを50:50に設定
+        splitterModel.value = 50
+        editor!.focus()
+
+        updateInterval(() => {
+          // 前のビュータイプがエディターだった場合、
+          // エディター領域のスクロール位置をプレビュー領域に同期させる
+          if (oldViewType === 'editor') {
+            const style = getComputedStyle(previewHTML.value!)
+            const width = myParseInt(style.width) - myParseInt(style.paddingLeft) - myParseInt(style.paddingRight)
+            if (width <= VIEW_MIN_WITH) return false
+
+            updateEditorScrollToPreview()
+            return true
+          }
+          // 前のビュータイプがプレビューだった場合、
+          // プレビュー領域のスクロール位置をエディター領域に同期させる
+          else if (oldViewType === 'preview') {
+            const width = editor!.getLayoutInfo().width
+            if (width <= VIEW_MIN_WITH) return false
+
+            updatePreviewScrollToEditor()
+            return true
+          }
+        })
       }
 
       //----------------------------------------------------------------------
@@ -483,11 +664,15 @@ namespace MarkdownEditor {
 
       return {
         editorContainer,
-        resultHTML,
+        previewHTML,
         splitterModel,
+        viewType,
         onResize,
         editorContainerOnStartScroll,
-        resultHTMLOnStartScroll,
+        previewHTMLOnStartScroll,
+        editorButtonOnClick,
+        previewButtonOnClick,
+        splitButtonOnClick,
       }
     },
   })

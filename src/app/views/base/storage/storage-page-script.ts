@@ -1,7 +1,7 @@
 import { SetupContext, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
 import { StorageArticleNodeType, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/logic'
 import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'
-import { TreeView, TreeViewEvent, TreeViewLazyLoadEvent } from '@/app/components/tree-view'
+import { TreeView, TreeViewLazyLoadEvent, TreeViewSelectEvent } from '@/app/components/tree-view'
 import { Loading } from 'quasar'
 import { StorageDirCreateDialog } from '@/app/views/base/storage/storage-dir-create-dialog.vue'
 import { StorageDirDetailView } from '@/app/views/base/storage/storage-dir-detail-view.vue'
@@ -92,7 +92,7 @@ namespace StoragePage {
     const visibleFileDetailView = ref(false)
 
     /**
-     * 左右のペインを隔てるスプリッターの左ペインの幅です。
+     * 左右のペインを隔てるスプリッターの左ペインの幅(px)です。
      */
     const splitterModel = ref(300)
 
@@ -117,19 +117,23 @@ namespace StoragePage {
      * 初回に読み込むべきストレージノードの読み込みを行います。
      */
     async function fetchInitialNodes(): Promise<void> {
-      if (!pageLogic.isFetchedInitialStorage) return
+      if (pageLogic.isFetchedInitialStorage.value) return
 
       dirView.value!.loading = true
 
       // 現在の選択ノードを取得
       // ※URLから取得したディレクトリまたは現在の選択ノード
       const dirPath = pageLogic.route.getNodePath() || pageLogic.selectedTreeNodePath.value
+
       // 初期ストレージノードの読み込み
       await pageLogic.fetchInitialStorage(dirPath)
+      if (!pageLogic.isFetchedInitialStorage.value) {
+        dirView.value!.loading = false
+        return
+      }
+
       // ページの選択ノードを設定
       changeDirOnPage(dirPath)
-      // // 選択ノードの祖先ノードを展開
-      // openParentNode(dirPath, false)
       // 選択ノードの位置までスクロールする
       scrollToSelectedNode(dirPath, false)
 
@@ -141,7 +145,7 @@ namespace StoragePage {
      * 指定されたノードがディレクトリ以外の場合は親であるディレクトリへ移動します。
      * @param nodePath
      */
-    function changeDir(nodePath: string): void {
+    const changeDir = extendedMethod((nodePath: string) => {
       const selectedNodePath = pageLogic.getTreeNode(nodePath)?.path ?? pageLogic.getRootTreeNode().path
 
       // ノード詳細ビューを非表示にする
@@ -153,7 +157,7 @@ namespace StoragePage {
       pathDirBreadcrumb.value!.setSelectedNode(selectedNodePath)
       // ディレクトリビューに選択ノードを設定
       dirView.value!.setSelectedNode(selectedNodePath)
-    }
+    })
 
     /**
      * 指定ディレクトリのパスをURLへ付与してディレクトリを移動します。
@@ -244,7 +248,7 @@ namespace StoragePage {
     }
 
     /**
-     * 指定されたノードをページの選択ノードとして設定します。
+     * 指定されたノードの詳細ビューを表示します。
      * @param nodePath
      */
     function showNodeDetail(nodePath: string): void {
@@ -523,7 +527,7 @@ namespace StoragePage {
      * ツリービューでノードが選択された際のリスナです。
      * @param e
      */
-    const treeViewOnSelect = extendedMethod<(e: TreeViewEvent<StorageTreeNode>) => void | Promise<void>>(e => {
+    const treeViewOnSelect = extendedMethod<(e: TreeViewSelectEvent<StorageTreeNode>) => void | Promise<void>>(e => {
       const selectedNode = e.node
 
       // 選択ノードまでスクロールするフラグが立っている場合
@@ -594,6 +598,7 @@ namespace StoragePage {
       visibleFileDetailView,
       splitterModel,
       needScrollToSelectedNode,
+      changeDir,
       changeDirOnPage,
       openParentNode,
       scrollToSelectedNode,
