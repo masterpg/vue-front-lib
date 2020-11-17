@@ -58,6 +58,6 @@
     <div ref="spinnerContainer" class="spinner-container layout vertical center-center" hidden>
       <div style="height: 20px"><div class="spinner spinner-type-one" /></div>
     </div>
-    <img ref="img" :src="src" :alt="alt" h-align="center" class="img-tag" @load="imgOnLoad" />
+    <img ref="img" :src="inputSrc" :alt="alt" h-align="center" class="img-tag" @load="imgOnLoad" />
   </div>
 </template>

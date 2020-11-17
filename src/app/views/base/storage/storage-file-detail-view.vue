@@ -49,7 +49,7 @@
     <div class="content-area flex-1" style="overflow-y: auto;">
       <!-- 画像 -->
       <div v-show="isImage" class="layout vertical center">
-        <StorageImg :src="isImage ? url : ''" class="img" />
+        <StorageImg :node-id="isImage ? id : ''" class="img" />
       </div>
       <!-- テキストデータ -->
       <q-input v-show="isText" v-model="textData" type="textarea" readonly filled />

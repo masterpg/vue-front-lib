@@ -202,6 +202,12 @@ interface SortTreeNode<NODE extends SortStorageNode> {
 //
 //========================================================================
 
+async function getIdToken(): Promise<string> {
+  const currentUser = firebase.auth().currentUser
+  if (!currentUser) throw new Error('Not signed in.')
+  return await currentUser.getIdToken()
+}
+
 namespace UserInfo {
   export function populate(from: DeepPartial<DeepReadonly<UserInfo>>, to: DeepPartial<UserInfo>): UserInfo {
     if (typeof from.id === 'string') to.id = from.id
@@ -392,5 +398,6 @@ export {
   UserClaims,
   UserInfo,
   UserInfoInput,
+  getIdToken,
 }
 export { SortStorageNode, sortStorageTree, storageChildrenSortFunc }

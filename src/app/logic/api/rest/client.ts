@@ -1,5 +1,5 @@
 import axios, { Method, ResponseType } from 'axios'
-import { getIdToken } from '@/app/logic/api/base'
+import { getIdToken } from '@/app/logic'
 import { useConfig } from '@/app/config'
 
 //========================================================================

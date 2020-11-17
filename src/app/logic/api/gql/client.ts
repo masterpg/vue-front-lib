@@ -3,7 +3,7 @@ import { ApolloClient, ApolloQueryResult, MutationOptions, OperationVariables, Q
 import { ApolloLink, FetchResult } from 'apollo-link'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { createHttpLink } from 'apollo-link-http'
-import { getIdToken } from '@/app/logic/api/base'
+import { getIdToken } from '@/app/logic'
 import { setContext } from 'apollo-link-context'
 import { useConfig } from '@/app/config'
 

@@ -6,7 +6,7 @@ import { extendedMethod } from '@/app/base'
 
 interface Img extends Img.Props {
   spinner(spin: boolean): void
-  el: HTMLElement
+  readonly el: HTMLElement
 }
 
 type AlignType = 'start' | 'center' | 'end'
@@ -60,6 +60,8 @@ namespace Img {
     const img = ref<HTMLImageElement>()
     const spinnerContainer = ref<HTMLElement>()
 
+    const inputSrc = ref('')
+
     //----------------------------------------------------------------------
     //
     //  Methods
@@ -104,11 +106,24 @@ namespace Img {
      * @param oldValue
      */
     const srcChanged = extendedMethod<(newValue: string, oldValue?: string) => Promise<void>>(async (newValue, oldValue) => {
+      beforeLoad(newValue)
+      inputSrc.value = newValue
+    })
+
+    /**
+     * 画像ロードの前処理を行います。
+     * @param src
+     */
+    function beforeLoad(src: string): void {
+      if (!img.value) return
+
       img.value!.style.opacity = '0'
-      if (props.src) {
+      if (src) {
         spinner(true)
       } else {
         spinner(false)
+        img.value!.style.width = '0'
+        img.value!.style.height = '0'
       }
 
       // 現在の画像のサイズを一旦固定
@@ -116,7 +131,7 @@ namespace Img {
       const imgStyle = getComputedStyle(img.value!)
       img.value!.style.width = imgStyle.width
       img.value!.style.height = imgStyle.height
-    })
+    }
 
     /**
      * hAlignプロパティが変更された際の処理を行います。
@@ -249,8 +264,10 @@ namespace Img {
       container,
       img,
       spinnerContainer,
+      inputSrc,
       spinner,
       srcChanged,
+      beforeLoad,
       imgOnLoad,
     }
   }

@@ -22,12 +22,6 @@ type ToEntity<T> = T extends undefined ? undefined : T extends null ? undefined 
 //
 //========================================================================
 
-async function getIdToken(): Promise<string> {
-  const currentUser = firebase.auth().currentUser
-  if (!currentUser) throw new Error('Not signed in.')
-  return await currentUser.getIdToken()
-}
-
 function toEntity<T extends RawEntity | RawEntity[] | undefined | null>(entity_or_entities: T): ToEntity<T> {
   if (!entity_or_entities) {
     return undefined as any
@@ -61,4 +55,4 @@ function toEntity<T extends RawEntity | RawEntity[] | undefined | null>(entity_o
 //
 //========================================================================
 
-export { RawEntity, getIdToken, toEntity }
+export { RawEntity, toEntity }
