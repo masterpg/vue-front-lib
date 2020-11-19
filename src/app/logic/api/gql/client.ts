@@ -3,8 +3,8 @@ import { ApolloClient, ApolloQueryResult, MutationOptions, OperationVariables, Q
 import { ApolloLink, FetchResult } from 'apollo-link'
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { createHttpLink } from 'apollo-link-http'
-import { getIdToken } from '@/app/logic'
 import { setContext } from 'apollo-link-context'
+import { sgetIdToken } from '@/app/logic/base'
 import { useConfig } from '@/app/config'
 
 //========================================================================
@@ -66,7 +66,7 @@ namespace GQLAPIClient {
       })
 
       if (isAuth) {
-        const idToken = await getIdToken()
+        const idToken = await sgetIdToken()
         const authLink = setContext((_, { headers }) => {
           return {
             headers: {

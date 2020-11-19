@@ -204,8 +204,17 @@ interface SortTreeNode<NODE extends SortStorageNode> {
 
 async function getIdToken(): Promise<string> {
   const currentUser = firebase.auth().currentUser
-  if (!currentUser) throw new Error('Not signed in.')
-  return await currentUser.getIdToken()
+  if (currentUser) {
+    return await currentUser.getIdToken()
+  } else {
+    return ''
+  }
+}
+
+async function sgetIdToken(): Promise<string> {
+  const idToken = getIdToken()
+  if (!idToken) throw new Error('Not signed in.')
+  return idToken
 }
 
 namespace UserInfo {
@@ -399,5 +408,6 @@ export {
   UserInfo,
   UserInfoInput,
   getIdToken,
+  sgetIdToken,
 }
 export { SortStorageNode, sortStorageTree, storageChildrenSortFunc }

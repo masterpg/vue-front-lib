@@ -1,16 +1,16 @@
 <script lang="ts">
 import { Img, ImgTemplate } from '@/app/components/img'
 import axios, { AxiosResponse, Canceler } from 'axios'
-import { defineComponent, watch } from '@vue/composition-api'
+import { defineComponent, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
 import { StorageLogic } from '@/app/logic/modules/storage'
 import { getIdToken } from '@/app/logic'
 
-interface StorageImg extends StorageImg.Props {}
+interface StorageImg extends StorageImg.Props, Img {}
 
 namespace StorageImg {
   export interface Props extends Img.Props {
     nodeId: string
-    autoSpinner: boolean
+    cache: { [src: string]: string } | null
   }
 
   export const clazz = defineComponent({
@@ -21,10 +21,29 @@ namespace StorageImg {
     props: {
       ...Img.props,
       nodeId: { type: String, default: '' },
-      autoSpinner: { type: Boolean, default: false },
+      cache: { type: Object, default: null },
     },
 
     setup(props: Readonly<Props>, ctx) {
+      //----------------------------------------------------------------------
+      //
+      //  Lifecycle hooks
+      //
+      //----------------------------------------------------------------------
+
+      onMounted(() => {
+        // nodeIdがバインディングではなく直打ちされた場合、
+        // 直打ち分のnodeIdChanged()が呼び出されない挙動の対応
+        props.nodeId && nodeIdChanged(props.nodeId)
+      })
+
+      onUnmounted(() => {
+        // キャッシュが有効でない場合、オブジェクトURLをメモリから解放する
+        if (!props.cache) {
+          base.imgSrc.value && window.URL.revokeObjectURL(base.imgSrc.value)
+        }
+      })
+
       //----------------------------------------------------------------------
       //
       //  Variables
@@ -35,51 +54,96 @@ namespace StorageImg {
 
       let canceler: Canceler | null = null
 
+      // プロパティとして入力された画像ソース
+      const inputSrc = ref('')
+
+      //----------------------------------------------------------------------
+      //
+      //  Methods
+      //
+      //----------------------------------------------------------------------
+
+      base.clear.value = () => {
+        base.clear.super()
+        ctx.emit('update:nodeId', '')
+      }
+
       //----------------------------------------------------------------------
       //
       //  Internal methods
       //
       //----------------------------------------------------------------------
 
-      base.srcChanged.value = async (newValue: string, oldValue?: string) => {
-        cancel()
-        base.beforeLoad(newValue)
-        if (newValue) {
-          const response = await load(newValue)
-          base.inputSrc.value = window.URL.createObjectURL(response.data)
-        } else {
-          base.inputSrc.value = ''
-        }
-      }
-
       async function nodeIdChanged(newValue: string, oldValue?: string): Promise<void> {
-        cancel()
-        base.beforeLoad(newValue)
-        if (newValue) {
-          const response = await load(StorageLogic.getNodeURL(newValue))
-          base.inputSrc.value = window.URL.createObjectURL(response.data)
+        await base.load()
+      }
+
+      base.load.value = async () => {
+        // 画像の入力ソースを取得
+        let src: string
+        if (props.nodeId) {
+          src = StorageLogic.getNodeURL(props.nodeId)
         } else {
-          base.inputSrc.value = ''
+          src = props.src
+        }
+
+        // 遅延ロードが有効な場合
+        if (props.lazy) {
+          // 次の条件が整っている場合のみ画像ロードが行われる
+          // - 表示領域に本コンポーネントが表示されている
+          // - 現画像の入力ソースとは別のソースが指定されている
+          const doLoad = base.isAppeared.value && inputSrc.value !== src
+          if (!doLoad) return
+        }
+
+        cancel()
+        base.beforeLoad(src)
+
+        // 画像の入力ソースを保存
+        inputSrc.value = src
+
+        // 画像の入力ソースが空の場合、画像をクリアして終了
+        if (!inputSrc.value) {
+          base.imgSrc.value = ''
+          return
+        }
+
+        // キャッシュがある場合
+        if (props.cache && props.cache[src]) {
+          base.imgSrc.value = props.cache[src]
+        }
+        // キャッシュがない場合
+        else {
+          // リクエスト用の認証ヘッダを取得
+          const authHeader = await getAuthHeader()
+
+          // 画像データをサーバーから取得
+          let response: AxiosResponse
+          try {
+            response = await axios.request({
+              url: src,
+              method: 'get',
+              responseType: 'blob',
+              headers: { ...authHeader },
+              cancelToken: new axios.CancelToken(c => {
+                canceler = c
+              }),
+            })
+          } catch (err) {
+            base.clearDisplay()
+            return
+          }
+
+          // 取得した画像データからオブジェクトURLを生成
+          base.imgSrc.value = window.URL.createObjectURL(response.data)
+          // オブジェクトURLをキャッシュ
+          props.cache && (props.cache[src] = base.imgSrc.value)
         }
       }
 
-      /**
-       * 指定されたURLの画像をBLOB形式でロードします。
-       * @param src
-       */
-      async function load(src: string): Promise<AxiosResponse> {
-        // リクエスト用の認証ヘッダを取得
-        const authHeader = await getAuthHeader()
-
-        return await axios.request({
-          url: src,
-          method: 'get',
-          responseType: 'blob',
-          headers: { ...authHeader },
-          cancelToken: new axios.CancelToken(c => {
-            canceler = c
-          }),
-        })
+      base.clearDisplay.value = () => {
+        base.clearDisplay.super()
+        inputSrc.value = ''
       }
 
       /**
@@ -112,6 +176,16 @@ namespace StorageImg {
         () => props.nodeId,
         (newValue: string, oldValue?: string) => {
           nodeIdChanged(newValue, oldValue)
+        }
+      )
+
+      watch(
+        () => base.imgSrc.value,
+        (newValue: string, oldValue?: string) => {
+          // キャッシュが有効でない場合、前のオブジェクトURLをメモリから解放する
+          if (!props.cache) {
+            oldValue && window.URL.revokeObjectURL(oldValue)
+          }
         }
       )
 

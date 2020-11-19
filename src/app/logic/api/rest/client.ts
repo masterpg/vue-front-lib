@@ -1,5 +1,5 @@
 import axios, { Method, ResponseType } from 'axios'
-import { getIdToken } from '@/app/logic'
+import { sgetIdToken } from '@/app/logic/base'
 import { useConfig } from '@/app/config'
 
 //========================================================================
@@ -82,7 +82,7 @@ namespace RESTAPIClient {
       delete axiosConfig.isAuth
 
       if (config.isAuth) {
-        const idToken = await getIdToken()
+        const idToken = await sgetIdToken()
         axiosConfig.headers = {
           ...(axiosConfig.headers || {}),
           Authorization: `Bearer ${idToken}`,

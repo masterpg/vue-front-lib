@@ -257,13 +257,14 @@ namespace TestAPIContainer {
     //----------------------------------------------------------------------
 
     function _setTestAuthToken(token: string | undefined): void {
-      td.replace(require('@/app/logic/api/base'), 'getIdToken', () => token)
+      td.replace(require('@/app/logic/base'), 'getIdToken', () => token)
+      td.replace(require('@/app/logic/base'), 'sgetIdToken', () => token)
     }
 
     async function _getTestAuthToken(): Promise<string | undefined> {
       let idToken: string | undefined
       try {
-        idToken = await require('@/app/logic/api/base').getIdToken()
+        idToken = await require('@/app/logic/base').getIdToken()
       } catch {}
       return idToken
     }

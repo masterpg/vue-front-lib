@@ -6,10 +6,16 @@ import { extendedMethod } from '@/app/base'
 
 interface Img extends Img.Props {
   spinner(spin: boolean): void
+  /**
+   * 画像表示をクリアします。
+   */
+  clear(): void
   readonly el: HTMLElement
 }
 
 type AlignType = 'start' | 'center' | 'end'
+
+type LazyOptions = { root?: HTMLElement; rootMargin?: string }
 
 namespace Img {
   export interface Props {
@@ -17,13 +23,19 @@ namespace Img {
     alt: string
     hAlign: AlignType
     vAlign: AlignType
+    lazy: boolean
+    lazyOptions: LazyOptions
+    noEffect: boolean
   }
 
   export const props = {
     src: { type: String, default: '' },
-    alt: { type: String, default: '' },
+    alt: { type: String, default: 'Cannot load image' },
     hAlign: { type: String, default: 'center' },
     vAlign: { type: String, default: 'center' },
+    lazy: { type: Boolean, default: false },
+    lazyOptions: { type: Object, default: () => {} },
+    noEffect: { type: Boolean, default: false },
   }
 
   export const clazz = defineComponent({
@@ -47,6 +59,13 @@ namespace Img {
       clearAlignClass()
       hAlignChanged(props.hAlign)
       vAlignChanged(props.vAlign)
+
+      // IntersectionObserverの設定
+      setupIntersectionObserver()
+
+      // srcがバインディングではなく直打ちされた場合、
+      // 直打ち分のsrcChanged()が呼び出されない挙動の対応
+      props.src && srcChanged(props.src)
     })
 
     //----------------------------------------------------------------------
@@ -60,7 +79,13 @@ namespace Img {
     const img = ref<HTMLImageElement>()
     const spinnerContainer = ref<HTMLElement>()
 
-    const inputSrc = ref('')
+    // imgタグの画像ソース
+    const imgSrc = ref('')
+
+    // 画像が表示領域に表示されているかを示すフラグ
+    const isAppeared = ref(false)
+
+    let observer: IntersectionObserver | null = null
 
     //----------------------------------------------------------------------
     //
@@ -69,7 +94,10 @@ namespace Img {
     //----------------------------------------------------------------------
 
     const spinner: Img['spinner'] = spin => {
+      if (props.noEffect) return
+
       if (spin) {
+        img.value!.style.opacity = '0'
         const opacity = parseFloat(spinnerContainer.value!.style.opacity || '0')
         if (opacity === 1) {
           spinnerContainer.value!.style.opacity = '0'
@@ -94,6 +122,11 @@ namespace Img {
       }
     }
 
+    const clear = extendedMethod<Img['clear']>(() => {
+      clearDisplay()
+      ctx.emit('update:src', '')
+    })
+
     //----------------------------------------------------------------------
     //
     //  Internal methods
@@ -105,9 +138,56 @@ namespace Img {
      * @param newValue
      * @param oldValue
      */
-    const srcChanged = extendedMethod<(newValue: string, oldValue?: string) => Promise<void>>(async (newValue, oldValue) => {
-      beforeLoad(newValue)
-      inputSrc.value = newValue
+    async function srcChanged(newValue: string, oldValue?: string): Promise<void> {
+      await load()
+    }
+
+    /**
+     * `isAppeared`が変更された際の処理を行います。
+     */
+    const isAppearedChanged = extendedMethod(async (visible: boolean) => {
+      await load()
+    })
+
+    /**
+     * `IntersectionObserver`の設定を行います。
+     */
+    function setupIntersectionObserver(): void {
+      if (observer) {
+        observer.disconnect()
+        observer = null
+        isAppeared.value = false
+      }
+
+      if (!props.lazy) return
+
+      observer = new IntersectionObserver((entries, observer) => {
+        const newIsAppeared = entries[0].isIntersecting
+        if (isAppeared.value !== newIsAppeared) {
+          isAppeared.value = newIsAppeared
+          isAppearedChanged(newIsAppeared)
+        }
+      }, props.lazyOptions)
+
+      observer.observe(img.value!)
+    }
+
+    /**
+     * 画像ロードを行います。
+     * @param src
+     */
+    const load = extendedMethod(async () => {
+      // 遅延ロードが有効な場合
+      if (props.lazy) {
+        // 次の条件が整っている場合のみ画像ロードが行われる
+        // - 表示領域に本コンポーネントが表示されている
+        // - 現画像のソースとは別のソースが指定されている
+        const doLoad = isAppeared.value && imgSrc.value !== props.src
+        if (!doLoad) return
+      }
+
+      beforeLoad(props.src)
+      imgSrc.value = props.src
     })
 
     /**
@@ -117,13 +197,10 @@ namespace Img {
     function beforeLoad(src: string): void {
       if (!img.value) return
 
-      img.value!.style.opacity = '0'
       if (src) {
         spinner(true)
       } else {
         spinner(false)
-        img.value!.style.width = '0'
-        img.value!.style.height = '0'
       }
 
       // 現在の画像のサイズを一旦固定
@@ -132,6 +209,16 @@ namespace Img {
       img.value!.style.width = imgStyle.width
       img.value!.style.height = imgStyle.height
     }
+
+    /**
+     * 画面表示のクリアを行います。
+     */
+    const clearDisplay = extendedMethod(() => {
+      imgSrc.value = ''
+      spinner(false)
+      img.value!.style.width = 'auto'
+      img.value!.style.height = 'auto'
+    })
 
     /**
      * hAlignプロパティが変更された際の処理を行います。
@@ -209,12 +296,15 @@ namespace Img {
     }
 
     function fadeInImg() {
+      if (props.noEffect) return
+
       anime({
         targets: img.value!,
         opacity: 1,
         duration: 500,
         easing: 'easeInOutQuad',
       })
+      spinner(false)
     }
 
     //----------------------------------------------------------------------
@@ -244,13 +334,31 @@ namespace Img {
       }
     )
 
+    watch(
+      () => props.lazy,
+      (newValue: boolean, oldValue?: boolean) => {
+        setupIntersectionObserver()
+      }
+    )
+
+    watch(
+      () => props.lazyOptions,
+      (newValue: LazyOptions, oldValue?: LazyOptions) => {
+        setupIntersectionObserver()
+      },
+      { deep: true }
+    )
+
     function imgOnLoad() {
       // ロードされた画像サイズへ自動調整
       img.value!.style.width = 'auto'
       img.value!.style.height = 'auto'
 
       fadeInImg()
-      spinner(false)
+    }
+
+    function imgOnError(e: any) {
+      clearDisplay()
     }
 
     //----------------------------------------------------------------------
@@ -264,16 +372,20 @@ namespace Img {
       container,
       img,
       spinnerContainer,
-      inputSrc,
+      imgSrc,
+      isAppeared,
       spinner,
-      srcChanged,
+      clear,
+      load,
       beforeLoad,
+      clearDisplay,
       imgOnLoad,
+      imgOnError,
     }
   }
 }
 
 export default Img.clazz
 // eslint-disable-next-line no-undef
-export { Img, AlignType }
+export { Img, AlignType, LazyOptions }
 </script>
