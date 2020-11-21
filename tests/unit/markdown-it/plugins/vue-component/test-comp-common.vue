@@ -1,5 +1,5 @@
 <template>
-  <span>{{ displayValue }}</span>
+  <div>{{ displayValue }}</div>
 </template>
 
 <script lang="ts">
@@ -12,9 +12,9 @@ interface TestCompCommon extends TestCompCommon.Props {
 namespace TestCompCommon {
   export interface Props {
     person: { name: string; age: number }
-    arr: string[]
     flag: boolean
-    num: number
+    arr?: string[]
+    num?: number
   }
 
   export const clazz = defineComponent({
@@ -22,19 +22,19 @@ namespace TestCompCommon {
 
     props: {
       person: { type: Object, default: () => ({ name: 'Anonymous', age: 0 }) },
-      arr: { type: Array, default: () => [] },
       flag: { type: Boolean, default: false },
-      num: { type: Number, default: 0 },
+      num: { type: Number, required: false },
+      arr: { type: Array, required: false },
     },
 
     setup(props: Readonly<Props>, ctx) {
       const displayValue = computed(() => {
         const name = `name: ${props.person.name}`
         const age = `age: ${props.person.age}`
-        const arr = `arr: [${props.arr.join(', ')}]`
-        const flag = `flag: ${props.flag}`
-        const num = `num: ${props.num}`
-        return `${name}, ${age}, ${arr}, ${flag}, ${num}`
+        const flag = typeof props.flag === 'boolean' ? `flag: ${props.flag}` : ''
+        const num = typeof props.num === 'number' ? `num: ${props.num}` : ''
+        const arr = Array.isArray(props.arr) ? `arr: [${props.arr.join(', ')}]` : ''
+        return [name, age, flag, num, arr].filter(Boolean).join(', ')
       })
 
       return {

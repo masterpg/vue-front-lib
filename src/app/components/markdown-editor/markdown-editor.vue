@@ -23,12 +23,10 @@
 
 .preview-container
   height: 100%
-  overflow: hidden
+  overflow: auto
 
   .preview-html
-    height: 100%
     padding: 2px 10px
-    overflow: auto
     background-color: white
 
 .control-bar
@@ -54,7 +52,7 @@
           @mouseover="editorContainerOnStartScroll"
           @touchstart="editorContainerOnStartScroll"
         >
-          <q-resize-observer @resize="onResize" />
+          <q-resize-observer @resize="editorOnResize" />
         </div>
       </div>
     </template>
@@ -67,14 +65,17 @@
           <q-btn v-show="viewType === 'preview'" icon="chevron_right" color="primary" size="sm" padding="xs" flat @click="splitButtonOnClick" />
           <q-btn v-show="viewType === 'preview'" icon="last_page" color="primary" size="sm" padding="xs" flat @click="editorButtonOnClick" />
         </div>
-        <div class="preview-container">
-          <div
-            ref="previewHTML"
-            class="preview-html markdown-body"
-            @mouseover="previewHTMLOnStartScroll"
-            @touchstart="previewHTMLOnStartScroll"
-            @wheel="previewHTMLOnStartScroll"
-          />
+        <div ref="previewContainer" class="preview-container">
+          <div>
+            <div
+              ref="previewHTML"
+              class="preview-html markdown-body"
+              @mouseover="previewHTMLOnStartScroll"
+              @touchstart="previewHTMLOnStartScroll"
+              @wheel="previewHTMLOnStartScroll"
+            />
+            <q-resize-observer @resize="previewOnResize" />
+          </div>
         </div>
       </div>
     </template>
@@ -96,12 +97,12 @@
 
 import 'highlight.js/styles/github.css'
 import * as monaco from 'monaco-editor'
+import { MarkdownItVueComponent, parseMarkdownItVueComponent } from '@/markdown-it'
 import { Ref, computed, defineComponent, onMounted, ref } from '@vue/composition-api'
 import { Img } from '@/app/components/img/img.vue'
 import MarkdownIt from 'markdown-it'
-import { MarkdownItVueComponent } from '@/markdown-it'
-import { QSplitter } from 'quasar'
 import { RenderRule } from 'markdown-it/lib/renderer'
+import { StorageImg } from '@/app/components/storage'
 import cheatSheet from '@/demo/views/markdown/cheat-sheet.md'
 import debounce from 'lodash/debounce'
 import hljs from 'highlight.js'
@@ -132,10 +133,6 @@ namespace MarkdownEditor {
   export const clazz = defineComponent({
     name: 'MarkdownEditor',
 
-    components: {
-      Img: Img.clazz,
-    },
-
     props: {
       size: { type: String, default: '26px' },
       color: { type: String, default: 'grey-6' },
@@ -165,6 +162,7 @@ namespace MarkdownEditor {
       const VIEW_MIN_WITH = 20
 
       const editorContainer = ref<HTMLElement>()
+      const previewContainer = ref<HTMLElement>()
       const previewHTML = ref<HTMLDivElement>()
 
       let editor: monaco.editor.IStandaloneCodeEditor | null = null
@@ -200,6 +198,8 @@ namespace MarkdownEditor {
         }
       })
 
+      const imgCache: { [src: string]: string } = {}
+
       //----------------------------------------------------------------------
       //
       //  Internal methods
@@ -207,10 +207,6 @@ namespace MarkdownEditor {
       //----------------------------------------------------------------------
 
       function init(): void {
-        updateResult = debounce(updateResultFunc, 300, { maxWait: 500 })
-        syncEditorScrollToPreview = debounce(syncEditorScrollToPreviewFunc, 50, { maxWait: 50 })
-        syncPreviewScrollToEditor = debounce(syncPreviewScrollToEditorFunc, 50, { maxWait: 50 })
-
         //
         // Monacoエディタの生成
         //
@@ -226,7 +222,7 @@ namespace MarkdownEditor {
         })
 
         editor.onDidChangeModelContent(e => {
-          updateResult()
+          updatePreview()
         })
 
         editorContainer.value!.firstChild!.addEventListener('wheel', editorContainerOnStartScroll)
@@ -263,7 +259,7 @@ namespace MarkdownEditor {
         }
 
         mdParserInit()
-        updateResult()
+        updatePreview()
       }
 
       /**
@@ -280,9 +276,7 @@ namespace MarkdownEditor {
           .use(require('markdown-it-mark'))
           .use(require('markdown-it-sub'))
           .use(require('markdown-it-sup'))
-          .use(MarkdownItVueComponent, {
-            components: { Img: Img.clazz },
-          })
+          .use(MarkdownItVueComponent)
 
         // Beautify output of parser for html content
         // md.renderer.rules.table_open = function() {
@@ -312,15 +306,38 @@ namespace MarkdownEditor {
       /**
        * 入力されたMarkdownテキストをパースしてプレビュー領域へ出力します。
        */
-      let updateResult!: () => void
+      const updatePreview = debounce(updatePreviewFunc, 300, { maxWait: 500 })
 
-      function updateResultFunc(): void {
+      function updatePreviewFunc(): void {
         if (!editor) return
 
         const source = editor.getValue()
         previewHTML.value!.innerHTML = md.render(source)
 
         scrollLineItems = null
+
+        // Markdownがレンダリングされた要素からVueコンポーネント情報を抽出し、
+        // 抽出した場所にVueコンポーネントを生成して埋め込み
+        parseMarkdownItVueComponent(previewHTML.value!, {
+          Img: {
+            component: Img.clazz,
+            props: {
+              noEffect: true,
+            },
+          },
+          StorageImg: {
+            component: StorageImg.clazz,
+            props: {
+              noEffect: true,
+              lazy: false,
+              lazyOptions: {
+                root: previewContainer.value!,
+                rootMargin: '300px',
+              },
+              cache: imgCache,
+            },
+          },
+        })
       }
 
       /**
@@ -345,20 +362,20 @@ namespace MarkdownEditor {
         }
 
         // プレビュー領域に出力された'.line'CSSクラスが付与された要素を取得しループ
-        const resultLinesEl = Array.from<HTMLElement>(previewHTML.value!.querySelectorAll('.line'))
-        for (const resultLineEl of resultLinesEl) {
+        const previewLinesEl = Array.from<HTMLElement>(previewHTML.value!.querySelectorAll('.line'))
+        for (const previewLineEl of previewLinesEl) {
           // 行要素から'data-line'属性の値(行番号)を取得
-          const resultLineStr = resultLineEl.getAttribute('data-line')
-          if (!resultLineStr) continue
+          const previewLineStr = previewLineEl.getAttribute('data-line')
+          if (!previewLineStr) continue
 
-          const resultLineIndex = parseInt(resultLineStr) - 1
-          const lineItem = result[resultLineIndex]
+          const previewLineIndex = parseInt(previewLineStr) - 1
+          const lineItem = result[previewLineIndex]
           if (!lineItem) continue
 
           // プレビュー領域のトップから行要素までの距離を取得
-          const resultHTMLStyle = window.getComputedStyle(previewHTML.value!)
-          const offsetTop = Math.round(parseFloat(resultHTMLStyle.paddingTop || '0')) + previewHTML.value!.offsetTop
-          lineItem.previewTop = Math.round(resultLineEl.offsetTop - offsetTop)
+          const previewHTMLStyle = window.getComputedStyle(previewHTML.value!)
+          const offsetTop = Math.round(parseFloat(previewHTMLStyle.paddingTop || '0')) + previewHTML.value!.offsetTop
+          lineItem.previewTop = Math.round(previewLineEl.offsetTop - offsetTop)
         }
 
         // ｢先頭行｣と｢末尾行｣のMarkdown結果トップ位置を設定
@@ -405,7 +422,7 @@ namespace MarkdownEditor {
        * エディター領域のスクロールとプレビュー領域を同期させるための処理を行います。
        * ※この関数はパフォーマンスを重視しており、スクロールイベントに紐付けられます。
        */
-      let syncEditorScrollToPreview!: () => void
+      const syncEditorScrollToPreview = debounce(syncEditorScrollToPreviewFunc, 50, { maxWait: 50 })
 
       function syncEditorScrollToPreviewFunc(): void {
         if (!editor) return
@@ -422,9 +439,9 @@ namespace MarkdownEditor {
           const nextLine = i === lastIndex ? null : scrollLineItems[i + 1]
 
           if (nextLine === null) {
-            previewHTML.value!.scrollTop = scrollLineItems[lastIndex].previewTop
+            previewContainer.value!.scrollTop = scrollLineItems[lastIndex].previewTop
           } else if (currentLine.editorTop <= scrollTop && scrollTop < nextLine.editorTop) {
-            previewHTML.value!.scrollTop = currentLine.previewTop
+            previewContainer.value!.scrollTop = currentLine.previewTop
             break
           }
         }
@@ -434,7 +451,7 @@ namespace MarkdownEditor {
        * エディター領域のスクロールとプレビュー領域を同期させるための処理を行います。
        */
       function updateEditorScrollToPreview(): void {
-        updateResult()
+        updatePreview()
         scrollLineItems = null
         syncEditorScrollToPreviewFunc()
       }
@@ -443,7 +460,7 @@ namespace MarkdownEditor {
        * プレビュー領域のスクロールとエディター領域を同期させるための処理を行います。
        * ※この関数はパフォーマンスを重視しており、スクロールイベントに紐付けられます。
        */
-      let syncPreviewScrollToEditor!: () => void
+      const syncPreviewScrollToEditor = debounce(syncPreviewScrollToEditorFunc, 50, { maxWait: 50 })
 
       function syncPreviewScrollToEditorFunc(): void {
         if (!editor) return
@@ -453,7 +470,7 @@ namespace MarkdownEditor {
         }
         if (!scrollLineItems) return
 
-        const scrollTop = previewHTML.value!.scrollTop
+        const scrollTop = previewContainer.value!.scrollTop
         for (let i = 0; i < scrollLineItems.length; i++) {
           const lastIndex = scrollLineItems.length - 1
           const currentLine = scrollLineItems[i]
@@ -472,7 +489,7 @@ namespace MarkdownEditor {
        * プレビュー領域のスクロールとエディター領域を同期させるための処理を行います。
        */
       function updatePreviewScrollToEditor(): void {
-        updateResult()
+        updatePreview()
         scrollLineItems = null
         syncPreviewScrollToEditorFunc()
       }
@@ -501,14 +518,14 @@ namespace MarkdownEditor {
        */
       function addPreviewScrollLister(): void {
         removeEditorScrollLister()
-        previewHTML.value!.addEventListener('scroll', syncPreviewScrollToEditor)
+        previewContainer.value!.addEventListener('scroll', syncPreviewScrollToEditor)
       }
 
       /**
        * プレビュー領域のスクロールにエディター領域を同期させるためのイベントリスナーを解除します。
        */
       function removePreviewScrollLister(): void {
-        previewHTML.value!.removeEventListener('scroll', syncPreviewScrollToEditor)
+        previewContainer.value!.removeEventListener('scroll', syncPreviewScrollToEditor)
       }
 
       /**
@@ -551,14 +568,19 @@ namespace MarkdownEditor {
       //
       //----------------------------------------------------------------------
 
-      function onResize(size: { width: string; height: string }) {
+      function editorOnResize(size: { width: string; height: string }) {
         if (!editor) return
 
-        updateResult()
+        updatePreview()
         editor.layout({
           width: myParseInt(size.width),
           height: myParseInt(size.height),
         })
+      }
+
+      function previewOnResize(size: { width: string; height: string }) {
+        scrollLineItems = null
+        syncEditorScrollToPreview()
       }
 
       /**
@@ -664,10 +686,12 @@ namespace MarkdownEditor {
 
       return {
         editorContainer,
+        previewContainer,
         previewHTML,
         splitterModel,
         viewType,
-        onResize,
+        editorOnResize,
+        previewOnResize,
         editorContainerOnStartScroll,
         previewHTMLOnStartScroll,
         editorButtonOnClick,

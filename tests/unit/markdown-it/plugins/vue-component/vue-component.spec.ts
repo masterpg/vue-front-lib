@@ -1,8 +1,14 @@
-import { MarkdownItVueComponent, getMarkdownItVueComponentBodyData, getMarkdownItVueComponentPropsData } from '@/markdown-it'
+import {
+  MarkdownItVueComponent,
+  getMarkdownItVueComponentBodyData,
+  getMarkdownItVueComponentPropsData,
+  parseMarkdownItVueComponent,
+} from '@/markdown-it'
 import MarkdownIt from 'markdown-it'
 import { TestCompBlock } from './test-comp-block.vue'
 import { TestCompCommon } from './test-comp-common.vue'
 import { TestCompInline } from './test-comp-inline.vue'
+import beautify from 'js-beautify'
 import { join } from 'path'
 import { mount } from '@vue/test-utils'
 import testgen from 'markdown-it-testgen'
@@ -312,5 +318,110 @@ describe('getMarkdownItVueComponentPropsData', () => {
       expect(actual.oth3).toEqual(`aaa`)
       expect(actual.oth4).toEqual(`bbb`)
     })
+  })
+})
+
+describe('parseMarkdownItVueComponent', () => {
+  function formatHTML(html: string): string {
+    return beautify.html(html, {
+      indent_size: 2,
+    })
+  }
+
+  it('ブロックコンポーネント', () => {
+    // data-vue-component-props = { yourName: "Taro" }
+    const mdRenderedEl = document.createElement('div')
+    mdRenderedEl.innerHTML = `
+      <p>AAA</p>
+      <div style="display: none;" data-vue-component-name="TestCompBlock" data-vue-component-props="eyJ5b3VyTmFtZSI6IlRhcm8ifQ=="></div>
+      <p>BBB</p>
+    `
+    parseMarkdownItVueComponent(mdRenderedEl, {
+      TestCompBlock: { component: TestCompBlock.clazz },
+    })
+
+    const actual = formatHTML(mdRenderedEl.outerHTML)
+    const expected = formatHTML(`
+      <div>
+        <p>AAA</p>
+        <div>Taro</div>
+        <p>BBB</p>
+      </div>
+    `)
+    expect(actual).toBe(expected)
+  })
+
+  it('インラインコンポーネント', () => {
+    // data-vue-component-props = { yourName: "Taro" }
+    const mdRenderedEl = document.createElement('div')
+    mdRenderedEl.innerHTML = `
+      <p>AAA <span style="display: none;" data-vue-component-name="TestCompInline" data-vue-component-props="eyJ5b3VyTmFtZSI6IlRhcm8ifQ=="></span> BBB</p>
+    `
+    parseMarkdownItVueComponent(mdRenderedEl, {
+      TestCompInline: { component: TestCompInline.clazz },
+    })
+
+    const actual = formatHTML(mdRenderedEl.outerHTML)
+    const expected = formatHTML(`
+      <div>
+        <p>AAA <span>Taro</span> BBB</p>
+      </div>
+    `)
+    expect(actual).toBe(expected)
+  })
+
+  it('コンポーネントにデフォルトプロパティを指定', () => {
+    // data-vue-component-props = { person: { name: "Taro", age: 18 } }
+    const mdRenderedEl = document.createElement('div')
+    mdRenderedEl.innerHTML = `
+      <p>AAA</p>
+      <div style="display: none;" data-vue-component-name="TestCompCommon" data-vue-component-props="eyJwZXJzb24iOnsibmFtZSI6IlRhcm8iLCJhZ2UiOjE4fX0="></div>
+      <p>BBB</p>
+    `
+    parseMarkdownItVueComponent(mdRenderedEl, {
+      TestCompCommon: {
+        component: TestCompCommon.clazz,
+        // デフォルトプロパティを指定
+        props: {
+          person: { name: 'default', age: 999 },
+          flag: true,
+          num: 999,
+          arr: ['a', 'b'],
+        },
+      },
+    })
+
+    const actual = formatHTML(mdRenderedEl.outerHTML)
+    const expected = formatHTML(`
+      <div>
+        <p>AAA</p>
+        <div>name: Taro, age: 18, flag: true, num: 999, arr: [a, b]</div>
+        <p>BBB</p>
+      </div>
+    `)
+    expect(actual).toBe(expected)
+  })
+
+  it('CSSクラスの適用', () => {
+    // data-vue-component-props = { class: "class1 class2" }
+    const mdRenderedEl = document.createElement('div')
+    mdRenderedEl.innerHTML = `
+      <p>AAA</p>
+      <div style="display: none;" data-vue-component-name="TestCompCommon" data-vue-component-props="eyJjbGFzcyI6ImNsYXNzMSBjbGFzczIifQ=="></div>
+      <p>BBB</p>
+    `
+    parseMarkdownItVueComponent(mdRenderedEl, {
+      TestCompCommon: { component: TestCompCommon.clazz },
+    })
+
+    const actual = formatHTML(mdRenderedEl.outerHTML)
+    const expected = formatHTML(`
+      <div>
+        <p>AAA</p>
+        <div class="class1 class2">name: Anonymous, age: 0, flag: false</div>
+        <p>BBB</p>
+      </div>
+    `)
+    expect(actual).toBe(expected)
   })
 })

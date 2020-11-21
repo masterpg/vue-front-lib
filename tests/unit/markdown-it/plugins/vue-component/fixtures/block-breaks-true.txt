@@ -11,7 +11,7 @@ AAA
 BBB
 .
 <p>AAA</p>
-<div>Taro</div>
+<div style="display: none;" data-vue-component-name="TestCompBlock" data-vue-component-props="eyJ5b3VyTmFtZSI6IlRhcm8ifQ=="></div>
 <p>BBB</p>
 .
 
@@ -32,7 +32,7 @@ AAA
 BBB
 .
 <p>AAA<br>
-@vue.TestCompBlock({ yourName: "Taro" })</p>
+<span style="display: none;" data-vue-component-name="TestCompBlock" data-vue-component-props="eyJ5b3VyTmFtZSI6IlRhcm8ifQ=="></span></p>
 <p>BBB</p>
 .
 
@@ -44,7 +44,7 @@ AAA
 BBB
 .
 <p>AAA</p>
-<p>@vue.TestCompBlock({ yourName: "Taro" })<br>
+<p><span style="display: none;" data-vue-component-name="TestCompBlock" data-vue-component-props="eyJ5b3VyTmFtZSI6IlRhcm8ifQ=="></span><br>
 BBB</p>
 .
 
@@ -57,6 +57,6 @@ AAA
 BBB
 .
 <p>AAA</p>
-<p>@vue.XXX()</p>
+<div style="display: none;" data-vue-component-name="XXX" data-vue-component-props="e30="></div>
 <p>BBB</p>
 .

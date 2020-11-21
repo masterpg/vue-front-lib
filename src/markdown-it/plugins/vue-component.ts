@@ -19,9 +19,7 @@ interface TokenEx extends Omit<Token, 'info'> {
   }
 }
 
-interface OptionsEx extends MarkdownIt.Options {
-  components: { [name: string]: Constructor }
-}
+interface OptionsEx extends MarkdownIt.Options {}
 
 interface VueComponentData {
   component: string
@@ -45,44 +43,6 @@ type PropValueType = PrimitiveType | JSONType
 //  Implementation
 //
 //========================================================================
-
-/**
- * Vueコンポーネントのインスタンスを生成します。
- * @param token markdown-itのトークン
- * @param components Vueコンポーネントクラスのリスト
- */
-function newVueComponent(token: TokenEx, components: { [name: string]: Constructor }): Vue | undefined {
-  // トークンからVueコンポーネントを生成するためのデータを取得
-  const compData = token.info
-
-  // 生成するVueコンポーネントクラスを取得
-  const component = components[compData.component]
-  if (!component) return undefined
-
-  // CSSクラスを取得
-  // 設定されている値の例: 'class1 class2'
-  const classes = compData.props.class
-  delete compData.props.class
-
-  // Vueコンポーネントのインスタンスを生成
-  const CompClass = Vue.extend(component)
-  const compInstance = new CompClass({
-    propsData: compData.props,
-  })
-  compInstance.$mount()
-
-  // Vueコンポーネントの要素にCSSクラスを付与
-  if (typeof classes === 'string' && classes) {
-    const classList = classes.split(' ').reduce((result, clazz) => {
-      clazz = clazz.trim()
-      if (clazz) result.push(clazz)
-      return result
-    }, [] as string[])
-    compInstance.$el.classList.add(...classList)
-  }
-
-  return compInstance
-}
 
 /**
  * Vueコンポーネントを生成するためのデータを取得(ブロック入力用)
@@ -288,74 +248,6 @@ function toPrimitiveValue(rawValue: string): PrimitiveType {
   return undefined
 }
 
-function isInlineElement(el: HTMLElement): boolean {
-  const inlines = [
-    'a',
-    'abbr',
-    'acronym',
-    'audio',
-    'b',
-    'bdi',
-    'bdo',
-    'big',
-    'br',
-    'button',
-    'canvas',
-    'cite',
-    'code',
-    'data',
-    'datalist',
-    'del',
-    'dfn',
-    'em',
-    'embed',
-    'i',
-    'iframe',
-    'img',
-    'input',
-    'ins',
-    'kbd',
-    'label',
-    'map',
-    'mark',
-    'meter',
-    'noscript',
-    'object',
-    'output',
-    'picture',
-    'progress',
-    'q',
-    'ruby',
-    's',
-    'samp',
-    'script',
-    'select',
-    'slot',
-    'small',
-    'span',
-    'strong',
-    'sub',
-    'sup',
-    'svg',
-    'template',
-    'textarea',
-    'time',
-    'u',
-    'tt',
-    'var',
-    'video',
-    'wbr',
-  ]
-
-  const display = el.style.display || ''
-
-  if (display === 'block') return false
-  if (display.startsWith('inline')) return true
-  if (inlines.includes(el.tagName.toLowerCase())) return true
-
-  return false
-}
-
 function MarkdownItVueComponent(md: MarkdownIt, options: OptionsEx) {
   //--------------------------------------------------
   //  Block
@@ -365,6 +257,8 @@ function MarkdownItVueComponent(md: MarkdownIt, options: OptionsEx) {
     const compData = getVueBlockComponentData(state, startLine, endLine)
     if (!compData) return false
 
+    // silent (validation) モードは、マークアップが空行なしで前のブロックを終了できるかどうかを
+    // チェックするために使用されます。これはブロックの終了の検出に備えるために使用されます。
     if (!silent) {
       // 'div'を指定しているが最終的に置き換えられるため'div'でなくてもよい
       const token = (state.push('vueBlock', 'div', 0) as any) as TokenEx
@@ -384,12 +278,9 @@ function MarkdownItVueComponent(md: MarkdownIt, options: OptionsEx) {
 
   md.renderer.rules['vueBlock'] = (tokens, idx) => {
     const token = (tokens[idx] as any) as TokenEx
-    const compInstance = newVueComponent(token, options['components'])
-    if (!compInstance) {
-      return `<p>${token.content}</p>\n`
-    }
-
-    return `${compInstance.$el.outerHTML}\n`
+    const componentName = token.info.component
+    const propsData = btoa(JSON.stringify(token.info.props))
+    return `<div style="display: none;" data-vue-component-name="${componentName}" data-vue-component-props="${propsData}"></div>\n`
   }
 
   //--------------------------------------------------
@@ -400,6 +291,8 @@ function MarkdownItVueComponent(md: MarkdownIt, options: OptionsEx) {
     const compData = getVueInlineComponentData(state)
     if (!compData) return false
 
+    // silent (validation) モードは、マークアップが空行なしで前のブロックを終了できるかどうかを
+    // チェックするために使用されます。これはブロックの終了の検出に備えるために使用されます。
     if (!silent) {
       // 'span'を指定しているが最終的に置き換えられるため'span'でなくてもよい
       const token = (state.push('vueInline', 'span', 0) as any) as TokenEx
@@ -418,16 +311,64 @@ function MarkdownItVueComponent(md: MarkdownIt, options: OptionsEx) {
 
   md.renderer.rules['vueInline'] = (tokens, idx) => {
     const token = (tokens[idx] as any) as TokenEx
-    const compInstance = newVueComponent(token, options['components'])
-    if (!compInstance) {
-      return token.content
+    const componentName = token.info.component
+    const propsData = btoa(JSON.stringify(token.info.props))
+    return `<span style="display: none;" data-vue-component-name="${componentName}" data-vue-component-props="${propsData}"></span>`
+  }
+}
+
+/**
+ * Markdownがレンダリングされた要素からVueコンポーネント情報を抽出し、
+ * 抽出した場所にVueコンポーネントを生成して埋め込みます。
+ * @param mdRenderedEl
+ * @param components
+ */
+function parseMarkdownItVueComponent(
+  mdRenderedEl: HTMLElement,
+  components: {
+    [name: string]: {
+      component: Constructor
+      props?: { [key: string]: any }
+    }
+  }
+): void {
+  const targets = mdRenderedEl.querySelectorAll('[data-vue-component-name]')
+  for (const target of targets) {
+    // Vueコンポーネントの情報が書き込まれた要素を取得
+    const name = target.getAttribute('data-vue-component-name')!
+    const compData = components[name]
+    if (!compData) continue
+
+    // 取得した要素からVueコンポーネントの情報を取得
+    let jsonProps: any
+    const binaryProps = target.getAttribute('data-vue-component-props')
+    if (binaryProps) {
+      try {
+        const jsonPropsStr = atob(binaryProps)
+        jsonProps = JSON.parse(jsonPropsStr)
+      } catch (err) {}
+    }
+    const { class: classes, ...embeddedPropsData } = jsonProps
+    const propsData = { ...compData.props, ...embeddedPropsData }
+
+    // Vueコンポーネントを生成
+    const ComponentClass = Vue.extend(compData.component)
+    const compInstance = new ComponentClass({ propsData })
+    compInstance.$mount()
+
+    // Vueコンポーネントの要素にCSSクラスを付与
+    if (typeof classes === 'string' && classes) {
+      const classList = classes.split(' ').reduce((result, clazz) => {
+        clazz = clazz.trim()
+        if (clazz) result.push(clazz)
+        return result
+      }, [] as string[])
+      compInstance.$el.classList.add(...classList)
     }
 
-    if (isInlineElement(compInstance.$el as HTMLElement)) {
-      return compInstance.$el.outerHTML
-    } else {
-      return token.content
-    }
+    // Vueコンポーネント情報を抽出した場所に生成したVueコンポーネントを埋め込み
+    const parent = (target as HTMLElement).parentElement!
+    parent.replaceChild(compInstance.$el, target)
   }
 }
 
@@ -437,4 +378,4 @@ function MarkdownItVueComponent(md: MarkdownIt, options: OptionsEx) {
 //
 //========================================================================
 
-export { MarkdownItVueComponent, getMarkdownItVueComponentBodyData, getMarkdownItVueComponentPropsData }
+export { MarkdownItVueComponent, getMarkdownItVueComponentBodyData, getMarkdownItVueComponentPropsData, parseMarkdownItVueComponent }
