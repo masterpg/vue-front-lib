@@ -14,7 +14,7 @@ import { extendedMethod } from '@/app/base'
  * アップロードファイルの情報です。
  */
 interface UploadFileParam {
-  data: Blob | Uint8Array | ArrayBuffer | File
+  data: Blob | Uint8Array | ArrayBuffer | File | string
   name: string
   dir: string
   contentType: string
@@ -342,8 +342,6 @@ namespace StorageUploader {
         try {
           // ファイルアップロード
           await uploadingFile.execute()
-          // ファイルアップロード後に必要な処理を実行
-          await storageLogic.handleUploadedFile(uploadingFile.path)
         } catch (err) {
           console.error(err)
         }
@@ -453,6 +451,8 @@ namespace StorageFileUploader {
     const size = computed(() => {
       if (uploadParam.data instanceof File || uploadParam.data instanceof Blob) {
         return uploadParam.data.size
+      } else if (typeof uploadParam.data === 'string') {
+        return new TextEncoder().encode(uploadParam.data).length
       } else {
         return uploadParam.data.byteLength
       }
@@ -482,8 +482,18 @@ namespace StorageFileUploader {
       const uploadPath = _path.join(basePath, path.value)
       const fileRef = firebase.storage().ref(uploadPath)
 
+      // アップロード可能なデータ形式へ変換
+      const uploadData = (() => {
+        if (typeof uploadParam.data === 'string') {
+          return new Blob([uploadParam.data])
+        } else {
+          return uploadParam.data
+        }
+      })()
+
       // アップロード実行
-      uploadTask = fileRef.put(uploadParam.data, {
+      uploadTask = fileRef.put(uploadData, {
+        contentType: contentType.value || null,
         customMetadata: { version },
       })
 
@@ -502,7 +512,14 @@ namespace StorageFileUploader {
               reject(err)
             }
           },
-          () => {
+          async () => {
+            try {
+              // ファイルアップロード後に必要な処理を実行
+              await storageLogic.handleUploadedFile(path.value)
+            } catch (err) {
+              reject(err)
+            }
+            // アップロード完了
             completed.value = true
             resolve()
           }
@@ -546,4 +563,4 @@ namespace StorageFileUploader {
 //
 //========================================================================
 
-export { UploadFileParam, StorageUploader, StorageFileUploader }
+export { StorageUploader, StorageFileUploader, UploadFileParam }

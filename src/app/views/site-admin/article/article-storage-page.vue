@@ -40,7 +40,6 @@
             @select="treeViewOnSelect($event)"
             @lazy-load="treeViewOnLazyLoad($event)"
             @node-action="popupMenuOnNodeAction"
-            @select-change="treeViewOnSelectChange($event)"
           />
         </div>
       </template>
@@ -62,7 +61,7 @@
               @deep-select="dirViewOnDeepSelect($event)"
               @node-action="popupMenuOnNodeAction($event)"
             />
-            <ArticleWritingView ref="writingView" v-show="visibleWritingView" class="flex-1" />
+            <ArticleWritingView ref="writingView" v-show="visibleWritingView" class="flex-1" :storage-type="storageType" />
             <StorageDirDetailView
               v-show="visibleDirDetailView"
               ref="dirDetailView"
@@ -154,7 +153,7 @@ namespace ArticleStoragePage {
       base.changeDir.value = nodePath => {
         base.changeDir.super(nodePath)
 
-        const node = pageLogic.sgetStorageNode({ path: nodePath })
+        const node = pageLogic.sgetTreeNode(nodePath)
         switch (node.nodeType) {
           case StorageNodeType.Dir: {
             // ディレクトリビューを表示
@@ -183,9 +182,11 @@ namespace ArticleStoragePage {
        * 記事編集ビューを表示します。
        * @param nodePath
        */
-      function showWritingView(nodePath: string): void {
+      async function showWritingView(nodePath: string): Promise<void> {
         visibleDirView.value = false
         visibleWritingView.value = true
+
+        await writingView.value!.load(nodePath)
       }
 
       //----------------------------------------------------------------------
@@ -231,10 +232,6 @@ namespace ArticleStoragePage {
         }
       }
 
-      function treeViewOnSelectChange(e: TreeViewSelectEvent<StorageTreeNode>) {
-        console.log(`new: '${e.node.label}', old: '${e.oldNode?.label}'`)
-      }
-
       //----------------------------------------------------------------------
       //
       //  Result
@@ -246,7 +243,6 @@ namespace ArticleStoragePage {
         writingView,
         visibleDirView,
         visibleWritingView,
-        treeViewOnSelectChange,
       }
     },
   })

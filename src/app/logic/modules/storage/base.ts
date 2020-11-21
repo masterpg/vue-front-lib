@@ -11,7 +11,7 @@ import {
 } from '@/app/logic/base'
 import { DeepReadonly, removeBothEndsSlash, removeEndSlash, removeStartDirChars } from 'web-base-lib'
 import { StorageDownloader, StorageFileDownloader, StorageFileDownloaderType } from '@/app/logic/modules/storage/download'
-import { StorageUploader } from '@/app/logic/modules/storage/upload'
+import { StorageFileUploader, StorageUploader, UploadFileParam } from '@/app/logic/modules/storage/upload'
 import _path from 'path'
 import { useConfig } from '@/app/config'
 
@@ -244,6 +244,8 @@ interface StorageLogic {
   handleUploadedFile(filePath: string): Promise<StorageNode>
 
   newUploader(owner: Ref<Element | undefined>): StorageUploader
+
+  newFileUploader(uploadParam: UploadFileParam): StorageFileUploader
 
   newDownloader(): StorageDownloader
 

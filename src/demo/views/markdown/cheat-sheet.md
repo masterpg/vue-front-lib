@@ -253,7 +253,7 @@ You can use your own Vue components. It can be used by writing as follows.
 @vue.Img({ src: "https://dummyimage.com/300x200", hAlign: "center" })
 ```
 
-`Img` is the class name of the Vue component. Write an argument in object format between `({ … })`.
+`Img` is the class name of the Vue component. Arguments should be written between `({ … })` in object format.
 
 @vue.Img({ src: "https://dummyimage.com/300x200", hAlign: "center" })
 

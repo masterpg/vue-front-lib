@@ -62,9 +62,13 @@ namespace StorageURLFileUploader {
         return
       }
 
+      // アップロード先のURLを取得
       const signedUploadUrl = await getSignedUploadUrl()
+
+      // アップロードデータを取得
       const fileData = await getFileData()
 
+      // アップロード実行
       try {
         await axios.request({
           url: signedUploadUrl,
@@ -90,6 +94,14 @@ namespace StorageURLFileUploader {
         return
       }
 
+      // ファイルアップロード後に必要な処理を実行
+      try {
+        await storageLogic.handleUploadedFile(base.path.value)
+      } catch (err) {
+        base.failed.value = true
+        throw err
+      }
+
       base.completed.value = true
     }
 
@@ -106,7 +118,14 @@ namespace StorageURLFileUploader {
 
     async function getFileData(): Promise<ArrayBuffer> {
       return new Promise<ArrayBuffer>((resolve, reject) => {
-        if (uploadParam.data instanceof Blob) {
+        let data: Blob | Uint8Array | ArrayBuffer | File
+        if (typeof uploadParam.data === 'string') {
+          data = new Blob([uploadParam.data])
+        } else {
+          data = uploadParam.data
+        }
+
+        if (data instanceof Blob) {
           const reader = new FileReader()
           reader.onload = () => {
             resolve(reader.result as ArrayBuffer)
@@ -114,9 +133,9 @@ namespace StorageURLFileUploader {
           reader.onerror = () => {
             reject(`Error occurred reading file: "${base.path.value}"`)
           }
-          reader.readAsArrayBuffer(uploadParam.data)
+          reader.readAsArrayBuffer(data)
         } else {
-          resolve(uploadParam.data)
+          resolve(data)
         }
       })
     }

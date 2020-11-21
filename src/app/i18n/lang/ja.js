@@ -5,6 +5,7 @@ export default {
     create: '作成',
     update: '更新',
     delete: '削除',
+    save: '保存',
     entry: '登録',
     send: '送信',
     failed: '失敗',

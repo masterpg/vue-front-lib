@@ -5,6 +5,7 @@ export default {
     create: 'Create',
     update: 'Update',
     delete: 'Delete',
+    save: 'Save',
     entry: 'Entry',
     send: 'Send',
     failed: 'Failed',

@@ -7,13 +7,14 @@
 
 <template>
   <div class="MarkdownItDemoPage">
-    <MarkdownEditor />
+    <MarkdownEditor v-model="mdSrc" />
   </div>
 </template>
 
 <script lang="ts">
+import { defineComponent, ref } from '@vue/composition-api'
 import { MarkdownEditor } from '@/app/components/markdown-editor'
-import { defineComponent } from '@vue/composition-api'
+import cheatSheet from '@/demo/views/markdown/cheat-sheet.md'
 
 namespace MarkdownDemoPage {
   export const clazz = defineComponent({
@@ -23,7 +24,13 @@ namespace MarkdownDemoPage {
       MarkdownEditor: MarkdownEditor.clazz,
     },
 
-    setup(props, ctx) {},
+    setup(props, ctx) {
+      const mdSrc = ref(cheatSheet)
+
+      return {
+        mdSrc,
+      }
+    },
   })
 }
 

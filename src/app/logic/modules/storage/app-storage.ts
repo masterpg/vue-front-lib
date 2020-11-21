@@ -8,10 +8,10 @@ import {
 } from '@/app/logic'
 import { DeepReadonly, arrayToDict, splitHierarchicalPaths } from 'web-base-lib'
 import { StorageDownloader, StorageFileDownloader } from '@/app/logic/modules/storage/download'
+import { StorageFileUploader, StorageUploader } from '@/app/logic/modules/storage/upload'
 import { computed, reactive } from '@vue/composition-api'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import { StorageURLUploader } from '@/app/logic/modules/storage/upload-url'
-import { StorageUploader } from '@/app/logic/modules/storage/upload'
 import { extendedMethod } from '@/app/base'
 import { injectAPI } from '@/app/logic/api'
 import { injectStore } from '@/app/logic/store'
@@ -460,6 +460,10 @@ namespace AppStorageLogic {
       return StorageUploader.newInstance(instance, owner)
     }
 
+    const newFileUploader: AppStorageLogic['newFileUploader'] = uploadParam => {
+      return StorageFileUploader.newInstance(instance, uploadParam)
+    }
+
     const newUrlUploader: AppStorageLogic['newUrlUploader'] = owner => {
       return StorageURLUploader.newInstance(instance, owner)
     }
@@ -727,6 +731,7 @@ namespace AppStorageLogic {
       setFileShareSettings,
       handleUploadedFile,
       newUploader,
+      newFileUploader,
       newDownloader,
       newUrlUploader,
       newFileDownloader,

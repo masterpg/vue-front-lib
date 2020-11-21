@@ -1,4 +1,12 @@
-import { ArticleStorageLogic, StorageDownloader, StorageFileDownloader, StorageFileDownloaderType, StorageLogic } from '@/app/logic/modules/storage'
+import {
+  ArticleStorageLogic,
+  StorageDownloader,
+  StorageFileDownloader,
+  StorageFileDownloaderType,
+  StorageFileUploader,
+  StorageLogic,
+  UploadFileParam,
+} from '@/app/logic/modules/storage'
 import { ComputedRef, Ref, WritableComputedRef, computed, ref, watch } from '@vue/composition-api'
 import {
   CreateArticleTypeDirInput,
@@ -67,6 +75,12 @@ interface StoragePageLogic {
    * @param path
    */
   getTreeNode(path: string): StorageTreeNode | undefined
+  /**
+   * 指定されたパスと一致するツリーノードを取得します。
+   * ツリーノードが存在しない場合は例外がスローされます。
+   * @param path
+   */
+  sgetTreeNode(path: string): StorageTreeNode
   /**
    * ストレージノードを取得します。
    */
@@ -198,6 +212,12 @@ interface StoragePageLogic {
    * @param filePath
    */
   newFileDownloader(type: StorageFileDownloaderType, filePath: string): StorageFileDownloader
+
+  /**
+   * 単一ファイルダアップロードの管理を行うアップローダーを生成します。
+   * @param uploadParam
+   */
+  newFileUploader(uploadParam: UploadFileParam): StorageFileUploader
 
   //--------------------------------------------------
   //  Helper methods
@@ -430,6 +450,14 @@ namespace StoragePageLogic {
 
     const getTreeNode: StoragePageLogic['getTreeNode'] = path => {
       return getTreeView().getNode(path)
+    }
+
+    const sgetTreeNode: StoragePageLogic['sgetTreeNode'] = path => {
+      const node = getTreeView().getNode(path)
+      if (!node) {
+        throw new Error(`The specified tree node was not found: '${path}'`)
+      }
+      return node
     }
 
     const getStorageNode: StoragePageLogic['getStorageNode'] = key => {
@@ -1063,6 +1091,10 @@ namespace StoragePageLogic {
       return storageLogic.newFileDownloader(type, filePath)
     }
 
+    const newFileUploader: StoragePageLogic['newFileUploader'] = uploadParam => {
+      return storageLogic.newFileUploader(uploadParam)
+    }
+
     //--------------------------------------------------
     //  Helper methods
     //--------------------------------------------------
@@ -1335,6 +1367,7 @@ namespace StoragePageLogic {
       getAllTreeNodes,
       getRootTreeNode,
       getTreeNode,
+      sgetTreeNode,
       setAllTreeNodes,
       setTreeNode,
       setTreeNodes,
@@ -1360,6 +1393,7 @@ namespace StoragePageLogic {
       onUploaded,
       newDownloader,
       newFileDownloader,
+      newFileUploader,
       showNotification,
       getInheritedShare,
       createRootNodeData,

@@ -43,6 +43,7 @@
       <div class="layout vertical full-height">
         <div class="control-bar layout horizontal center">
           <div class="flex-1" />
+          <q-btn v-show="viewType === 'split'" icon="chevron_left" color="primary" size="sm" padding="xs" flat @click="previewButtonOnClick" />
           <q-btn v-show="viewType === 'editor'" icon="chevron_left" color="primary" size="sm" padding="xs" flat @click="splitButtonOnClick" />
           <q-btn v-show="viewType === 'editor'" icon="first_page" color="primary" size="sm" padding="xs" flat @click="previewButtonOnClick" />
         </div>
@@ -60,12 +61,11 @@
     <template v-slot:after>
       <div class="layout vertical full-height">
         <div class="control-bar layout horizontal center">
-          <q-btn v-show="viewType === 'split'" icon="chevron_left" color="primary" size="sm" padding="xs" flat @click="previewButtonOnClick" />
           <q-btn v-show="viewType === 'split'" icon="chevron_right" color="primary" size="sm" padding="xs" flat @click="editorButtonOnClick" />
           <q-btn v-show="viewType === 'preview'" icon="chevron_right" color="primary" size="sm" padding="xs" flat @click="splitButtonOnClick" />
           <q-btn v-show="viewType === 'preview'" icon="last_page" color="primary" size="sm" padding="xs" flat @click="editorButtonOnClick" />
         </div>
-        <div ref="previewContainer" class="preview-container">
+        <div ref="previewContainer" class="preview-container flex-1">
           <div>
             <div
               ref="previewHTML"
@@ -98,17 +98,18 @@
 import 'highlight.js/styles/github.css'
 import * as monaco from 'monaco-editor'
 import { MarkdownItVueComponent, parseMarkdownItVueComponent } from '@/markdown-it'
-import { Ref, computed, defineComponent, onMounted, ref } from '@vue/composition-api'
+import { Ref, computed, defineComponent, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
 import { Img } from '@/app/components/img/img.vue'
 import MarkdownIt from 'markdown-it'
 import { RenderRule } from 'markdown-it/lib/renderer'
 import { StorageImg } from '@/app/components/storage'
-import cheatSheet from '@/demo/views/markdown/cheat-sheet.md'
 import debounce from 'lodash/debounce'
 import hljs from 'highlight.js'
 import twemoji from 'twemoji'
 
-interface MarkdownEditor extends MarkdownEditor.Props {}
+interface MarkdownEditor extends MarkdownEditor.Props {
+  clear(): void
+}
 
 /**
  * エディタ領域とプレビュー領域のスクロール情報を格納するデータクラスです。
@@ -126,6 +127,7 @@ type ViewType = 'editor' | 'preview' | 'split'
 
 namespace MarkdownEditor {
   export interface Props {
+    value: string
     size: string
     color: string
   }
@@ -134,6 +136,7 @@ namespace MarkdownEditor {
     name: 'MarkdownEditor',
 
     props: {
+      value: { type: String, default: '' },
       size: { type: String, default: '26px' },
       color: { type: String, default: 'grey-6' },
     },
@@ -147,6 +150,13 @@ namespace MarkdownEditor {
 
       onMounted(() => {
         init()
+      })
+
+      onUnmounted(() => {
+        for (const objectURL of Object.values(imgCache)) {
+          console.log(objectURL)
+          window.URL.revokeObjectURL(objectURL)
+        }
       })
 
       //----------------------------------------------------------------------
@@ -202,6 +212,19 @@ namespace MarkdownEditor {
 
       //----------------------------------------------------------------------
       //
+      //  Methods
+      //
+      //----------------------------------------------------------------------
+
+      const clear: MarkdownEditor['clear'] = () => {
+        editor?.setValue('')
+        editor?.setScrollTop(0)
+        previewHTML.value!.innerHTML = ''
+        ctx.emit('input', '')
+      }
+
+      //----------------------------------------------------------------------
+      //
       //  Internal methods
       //
       //----------------------------------------------------------------------
@@ -212,7 +235,7 @@ namespace MarkdownEditor {
         //
 
         editor = monaco.editor.create(editorContainer.value!, {
-          value: cheatSheet,
+          value: props.value,
           language: 'markdown',
           minimap: {
             enabled: false,
@@ -338,6 +361,8 @@ namespace MarkdownEditor {
             },
           },
         })
+
+        ctx.emit('input', source)
       }
 
       /**
@@ -568,6 +593,15 @@ namespace MarkdownEditor {
       //
       //----------------------------------------------------------------------
 
+      watch(
+        () => props.value,
+        (newValue, oldValue) => {
+          if (!editor) return
+          const value = editor.getValue()
+          value !== newValue && editor.setValue(newValue)
+        }
+      )
+
       function editorOnResize(size: { width: string; height: string }) {
         if (!editor) return
 
@@ -690,6 +724,7 @@ namespace MarkdownEditor {
         previewHTML,
         splitterModel,
         viewType,
+        clear,
         editorOnResize,
         previewOnResize,
         editorContainerOnStartScroll,
