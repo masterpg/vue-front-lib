@@ -117,8 +117,6 @@ namespace StoragePage {
      * 初回に読み込むべきストレージノードの読み込みを行います。
      */
     async function fetchInitialNodes(): Promise<void> {
-      if (pageLogic.isFetchedInitialStorage.value) return
-
       dirView.value!.loading = true
 
       // 現在の選択ノードを取得

@@ -497,7 +497,7 @@ namespace StoragePageLogic {
           storageDirNodes.push(...(await storageLogic.fetchChildren(iDirPath)))
         }
       } else {
-        // 引数ディレクトリを含め、階層構造を形成する各ディレクトリの子ノードをサーバーから取得
+        // 引数ディレクトリを含め、階層構造を形成する各ディレクトリの子ノードを取得
         for (const iDirPath of [getRootTreeNode().path, ...dirPaths]) {
           storageDirNodes.push(...storageLogic.getChildren(iDirPath))
         }
