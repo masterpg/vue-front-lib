@@ -154,7 +154,6 @@ namespace MarkdownEditor {
 
       onUnmounted(() => {
         for (const objectURL of Object.values(imgCache)) {
-          console.log(objectURL)
           window.URL.revokeObjectURL(objectURL)
         }
       })
@@ -169,7 +168,7 @@ namespace MarkdownEditor {
        * エディター要素、プレビュー要素の最小幅の定数です。
        * ※厳密な最小幅ではなく補正値を含んだ値です。
        */
-      const VIEW_MIN_WITH = 20
+      const VIEW_MIN_WITH = 100
 
       const editorContainer = ref<HTMLElement>()
       const previewContainer = ref<HTMLElement>()
@@ -605,6 +604,13 @@ namespace MarkdownEditor {
       function editorOnResize(size: { width: string; height: string }) {
         if (!editor) return
 
+        // 注意: Monaco Editorにおいて、ある入力値の場合に幅をかなり縮めると、
+        // ブラウザタブが固まる不具合(または仕様)が発生する。これに対応するため、
+        // Monaco Editorの幅をある一定より縮めないよう制限している。
+        if (myParseInt(size.width) <= VIEW_MIN_WITH) {
+          return
+        }
+
         updatePreview()
         editor.layout({
           width: myParseInt(size.width),
@@ -644,7 +650,7 @@ namespace MarkdownEditor {
       //--------------------------------------------------
 
       /**
-       * プレビューボタンがクリックされた際のリスナーです。
+       * エディターボタンがクリックされた際のリスナーです。
        */
       function editorButtonOnClick() {
         // プレビュー領域のスクロールとエディター領域を同期させるリスナーを解除
@@ -655,21 +661,13 @@ namespace MarkdownEditor {
       }
 
       /**
-       * エディターボタンがクリックされた際のリスナーです。
+       * プレビューボタンがクリックされた際のリスナーです。
        */
       function previewButtonOnClick() {
         // エディター領域のスクロールとプレビュー領域を同期させるリスナーを解除
         removeEditorScrollLister()
 
         splitterModel.value = 0
-
-        updateInterval(() => {
-          const width = editor!.getLayoutInfo().width
-          if (width > VIEW_MIN_WITH) return false
-
-          updateEditorScrollToPreview()
-          return true
-        })
       }
 
       /**
