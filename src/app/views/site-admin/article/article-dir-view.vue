@@ -26,14 +26,10 @@
       <template v-slot:body="slotProps">
         <q-tr :props="slotProps.tr" @click="rowOnClick(slotProps.tr.row)">
           <q-td auto-width>
-            <q-checkbox v-show="!isArticleFile(slotProps.tr.row.path)" v-model="slotProps.tr.selected" />
+            <q-checkbox v-show="!slotProps.tr.row.isArticleFile" v-model="slotProps.tr.selected" />
           </q-td>
           <q-td key="label" :props="slotProps.tr">
-            <span
-              v-if="slotProps.tr.row.isDir || isArticleFile(slotProps.tr.row.path)"
-              class="th label"
-              @click="nameCellOnClick(slotProps.tr.row, $event)"
-            >
+            <span v-if="slotProps.tr.row.isDir || slotProps.tr.row.isArticleFile" class="th label" @click="nameCellOnClick(slotProps.tr.row, $event)">
               <q-icon :name="slotProps.tr.row.icon" size="24px" class="app-mr-6" />
               <span>{{ slotProps.tr.row.label }}</span>
             </span>
@@ -117,10 +113,6 @@ namespace ArticleDirView {
         return StorageLogic.sortChildren(rows)
       }
 
-      function isArticleFile(nodePath: string): boolean {
-        return pageLogic.isArticleFile({ path: nodePath })
-      }
-
       //----------------------------------------------------------------------
       //
       //  Event listeners
@@ -147,7 +139,6 @@ namespace ArticleDirView {
 
       return {
         ...base,
-        isArticleFile,
         onSelection,
       }
     },

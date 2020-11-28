@@ -161,7 +161,7 @@ namespace ArticleStoragePage {
             break
           }
           case StorageNodeType.File: {
-            if (pageLogic.isArticleFile(node)) {
+            if (node.isArticleFile) {
               // 記事編集ビューを表示
               showWritingView(node.path)
             }
@@ -202,7 +202,7 @@ namespace ArticleStoragePage {
         // 選択ノードがファイルの場合
         if (selectedNode.nodeType === StorageNodeType.File) {
           // 選択ノードが｢記事ファイル｣の場合
-          if (selectedNode.nodeType === StorageNodeType.File && pageLogic.isArticleFile(selectedNode)) {
+          if (selectedNode.nodeType === StorageNodeType.File && selectedNode.isArticleFile) {
             // 選択ノードのパスをURLに付与
             // ※記事編集ビューが表示されることになる
             base.changeDirOnPage(selectedNode.path)

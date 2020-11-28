@@ -131,6 +131,7 @@ interface StorageNode extends TimestampEntity {
   articleNodeName: string | null
   articleNodeType: StorageArticleNodeType | null
   articleSortOrder: number | null
+  isArticleFile: boolean | null
   version: number
 }
 
@@ -271,6 +272,9 @@ namespace StorageNode {
     }
     if (typeof from.articleSortOrder === 'number' || from.articleSortOrder === null) {
       to.articleSortOrder = from.articleSortOrder
+    }
+    if (typeof from.isArticleFile === 'boolean' || from.isArticleFile === null) {
+      to.isArticleFile = from.isArticleFile
     }
     if (typeof from.version === 'number') to.version = from.version
     if (dayjs.isDayjs(from.createdAt)) to.createdAt = from.createdAt

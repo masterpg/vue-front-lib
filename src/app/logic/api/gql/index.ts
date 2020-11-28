@@ -112,7 +112,7 @@ interface GQLAPIContainer {
 }
 
 //--------------------------------------------------
-//  Foundation
+//  Env
 //--------------------------------------------------
 
 interface AppConfigResponse extends StorageConfig {}
@@ -314,6 +314,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -347,6 +348,7 @@ namespace GQLAPIContainer {
                 articleNodeName
                 articleNodeType
                 articleSortOrder
+                isArticleFile
                 version
                 createdAt
                 updatedAt
@@ -385,6 +387,7 @@ namespace GQLAPIContainer {
                 articleNodeName
                 articleNodeType
                 articleSortOrder
+                isArticleFile
                 version
                 createdAt
                 updatedAt
@@ -423,6 +426,7 @@ namespace GQLAPIContainer {
                 articleNodeName
                 articleNodeType
                 articleSortOrder
+                isArticleFile
                 version
                 createdAt
                 updatedAt
@@ -461,6 +465,7 @@ namespace GQLAPIContainer {
                 articleNodeName
                 articleNodeType
                 articleSortOrder
+                isArticleFile
                 version
                 createdAt
                 updatedAt
@@ -498,6 +503,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -530,6 +536,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -562,6 +569,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -594,6 +602,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -627,6 +636,7 @@ namespace GQLAPIContainer {
                 articleNodeName
                 articleNodeType
                 articleSortOrder
+                isArticleFile
                 version
                 createdAt
                 updatedAt
@@ -664,6 +674,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -697,6 +708,7 @@ namespace GQLAPIContainer {
                 articleNodeName
                 articleNodeType
                 articleSortOrder
+                isArticleFile
                 version
                 createdAt
                 updatedAt
@@ -734,6 +746,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -767,6 +780,7 @@ namespace GQLAPIContainer {
                 articleNodeName
                 articleNodeType
                 articleSortOrder
+                isArticleFile
                 version
                 createdAt
                 updatedAt
@@ -804,6 +818,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -836,6 +851,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -868,6 +884,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -900,6 +917,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -949,6 +967,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -981,6 +1000,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -1013,6 +1033,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -1045,6 +1066,7 @@ namespace GQLAPIContainer {
               articleNodeName
               articleNodeType
               articleSortOrder
+              isArticleFile
               version
               createdAt
               updatedAt
@@ -1078,6 +1100,7 @@ namespace GQLAPIContainer {
                 articleNodeName
                 articleNodeType
                 articleSortOrder
+                isArticleFile
                 version
                 createdAt
                 updatedAt

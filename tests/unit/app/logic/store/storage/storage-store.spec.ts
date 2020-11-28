@@ -447,7 +447,7 @@ describe('StorageStore', () => {
       const userRootPath = `${usersPath}/${GENERAL_USER.uid}`
       const articleRootPath = `${userRootPath}/${config.storage.article.rootName}`
       const bundle = newTestStorageDirNode(`${articleRootPath}/${generateFirestoreId()}`, {
-        articleNodeName: 'バンドル',
+        articleNodeName: 'Bundle',
         articleNodeType: StorageArticleNodeType.ListBundle,
         articleSortOrder: 1,
       })
@@ -1197,6 +1197,40 @@ describe('StorageStore', () => {
       expect(store.storage.state.all[5]).toEqual(d2)
       expect(store.storage.state.all[6]).toEqual(d21)
       expect(store.storage.state.all[7]).toEqual(f1)
+    })
+  })
+
+  describe('clone', () => {
+    it('ベーシックケース', () => {
+      const config = useConfig()
+      const bundle = newTestStorageDirNode(`${generateFirestoreId()}`, {
+        articleNodeName: 'バンドル',
+        articleNodeType: StorageArticleNodeType.CategoryBundle,
+        articleSortOrder: 1,
+        share: {
+          isPublic: true,
+          readUIds: ['ichiro'],
+          writeUIds: ['ichiro'],
+        },
+      })
+      const cat1 = newTestStorageDirNode(`${bundle.path}/${generateFirestoreId()}`, {
+        articleNodeName: 'カテゴリ1',
+        articleNodeType: StorageArticleNodeType.Category,
+        articleSortOrder: 1,
+      })
+      const art1 = newTestStorageDirNode(`${cat1.path}/${generateFirestoreId()}`, {
+        articleNodeName: '記事1',
+        articleNodeType: StorageArticleNodeType.Article,
+        articleSortOrder: 1,
+      })
+      const art1Index = newTestStorageFileNode(`${art1.path}/${config.storage.article.fileName}`, {
+        isArticleFile: true,
+      })
+
+      expect(bundle).toEqual(StorageNode.clone(bundle))
+      expect(cat1).toEqual(StorageNode.clone(cat1))
+      expect(art1).toEqual(StorageNode.clone(art1))
+      expect(art1Index).toEqual(StorageNode.clone(art1Index))
     })
   })
 })

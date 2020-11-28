@@ -366,7 +366,9 @@ describe('AppStorageLogic', () => {
         articleNodeType: StorageArticleNodeType.Article,
         articleSortOrder: 1,
       })
-      const art1Index = newTestStorageFileNode(`${art1.path}/${config.storage.article.fileName}`)
+      const art1Index = newTestStorageFileNode(`${art1.path}/${config.storage.article.fileName}`, {
+        isArticleFile: true,
+      })
       const {
         logic: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {

@@ -2044,12 +2044,16 @@ describe('StorageLogic', () => {
         articleNodeType: StorageArticleNodeType.Article,
         articleSortOrder: 999,
       })
-      const category_ts_art1_index = newTestStorageFileNode(`category/TypeScript/art1/index.md`)
+      const category_ts_art1_index = newTestStorageFileNode(`category/TypeScript/art1/index.md`, {
+        isArticleFile: true,
+      })
       const category_ts_art2 = newTestStorageDirNode(`category/TypeScript/art2`, {
         articleNodeType: StorageArticleNodeType.Article,
         articleSortOrder: 998,
       })
-      const category_ts_art2_index = newTestStorageFileNode(`category/TypeScript/art2/index.md`)
+      const category_ts_art2_index = newTestStorageFileNode(`category/TypeScript/art2/index.md`, {
+        isArticleFile: true,
+      })
       const category_js = newTestStorageDirNode(`category/JavaScript`)
       const category_js_art1 = newTestStorageDirNode(`category/JavaScript/art1`, {
         articleNodeType: StorageArticleNodeType.Article,

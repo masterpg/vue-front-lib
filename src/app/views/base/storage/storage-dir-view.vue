@@ -107,6 +107,7 @@ interface StorageDirTableRow {
   readonly size: string
   readonly articleNodeType: StorageNode['articleNodeType']
   readonly articleSortOrder: StorageNode['articleSortOrder']
+  readonly isArticleFile: StorageNode['isArticleFile']
   readonly updatedAt: string
   readonly updatedAtNum: number
   readonly isDir: boolean
@@ -180,6 +181,8 @@ namespace StorageDirTableRow {
 
     const articleSortOrder = computed(() => node.articleSortOrder)
 
+    const isArticleFile = computed(() => node.isArticleFile)
+
     const updatedAt = computed(() => String(d(node.updatedAt.toDate(), 'dateTime')))
 
     const updatedAtNum = computed(() => node.updatedAt.unix())
@@ -210,6 +213,7 @@ namespace StorageDirTableRow {
       size,
       articleNodeType,
       articleSortOrder,
+      isArticleFile,
       updatedAt,
       updatedAtNum,
       isDir,
