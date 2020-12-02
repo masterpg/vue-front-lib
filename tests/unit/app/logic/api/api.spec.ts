@@ -48,8 +48,8 @@ describe('Foundation API', () => {
       const { api } = provideDependency()
       const actual = await api.getAppConfig()
 
-      expect(actual.user).toMatchObject(config.storage.user)
-      expect(actual.article).toMatchObject(config.storage.article)
+      expect(actual.storage.user).toMatchObject(config.storage.user)
+      expect(actual.storage.article).toMatchObject(config.storage.article)
     })
   })
 })

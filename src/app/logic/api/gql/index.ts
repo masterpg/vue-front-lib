@@ -25,7 +25,7 @@ import gql from 'graphql-tag'
 //========================================================================
 
 interface GQLAPIContainer {
-  getAppConfig(): Promise<AppConfigResponse>
+  getAppConfig(): Promise<AppConfig>
 
   //--------------------------------------------------
   //  User
@@ -115,7 +115,9 @@ interface GQLAPIContainer {
 //  Env
 //--------------------------------------------------
 
-interface AppConfigResponse extends StorageConfig {}
+interface AppConfig {
+  storage: StorageConfig
+}
 
 //--------------------------------------------------
 //  User
@@ -179,17 +181,19 @@ namespace GQLAPIContainer {
     //----------------------------------------------------------------------
 
     const getAppConfig: GQLAPIContainer['getAppConfig'] = async () => {
-      const response = await c.query<{ appConfig: AppConfigResponse }>({
+      const response = await c.query<{ appConfig: AppConfig }>({
         query: gql`
           query GetAppConfig {
             appConfig {
-              user {
-                rootName
-              }
-              article {
-                rootName
-                fileName
-                assetsName
+              storage {
+                user {
+                  rootName
+                }
+                article {
+                  rootName
+                  fileName
+                  assetsName
+                }
               }
             }
           }
