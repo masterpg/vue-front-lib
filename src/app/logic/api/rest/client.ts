@@ -48,6 +48,8 @@ interface RESTAPIRequestInternalConfig extends RESTAPIRequestConfig {
   data?: any
 }
 
+type RESTEndpoint = 'storage' | 'example'
+
 //========================================================================
 //
 //  Implementation
@@ -55,11 +57,11 @@ interface RESTAPIRequestInternalConfig extends RESTAPIRequestConfig {
 //========================================================================
 
 namespace RESTAPIClient {
-  export function newInstance(): RESTAPIClient {
-    return newRawInstance()
+  export function newInstance(endpoint: RESTEndpoint): RESTAPIClient {
+    return newRawInstance(endpoint)
   }
 
-  export function newRawInstance() {
+  export function newRawInstance(endpoint: RESTEndpoint) {
     //----------------------------------------------------------------------
     //
     //  Variables
@@ -133,7 +135,7 @@ namespace RESTAPIClient {
     //----------------------------------------------------------------------
 
     function getRequestURL(): string {
-      return `${config.api.baseURL}/rest`
+      return `${config.api.baseURL}/rest_${endpoint}`
     }
 
     //----------------------------------------------------------------------

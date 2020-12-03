@@ -1,6 +1,7 @@
 import { AuthStatus, UserClaims, UserInfo, UserInfoInput } from '@/app/logic'
 import { APIContainer } from '@/app/logic/api'
 import { APP_ADMIN_TOKEN } from '../data'
+import { GQLAPIClient } from '@/app/logic/api/gql/client'
 import { RawUser } from '@/app/logic/api/gql'
 import axios from 'axios'
 import gql from 'graphql-tag'
@@ -77,6 +78,7 @@ namespace TestAPIContainer {
 
   export function mix<T extends APIContainerImpl>(api: T): TestAPIContainer & T {
     const config = useConfig()
+    const devClient = GQLAPIClient.newInstance('dev')
 
     const setTestAuthToken: TestAPIContainer['setTestAuthToken'] = token => {
       const tokenString = token ? JSON.stringify(token) : undefined
@@ -84,7 +86,7 @@ namespace TestAPIContainer {
     }
 
     const putTestStoreData: TestAPIContainer['putTestStoreData'] = async inputs => {
-      await api.gql.client.mutate<{ putTestStoreData: boolean }>({
+      await devClient.mutate<{ putTestStoreData: boolean }>({
         mutation: gql`
           mutation PutTestStoreData($inputs: [PutTestStoreDataInput!]!) {
             putTestStoreData(inputs: $inputs)
@@ -184,7 +186,7 @@ namespace TestAPIContainer {
     }
 
     const setTestFirebaseUsers: TestAPIContainer['setTestFirebaseUsers'] = async users => {
-      await api.gql.client.mutate<{ setTestFirebaseUsers: boolean }>({
+      await devClient.mutate<{ setTestFirebaseUsers: boolean }>({
         mutation: gql`
           mutation SetTestFirebaseUsers($users: [TestFirebaseUserInput!]!) {
             setTestFirebaseUsers(users: $users)
@@ -195,7 +197,7 @@ namespace TestAPIContainer {
     }
 
     const deleteTestFirebaseUsers: TestAPIContainer['deleteTestFirebaseUsers'] = async uids => {
-      await api.gql.client.mutate<{ deleteTestFirebaseUsers: boolean }>({
+      await devClient.mutate<{ deleteTestFirebaseUsers: boolean }>({
         mutation: gql`
           mutation DeleteTestFirebaseUsers($uids: [String!]!) {
             deleteTestFirebaseUsers(uids: $uids)
@@ -206,7 +208,7 @@ namespace TestAPIContainer {
     }
 
     const setTestUsers: TestAPIContainer['setTestUsers'] = async users => {
-      const response = await api.gql.client.mutate<{ setTestUsers: RawUser[] }>({
+      const response = await devClient.mutate<{ setTestUsers: RawUser[] }>({
         mutation: gql`
           mutation SetTestUsers($users: [TestUserInput!]!) {
             setTestUsers(users: $users) {
@@ -240,7 +242,7 @@ namespace TestAPIContainer {
     }
 
     const deleteTestUsers: TestAPIContainer['deleteTestUsers'] = async uids => {
-      await api.gql.client.mutate<{ deleteTestUsers: boolean }>({
+      await devClient.mutate<{ deleteTestUsers: boolean }>({
         mutation: gql`
           mutation DeleteTestUsers($uids: [String!]!) {
             deleteTestUsers(uids: $uids)

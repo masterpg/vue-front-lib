@@ -18,6 +18,8 @@ interface GQLAPIClient {
   mutate<T = any, TVariables = OperationVariables>(options: MutationOptions<T, TVariables> & { isAuth?: boolean }): Promise<FetchResult<T>>
 }
 
+type GQLEndpoint = 'standard' | 'middle' | 'high' | 'extra' | 'dev' | 'example'
+
 //========================================================================
 //
 //  Implementation
@@ -25,11 +27,11 @@ interface GQLAPIClient {
 //========================================================================
 
 namespace GQLAPIClient {
-  export function newInstance(): GQLAPIClient {
-    return newRawInstance()
+  export function newInstance(endpoint: GQLEndpoint): GQLAPIClient {
+    return newRawInstance(endpoint)
   }
 
-  export function newRawInstance() {
+  export function newRawInstance(endpoint: GQLEndpoint) {
     //----------------------------------------------------------------------
     //
     //  Variables
@@ -86,7 +88,7 @@ namespace GQLAPIClient {
     }
 
     function getRequestURL(): string {
-      return `${config.api.baseURL}/gql`
+      return `${config.api.baseURL}/gql_${endpoint}`
     }
 
     //----------------------------------------------------------------------

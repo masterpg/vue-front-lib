@@ -27,15 +27,15 @@ namespace DemoGQLAPIContainer {
     return newRawInstance()
   }
 
-  export function newRawInstance(client?: GQLAPIClient) {
+  export function newRawInstance() {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
 
-    const c = client ?? GQLAPIClient.newInstance()
-    const base = GQLAPIContainer.newRawInstance(c)
+    const base = GQLAPIContainer.newRawInstance()
+    const exampleClient = GQLAPIClient.newInstance('example')
 
     //----------------------------------------------------------------------
     //
@@ -49,7 +49,7 @@ namespace DemoGQLAPIContainer {
     }
 
     const getProducts: DemoGQLAPIContainer['getProducts'] = async ids => {
-      const response = await c.query<{ products: RawProduct[] }>({
+      const response = await exampleClient.query<{ products: RawProduct[] }>({
         query: gql`
           query GetProducts($ids: [ID!]) {
             products(ids: $ids) {
@@ -74,7 +74,7 @@ namespace DemoGQLAPIContainer {
     }
 
     const getCartItems: DemoGQLAPIContainer['getCartItems'] = async ids => {
-      const response = await c.query<{ cartItems: RawCartItem[] }>({
+      const response = await exampleClient.query<{ cartItems: RawCartItem[] }>({
         query: gql`
           query GetCartItems($ids: [ID!]) {
             cartItems(ids: $ids) {
@@ -96,7 +96,7 @@ namespace DemoGQLAPIContainer {
     }
 
     const addCartItems: DemoGQLAPIContainer['addCartItems'] = async inputs => {
-      const response = await c.mutate<{ addCartItems: RawCartItemEditResponse[] }>({
+      const response = await exampleClient.mutate<{ addCartItems: RawCartItemEditResponse[] }>({
         mutation: gql`
           mutation AddCartItems($inputs: [CartItemAddInput!]!) {
             addCartItems(inputs: $inputs) {
@@ -138,7 +138,7 @@ namespace DemoGQLAPIContainer {
     }
 
     const updateCartItems: DemoGQLAPIContainer['updateCartItems'] = async inputs => {
-      const response = await c.mutate<{ updateCartItems: RawCartItemEditResponse[] }>({
+      const response = await exampleClient.mutate<{ updateCartItems: RawCartItemEditResponse[] }>({
         mutation: gql`
           mutation UpdateCartItems($inputs: [CartItemUpdateInput!]!) {
             updateCartItems(inputs: $inputs) {
@@ -178,7 +178,7 @@ namespace DemoGQLAPIContainer {
     }
 
     const removeCartItems: DemoGQLAPIContainer['removeCartItems'] = async ids => {
-      const response = await c.mutate<{ removeCartItems: RawCartItemEditResponse[] }>({
+      const response = await exampleClient.mutate<{ removeCartItems: RawCartItemEditResponse[] }>({
         mutation: gql`
           mutation RemoveCartItems($ids: [ID!]!) {
             removeCartItems(ids: $ids) {
@@ -211,7 +211,7 @@ namespace DemoGQLAPIContainer {
     }
 
     const checkoutCart: DemoGQLAPIContainer['checkoutCart'] = async () => {
-      const response = await c.mutate<{ checkoutCart: boolean }>({
+      const response = await exampleClient.mutate<{ checkoutCart: boolean }>({
         mutation: gql`
           mutation CheckoutCart {
             checkoutCart

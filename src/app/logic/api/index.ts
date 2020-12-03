@@ -23,17 +23,12 @@ namespace APIContainer {
   }
 
   export function newRawInstance() {
-    const gqlClient = GQLAPIClient.newInstance()
-    const restClient = RESTAPIClient.newInstance()
-
-    const gql = GQLAPIContainer.newRawInstance(gqlClient)
-    const rest = RESTAPIContainer.newRawInstance(restClient)
+    const gql = GQLAPIContainer.newRawInstance()
+    const rest = RESTAPIContainer.newRawInstance()
 
     return {
       ...gql,
       ...rest,
-      gql: { client: gqlClient },
-      rest: { client: restClient },
     }
   }
 }

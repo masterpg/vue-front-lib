@@ -22,7 +22,7 @@ namespace DemoRESTAPIContainer {
     return newRawInstance()
   }
 
-  export function newRawInstance(client?: RESTAPIClient) {
+  export function newRawInstance() {
     //----------------------------------------------------------------------
     //
     //  Variables
@@ -31,8 +31,8 @@ namespace DemoRESTAPIContainer {
 
     const PREFIX = 'example/shop'
 
-    const c = client ?? RESTAPIClient.newInstance()
-    const base = RESTAPIContainer.newRawInstance(c)
+    const base = RESTAPIContainer.newRawInstance()
+    const client = RESTAPIClient.newInstance('example')
 
     //----------------------------------------------------------------------
     //
@@ -41,7 +41,7 @@ namespace DemoRESTAPIContainer {
     //----------------------------------------------------------------------
 
     const getProduct: DemoRESTAPIContainer['getProduct'] = async id => {
-      const response = await c.get<RawProduct[]>(`${PREFIX}/products`, {
+      const response = await client.get<RawProduct[]>(`${PREFIX}/products`, {
         params: { ids: [id] },
       })
       if (response.data.length === 0) return
@@ -49,14 +49,14 @@ namespace DemoRESTAPIContainer {
     }
 
     const getProducts: DemoRESTAPIContainer['getProducts'] = async ids => {
-      const response = await c.get<RawProduct[]>(`${PREFIX}/products`, {
+      const response = await client.get<RawProduct[]>(`${PREFIX}/products`, {
         params: { ids },
       })
       return toEntity(response.data)
     }
 
     const getCartItem: DemoRESTAPIContainer['getCartItem'] = async id => {
-      const response = await c.get<RawCartItem[]>(`${PREFIX}/cartItems`, {
+      const response = await client.get<RawCartItem[]>(`${PREFIX}/cartItems`, {
         isAuth: true,
         params: { ids: [id] },
       })
@@ -65,7 +65,7 @@ namespace DemoRESTAPIContainer {
     }
 
     const getCartItems: DemoRESTAPIContainer['getCartItems'] = async ids => {
-      const response = await c.get<RawCartItem[]>(`${PREFIX}/cartItems`, {
+      const response = await client.get<RawCartItem[]>(`${PREFIX}/cartItems`, {
         isAuth: true,
         params: { ids },
       })
@@ -73,17 +73,17 @@ namespace DemoRESTAPIContainer {
     }
 
     const addCartItems: DemoRESTAPIContainer['addCartItems'] = async inputs => {
-      const response = await c.post<RawCartItemEditResponse[]>(`${PREFIX}/cartItems`, inputs, { isAuth: true })
+      const response = await client.post<RawCartItemEditResponse[]>(`${PREFIX}/cartItems`, inputs, { isAuth: true })
       return toEntity(response.data)
     }
 
     const updateCartItems: DemoRESTAPIContainer['updateCartItems'] = async inputs => {
-      const response = await c.put<RawCartItemEditResponse[]>(`${PREFIX}/cartItems`, inputs, { isAuth: true })
+      const response = await client.put<RawCartItemEditResponse[]>(`${PREFIX}/cartItems`, inputs, { isAuth: true })
       return toEntity(response.data)
     }
 
     const removeCartItems: DemoRESTAPIContainer['removeCartItems'] = async cartItemIds => {
-      const response = await c.delete<RawCartItemEditResponse[]>(`${PREFIX}/cartItems`, {
+      const response = await client.delete<RawCartItemEditResponse[]>(`${PREFIX}/cartItems`, {
         isAuth: true,
         params: { ids: cartItemIds },
       })
@@ -91,7 +91,7 @@ namespace DemoRESTAPIContainer {
     }
 
     const checkoutCart: DemoRESTAPIContainer['checkoutCart'] = async () => {
-      const response = await c.put<boolean>(`${PREFIX}/checkoutCart`, undefined, { isAuth: true })
+      const response = await client.put<boolean>(`${PREFIX}/checkoutCart`, undefined, { isAuth: true })
       return response.data
     }
 

@@ -19,9 +19,7 @@ namespace RESTAPIContainer {
     return newRawInstance()
   }
 
-  export function newRawInstance(client?: RESTAPIClient) {
-    const c = client ?? RESTAPIClient.newInstance()
-
+  export function newRawInstance() {
     return {}
   }
 }

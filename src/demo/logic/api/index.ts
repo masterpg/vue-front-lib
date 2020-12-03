@@ -34,11 +34,8 @@ namespace DemoAPIContainer {
     //
     //----------------------------------------------------------------------
 
-    const gqlClient = GQLAPIClient.newInstance()
-    const restClient = RESTAPIClient.newInstance()
-
-    const gql = DemoGQLAPIContainer.newRawInstance(gqlClient)
-    const rest = DemoRESTAPIContainer.newRawInstance(restClient)
+    const gql = DemoGQLAPIContainer.newRawInstance()
+    const rest = DemoRESTAPIContainer.newRawInstance()
 
     const state = reactive({
       type: 'gql' as 'gql' | 'rest',
@@ -108,8 +105,6 @@ namespace DemoAPIContainer {
       updateCartItems,
       removeCartItems,
       checkoutCart,
-      gql: { client: gqlClient },
-      rest: { client: restClient },
     }
   }
 }
