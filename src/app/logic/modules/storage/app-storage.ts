@@ -1,12 +1,14 @@
+import * as _path from 'path'
 import {
   APIStorageNode,
   CreateStorageNodeInput,
   RequiredStorageNodeShareSettings,
   StorageNode,
   StorageNodeKeyInput,
+  StorageNodeKeysInput,
   StorageNodeShareSettingsInput,
 } from '@/app/logic'
-import { DeepReadonly, arrayToDict, splitHierarchicalPaths } from 'web-base-lib'
+import { DeepReadonly, arrayToDict, splitArrayChunk, splitHierarchicalPaths } from 'web-base-lib'
 import { StorageDownloader, StorageFileDownloader } from '@/app/logic/modules/storage/download'
 import { StorageFileUploader, StorageUploader } from '@/app/logic/modules/storage/upload'
 import { computed, reactive } from '@vue/composition-api'
@@ -28,6 +30,7 @@ interface AppStorageLogic extends StorageLogic {
   //--------------------------------------------------
 
   getNodeAPI(input: StorageNodeKeyInput): Promise<StorageNode | undefined>
+  getNodesAPI(input: StorageNodeKeysInput): Promise<StorageNode[]>
   getDirDescendantsAPI(dirPath?: string): Promise<StorageNode[]>
   getDescendantsAPI(dirPath?: string): Promise<StorageNode[]>
   getDirChildrenAPI(dirPath?: string): Promise<StorageNode[]>
@@ -36,11 +39,11 @@ interface AppStorageLogic extends StorageLogic {
   getAncestorDirsAPI(nodePath: string): Promise<StorageNode[]>
   createDirAPI(dirPath: string, input?: CreateStorageNodeInput): Promise<StorageNode>
   createHierarchicalDirsAPI(dirPaths: string[]): Promise<StorageNode[]>
-  removeDirAPI(dirPath: string): Promise<StorageNode[]>
+  removeDirAPI(dirPath: string): Promise<void>
   removeFileAPI(filePath: string): Promise<StorageNode | undefined>
-  moveDirAPI(fromDirPath: string, toDirPath: string): Promise<StorageNode[]>
+  moveDirAPI(fromDirPath: string, toDirPath: string): Promise<void>
   moveFileAPI(fromFilePath: string, toFilePath: string): Promise<StorageNode>
-  renameDirAPI(dirPath: string, newName: string): Promise<StorageNode[]>
+  renameDirAPI(dirPath: string, newName: string): Promise<void>
   renameFileAPI(filePath: string, newName: string): Promise<StorageNode>
   setDirShareSettingsAPI(dirPath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode>
   handleUploadedFileAPI(filePath: string): Promise<StorageNode>
@@ -392,9 +395,31 @@ namespace AppStorageLogic {
     const moveDir: AppStorageLogic['moveDir'] = async (fromDirPath, toDirPath) => {
       validateNotBasePathRoot('fromDirPath', fromDirPath)
       validateNotBasePathRoot('toDirPath', toDirPath)
+      const fullFromDirPath = toFullPath(fromDirPath)
+      const fullToDirPath = toFullPath(toDirPath)
 
-      const apiNodes = await moveDirAPI(toFullPath(fromDirPath), toFullPath(toDirPath))
-      store.storage.move(toFullPath(fromDirPath), toFullPath(toDirPath))
+      // 移動ノードをストアから取得しておく
+      const movingNodes = store.storage.getDirDescendants(fullFromDirPath)
+
+      // ノード移動を実行
+      await moveDirAPI(fullFromDirPath, fullToDirPath)
+      store.storage.move(fullFromDirPath, fullToDirPath)
+
+      // 移動先の親ディレクトリがストアに存在しない場合、読み込みを行う
+      // ※移動ノードの親が存在しないと、移動ノードが迷子になってしまうため、読み込みを行う必要がある
+      const fullToParentPath = _path.dirname(fullToDirPath)
+      const toParentNode = store.storage.get({ path: fullToParentPath })
+      if (!toParentNode) {
+        await fetchHierarchicalNodes(toBasePath(fullToParentPath))
+      }
+
+      // 移動したノードをサーバーから読み込む
+      const apiNodes: StorageNode[] = []
+      for (const chunk of splitArrayChunk(movingNodes, 50)) {
+        const ids = chunk.map(node => node.id)
+        const nodes = await getNodesAPI({ ids })
+        apiNodes.push(...nodes)
+      }
       const nodes = setAPINodesToStore(apiNodes)
 
       return toBasePathNode(nodes)
@@ -413,9 +438,21 @@ namespace AppStorageLogic {
 
     const renameDir = extendedMethod<AppStorageLogic['renameDir']>(async (dirPath, newName) => {
       validateNotBasePathRoot('dirPath', dirPath)
+      const fullDirPath = toFullPath(dirPath)
 
-      const apiNodes = await renameDirAPI(toFullPath(dirPath), newName)
-      store.storage.rename(toFullPath(dirPath), newName)
+      // リネームノードをストアから取得しておく
+      const renamingNodes = store.storage.getDirDescendants(fullDirPath)
+
+      // リネームを実行
+      await renameDirAPI(fullDirPath, newName)
+      store.storage.rename(fullDirPath, newName)
+
+      // リネームしたノードをサーバーから読み込む
+      const apiNodes: StorageNode[] = []
+      for (const chunk of splitArrayChunk(renamingNodes, 50)) {
+        const ids = chunk.map(node => node.id)
+        apiNodes.push(...(await getNodesAPI({ ids })))
+      }
       const nodes = setAPINodesToStore(apiNodes)
 
       return toBasePathNode(nodes)
@@ -485,6 +522,11 @@ namespace AppStorageLogic {
       return apiNodeToStorageNode(apiNode)
     })
 
+    const getNodesAPI = extendedMethod<AppStorageLogic['getNodesAPI']>(async input => {
+      const apiNodes = await api.getStorageNodes(input)
+      return apiNodesToStorageNodes(apiNodes)
+    })
+
     const getDirDescendantsAPI = extendedMethod<AppStorageLogic['getDirDescendantsAPI']>(async dirPath => {
       const apiNodes = await api.callStoragePaginationAPI(api.getStorageDirDescendants, dirPath)
       return apiNodesToStorageNodes(apiNodes)
@@ -526,8 +568,7 @@ namespace AppStorageLogic {
     })
 
     const removeDirAPI = extendedMethod<AppStorageLogic['removeDirAPI']>(async dirPath => {
-      const apiNodes = await api.callStoragePaginationAPI(api.removeStorageDir, dirPath)
-      return apiNodesToStorageNodes(apiNodes)
+      await api.removeStorageDir(dirPath)
     })
 
     const removeFileAPI = extendedMethod<AppStorageLogic['removeFileAPI']>(async filePath => {
@@ -536,8 +577,7 @@ namespace AppStorageLogic {
     })
 
     const moveDirAPI = extendedMethod<AppStorageLogic['moveDirAPI']>(async (fromDirPath, toDirPath) => {
-      const apiNodes = await api.callStoragePaginationAPI(api.moveStorageDir, fromDirPath, toDirPath)
-      return apiNodesToStorageNodes(apiNodes)
+      await api.moveStorageDir(fromDirPath, toDirPath)
     })
 
     const moveFileAPI = extendedMethod<AppStorageLogic['moveFileAPI']>(async (fromFilePath, toFilePath) => {
@@ -546,8 +586,7 @@ namespace AppStorageLogic {
     })
 
     const renameDirAPI = extendedMethod<AppStorageLogic['renameDirAPI']>(async (dirPath, newName) => {
-      const apiNodes = await api.callStoragePaginationAPI(api.renameStorageDir, dirPath, newName)
-      return apiNodesToStorageNodes(apiNodes)
+      await api.renameStorageDir(dirPath, newName)
     })
 
     const renameFileAPI = extendedMethod<AppStorageLogic['renameFileAPI']>(async (filePath, newName) => {
@@ -739,6 +778,7 @@ namespace AppStorageLogic {
       //  AppStorageLogic
       //--------------------------------------------------
       getNodeAPI,
+      getNodesAPI,
       getDirDescendantsAPI,
       getDescendantsAPI,
       getDirChildrenAPI,

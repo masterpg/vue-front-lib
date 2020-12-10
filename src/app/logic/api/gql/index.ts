@@ -7,6 +7,7 @@ import {
   SetArticleSortOrderInput,
   StorageArticleNodeType,
   StorageNodeKeyInput,
+  StorageNodeKeysInput,
   StorageNodeShareSettingsInput,
   StoragePaginationInput,
   StoragePaginationResult,
@@ -43,6 +44,8 @@ interface GQLAPIContainer {
 
   getStorageNode(input: StorageNodeKeyInput): Promise<APIStorageNode | undefined>
 
+  getStorageNodes(input: StorageNodeKeysInput): Promise<APIStorageNode[]>
+
   getStorageDirDescendants(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
 
   getStorageDescendants(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
@@ -59,15 +62,15 @@ interface GQLAPIContainer {
 
   createStorageHierarchicalDirs(dirPaths: string[]): Promise<APIStorageNode[]>
 
-  removeStorageDir(dirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
+  removeStorageDir(dirPath: string): Promise<void>
 
   removeStorageFile(filePath: string): Promise<APIStorageNode | undefined>
 
-  moveStorageDir(fromDirPath: string, toDirPath: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
+  moveStorageDir(fromDirPath: string, toDirPath: string): Promise<void>
 
   moveStorageFile(fromFilePath: string, toFilePath: string): Promise<APIStorageNode>
 
-  renameStorageDir(dirPath: string, newName: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
+  renameStorageDir(dirPath: string, newName: string): Promise<void>
 
   renameStorageFile(filePath: string, newName: string): Promise<APIStorageNode>
 
@@ -172,8 +175,8 @@ namespace GQLAPIContainer {
     //
     //----------------------------------------------------------------------
 
-    const standardClient = GQLAPIClient.newInstance('standard')
-    const middleClient = GQLAPIClient.newInstance('middle')
+    const clientLv1 = GQLAPIClient.newInstance('lv1')
+    const clientLv3 = GQLAPIClient.newInstance('lv3')
 
     //----------------------------------------------------------------------
     //
@@ -182,7 +185,7 @@ namespace GQLAPIContainer {
     //----------------------------------------------------------------------
 
     const getAppConfig: GQLAPIContainer['getAppConfig'] = async () => {
-      const response = await standardClient.query<{ appConfig: AppConfig }>({
+      const response = await clientLv1.query<{ appConfig: AppConfig }>({
         query: gql`
           query GetAppConfig {
             appConfig {
@@ -208,7 +211,7 @@ namespace GQLAPIContainer {
     //--------------------------------------------------
 
     const getAuthData: GQLAPIContainer['getAuthData'] = async () => {
-      const response = await standardClient.query<{ authData: RawAuthDataResult }>({
+      const response = await clientLv1.query<{ authData: RawAuthDataResult }>({
         query: gql`
           query AuthData {
             authData {
@@ -251,7 +254,7 @@ namespace GQLAPIContainer {
     }
 
     const setOwnUserInfo: GQLAPIContainer['setOwnUserInfo'] = async input => {
-      const response = await standardClient.mutate<{ setOwnUserInfo: RawUser }>({
+      const response = await clientLv1.mutate<{ setOwnUserInfo: RawUser }>({
         mutation: gql`
           mutation SetOwnUserInfo($input: UserInfoInput!) {
             setOwnUserInfo(input: $input) {
@@ -284,7 +287,7 @@ namespace GQLAPIContainer {
     }
 
     const deleteOwnUser: GQLAPIContainer['deleteOwnUser'] = async () => {
-      const response = await standardClient.mutate<{ deleteOwnUser: boolean }>({
+      const response = await clientLv1.mutate<{ deleteOwnUser: boolean }>({
         mutation: gql`
           mutation DeleteOwnUser {
             deleteOwnUser
@@ -300,7 +303,7 @@ namespace GQLAPIContainer {
     //--------------------------------------------------
 
     const getStorageNode: GQLAPIContainer['getStorageNode'] = async input => {
-      const response = await standardClient.query<{ storageNode: RawStorageNode | null }>({
+      const response = await clientLv1.query<{ storageNode: RawStorageNode | null }>({
         query: gql`
           query GetStorageNode($input: StorageNodeKeyInput!) {
             storageNode(input: $input) {
@@ -332,8 +335,41 @@ namespace GQLAPIContainer {
       return toEntity(response.data.storageNode)
     }
 
+    const getStorageNodes: GQLAPIContainer['getStorageNodes'] = async input => {
+      const response = await clientLv1.query<{ storageNodes: RawStorageNode[] }>({
+        query: gql`
+          query GetStorageNodes($input: StorageNodeKeysInput!) {
+            storageNodes(input: $input) {
+              id
+              nodeType
+              name
+              dir
+              path
+              contentType
+              size
+              share {
+                isPublic
+                readUIds
+                writeUIds
+              }
+              articleNodeName
+              articleNodeType
+              articleSortOrder
+              isArticleFile
+              version
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: { input },
+        isAuth: true,
+      })
+      return toEntity(response.data.storageNodes)
+    }
+
     const getStorageDirDescendants: GQLAPIContainer['getStorageDirDescendants'] = async (dirPath, input) => {
-      const response = await standardClient.query<{ storageDirDescendants: RawStoragePaginationResult }>({
+      const response = await clientLv1.query<{ storageDirDescendants: RawStoragePaginationResult }>({
         query: gql`
           query GetStorageDirDescendants($dirPath: String, $input: StoragePaginationInput) {
             storageDirDescendants(dirPath: $dirPath, input: $input) {
@@ -372,7 +408,7 @@ namespace GQLAPIContainer {
     }
 
     const getStorageDescendants: GQLAPIContainer['getStorageDescendants'] = async (dirPath, input) => {
-      const response = await standardClient.query<{ storageDescendants: RawStoragePaginationResult }>({
+      const response = await clientLv1.query<{ storageDescendants: RawStoragePaginationResult }>({
         query: gql`
           query GetStorageDescendants($dirPath: String, $input: StoragePaginationInput) {
             storageDescendants(dirPath: $dirPath, input: $input) {
@@ -411,7 +447,7 @@ namespace GQLAPIContainer {
     }
 
     const getStorageDirChildren: GQLAPIContainer['getStorageDirChildren'] = async (dirPath, input) => {
-      const response = await standardClient.query<{ storageDirChildren: RawStoragePaginationResult }>({
+      const response = await clientLv1.query<{ storageDirChildren: RawStoragePaginationResult }>({
         query: gql`
           query GetStorageDirChildren($dirPath: String, $input: StoragePaginationInput) {
             storageDirChildren(dirPath: $dirPath, input: $input) {
@@ -450,7 +486,7 @@ namespace GQLAPIContainer {
     }
 
     const getStorageChildren: GQLAPIContainer['getStorageChildren'] = async (dirPath, input) => {
-      const response = await standardClient.query<{ storageChildren: RawStoragePaginationResult }>({
+      const response = await clientLv1.query<{ storageChildren: RawStoragePaginationResult }>({
         query: gql`
           query GetStorageChildren($dirPath: String, $input: StoragePaginationInput) {
             storageChildren(dirPath: $dirPath, input: $input) {
@@ -489,7 +525,7 @@ namespace GQLAPIContainer {
     }
 
     const getStorageHierarchicalNodes: GQLAPIContainer['getStorageHierarchicalNodes'] = async nodePath => {
-      const response = await standardClient.query<{ storageHierarchicalNodes: RawStorageNode[] }>({
+      const response = await clientLv1.query<{ storageHierarchicalNodes: RawStorageNode[] }>({
         query: gql`
           query GetStorageHierarchicalNodes($nodePath: String!) {
             storageHierarchicalNodes(nodePath: $nodePath) {
@@ -522,7 +558,7 @@ namespace GQLAPIContainer {
     }
 
     const getStorageAncestorDirs: GQLAPIContainer['getStorageAncestorDirs'] = async nodePath => {
-      const response = await standardClient.query<{ storageAncestorDirs: RawStorageNode[] }>({
+      const response = await clientLv1.query<{ storageAncestorDirs: RawStorageNode[] }>({
         query: gql`
           query GetStorageAncestorDirs($nodePath: String!) {
             storageAncestorDirs(nodePath: $nodePath) {
@@ -555,7 +591,7 @@ namespace GQLAPIContainer {
     }
 
     const createStorageDir: GQLAPIContainer['createStorageDir'] = async (dirPath, input) => {
-      const response = await standardClient.mutate<{ createStorageDir: RawStorageNode }>({
+      const response = await clientLv1.mutate<{ createStorageDir: RawStorageNode }>({
         mutation: gql`
           mutation CreateStorageDir($dirPath: String!, $input: CreateStorageNodeInput) {
             createStorageDir(dirPath: $dirPath, input: $input) {
@@ -588,7 +624,7 @@ namespace GQLAPIContainer {
     }
 
     const createStorageHierarchicalDirs: GQLAPIContainer['createStorageHierarchicalDirs'] = async dirPaths => {
-      const response = await standardClient.mutate<{ createStorageHierarchicalDirs: RawStorageNode[] }>({
+      const response = await clientLv1.mutate<{ createStorageHierarchicalDirs: RawStorageNode[] }>({
         mutation: gql`
           mutation CreateStorageHierarchicalDirs($dirPaths: [String!]!) {
             createStorageHierarchicalDirs(dirPaths: $dirPaths) {
@@ -620,47 +656,20 @@ namespace GQLAPIContainer {
       return toEntity(response.data!.createStorageHierarchicalDirs)
     }
 
-    const removeStorageDir: GQLAPIContainer['removeStorageDir'] = async (dirPath, input) => {
-      const response = await middleClient.mutate<{ removeStorageDir: RawStoragePaginationResult }>({
+    const removeStorageDir: GQLAPIContainer['removeStorageDir'] = async dirPath => {
+      const response = await clientLv3.mutate<{ removeStorageDir: boolean }>({
         mutation: gql`
-          mutation RemoveStorageDir($dirPath: String!, $input: StoragePaginationInput) {
-            removeStorageDir(dirPath: $dirPath, input: $input) {
-              list {
-                id
-                nodeType
-                name
-                dir
-                path
-                contentType
-                size
-                share {
-                  isPublic
-                  readUIds
-                  writeUIds
-                }
-                articleNodeName
-                articleNodeType
-                articleSortOrder
-                isArticleFile
-                version
-                createdAt
-                updatedAt
-              }
-              nextPageToken
-            }
+          mutation RemoveStorageDir($dirPath: String!) {
+            removeStorageDir(dirPath: $dirPath)
           }
         `,
-        variables: { dirPath, input },
+        variables: { dirPath },
         isAuth: true,
       })
-      return {
-        list: toEntity(response.data!.removeStorageDir.list),
-        nextPageToken: response.data!.removeStorageDir.nextPageToken || undefined,
-      }
     }
 
     const removeStorageFile: GQLAPIContainer['removeStorageFile'] = async filePath => {
-      const response = await standardClient.mutate<{ removeStorageFile: RawStorageNode | null }>({
+      const response = await clientLv1.mutate<{ removeStorageFile: RawStorageNode | null }>({
         mutation: gql`
           mutation RemoveStorageFile($filePath: String!) {
             removeStorageFile(filePath: $filePath) {
@@ -692,47 +701,20 @@ namespace GQLAPIContainer {
       return toEntity(response.data!.removeStorageFile)
     }
 
-    const moveStorageDir: GQLAPIContainer['moveStorageDir'] = async (fromDirPath, toDirPath, input) => {
-      const response = await middleClient.mutate<{ moveStorageDir: RawStoragePaginationResult }>({
+    const moveStorageDir: GQLAPIContainer['moveStorageDir'] = async (fromDirPath, toDirPath) => {
+      const response = await clientLv3.mutate<{ moveStorageDir: RawStoragePaginationResult }>({
         mutation: gql`
-          mutation MoveStorageDir($fromDirPath: String!, $toDirPath: String!, $input: StoragePaginationInput) {
-            moveStorageDir(fromDirPath: $fromDirPath, toDirPath: $toDirPath, input: $input) {
-              list {
-                id
-                nodeType
-                name
-                dir
-                path
-                contentType
-                size
-                share {
-                  isPublic
-                  readUIds
-                  writeUIds
-                }
-                articleNodeName
-                articleNodeType
-                articleSortOrder
-                isArticleFile
-                version
-                createdAt
-                updatedAt
-              }
-              nextPageToken
-            }
+          mutation MoveStorageDir($fromDirPath: String!, $toDirPath: String!) {
+            moveStorageDir(fromDirPath: $fromDirPath, toDirPath: $toDirPath)
           }
         `,
-        variables: { fromDirPath, toDirPath, input },
+        variables: { fromDirPath, toDirPath },
         isAuth: true,
       })
-      return {
-        list: toEntity(response.data!.moveStorageDir.list),
-        nextPageToken: response.data!.moveStorageDir.nextPageToken || undefined,
-      }
     }
 
     const moveStorageFile: GQLAPIContainer['moveStorageFile'] = async (fromFilePath, toFilePath) => {
-      const response = await standardClient.mutate<{ moveStorageFile: RawStorageNode }>({
+      const response = await clientLv1.mutate<{ moveStorageFile: RawStorageNode }>({
         mutation: gql`
           mutation MoveStorageFile($fromFilePath: String!, $toFilePath: String!) {
             moveStorageFile(fromFilePath: $fromFilePath, toFilePath: $toFilePath) {
@@ -764,47 +746,20 @@ namespace GQLAPIContainer {
       return toEntity(response.data!.moveStorageFile)
     }
 
-    const renameStorageDir: GQLAPIContainer['renameStorageDir'] = async (dirPath, newName, input) => {
-      const response = await middleClient.mutate<{ renameStorageDir: RawStoragePaginationResult }>({
+    const renameStorageDir: GQLAPIContainer['renameStorageDir'] = async (dirPath, newName) => {
+      const response = await clientLv3.mutate<{ renameStorageDir: boolean }>({
         mutation: gql`
-          mutation RenameStorageDir($dirPath: String!, $newName: String!, $input: StoragePaginationInput) {
-            renameStorageDir(dirPath: $dirPath, newName: $newName, input: $input) {
-              list {
-                id
-                nodeType
-                name
-                dir
-                path
-                contentType
-                size
-                share {
-                  isPublic
-                  readUIds
-                  writeUIds
-                }
-                articleNodeName
-                articleNodeType
-                articleSortOrder
-                isArticleFile
-                version
-                createdAt
-                updatedAt
-              }
-              nextPageToken
-            }
+          mutation RenameStorageDir($dirPath: String!, $newName: String!) {
+            renameStorageDir(dirPath: $dirPath, newName: $newName)
           }
         `,
-        variables: { dirPath, newName, input },
+        variables: { dirPath, newName },
         isAuth: true,
       })
-      return {
-        list: toEntity(response.data!.renameStorageDir.list),
-        nextPageToken: response.data!.renameStorageDir.nextPageToken || undefined,
-      }
     }
 
     const renameStorageFile: GQLAPIContainer['renameStorageFile'] = async (filePath, newName) => {
-      const response = await standardClient.mutate<{ renameStorageFile: RawStorageNode }>({
+      const response = await clientLv1.mutate<{ renameStorageFile: RawStorageNode }>({
         mutation: gql`
           mutation RenameStorageFile($filePath: String!, $newName: String!) {
             renameStorageFile(filePath: $filePath, newName: $newName) {
@@ -837,7 +792,7 @@ namespace GQLAPIContainer {
     }
 
     const setStorageDirShareSettings: GQLAPIContainer['setStorageDirShareSettings'] = async (dirPath, input) => {
-      const response = await standardClient.mutate<{ setStorageDirShareSettings: RawStorageNode }>({
+      const response = await clientLv1.mutate<{ setStorageDirShareSettings: RawStorageNode }>({
         mutation: gql`
           mutation SetStorageDirShareSettings($dirPath: String!, $input: StorageNodeShareSettingsInput!) {
             setStorageDirShareSettings(dirPath: $dirPath, input: $input) {
@@ -870,7 +825,7 @@ namespace GQLAPIContainer {
     }
 
     const handleUploadedFile: GQLAPIContainer['handleUploadedFile'] = async filePath => {
-      const response = await standardClient.mutate<{ handleUploadedFile: RawStorageNode }>({
+      const response = await clientLv1.mutate<{ handleUploadedFile: RawStorageNode }>({
         mutation: gql`
           mutation HandleUploadedFile($filePath: String!) {
             handleUploadedFile(filePath: $filePath) {
@@ -903,7 +858,7 @@ namespace GQLAPIContainer {
     }
 
     const setStorageFileShareSettings: GQLAPIContainer['setStorageFileShareSettings'] = async (filePath, input) => {
-      const response = await standardClient.mutate<{ setStorageFileShareSettings: RawStorageNode }>({
+      const response = await clientLv1.mutate<{ setStorageFileShareSettings: RawStorageNode }>({
         mutation: gql`
           mutation SetStorageFileShareSettings($filePath: String!, $input: StorageNodeShareSettingsInput!) {
             setStorageFileShareSettings(filePath: $filePath, input: $input) {
@@ -936,7 +891,7 @@ namespace GQLAPIContainer {
     }
 
     const getSignedUploadUrls: GQLAPIContainer['getSignedUploadUrls'] = async inputs => {
-      const response = await standardClient.query<{ signedUploadUrls: string[] }>({
+      const response = await clientLv1.query<{ signedUploadUrls: string[] }>({
         query: gql`
           query GetSignedUploadUrls($inputs: [SignedUploadUrlInput!]!) {
             signedUploadUrls(inputs: $inputs)
@@ -953,7 +908,7 @@ namespace GQLAPIContainer {
     //--------------------------------------------------
 
     const createArticleTypeDir: GQLAPIContainer['createArticleTypeDir'] = async input => {
-      const response = await standardClient.mutate<{ createArticleTypeDir: RawStorageNode }>({
+      const response = await clientLv1.mutate<{ createArticleTypeDir: RawStorageNode }>({
         mutation: gql`
           mutation CreateArticleTypeDir($input: CreateArticleTypeDirInput!) {
             createArticleTypeDir(input: $input) {
@@ -986,7 +941,7 @@ namespace GQLAPIContainer {
     }
 
     const createArticleGeneralDir: GQLAPIContainer['createArticleGeneralDir'] = async dirPath => {
-      const response = await standardClient.mutate<{ createArticleGeneralDir: RawStorageNode }>({
+      const response = await clientLv1.mutate<{ createArticleGeneralDir: RawStorageNode }>({
         mutation: gql`
           mutation CreateArticleGeneralDir($dirPath: String!) {
             createArticleGeneralDir(dirPath: $dirPath) {
@@ -1019,7 +974,7 @@ namespace GQLAPIContainer {
     }
 
     const renameArticleNode: GQLAPIContainer['renameArticleNode'] = async (nodePath, newName) => {
-      const response = await standardClient.mutate<{ renameArticleNode: RawStorageNode }>({
+      const response = await clientLv1.mutate<{ renameArticleNode: RawStorageNode }>({
         mutation: gql`
           mutation RenameArticleNode($nodePath: String!, $newName: String!) {
             renameArticleNode(nodePath: $nodePath, newName: $newName) {
@@ -1052,7 +1007,7 @@ namespace GQLAPIContainer {
     }
 
     const setArticleSortOrder: GQLAPIContainer['setArticleSortOrder'] = async (nodePath, input) => {
-      const response = await standardClient.mutate<{ setArticleSortOrder: RawStorageNode }>({
+      const response = await clientLv1.mutate<{ setArticleSortOrder: RawStorageNode }>({
         mutation: gql`
           mutation SetArticleSortOrder($nodePath: String!, $input: SetArticleSortOrderInput!) {
             setArticleSortOrder(nodePath: $nodePath, input: $input) {
@@ -1085,7 +1040,7 @@ namespace GQLAPIContainer {
     }
 
     const getArticleChildren: GQLAPIContainer['getArticleChildren'] = async (dirPath, articleTypes, input) => {
-      const response = await standardClient.query<{ articleChildren: RawStoragePaginationResult }>({
+      const response = await clientLv1.query<{ articleChildren: RawStoragePaginationResult }>({
         query: gql`
           query GetArticleChildren($dirPath: String!, $articleTypes: [StorageArticleNodeType!]!, $input: StoragePaginationInput) {
             articleChildren(dirPath: $dirPath, articleTypes: $articleTypes, input: $input) {
@@ -1170,6 +1125,7 @@ namespace GQLAPIContainer {
       setOwnUserInfo,
       deleteOwnUser,
       getStorageNode,
+      getStorageNodes,
       getStorageDirDescendants,
       getStorageDescendants,
       getStorageDirChildren,

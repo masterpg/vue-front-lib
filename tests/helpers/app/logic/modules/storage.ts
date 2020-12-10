@@ -44,7 +44,7 @@ function newTestStorageDirNode(dirPath: string, data?: NewTestStorageNodeData): 
     articleNodeName: data.articleNodeName || null,
     articleNodeType: data.articleNodeType || null,
     articleSortOrder: data.articleSortOrder || null,
-    isArticleFile: data.isArticleFile || null,
+    isArticleFile: data.isArticleFile ?? false,
     version: 1,
     createdAt: dayjs.isDayjs(data.createdAt) ? data.createdAt : dayjs(),
     updatedAt: dayjs.isDayjs(data.updatedAt) ? data.updatedAt : dayjs(),
@@ -71,7 +71,7 @@ function newTestStorageFileNode(filePath: string, data?: NewTestStorageNodeData)
     articleNodeName: data.articleNodeName || null,
     articleNodeType: data.articleNodeType || null,
     articleSortOrder: data.articleSortOrder || null,
-    isArticleFile: data.isArticleFile || null,
+    isArticleFile: data.isArticleFile ?? false,
     version: 1,
     createdAt: dayjs.isDayjs(data.createdAt) ? data.createdAt : dayjs(),
     updatedAt: dayjs.isDayjs(data.updatedAt) ? data.updatedAt : dayjs(),
@@ -89,6 +89,7 @@ function mockStorageLogicAPIMethods(params: Pick<TestLogicContainer, 'appStorage
 
   for (const storageLogic of storageLogicList) {
     storageLogic.getNodeAPI.value = td.func() as any
+    storageLogic.getNodesAPI.value = td.func() as any
     storageLogic.getDirDescendantsAPI.value = td.func() as any
     storageLogic.getDescendantsAPI.value = td.func() as any
     storageLogic.getDirChildrenAPI.value = td.func() as any

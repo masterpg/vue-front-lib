@@ -220,6 +220,31 @@ describe('Storage API', () => {
     })
   })
 
+  describe('getStorageNodes', () => {
+    beforeEach(async () => {
+      const { api } = provideDependency()
+      await api.uploadTestFiles([
+        {
+          filePath: `${TEST_DIR}/fileA.txt`,
+          fileData: 'test',
+          contentType: 'text/plain',
+        },
+      ])
+    })
+
+    it('疎通確認', async () => {
+      const { api } = provideDependency()
+      api.setTestAuthToken(APP_ADMIN_TOKEN)
+
+      const [testDir, fileA] = (await api.getStorageDirDescendants(`${TEST_DIR}`)).list
+
+      const actual = await api.getStorageNodes({ ids: [testDir.id], paths: [fileA.path] })
+
+      expect(actual[0].path).toBe(`${TEST_DIR}`)
+      expect(actual[1].path).toBe(`${TEST_DIR}/fileA.txt`)
+    })
+  })
+
   describe('getStorageDirDescendants', () => {
     beforeEach(async () => {
       const { api } = provideDependency()
@@ -491,7 +516,7 @@ describe('Storage API', () => {
   })
 
   describe('removeStorageDir', () => {
-    it('疎通確認 - ページングなし', async () => {
+    it('疎通確認', async () => {
       const { api } = provideDependency()
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
@@ -503,40 +528,10 @@ describe('Storage API', () => {
         { filePath: `${TEST_DIR}/d1/file5.txt`, fileData: 'test', contentType: 'text/plain' },
       ])
 
-      const actual = (await api.removeStorageDir(`${TEST_DIR}/d1`)).list
+      await api.removeStorageDir(`${TEST_DIR}/d1`)
 
-      sortStorageTree(actual)
-      expect(actual.length).toBe(6)
-      expect(actual[0].path).toBe(`${TEST_DIR}/d1`)
-      expect(actual[1].path).toBe(`${TEST_DIR}/d1/file1.txt`)
-      expect(actual[2].path).toBe(`${TEST_DIR}/d1/file2.txt`)
-      expect(actual[3].path).toBe(`${TEST_DIR}/d1/file3.txt`)
-      expect(actual[4].path).toBe(`${TEST_DIR}/d1/file4.txt`)
-      expect(actual[5].path).toBe(`${TEST_DIR}/d1/file5.txt`)
-    })
-
-    it('疎通確認 - ページングあり', async () => {
-      const { api } = provideDependency()
-      api.setTestAuthToken(APP_ADMIN_TOKEN)
-
-      await api.uploadTestFiles([
-        { filePath: `${TEST_DIR}/d1/file1.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/file2.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/file3.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/file4.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/file5.txt`, fileData: 'test', contentType: 'text/plain' },
-      ])
-
-      const actual = await api.callStoragePaginationAPI(api.removeStorageDir, `${TEST_DIR}/d1`, { maxChunk: 2 })
-
-      sortStorageTree(actual)
-      expect(actual.length).toBe(6)
-      expect(actual[0].path).toBe(`${TEST_DIR}/d1`)
-      expect(actual[1].path).toBe(`${TEST_DIR}/d1/file1.txt`)
-      expect(actual[2].path).toBe(`${TEST_DIR}/d1/file2.txt`)
-      expect(actual[3].path).toBe(`${TEST_DIR}/d1/file3.txt`)
-      expect(actual[4].path).toBe(`${TEST_DIR}/d1/file4.txt`)
-      expect(actual[5].path).toBe(`${TEST_DIR}/d1/file5.txt`)
+      const d1_and_descendants = (await api.getStorageDirDescendants(`${TEST_DIR}/d1`)).list
+      expect(d1_and_descendants.length).toBe(0)
     })
   })
 
@@ -554,7 +549,7 @@ describe('Storage API', () => {
   })
 
   describe('moveStorageDir', () => {
-    it('疎通確認 - ページングなし', async () => {
+    it('疎通確認', async () => {
       const { api } = provideDependency()
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
@@ -567,41 +562,17 @@ describe('Storage API', () => {
         `${TEST_DIR}/d2`,
       ])
 
-      const actual = (await api.moveStorageDir(`${TEST_DIR}/d1`, `${TEST_DIR}/d2/d1`)).list
+      await api.moveStorageDir(`${TEST_DIR}/d1`, `${TEST_DIR}/d2/d1`)
 
-      sortStorageTree(actual)
-      expect(actual.length).toBe(6)
-      expect(actual[0].path).toBe(`${TEST_DIR}/d2/d1`)
-      expect(actual[1].path).toBe(`${TEST_DIR}/d2/d1/d11`)
-      expect(actual[2].path).toBe(`${TEST_DIR}/d2/d1/d12`)
-      expect(actual[3].path).toBe(`${TEST_DIR}/d2/d1/d13`)
-      expect(actual[4].path).toBe(`${TEST_DIR}/d2/d1/d14`)
-      expect(actual[5].path).toBe(`${TEST_DIR}/d2/d1/d15`)
-    })
-
-    it('疎通確認 - ページングあり', async () => {
-      const { api } = provideDependency()
-      api.setTestAuthToken(APP_ADMIN_TOKEN)
-
-      await api.createStorageHierarchicalDirs([
-        `${TEST_DIR}/d1/d11`,
-        `${TEST_DIR}/d1/d12`,
-        `${TEST_DIR}/d1/d13`,
-        `${TEST_DIR}/d1/d14`,
-        `${TEST_DIR}/d1/d15`,
-        `${TEST_DIR}/d2`,
-      ])
-
-      const actual = await api.callStoragePaginationAPI(api.moveStorageDir, `${TEST_DIR}/d1`, `${TEST_DIR}/d2/d1`, { maxChunk: 2 })
-
-      sortStorageTree(actual)
-      expect(actual.length).toBe(6)
-      expect(actual[0].path).toBe(`${TEST_DIR}/d2/d1`)
-      expect(actual[1].path).toBe(`${TEST_DIR}/d2/d1/d11`)
-      expect(actual[2].path).toBe(`${TEST_DIR}/d2/d1/d12`)
-      expect(actual[3].path).toBe(`${TEST_DIR}/d2/d1/d13`)
-      expect(actual[4].path).toBe(`${TEST_DIR}/d2/d1/d14`)
-      expect(actual[5].path).toBe(`${TEST_DIR}/d2/d1/d15`)
+      const d1_and_descendants = (await api.getStorageDirDescendants(`${TEST_DIR}/d2/d1`)).list
+      sortStorageTree(d1_and_descendants)
+      expect(d1_and_descendants.length).toBe(6)
+      expect(d1_and_descendants[0].path).toBe(`${TEST_DIR}/d2/d1`)
+      expect(d1_and_descendants[1].path).toBe(`${TEST_DIR}/d2/d1/d11`)
+      expect(d1_and_descendants[2].path).toBe(`${TEST_DIR}/d2/d1/d12`)
+      expect(d1_and_descendants[3].path).toBe(`${TEST_DIR}/d2/d1/d13`)
+      expect(d1_and_descendants[4].path).toBe(`${TEST_DIR}/d2/d1/d14`)
+      expect(d1_and_descendants[5].path).toBe(`${TEST_DIR}/d2/d1/d15`)
     })
   })
 
@@ -620,7 +591,7 @@ describe('Storage API', () => {
   })
 
   describe('renameStorageDir', () => {
-    it('疎通確認 - ページングなし', async () => {
+    it('疎通確認', async () => {
       const { api } = provideDependency()
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
@@ -632,40 +603,17 @@ describe('Storage API', () => {
         `${TEST_DIR}/d1/d15`,
       ])
 
-      const actual = (await api.renameStorageDir(`${TEST_DIR}/d1`, `d2`)).list
+      await await api.renameStorageDir(`${TEST_DIR}/d1`, `d2`)
 
-      sortStorageTree(actual)
-      expect(actual.length).toBe(6)
-      expect(actual[0].path).toBe(`${TEST_DIR}/d2`)
-      expect(actual[1].path).toBe(`${TEST_DIR}/d2/d11`)
-      expect(actual[2].path).toBe(`${TEST_DIR}/d2/d12`)
-      expect(actual[3].path).toBe(`${TEST_DIR}/d2/d13`)
-      expect(actual[4].path).toBe(`${TEST_DIR}/d2/d14`)
-      expect(actual[5].path).toBe(`${TEST_DIR}/d2/d15`)
-    })
-
-    it('疎通確認 - ページングあり', async () => {
-      const { api } = provideDependency()
-      api.setTestAuthToken(APP_ADMIN_TOKEN)
-
-      await api.createStorageHierarchicalDirs([
-        `${TEST_DIR}/d1/d11`,
-        `${TEST_DIR}/d1/d12`,
-        `${TEST_DIR}/d1/d13`,
-        `${TEST_DIR}/d1/d14`,
-        `${TEST_DIR}/d1/d15`,
-      ])
-
-      const actual = await api.callStoragePaginationAPI(api.renameStorageDir, `${TEST_DIR}/d1`, `d2`, { maxChunk: 2 })
-
-      sortStorageTree(actual)
-      expect(actual.length).toBe(6)
-      expect(actual[0].path).toBe(`${TEST_DIR}/d2`)
-      expect(actual[1].path).toBe(`${TEST_DIR}/d2/d11`)
-      expect(actual[2].path).toBe(`${TEST_DIR}/d2/d12`)
-      expect(actual[3].path).toBe(`${TEST_DIR}/d2/d13`)
-      expect(actual[4].path).toBe(`${TEST_DIR}/d2/d14`)
-      expect(actual[5].path).toBe(`${TEST_DIR}/d2/d15`)
+      const d2_and_descendants = (await api.getStorageDirDescendants(`${TEST_DIR}/d2`)).list
+      sortStorageTree(d2_and_descendants)
+      expect(d2_and_descendants.length).toBe(6)
+      expect(d2_and_descendants[0].path).toBe(`${TEST_DIR}/d2`)
+      expect(d2_and_descendants[1].path).toBe(`${TEST_DIR}/d2/d11`)
+      expect(d2_and_descendants[2].path).toBe(`${TEST_DIR}/d2/d12`)
+      expect(d2_and_descendants[3].path).toBe(`${TEST_DIR}/d2/d13`)
+      expect(d2_and_descendants[4].path).toBe(`${TEST_DIR}/d2/d14`)
+      expect(d2_and_descendants[5].path).toBe(`${TEST_DIR}/d2/d15`)
     })
   })
 

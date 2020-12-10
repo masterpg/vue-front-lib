@@ -1499,7 +1499,7 @@ describe('AppStorageLogic', () => {
       // モック設定
       const moved_d11 = cloneTestStorageNode(d11, { dir: `d2`, path: `d2/d11`, updatedAt: dayjs() })
       const moved_f111 = cloneTestStorageNode(f111, { dir: `d2/d11`, path: `d2/d11/f111.txt` })
-      td.when(appStorage.moveDirAPI(d11.path, moved_d11.path)).thenResolve([moved_d11, moved_f111])
+      td.when(appStorage.getNodesAPI({ ids: [moved_d11.id, moved_f111.id] })).thenResolve([moved_d11, moved_f111])
 
       // 'd1/d11'を'd2'へ移動
       const actual = await appStorage.moveDir(d11.path, moved_d11.path)
@@ -1513,41 +1513,48 @@ describe('AppStorageLogic', () => {
       expect(actual[0]).toEqual(moved_d11)
       expect(actual[1]).toEqual(moved_f111)
       expect(appStorage.getAllNodes()).toEqual([d1, d2, moved_d11, moved_f111])
+
+      const exp = td.explain(appStorage.moveDirAPI.value)
+      expect(exp.calls[0].args).toEqual([d11.path, moved_d11.path])
     })
 
-    it('移動ノード配下がストアに読み込まれていない場合', async () => {
-      // 移動ノード'd1/d11'の配下ノードがストアに読み込まれていない状態にする
+    it('移動先ディレクトリが読み込まれていない場合', async () => {
       // bucketRoot
       // ├d1
       // │└d11 ← d2へ移動
-      // │  └f111.txt ← 読み込まれていないのでストアには存在しない
-      // └d2
+      // │  └f111.txt
+      // └d2 ← 読み込まれていないのでストアには存在しない
       const d1 = newTestStorageDirNode(`d1`)
       const d11 = newTestStorageDirNode(`d1/d11`)
+      const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
       const d2 = newTestStorageDirNode(`d2`)
       const {
         logic: { appStorage },
       } = provideDependency(({ store }) => {
-        store.storage.setAll([d1, d11, d2])
+        store.storage.setAll([d1, d11, f111])
       })
 
       // モック設定
       const moved_d11 = cloneTestStorageNode(d11, { dir: `d2`, path: `d2/d11`, updatedAt: dayjs() })
-      const moved_f111 = newTestStorageFileNode(`d2/d11/f111.txt`)
-      td.when(appStorage.moveDirAPI(d11.path, moved_d11.path)).thenResolve([moved_d11, moved_f111])
+      const moved_f111 = cloneTestStorageNode(f111, { dir: `d2/d11`, path: `d2/d11/f111.txt` })
+      td.when(appStorage.getHierarchicalNodesAPI(d2.path)).thenResolve([d2])
+      td.when(appStorage.getNodesAPI({ ids: [moved_d11.id, moved_f111.id] })).thenResolve([moved_d11, moved_f111])
 
       // 'd1/d11'を'd2'へ移動
       const actual = await appStorage.moveDir(d11.path, moved_d11.path)
 
       // bucketRoot
       // ├d1
-      // └d2
+      // └d2 ← 読み込まれたのでストアに存在する
       //   └d11
-      //     └f111.txt ← 移動が行われたことにより追加された
+      //     └f111.txt
       expect(actual.length).toBe(2)
       expect(actual[0]).toEqual(moved_d11)
       expect(actual[1]).toEqual(moved_f111)
       expect(appStorage.getAllNodes()).toEqual([d1, d2, moved_d11, moved_f111])
+
+      const exp = td.explain(appStorage.moveDirAPI.value)
+      expect(exp.calls[0].args).toEqual([d11.path, moved_d11.path])
     })
 
     it('APIでエラーが発生した場合', async () => {
@@ -1648,7 +1655,7 @@ describe('AppStorageLogic', () => {
       // モック設定
       const renamed_x11 = cloneTestStorageNode(d11, { name: `x11`, path: `d1/x11`, updatedAt: dayjs() })
       const renamed_f111 = cloneTestStorageNode(f111, { dir: `d1/x11`, path: `d1/x11/f111.txt` })
-      td.when(appStorage.renameDirAPI(d11.path, renamed_x11.name)).thenResolve([renamed_x11, renamed_f111])
+      td.when(appStorage.getNodesAPI({ ids: [renamed_x11.id, renamed_f111.id] })).thenResolve([renamed_x11, renamed_f111])
 
       // 'd1/d11'を'd1/x11'へリネーム
       const actual = await appStorage.renameDir(d11.path, renamed_x11.name)
@@ -1661,39 +1668,9 @@ describe('AppStorageLogic', () => {
       expect(actual[0]).toEqual(renamed_x11)
       expect(actual[1]).toEqual(renamed_f111)
       expect(appStorage.getAllNodes()).toEqual([d1, renamed_x11, renamed_f111])
-    })
 
-    it('リネームノードの配下がストアに読み込まれていない場合', async () => {
-      // リネームノード'd1/d11'の配下ノードがストアに読み込まれていない状態にする
-      // bucketRoot
-      // └d1
-      //   └d11 ← x11へリネーム
-      //     └[f111.txt] ← 読み込まれていないのでストアには存在しない
-      const d1 = newTestStorageDirNode(`d1`)
-      const d11 = newTestStorageDirNode(`d1/d11`)
-      const {
-        logic: { appStorage },
-      } = provideDependency(({ store }) => {
-        store.storage.setAll([d1, d11])
-      })
-
-      // モック設定
-      const renamed_x11 = cloneTestStorageNode(d11, { name: `x11`, path: `d1/x11`, updatedAt: dayjs() })
-      const renamed_f111 = newTestStorageFileNode(`d1/x11/f111.txt`)
-      td.when(appStorage.renameDirAPI(d11.path, renamed_x11.name)).thenResolve([renamed_x11, renamed_f111])
-
-      // 'd1/d11'を'd1/x11'へリネーム
-      const actual = await appStorage.renameDir(d11.path, renamed_x11.name)
-
-      expect(actual.length).toBe(2)
-      expect(actual[0]).toEqual(renamed_x11)
-      expect(actual[1]).toEqual(renamed_f111)
-
-      // bucketRoot
-      // └d1
-      //   └x11
-      //     └f111.txt ← リネームが行われたことにより読み込まれた
-      expect(appStorage.getAllNodes()).toEqual([d1, renamed_x11, renamed_f111])
+      const exp = td.explain(appStorage.renameDirAPI.value)
+      expect(exp.calls[0].args).toEqual([d11.path, renamed_x11.name])
     })
 
     it('APIでエラーが発生した場合', async () => {

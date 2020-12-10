@@ -973,7 +973,7 @@ describe('AppStorageLogic', () => {
       // モック設定
       const moved_d11 = cloneTestStorageNode(d11, { dir: `${basePath}/d2`, path: `${basePath}/d2/d11`, updatedAt: dayjs() })
       const moved_f111 = cloneTestStorageNode(f111, { dir: `${basePath}/d2/d11`, path: `${basePath}/d2/d11/f111.txt` })
-      td.when(userStorage.moveDirAPI(d11.path, moved_d11.path)).thenResolve([moved_d11, moved_f111])
+      td.when(userStorage.getNodesAPI({ ids: [moved_d11.id, moved_f111.id] })).thenResolve([moved_d11, moved_f111])
 
       // 'd1/d11'を'd2'へ移動
       const actual = await userStorage.moveDir(toBasePath(d11.path), toBasePath(moved_d11.path))
@@ -987,6 +987,48 @@ describe('AppStorageLogic', () => {
       expect(actual[0]).toEqual(toBasePathNode(moved_d11))
       expect(actual[1]).toEqual(toBasePathNode(moved_f111))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d2, moved_d11, moved_f111])
+
+      const exp = td.explain(userStorage.moveDirAPI.value)
+      expect(exp.calls[0].args).toEqual([d11.path, moved_d11.path])
+    })
+
+    it('移動先ディレクトリが読み込まれていない場合', async () => {
+      // basePathRoot
+      // ├d1
+      // │└d11 ← d2へ移動
+      // │  └f111.txt
+      // └d2 ← 読み込まれていないのでストアには存在しない
+      const d1 = newTestStorageDirNode(`${basePath}/d1`)
+      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const {
+        logic: { userStorage, appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([...basePathNodes, d1, d11, f111])
+      })
+
+      // モック設定
+      const moved_d11 = cloneTestStorageNode(d11, { dir: `${basePath}/d2`, path: `${basePath}/d2/d11`, updatedAt: dayjs() })
+      const moved_f111 = cloneTestStorageNode(f111, { dir: `${basePath}/d2/d11`, path: `${basePath}/d2/d11/f111.txt` })
+      td.when(userStorage.getHierarchicalNodesAPI(d2.path)).thenResolve([...basePathNodes, d2])
+      td.when(userStorage.getNodesAPI({ ids: [moved_d11.id, moved_f111.id] })).thenResolve([moved_d11, moved_f111])
+
+      // 'd1/d11'を'd2'へ移動
+      const actual = await userStorage.moveDir(toBasePath(d11.path), toBasePath(moved_d11.path))
+
+      // basePathRoot
+      // ├d1
+      // └d2 ← 読み込まれたのでストアに存在する
+      //   └d11
+      //     └f111.txt
+      expect(actual.length).toBe(2)
+      expect(actual[0]).toEqual(toBasePathNode(moved_d11))
+      expect(actual[1]).toEqual(toBasePathNode(moved_f111))
+      expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d2, moved_d11, moved_f111])
+
+      const exp = td.explain(userStorage.moveDirAPI.value)
+      expect(exp.calls[0].args).toEqual([d11.path, moved_d11.path])
     })
   })
 
@@ -1042,7 +1084,7 @@ describe('AppStorageLogic', () => {
       // モック設定
       const renamed_x11 = cloneTestStorageNode(d11, { name: `${basePath}/x11`, path: `${basePath}/d1/x11`, updatedAt: dayjs() })
       const renamed_f111 = cloneTestStorageNode(f111, { dir: `${basePath}/d1/x11`, path: `${basePath}/d1/x11/f111.txt` })
-      td.when(userStorage.renameDirAPI(d11.path, renamed_x11.name)).thenResolve([renamed_x11, renamed_f111])
+      td.when(userStorage.getNodesAPI({ ids: [renamed_x11.id, renamed_f111.id] })).thenResolve([renamed_x11, renamed_f111])
 
       // 'd1/d11'を'd1/x11'へリネーム
       const actual = await userStorage.renameDir(toBasePath(d11.path), renamed_x11.name)
@@ -1055,6 +1097,9 @@ describe('AppStorageLogic', () => {
       expect(actual[0]).toEqual(toBasePathNode(renamed_x11))
       expect(actual[1]).toEqual(toBasePathNode(renamed_f111))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, renamed_x11, renamed_f111])
+
+      const exp = td.explain(userStorage.renameDirAPI.value)
+      expect(exp.calls[0].args).toEqual([d11.path, renamed_x11.name])
     })
   })
 

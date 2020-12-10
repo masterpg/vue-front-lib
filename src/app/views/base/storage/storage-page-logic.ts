@@ -181,9 +181,9 @@ interface StoragePageLogic {
   /**
    * ノードの移動を行います。
    * @param fromNodePaths 移動するノードのパス。例: ['home/dev', 'home/photos']
-   * @param toDirPath 移動先のディレクトリパス。例: 'tmp'
+   * @param toParentPath 移動先親ディレクトリのパス。例: 'tmp'
    */
-  moveStorageNodes(fromNodePaths: string[], toDirPath: string): Promise<void>
+  moveStorageNodes(fromNodePaths: string[], toParentPath: string): Promise<void>
   /**
    * ノードをリネームします。
    * また対象のツリーノードとその子孫のパスも変更されます。
@@ -900,9 +900,9 @@ namespace StoragePageLogic {
       removeTreeNodes(removedNodePaths)
     }
 
-    const moveStorageNodes: StoragePageLogic['moveStorageNodes'] = async (fromNodePaths, toDirPath) => {
+    const moveStorageNodes: StoragePageLogic['moveStorageNodes'] = async (fromNodePaths, toParentPath) => {
       fromNodePaths = fromNodePaths.map(fromNodePath => removeBothEndsSlash(fromNodePath))
-      toDirPath = removeBothEndsSlash(toDirPath)
+      toParentPath = removeBothEndsSlash(toParentPath)
 
       // 引数チェック
       for (const fromNodePath of fromNodePaths) {
@@ -918,8 +918,8 @@ namespace StoragePageLogic {
           // 移動先ディレクトリが移動対象のサブディレクトリでないことを確認
           // from: aaa/bbb → to: aaa/bbb/ccc/bbb [NG]
           //               → to: aaa/zzz/ccc/bbb [OK]
-          if (toDirPath.startsWith(_path.join(fromNodePath, '/'))) {
-            throw new Error(`The destination directory is its own subdirectory: '${fromNodePath}' -> '${toDirPath}'`)
+          if (toParentPath.startsWith(_path.join(fromNodePath, '/'))) {
+            throw new Error(`The destination directory is its own subdirectory: '${fromNodePath}' -> '${toParentPath}'`)
           }
         }
       }
@@ -930,7 +930,7 @@ namespace StoragePageLogic {
       const movedNodes: StorageNode[] = []
       for (const fromNodePath of fromNodePaths) {
         const fromNode = storageLogic.sgetNode({ path: fromNodePath })
-        const toNodePath = _path.join(toDirPath, fromNode.name)
+        const toNodePath = _path.join(toParentPath, fromNode.name)
         try {
           switch (fromNode.nodeType) {
             case StorageNodeType.Dir: {
@@ -951,24 +951,15 @@ namespace StoragePageLogic {
       }
 
       //
-      // 2. 移動先ディレクトリの上位ディレクトリ階層の作成
+      // 2. 移動先ディレクトリの上位ディレクトリ階層の取得
       //
-      const hierarchicalNodes = await storageLogic.fetchHierarchicalNodes(toDirPath)
+      const hierarchicalNodes = await storageLogic.getHierarchicalNodes(toParentPath)
       setTreeNodes(hierarchicalNodes)
 
       //
       // 3. 移動ノードをツリービューに反映
       //
-      const movedDirNodes = movedNodes.filter(nodeFilter)
-      setTreeNodes(
-        movedDirNodes.map(storeNode => {
-          if (storeNode.nodeType === StorageNodeType.Dir) {
-            return Object.assign({}, storeNode, { lazyLoadStatus: 'loaded' })
-          } else {
-            return storeNode
-          }
-        })
-      )
+      setTreeNodes(movedNodes.filter(nodeFilter))
     }
 
     const renameStorageNode: StoragePageLogic['renameStorageNode'] = async (nodePath, newName) => {
@@ -1001,16 +992,7 @@ namespace StoragePageLogic {
       //
       // 2. リネームノードをツリービューに反映
       //
-      const renamedDirNodes = renamedNodes.filter(nodeFilter)
-      setTreeNodes(
-        renamedDirNodes.map(storeNode => {
-          if (storeNode.nodeType === StorageNodeType.Dir) {
-            return Object.assign({}, storeNode, { lazyLoadStatus: 'loaded' })
-          } else {
-            return storeNode
-          }
-        })
-      )
+      setTreeNodes(renamedNodes.filter(nodeFilter))
     }
 
     const setStorageNodeShareSettings: StoragePageLogic['setStorageNodeShareSettings'] = async (nodePaths, input) => {
@@ -1460,7 +1442,7 @@ namespace StoragePageLogic {
       articleNodeName: null,
       articleNodeType: null,
       articleSortOrder: null,
-      isArticleFile: null,
+      isArticleFile: false,
       url: '',
       createdAt: dayjs(0),
       updatedAt: dayjs(0),

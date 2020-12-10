@@ -18,7 +18,8 @@ import { useConfig } from '@/app/config'
 
 interface TestAPIContainer extends APIContainer {
   setTestAuthToken(token: TestAuthToken | null): void
-  putTestStoreData(inputs: TestCollectionData[]): Promise<void>
+  putTestStoreData(inputs: PutTestStoreDataInput[]): Promise<void>
+  putTestIndexData(input: PutTestIndexDataInput): Promise<void>
   uploadTestFiles(uploadList: TestUploadFileItem[]): Promise<void>
   uploadTestUserFiles(user: TestAuthToken, uploadList: TestUploadFileItem[]): Promise<void>
   removeTestDir(dirPaths: string[]): Promise<void>
@@ -38,9 +39,14 @@ interface TestAuthToken {
   isAppAdmin?: boolean
 }
 
-interface TestCollectionData {
+interface PutTestStoreDataInput {
   collectionName: string
   collectionRecords: any[]
+}
+
+interface PutTestIndexDataInput {
+  index: string
+  data: any[]
 }
 
 interface TestUploadFileItem {
@@ -78,7 +84,7 @@ namespace TestAPIContainer {
 
   export function mix<T extends APIContainerImpl>(api: T): TestAPIContainer & T {
     const config = useConfig()
-    const devClient = GQLAPIClient.newInstance('dev')
+    const clientDev = GQLAPIClient.newInstance('dev')
 
     const setTestAuthToken: TestAPIContainer['setTestAuthToken'] = token => {
       const tokenString = token ? JSON.stringify(token) : undefined
@@ -86,13 +92,24 @@ namespace TestAPIContainer {
     }
 
     const putTestStoreData: TestAPIContainer['putTestStoreData'] = async inputs => {
-      await devClient.mutate<{ putTestStoreData: boolean }>({
+      await clientDev.mutate<{ putTestStoreData: boolean }>({
         mutation: gql`
           mutation PutTestStoreData($inputs: [PutTestStoreDataInput!]!) {
             putTestStoreData(inputs: $inputs)
           }
         `,
         variables: { inputs },
+      })
+    }
+
+    const putTestIndexData: TestAPIContainer['putTestIndexData'] = async input => {
+      await clientDev.mutate<{ putTestIndexData: boolean }>({
+        mutation: gql`
+          mutation PutTestIndexData($input: PutTestIndexDataInput!) {
+            putTestIndexData(input: $input)
+          }
+        `,
+        variables: { input },
       })
     }
 
@@ -143,7 +160,7 @@ namespace TestAPIContainer {
       setTestAuthToken(APP_ADMIN_TOKEN)
 
       for (const dirPath of dirPaths) {
-        await api.callStoragePaginationAPI(api.removeStorageDir, dirPath)
+        await api.removeStorageDir(dirPath)
       }
 
       _setTestAuthToken(tokenBackup)
@@ -186,7 +203,7 @@ namespace TestAPIContainer {
     }
 
     const setTestFirebaseUsers: TestAPIContainer['setTestFirebaseUsers'] = async users => {
-      await devClient.mutate<{ setTestFirebaseUsers: boolean }>({
+      await clientDev.mutate<{ setTestFirebaseUsers: boolean }>({
         mutation: gql`
           mutation SetTestFirebaseUsers($users: [TestFirebaseUserInput!]!) {
             setTestFirebaseUsers(users: $users)
@@ -197,7 +214,7 @@ namespace TestAPIContainer {
     }
 
     const deleteTestFirebaseUsers: TestAPIContainer['deleteTestFirebaseUsers'] = async uids => {
-      await devClient.mutate<{ deleteTestFirebaseUsers: boolean }>({
+      await clientDev.mutate<{ deleteTestFirebaseUsers: boolean }>({
         mutation: gql`
           mutation DeleteTestFirebaseUsers($uids: [String!]!) {
             deleteTestFirebaseUsers(uids: $uids)
@@ -208,7 +225,7 @@ namespace TestAPIContainer {
     }
 
     const setTestUsers: TestAPIContainer['setTestUsers'] = async users => {
-      const response = await devClient.mutate<{ setTestUsers: RawUser[] }>({
+      const response = await clientDev.mutate<{ setTestUsers: RawUser[] }>({
         mutation: gql`
           mutation SetTestUsers($users: [TestUserInput!]!) {
             setTestUsers(users: $users) {
@@ -242,7 +259,7 @@ namespace TestAPIContainer {
     }
 
     const deleteTestUsers: TestAPIContainer['deleteTestUsers'] = async uids => {
-      await devClient.mutate<{ deleteTestUsers: boolean }>({
+      await clientDev.mutate<{ deleteTestUsers: boolean }>({
         mutation: gql`
           mutation DeleteTestUsers($uids: [String!]!) {
             deleteTestUsers(uids: $uids)
@@ -299,6 +316,7 @@ namespace TestAPIContainer {
       ...api,
       setTestAuthToken,
       putTestStoreData,
+      putTestIndexData,
       uploadTestFiles,
       uploadTestUserFiles,
       removeTestDir,
@@ -320,4 +338,4 @@ namespace TestAPIContainer {
 //
 //========================================================================
 
-export { TestCollectionData, TestAPIContainer, TestAuthToken, TestFirebaseUserInput, TestUserInput, TestUploadFileItem }
+export { PutTestStoreDataInput, TestAPIContainer, TestAuthToken, TestFirebaseUserInput, TestUserInput, TestUploadFileItem }

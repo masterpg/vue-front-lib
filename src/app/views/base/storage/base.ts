@@ -20,7 +20,7 @@ interface StorageTreeNodeData extends RequiredAre<TreeNodeData, 'icon' | 'opened
   articleNodeName: string | null
   articleNodeType: StorageArticleNodeType | null
   articleSortOrder: number | null
-  isArticleFile: boolean | null
+  isArticleFile: boolean
   url: string
   createdAt: Dayjs
   updatedAt: Dayjs

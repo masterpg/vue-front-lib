@@ -18,7 +18,7 @@ interface GQLAPIClient {
   mutate<T = any, TVariables = OperationVariables>(options: MutationOptions<T, TVariables> & { isAuth?: boolean }): Promise<FetchResult<T>>
 }
 
-type GQLEndpoint = 'standard' | 'middle' | 'high' | 'extra' | 'dev' | 'example'
+type GQLEndpoint = 'lv1' | 'lv2' | 'lv3' | 'lv4' | 'dev' | 'example'
 
 //========================================================================
 //

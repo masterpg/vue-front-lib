@@ -148,7 +148,7 @@ describe('AppStorageLogic', () => {
 
       // モック設定
       const renamed_x1 = cloneTestStorageNode(d1, { name: `x1`, path: `${assets.path}/x1`, version: d1.version + 1 })
-      td.when(articleStorage.renameDirAPI(d1.path, 'x1')).thenResolve([renamed_x1])
+      td.when(articleStorage.getNodesAPI({ ids: [renamed_x1.id] })).thenResolve([renamed_x1])
 
       // テスト対象実行
       const [actual] = await articleStorage.renameDir(toBasePath(d1.path), renamed_x1.name)
@@ -177,6 +177,9 @@ describe('AppStorageLogic', () => {
       expect(hierarchicalNodes[2].path).toBe(articles.path)
       expect(hierarchicalNodes[3].path).toBe(assets.path)
       expect(hierarchicalNodes[4].path).toBe(renamed_x1.path)
+
+      const exp = td.explain(articleStorage.renameDirAPI.value)
+      expect(exp.calls[0].args).toEqual([d1.path, renamed_x1.name])
     })
   })
 

@@ -131,7 +131,7 @@ interface StorageNode extends TimestampEntity {
   articleNodeName: string | null
   articleNodeType: StorageArticleNodeType | null
   articleSortOrder: number | null
-  isArticleFile: boolean | null
+  isArticleFile: boolean
   version: number
 }
 
@@ -168,6 +168,11 @@ interface StorageNodeShareSettingsInput {
 interface StorageNodeKeyInput {
   id?: string
   path?: string
+}
+
+interface StorageNodeKeysInput {
+  ids?: string[]
+  paths?: string[]
 }
 
 interface CreateStorageNodeInput extends StorageNodeShareSettingsInput {}
@@ -273,7 +278,7 @@ namespace StorageNode {
     if (typeof from.articleSortOrder === 'number' || from.articleSortOrder === null) {
       to.articleSortOrder = from.articleSortOrder
     }
-    if (typeof from.isArticleFile === 'boolean' || from.isArticleFile === null) {
+    if (typeof from.isArticleFile === 'boolean') {
       to.isArticleFile = from.isArticleFile
     }
     if (typeof from.version === 'number') to.version = from.version
@@ -402,6 +407,7 @@ export {
   StorageArticleNodeType,
   StorageNode,
   StorageNodeKeyInput,
+  StorageNodeKeysInput,
   StorageNodeShareSettings,
   StorageNodeShareSettingsInput,
   StorageNodeType,

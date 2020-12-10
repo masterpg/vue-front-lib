@@ -107,7 +107,7 @@ interface StorageDirTableRow {
   readonly size: string
   readonly articleNodeType: StorageNode['articleNodeType']
   readonly articleSortOrder: StorageNode['articleSortOrder']
-  readonly isArticleFile: StorageNode['isArticleFile']
+  readonly isArticleFile: boolean
   readonly updatedAt: string
   readonly updatedAtNum: number
   readonly isDir: boolean

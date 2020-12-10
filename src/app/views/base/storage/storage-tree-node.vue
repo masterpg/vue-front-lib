@@ -144,7 +144,7 @@ interface StorageTreeNodeMembers {
   readonly articleNodeName: string | null
   readonly articleNodeType: StorageArticleNodeType | null
   readonly articleSortOrder: number | null
-  readonly isArticleFile: boolean | null
+  readonly isArticleFile: boolean
   readonly url: string
   readonly createdAt: Dayjs
   readonly updatedAt: Dayjs
@@ -318,7 +318,7 @@ namespace StorageTreeNode {
       if (typeof editData.articleSortOrder === 'number' || editData.articleSortOrder === null) {
         nodeData.value.articleSortOrder = editData.articleSortOrder
       }
-      if (typeof editData.isArticleFile === 'boolean' || editData.isArticleFile === null) {
+      if (typeof editData.isArticleFile === 'boolean') {
         nodeData.value.isArticleFile = editData.isArticleFile
       }
       if (typeof editData.url === 'string') {

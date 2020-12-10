@@ -289,13 +289,13 @@ namespace StoragePage {
     /**
      * ノードの移動を行います。
      * @param nodePaths 移動するノード
-     * @param toDirPath 移動先のディレクトリパス
+     * @param toParentPath 移動先親ディレクトリのパス
      */
-    async function moveNodes(nodePaths: string[], toDirPath: string): Promise<void> {
+    async function moveNodes(nodePaths: string[], toParentPath: string): Promise<void> {
       Loading.show()
 
       // ノードの移動を実行
-      await pageLogic.moveStorageNodes(nodePaths, toDirPath)
+      await pageLogic.moveStorageNodes(nodePaths, toParentPath)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
       changeDirOnPage(pageLogic.selectedTreeNodePath.value)
@@ -462,9 +462,9 @@ namespace StoragePage {
           break
         }
         case 'move': {
-          const toDir = await nodeMoveDialog.value!.open(e.nodePaths)
-          if (typeof toDir === 'string') {
-            await moveNodes(e.nodePaths, toDir)
+          const toParentPath = await nodeMoveDialog.value!.open(e.nodePaths)
+          if (typeof toParentPath === 'string') {
+            await moveNodes(e.nodePaths, toParentPath)
           }
           break
         }
