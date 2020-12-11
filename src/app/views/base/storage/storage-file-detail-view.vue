@@ -41,7 +41,7 @@
   <div class="StorageFileNodeView layout vertical">
     <!-- ノード名 -->
     <div class="layout horizontal center">
-      <q-icon name="description" size="24px" class="app-mr-12" />
+      <q-icon :name="icon" :size="iconSize" class="app-mr-12" />
       <div class="node-name flex-1">{{ fileName }}</div>
       <q-btn flat round color="primary" icon="close" @click="closeOnClick" />
     </div>
@@ -113,6 +113,7 @@ import { StorageImg } from '@/app/components/storage/storage-img.vue'
 import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import _bytes from 'bytes'
 import anime from 'animejs'
+import { isFontAwesome } from '@/app/base'
 import { removeBothEndsSlash } from 'web-base-lib'
 import { useI18n } from '@/app/i18n'
 
@@ -160,6 +161,15 @@ namespace StorageFileDetailView {
     const fileNode: Ref<StorageNode | null> = ref(null)
 
     const textData: Ref<string | null> = ref(null)
+
+    const icon = computed(() => {
+      if (!fileNode.value) return ''
+      return pageLogic.getNodeIcon(fileNode.value)
+    })
+
+    const iconSize = computed(() => {
+      return isFontAwesome(icon.value) ? '20px' : '24px'
+    })
 
     const isImage = computed(() => {
       if (!fileNode.value) return false
@@ -359,6 +369,8 @@ namespace StorageFileDetailView {
       t,
       downloadLinear,
       textData,
+      icon,
+      iconSize,
       isImage,
       isText,
       url,

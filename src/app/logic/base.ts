@@ -74,7 +74,7 @@ namespace StorageNodeType {
       case StorageNodeType.Dir:
         return 'folder'
       case StorageNodeType.File:
-        return 'description'
+        return 'far fa-file'
     }
   }
 }
@@ -106,13 +106,13 @@ namespace StorageArticleNodeType {
   export function getIcon(nodeType: StorageArticleNodeType | null): string {
     switch (nodeType) {
       case StorageArticleNodeType.ListBundle:
-        return 'view_headline'
+        return 'fas fa-bars'
       case StorageArticleNodeType.CategoryBundle:
-        return 'subject'
+        return 'fas fa-stream'
       case StorageArticleNodeType.Category:
-        return 'snippet_folder'
+        return 'fas fa-list-alt'
       case StorageArticleNodeType.Article:
-        return 'article'
+        return 'fas fa-file-alt'
       default:
         return ''
     }

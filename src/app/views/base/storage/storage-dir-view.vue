@@ -29,18 +29,18 @@
           </q-td>
           <q-td key="label" :props="slotProps.tr">
             <span v-if="slotProps.tr.row.isDir" class="th label" @click="nameCellOnClick(slotProps.tr.row, $event)">
-              <q-icon :name="slotProps.tr.row.icon" size="24px" class="app-mr-6" />
+              <q-icon :name="slotProps.tr.row.icon" :size="slotProps.tr.row.iconSize" class="app-mr-6" />
               <span>{{ slotProps.tr.row.label }}</span>
             </span>
             <span v-else-if="slotProps.tr.row.isFile" class="th">
-              <q-icon :name="slotProps.tr.row.icon" size="24px" class="app-mr-6" />
+              <q-icon :name="slotProps.tr.row.icon" :size="slotProps.tr.row.iconSize" class="app-mr-6" />
               <span>{{ slotProps.tr.row.label }}</span>
             </span>
           </q-td>
           <q-td key="type" :props="slotProps.tr" class="th">{{ slotProps.tr.row.type }}</q-td>
           <q-td key="size" :props="slotProps.tr" class="th">{{ slotProps.tr.row.size }}</q-td>
           <q-td key="share" :props="slotProps.tr" class="th">
-            <q-icon :name="slotProps.tr.row.share.icon" size="24px" />
+            <q-icon :name="slotProps.tr.row.share.icon" :size="slotProps.tr.row.share.iconSize" />
           </q-td>
           <q-td key="updatedAt" :props="slotProps.tr" class="th">{{ slotProps.tr.row.updatedAt }}</q-td>
           <StorageNodePopupMenu
@@ -59,6 +59,7 @@
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
 import { StorageNode, StorageNodeType, StorageType } from '@/app/logic'
+import { extendedMethod, isFontAwesome } from '@/app/base'
 import { QTableColumn } from 'quasar'
 import { StorageDirTable } from '@/app/views/base/storage/storage-dir-table.vue'
 import { StorageNodeActionEvent } from '@/app/views/base/storage/base'
@@ -66,7 +67,6 @@ import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popu
 import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import { arrayToDict } from 'web-base-lib'
 import bytes from 'bytes'
-import { extendedMethod } from '@/app/base'
 import { useI18n } from '@/app/i18n'
 
 //========================================================================
@@ -136,6 +136,10 @@ namespace StorageDirTableRow {
 
     const icon = computed(() => pageLogic.getNodeIcon(node))
 
+    const iconSize = computed(() => {
+      return isFontAwesome(icon.value) ? '20px' : '24px'
+    })
+
     const type = computed(() => {
       switch (nodeType.value) {
         case StorageNodeType.Dir:
@@ -163,14 +167,15 @@ namespace StorageDirTableRow {
     const path = computed(() => node.path)
 
     const share = computed(() => {
+      let icon = ''
       if (node.share.isPublic === null) {
         if (pageLogic.getInheritedShare(node.path).isPublic) {
-          return { icon: 'public' }
+          icon = 'public'
         }
       } else {
-        return { icon: node.share.isPublic ? 'public' : 'lock' }
+        icon = node.share.isPublic ? 'public' : 'lock'
       }
-      return { icon: '' }
+      return { icon, iconSize: isFontAwesome(icon) ? '20px' : '24px' }
     })
 
     const size = computed(() => {
@@ -202,6 +207,7 @@ namespace StorageDirTableRow {
 
     return reactive({
       icon,
+      iconSize,
       type,
       label,
       id,

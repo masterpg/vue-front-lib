@@ -37,7 +37,7 @@
         <q-card-section class="content-area scroll">
           <q-input v-show="sharingNodes.length === 1" ref="newNameInput" v-model="targetNodeName" :label="targetNodeLabel" class="app-pb-20" readonly>
             <template v-slot:prepend>
-              <q-icon :name="targetNodeIcon" />
+              <q-icon :name="targetNodeIcon" :size="targetNodeIconSize" />
             </template>
           </q-input>
           <div class="app-mb-10">{{ selectPublicPrompt }}</div>
@@ -75,6 +75,7 @@ import { StorageNode, StorageNodeShareSettings, StorageType } from '@/app/logic'
 import { Dialog } from '@/app/components/dialog'
 import { QDialog } from 'quasar'
 import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
+import { isFontAwesome } from '@/app/base'
 import { useI18n } from '@/app/i18n'
 
 interface StorageNodeShareDialog extends Dialog<string[], StorageNodeShareSettings | undefined>, StorageNodeShareDialog.Props {}
@@ -148,6 +149,10 @@ namespace StorageNodeShareDialog {
         return pageLogic.getNodeIcon(sharingNodes.value[0])
       }
       return ''
+    })
+
+    const targetNodeIconSize = computed(() => {
+      return isFontAwesome(targetNodeIcon.value) ? '20px' : '24px'
     })
 
     const isPublic = ref<boolean | null>(null)
@@ -236,6 +241,7 @@ namespace StorageNodeShareDialog {
       targetNodeLabel,
       targetNodeName,
       targetNodeIcon,
+      targetNodeIconSize,
       isPublic,
       errorMessage,
       open,

@@ -42,6 +42,11 @@ interface TreeNodeData {
    */
   iconColor?: string
   /**
+   * アイコンのサイズを指定します。
+   * 例: 24px
+   */
+  iconSize?: string
+  /**
    * 子ノードを指定します。
    */
   children?: this[]

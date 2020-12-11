@@ -73,7 +73,7 @@
       <div class="layout horizontal center item-container" :class="{ selected, unselectable }" @click="itemContainerOnClick">
         <!-- 指定アイコン -->
         <div v-if="!!icon" class="icon-container">
-          <q-icon :name="icon" :color="iconColor" size="24px" />
+          <q-icon :name="icon" :color="iconColor" :size="iconSize" />
         </div>
         <!-- ドットアイコン -->
         <div v-else class="icon-container">
@@ -98,11 +98,11 @@ import * as util from './base'
 import { ChildrenSortFunc, TreeNodeData, TreeNodeEditData, TreeViewLazyLoadStatus } from '@/app/components/tree-view/base'
 import { Ref, SetupContext, computed, defineComponent, getCurrentInstance, nextTick, reactive, ref, set } from '@vue/composition-api'
 import { TreeView, TreeViewImpl } from '@/app/components/tree-view/tree-view.vue'
+import { extendedMethod, isFontAwesome } from '@/app/base'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
 import Vue from 'vue'
 import anime from 'animejs'
 import debounce from 'lodash/debounce'
-import { extendedMethod } from '@/app/base'
 
 //========================================================================
 //
@@ -156,6 +156,11 @@ interface TreeNode<DATA extends TreeNodeData = TreeNodeData> extends Vue {
    * 例: 'primary' or 'indigo-8' or '#303f9f'
    */
   iconColor: string
+  /**
+   * アイコンのサイズです。デフォルトは'24px'です。
+   * 例: '24px'
+   */
+  iconSize: string
   /**
    * 子ノードの読み込みを遅延ロードするか否かです。
    */
@@ -413,6 +418,14 @@ namespace TreeNode {
       },
     })
 
+    const iconSize = computed({
+      get: () => nodeData.value.iconSize,
+      set: value => {
+        nodeData.value.iconSize = value
+        resetNodePositionInParentDebounce(self)
+      },
+    })
+
     const lazy = computed({
       get: () => nodeData.value.lazy,
       set: value => {
@@ -540,6 +553,10 @@ namespace TreeNode {
         iconColor.value = editData.iconColor
       }
 
+      if (typeof editData.iconSize === 'string') {
+        iconSize.value = editData.iconSize
+      }
+
       if (typeof editData.opened === 'boolean') {
         if (editData.opened) {
           open(false)
@@ -626,6 +643,7 @@ namespace TreeNode {
       // 任意項目は値が設定されていないとリアクティブにならないのでここで初期化
       set(data, 'icon', data.icon || '')
       set(data, 'iconColor', data.iconColor || '')
+      set(data, 'iconSize', data.iconSize || isFontAwesome(data.icon) ? '20px' : '24px')
       set(data, 'opened', Boolean(data.opened))
       set(data, 'unselectable', Boolean(data.unselectable))
       set(data, 'selected', Boolean(data.selected))
@@ -1152,6 +1170,7 @@ namespace TreeNode {
       children,
       icon,
       iconColor,
+      iconSize,
       lazy,
       lazyLoadStatus,
       isEldest,

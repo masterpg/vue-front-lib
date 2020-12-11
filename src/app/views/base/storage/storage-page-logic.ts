@@ -263,12 +263,21 @@ interface StoragePageLogic {
    * ノードのアイコンを取得します。
    * @param node
    */
-  getNodeIcon(node: { path: StorageNode['path']; nodeType: StorageNode['nodeType']; articleNodeType: StorageNode['articleNodeType'] }): string
+  getNodeIcon(node: {
+    path: StorageNode['path']
+    nodeType: StorageNode['nodeType']
+    articleNodeType: StorageNode['articleNodeType']
+    isArticleFile: StorageNode['isArticleFile']
+  }): string
   /**
    * ノードタイプのアイコンを取得します。
    * @param node
    */
-  getNodeTypeIcon(node: { nodeType: StorageNode['nodeType']; articleNodeType: StorageNode['articleNodeType'] }): string
+  getNodeTypeIcon(node: {
+    nodeType: StorageNode['nodeType']
+    articleNodeType: StorageNode['articleNodeType']
+    isArticleFile: StorageNode['isArticleFile']
+  }): string
   /**
    * ノードタイプの表示ラベルを取得します。
    * @param node
@@ -325,6 +334,10 @@ interface StoragePageStore {
 namespace StoragePageLogic {
   const pageLogicDict: { [storageType: string]: StoragePageLogic } = {}
 
+  /**
+   * 指定されたストレージタイプに対応するストレージロジックのインスタンスを取得します。
+   * @param storageType
+   */
   export function getInstance(storageType: StorageType): StoragePageLogic {
     const pageLogic = pageLogicDict[storageType]
     if (!pageLogic) {
@@ -333,7 +346,11 @@ namespace StoragePageLogic {
     return pageLogic
   }
 
-  export function deleteInstance(storageType: StorageType): void {
+  /**
+   * 指定されたストレージタイプに対応するストレージロジックのインスタンスを破棄します。
+   * @param storageType
+   */
+  export function destroyInstance(storageType: StorageType): void {
     delete pageLogicDict[storageType]
   }
 
@@ -1173,7 +1190,11 @@ namespace StoragePageLogic {
       if (node.articleNodeType) {
         return StorageArticleNodeType.getIcon(node.articleNodeType)
       } else {
-        return StorageNodeType.getIcon(node.nodeType)
+        if (node.isArticleFile) {
+          return 'fas fa-pen-square'
+        } else {
+          return StorageNodeType.getIcon(node.nodeType)
+        }
       }
     }
 
@@ -1416,7 +1437,7 @@ namespace StoragePageLogic {
         break
       case 'article':
         label = String(t('storage.articleRootName'))
-        icon = 'home'
+        icon = 'storage'
         break
     }
 

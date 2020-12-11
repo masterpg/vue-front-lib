@@ -30,18 +30,18 @@
           </q-td>
           <q-td key="label" :props="slotProps.tr">
             <span v-if="slotProps.tr.row.isDir || slotProps.tr.row.isArticleFile" class="th label" @click="nameCellOnClick(slotProps.tr.row, $event)">
-              <q-icon :name="slotProps.tr.row.icon" size="24px" class="app-mr-6" />
+              <q-icon :name="slotProps.tr.row.icon" :size="slotProps.tr.row.iconSize" class="app-mr-6" />
               <span>{{ slotProps.tr.row.label }}</span>
             </span>
             <span v-else-if="slotProps.tr.row.isFile" class="th">
-              <q-icon :name="slotProps.tr.row.icon" size="24px" class="app-mr-6" />
+              <q-icon :name="slotProps.tr.row.icon" :size="slotProps.tr.row.iconSize" class="app-mr-6" />
               <span>{{ slotProps.tr.row.label }}</span>
             </span>
           </q-td>
           <q-td key="type" :props="slotProps.tr" class="th">{{ slotProps.tr.row.type }}</q-td>
           <q-td key="size" :props="slotProps.tr" class="th">{{ slotProps.tr.row.size }}</q-td>
           <q-td key="share" :props="slotProps.tr" class="th">
-            <q-icon :name="slotProps.tr.row.share.icon" size="24px" />
+            <q-icon :name="slotProps.tr.row.share.icon" :size="slotProps.tr.row.share.iconSize" />
           </q-td>
           <q-td key="updatedAt" :props="slotProps.tr" class="th">{{ slotProps.tr.row.updatedAt }}</q-td>
           <StorageNodePopupMenu

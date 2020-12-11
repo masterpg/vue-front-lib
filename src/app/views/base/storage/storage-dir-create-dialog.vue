@@ -23,7 +23,7 @@
       <q-card-section>
         <q-input ref="dirNameInput" v-model="dirName" class="app-pb-20" :label="parentPath" :error="isError" :error-message="errorMessage">
           <template v-slot:prepend>
-            <q-icon :name="icon" />
+            <q-icon :name="icon" :size="iconSize" />
           </template>
         </q-input>
       </q-card-section>
@@ -46,6 +46,7 @@ import { StorageArticleNodeType, StorageNode, StorageNodeType, StorageType } fro
 import { Dialog } from '@/app/components/dialog'
 import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import _path from 'path'
+import { isFontAwesome } from '@/app/base'
 import { useI18n } from '@/app/i18n'
 
 interface StorageDirCreateDialog extends Dialog<DialogParams, DialogResult | undefined>, StorageDirCreateDialog.Props {}
@@ -99,7 +100,12 @@ namespace StorageDirCreateDialog {
       return pageLogic.getNodeTypeIcon({
         nodeType: StorageNodeType.Dir,
         articleNodeType: state.articleNodeType,
+        isArticleFile: false,
       })
+    })
+
+    const iconSize = computed(() => {
+      return isFontAwesome(icon.value) ? '20px' : '24px'
     })
 
     const title = computed(() => {
@@ -223,6 +229,7 @@ namespace StorageDirCreateDialog {
       t,
       dirNameInput,
       icon,
+      iconSize,
       title,
       dirName,
       parentPath,

@@ -32,7 +32,7 @@
             @input="newNameInputOnInput"
           >
             <template v-slot:prepend>
-              <q-icon :name="nodeIcon" />
+              <q-icon :name="nodeIcon" :size="nodeIconSize" />
             </template>
           </q-input>
         </q-card-section>
@@ -56,6 +56,7 @@ import { StorageNode, StorageType } from '@/app/logic'
 import { Dialog } from '@/app/components/dialog'
 import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import _path from 'path'
+import { isFontAwesome } from '@/app/base'
 import { useI18n } from '@/app/i18n'
 
 interface StorageNodeRenameDialog extends Dialog<string, string | undefined>, StorageNodeRenameDialog.Props {}
@@ -100,6 +101,10 @@ namespace StorageNodeRenameDialog {
     const nodeIcon = computed(() => {
       if (!targetNode.value) return ''
       return pageLogic.getNodeIcon(targetNode.value)
+    })
+
+    const nodeIconSize = computed(() => {
+      return isFontAwesome(nodeIcon.value) ? '20px' : '24px'
     })
 
     const newName = ref<string | null>(null)
@@ -238,6 +243,7 @@ namespace StorageNodeRenameDialog {
       newNameInput,
       title,
       nodeIcon,
+      nodeIconSize,
       newName,
       parentPath,
       isError,

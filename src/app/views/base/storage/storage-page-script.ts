@@ -56,7 +56,7 @@ namespace StoragePage {
     })
 
     onUnmounted(() => {
-      StoragePageLogic.deleteInstance(storageType)
+      StoragePageLogic.destroyInstance(storageType)
     })
 
     //----------------------------------------------------------------------

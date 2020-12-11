@@ -73,7 +73,7 @@
       <div class="layout horizontal center item-container" :class="{ selected, unselectable }" @click="itemContainerOnClick">
         <!-- 指定アイコン -->
         <div v-if="!!icon" class="icon-container">
-          <q-icon :name="icon" :color="iconColor" size="24px" />
+          <q-icon :name="icon" :color="iconColor" :size="iconSize" />
         </div>
         <!-- ドットアイコン -->
         <div v-else class="icon-container">

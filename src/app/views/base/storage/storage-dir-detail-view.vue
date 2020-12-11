@@ -41,7 +41,7 @@
   <div class="StorageDirDetailView layout vertical">
     <!-- ノード名 -->
     <div class="layout horizontal center">
-      <q-icon :name="icon" size="24px" class="app-mr-12" />
+      <q-icon :name="icon" :size="iconSize" class="app-mr-12" />
       <div class="node-label flex-1">{{ label }}</div>
       <q-btn flat round color="primary" icon="close" @click="closeOnClick" />
     </div>
@@ -102,6 +102,7 @@ import { QLinearProgress } from 'quasar'
 import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import _bytes from 'bytes'
 import anime from 'animejs'
+import { isFontAwesome } from '@/app/base'
 import { removeBothEndsSlash } from 'web-base-lib'
 import { useI18n } from '@/app/i18n'
 
@@ -147,6 +148,10 @@ namespace StorageDirDetailView {
     const icon = computed(() => {
       if (!dirNode.value) return ''
       return pageLogic.getNodeIcon(dirNode.value)
+    })
+
+    const iconSize = computed(() => {
+      return isFontAwesome(icon.value) ? '20px' : '24px'
     })
 
     const label = computed(() => {
@@ -324,6 +329,7 @@ namespace StorageDirDetailView {
       t,
       downloadLinear,
       icon,
+      iconSize,
       label,
       id,
       path,

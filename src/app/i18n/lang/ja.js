@@ -94,7 +94,7 @@ export default {
   storage: {
     appRootName: 'Storage',
     userRootName: 'Home',
-    articleRootName: 'ホーム',
+    articleRootName: '記事',
     uploading: 'アップロード中',
     uploadTotalRatio: 'アップロード {0} / {1}',
     uploadFileFailed: 'アップロード失敗',

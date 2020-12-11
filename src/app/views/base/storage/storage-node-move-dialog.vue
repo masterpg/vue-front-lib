@@ -40,7 +40,7 @@
         <q-card-section class="content-area scroll">
           <q-input v-show="movingNodes.length === 1" ref="newNameInput" v-model="movingNodeName" :label="movingNodeLabel" class="app-pb-20" readonly>
             <template v-slot:prepend>
-              <q-icon :name="movingNodeIcon" />
+              <q-icon :name="movingNodeIcon" :size="movingNodeIconSize" />
             </template>
           </q-input>
           <div class="app-mb-10">{{ t('storage.move.selectDestPrompt') }}</div>
@@ -77,6 +77,7 @@ import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
 import { StorageTreeNodeData } from '@/app/views/base/storage/base'
 import _path from 'path'
+import { isFontAwesome } from '@/app/base'
 import { useI18n } from '@/app/i18n'
 
 interface StorageNodeMoveDialog extends Dialog<string[], string | undefined>, StorageNodeMoveDialog.Props {}
@@ -146,6 +147,10 @@ namespace StorageNodeMoveDialog {
         return pageLogic.getNodeIcon(movingNodes.value[0])
       }
       return ''
+    })
+
+    const movingNodeIconSize = computed(() => {
+      return isFontAwesome(movingNodeIcon.value) ? '20px' : '24px'
     })
 
     const movingNodesParentPath = computed(() => {
@@ -445,6 +450,7 @@ namespace StorageNodeMoveDialog {
       movingNodeLabel,
       movingNodeName,
       movingNodeIcon,
+      movingNodeIconSize,
       errorMessage,
       open,
       close,
