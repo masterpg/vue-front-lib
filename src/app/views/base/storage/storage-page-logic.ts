@@ -198,6 +198,11 @@ interface StoragePageLogic {
    */
   setStorageNodeShareSettings(nodePaths: string[], input: StorageNodeShareSettings): Promise<void>
   /**
+   * 指定されたノードにソート順を設定します。
+   * @param orderNodePaths ソート順を設定するノードパスを順番に指定
+   */
+  setArticleSortOrder(orderNodePaths: string[]): Promise<void>
+  /**
    * アップロードが行われた後のツリーの更新処理を行います。
    * @param e
    */
@@ -1046,6 +1051,37 @@ namespace StoragePageLogic {
       setTreeNodes(processedDirNodes)
     }
 
+    const setArticleSortOrder: StoragePageLogic['setArticleSortOrder'] = async orderNodePaths => {
+      if (storageType !== 'article') {
+        throw new Error(`This method cannot be executed by storageType '${storageType}'.`)
+      }
+
+      const articleLogic = storageLogic as ArticleStorageLogic
+
+      // 引数チェック
+      for (const nodePath of orderNodePaths) {
+        const node = articleLogic.sgetNode({ path: nodePath })
+        if (!node.articleNodeType) {
+          const { id, path, articleNodeName, articleNodeType } = node
+          const nodeDetail = JSON.stringify({ id, path, articleNodeName, articleNodeType }, null, 2)
+          throw new Error(`A node is specified for which the sort order cannot be set: ${nodeDetail}`)
+        }
+      }
+
+      // APIによるソート順設定を実行
+      let processedNodes!: StorageNode[]
+      try {
+        processedNodes = await articleLogic.setArticleSortOrder(orderNodePaths)
+      } catch (err) {
+        console.error(err)
+        showNotification('error', String(t('storage.sort.sortingError')))
+      }
+
+      // ツリービューに処理内容を反映
+      const processedDirNodes = processedNodes.filter(nodeFilter)
+      setTreeNodes(processedDirNodes)
+    }
+
     const onUploaded: StoragePageLogic['onUploaded'] = async e => {
       const uploadDirTreeNode = getTreeNode(e.uploadDirPath)
       if (!uploadDirTreeNode) {
@@ -1394,6 +1430,7 @@ namespace StoragePageLogic {
       moveStorageNodes,
       renameStorageNode,
       setStorageNodeShareSettings,
+      setArticleSortOrder,
       onUploaded,
       newDownloader,
       newFileDownloader,

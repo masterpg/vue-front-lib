@@ -129,6 +129,9 @@ export default {
       private: '非公開',
       sharingError: '「{nodeName}」の共有でエラーが発生しました。',
     },
+    sort: {
+      sortingError: '並び順の設定でエラーが発生しました。',
+    },
     nodeDetail: {
       id: 'ID',
       name: '名前',

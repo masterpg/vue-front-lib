@@ -24,7 +24,6 @@ import { Ref, defineComponent, ref } from '@vue/composition-api'
 import { StorageNode, StorageNodeType, StorageType } from '@/app/logic'
 import { MarkdownEditor } from '@/app/components/markdown-editor'
 import { StoragePageLogic } from '@/app/views/base/storage'
-import { sleep } from 'web-base-lib'
 import { useI18n } from '@/app/i18n'
 
 interface ArticleWritingView extends ArticleWritingView.Props {
@@ -59,7 +58,6 @@ namespace ArticleWritingView {
 
       const editor = ref<MarkdownEditor>()
 
-      // const mdSrc = ref(cheatSheet)
       const mdSrc = ref('')
 
       const fileNode: Ref<StorageNode> = ref(null as any)

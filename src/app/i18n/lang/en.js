@@ -130,6 +130,9 @@ export default {
       private: 'Private',
       sharingError: 'An error occurred while sharing "{nodeName}".',
     },
+    sort: {
+      sortingError: 'An error occurred in setting the sort order.',
+    },
     nodeDetail: {
       id: 'ID',
       name: 'Name',
@@ -148,10 +151,10 @@ export default {
   },
   article: {
     nodeType: {
-      listBundle: 'List Type Bundle' | 'List Type Bundles',
-      categoryBundle: 'Category Bundle' | 'Category Bundles',
-      category: 'Category' | 'Categories',
-      article: 'Article' | 'Articles',
+      listBundle: 'List Type Bundle | List Type Bundles',
+      categoryBundle: 'Category Bundle | Category Bundles',
+      category: 'Category | Categories',
+      article: 'Article | Articles',
     },
   },
 }

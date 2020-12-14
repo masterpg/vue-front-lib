@@ -4,7 +4,6 @@ import {
   CreateArticleTypeDirInput,
   CreateStorageNodeInput,
   PublicProfile,
-  SetArticleSortOrderInput,
   StorageArticleNodeType,
   StorageNodeKeyInput,
   StorageNodeKeysInput,
@@ -92,7 +91,7 @@ interface GQLAPIContainer {
 
   renameArticleNode(nodePath: string, newName: string): Promise<APIStorageNode>
 
-  setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<APIStorageNode>
+  setArticleSortOrder(orderNodePaths: string[]): Promise<void>
 
   getArticleChildren(dirPath: string, articleTypes: StorageArticleNodeType[], input?: StoragePaginationInput): Promise<StoragePaginationResult>
 
@@ -1006,37 +1005,16 @@ namespace GQLAPIContainer {
       return toEntity(response.data!.renameArticleNode)
     }
 
-    const setArticleSortOrder: GQLAPIContainer['setArticleSortOrder'] = async (nodePath, input) => {
-      const response = await clientLv1.mutate<{ setArticleSortOrder: RawStorageNode }>({
+    const setArticleSortOrder: GQLAPIContainer['setArticleSortOrder'] = async orderNodePaths => {
+      await clientLv1.mutate<{ setArticleSortOrder: boolean }>({
         mutation: gql`
-          mutation SetArticleSortOrder($nodePath: String!, $input: SetArticleSortOrderInput!) {
-            setArticleSortOrder(nodePath: $nodePath, input: $input) {
-              id
-              nodeType
-              name
-              dir
-              path
-              contentType
-              size
-              share {
-                isPublic
-                readUIds
-                writeUIds
-              }
-              articleNodeName
-              articleNodeType
-              articleSortOrder
-              isArticleFile
-              version
-              createdAt
-              updatedAt
-            }
+          mutation SetArticleSortOrder($orderNodePaths: [String!]!) {
+            setArticleSortOrder(orderNodePaths: $orderNodePaths)
           }
         `,
-        variables: { nodePath, input },
+        variables: { orderNodePaths },
         isAuth: true,
       })
-      return toEntity(response.data!.setArticleSortOrder)
     }
 
     const getArticleChildren: GQLAPIContainer['getArticleChildren'] = async (dirPath, articleTypes, input) => {

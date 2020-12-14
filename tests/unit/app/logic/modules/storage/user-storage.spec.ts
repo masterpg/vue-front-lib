@@ -390,6 +390,118 @@ describe('AppStorageLogic', () => {
     })
   })
 
+  describe('fetchNode', () => {
+    it('ベーシックケース - パス検索', async () => {
+      // basePathRoot
+      // ├d1 ← 対象ノードに指定
+      // │├d11
+      // ││└f111.txt
+      // │└f11.txt
+      // └d2
+      const d1 = newTestStorageDirNode(`${basePath}/d1`)
+      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const f11 = newTestStorageFileNode(`${basePath}/d1/f11.txt`)
+      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const {
+        logic: { userStorage, appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([...basePathNodes, d1, d11, f111, f11, d2])
+      })
+
+      // APIから以下の状態のノードリストが取得される
+      // ・'d1'が更新された
+      const updated_d1 = cloneTestStorageNode(d1, { updatedAt: dayjs() })
+      td.when(userStorage.getNodeAPI({ path: d1.path })).thenResolve(updated_d1)
+
+      const actual = await userStorage.fetchNode({ path: toBasePath(d1.path) })
+
+      // basePathRoot
+      // ├d1
+      // │├d11
+      // ││└f112.txt
+      // │└d12
+      // └d2
+      expect(actual).toEqual(toBasePathNode(updated_d1))
+      expect(appStorage.getAllNodes()).toEqual([...basePathNodes, updated_d1, d11, f111, f11, d2])
+    })
+
+    it('ベースパスルートを指定した場合', async () => {
+      // basePathRoot ← 対象ノードに指定
+      // └d1
+      const d1 = newTestStorageDirNode(`${basePath}/d1`)
+      const {
+        logic: { userStorage, appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([...basePathNodes, d1])
+      })
+
+      const actual = await userStorage.fetchNode({ path: `` })
+
+      // basePathRoot
+      // └d1
+      expect(actual).toBeUndefined()
+      expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1])
+    })
+  })
+
+  describe('fetchNodes', () => {
+    it('ベーシックケース - パス検索', async () => {
+      // basePathRoot
+      // ├d1 ← 対象ノードに指定
+      // │├d11
+      // ││└f111.txt
+      // │└f11.txt
+      // └d2
+      const d1 = newTestStorageDirNode(`${basePath}/d1`)
+      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const f11 = newTestStorageFileNode(`${basePath}/d1/f11.txt`)
+      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const {
+        logic: { userStorage, appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([...basePathNodes, d1, d11, f111, f11, d2])
+      })
+
+      // APIから以下の状態のノードリストが取得される
+      // ・'d1'が更新された
+      const updated_d1 = cloneTestStorageNode(d1, { updatedAt: dayjs() })
+      td.when(userStorage.getNodesAPI({ paths: [d1.path] })).thenResolve([updated_d1])
+
+      const actual = await userStorage.fetchNodes({ paths: toBasePath([d1.path]) })
+
+      // basePathRoot
+      // ├d1
+      // │├d11
+      // ││└f112.txt
+      // │└d12
+      // └d2
+      expect(actual).toEqual(toBasePathNode([updated_d1]))
+      expect(appStorage.getAllNodes()).toEqual([...basePathNodes, updated_d1, d11, f111, f11, d2])
+    })
+
+    it('ベースパスルートを指定した場合', async () => {
+      // basePathRoot ← 対象ノードに指定
+      // └d1
+      const d1 = newTestStorageDirNode(`${basePath}/d1`)
+      const {
+        logic: { userStorage, appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([...basePathNodes, d1])
+      })
+
+      td.when(userStorage.getNodesAPI({ paths: [] })).thenResolve([])
+
+      const actual = await userStorage.fetchNodes({ paths: [``] })
+
+      // basePathRoot
+      // └d1
+      expect(actual).toEqual([])
+      expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1])
+    })
+  })
+
   describe('fetchHierarchicalNodes', () => {
     it('ベーシックケース', async () => {
       // basePathRoot

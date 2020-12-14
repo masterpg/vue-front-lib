@@ -5,6 +5,7 @@ import {
   SortStorageNode,
   StorageNode,
   StorageNodeKeyInput,
+  StorageNodeKeysInput,
   StorageNodeShareSettingsInput,
   sortStorageTree,
   storageChildrenSortFunc,
@@ -36,6 +37,11 @@ interface StorageLogic {
    * @param key
    */
   getNode(key: StorageNodeKeyInput): StorageNode | undefined
+  /**
+   * 指定されたノードリストを取得します。
+   * @param input
+   */
+  getNodes(input: StorageNodeKeysInput): StorageNode[]
   /**
    * 指定ノードをストアから取得します。
    * ノードが存在しない場合は例外がスローされます。
@@ -88,6 +94,16 @@ interface StorageLogic {
    * 補足: 内部的にはベースパスルートを超え、バケットルート直下のディレクトリまで取得/作成し、ストアに格納します。
    */
   fetchRoot(): Promise<void>
+  /**
+   * 指定されたノードを取得します。
+   * @param input
+   */
+  fetchNode(input: StorageNodeKeyInput): Promise<StorageNode | undefined>
+  /**
+   * 指定されたノードを取得します。
+   * @param input
+   */
+  fetchNodes(input: StorageNodeKeysInput): Promise<StorageNode[]>
   /**
    * 指定ノードとその階層を構成するディレクトリをサーバーから取得します。
    * 戻り値で取得される階層構造のトップは、ベースパスルート直下のディレクトリとなります。

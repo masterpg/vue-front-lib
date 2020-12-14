@@ -450,4 +450,109 @@ describe('AppStorageLogic', () => {
       expect(actual.message).toBe(`One of the nodes in the path '${art1.dir}' does not exist.`)
     })
   })
+
+  describe('setArticleSortOrder', () => {
+    it('ベーシックケース', async () => {
+      const bundle = newTestStorageDirNode(`${articles.path}/${generateFirestoreId()}`, {
+        articleNodeName: 'バンドル',
+        articleNodeType: StorageArticleNodeType.ListBundle,
+        articleSortOrder: 1,
+      })
+      const art1 = newTestStorageDirNode(`${bundle.path}/${generateFirestoreId()}`, {
+        articleNodeName: '記事1',
+        articleNodeType: StorageArticleNodeType.Article,
+      })
+      const art2 = newTestStorageDirNode(`${bundle.path}/${generateFirestoreId()}`, {
+        articleNodeName: '記事2',
+        articleNodeType: StorageArticleNodeType.Article,
+      })
+      const {
+        logic: { articleStorage, appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([users, user, articles, bundle, art2, art1])
+      })
+
+      // モック設定
+      td.when(articleStorage.getNodesAPI({ paths: [art1.path, art2.path] })).thenResolve([art1, art2])
+
+      // テスト対象実行
+      art1.articleSortOrder = 2
+      art2.articleSortOrder = 1
+      const actual = await articleStorage.setArticleSortOrder(toBasePath([art1.path, art2.path]))
+
+      // 戻り値の検証
+      {
+        const [_art1, _art2] = actual
+        expect(_art1.path).toBe(toBasePath(art1.path))
+        expect(_art1.articleSortOrder).toBe(2)
+        expect(_art2.path).toBe(toBasePath(art2.path))
+        expect(_art2.articleSortOrder).toBe(1)
+      }
+      // ストアの検証
+      {
+        const [_art1, _art2] = articleStorage.getNodes({ ids: [art1.id, art2.id] })
+        expect(_art1.path).toBe(toBasePath(art1.path))
+        expect(_art1.articleSortOrder).toBe(2)
+        expect(_art2.path).toBe(toBasePath(art2.path))
+        expect(_art2.articleSortOrder).toBe(1)
+      }
+
+      const exp = td.explain(articleStorage.setArticleSortOrderAPI.value)
+      expect(exp.calls[0].args).toEqual([[art1.path, art2.path]])
+    })
+
+    it('大量データの場合', async () => {
+      const Num = 101
+
+      const bundle = newTestStorageDirNode(`${articles.path}/${generateFirestoreId()}`, {
+        articleNodeName: 'バンドル',
+        articleNodeType: StorageArticleNodeType.ListBundle,
+        articleSortOrder: 1,
+      })
+      const arts: StorageNode[] = []
+      for (let i = 0; i < Num; i++) {
+        arts.push(
+          newTestStorageDirNode(`${bundle.path}/${generateFirestoreId()}`, {
+            articleNodeName: `記事${i + 1}`,
+            articleNodeType: StorageArticleNodeType.Article,
+          })
+        )
+      }
+      const {
+        logic: { articleStorage, appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([users, user, articles, bundle, ...arts])
+      })
+
+      // モック設定
+      arts.forEach((art, index) => (art.articleSortOrder = Num - index))
+      const art1to50 = arts.slice(0, 50)
+      const art51to100 = arts.slice(50, 100)
+      const art101to = arts.slice(100, Num)
+      td.when(articleStorage.getNodesAPI({ paths: art1to50.map(art => art.path) })).thenResolve(art1to50)
+      td.when(articleStorage.getNodesAPI({ paths: art51to100.map(art => art.path) })).thenResolve(art51to100)
+      td.when(articleStorage.getNodesAPI({ paths: art101to.map(art => art.path) })).thenResolve(art101to)
+
+      // テスト対象実行
+      const actual = await articleStorage.setArticleSortOrder(toBasePath(arts.map(art => art.path)))
+
+      // 戻り値の検証
+      for (let i = 0; i < Num; i++) {
+        const art = arts[i]
+        const _art = actual[i]
+        expect(_art.path).toBe(toBasePath(art.path))
+        expect(_art.articleSortOrder).toBe(Num - i)
+      }
+      // ストアの検証
+      for (let i = 0; i < Num; i++) {
+        const art = arts[i]
+        const _art = articleStorage.sgetNode({ id: art.id })
+        expect(_art.path).toBe(toBasePath(art.path))
+        expect(_art.articleSortOrder).toBe(Num - i)
+      }
+
+      const exp = td.explain(articleStorage.setArticleSortOrderAPI.value)
+      expect(exp.calls[0].args).toEqual([arts.map(art => art.path)])
+    })
+  })
 })

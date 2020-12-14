@@ -183,11 +183,6 @@ interface CreateArticleTypeDirInput {
   articleNodeType: StorageArticleNodeType
 }
 
-interface SetArticleSortOrderInput {
-  insertBeforeNodePath?: string
-  insertAfterNodePath?: string
-}
-
 interface SortStorageNode {
   nodeType: StorageNodeType
   name: string
@@ -403,7 +398,6 @@ export {
   IdToken,
   PublicProfile,
   RequiredStorageNodeShareSettings,
-  SetArticleSortOrderInput,
   StorageArticleNodeType,
   StorageNode,
   StorageNodeKeyInput,

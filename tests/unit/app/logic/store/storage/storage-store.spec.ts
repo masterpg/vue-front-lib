@@ -165,6 +165,65 @@ describe('StorageStore', () => {
     })
   })
 
+  describe('getList', () => {
+    it('ベーシックケース - id検索', () => {
+      const d1 = newTestStorageDirNode('d1')
+      const d11 = newTestStorageDirNode('d1/d11')
+      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
+      const d12 = newTestStorageDirNode('d1/d12')
+      const d2 = newTestStorageDirNode('d2')
+      const all = [d1, d11, f111, d12, d2]
+      const { store } = provideDependency(({ store }) => {
+        store.storage.setAll(all)
+      })
+
+      const actual = store.storage.getList({ ids: [d11.id] })
+
+      expect(actual).toEqual([d11])
+      toBeCopy(actual)
+    })
+
+    it('ベーシックケース - path検索', () => {
+      const d1 = newTestStorageDirNode('d1')
+      const d11 = newTestStorageDirNode('d1/d11')
+      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
+      const d12 = newTestStorageDirNode('d1/d12')
+      const d2 = newTestStorageDirNode('d2')
+      const { store } = provideDependency(({ store }) => {
+        store.storage.setAll([d1, d11, f111, d12, d2])
+      })
+
+      const actual = store.storage.getList({ paths: [d11.path] })
+
+      expect(actual).toEqual([d11])
+      toBeCopy(actual)
+    })
+
+    it('ベーシックケース - idとpathを両方指定した場合', () => {
+      const d1 = newTestStorageDirNode('d1')
+      const d11 = newTestStorageDirNode('d1/d11')
+      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
+      const d12 = newTestStorageDirNode('d1/d12')
+      const d2 = newTestStorageDirNode('d2')
+      const { store } = provideDependency(({ store }) => {
+        store.storage.setAll([d1, d11, f111, d12, d2])
+      })
+
+      const actual = store.storage.getList({ ids: [d11.id], paths: [d12.path] })
+
+      expect(actual).toEqual([d11, d12])
+      toBeCopy(actual)
+    })
+
+    it('idとpath両方指定しなかった場合', () => {
+      const { store } = provideDependency()
+
+      const actual = store.storage.getList({})
+
+      expect(actual).toEqual([])
+    })
+  })
+
   describe('getChildren', () => {
     it('ベーシックケース', () => {
       const d1 = newTestStorageDirNode('d1')

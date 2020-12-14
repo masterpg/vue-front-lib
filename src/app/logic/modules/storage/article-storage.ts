@@ -1,11 +1,4 @@
-import {
-  CreateArticleTypeDirInput,
-  SetArticleSortOrderInput,
-  StorageArticleNodeType,
-  StorageNode,
-  StoragePaginationInput,
-  StoragePaginationResult,
-} from '@/app/logic/base'
+import { CreateArticleTypeDirInput, StorageArticleNodeType, StorageNode, StoragePaginationInput, StoragePaginationResult } from '@/app/logic/base'
 import { AppStorageLogic } from '@/app/logic/modules/storage/app-storage'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import _path from 'path'
@@ -13,6 +6,7 @@ import { extendedMethod } from '@/app/base'
 import { injectAPI } from '@/app/logic/api'
 import { injectInternalLogic } from '@/app/logic/modules/internal'
 import { injectStore } from '@/app/logic/store'
+import { splitArrayChunk } from 'web-base-lib'
 import { useConfig } from '@/app/config'
 import { watch } from '@vue/composition-api'
 
@@ -24,7 +18,7 @@ import { watch } from '@vue/composition-api'
 
 interface ArticleStorageLogic extends StorageLogic {
   createArticleTypeDir(input: CreateArticleTypeDirInput): Promise<StorageNode>
-  setArticleSortOrder(nodePath: string, input: SetArticleSortOrderInput): Promise<StorageNode>
+  setArticleSortOrder(orderNodePaths: string[]): Promise<StorageNode[]>
   fetchArticleChildren(
     dirPath: string,
     articleTypes: StorageArticleNodeType[],
@@ -93,13 +87,13 @@ namespace ArticleStorageLogic {
       if (!assetsNode) {
         // アセットディレクトリをサーバーから取得し、ストアに格納
         assetsNode = await base.getNodeAPI({ path: assetsPath })
-        assetsNode && base.setAPINodesToStore([assetsNode])
+        assetsNode && base.setAPINodeToStore(assetsNode)
       }
       // アセットディレクトリをサーバーから取得した後でも、アセットディレクトリが存在しない場合
       if (!assetsNode) {
         // アセットディレクトリを作成
         assetsNode = await createArticleGeneralDirAPI(assetsPath)
-        base.setAPINodesToStore([assetsNode])
+        base.setAPINodeToStore(assetsNode)
       }
     }
 
@@ -107,7 +101,7 @@ namespace ArticleStorageLogic {
       const dirNode = base.sgetNode({ path: dirPath })
       if (dirNode.articleNodeType) {
         const apiNode = await renameArticleNodeAPI(base.toFullPath(dirPath), newName)
-        const dirNode = base.setAPINodesToStore([apiNode])[0]
+        const dirNode = base.setAPINodeToStore(apiNode)
         return base.toBasePathNode([dirNode])
       } else {
         return await base.renameDir.super(dirPath, newName)
@@ -123,7 +117,7 @@ namespace ArticleStorageLogic {
 
       // APIで指定ディレクトリを作成
       const apiNode = await createArticleGeneralDirAPI(base.toFullPath(dirPath))
-      const dirNode = base.setAPINodesToStore([apiNode])[0]
+      const dirNode = base.setAPINodeToStore(apiNode)
 
       return base.toBasePathNode(dirNode)
     }
@@ -143,7 +137,7 @@ namespace ArticleStorageLogic {
         dir: base.toFullPath(parentPath),
       })
       // 作成されたディレクトリをストアに反映
-      const dirNode = base.setAPINodesToStore([apiNode])[0]
+      const dirNode = base.setAPINodeToStore(apiNode)
 
       // 記事作成時は記事ファイルも作成されるので読み込みを行う
       if (apiNode.articleNodeType === StorageArticleNodeType.Article) {
@@ -153,21 +147,19 @@ namespace ArticleStorageLogic {
       return base.toBasePathNode(dirNode)
     }
 
-    const setArticleSortOrder: ArticleStorageLogic['setArticleSortOrder'] = async (nodePath, input) => {
+    const setArticleSortOrder: ArticleStorageLogic['setArticleSortOrder'] = async orderNodePaths => {
       // APIでソート順を設定
-      const fullNodePath = base.toFullPath(nodePath)
-      const fullInput: SetArticleSortOrderInput = {}
-      if (input.insertBeforeNodePath) {
-        fullInput.insertBeforeNodePath = base.toFullPath(input.insertBeforeNodePath)
-      } else if (input.insertAfterNodePath) {
-        fullInput.insertAfterNodePath = base.toFullPath(input.insertAfterNodePath)
+      const fullOrderNodePaths = orderNodePaths.map(nodePath => base.toFullPath(nodePath))
+      await setArticleSortOrderAPI(fullOrderNodePaths)
+
+      // 移動したノードをサーバーから読み込む
+      const nodes: StorageNode[] = []
+      for (const paths of splitArrayChunk(orderNodePaths, 50)) {
+        const _nodes = await base.fetchNodes({ paths })
+        nodes.push(..._nodes)
       }
-      const node = await setArticleSortOrderAPI(fullNodePath, fullInput)
 
-      // API結果をストアに反映
-      base.setAPINodesToStore([node])
-
-      return base.toBasePathNode(node)
+      return nodes
     }
 
     const fetchArticleChildren: ArticleStorageLogic['fetchArticleChildren'] = async (dirPath, articleTypes, input) => {
@@ -205,9 +197,8 @@ namespace ArticleStorageLogic {
       return base.apiNodeToStorageNode(apiNode)!
     })
 
-    const setArticleSortOrderAPI = extendedMethod(async (nodePath: string, input: SetArticleSortOrderInput) => {
-      const apiNode = await api.setArticleSortOrder(nodePath, input)
-      return base.apiNodeToStorageNode(apiNode)!
+    const setArticleSortOrderAPI = extendedMethod(async (orderNodePaths: string[]) => {
+      const apiNode = await api.setArticleSortOrder(orderNodePaths)
     })
 
     const getArticleChildrenAPI = extendedMethod(async (dirPath: string, articleTypes: StorageArticleNodeType[], input?: StoragePaginationInput) => {

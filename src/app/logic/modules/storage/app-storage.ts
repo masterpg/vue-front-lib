@@ -8,7 +8,7 @@ import {
   StorageNodeKeysInput,
   StorageNodeShareSettingsInput,
 } from '@/app/logic'
-import { DeepReadonly, arrayToDict, splitArrayChunk, splitHierarchicalPaths } from 'web-base-lib'
+import { DeepReadonly, arrayToDict, removeBothEndsSlash, splitArrayChunk, splitHierarchicalPaths } from 'web-base-lib'
 import { StorageDownloader, StorageFileDownloader } from '@/app/logic/modules/storage/download'
 import { StorageFileUploader, StorageUploader } from '@/app/logic/modules/storage/upload'
 import { computed, reactive } from '@vue/composition-api'
@@ -55,6 +55,11 @@ interface AppStorageLogic extends StorageLogic {
 
   apiNodeToStorageNode(apiNode?: APIStorageNode): StorageNode | undefined
   apiNodesToStorageNodes(apiNodes: APIStorageNode[]): StorageNode[]
+  /**
+   * APIノードをストアに反映します。
+   * @param apiNode
+   */
+  setAPINodeToStore(apiNode: StorageNode): StorageNode
   /**
    * APIノードをストアに反映します。
    * @param apiNodes
@@ -167,6 +172,11 @@ namespace AppStorageLogic {
       return toBasePathNode(node)
     }
 
+    const getNodes: AppStorageLogic['getNodes'] = input => {
+      const nodes = store.storage.getList(input)
+      return toBasePathNode(nodes)
+    }
+
     const sgetNode: AppStorageLogic['sgetNode'] = ({ id, path }) => {
       if (path) path = toFullPath(path)
       const node = store.storage.get({ id, path })
@@ -244,6 +254,49 @@ namespace AppStorageLogic {
     const fetchRoot = extendedMethod<AppStorageLogic['fetchRoot']>(async () => {
       // アプリケーションストレージの場合、特にすることはない
     })
+
+    const fetchNode: AppStorageLogic['fetchNode'] = async input => {
+      if (!input.id && !removeBothEndsSlash(input.path)) {
+        return undefined
+      }
+
+      // APIからノードを取得
+      const fullInput: StorageNodeKeyInput = {}
+      input.id && (fullInput.id = input.id)
+      input.path && (fullInput.path = toFullPath(input.path))
+      const apiNode = await getNodeAPI(fullInput)
+
+      let result: StorageNode | undefined
+
+      // APIからノードが取得された場合
+      if (apiNode) {
+        // APIノードをストアへ反映
+        result = setAPINodeToStore(apiNode)
+      }
+      // APIからノードが取得されなかった場合
+      else {
+        // APIから取得されなかったノードをストアから削除
+        store.storage.remove(fullInput)
+      }
+
+      return toBasePathNode(result)
+    }
+
+    const fetchNodes: AppStorageLogic['fetchNodes'] = async input => {
+      // APIノードをストアへ反映
+      const fullInput: StorageNodeKeysInput = {}
+      input.ids && (fullInput.ids = input.ids)
+      if (input.paths) {
+        fullInput.paths = input.paths.filter(path => Boolean(removeBothEndsSlash(path))).map(path => toFullPath(path))
+      }
+      const apiNodes = await getNodesAPI(fullInput)
+      const result = setAPINodesToStore(apiNodes)
+
+      // APIノードにないストアノードを削除
+      removeNotExistsStoreNodes(apiNodes, store.storage.getList(fullInput))
+
+      return toBasePathNode(result)
+    }
 
     const fetchHierarchicalNodes: AppStorageLogic['fetchHierarchicalNodes'] = async nodePath => {
       // APIノードをストアへ反映
@@ -364,7 +417,7 @@ namespace AppStorageLogic {
       }
 
       const apiNode = await createDirAPI(toFullPath(dirPath), input)
-      const node = setAPINodesToStore([apiNode])[0]
+      const node = setAPINodeToStore(apiNode)
 
       return toBasePathNode(node)
     })
@@ -431,7 +484,7 @@ namespace AppStorageLogic {
 
       const apiNode = await moveFileAPI(toFullPath(fromFilePath), toFullPath(toFilePath))
       store.storage.move(toFullPath(fromFilePath), toFullPath(toFilePath))
-      const node = setAPINodesToStore([apiNode])[0]
+      const node = setAPINodeToStore(apiNode)
 
       return toBasePathNode(node)
     }
@@ -463,7 +516,7 @@ namespace AppStorageLogic {
 
       const apiNode = await renameFileAPI(toFullPath(filePath), newName)
       store.storage.rename(toFullPath(filePath), newName)
-      const node = setAPINodesToStore([apiNode])[0]
+      const node = setAPINodeToStore(apiNode)
 
       return toBasePathNode(node)
     })
@@ -472,7 +525,7 @@ namespace AppStorageLogic {
       validateNotBasePathRoot('dirPath', dirPath)
 
       const apiNode = await setDirShareSettingsAPI(toFullPath(dirPath), input)
-      const node = setAPINodesToStore([apiNode])[0]
+      const node = setAPINodeToStore(apiNode)
 
       return toBasePathNode(node)
     }
@@ -481,14 +534,14 @@ namespace AppStorageLogic {
       validateNotBasePathRoot('filePath', filePath)
 
       const apiNode = await setFileShareSettingsAPI(toFullPath(filePath), input)
-      const node = setAPINodesToStore([apiNode])[0]
+      const node = setAPINodeToStore(apiNode)
 
       return toBasePathNode(node)
     }
 
     const handleUploadedFile: AppStorageLogic['handleUploadedFile'] = async filePath => {
       const apiNode = await handleUploadedFileAPI(toFullPath(filePath))
-      const node = setAPINodesToStore([apiNode])[0]
+      const node = setAPINodeToStore(apiNode)
 
       return toBasePathNode(node)
     }
@@ -624,6 +677,10 @@ namespace AppStorageLogic {
       })
     }
 
+    const setAPINodeToStore: AppStorageLogic['setAPINodeToStore'] = apiNode => {
+      return setAPINodesToStore([apiNode])[0]
+    }
+
     const setAPINodesToStore: AppStorageLogic['setAPINodesToStore'] = apiNodes => {
       const result: StorageNode[] = []
 
@@ -742,6 +799,7 @@ namespace AppStorageLogic {
       basePath,
       getAllNodes,
       getNode,
+      getNodes,
       sgetNode,
       getDirDescendants,
       getDescendants,
@@ -750,6 +808,8 @@ namespace AppStorageLogic {
       getHierarchicalNodes,
       getInheritedShare,
       fetchRoot,
+      fetchNode,
+      fetchNodes,
       fetchHierarchicalNodes,
       fetchAncestorDirs,
       fetchDirDescendants,
@@ -798,6 +858,7 @@ namespace AppStorageLogic {
       setFileShareSettingsAPI,
       apiNodeToStorageNode,
       apiNodesToStorageNodes,
+      setAPINodeToStore,
       setAPINodesToStore,
       removeNotExistsStoreNodes,
       fetchUnloadedHierarchicalNodes,

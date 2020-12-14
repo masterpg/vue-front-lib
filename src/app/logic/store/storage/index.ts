@@ -1,6 +1,6 @@
 import { ComputedRef, computed, reactive } from '@vue/composition-api'
 import { DeepReadonly, arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
-import { StorageNode, StorageNodeType, sortStorageTree } from '@/app/logic/base'
+import { StorageNode, StorageNodeKeysInput, StorageNodeType, sortStorageTree } from '@/app/logic/base'
 import _path from 'path'
 
 //========================================================================
@@ -13,6 +13,8 @@ interface StorageStore {
   readonly all: ComputedRef<DeepReadonly<StorageNode>[]>
 
   get(key: { id?: string; path?: string }): StorageNode | undefined
+
+  getList(input: StorageNodeKeysInput): StorageNode[]
 
   getChildren(dirPath?: string): StorageNode[]
 
@@ -101,6 +103,25 @@ namespace StorageStore {
     const get: StorageStore['get'] = key => {
       const stateNode = getStateNode(key)
       return StorageNode.clone(stateNode)
+    }
+
+    const getList: StorageStore['getList'] = input => {
+      const idDict: { [id: string]: StorageNode } = {}
+      const pathDict: { [path: string]: StorageNode } = {}
+      all.value.forEach(node => {
+        idDict[node.id] = node
+        pathDict[node.path] = node
+      })
+
+      const stateNodes: StorageNode[] = []
+      ;(input.ids ?? []).forEach(id => {
+        idDict[id] && stateNodes.push(idDict[id])
+      })
+      ;(input.paths ?? []).forEach(path => {
+        pathDict[path] && stateNodes.push(pathDict[path])
+      })
+
+      return StorageNode.clone(stateNodes)
     }
 
     const getChildren: StorageStore['getChildren'] = dirPath => {
@@ -369,6 +390,7 @@ namespace StorageStore {
     return {
       all,
       get,
+      getList,
       getChildren,
       getDirChildren,
       getDescendants,

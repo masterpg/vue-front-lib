@@ -817,12 +817,14 @@ describe('Storage API', () => {
         articleNodeType: StorageArticleNodeType.Article,
       })
 
-      const actual = await api.setArticleSortOrder(`${art1.path}`, {
-        insertAfterNodePath: `${art2.path}`,
-      })
+      await api.setArticleSortOrder([art1.path, art2.path])
 
-      expect(actual.path).toBe(`${art1.path}`)
-      expect(actual.articleSortOrder! < art2.articleSortOrder!).toBeTruthy()
+      const bundle_children = (await api.getStorageChildren(bundle.path)).list
+      const [_art1, _art2] = sortStorageTree(bundle_children)
+      expect(_art1.path).toBe(art1.path)
+      expect(_art1.articleSortOrder).toBe(2)
+      expect(_art2.path).toBe(art2.path)
+      expect(_art2.articleSortOrder).toBe(1)
     })
   })
 

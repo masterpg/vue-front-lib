@@ -285,7 +285,7 @@ namespace StorageDirView {
     const dirChildNodes: Ref<StorageDirTableRow[]> = ref([])
 
     const targetDir = computed(() => {
-      if (!state.dirPath) return null
+      if (typeof state.dirPath !== 'string') return null
       return pageLogic.getStorageNode({ path: state.dirPath }) ?? null
     })
 
@@ -315,16 +315,7 @@ namespace StorageDirView {
     //----------------------------------------------------------------------
 
     const setSelectedNode: StorageDirView['setSelectedNode'] = selectedNodePath => {
-      const clear = () => {
-        state.dirPath = null
-        dirChildNodes.value.splice(0)
-        // 選択状態を初期化
-        table.value!.selected && table.value!.selected.splice(0)
-        // スクロール位置を先頭へ初期化
-        table.value!.setScrollTop(0)
-      }
-
-      // 選択ノードにnullが渡された場合、テーブルをクリアして終了
+      // 選択ノードにnullが渡された場合
       if (selectedNodePath === null) {
         clear()
         return
@@ -343,7 +334,6 @@ namespace StorageDirView {
 
       // 前回と今回で対象となるディレクトリが異なる場合
       if (state.dirPath !== dirPath) {
-        // テーブルをクリア
         clear()
       }
 
@@ -357,6 +347,15 @@ namespace StorageDirView {
     //  Internal methods
     //
     //----------------------------------------------------------------------
+
+    const clear = extendedMethod(() => {
+      state.dirPath = null
+      dirChildNodes.value.splice(0)
+      // 選択状態を初期化
+      table.value!.selected && table.value!.selected.splice(0)
+      // スクロール位置を先頭へ初期化
+      table.value!.setScrollTop(0)
+    })
 
     /**
      * `StorageNode`を`StorageDirTableRow`へ変換します。
@@ -492,7 +491,9 @@ namespace StorageDirView {
       dirChildNodes,
       loading,
       setSelectedNode,
+      clear,
       sortChildNodesMethod,
+      buildDirChildNodes,
       rowOnClick,
       nameCellOnClick,
       popupMenuOnNodeAction,

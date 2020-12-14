@@ -197,13 +197,13 @@ function newListBundleFamilyNodes() {
   const blog = newTestStorageDirNode(`${generateFirestoreId()}`, {
     articleNodeName: 'ブログ',
     articleNodeType: StorageArticleNodeType.ListBundle,
-    articleSortOrder: 9,
+    articleSortOrder: 1,
   })
 
   const art2 = newTestStorageDirNode(`${blog.path}/${generateFirestoreId()}`, {
     articleNodeName: '記事2',
     articleNodeType: StorageArticleNodeType.Article,
-    articleSortOrder: 99,
+    articleSortOrder: 2,
   })
 
   const art2_index = newTestStorageDirNode(`${art2.path}/${articleFileName}`)
@@ -211,7 +211,7 @@ function newListBundleFamilyNodes() {
   const art1 = newTestStorageDirNode(`${blog.path}/${generateFirestoreId()}`, {
     articleNodeName: '記事1',
     articleNodeType: StorageArticleNodeType.Article,
-    articleSortOrder: 98,
+    articleSortOrder: 1,
   })
 
   const art1_index = newTestStorageDirNode(`${art1.path}/${articleFileName}`)
@@ -234,22 +234,22 @@ function newCategoryBundleFamilyNodes() {
   const config = useConfig()
   const articleFileName = config.storage.article.fileName
 
-  const programing = newTestStorageDirNode(`${generateFirestoreId()}`, {
+  const programming = newTestStorageDirNode(`${generateFirestoreId()}`, {
     articleNodeName: 'プログラミング',
     articleNodeType: StorageArticleNodeType.CategoryBundle,
-    articleSortOrder: 9,
+    articleSortOrder: 1,
   })
 
-  const ts = newTestStorageDirNode(`${programing.path}/${generateFirestoreId()}`, {
+  const ts = newTestStorageDirNode(`${programming.path}/${generateFirestoreId()}`, {
     articleNodeName: 'TypeScript',
     articleNodeType: StorageArticleNodeType.Category,
-    articleSortOrder: 99,
+    articleSortOrder: 1,
   })
 
   const variable = newTestStorageDirNode(`${ts.path}/${generateFirestoreId()}`, {
     articleNodeName: '変数',
     articleNodeType: StorageArticleNodeType.Article,
-    articleSortOrder: 999,
+    articleSortOrder: 2,
   })
 
   const variable_index = newTestStorageDirNode(`${variable.path}/${articleFileName}`)
@@ -257,12 +257,12 @@ function newCategoryBundleFamilyNodes() {
   const clazz = newTestStorageDirNode(`${ts.path}/${generateFirestoreId()}`, {
     articleNodeName: 'クラス',
     articleNodeType: StorageArticleNodeType.Article,
-    articleSortOrder: 998,
+    articleSortOrder: 1,
   })
 
   const clazz_index = newTestStorageDirNode(`${clazz.path}/${articleFileName}`)
 
-  return { programing, ts, variable, variable_index, clazz, clazz_index }
+  return { programming, ts, variable, variable_index, clazz, clazz_index }
 }
 
 //========================================================================
@@ -1760,7 +1760,7 @@ describe('StoragePageLogic', () => {
       const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleNodeName: 'バンドル',
-        articleSortOrder: 123,
+        articleSortOrder: 1,
         lazyLoadStatus: 'none',
       })
       pageLogic.setAllTreeNodes([])
@@ -1797,13 +1797,13 @@ describe('StoragePageLogic', () => {
       const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleNodeName: 'バンドル',
-        articleSortOrder: 123,
+        articleSortOrder: 1,
         lazyLoadStatus: 'loaded',
       })
       const cat1 = newTreeDirNodeInput(`${bundle.path}/${generateFirestoreId()}`, {
         articleNodeType: StorageArticleNodeType.Category,
         articleNodeName: 'カテゴリ1',
-        articleSortOrder: 123,
+        articleSortOrder: 1,
         lazyLoadStatus: 'none',
       })
       pageLogic.setAllTreeNodes([bundle])
@@ -1848,13 +1848,13 @@ describe('StoragePageLogic', () => {
       const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleNodeName: 'バンドル',
-        articleSortOrder: 123,
+        articleSortOrder: 1,
         lazyLoadStatus: 'loaded',
       })
       const art1 = newTreeDirNodeInput(`${bundle.path}/${generateFirestoreId()}`, {
         articleNodeType: StorageArticleNodeType.Article,
         articleNodeName: '記事1',
-        articleSortOrder: 123,
+        articleSortOrder: 1,
         lazyLoadStatus: 'none',
       })
       const art1_index = newTreeFileNodeInput(`${art1.path}/${articleFileName}`)
@@ -1897,7 +1897,7 @@ describe('StoragePageLogic', () => {
       const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleNodeName: 'バンドル',
-        articleSortOrder: 123,
+        articleSortOrder: 1,
         lazyLoadStatus: 'none',
       })
       pageLogic.setAllTreeNodes([])
@@ -1922,7 +1922,7 @@ describe('StoragePageLogic', () => {
       const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleNodeName: 'バンドル',
-        articleSortOrder: 123,
+        articleSortOrder: 1,
         lazyLoadStatus: 'none',
       })
       pageLogic.setAllTreeNodes([])
@@ -3069,6 +3069,98 @@ describe('StoragePageLogic', () => {
     })
   })
 
+  describe('setArticleSortOrder', () => {
+    it('ベーシックケース', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ storageType: 'article' })
+      const articleLogic = storageLogic as ArticleStorageLogic
+      const config = useConfig()
+
+      // articles
+      // ├バンドル1
+      // ├バンドル2
+      // └アセット
+      const bundle1 = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+        articleNodeType: StorageArticleNodeType.CategoryBundle,
+        articleNodeName: 'バンドル1',
+        articleSortOrder: 2,
+      })
+      const bundle2 = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+        articleNodeType: StorageArticleNodeType.CategoryBundle,
+        articleNodeName: 'バンドル2',
+        articleSortOrder: 1,
+      })
+      const assets = newTestStorageDirNode(`${config.storage.article.assetsName}`)
+      pageLogic.setAllTreeNodes([bundle1, bundle2, assets])
+
+      // モック設定
+      {
+        td.when(articleLogic.sgetNode({ path: bundle2.path })).thenReturn(toStorageNode(bundle2))
+        td.when(articleLogic.sgetNode({ path: bundle1.path })).thenReturn(toStorageNode(bundle1))
+
+        bundle1.articleSortOrder = 1
+        bundle2.articleSortOrder = 2
+        td.when(articleLogic.setArticleSortOrder([bundle2.path, bundle1.path])).thenResolve(toStorageNode([bundle2, bundle1]))
+      }
+
+      // ソート順の設定
+      await pageLogic.setArticleSortOrder([bundle2.path, bundle1.path])
+
+      // articles
+      // ├バンドル2
+      // ├バンドル1
+      // └アセット
+      const [_root, _bundle2, _bundle1, _assets] = pageLogic.getAllTreeNodes()
+      expect(_bundle2.path).toBe(bundle2.path)
+      expect(_bundle2.articleSortOrder).toBe(bundle2.articleSortOrder)
+      expect(_bundle1.path).toBe(bundle1.path)
+      expect(_bundle1.articleSortOrder).toBe(bundle1.articleSortOrder)
+      expect(_assets.path).toBe(assets.path)
+
+      verifyParentChildRelationForTree(treeView)
+    })
+
+    it('ソート順を設定できないノードにソート順を設定しようとした場合', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ storageType: 'article' })
+      const articleLogic = storageLogic as ArticleStorageLogic
+      const config = useConfig()
+
+      // articles
+      // ├バンドル1
+      // ├バンドル2
+      // └アセット
+      const bundle1 = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+        articleNodeType: StorageArticleNodeType.CategoryBundle,
+        articleNodeName: 'バンドル1',
+        articleSortOrder: 2,
+      })
+      const bundle2 = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+        articleNodeType: StorageArticleNodeType.CategoryBundle,
+        articleNodeName: 'バンドル2',
+        articleSortOrder: 1,
+      })
+      const assets = newTestStorageDirNode(`${config.storage.article.assetsName}`)
+      pageLogic.setAllTreeNodes([bundle1, bundle2, assets])
+
+      // モック設定
+      {
+        td.when(articleLogic.sgetNode({ path: bundle2.path })).thenReturn(toStorageNode(bundle2))
+        td.when(articleLogic.sgetNode({ path: bundle1.path })).thenReturn(toStorageNode(bundle1))
+        td.when(articleLogic.sgetNode({ path: assets.path })).thenReturn(toStorageNode(assets))
+      }
+
+      let actual!: Error
+      try {
+        // ソート順の設定
+        // ※ソート順を設定できない｢アセット｣を指定
+        await pageLogic.setArticleSortOrder([bundle2.path, bundle1.path, assets.path])
+      } catch (err) {
+        actual = err
+      }
+
+      expect(actual.message).toMatch(/^A node is specified for which the sort order cannot be set:/)
+    })
+  })
+
   describe('onUploaded', () => {
     it('ベーシックケース', async () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
@@ -3479,12 +3571,12 @@ describe('StoragePageLogic', () => {
       //   └TypeScript
       //     └変数
       //       └index.md
-      const { programing } = newCategoryBundleFamilyNodes()
+      const { programming } = newCategoryBundleFamilyNodes()
 
       // モック設定
-      td.when(storageLogic.getNode({ path: `${programing.path}` })).thenReturn(programing)
+      td.when(storageLogic.getNode({ path: `${programming.path}` })).thenReturn(programming)
 
-      const actual = pageLogic.isCategoryBundle({ path: `${programing.path}` })
+      const actual = pageLogic.isCategoryBundle({ path: `${programming.path}` })
 
       expect(actual).toBeTruthy()
     })
@@ -3513,7 +3605,7 @@ describe('StoragePageLogic', () => {
       // articles
       // └プログラミング
       //   └TypeScript ← 対象ノードに指定
-      const { programing, ts } = newCategoryBundleFamilyNodes()
+      const { programming, ts } = newCategoryBundleFamilyNodes()
 
       // モック設定
       td.when(storageLogic.getNode({ path: `${ts.path}` })).thenReturn(ts)

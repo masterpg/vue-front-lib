@@ -124,6 +124,22 @@ describe('AppStorageLogic', () => {
     })
   })
 
+  describe('getNodes', () => {
+    it('ベーシックケース', () => {
+      const d1 = newTestStorageDirNode(`d1`)
+      const d2 = newTestStorageDirNode(`d2`)
+      const {
+        logic: { appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([d1, d2])
+      })
+
+      const actual = appStorage.getNodes({ ids: [d1.id], paths: [d2.path] })
+
+      expect(actual).toEqual([d1, d2])
+    })
+  })
+
   describe('getDirDescendants', () => {
     it('ベーシックケース', async () => {
       // bucketRoot
@@ -440,6 +456,248 @@ describe('AppStorageLogic', () => {
       }
 
       expect(actual.message).toBe(`Base path root is set for 'nodePath'.`)
+    })
+  })
+
+  describe('fetchNode', () => {
+    it('ベーシックケース - ID検索', async () => {
+      // bucketRoot
+      // ├d1 ← 対象ノードに指定
+      // │├d11
+      // ││└f111.txt
+      // │└f11.txt
+      // └d2
+      const d1 = newTestStorageDirNode(`d1`)
+      const d11 = newTestStorageDirNode(`d1/d11`)
+      const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
+      const f11 = newTestStorageFileNode(`d1/f11.txt`)
+      const d2 = newTestStorageDirNode(`d2`)
+      const {
+        logic: { appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([d1, d11, f111, f11, d2])
+      })
+
+      // APIから以下の状態のノードリストが取得される
+      // ・'d1'が更新された
+      const updated_d1 = cloneTestStorageNode(d1, { updatedAt: dayjs() })
+      td.when(appStorage.getNodeAPI({ id: d1.id })).thenResolve(updated_d1)
+
+      const actual = await appStorage.fetchNode({ id: d1.id })
+
+      // bucketRoot
+      // ├d1
+      // │├d11
+      // ││└f111.txt
+      // │└f11.txt
+      // └d2
+      expect(actual).toEqual(updated_d1)
+      expect(appStorage.getAllNodes()).toEqual([updated_d1, d11, f111, f11, d2])
+    })
+
+    it('ベーシックケース - パス検索', async () => {
+      // bucketRoot
+      // ├d1 ← 対象ノードに指定
+      // │├d11
+      // ││└f111.txt
+      // │└f11.txt
+      // └d2
+      const d1 = newTestStorageDirNode(`d1`)
+      const d11 = newTestStorageDirNode(`d1/d11`)
+      const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
+      const f11 = newTestStorageFileNode(`d1/f11.txt`)
+      const d2 = newTestStorageDirNode(`d2`)
+      const {
+        logic: { appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([d1, d11, f111, f11, d2])
+      })
+
+      // APIから以下の状態のノードリストが取得される
+      // ・'d1'が更新された
+      const updated_d1 = cloneTestStorageNode(d1, { updatedAt: dayjs() })
+      td.when(appStorage.getNodeAPI({ path: d1.path })).thenResolve(updated_d1)
+
+      const actual = await appStorage.fetchNode({ path: d1.path })
+
+      // bucketRoot
+      // ├d1
+      // │├d11
+      // ││└f111.txt
+      // │└f11.txt
+      // └d2
+      expect(actual).toEqual(updated_d1)
+      expect(appStorage.getAllNodes()).toEqual([updated_d1, d11, f111, f11, d2])
+    })
+
+    it('バケットルートを指定した場合', async () => {
+      // bucketRoot ← 対象ノードに指定
+      // └d1
+      const d1 = newTestStorageDirNode(`d1`)
+      const {
+        logic: { appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([d1])
+      })
+
+      const actual = await appStorage.fetchNode({ path: `` })
+
+      // bucketRoot
+      // └d1
+      expect(actual).toBeUndefined()
+      expect(appStorage.getAllNodes()).toEqual([d1])
+    })
+
+    it('他端末でディレクトリが削除されていた場合', async () => {
+      // bucketRoot
+      // ├d1 ← 対象ノードに指定
+      // │├d11
+      // ││└f111.txt
+      // │└f11.txt
+      // └d2
+      const d1 = newTestStorageDirNode(`d1`)
+      const d11 = newTestStorageDirNode(`d1/d11`)
+      const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
+      const f11 = newTestStorageFileNode(`d1/f11.txt`)
+      const d2 = newTestStorageDirNode(`d2`)
+      const {
+        logic: { appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([d1, d11, f111, f11, d2])
+      })
+
+      // APIから以下の状態のノードリストが取得される
+      // ・'d1'が削除された
+      td.when(appStorage.getNodeAPI({ id: d1.id, path: '' })).thenResolve(undefined)
+
+      const actual = await appStorage.fetchNode({ id: d1.id })
+
+      // bucketRoot
+      // └d2
+      expect(actual).toBeUndefined()
+      expect(appStorage.getAllNodes()).toEqual([d2])
+    })
+  })
+
+  describe('fetchNodes', () => {
+    it('ベーシックケース - ID検索', async () => {
+      // bucketRoot
+      // ├d1 ← 対象ノードに指定
+      // │├d11
+      // ││└f111.txt
+      // │└f11.txt
+      // └d2
+      const d1 = newTestStorageDirNode(`d1`)
+      const d11 = newTestStorageDirNode(`d1/d11`)
+      const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
+      const f11 = newTestStorageFileNode(`d1/f11.txt`)
+      const d2 = newTestStorageDirNode(`d2`)
+      const {
+        logic: { appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([d1, d11, f111, f11, d2])
+      })
+
+      // APIから以下の状態のノードリストが取得される
+      // ・'d1'が更新された
+      const updated_d1 = cloneTestStorageNode(d1, { updatedAt: dayjs() })
+      td.when(appStorage.getNodesAPI({ ids: [d1.id] })).thenResolve([updated_d1])
+
+      const actual = await appStorage.fetchNodes({ ids: [d1.id] })
+
+      // bucketRoot
+      // ├d1
+      // │├d11
+      // ││└f111.txt
+      // │└f11.txt
+      // └d2
+      expect(actual).toEqual([updated_d1])
+      expect(appStorage.getAllNodes()).toEqual([updated_d1, d11, f111, f11, d2])
+    })
+
+    it('ベーシックケース - パス検索', async () => {
+      // bucketRoot
+      // ├d1 ← 対象ノードに指定
+      // │├d11
+      // ││└f111.txt
+      // │└f11.txt
+      // └d2
+      const d1 = newTestStorageDirNode(`d1`)
+      const d11 = newTestStorageDirNode(`d1/d11`)
+      const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
+      const f11 = newTestStorageFileNode(`d1/f11.txt`)
+      const d2 = newTestStorageDirNode(`d2`)
+      const {
+        logic: { appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([d1, d11, f111, f11, d2])
+      })
+
+      // APIから以下の状態のノードリストが取得される
+      // ・'d1'が更新された
+      const updated_d1 = cloneTestStorageNode(d1, { updatedAt: dayjs() })
+      td.when(appStorage.getNodesAPI({ paths: [d1.path] })).thenResolve([updated_d1])
+
+      const actual = await appStorage.fetchNodes({ paths: [d1.path] })
+
+      // bucketRoot
+      // ├d1
+      // │├d11
+      // ││└f111.txt
+      // │└f11.txt
+      // └d2
+      expect(actual).toEqual([updated_d1])
+      expect(appStorage.getAllNodes()).toEqual([updated_d1, d11, f111, f11, d2])
+    })
+
+    it('バケットルートを指定した場合', async () => {
+      // bucketRoot ← 対象ノードに指定
+      // └d1
+      const d1 = newTestStorageDirNode(`d1`)
+      const {
+        logic: { appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([d1])
+      })
+
+      td.when(appStorage.getNodesAPI({ paths: [] })).thenResolve([])
+
+      const actual = await appStorage.fetchNodes({ paths: [``] })
+
+      // bucketRoot
+      // └d1
+      expect(actual).toEqual([])
+      expect(appStorage.getAllNodes()).toEqual([d1])
+    })
+
+    it('他端末でディレクトリが削除されていた場合', async () => {
+      // bucketRoot
+      // ├d1 ← 対象ノードに指定
+      // │├d11
+      // ││└f111.txt
+      // │└f11.txt
+      // └d2
+      const d1 = newTestStorageDirNode(`d1`)
+      const d11 = newTestStorageDirNode(`d1/d11`)
+      const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
+      const f11 = newTestStorageFileNode(`d1/f11.txt`)
+      const d2 = newTestStorageDirNode(`d2`)
+      const {
+        logic: { appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([d1, d11, f111, f11, d2])
+      })
+
+      // APIから以下の状態のノードリストが取得される
+      // ・'d1'が削除された
+      td.when(appStorage.getNodesAPI({ ids: [d1.id] })).thenResolve([])
+
+      const actual = await appStorage.fetchNodes({ ids: [d1.id] })
+
+      // bucketRoot
+      // └d2
+      expect(actual).toEqual([])
+      expect(appStorage.getAllNodes()).toEqual([d2])
     })
   })
 
@@ -1990,55 +2248,58 @@ describe('StorageLogic', () => {
       //       ︙
       const blog = newTestStorageDirNode(`blog`, {
         articleNodeType: StorageArticleNodeType.ListBundle,
-        articleSortOrder: 9,
+        articleSortOrder: 2,
       })
       const blog_art1 = newTestStorageDirNode(`blog/art1`, {
         articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 99,
+        articleSortOrder: 2,
       })
       const blog_art1_index = newTestStorageFileNode(`blog/art1/index.md`)
       const blog_art2 = newTestStorageDirNode(`blog/art2`, {
         articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 98,
+        articleSortOrder: 1,
       })
       const blog_art2_index = newTestStorageFileNode(`blog/art2/index.md`)
       const category = newTestStorageDirNode(`category`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleSortOrder: 8,
+        articleSortOrder: 1,
       })
+
       const category_art1 = newTestStorageDirNode(`category/art1`, {
         articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 99,
+        articleSortOrder: 4,
       })
       const category_art2 = newTestStorageDirNode(`category/art2`, {
         articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 98,
+        articleSortOrder: 3,
       })
       const category_ts = newTestStorageDirNode(`category/TypeScript`, {
-        articleSortOrder: 97,
+        articleSortOrder: 2,
       })
       const category_ts_art1 = newTestStorageDirNode(`category/TypeScript/art1`, {
         articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 999,
+        articleSortOrder: 2,
       })
       const category_ts_art1_index = newTestStorageFileNode(`category/TypeScript/art1/index.md`, {
         isArticleFile: true,
       })
       const category_ts_art2 = newTestStorageDirNode(`category/TypeScript/art2`, {
         articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 998,
+        articleSortOrder: 1,
       })
       const category_ts_art2_index = newTestStorageFileNode(`category/TypeScript/art2/index.md`, {
         isArticleFile: true,
       })
-      const category_js = newTestStorageDirNode(`category/JavaScript`)
+      const category_js = newTestStorageDirNode(`category/JavaScript`, {
+        articleSortOrder: 1,
+      })
       const category_js_art1 = newTestStorageDirNode(`category/JavaScript/art1`, {
         articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 999,
+        articleSortOrder: 2,
       })
       const category_js_art2 = newTestStorageDirNode(`category/JavaScript/art2`, {
         articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 998,
+        articleSortOrder: 1,
       })
 
       const nodes = shuffleArray([
@@ -2093,33 +2354,33 @@ describe('StorageLogic', () => {
       //     └art2
       const category_art1 = newTestStorageDirNode(`category/art1`, {
         articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 99,
+        articleSortOrder: 4,
       })
       const category_art2 = newTestStorageDirNode(`category/art2`, {
         articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 98,
+        articleSortOrder: 3,
       })
       const category_ts = newTestStorageDirNode(`category/TypeScript`, {
-        articleSortOrder: 97,
+        articleSortOrder: 2,
       })
       const category_ts_art1 = newTestStorageDirNode(`category/TypeScript/art1`, {
         articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 999,
+        articleSortOrder: 2,
       })
       const category_ts_art2 = newTestStorageDirNode(`category/TypeScript/art2`, {
         articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 998,
+        articleSortOrder: 1,
       })
       const category_js = newTestStorageDirNode(`category/JavaScript`, {
-        articleSortOrder: 96,
+        articleSortOrder: 1,
       })
       const category_js_art1 = newTestStorageDirNode(`category/JavaScript/art1`, {
         articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 999,
+        articleSortOrder: 2,
       })
       const category_js_art2 = newTestStorageDirNode(`category/JavaScript/art2`, {
         articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 998,
+        articleSortOrder: 1,
       })
 
       // 実際は上位ディレクトリ(category)は存在するが、配列には追加されないパターン
