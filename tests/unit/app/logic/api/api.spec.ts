@@ -875,6 +875,7 @@ describe('Storage API', () => {
       const actual = await api.getArticleChildren(`${bundle.path}`, [StorageArticleNodeType.Article])
 
       expect(actual.nextPageToken).toBeUndefined()
+      expect(actual.isPaginationTimeout).toBeFalsy()
       expect(actual.list.length).toBe(3)
       expect(actual.list[0].path).toBe(`${art3.path}`)
       expect(actual.list[1].path).toBe(`${art2.path}`)

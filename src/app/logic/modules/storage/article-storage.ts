@@ -164,12 +164,12 @@ namespace ArticleStorageLogic {
 
     const fetchArticleChildren: ArticleStorageLogic['fetchArticleChildren'] = async (dirPath, articleTypes, input) => {
       // APIノードをストアへ反映
-      const { nextPageToken, list: apiNodes } = await getArticleChildrenAPI(base.toFullPath(dirPath), articleTypes, input)
+      const { nextPageToken, list: apiNodes, isPaginationTimeout } = await getArticleChildrenAPI(base.toFullPath(dirPath), articleTypes, input)
       // APIノードにないストアノードを削除
       base.removeNotExistsStoreNodes(apiNodes, store.storage.getChildren(dirPath))
 
       const list = base.setAPINodesToStore(apiNodes)
-      return { nextPageToken, list }
+      return { nextPageToken, list, isPaginationTimeout }
     }
 
     //----------------------------------------------------------------------
@@ -202,10 +202,11 @@ namespace ArticleStorageLogic {
     })
 
     const getArticleChildrenAPI = extendedMethod(async (dirPath: string, articleTypes: StorageArticleNodeType[], input?: StoragePaginationInput) => {
-      const apiPagination = await api.getArticleChildren(dirPath, articleTypes, input)
+      const pagination = await api.getArticleChildren(dirPath, articleTypes, input)
       return {
-        nextPageToken: apiPagination.nextPageToken,
-        list: base.apiNodesToStorageNodes(apiPagination.list),
+        nextPageToken: pagination.nextPageToken,
+        list: base.apiNodesToStorageNodes(pagination.list),
+        isPaginationTimeout: pagination.isPaginationTimeout,
       }
     })
 

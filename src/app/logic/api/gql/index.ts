@@ -154,6 +154,7 @@ interface RawStorageNode extends RawEntity<APIStorageNode> {}
 interface RawStoragePaginationResult {
   list: RawStorageNode[]
   nextPageToken?: string
+  isPaginationTimeout: boolean
 }
 
 //========================================================================
@@ -394,6 +395,7 @@ namespace GQLAPIContainer {
                 updatedAt
               }
               nextPageToken
+              isPaginationTimeout
             }
           }
         `,
@@ -403,6 +405,7 @@ namespace GQLAPIContainer {
       return {
         list: toEntity(response.data.storageDirDescendants.list),
         nextPageToken: response.data.storageDirDescendants.nextPageToken || undefined,
+        isPaginationTimeout: response.data.storageDirDescendants.isPaginationTimeout ?? false,
       }
     }
 
@@ -433,6 +436,7 @@ namespace GQLAPIContainer {
                 updatedAt
               }
               nextPageToken
+              isPaginationTimeout
             }
           }
         `,
@@ -442,6 +446,7 @@ namespace GQLAPIContainer {
       return {
         list: toEntity(response.data.storageDescendants.list),
         nextPageToken: response.data.storageDescendants.nextPageToken || undefined,
+        isPaginationTimeout: response.data.storageDescendants.isPaginationTimeout ?? false,
       }
     }
 
@@ -472,6 +477,7 @@ namespace GQLAPIContainer {
                 updatedAt
               }
               nextPageToken
+              isPaginationTimeout
             }
           }
         `,
@@ -481,6 +487,7 @@ namespace GQLAPIContainer {
       return {
         list: toEntity(response.data.storageDirChildren.list),
         nextPageToken: response.data.storageDirChildren.nextPageToken || undefined,
+        isPaginationTimeout: response.data.storageDirChildren.isPaginationTimeout ?? false,
       }
     }
 
@@ -511,6 +518,7 @@ namespace GQLAPIContainer {
                 updatedAt
               }
               nextPageToken
+              isPaginationTimeout
             }
           }
         `,
@@ -520,6 +528,7 @@ namespace GQLAPIContainer {
       return {
         list: toEntity(response.data.storageChildren.list),
         nextPageToken: response.data.storageChildren.nextPageToken || undefined,
+        isPaginationTimeout: response.data.storageChildren.isPaginationTimeout ?? false,
       }
     }
 
@@ -1044,6 +1053,7 @@ namespace GQLAPIContainer {
                 updatedAt
               }
               nextPageToken
+              isPaginationTimeout
             }
           }
         `,
@@ -1053,6 +1063,7 @@ namespace GQLAPIContainer {
       return {
         list: toEntity(response.data.articleChildren.list),
         nextPageToken: response.data.articleChildren.nextPageToken || undefined,
+        isPaginationTimeout: response.data.articleChildren.isPaginationTimeout ?? false,
       }
     }
 

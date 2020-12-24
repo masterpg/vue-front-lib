@@ -145,6 +145,7 @@ interface StoragePaginationInput {
 interface StoragePaginationResult<NODE extends DeepReadonly<APIStorageNode> = APIStorageNode> {
   list: NODE[]
   nextPageToken?: string
+  isPaginationTimeout: boolean
 }
 
 interface StorageNodeShareSettings {
