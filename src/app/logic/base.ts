@@ -1,4 +1,4 @@
-import { DeepPartial, DeepReadonly } from 'web-base-lib'
+import { DeepPartial, DeepReadonly, Entities } from 'web-base-lib'
 import { Entity, OmitEntityTimestamp } from '@/firestore-ex'
 import dayjs, { Dayjs } from 'dayjs'
 import { useI18n } from '@/app/i18n'
@@ -47,6 +47,13 @@ interface PublicProfile extends TimestampEntity {
 interface UserInfoInput {
   fullName: string
   displayName: string
+}
+
+namespace UserInfoInput {
+  export function rigidify<T extends UserInfoInput | undefined>(input?: UserInfoInput): T {
+    if (!input) return undefined as T
+    return { fullName: input.fullName, displayName: input.displayName } as T
+  }
 }
 
 //--------------------------------------------------
@@ -142,6 +149,13 @@ interface StoragePaginationInput {
   pageToken?: string
 }
 
+namespace StoragePaginationInput {
+  export function rigidify<T extends StoragePaginationInput | undefined>(input?: StoragePaginationInput): T {
+    if (!input) return undefined as T
+    return { maxChunk: input.maxChunk, pageToken: input.pageToken } as T
+  }
+}
+
 interface StoragePaginationResult<NODE extends DeepReadonly<APIStorageNode> = APIStorageNode> {
   list: NODE[]
   nextPageToken?: string
@@ -166,22 +180,82 @@ interface StorageNodeShareSettingsInput {
   writeUIds?: string[] | null
 }
 
+namespace StorageNodeShareSettingsInput {
+  export function rigidify<T extends StorageNodeShareSettingsInput | undefined>(input?: StorageNodeShareSettingsInput): T {
+    if (!input) return undefined as T
+    return { isPublic: input.isPublic, readUIds: input.readUIds, writeUIds: input.writeUIds } as T
+  }
+}
+
 interface StorageNodeKeyInput {
+  id: string
+  path: string
+}
+
+namespace StorageNodeKeyInput {
+  export function rigidify<T extends StorageNodeKeyInput | undefined>(input?: StorageNodeKeyInput): T {
+    if (!input) return undefined as T
+    return { id: input.id, path: input.path } as T
+  }
+}
+
+interface StorageNodeGetKeyInput {
   id?: string
   path?: string
 }
 
-interface StorageNodeKeysInput {
+namespace StorageNodeGetKeyInput {
+  export function rigidify<T extends StorageNodeGetKeyInput | undefined>(input?: StorageNodeGetKeyInput): T {
+    if (!input) return undefined as T
+    return { id: input.id, path: input.path } as T
+  }
+}
+
+interface StorageNodeGetKeysInput {
   ids?: string[]
   paths?: string[]
 }
 
+namespace StorageNodeGetKeysInput {
+  export function rigidify<T extends StorageNodeGetKeysInput | undefined>(input?: StorageNodeGetKeysInput): T {
+    if (!input) return undefined as T
+    return { ids: input.ids, paths: input.paths } as T
+  }
+}
+
+interface SignedUploadUrlInput {
+  id: string
+  path: string
+  contentType?: string
+}
+
+namespace SignedUploadUrlInput {
+  export function rigidify<T extends SignedUploadUrlInput | undefined>(input?: SignedUploadUrlInput): T {
+    if (!input) return undefined as T
+    return { id: input.id, path: input.path, contentType: input.contentType } as T
+  }
+}
+
 interface CreateStorageNodeInput extends StorageNodeShareSettingsInput {}
+
+namespace CreateStorageNodeInput {
+  export function rigidify<T extends CreateStorageNodeInput | undefined>(input?: CreateStorageNodeInput): T {
+    if (!input) return undefined as T
+    return StorageNodeShareSettingsInput.rigidify(input) as T
+  }
+}
 
 interface CreateArticleTypeDirInput {
   dir: string
   articleNodeName: string
   articleNodeType: StorageArticleNodeType
+}
+
+namespace CreateArticleTypeDirInput {
+  export function rigidify<T extends CreateArticleTypeDirInput | undefined>(input?: CreateArticleTypeDirInput): T {
+    if (!input) return undefined as T
+    return { dir: input.dir, articleNodeName: input.articleNodeName, articleNodeType: input.articleNodeType } as T
+  }
 }
 
 interface SortStorageNode {
@@ -219,6 +293,17 @@ async function sgetIdToken(): Promise<string> {
   return idToken
 }
 
+/**
+ * エンティティIDを生成します。
+ * @param entityName エンティティ名を指定します。
+ */
+function generateEntityId(entityName: string): string {
+  return firebase
+    .firestore()
+    .collection(entityName)
+    .doc().id
+}
+
 namespace UserInfo {
   export function populate(from: DeepPartial<DeepReadonly<UserInfo>>, to: DeepPartial<UserInfo>): UserInfo {
     if (typeof from.id === 'string') to.id = from.id
@@ -244,6 +329,10 @@ namespace UserInfo {
 }
 
 namespace StorageNode {
+  export function generateId(): string {
+    return generateEntityId(Entities.StorageNodes.Name)
+  }
+
   export function populate(from: DeepPartial<DeepReadonly<StorageNode>>, to: DeepPartial<StorageNode>): StorageNode {
     if (typeof from.id === 'string') to.id = from.id
     if (typeof from.nodeType === 'string') to.nodeType = from.nodeType
@@ -399,10 +488,12 @@ export {
   IdToken,
   PublicProfile,
   RequiredStorageNodeShareSettings,
+  SignedUploadUrlInput,
   StorageArticleNodeType,
   StorageNode,
+  StorageNodeGetKeyInput,
+  StorageNodeGetKeysInput,
   StorageNodeKeyInput,
-  StorageNodeKeysInput,
   StorageNodeShareSettings,
   StorageNodeShareSettingsInput,
   StorageNodeType,
@@ -412,6 +503,7 @@ export {
   UserClaims,
   UserInfo,
   UserInfoInput,
+  generateEntityId,
   getIdToken,
   sgetIdToken,
 }

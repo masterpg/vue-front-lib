@@ -3,9 +3,11 @@ import {
   APIStorageNode,
   CreateStorageNodeInput,
   RequiredStorageNodeShareSettings,
+  SignedUploadUrlInput,
   StorageNode,
+  StorageNodeGetKeyInput,
+  StorageNodeGetKeysInput,
   StorageNodeKeyInput,
-  StorageNodeKeysInput,
   StorageNodeShareSettingsInput,
 } from '@/app/logic'
 import { DeepReadonly, arrayToDict, removeBothEndsSlash, splitArrayChunk, splitHierarchicalPaths } from 'web-base-lib'
@@ -29,8 +31,8 @@ interface AppStorageLogic extends StorageLogic {
   //  API
   //--------------------------------------------------
 
-  getNodeAPI(input: StorageNodeKeyInput): Promise<StorageNode | undefined>
-  getNodesAPI(input: StorageNodeKeysInput): Promise<StorageNode[]>
+  getNodeAPI(input: StorageNodeGetKeyInput): Promise<StorageNode | undefined>
+  getNodesAPI(input: StorageNodeGetKeysInput): Promise<StorageNode[]>
   getDirDescendantsAPI(dirPath?: string): Promise<StorageNode[]>
   getDescendantsAPI(dirPath?: string): Promise<StorageNode[]>
   getDirChildrenAPI(dirPath?: string): Promise<StorageNode[]>
@@ -46,7 +48,8 @@ interface AppStorageLogic extends StorageLogic {
   renameDirAPI(dirPath: string, newName: string): Promise<void>
   renameFileAPI(filePath: string, newName: string): Promise<StorageNode>
   setDirShareSettingsAPI(dirPath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode>
-  handleUploadedFileAPI(filePath: string): Promise<StorageNode>
+  handleUploadedFileAPI(input: StorageNodeKeyInput): Promise<StorageNode>
+  getSignedUploadUrlsAPI(inputs: SignedUploadUrlInput[]): Promise<string[]>
   setFileShareSettingsAPI(filePath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode>
 
   //--------------------------------------------------
@@ -261,7 +264,7 @@ namespace AppStorageLogic {
       }
 
       // APIからノードを取得
-      const fullInput: StorageNodeKeyInput = {}
+      const fullInput: StorageNodeGetKeyInput = {}
       input.id && (fullInput.id = input.id)
       input.path && (fullInput.path = toFullPath(input.path))
       const apiNode = await getNodeAPI(fullInput)
@@ -284,7 +287,7 @@ namespace AppStorageLogic {
 
     const fetchNodes: AppStorageLogic['fetchNodes'] = async input => {
       // APIノードをストアへ反映
-      const fullInput: StorageNodeKeysInput = {}
+      const fullInput: StorageNodeGetKeysInput = {}
       input.ids && (fullInput.ids = input.ids)
       if (input.paths) {
         fullInput.paths = input.paths.filter(path => Boolean(removeBothEndsSlash(path))).map(path => toFullPath(path))
@@ -539,11 +542,25 @@ namespace AppStorageLogic {
       return toBasePathNode(node)
     }
 
-    const handleUploadedFile: AppStorageLogic['handleUploadedFile'] = async filePath => {
-      const apiNode = await handleUploadedFileAPI(toFullPath(filePath))
+    const handleUploadedFile: AppStorageLogic['handleUploadedFile'] = async input => {
+      const fullInput: StorageNodeKeyInput = {
+        id: input.id,
+        path: toFullPath(input.path),
+      }
+      const apiNode = await handleUploadedFileAPI(fullInput)
       const node = setAPINodeToStore(apiNode)
 
       return toBasePathNode(node)
+    }
+
+    const getSignedUploadUrl: AppStorageLogic['getSignedUploadUrl'] = async input => {
+      const fullInput: SignedUploadUrlInput = {
+        id: input.id,
+        path: toFullPath(input.path),
+        contentType: input.contentType,
+      }
+      const urls = await getSignedUploadUrlsAPI([fullInput])
+      return urls[0]
     }
 
     const newUploader: AppStorageLogic['newUploader'] = owner => {
@@ -652,9 +669,13 @@ namespace AppStorageLogic {
       return apiNodeToStorageNode(apiNode)!
     })
 
-    const handleUploadedFileAPI = extendedMethod<AppStorageLogic['handleUploadedFileAPI']>(async filePath => {
-      const apiNode = await api.handleUploadedFile(filePath)
+    const handleUploadedFileAPI = extendedMethod<AppStorageLogic['handleUploadedFileAPI']>(async input => {
+      const apiNode = await api.handleUploadedFile(input)
       return apiNodeToStorageNode(apiNode)!
+    })
+
+    const getSignedUploadUrlsAPI = extendedMethod<AppStorageLogic['getSignedUploadUrlsAPI']>(async inputs => {
+      return await api.getSignedUploadUrls(inputs)
     })
 
     const setFileShareSettingsAPI = extendedMethod<AppStorageLogic['setFileShareSettingsAPI']>(async (filePath, input) => {
@@ -829,6 +850,7 @@ namespace AppStorageLogic {
       setDirShareSettings,
       setFileShareSettings,
       handleUploadedFile,
+      getSignedUploadUrl,
       newUploader,
       newFileUploader,
       newDownloader,
@@ -855,6 +877,7 @@ namespace AppStorageLogic {
       renameFileAPI,
       setDirShareSettingsAPI,
       handleUploadedFileAPI,
+      getSignedUploadUrlsAPI,
       setFileShareSettingsAPI,
       apiNodeToStorageNode,
       apiNodesToStorageNodes,

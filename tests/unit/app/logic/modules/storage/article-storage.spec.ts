@@ -2,7 +2,6 @@ import {
   GENERAL_TOKEN,
   TestUserStorageLogic,
   cloneTestStorageNode,
-  generateFirestoreId,
   mockStorageLogicAPIMethods,
   newTestStorageDirNode,
   newTestStorageFileNode,
@@ -94,7 +93,7 @@ describe('AppStorageLogic', () => {
 
   describe('renameDir', () => {
     it('ベーシックケース - 記事系ノード', async () => {
-      const bundle = newTestStorageDirNode(`${articles.path}/${generateFirestoreId()}`, {
+      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         version: 1,
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.CategoryBundle,
@@ -228,17 +227,17 @@ describe('AppStorageLogic', () => {
 
   describe('createDir', () => {
     it('ベーシックケース', async () => {
-      const bundle = newTestStorageDirNode(`${articles.path}/${generateFirestoreId()}`, {
+      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleSortOrder: 1,
       })
-      const cat1 = newTestStorageDirNode(`${bundle.path}/${generateFirestoreId()}`, {
+      const cat1 = newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'カテゴリ1',
         articleNodeType: StorageArticleNodeType.Category,
         articleSortOrder: 1,
       })
-      const art1 = newTestStorageDirNode(`${cat1.path}/${generateFirestoreId()}`, {
+      const art1 = newTestStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
         articleNodeName: '記事1',
         articleNodeType: StorageArticleNodeType.Article,
         articleSortOrder: 1,
@@ -274,17 +273,17 @@ describe('AppStorageLogic', () => {
     })
 
     it('階層を構成するノードが欠けていた場合', async () => {
-      const bundle = newTestStorageDirNode(`${articles.path}/${generateFirestoreId()}`, {
+      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleSortOrder: 1,
       })
-      const cat1 = newTestStorageDirNode(`${bundle.path}/${generateFirestoreId()}`, {
+      const cat1 = newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'カテゴリ1',
         articleNodeType: StorageArticleNodeType.Category,
         articleSortOrder: 1,
       })
-      const art1 = newTestStorageDirNode(`${cat1.path}/${generateFirestoreId()}`, {
+      const art1 = newTestStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
         articleNodeName: '記事1',
         articleNodeType: StorageArticleNodeType.Article,
         articleSortOrder: 1,
@@ -311,7 +310,7 @@ describe('AppStorageLogic', () => {
 
   describe('createArticleTypeDir', () => {
     it('ベーシックケース - バンドル作成', async () => {
-      const bundle = newTestStorageDirNode(`${articles.path}/${generateFirestoreId()}`, {
+      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.ListBundle,
         articleSortOrder: 1,
@@ -354,17 +353,17 @@ describe('AppStorageLogic', () => {
 
     it('ベーシックケース - 記事作成', async () => {
       const config = useConfig()
-      const bundle = newTestStorageDirNode(`${articles.path}/${generateFirestoreId()}`, {
+      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleSortOrder: 1,
       })
-      const cat1 = newTestStorageDirNode(`${bundle.path}/${generateFirestoreId()}`, {
+      const cat1 = newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'カテゴリ1',
         articleNodeType: StorageArticleNodeType.Category,
         articleSortOrder: 1,
       })
-      const art1 = newTestStorageDirNode(`${cat1.path}/${generateFirestoreId()}`, {
+      const art1 = newTestStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
         articleNodeName: '記事1',
         articleNodeType: StorageArticleNodeType.Article,
         articleSortOrder: 1,
@@ -413,17 +412,17 @@ describe('AppStorageLogic', () => {
     })
 
     it('階層を構成するノードが欠けていた場合', async () => {
-      const bundle = newTestStorageDirNode(`${articles.path}/${generateFirestoreId()}`, {
+      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleSortOrder: 1,
       })
-      const cat1 = newTestStorageDirNode(`${bundle.path}/${generateFirestoreId()}`, {
+      const cat1 = newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'カテゴリ1',
         articleNodeType: StorageArticleNodeType.Category,
         articleSortOrder: 1,
       })
-      const art1 = newTestStorageDirNode(`${cat1.path}/${generateFirestoreId()}`, {
+      const art1 = newTestStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
         articleNodeName: '記事1',
         articleNodeType: StorageArticleNodeType.Article,
         articleSortOrder: 1,
@@ -453,16 +452,16 @@ describe('AppStorageLogic', () => {
 
   describe('setArticleSortOrder', () => {
     it('ベーシックケース', async () => {
-      const bundle = newTestStorageDirNode(`${articles.path}/${generateFirestoreId()}`, {
+      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.ListBundle,
         articleSortOrder: 1,
       })
-      const art1 = newTestStorageDirNode(`${bundle.path}/${generateFirestoreId()}`, {
+      const art1 = newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeName: '記事1',
         articleNodeType: StorageArticleNodeType.Article,
       })
-      const art2 = newTestStorageDirNode(`${bundle.path}/${generateFirestoreId()}`, {
+      const art2 = newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeName: '記事2',
         articleNodeType: StorageArticleNodeType.Article,
       })
@@ -504,7 +503,7 @@ describe('AppStorageLogic', () => {
     it('大量データの場合', async () => {
       const Num = 101
 
-      const bundle = newTestStorageDirNode(`${articles.path}/${generateFirestoreId()}`, {
+      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.ListBundle,
         articleSortOrder: 1,
@@ -512,7 +511,7 @@ describe('AppStorageLogic', () => {
       const arts: StorageNode[] = []
       for (let i = 0; i < Num; i++) {
         arts.push(
-          newTestStorageDirNode(`${bundle.path}/${generateFirestoreId()}`, {
+          newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
             articleNodeName: `記事${i + 1}`,
             articleNodeType: StorageArticleNodeType.Article,
           })

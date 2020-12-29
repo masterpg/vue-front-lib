@@ -3,6 +3,7 @@ import {
   AuthStatus,
   PublicProfile,
   StorageArticleNodeType,
+  StorageNode,
   StorageNodeShareSettings,
   UserInfo,
   UserInfoInput,
@@ -194,9 +195,10 @@ describe('Storage API', () => {
       const { api } = provideDependency()
       await api.uploadTestFiles([
         {
-          filePath: `${TEST_DIR}/d1/d11/fileA.txt`,
-          fileData: 'test',
+          id: StorageNode.generateId(),
+          path: `${TEST_DIR}/d1/d11/fileA.txt`,
           contentType: 'text/plain',
+          data: 'test',
         },
       ])
     })
@@ -223,13 +225,7 @@ describe('Storage API', () => {
   describe('getStorageNodes', () => {
     beforeEach(async () => {
       const { api } = provideDependency()
-      await api.uploadTestFiles([
-        {
-          filePath: `${TEST_DIR}/fileA.txt`,
-          fileData: 'test',
-          contentType: 'text/plain',
-        },
-      ])
+      await api.uploadTestFiles([{ id: StorageNode.generateId(), path: `${TEST_DIR}/fileA.txt`, contentType: 'text/plain', data: 'test' }])
     })
 
     it('疎通確認', async () => {
@@ -248,11 +244,10 @@ describe('Storage API', () => {
   describe('getStorageDirDescendants', () => {
     beforeEach(async () => {
       const { api } = provideDependency()
-
       await api.uploadTestFiles([
-        { filePath: `${TEST_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/d11/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/d11/d111/fileC.txt`, fileData: 'test', contentType: 'text/plain' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileA.txt`, contentType: 'text/plain', data: 'test' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/d11/fileB.txt`, contentType: 'text/plain', data: 'test' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/d11/d111/fileC.txt`, contentType: 'text/plain', data: 'test' },
       ])
     })
 
@@ -294,9 +289,9 @@ describe('Storage API', () => {
     beforeEach(async () => {
       const { api } = provideDependency()
       await api.uploadTestFiles([
-        { filePath: `${TEST_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/d11/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/d11/d111/fileC.txt`, fileData: 'test', contentType: 'text/plain' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileA.txt`, contentType: 'text/plain', data: 'test' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/d11/fileB.txt`, contentType: 'text/plain', data: 'test' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/d11/d111/fileC.txt`, contentType: 'text/plain', data: 'test' },
       ])
     })
 
@@ -336,9 +331,9 @@ describe('Storage API', () => {
     beforeEach(async () => {
       const { api } = provideDependency()
       await api.uploadTestFiles([
-        { filePath: `${TEST_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/d11/fileC.txt`, fileData: 'test', contentType: 'text/plain' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileA.txt`, contentType: 'text/plain', data: 'test' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileB.txt`, contentType: 'text/plain', data: 'test' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/d11/fileC.txt`, contentType: 'text/plain', data: 'test' },
       ])
     })
 
@@ -376,9 +371,9 @@ describe('Storage API', () => {
     beforeEach(async () => {
       const { api } = provideDependency()
       await api.uploadTestFiles([
-        { filePath: `${TEST_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/fileB.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/d11/fileC.txt`, fileData: 'test', contentType: 'text/plain' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileA.txt`, contentType: 'text/plain', data: 'test' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileB.txt`, contentType: 'text/plain', data: 'test' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/d11/fileC.txt`, contentType: 'text/plain', data: 'test' },
       ])
     })
 
@@ -413,7 +408,9 @@ describe('Storage API', () => {
   describe('getStorageHierarchicalNodes', () => {
     beforeEach(async () => {
       const { api } = provideDependency()
-      await api.uploadTestFiles([{ filePath: `${TEST_DIR}/d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestFiles([
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/d11/d111/fileA.txt`, contentType: 'text/plain', data: 'test' },
+      ])
     })
 
     it('疎通確認', async () => {
@@ -434,7 +431,9 @@ describe('Storage API', () => {
   describe('getStorageAncestorDirs', () => {
     beforeEach(async () => {
       const { api } = provideDependency()
-      await api.uploadTestFiles([{ filePath: `${TEST_DIR}/d1/d11/d111/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestFiles([
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/d11/d111/fileA.txt`, contentType: 'text/plain', data: 'test' },
+      ])
     })
 
     it('疎通確認', async () => {
@@ -457,9 +456,10 @@ describe('Storage API', () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       await api.createStorageHierarchicalDirs([`${TEST_DIR}/docs`])
-      await api.uploadTestFiles([{ filePath: `${TEST_DIR}/docs/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      const uploadItem = { id: StorageNode.generateId(), path: `${TEST_DIR}/docs/fileA.txt`, contentType: 'text/plain', data: 'test' }
+      await api.uploadTestFiles([uploadItem])
 
-      const actual = await api.handleUploadedFile(`${TEST_DIR}/docs/fileA.txt`)
+      const actual = await api.handleUploadedFile(uploadItem)
 
       expect(actual.path).toBe(`${TEST_DIR}/docs/fileA.txt`)
     })
@@ -521,11 +521,11 @@ describe('Storage API', () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       await api.uploadTestFiles([
-        { filePath: `${TEST_DIR}/d1/file1.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/file2.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/file3.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/file4.txt`, fileData: 'test', contentType: 'text/plain' },
-        { filePath: `${TEST_DIR}/d1/file5.txt`, fileData: 'test', contentType: 'text/plain' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/file1.txt`, contentType: 'text/plain', data: 'test' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/file2.txt`, contentType: 'text/plain', data: 'test' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/file3.txt`, contentType: 'text/plain', data: 'test' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/file4.txt`, contentType: 'text/plain', data: 'test' },
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/file5.txt`, contentType: 'text/plain', data: 'test' },
       ])
 
       await api.removeStorageDir(`${TEST_DIR}/d1`)
@@ -540,9 +540,10 @@ describe('Storage API', () => {
       const { api } = provideDependency()
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
-      await api.uploadTestFiles([{ filePath: `${TEST_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      const uploadItem = { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileA.txt`, contentType: 'text/plain', data: 'test' }
+      await api.uploadTestFiles([uploadItem])
 
-      const actual = (await api.removeStorageFile(`${TEST_DIR}/d1/fileA.txt`))!
+      const actual = (await api.removeStorageFile(uploadItem.path))!
 
       expect(actual.path).toBe(`${TEST_DIR}/d1/fileA.txt`)
     })
@@ -582,7 +583,7 @@ describe('Storage API', () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       await api.createStorageHierarchicalDirs([`${TEST_DIR}/d1`, `${TEST_DIR}/d2`])
-      await api.uploadTestFiles([{ filePath: `${TEST_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestFiles([{ id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileA.txt`, contentType: 'text/plain', data: 'test' }])
 
       const actual = await api.moveStorageFile(`${TEST_DIR}/d1/fileA.txt`, `${TEST_DIR}/d2/fileA.txt`)
 
@@ -623,7 +624,7 @@ describe('Storage API', () => {
       api.setTestAuthToken(APP_ADMIN_TOKEN)
 
       await api.createStorageHierarchicalDirs([`${TEST_DIR}/d1`])
-      await api.uploadTestFiles([{ filePath: `${TEST_DIR}/d1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestFiles([{ id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileA.txt`, contentType: 'text/plain', data: 'test' }])
 
       const actual = await api.renameStorageFile(`${TEST_DIR}/d1/fileA.txt`, `fileB.txt`)
 
@@ -636,7 +637,7 @@ describe('Storage API', () => {
       const { api } = provideDependency()
       api.setTestAuthToken(APP_ADMIN_TOKEN)
       await api.createStorageHierarchicalDirs([`${TEST_DIR}/dir1`])
-      await api.uploadTestFiles([{ filePath: `${TEST_DIR}/dir1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestFiles([{ id: StorageNode.generateId(), path: `${TEST_DIR}/dir1/fileA.txt`, contentType: 'text/plain', data: 'test' }])
 
       const actual = await api.setStorageDirShareSettings(`${TEST_DIR}/dir1`, { isPublic: true, readUIds: ['ichiro'], writeUIds: ['ichiro'] })
 
@@ -650,7 +651,7 @@ describe('Storage API', () => {
       const { api } = provideDependency()
       api.setTestAuthToken(APP_ADMIN_TOKEN)
       await api.createStorageHierarchicalDirs([`${TEST_DIR}/dir1`])
-      await api.uploadTestFiles([{ filePath: `${TEST_DIR}/dir1/fileA.txt`, fileData: 'test', contentType: 'text/plain' }])
+      await api.uploadTestFiles([{ id: StorageNode.generateId(), path: `${TEST_DIR}/dir1/fileA.txt`, contentType: 'text/plain', data: 'test' }])
 
       const actual = await api.setStorageFileShareSettings(`${TEST_DIR}/dir1/fileA.txt`, {
         isPublic: true,

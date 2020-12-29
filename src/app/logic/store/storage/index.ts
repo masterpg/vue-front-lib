@@ -1,6 +1,6 @@
 import { ComputedRef, computed, reactive } from '@vue/composition-api'
 import { DeepReadonly, arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
-import { StorageNode, StorageNodeKeysInput, StorageNodeType, sortStorageTree } from '@/app/logic/base'
+import { StorageNode, StorageNodeGetKeysInput, StorageNodeType, sortStorageTree } from '@/app/logic/base'
 import _path from 'path'
 
 //========================================================================
@@ -14,7 +14,7 @@ interface StorageStore {
 
   get(key: { id?: string; path?: string }): StorageNode | undefined
 
-  getList(input: StorageNodeKeysInput): StorageNode[]
+  getList(input: StorageNodeGetKeysInput): StorageNode[]
 
   getChildren(dirPath?: string): StorageNode[]
 

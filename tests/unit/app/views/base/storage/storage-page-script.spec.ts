@@ -4,7 +4,6 @@ import {
   EMPTY_SHARE_SETTINGS,
   NewTestStorageNodeData,
   TestLogicContainer,
-  generateFirestoreId,
   newTestStorageDirNode,
   newTestStorageFileNode,
 } from '../../../../../helpers/app'
@@ -194,13 +193,13 @@ function newListBundleFamilyNodes() {
   const config = useConfig()
   const articleFileName = config.storage.article.fileName
 
-  const blog = newTestStorageDirNode(`${generateFirestoreId()}`, {
+  const blog = newTestStorageDirNode(`${StorageNode.generateId()}`, {
     articleNodeName: 'ブログ',
     articleNodeType: StorageArticleNodeType.ListBundle,
     articleSortOrder: 1,
   })
 
-  const art2 = newTestStorageDirNode(`${blog.path}/${generateFirestoreId()}`, {
+  const art2 = newTestStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
     articleNodeName: '記事2',
     articleNodeType: StorageArticleNodeType.Article,
     articleSortOrder: 2,
@@ -208,7 +207,7 @@ function newListBundleFamilyNodes() {
 
   const art2_index = newTestStorageDirNode(`${art2.path}/${articleFileName}`)
 
-  const art1 = newTestStorageDirNode(`${blog.path}/${generateFirestoreId()}`, {
+  const art1 = newTestStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
     articleNodeName: '記事1',
     articleNodeType: StorageArticleNodeType.Article,
     articleSortOrder: 1,
@@ -234,19 +233,19 @@ function newCategoryBundleFamilyNodes() {
   const config = useConfig()
   const articleFileName = config.storage.article.fileName
 
-  const programming = newTestStorageDirNode(`${generateFirestoreId()}`, {
+  const programming = newTestStorageDirNode(`${StorageNode.generateId()}`, {
     articleNodeName: 'プログラミング',
     articleNodeType: StorageArticleNodeType.CategoryBundle,
     articleSortOrder: 1,
   })
 
-  const ts = newTestStorageDirNode(`${programming.path}/${generateFirestoreId()}`, {
+  const ts = newTestStorageDirNode(`${programming.path}/${StorageNode.generateId()}`, {
     articleNodeName: 'TypeScript',
     articleNodeType: StorageArticleNodeType.Category,
     articleSortOrder: 1,
   })
 
-  const variable = newTestStorageDirNode(`${ts.path}/${generateFirestoreId()}`, {
+  const variable = newTestStorageDirNode(`${ts.path}/${StorageNode.generateId()}`, {
     articleNodeName: '変数',
     articleNodeType: StorageArticleNodeType.Article,
     articleSortOrder: 2,
@@ -254,7 +253,7 @@ function newCategoryBundleFamilyNodes() {
 
   const variable_index = newTestStorageDirNode(`${variable.path}/${articleFileName}`)
 
-  const clazz = newTestStorageDirNode(`${ts.path}/${generateFirestoreId()}`, {
+  const clazz = newTestStorageDirNode(`${ts.path}/${StorageNode.generateId()}`, {
     articleNodeName: 'クラス',
     articleNodeType: StorageArticleNodeType.Article,
     articleSortOrder: 1,
@@ -729,7 +728,7 @@ describe('StoragePageLogic', () => {
       pageLogic.setAllTreeNodes([d1, d11])
 
       // 'd1/d11'が削除後また同じディレクトリに同じ名前で作成された
-      const created_d11 = cloneTreeNodeInput(d11, { id: generateFirestoreId(), createdAt: dayjs(), updatedAt: dayjs() })
+      const created_d11 = cloneTreeNodeInput(d11, { id: StorageNode.generateId(), createdAt: dayjs(), updatedAt: dayjs() })
       pageLogic.setTreeNodes([created_d11])
 
       const _d11 = pageLogic.getTreeNode(`d1/d11`)!
@@ -750,7 +749,7 @@ describe('StoragePageLogic', () => {
       pageLogic.setAllTreeNodes([d1, d11, f111, f112])
 
       // 'd1/d11/f111.txt'が削除後また同じディレクトリに同じ名前でアップロードされた
-      const created_f111 = cloneTreeNodeInput(f111, { id: generateFirestoreId(), createdAt: dayjs(), updatedAt: dayjs() })
+      const created_f111 = cloneTreeNodeInput(f111, { id: StorageNode.generateId(), createdAt: dayjs(), updatedAt: dayjs() })
       pageLogic.setTreeNodes([created_f111])
 
       const _f111 = pageLogic.getTreeNode(`d1/d11/f111.txt`)!
@@ -1485,7 +1484,7 @@ describe('StoragePageLogic', () => {
       // ・'d1/d11/d111'が削除された
       // ・'d1/d11/f111.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
       // ・'d1/d11/f112.txt'が追加された
-      const updated_f111 = cloneTreeNodeInput(f111, { id: generateFirestoreId() })
+      const updated_f111 = cloneTreeNodeInput(f111, { id: StorageNode.generateId() })
       // StorageLogic.getNode()をモック化
       td.when(storageLogic.getNode({ path: d1.path })).thenReturn(toStorageNode(d1))
       // StorageLogic.getDirDescendants()をモック化
@@ -1757,7 +1756,7 @@ describe('StoragePageLogic', () => {
 
       // articles
       // └[バンドル]
-      const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+      const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleNodeName: 'バンドル',
         articleSortOrder: 1,
@@ -1794,13 +1793,13 @@ describe('StoragePageLogic', () => {
       // articles
       // └バンドル
       //   └[カテゴリ1]
-      const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+      const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleNodeName: 'バンドル',
         articleSortOrder: 1,
         lazyLoadStatus: 'loaded',
       })
-      const cat1 = newTreeDirNodeInput(`${bundle.path}/${generateFirestoreId()}`, {
+      const cat1 = newTreeDirNodeInput(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeType: StorageArticleNodeType.Category,
         articleNodeName: 'カテゴリ1',
         articleSortOrder: 1,
@@ -1845,13 +1844,13 @@ describe('StoragePageLogic', () => {
       // └バンドル
       //   └[記事1]
       //     └[index1.md]
-      const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+      const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleNodeName: 'バンドル',
         articleSortOrder: 1,
         lazyLoadStatus: 'loaded',
       })
-      const art1 = newTreeDirNodeInput(`${bundle.path}/${generateFirestoreId()}`, {
+      const art1 = newTreeDirNodeInput(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeType: StorageArticleNodeType.Article,
         articleNodeName: '記事1',
         articleSortOrder: 1,
@@ -1894,7 +1893,7 @@ describe('StoragePageLogic', () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ storageType: 'article' })
       const articleLogic = storageLogic as ArticleStorageLogic
 
-      const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+      const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleNodeName: 'バンドル',
         articleSortOrder: 1,
@@ -1919,7 +1918,7 @@ describe('StoragePageLogic', () => {
     it('ストレージタイプが｢記事｣以外で実行した場合', async () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ storageType: 'app' })
 
-      const bundle = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+      const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleNodeName: 'バンドル',
         articleSortOrder: 1,
@@ -3079,12 +3078,12 @@ describe('StoragePageLogic', () => {
       // ├バンドル1
       // ├バンドル2
       // └アセット
-      const bundle1 = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+      const bundle1 = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleNodeName: 'バンドル1',
         articleSortOrder: 2,
       })
-      const bundle2 = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+      const bundle2 = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleNodeName: 'バンドル2',
         articleSortOrder: 1,
@@ -3128,12 +3127,12 @@ describe('StoragePageLogic', () => {
       // ├バンドル1
       // ├バンドル2
       // └アセット
-      const bundle1 = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+      const bundle1 = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleNodeName: 'バンドル1',
         articleSortOrder: 2,
       })
-      const bundle2 = newTreeDirNodeInput(`${generateFirestoreId()}`, {
+      const bundle2 = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleNodeName: 'バンドル2',
         articleSortOrder: 1,

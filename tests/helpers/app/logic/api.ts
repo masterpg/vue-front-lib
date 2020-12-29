@@ -50,9 +50,10 @@ interface PutTestIndexDataInput {
 }
 
 interface TestUploadFileItem {
-  fileData: string | Blob | Uint8Array | ArrayBuffer | File
-  filePath: string
+  id: string
+  path: string
   contentType: string
+  data: string | Blob | Uint8Array | ArrayBuffer | File
 }
 
 interface TestFirebaseUserInput {
@@ -117,19 +118,16 @@ namespace TestAPIContainer {
       const tokenBackup = await _getTestAuthToken()
       setTestAuthToken(APP_ADMIN_TOKEN)
 
-      const _uploadList = uploadList as (TestUploadFileItem & { signedUploadUrl: string })[]
+      const _uploadList = uploadList.map(item => ({ ...item, signedUploadUrl: '' }))
 
-      const signedUploadUrls = await api.getSignedUploadUrls(
-        _uploadList.map(item => {
-          return { filePath: item.filePath, contentType: item.contentType }
-        })
-      )
+      const inputs = _uploadList.map(item => ({ id: item.id, path: item.path, contentType: item.contentType }))
+      const signedUploadUrls = await api.getSignedUploadUrls(inputs)
       signedUploadUrls.forEach((url, index) => {
         _uploadList[index].signedUploadUrl = url
       })
 
       for (const uploadItem of _uploadList) {
-        const data = await readAsArrayBuffer(uploadItem.fileData)
+        const data = await readAsArrayBuffer(uploadItem.data)
         await axios.request({
           url: uploadItem.signedUploadUrl,
           method: 'put',
@@ -138,9 +136,9 @@ namespace TestAPIContainer {
             'content-type': 'application/octet-stream',
           },
         })
-        const parentPath = removeStartDirChars(path.dirname(uploadItem.filePath))
+        const parentPath = removeStartDirChars(path.dirname(uploadItem.path))
         await api.createStorageHierarchicalDirs([parentPath])
-        await api.handleUploadedFile(uploadItem.filePath)
+        await api.handleUploadedFile({ id: uploadItem.id, path: uploadItem.path })
       }
 
       _setTestAuthToken(tokenBackup)
@@ -149,7 +147,7 @@ namespace TestAPIContainer {
     const uploadTestUserFiles: TestAPIContainer['uploadTestUserFiles'] = async (user, uploadList) => {
       await uploadTestFiles(
         uploadList.map(uploadItem => {
-          uploadItem.filePath = path.join(toUserStorageBasePath(user), uploadItem.filePath)
+          uploadItem.path = path.join(toUserStorageBasePath(user), uploadItem.path)
           return uploadItem
         })
       )

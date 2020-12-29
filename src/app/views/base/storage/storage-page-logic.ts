@@ -13,7 +13,7 @@ import {
   RequiredStorageNodeShareSettings,
   StorageArticleNodeType,
   StorageNode,
-  StorageNodeKeyInput,
+  StorageNodeGetKeyInput,
   StorageNodeShareSettings,
   StorageNodeType,
   StorageType,
@@ -263,7 +263,7 @@ interface StoragePageLogic {
    * ノードの表示用パスを取得します。
    * @param key
    */
-  getDisplayNodePath(key: StorageNodeKeyInput): string
+  getDisplayNodePath(key: StorageNodeGetKeyInput): string
   /**
    * ノードのアイコンを取得します。
    * @param node
@@ -292,37 +292,37 @@ interface StoragePageLogic {
    * 指定されたノードが｢アセットディレクトリ｣か否かを取得します。
    * @param key
    */
-  isAssetsDir(key: StorageNodeKeyInput): boolean
+  isAssetsDir(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢リストバンドル｣か否かを取得します。
    * @param key
    */
-  isListBundle(key: StorageNodeKeyInput): boolean
+  isListBundle(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢カテゴリバンドル｣か否かを取得します。
    * @param key
    */
-  isCategoryBundle(key: StorageNodeKeyInput): boolean
+  isCategoryBundle(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢カテゴリ｣か否かを取得します。
    * @param key
    */
-  isCategory(key: StorageNodeKeyInput): boolean
+  isCategory(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢記事｣か否かを取得します。
    * @param key
    */
-  isArticle(key: StorageNodeKeyInput): boolean
+  isArticle(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢記事ファイル｣か否かを取得します。
    * @param key
    */
-  isArticleFile(key: StorageNodeKeyInput): boolean
+  isArticleFile(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢記事｣の子孫か否かを取得します。
    * @param key
    */
-  isArticleDescendant(key: StorageNodeKeyInput): boolean
+  isArticleDescendant(key: StorageNodeGetKeyInput): boolean
 }
 
 interface StoragePageStore {

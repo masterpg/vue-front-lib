@@ -2,9 +2,8 @@ import { Ref, UnwrapRef, reactive } from '@vue/composition-api'
 import { StorageFileUploader, StorageUploader, UploadFileParam } from '@/app/logic/modules/storage/upload'
 import axios, { Canceler } from 'axios'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
-import _path from 'path'
+import { StorageNode } from '@/app/logic'
 import { injectAPI } from '@/app/logic/api'
-import { removeBothEndsSlash } from 'web-base-lib'
 
 //========================================================================
 //
@@ -62,8 +61,17 @@ namespace StorageURLFileUploader {
         return
       }
 
+      // ファイルノードの新バージョン番号を取得
+      const node = storageLogic.getNode({ path: base.path.value })
+      const nodeId = node?.id || StorageNode.generateId()
+      const version = node ? String(node.version + 1) : '1'
+
       // アップロード先のURLを取得
-      const signedUploadUrl = await getSignedUploadUrl()
+      const signedUploadUrl = await storageLogic.getSignedUploadUrl({
+        id: nodeId,
+        path: base.path.value,
+        contentType: uploadParam.contentType,
+      })
 
       // アップロードデータを取得
       const fileData = await getFileData()
@@ -94,9 +102,15 @@ namespace StorageURLFileUploader {
         return
       }
 
+      // ストレージファイルのメタデータにバージョンを設定
+      const fileRef = firebase.storage().ref(nodeId)
+      await fileRef.updateMetadata({
+        customMetadata: { version },
+      })
+
       // ファイルアップロード後に必要な処理を実行
       try {
-        await storageLogic.handleUploadedFile(base.path.value)
+        await storageLogic.handleUploadedFile({ id: nodeId, path: base.path.value })
       } catch (err) {
         base.failed.value = true
         throw err
@@ -138,17 +152,6 @@ namespace StorageURLFileUploader {
           resolve(data)
         }
       })
-    }
-
-    async function getSignedUploadUrl(): Promise<string> {
-      const basePath = removeBothEndsSlash(storageLogic.basePath.value)
-      const params = [
-        {
-          filePath: _path.join(basePath, base.path.value),
-          contentType: uploadParam.contentType,
-        },
-      ]
-      return (await api.getSignedUploadUrls(params))[0]
     }
 
     //----------------------------------------------------------------------

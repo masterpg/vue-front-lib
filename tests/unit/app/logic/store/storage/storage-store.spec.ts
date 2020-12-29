@@ -1,12 +1,5 @@
 import { DeepReadonly, removeStartDirChars } from 'web-base-lib'
-import {
-  GENERAL_USER,
-  cloneTestStorageNode,
-  generateFirestoreId,
-  newTestStorageDirNode,
-  newTestStorageFileNode,
-  provideDependency,
-} from '../../../../../helpers/app'
+import { GENERAL_USER, cloneTestStorageNode, newTestStorageDirNode, newTestStorageFileNode, provideDependency } from '../../../../../helpers/app'
 import { StorageArticleNodeType, StorageNode, StorageNodeShareSettings, StorageNodeType, sortStorageTree } from '@/app/logic'
 import dayjs from 'dayjs'
 import path from 'path'
@@ -505,7 +498,7 @@ describe('StorageStore', () => {
       const usersPath = `${config.storage.user.rootName}`
       const userRootPath = `${usersPath}/${GENERAL_USER.uid}`
       const articleRootPath = `${userRootPath}/${config.storage.article.rootName}`
-      const bundle = newTestStorageDirNode(`${articleRootPath}/${generateFirestoreId()}`, {
+      const bundle = newTestStorageDirNode(`${articleRootPath}/${StorageNode.generateId()}`, {
         articleNodeName: 'Bundle',
         articleNodeType: StorageArticleNodeType.ListBundle,
         articleSortOrder: 1,
@@ -574,7 +567,7 @@ describe('StorageStore', () => {
       })
 
       let actual!: Error
-      const notExistsId = generateFirestoreId()
+      const notExistsId = StorageNode.generateId()
       try {
         store.storage.set({ id: notExistsId, name: `dX`, dir: ``, path: `dX` })
       } catch (err) {
@@ -1262,7 +1255,7 @@ describe('StorageStore', () => {
   describe('clone', () => {
     it('ベーシックケース', () => {
       const config = useConfig()
-      const bundle = newTestStorageDirNode(`${generateFirestoreId()}`, {
+      const bundle = newTestStorageDirNode(`${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleSortOrder: 1,
@@ -1272,12 +1265,12 @@ describe('StorageStore', () => {
           writeUIds: ['ichiro'],
         },
       })
-      const cat1 = newTestStorageDirNode(`${bundle.path}/${generateFirestoreId()}`, {
+      const cat1 = newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'カテゴリ1',
         articleNodeType: StorageArticleNodeType.Category,
         articleSortOrder: 1,
       })
-      const art1 = newTestStorageDirNode(`${cat1.path}/${generateFirestoreId()}`, {
+      const art1 = newTestStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
         articleNodeName: '記事1',
         articleNodeType: StorageArticleNodeType.Article,
         articleSortOrder: 1,

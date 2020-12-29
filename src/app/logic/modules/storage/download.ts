@@ -442,8 +442,7 @@ namespace StorageFileFirebaseDownloader {
       base.status.value = 'running'
 
       // URLの取得
-      const downloadFilePath = removeBothEndsSlash(path.join(storageLogic.basePath.value, base.fileNode.path))
-      const fileRef = firebase.storage().ref(downloadFilePath)
+      const fileRef = firebase.storage().ref(base.fileNode.id)
       const downloadURL = await fileRef.getDownloadURL()
 
       // 認証ヘッダの取得

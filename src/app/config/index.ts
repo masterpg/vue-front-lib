@@ -1,4 +1,5 @@
 import { DeepPartial, removeEndSlash } from 'web-base-lib'
+import { StorageArticlesConfig, StorageUsersConfig } from 'web-base-lib'
 import URI from 'urijs'
 import merge from 'lodash/merge'
 import { reactive } from '@vue/composition-api'
@@ -103,12 +104,12 @@ function createConfig(params: CreateConfigParams = {}): Config {
     storage: merge(
       {
         user: {
-          rootName: 'users',
+          rootName: StorageUsersConfig.RootName,
         },
         article: {
-          rootName: 'articles',
-          fileName: 'index.md',
-          assetsName: 'assets',
+          rootName: StorageArticlesConfig.RootName,
+          fileName: StorageArticlesConfig.FileName,
+          assetsName: StorageArticlesConfig.AssetsName,
         },
       },
       params.storage

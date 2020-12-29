@@ -2,10 +2,12 @@ import { ComputedRef, Ref } from '@vue/composition-api'
 import {
   CreateStorageNodeInput,
   RequiredStorageNodeShareSettings,
+  SignedUploadUrlInput,
   SortStorageNode,
   StorageNode,
+  StorageNodeGetKeyInput,
+  StorageNodeGetKeysInput,
   StorageNodeKeyInput,
-  StorageNodeKeysInput,
   StorageNodeShareSettingsInput,
   sortStorageTree,
   storageChildrenSortFunc,
@@ -36,18 +38,18 @@ interface StorageLogic {
    * 指定ノードをストアから取得します。
    * @param key
    */
-  getNode(key: StorageNodeKeyInput): StorageNode | undefined
+  getNode(key: StorageNodeGetKeyInput): StorageNode | undefined
   /**
    * 指定されたノードリストを取得します。
    * @param input
    */
-  getNodes(input: StorageNodeKeysInput): StorageNode[]
+  getNodes(input: StorageNodeGetKeysInput): StorageNode[]
   /**
    * 指定ノードをストアから取得します。
    * ノードが存在しない場合は例外がスローされます。
    * @param key
    */
-  sgetNode(key: StorageNodeKeyInput): StorageNode
+  sgetNode(key: StorageNodeGetKeyInput): StorageNode
   /**
    * 指定ディレクトリとその配下のノードをストアから取得します。
    * @param dirPath 対象となるディレクトリを指定します。
@@ -98,12 +100,12 @@ interface StorageLogic {
    * 指定されたノードを取得します。
    * @param input
    */
-  fetchNode(input: StorageNodeKeyInput): Promise<StorageNode | undefined>
+  fetchNode(input: StorageNodeGetKeyInput): Promise<StorageNode | undefined>
   /**
    * 指定されたノードを取得します。
    * @param input
    */
-  fetchNodes(input: StorageNodeKeysInput): Promise<StorageNode[]>
+  fetchNodes(input: StorageNodeGetKeysInput): Promise<StorageNode[]>
   /**
    * 指定ノードとその階層を構成するディレクトリをサーバーから取得します。
    * 戻り値で取得される階層構造のトップは、ベースパスルート直下のディレクトリとなります。
@@ -255,9 +257,14 @@ interface StorageLogic {
   setFileShareSettings(filePath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode>
   /**
    * ファイルアップロードの後に必要な処理を行います。
-   * @param filePath
+   * @param input
    */
-  handleUploadedFile(filePath: string): Promise<StorageNode>
+  handleUploadedFile(input: StorageNodeKeyInput): Promise<StorageNode>
+  /**
+   * 署名付きのアップロードURLを取得します。
+   * @param input
+   */
+  getSignedUploadUrl(input: SignedUploadUrlInput): Promise<string>
 
   newUploader(owner: Ref<Element | undefined>): StorageUploader
 
@@ -268,8 +275,6 @@ interface StorageLogic {
   newUrlUploader(owner: Ref<Element | undefined>): StorageUploader
 
   newFileDownloader(type: StorageFileDownloaderType, filePath: string): StorageFileDownloader
-
-  handleUploadedFileAPI(filePath: string): Promise<StorageNode>
 }
 
 type StorageType = 'user' | 'app' | 'article'

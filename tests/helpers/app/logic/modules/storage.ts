@@ -1,8 +1,8 @@
 import { DeepPartial, removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { StorageNode, StorageNodeShareSettings, StorageNodeType } from '@/app/logic'
-import { TestLogicContainer, generateFirestoreId } from '../index'
 import { cloneDeep, merge } from 'lodash'
 import { StorageLogic } from '@/app/logic/modules/storage'
+import { TestLogicContainer } from '../index'
 import _path from 'path'
 import dayjs from 'dayjs'
 
@@ -29,7 +29,7 @@ function newTestStorageDirNode(dirPath: string, data?: NewTestStorageNodeData): 
   if (data.articleNodeType) {
     nodeId = _path.basename(dirPath)
   } else {
-    nodeId = data.id || generateFirestoreId()
+    nodeId = data.id || StorageNode.generateId()
   }
   const result: StorageNode = {
     id: nodeId,
@@ -57,9 +57,9 @@ function newTestStorageFileNode(filePath: string, data?: NewTestStorageNodeData)
   data = data || {}
   const name = _path.basename(filePath)
   const dir = removeStartDirChars(_path.dirname(filePath))
-  const nodeId = data.id || generateFirestoreId()
+  const nodeId = data.id || StorageNode.generateId()
   const result: StorageNode = {
-    id: data.id || generateFirestoreId(),
+    id: data.id || StorageNode.generateId(),
     nodeType: StorageNodeType.File,
     name,
     dir,

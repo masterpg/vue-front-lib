@@ -1,8 +1,7 @@
 import { Config, useConfig } from '@/app/config'
-import { StorageArticleNodeType, StorageNodeShareSettings } from '@/app/logic'
+import { StorageArticleNodeType, StorageNode, StorageNodeShareSettings } from '@/app/logic'
 import {
   cloneTestStorageNode,
-  generateFirestoreId,
   mockStorageLogicAPIMethods,
   newTestStorageDirNode,
   newTestStorageFileNode,
@@ -846,7 +845,7 @@ describe('AppStorageLogic', () => {
       // ・'d1/d11/f112.txt'が追加された
       // ・'d1/d12'が削除された
       // ・'d1/f11.txt'が一度削除され、その後また同じディレクトリに同じ名前でアップロードされた
-      const updated_f11 = cloneTestStorageNode(f11, { id: generateFirestoreId(), updatedAt: dayjs() })
+      const updated_f11 = cloneTestStorageNode(f11, { id: StorageNode.generateId(), updatedAt: dayjs() })
       td.when(appStorage.getDirDescendantsAPI(d1.path)).thenResolve([d1, d11, f112, updated_f11])
 
       const actual = await appStorage.fetchDirDescendants(d1.path)
@@ -960,7 +959,7 @@ describe('AppStorageLogic', () => {
       // ・'d1/d11/f112.txt'が追加された
       // ・'d1/d12'が削除された
       // ・'d1/f11.txt'が一度削除され、その後また同じディレクトリに同じ名前でアップロードされた
-      const updated_f11 = cloneTestStorageNode(f11, { id: generateFirestoreId(), updatedAt: dayjs() })
+      const updated_f11 = cloneTestStorageNode(f11, { id: StorageNode.generateId(), updatedAt: dayjs() })
       td.when(appStorage.getDescendantsAPI(d1.path)).thenResolve([d11, f112, updated_f11])
 
       const actual = await appStorage.fetchDescendants(d1.path)
@@ -1043,7 +1042,7 @@ describe('AppStorageLogic', () => {
       // ・'d1/f11.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
       // ・'d1/f12.txt'が追加された
       // ・'d1/d12'が削除された
-      const updated_f11 = cloneTestStorageNode(f11, { id: generateFirestoreId(), updatedAt: dayjs() })
+      const updated_f11 = cloneTestStorageNode(f11, { id: StorageNode.generateId(), updatedAt: dayjs() })
       td.when(appStorage.getDirChildrenAPI(d1.path)).thenResolve([d1, d11, updated_f11, f12])
 
       const actual = await appStorage.fetchDirChildren(d1.path)
@@ -1146,7 +1145,7 @@ describe('AppStorageLogic', () => {
       // ・'d1/f11.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
       // ・'d1/f12.txt'が追加された
       // ・'d1/d12'が削除された
-      const updated_f11 = cloneTestStorageNode(f11, { id: generateFirestoreId(), updatedAt: dayjs() })
+      const updated_f11 = cloneTestStorageNode(f11, { id: StorageNode.generateId(), updatedAt: dayjs() })
       td.when(appStorage.getChildrenAPI(d1.path)).thenResolve([d11, updated_f11, f12])
 
       const actual = await appStorage.fetchChildren(d1.path)
@@ -1217,7 +1216,7 @@ describe('AppStorageLogic', () => {
       // ・'d1/d11/d111'が削除された
       // ・'d1/d11/f111.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
       // ・'d1/d11/f112.txt'が追加された
-      const updated_f111 = cloneTestStorageNode(f111, { id: generateFirestoreId(), updatedAt: dayjs() })
+      const updated_f111 = cloneTestStorageNode(f111, { id: StorageNode.generateId(), updatedAt: dayjs() })
       td.when(appStorage.getHierarchicalNodesAPI(d11.path)).thenResolve([d1, d11])
       td.when(appStorage.getDescendantsAPI(d11.path)).thenResolve([updated_f111, f112])
 
@@ -1372,7 +1371,7 @@ describe('AppStorageLogic', () => {
       // ・'d1/d11/d111'が削除された
       // ・'d1/d11/f111.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
       // ・'d1/d11/f112.txt'が追加された
-      const updated_f111 = cloneTestStorageNode(f111, { id: generateFirestoreId(), updatedAt: dayjs() })
+      const updated_f111 = cloneTestStorageNode(f111, { id: StorageNode.generateId(), updatedAt: dayjs() })
       td.when(appStorage.getHierarchicalNodesAPI(d11.path)).thenResolve([d1, d11])
       td.when(appStorage.getChildrenAPI(d11.path)).thenResolve([updated_f111, f112])
 
@@ -2114,9 +2113,9 @@ describe('AppStorageLogic', () => {
         store.storage.setAll([d1, d11])
       })
 
-      td.when(appStorage.handleUploadedFileAPI(f111.path)).thenResolve(f111)
+      td.when(appStorage.handleUploadedFileAPI({ id: f111.id, path: f111.path })).thenResolve(f111)
 
-      const actual = await appStorage.handleUploadedFile(f111.path)
+      const actual = await appStorage.handleUploadedFile({ id: f111.id, path: f111.path })
 
       // bucketRoot
       // └d1
@@ -2136,10 +2135,10 @@ describe('AppStorageLogic', () => {
         store.storage.setAll([d1, d11])
       })
 
-      td.when(appStorage.handleUploadedFileAPI(f111.path)).thenReject(new Error())
+      td.when(appStorage.handleUploadedFileAPI({ id: f111.id, path: f111.path })).thenReject(new Error())
 
       try {
-        await appStorage.handleUploadedFile(f111.path)
+        await appStorage.handleUploadedFile({ id: f111.id, path: f111.path })
       } catch (err) {}
 
       // ノードリストに変化がないことを検証
