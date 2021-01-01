@@ -474,10 +474,10 @@ namespace StorageFileUploader {
 
       state.status = 'running'
 
-      // ファイルノードの新バージョン番号を取得
+      // ファイルノード情報を取得
       const node = storageLogic.getNode({ path: path.value })
       const nodeId = node?.id || StorageNode.generateId()
-      const version = node ? String(node.version + 1) : '1'
+      const uid = StorageLogic.extractUId(storageLogic.basePath.value) || undefined
 
       // アップロード先の参照を取得
       const fileRef = firebase.storage().ref(nodeId)
@@ -494,7 +494,7 @@ namespace StorageFileUploader {
       // アップロード実行
       uploadTask = fileRef.put(uploadData, {
         contentType: contentType.value || null,
-        customMetadata: { version },
+        customMetadata: { uid } as any,
       })
 
       return new Promise<void>((resolve, reject) => {

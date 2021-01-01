@@ -61,10 +61,9 @@ namespace StorageURLFileUploader {
         return
       }
 
-      // ファイルノードの新バージョン番号を取得
+      // ファイルノード情報を取得
       const node = storageLogic.getNode({ path: base.path.value })
       const nodeId = node?.id || StorageNode.generateId()
-      const version = node ? String(node.version + 1) : '1'
 
       // アップロード先のURLを取得
       const signedUploadUrl = await storageLogic.getSignedUploadUrl({
@@ -101,12 +100,6 @@ namespace StorageURLFileUploader {
         }
         return
       }
-
-      // ストレージファイルのメタデータにバージョンを設定
-      const fileRef = firebase.storage().ref(nodeId)
-      await fileRef.updateMetadata({
-        customMetadata: { version },
-      })
 
       // ファイルアップロード後に必要な処理を実行
       try {

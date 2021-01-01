@@ -396,7 +396,7 @@ namespace StorageLogic {
   }
 
   /**
-   * ノードパスをベースパスを基準に変換します。
+   * ノードパスをベースパスを基準とした相対パスへ変換します。
    * @param basePath
    * @param nodePath_or_nodePaths
    */
@@ -439,6 +439,17 @@ namespace StorageLogic {
    * ディレクトリの子ノードをソートする関数です。
    */
   export const childrenSortFunc = storageChildrenSortFunc
+
+  /**
+   * 指定されたノードパスからユーザー名を取り出します。
+   * @param nodePath
+   */
+  export function extractUId(nodePath: string): string {
+    const config = useConfig()
+    const reg = new RegExp(`^${config.storage.user.rootName}/(?<uid>[^/]+)`)
+    const execArray = reg.exec(nodePath)
+    return execArray?.groups?.uid ?? ''
+  }
 
   /**
    * 指定されたパスのストレージタイプを取得します。
