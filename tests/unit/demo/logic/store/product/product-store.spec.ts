@@ -1,7 +1,6 @@
 import { provideDependency, toBeCopyProduct } from '../../../../../helpers/demo'
 import { Product } from '@/demo/logic'
 import dayjs from 'dayjs'
-import { generateFirestoreId } from '../../../../../helpers/app'
 
 //========================================================================
 //
@@ -9,14 +8,18 @@ import { generateFirestoreId } from '../../../../../helpers/app'
 //
 //========================================================================
 
-const PRODUCTS: Product[] = [
-  { id: 'product1', title: 'iPad 4 Mini', price: 39700, stock: 1, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
-  { id: 'product2', title: 'Fire HD 8 Tablet', price: 8980, stock: 5, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
-  { id: 'product3', title: 'MediaPad 10', price: 26400, stock: 10, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
-  { id: 'product4', title: 'Surface Go', price: 54290, stock: 0, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
-]
+function Products(): Product[] {
+  return [
+    { id: 'product1', title: 'iPad 4 Mini', price: 39700, stock: 1, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
+    { id: 'product2', title: 'Fire HD 8 Tablet', price: 8980, stock: 5, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
+    { id: 'product3', title: 'MediaPad 10', price: 26400, stock: 10, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
+    { id: 'product4', title: 'Surface Go', price: 54290, stock: 0, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
+  ]
+}
 
-const PRODUCT_1 = PRODUCTS[0]
+function Product1(): Product {
+  return Products()[0]
+}
 
 //========================================================================
 //
@@ -27,31 +30,31 @@ const PRODUCT_1 = PRODUCTS[0]
 describe('ProductStore', () => {
   it('all', async () => {
     const { store } = provideDependency(({ store }) => {
-      store.product.setAll(PRODUCTS)
+      store.product.setAll(Products())
     })
 
     // テスト対象実行
     const actual = store.product.all.value
 
-    expect(actual).toEqual(PRODUCTS)
+    expect(actual).toEqual(Products())
   })
 
   describe('getById', () => {
     it('ベーシックケース', () => {
       const { store } = provideDependency(({ store }) => {
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
       })
 
       // テスト対象実行
-      const actual = store.product.getById(PRODUCT_1.id)!
+      const actual = store.product.getById(Product1().id)!
 
-      expect(actual).toEqual(PRODUCT_1)
+      expect(actual).toEqual(Product1())
       toBeCopyProduct(store, actual)
     })
 
     it('存在しない商品IDを指定した場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
       })
 
       // テスト対象実行
@@ -64,19 +67,19 @@ describe('ProductStore', () => {
   describe('sgetById', () => {
     it('ベーシックケース', () => {
       const { store } = provideDependency(({ store }) => {
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
       })
 
       // テスト対象実行
-      const actual = store.product.sgetById(PRODUCT_1.id)
+      const actual = store.product.sgetById(Product1().id)
 
-      expect(actual).toEqual(PRODUCT_1)
+      expect(actual).toEqual(Product1())
       toBeCopyProduct(store, actual)
     })
 
     it('存在しない商品IDを指定した場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
       })
 
       let actual!: Error
@@ -94,11 +97,11 @@ describe('ProductStore', () => {
   describe('add', () => {
     it('ベーシックケース', () => {
       const { store } = provideDependency(({ store }) => {
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
       })
 
-      const productX = Product.clone(PRODUCT_1)
-      productX.id = generateFirestoreId()
+      const productX = Product.clone(Product1())
+      productX.id = Product.generateId()
       productX.title = 'Product X'
       productX.price = 999
       productX.stock = 888
@@ -115,11 +118,11 @@ describe('ProductStore', () => {
 
     it('余分なプロパティを含んだ場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
       })
 
-      const productX = Product.clone(PRODUCTS[0])
-      productX.id = generateFirestoreId()
+      const productX = Product.clone(Products()[0])
+      productX.id = Product.generateId()
       productX.title = 'Product X'
       productX.price = 999
       productX.stock = 888
@@ -141,28 +144,28 @@ describe('ProductStore', () => {
 
     it('既に存在する商品IDを指定した場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
       })
 
       let actual!: Error
       try {
         // テスト対象実行
-        store.product.add(PRODUCT_1)
+        store.product.add(Product1())
       } catch (err) {
         actual = err
       }
 
-      expect(actual.message).toBe(`The specified Product already exists: '${PRODUCT_1.id}'`)
+      expect(actual.message).toBe(`The specified Product already exists: '${Product1().id}'`)
     })
   })
 
   describe('set', () => {
     it('ベーシックケース', () => {
       const { store } = provideDependency(({ store }) => {
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
       })
 
-      const product1 = Product.clone(PRODUCTS[0])
+      const product1 = Product.clone(Products()[0])
       product1.title = 'aaa'
 
       // テスト対象実行
@@ -178,10 +181,10 @@ describe('ProductStore', () => {
 
     it('余分なプロパティを含んだ場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
       })
 
-      const product1 = Product.clone(PRODUCT_1)
+      const product1 = Product.clone(Product1())
 
       // テスト対象実行
       const actual = store.product.set({
@@ -200,12 +203,12 @@ describe('ProductStore', () => {
 
     it('存在しない商品IDを指定した場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
       })
 
       // テスト対象実行
       const actual = store.product.set({
-        ...PRODUCT_1,
+        ...Product1(),
         id: '9999',
       })
 
@@ -216,19 +219,19 @@ describe('ProductStore', () => {
   describe('decrementStock', () => {
     it('ベーシックケース', () => {
       const { store } = provideDependency(({ store }) => {
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
       })
 
       // テスト対象実行
-      const actual = store.product.decrementStock(PRODUCT_1.id)
+      const actual = store.product.decrementStock(Product1().id)
 
-      const updated = store.product.sgetById(PRODUCT_1.id)
-      expect(updated.stock).toBe(PRODUCT_1.stock - 1)
+      const updated = store.product.sgetById(Product1().id)
+      expect(updated.stock).toBe(Product1().stock - 1)
     })
 
     it('存在しない商品IDを指定した場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
       })
 
       let actual!: Error
@@ -246,19 +249,19 @@ describe('ProductStore', () => {
   describe('incrementStock', () => {
     it('ベーシックケース', () => {
       const { store } = provideDependency(({ store }) => {
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
       })
 
       // テスト対象実行
-      const actual = store.product.incrementStock(PRODUCT_1.id)
+      const actual = store.product.incrementStock(Product1().id)
 
-      const updated = store.product.sgetById(PRODUCT_1.id)
-      expect(updated.stock).toBe(PRODUCT_1.stock + 1)
+      const updated = store.product.sgetById(Product1().id)
+      expect(updated.stock).toBe(Product1().stock + 1)
     })
 
     it('存在しない商品IDを指定した場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
       })
 
       let actual!: Error

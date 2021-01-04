@@ -52,15 +52,6 @@ namespace TestLogicContainer {
   }
 }
 
-function generateFirestoreId(): string {
-  const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let autoId = ''
-  for (let i = 0; i < 20; i++) {
-    autoId += CHARS.charAt(Math.floor(Math.random() * CHARS.length))
-  }
-  return autoId
-}
-
 /**
  * 指定されたアイテムがコピーであることを検証します。
  * @param actual
@@ -84,7 +75,7 @@ function expectToBeCopyEntity<T extends Entity>(actual: T | T[], expected: T | T
 //
 //========================================================================
 
-export { TestLogicContainer, TestAppStorageLogic, TestUserStorageLogic, TestArticleStorageLogic, generateFirestoreId, expectToBeCopyEntity }
+export { TestLogicContainer, TestAppStorageLogic, TestUserStorageLogic, TestArticleStorageLogic, expectToBeCopyEntity }
 export * from './api'
 export * from './store'
 export * from './modules/storage'

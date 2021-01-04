@@ -1,5 +1,5 @@
 import { DeepPartial, DeepReadonly } from 'web-base-lib'
-import { TimestampEntity } from '@/app/logic'
+import { TimestampEntity, generateEntityId } from '@/app/logic'
 import dayjs from 'dayjs'
 
 //========================================================================
@@ -29,6 +29,10 @@ interface CartItem extends TimestampEntity {
 //========================================================================
 
 namespace Product {
+  export function generateId(): string {
+    return generateEntityId('products')
+  }
+
   export function populate(from: DeepPartial<Product>, to: DeepPartial<Product>): Product {
     if (typeof from.id === 'string') to.id = from.id
     if (typeof from.title === 'string') to.title = from.title
@@ -52,6 +56,10 @@ namespace Product {
 }
 
 namespace CartItem {
+  export function generateId(): string {
+    return generateEntityId('cart-items')
+  }
+
   export function populate(from: DeepPartial<CartItem>, to: DeepPartial<CartItem>): CartItem {
     if (typeof from.id === 'string') to.id = from.id
     if (typeof from.uid === 'string') to.uid = from.uid

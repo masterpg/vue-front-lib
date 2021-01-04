@@ -1,7 +1,6 @@
 import { provideDependency, toBeCopyCartItem } from '../../../../../helpers/demo'
 import { CartItem } from '@/demo/logic'
 import dayjs from 'dayjs'
-import { generateFirestoreId } from '../../../../../helpers/app'
 
 //========================================================================
 //
@@ -9,30 +8,34 @@ import { generateFirestoreId } from '../../../../../helpers/app'
 //
 //========================================================================
 
-const CART_ITEMS: CartItem[] = [
-  {
-    id: 'cartItem1',
-    uid: 'taro.yamada',
-    productId: 'product1',
-    title: 'iPad 4 Mini',
-    price: 39700,
-    quantity: 2,
-    createdAt: dayjs('2020-01-01'),
-    updatedAt: dayjs('2020-01-02'),
-  },
-  {
-    id: 'cartItem2',
-    uid: 'taro.yamada',
-    productId: 'product2',
-    title: 'Fire HD 8 Tablet',
-    price: 8980,
-    quantity: 1,
-    createdAt: dayjs('2020-01-01'),
-    updatedAt: dayjs('2020-01-02'),
-  },
-]
+function CartItems(): CartItem[] {
+  return [
+    {
+      id: 'cartItem1',
+      uid: 'taro.yamada',
+      productId: 'product1',
+      title: 'iPad 4 Mini',
+      price: 39700,
+      quantity: 2,
+      createdAt: dayjs('2020-01-01'),
+      updatedAt: dayjs('2020-01-02'),
+    },
+    {
+      id: 'cartItem2',
+      uid: 'taro.yamada',
+      productId: 'product2',
+      title: 'Fire HD 8 Tablet',
+      price: 8980,
+      quantity: 1,
+      createdAt: dayjs('2020-01-01'),
+      updatedAt: dayjs('2020-01-02'),
+    },
+  ]
+}
 
-const CART_ITEM_1 = CART_ITEMS[0]
+function CartItem1(): CartItem {
+  return CartItems()[0]
+}
 
 //========================================================================
 //
@@ -43,18 +46,18 @@ const CART_ITEM_1 = CART_ITEMS[0]
 describe('CartStore', () => {
   it('all', async () => {
     const { store } = provideDependency(({ store }) => {
-      store.cart.setAll(CART_ITEMS)
+      store.cart.setAll(CartItems())
     })
 
     // テスト対象実行
     const actual = store.cart.all.value
 
-    expect(actual).toEqual(CART_ITEMS)
+    expect(actual).toEqual(CartItems())
   })
 
   it('totalPrice', async () => {
     const { store } = provideDependency(({ store }) => {
-      store.cart.setAll(CART_ITEMS)
+      store.cart.setAll(CartItems())
     })
 
     // テスト対象実行
@@ -66,19 +69,19 @@ describe('CartStore', () => {
   describe('getById', () => {
     it('ベーシックケース', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
       // テスト対象実行
-      const actual = store.cart.getById(CART_ITEM_1.id)!
+      const actual = store.cart.getById(CartItem1().id)!
 
-      expect(actual).toEqual(CART_ITEM_1)
+      expect(actual).toEqual(CartItem1())
       toBeCopyCartItem(store, actual)
     })
 
     it('存在しないカートアイテムIDを指定した場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
       // テスト対象実行
@@ -91,19 +94,19 @@ describe('CartStore', () => {
   describe('sgetById', () => {
     it('ベーシックケース', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
       // テスト対象実行
-      const actual = store.cart.sgetById(CART_ITEM_1.id)
+      const actual = store.cart.sgetById(CartItem1().id)
 
-      expect(actual).toEqual(CART_ITEM_1)
+      expect(actual).toEqual(CartItem1())
       toBeCopyCartItem(store, actual)
     })
 
     it('存在しないカートアイテムIDを指定した場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
       let actual!: Error
@@ -121,19 +124,19 @@ describe('CartStore', () => {
   describe('getByProductId', () => {
     it('ベーシックケース', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
       // テスト対象実行
-      const actual = store.cart.getByProductId(CART_ITEM_1.productId)!
+      const actual = store.cart.getByProductId(CartItem1().productId)!
 
-      expect(actual).toEqual(CART_ITEM_1)
+      expect(actual).toEqual(CartItem1())
       toBeCopyCartItem(store, actual)
     })
 
     it('存在しない商品IDを指定した場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
       // テスト対象実行
@@ -146,19 +149,19 @@ describe('CartStore', () => {
   describe('sgetByProductId', () => {
     it('ベーシックケース', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
       // テスト対象実行
-      const actual = store.cart.sgetByProductId(CART_ITEM_1.productId)
+      const actual = store.cart.sgetByProductId(CartItem1().productId)
 
-      expect(actual).toEqual(CART_ITEM_1)
+      expect(actual).toEqual(CartItem1())
       toBeCopyCartItem(store, actual)
     })
 
     it('存在しない商品IDを指定した場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
       let actual!: Error
@@ -176,11 +179,11 @@ describe('CartStore', () => {
   describe('add', () => {
     it('ベーシックケース', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
-      const cartItemX = CartItem.clone(CART_ITEM_1)
-      cartItemX.id = generateFirestoreId()
+      const cartItemX = CartItem.clone(CartItem1())
+      cartItemX.id = CartItem.generateId()
       cartItemX.uid = 'userX'
       cartItemX.productId = 'productX'
       cartItemX.title = 'Product X'
@@ -199,11 +202,11 @@ describe('CartStore', () => {
 
     it('余分なプロパティを含んだ場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
-      const cartItemX = CartItem.clone(CART_ITEM_1)
-      cartItemX.id = generateFirestoreId()
+      const cartItemX = CartItem.clone(CartItem1())
+      cartItemX.id = CartItem.generateId()
       cartItemX.uid = 'userX'
       cartItemX.productId = 'productX'
       cartItemX.title = 'Product X'
@@ -227,28 +230,28 @@ describe('CartStore', () => {
 
     it('既に存在するカートアイテムIDを指定した場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
       let actual!: Error
       try {
         // テスト対象実行
-        store.cart.add(CART_ITEM_1)
+        store.cart.add(CartItem1())
       } catch (err) {
         actual = err
       }
 
-      expect(actual.message).toBe(`The specified CartItem already exists: '${CART_ITEM_1.id}'`)
+      expect(actual.message).toBe(`The specified CartItem already exists: '${CartItem1().id}'`)
     })
   })
 
   describe('set', () => {
     it('ベーシックケース', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
-      const cartItem1 = CartItem.clone(CART_ITEM_1)
+      const cartItem1 = CartItem.clone(CartItem1())
       cartItem1.title = 'aaa'
 
       // テスト対象実行
@@ -264,10 +267,10 @@ describe('CartStore', () => {
 
     it('余分なプロパティを含んだ場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
-      const cartItem1 = CartItem.clone(CART_ITEM_1)
+      const cartItem1 = CartItem.clone(CartItem1())
 
       // テスト対象実行
       const actual = store.cart.set({
@@ -286,12 +289,12 @@ describe('CartStore', () => {
 
     it('存在しないカートアイテムIDを指定した場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
       // テスト対象実行
       const actual = store.cart.set({
-        ...CART_ITEM_1,
+        ...CartItem1(),
         id: '9999',
       })
 
@@ -302,23 +305,23 @@ describe('CartStore', () => {
   describe('remove', () => {
     it('ベーシックケース', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
       // テスト対象実行
-      const actual = store.cart.remove(CART_ITEM_1.id)!
+      const actual = store.cart.remove(CartItem1().id)!
 
-      expect(actual).toEqual(CART_ITEM_1)
+      expect(actual).toEqual(CartItem1())
       toBeCopyCartItem(store, actual)
     })
 
     it('存在しないカートアイテムIDを指定した場合', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
       // テスト対象実行
-      const actual = store.cart.remove(CART_ITEM_1.id)
+      const actual = store.cart.remove(CartItem1().id)
 
       expect(actual).toBeDefined()
     })
@@ -327,7 +330,7 @@ describe('CartStore', () => {
   describe('clear', () => {
     it('ベーシックケース', () => {
       const { store } = provideDependency(({ store }) => {
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
       })
 
       // テスト対象実行

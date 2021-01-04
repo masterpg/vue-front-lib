@@ -8,6 +8,7 @@ import {
   StorageNodeGetKeyInput,
   StorageNodeGetKeysInput,
   StorageNodeKeyInput,
+  StorageNodeShareSettings,
   StorageNodeShareSettingsInput,
   sortStorageTree,
   storageChildrenSortFunc,
@@ -499,6 +500,14 @@ namespace StorageLogic {
     }
 
     return false
+  }
+
+  export function EmptyShareSettings(): StorageNodeShareSettings {
+    return {
+      isPublic: null,
+      readUIds: null,
+      writeUIds: null,
+    }
   }
 }
 

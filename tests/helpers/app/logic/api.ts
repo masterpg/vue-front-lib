@@ -1,6 +1,6 @@
 import { AuthStatus, UserClaims, UserInfo, UserInfoInput } from '@/app/logic'
 import { APIContainer } from '@/app/logic/api'
-import { APP_ADMIN_TOKEN } from '../data'
+import { AppAdminToken } from '../data'
 import { GQLAPIClient } from '@/app/logic/api/gql/client'
 import { RawUser } from '@/app/logic/api/gql'
 import axios from 'axios'
@@ -116,7 +116,7 @@ namespace TestAPIContainer {
 
     const uploadTestFiles: TestAPIContainer['uploadTestFiles'] = async uploadList => {
       const tokenBackup = await _getTestAuthToken()
-      setTestAuthToken(APP_ADMIN_TOKEN)
+      setTestAuthToken(AppAdminToken())
 
       const _uploadList = uploadList.map(item => ({ ...item, signedUploadUrl: '' }))
 
@@ -155,7 +155,7 @@ namespace TestAPIContainer {
 
     const removeTestDir: TestAPIContainer['removeTestDir'] = async dirPaths => {
       const tokenBackup = await _getTestAuthToken()
-      setTestAuthToken(APP_ADMIN_TOKEN)
+      setTestAuthToken(AppAdminToken())
 
       for (const dirPath of dirPaths) {
         await api.removeStorageDir(dirPath)
@@ -166,7 +166,7 @@ namespace TestAPIContainer {
 
     const removeTestUserDir: TestAPIContainer['removeTestUserDir'] = async user => {
       const tokenBackup = await _getTestAuthToken()
-      setTestAuthToken(APP_ADMIN_TOKEN)
+      setTestAuthToken(AppAdminToken())
 
       await removeTestDir([toUserStorageBasePath(user)])
 
@@ -183,7 +183,7 @@ namespace TestAPIContainer {
 
     const removeTestFiles: TestAPIContainer['removeTestFiles'] = async filePaths => {
       const tokenBackup = await _getTestAuthToken()
-      setTestAuthToken(APP_ADMIN_TOKEN)
+      setTestAuthToken(AppAdminToken())
 
       for (const filePath of filePaths) {
         await api.removeStorageFile(filePath)

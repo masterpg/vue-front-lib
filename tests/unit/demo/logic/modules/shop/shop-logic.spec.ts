@@ -3,7 +3,6 @@ import { TestDemoAPIContainer, provideDependency, toBeCopyCartItem, toBeCopyProd
 import { CartItemEditResponse } from '@/demo/logic/api/base'
 import { InternalAuthLogic } from '@/app/logic/modules/internal'
 import dayjs from 'dayjs'
-import { generateFirestoreId } from '../../../../../helpers/app'
 
 //========================================================================
 //
@@ -11,35 +10,39 @@ import { generateFirestoreId } from '../../../../../helpers/app'
 //
 //========================================================================
 
-const PRODUCTS: Product[] = [
-  { id: 'product1', title: 'iPad 4 Mini', price: 39700, stock: 1, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
-  { id: 'product2', title: 'Fire HD 8 Tablet', price: 8980, stock: 5, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
-  { id: 'product3', title: 'MediaPad 10', price: 26400, stock: 10, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
-  { id: 'product4', title: 'Surface Go', price: 54290, stock: 0, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
-]
+function Products(): Product[] {
+  return [
+    { id: 'product1', title: 'iPad 4 Mini', price: 39700, stock: 1, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
+    { id: 'product2', title: 'Fire HD 8 Tablet', price: 8980, stock: 5, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
+    { id: 'product3', title: 'MediaPad 10', price: 26400, stock: 10, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
+    { id: 'product4', title: 'Surface Go', price: 54290, stock: 0, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
+  ]
+}
 
-const CART_ITEMS: CartItem[] = [
-  {
-    id: 'cartItem1',
-    uid: 'taro.yamada',
-    productId: 'product1',
-    title: 'iPad 4 Mini',
-    price: 39700,
-    quantity: 2,
-    createdAt: dayjs('2020-01-01'),
-    updatedAt: dayjs('2020-01-02'),
-  },
-  {
-    id: 'cartItem2',
-    uid: 'taro.yamada',
-    productId: 'product2',
-    title: 'Fire HD 8 Tablet',
-    price: 8980,
-    quantity: 1,
-    createdAt: dayjs('2020-01-01'),
-    updatedAt: dayjs('2020-01-02'),
-  },
-]
+function CartItems(): CartItem[] {
+  return [
+    {
+      id: 'cartItem1',
+      uid: 'taro.yamada',
+      productId: 'product1',
+      title: 'iPad 4 Mini',
+      price: 39700,
+      quantity: 2,
+      createdAt: dayjs('2020-01-01'),
+      updatedAt: dayjs('2020-01-02'),
+    },
+    {
+      id: 'cartItem2',
+      uid: 'taro.yamada',
+      productId: 'product2',
+      title: 'Fire HD 8 Tablet',
+      price: 8980,
+      quantity: 1,
+      createdAt: dayjs('2020-01-01'),
+      updatedAt: dayjs('2020-01-02'),
+    },
+  ]
+}
 
 //========================================================================
 //
@@ -52,14 +55,14 @@ describe('ShopLogic', () => {
     const { store, logic } = provideDependency(({ api }) => {
       // モック設定
       const getProducts = td.replace<TestDemoAPIContainer, 'getProducts'>(api, 'getProducts')
-      td.when(getProducts()).thenResolve(PRODUCTS)
+      td.when(getProducts()).thenResolve(Products())
     })
 
     // テスト対象実行
     const actual = await logic.shop.fetchProducts()
 
-    expect(actual).toEqual(PRODUCTS)
-    expect(store.product.all.value).toEqual(PRODUCTS)
+    expect(actual).toEqual(Products())
+    expect(store.product.all.value).toEqual(Products())
     toBeCopyProduct(store, actual)
   })
 
@@ -69,14 +72,14 @@ describe('ShopLogic', () => {
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
         const getCartItems = td.replace<TestDemoAPIContainer, 'getCartItems'>(api, 'getCartItems')
-        td.when(getCartItems()).thenResolve(CART_ITEMS)
+        td.when(getCartItems()).thenResolve(CartItems())
       })
 
       // テスト対象実行
       const actual = await logic.shop.fetchCartItems()
 
-      expect(actual).toEqual(CART_ITEMS)
-      expect(store.cart.all.value).toEqual(CART_ITEMS)
+      expect(actual).toEqual(CartItems())
+      expect(store.cart.all.value).toEqual(CartItems())
       toBeCopyCartItem(store, actual)
 
       // validateSignedInの呼び出しを検証
@@ -111,12 +114,12 @@ describe('ShopLogic', () => {
   describe('addItemToCart', () => {
     it('ベーシックケース - 追加', async () => {
       // 現在の商品の在庫数を設定
-      const products = Product.clone(PRODUCTS)
+      const products = Product.clone(Products())
       const product3 = products[2]
       product3.stock = 10
       // API実行後のレスポンスオブジェクト
       const response: CartItemEditResponse = {
-        id: generateFirestoreId(),
+        id: CartItem.generateId(),
         uid: 'taro.yamada',
         productId: product3.id,
         title: product3.title,
@@ -170,11 +173,11 @@ describe('ShopLogic', () => {
 
     it('ベーシックケース - 更新', async () => {
       // 現在の商品の在庫数を設定
-      const products = Product.clone(PRODUCTS)
+      const products = Product.clone(Products())
       const product1 = products[0]
       product1.stock = 10
       // API実行後のレスポンスオブジェクト
-      const cartItem1 = CART_ITEMS[0]
+      const cartItem1 = CartItems()[0]
       expect(cartItem1.productId).toBe(product1.id)
       const response: CartItemEditResponse = {
         ...cartItem1,
@@ -191,7 +194,7 @@ describe('ShopLogic', () => {
       const { api, store, internal, logic } = provideDependency(({ api, store, internal }) => {
         // ストア設定
         store.product.setAll(products)
-        store.cart.setAll(CART_ITEMS)
+        store.cart.setAll(CartItems())
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
         const updateCartItems = td.replace<TestDemoAPIContainer, 'updateCartItems'>(api, 'updateCartItems')
@@ -224,7 +227,7 @@ describe('ShopLogic', () => {
     })
 
     it('在庫が足りなかった場合', async () => {
-      const products = Product.clone(PRODUCTS)
+      const products = Product.clone(Products())
       const product1 = products[0]
       // 現在の商品の在庫数を設定
       product1.stock = 0
@@ -253,12 +256,12 @@ describe('ShopLogic', () => {
     })
 
     it('APIでエラーが発生した場合', async () => {
-      const product1 = PRODUCTS[0]
+      const product1 = Products()[0]
 
       const expected = new Error()
       const { store, logic } = provideDependency(({ api, store, internal }) => {
         // ストア設定
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
         const addCartItems = td.replace<TestDemoAPIContainer, 'addCartItems'>(api, 'addCartItems')
@@ -275,7 +278,7 @@ describe('ShopLogic', () => {
 
       expect(actual).toBe(expected)
       // ストアに変化がないことを検証
-      expect(store.product.all.value).toEqual(PRODUCTS)
+      expect(store.product.all.value).toEqual(Products())
       expect(store.cart.all.value.length).toBe(0)
     })
   })
@@ -283,11 +286,11 @@ describe('ShopLogic', () => {
   describe('removeItemFromCart', () => {
     it('ベーシックケース - 更新', async () => {
       // 現在の商品の在庫数を設定
-      const products = Product.clone(PRODUCTS)
+      const products = Product.clone(Products())
       const product1 = products[0]
       product1.stock = 10
       // 現在のカートの数量を設定
-      const cartItems = CartItem.clone(CART_ITEMS)
+      const cartItems = CartItem.clone(CartItems())
       const cartItem1 = cartItems[0]
       cartItem1.quantity = 2
       // API実行後のレスポンスオブジェクト
@@ -340,11 +343,11 @@ describe('ShopLogic', () => {
 
     it('ベーシックケース - 削除', async () => {
       // 現在の商品の在庫数を設定
-      const products = Product.clone(PRODUCTS)
+      const products = Product.clone(Products())
       const product1 = products[0]
       product1.stock = 10
       // 現在のカートの数量を設定
-      const cartItems = CartItem.clone(CART_ITEMS)
+      const cartItems = CartItem.clone(CartItems())
       const cartItem1 = cartItems[0]
       cartItem1.quantity = 1
       // API実行後のレスポンスオブジェクト
@@ -389,16 +392,16 @@ describe('ShopLogic', () => {
     })
 
     it('APIでエラーが発生した場合', async () => {
-      const product1 = PRODUCTS[0]
+      const product1 = Products()[0]
       // 現在のカートの数量を設定
-      const cartItems = CartItem.clone(CART_ITEMS)
+      const cartItems = CartItem.clone(CartItems())
       const cartItem1 = cartItems[0]
       cartItem1.quantity = 1
 
       const expected = new Error()
       const { store, logic } = provideDependency(({ api, store, internal }) => {
         // ストア設定
-        store.product.setAll(PRODUCTS)
+        store.product.setAll(Products())
         store.cart.setAll(cartItems)
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
@@ -416,7 +419,7 @@ describe('ShopLogic', () => {
 
       expect(actual).toBe(expected)
       // ストアに変化がないことを検証
-      expect(store.product.all.value).toEqual(PRODUCTS)
+      expect(store.product.all.value).toEqual(Products())
       expect(store.cart.all.value).toEqual(cartItems)
     })
   })
@@ -425,8 +428,8 @@ describe('ShopLogic', () => {
     it('ベーシックケース', async () => {
       const { api, logic } = provideDependency(({ api, store, internal }) => {
         // ストア設定
-        store.product.setAll(PRODUCTS)
-        store.cart.setAll(CART_ITEMS)
+        store.product.setAll(Products())
+        store.cart.setAll(CartItems())
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
         const checkoutCart = td.replace<TestDemoAPIContainer, 'checkoutCart'>(api, 'checkoutCart')
@@ -438,15 +441,15 @@ describe('ShopLogic', () => {
 
       td.verify(api.checkoutCart())
       expect(logic.shop.cartItems.value.length).toBe(0)
-      expect(logic.shop.products.value).toEqual(PRODUCTS)
+      expect(logic.shop.products.value).toEqual(Products())
     })
 
     it('APIでエラーが発生した場合', async () => {
       const expected = new Error()
       const { store, logic } = provideDependency(({ api, store, internal }) => {
         // ストア設定
-        store.product.setAll(PRODUCTS)
-        store.cart.setAll(CART_ITEMS)
+        store.product.setAll(Products())
+        store.cart.setAll(CartItems())
         // モック設定
         td.replace<InternalAuthLogic, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
         const checkoutCart = td.replace<TestDemoAPIContainer, 'checkoutCart'>(api, 'checkoutCart')
@@ -463,8 +466,8 @@ describe('ShopLogic', () => {
 
       expect(actual).toBe(expected)
       // ストアに変化がないことを検証
-      expect(store.product.all.value).toEqual(PRODUCTS)
-      expect(store.cart.all.value).toEqual(CART_ITEMS)
+      expect(store.product.all.value).toEqual(Products())
+      expect(store.cart.all.value).toEqual(CartItems())
     })
   })
 })

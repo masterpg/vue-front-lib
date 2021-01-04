@@ -1,6 +1,6 @@
 import { CartItem, Product } from '@/demo/logic'
 import { CartItemEditResponse, RawCartItem, RawProduct } from '@/demo/logic/api/base'
-import { GENERAL_TOKEN } from '../../../../helpers/app'
+import { GeneralToken } from '../../../../helpers/app'
 import dayjs from 'dayjs'
 import { provideDependency } from '../../../../helpers/demo'
 
@@ -10,47 +10,83 @@ import { provideDependency } from '../../../../helpers/demo'
 //
 //========================================================================
 
-const RAW_PRODUCTS: RawProduct[] = [
-  { id: 'product1', title: 'iPad 4 Mini', price: 39700, stock: 1, createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-02T00:00:00.000Z' },
-  { id: 'product2', title: 'Fire HD 8 Tablet', price: 8980, stock: 5, createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-02T00:00:00.000Z' },
-  { id: 'product3', title: 'MediaPad 10', price: 26400, stock: 10, createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-02T00:00:00.000Z' },
-  { id: 'product4', title: 'Surface Go', price: 54290, stock: 0, createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-02T00:00:00.000Z' },
-]
+function RawProducts(): RawProduct[] {
+  return [
+    {
+      id: 'product1',
+      title: 'iPad 4 Mini',
+      price: 39700,
+      stock: 1,
+      createdAt: '2020-01-01T00:00:00.000Z',
+      updatedAt: '2020-01-02T00:00:00.000Z',
+    },
+    {
+      id: 'product2',
+      title: 'Fire HD 8 Tablet',
+      price: 8980,
+      stock: 5,
+      createdAt: '2020-01-01T00:00:00.000Z',
+      updatedAt: '2020-01-02T00:00:00.000Z',
+    },
+    {
+      id: 'product3',
+      title: 'MediaPad 10',
+      price: 26400,
+      stock: 10,
+      createdAt: '2020-01-01T00:00:00.000Z',
+      updatedAt: '2020-01-02T00:00:00.000Z',
+    },
+    {
+      id: 'product4',
+      title: 'Surface Go',
+      price: 54290,
+      stock: 0,
+      createdAt: '2020-01-01T00:00:00.000Z',
+      updatedAt: '2020-01-02T00:00:00.000Z',
+    },
+  ]
+}
 
-const PRODUCTS: Product[] = RAW_PRODUCTS.map(rawProduct => ({
-  ...rawProduct,
-  createdAt: dayjs(rawProduct.createdAt),
-  updatedAt: dayjs(rawProduct.updatedAt),
-}))
+function Products(): Product[] {
+  return RawProducts().map(rawProduct => ({
+    ...rawProduct,
+    createdAt: dayjs(rawProduct.createdAt),
+    updatedAt: dayjs(rawProduct.updatedAt),
+  }))
+}
 
-const RAW_CART_ITEMS: RawCartItem[] = [
-  {
-    id: 'cartItem1',
-    uid: GENERAL_TOKEN.uid,
-    productId: 'product1',
-    title: 'iPad 4 Mini',
-    price: 39700,
-    quantity: 2,
-    createdAt: '2020-01-01T00:00:00.000Z',
-    updatedAt: '2020-01-02T00:00:00.000Z',
-  },
-  {
-    id: 'cartItem2',
-    uid: GENERAL_TOKEN.uid,
-    productId: 'product2',
-    title: 'Fire HD 8 Tablet',
-    price: 8980,
-    quantity: 1,
-    createdAt: '2020-01-01T00:00:00.000Z',
-    updatedAt: '2020-01-02T00:00:00.000Z',
-  },
-]
+function RawCartItems(): RawCartItem[] {
+  return [
+    {
+      id: 'cartItem1',
+      uid: GeneralToken().uid,
+      productId: 'product1',
+      title: 'iPad 4 Mini',
+      price: 39700,
+      quantity: 2,
+      createdAt: '2020-01-01T00:00:00.000Z',
+      updatedAt: '2020-01-02T00:00:00.000Z',
+    },
+    {
+      id: 'cartItem2',
+      uid: GeneralToken().uid,
+      productId: 'product2',
+      title: 'Fire HD 8 Tablet',
+      price: 8980,
+      quantity: 1,
+      createdAt: '2020-01-01T00:00:00.000Z',
+      updatedAt: '2020-01-02T00:00:00.000Z',
+    },
+  ]
+}
 
-const CART_ITEMS: CartItem[] = RAW_CART_ITEMS.map(rawCartItem => ({
-  ...rawCartItem,
-  createdAt: dayjs(rawCartItem.createdAt),
-  updatedAt: dayjs(rawCartItem.updatedAt),
-}))
+function CartItems(): CartItem[] {
+  return RawCartItems().map(rawCartItem => ({
+    ...rawCartItem,
+    createdAt: dayjs(rawCartItem.createdAt),
+    updatedAt: dayjs(rawCartItem.updatedAt),
+  }))
+}
 
 //========================================================================
 //
@@ -68,9 +104,9 @@ describe('DemoAPIContainer', () => {
   describe('getProduct', () => {
     it('ベーシックケース', async () => {
       const { api } = provideDependency()
-      await api.putTestStoreData([{ collectionName: 'products', collectionRecords: RAW_PRODUCTS }])
+      await api.putTestStoreData([{ collectionName: 'products', collectionRecords: RawProducts() }])
 
-      const product1 = PRODUCTS[0]
+      const product1 = Products()[0]
 
       // テスト対象実行
       const actual = await api.getProduct(product1.id)
@@ -82,19 +118,19 @@ describe('DemoAPIContainer', () => {
   describe('getProducts', () => {
     it('ベーシックケース - 引数なし', async () => {
       const { api } = provideDependency()
-      await api.putTestStoreData([{ collectionName: 'products', collectionRecords: RAW_PRODUCTS }])
+      await api.putTestStoreData([{ collectionName: 'products', collectionRecords: RawProducts() }])
 
       // テスト対象実行
       const actual = await api.getProducts()
 
-      expect(actual).toMatchObject(PRODUCTS)
+      expect(actual).toMatchObject(Products())
     })
 
     it('ベーシックケース - 引数あり', async () => {
       const { api } = provideDependency()
-      await api.putTestStoreData([{ collectionName: 'products', collectionRecords: RAW_PRODUCTS }])
+      await api.putTestStoreData([{ collectionName: 'products', collectionRecords: RawProducts() }])
 
-      const [product1, product2] = PRODUCTS
+      const [product1, product2] = Products()
 
       // テスト対象実行
       const actual = await api.getProducts([product1.id, product2.id])
@@ -105,10 +141,10 @@ describe('DemoAPIContainer', () => {
 
   it('getCartItem', async () => {
     const { api } = provideDependency()
-    await api.putTestStoreData([{ collectionName: 'cart', collectionRecords: RAW_CART_ITEMS }])
+    await api.putTestStoreData([{ collectionName: 'cart', collectionRecords: RawCartItems() }])
 
-    api.setTestAuthToken(GENERAL_TOKEN)
-    const cartItem1 = CART_ITEMS[0]
+    api.setTestAuthToken(GeneralToken())
+    const cartItem1 = CartItems()[0]
 
     // テスト対象実行
     const actual = await api.getCartItem(cartItem1.id)
@@ -119,22 +155,22 @@ describe('DemoAPIContainer', () => {
   describe('getCartItems', () => {
     it('ベーシックケース - 引数なし', async () => {
       const { api } = provideDependency()
-      await api.putTestStoreData([{ collectionName: 'cart', collectionRecords: RAW_CART_ITEMS }])
+      await api.putTestStoreData([{ collectionName: 'cart', collectionRecords: RawCartItems() }])
 
-      api.setTestAuthToken(GENERAL_TOKEN)
+      api.setTestAuthToken(GeneralToken())
 
       // テスト対象実行
       const actual = await api.getCartItems()
 
-      expect(actual).toMatchObject(CART_ITEMS)
+      expect(actual).toMatchObject(CartItems())
     })
 
     it('ベーシックケース - 引数あり', async () => {
       const { api } = provideDependency()
-      await api.putTestStoreData([{ collectionName: 'cart', collectionRecords: RAW_CART_ITEMS }])
+      await api.putTestStoreData([{ collectionName: 'cart', collectionRecords: RawCartItems() }])
 
-      api.setTestAuthToken(GENERAL_TOKEN)
-      const [cartItem1, cartItem2] = CART_ITEMS
+      api.setTestAuthToken(GeneralToken())
+      const [cartItem1, cartItem2] = CartItems()
 
       // テスト対象実行
       const actual = await api.getCartItems([cartItem1.id, cartItem2.id])
@@ -147,12 +183,12 @@ describe('DemoAPIContainer', () => {
     it('ベーシックケース', async () => {
       const { api } = provideDependency()
       await api.putTestStoreData([
-        { collectionName: 'products', collectionRecords: RAW_PRODUCTS },
-        { collectionName: 'cart', collectionRecords: RAW_CART_ITEMS },
+        { collectionName: 'products', collectionRecords: RawProducts() },
+        { collectionName: 'cart', collectionRecords: RawCartItems() },
       ])
 
-      api.setTestAuthToken(GENERAL_TOKEN)
-      const product3 = PRODUCTS[2]
+      api.setTestAuthToken(GeneralToken())
+      const product3 = Products()[2]
       const now = dayjs()
 
       // テスト対象実行
@@ -167,7 +203,7 @@ describe('DemoAPIContainer', () => {
 
       expect(actual.length).toBe(1)
       expect(actual[0]).toMatchObject({
-        uid: GENERAL_TOKEN.uid,
+        uid: GeneralToken().uid,
         productId: product3.id,
         title: product3.title,
         price: product3.price,
@@ -187,13 +223,13 @@ describe('DemoAPIContainer', () => {
     it('ベーシックケース', async () => {
       const { api } = provideDependency()
       await api.putTestStoreData([
-        { collectionName: 'products', collectionRecords: RAW_PRODUCTS },
-        { collectionName: 'cart', collectionRecords: RAW_CART_ITEMS },
+        { collectionName: 'products', collectionRecords: RawProducts() },
+        { collectionName: 'cart', collectionRecords: RawCartItems() },
       ])
 
-      api.setTestAuthToken(GENERAL_TOKEN)
-      const product1 = PRODUCTS[0]
-      const cartItem1 = CART_ITEMS[0]
+      api.setTestAuthToken(GeneralToken())
+      const product1 = Products()[0]
+      const cartItem1 = CartItems()[0]
       const now = dayjs()
 
       // テスト対象実行
@@ -226,13 +262,13 @@ describe('DemoAPIContainer', () => {
     it('ベーシックケース', async () => {
       const { api } = provideDependency()
       await api.putTestStoreData([
-        { collectionName: 'products', collectionRecords: RAW_PRODUCTS },
-        { collectionName: 'cart', collectionRecords: RAW_CART_ITEMS },
+        { collectionName: 'products', collectionRecords: RawProducts() },
+        { collectionName: 'cart', collectionRecords: RawCartItems() },
       ])
 
-      api.setTestAuthToken(GENERAL_TOKEN)
-      const product1 = PRODUCTS[0]
-      const cartItem1 = CART_ITEMS[0]
+      api.setTestAuthToken(GeneralToken())
+      const product1 = Products()[0]
+      const cartItem1 = CartItems()[0]
       const now = dayjs()
 
       // テスト対象実行
@@ -260,11 +296,11 @@ describe('DemoAPIContainer', () => {
     it('ベーシックケース', async () => {
       const { api } = provideDependency()
       await api.putTestStoreData([
-        { collectionName: 'products', collectionRecords: RAW_PRODUCTS },
-        { collectionName: 'cart', collectionRecords: RAW_CART_ITEMS },
+        { collectionName: 'products', collectionRecords: RawProducts() },
+        { collectionName: 'cart', collectionRecords: RawCartItems() },
       ])
 
-      api.setTestAuthToken(GENERAL_TOKEN)
+      api.setTestAuthToken(GeneralToken())
 
       // テスト対象実行
       const actual = await api.checkoutCart()

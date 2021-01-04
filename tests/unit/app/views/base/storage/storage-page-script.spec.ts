@@ -1,12 +1,6 @@
 import { ArticleStorageLogic, StorageLogic } from '@/app/logic/modules/storage'
 import { CreateArticleTypeDirInput, StorageArticleNodeType, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/logic'
-import {
-  EMPTY_SHARE_SETTINGS,
-  NewTestStorageNodeData,
-  TestLogicContainer,
-  newTestStorageDirNode,
-  newTestStorageFileNode,
-} from '../../../../../helpers/app'
+import { NewTestStorageNodeData, TestLogicContainer, newStorageDirNode, newStorageFileNode } from '../../../../../helpers/app'
 import { Ref, ref } from '@vue/composition-api'
 import { StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/storage/base'
 import { TreeNode, TreeView, TreeViewImpl } from '@/app/components/tree-view'
@@ -20,6 +14,7 @@ import { mount } from '@vue/test-utils'
 import { shuffleArray } from 'web-base-lib'
 import { useConfig } from '@/app/config'
 import { useI18n } from '@/app/i18n'
+const { EmptyShareSettings } = StorageLogic
 
 //========================================================================
 //
@@ -123,7 +118,7 @@ function verifyParentChildRelationForNode(node: TreeNode) {
  * @param data
  */
 function newTreeDirNodeInput(dirPath: string, data?: NewTreeDirNodeInputData): StorageTreeNodeInput {
-  return Object.assign(newTestStorageDirNode(dirPath, data), {
+  return Object.assign(newStorageDirNode(dirPath, data), {
     opened: data?.opened,
     lazyLoadStatus: data?.lazyLoadStatus,
   })
@@ -135,7 +130,7 @@ function newTreeDirNodeInput(dirPath: string, data?: NewTreeDirNodeInputData): S
  * @param data
  */
 function newTreeFileNodeInput(filePath: string, data?: NewTreeFileNodeInputData): StorageTreeNodeInput {
-  return Object.assign(newTestStorageFileNode(filePath, data), {})
+  return Object.assign(newStorageFileNode(filePath, data), {})
 }
 
 function cloneTreeNodeInput(source: StorageTreeNodeInput, input: Partial<StorageTreeNodeInput>): StorageTreeNodeInput {
@@ -193,27 +188,27 @@ function newListBundleFamilyNodes() {
   const config = useConfig()
   const articleFileName = config.storage.article.fileName
 
-  const blog = newTestStorageDirNode(`${StorageNode.generateId()}`, {
+  const blog = newStorageDirNode(`${StorageNode.generateId()}`, {
     articleNodeName: 'ブログ',
     articleNodeType: StorageArticleNodeType.ListBundle,
     articleSortOrder: 1,
   })
 
-  const art2 = newTestStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
+  const art2 = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
     articleNodeName: '記事2',
     articleNodeType: StorageArticleNodeType.Article,
     articleSortOrder: 2,
   })
 
-  const art2_index = newTestStorageDirNode(`${art2.path}/${articleFileName}`)
+  const art2_index = newStorageDirNode(`${art2.path}/${articleFileName}`)
 
-  const art1 = newTestStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
+  const art1 = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
     articleNodeName: '記事1',
     articleNodeType: StorageArticleNodeType.Article,
     articleSortOrder: 1,
   })
 
-  const art1_index = newTestStorageDirNode(`${art1.path}/${articleFileName}`)
+  const art1_index = newStorageDirNode(`${art1.path}/${articleFileName}`)
 
   return { blog, art2, art2_index, art1, art1_index }
 }
@@ -233,33 +228,33 @@ function newCategoryBundleFamilyNodes() {
   const config = useConfig()
   const articleFileName = config.storage.article.fileName
 
-  const programming = newTestStorageDirNode(`${StorageNode.generateId()}`, {
+  const programming = newStorageDirNode(`${StorageNode.generateId()}`, {
     articleNodeName: 'プログラミング',
     articleNodeType: StorageArticleNodeType.CategoryBundle,
     articleSortOrder: 1,
   })
 
-  const ts = newTestStorageDirNode(`${programming.path}/${StorageNode.generateId()}`, {
+  const ts = newStorageDirNode(`${programming.path}/${StorageNode.generateId()}`, {
     articleNodeName: 'TypeScript',
     articleNodeType: StorageArticleNodeType.Category,
     articleSortOrder: 1,
   })
 
-  const variable = newTestStorageDirNode(`${ts.path}/${StorageNode.generateId()}`, {
+  const variable = newStorageDirNode(`${ts.path}/${StorageNode.generateId()}`, {
     articleNodeName: '変数',
     articleNodeType: StorageArticleNodeType.Article,
     articleSortOrder: 2,
   })
 
-  const variable_index = newTestStorageDirNode(`${variable.path}/${articleFileName}`)
+  const variable_index = newStorageDirNode(`${variable.path}/${articleFileName}`)
 
-  const clazz = newTestStorageDirNode(`${ts.path}/${StorageNode.generateId()}`, {
+  const clazz = newStorageDirNode(`${ts.path}/${StorageNode.generateId()}`, {
     articleNodeName: 'クラス',
     articleNodeType: StorageArticleNodeType.Article,
     articleSortOrder: 1,
   })
 
-  const clazz_index = newTestStorageDirNode(`${clazz.path}/${articleFileName}`)
+  const clazz_index = newStorageDirNode(`${clazz.path}/${articleFileName}`)
 
   return { programming, ts, variable, variable_index, clazz, clazz_index }
 }
@@ -1413,8 +1408,8 @@ describe('StoragePageLogic', () => {
       // └d2
       const d1 = newTreeDirNodeInput(`d1`, { lazyLoadStatus: 'none' })
       const d11 = newTreeDirNodeInput(`d1/d11`, { lazyLoadStatus: 'none' })
-      const f111 = newTestStorageFileNode(`d1/d11/f111.txt`)
-      const f112 = newTestStorageFileNode(`d1/d11/f112.txt`)
+      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
+      const f112 = newStorageFileNode(`d1/d11/f112.txt`)
       const d12 = newTreeDirNodeInput(`d1/d12`, { lazyLoadStatus: 'none' })
       const d2 = newTreeDirNodeInput(`d2`, { lazyLoadStatus: 'none' })
       pageLogic.setAllTreeNodes([d1, d11, f111, d12, d2])
@@ -2889,10 +2884,12 @@ describe('StoragePageLogic', () => {
   })
 
   describe('setStorageNodeShareSettings', () => {
-    const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
-      isPublic: true,
-      readUIds: ['ichiro'],
-      writeUIds: ['ichiro'],
+    const InitialShareSettings = () => {
+      return {
+        isPublic: true,
+        readUIds: ['ichiro'],
+        writeUIds: ['ichiro'],
+      } as StorageNodeShareSettings
     }
 
     it('ベーシックケース', async () => {
@@ -2915,28 +2912,28 @@ describe('StoragePageLogic', () => {
 
       // モック設定
       {
-        const to_d1 = cloneTreeNodeInput(d1, { share: NEW_SHARE_SETTINGS })
-        const to_fileB = cloneTreeNodeInput(fileB, { share: NEW_SHARE_SETTINGS })
+        const to_d1 = cloneTreeNodeInput(d1, { share: InitialShareSettings() })
+        const to_fileB = cloneTreeNodeInput(fileB, { share: InitialShareSettings() })
 
         td.when(storageLogic.sgetNode({ path: `dA/d1` })).thenReturn(toStorageNode(d1))
         td.when(storageLogic.sgetNode({ path: `dA/fileB.txt` })).thenReturn(toStorageNode(fileB))
 
-        td.when(storageLogic.setDirShareSettings(to_d1.path, NEW_SHARE_SETTINGS)).thenResolve(toStorageNode(to_d1))
-        td.when(storageLogic.setFileShareSettings(to_fileB.path, NEW_SHARE_SETTINGS)).thenResolve(toStorageNode(to_fileB))
+        td.when(storageLogic.setDirShareSettings(to_d1.path, InitialShareSettings())).thenResolve(toStorageNode(to_d1))
+        td.when(storageLogic.setFileShareSettings(to_fileB.path, InitialShareSettings())).thenResolve(toStorageNode(to_fileB))
       }
 
       // 'dA/d1'と'dA/fileB.txt'に共有設定
-      await pageLogic.setStorageNodeShareSettings([`dA/d1`, `dA/fileB.txt`], NEW_SHARE_SETTINGS)
+      await pageLogic.setStorageNodeShareSettings([`dA/d1`, `dA/fileB.txt`], InitialShareSettings())
 
       const _dA = pageLogic.getTreeNode(`dA`)!
       const _dA_descendants = _dA.getDescendants()
       const [_d1, _d11, _fileA, _fileB, _fileC] = _dA_descendants
       expect(_dA_descendants.length).toBe(5)
-      expect(_d1.share).toEqual(NEW_SHARE_SETTINGS)
-      expect(_d11.share).toEqual(EMPTY_SHARE_SETTINGS)
-      expect(_fileA.share).toEqual(EMPTY_SHARE_SETTINGS)
-      expect(_fileB.share).toEqual(NEW_SHARE_SETTINGS)
-      expect(_fileC.share).toEqual(EMPTY_SHARE_SETTINGS)
+      expect(_d1.share).toEqual(InitialShareSettings())
+      expect(_d11.share).toEqual(EmptyShareSettings())
+      expect(_fileA.share).toEqual(EmptyShareSettings())
+      expect(_fileB.share).toEqual(InitialShareSettings())
+      expect(_fileC.share).toEqual(EmptyShareSettings())
 
       verifyParentChildRelationForTree(treeView)
     })
@@ -2950,7 +2947,7 @@ describe('StoragePageLogic', () => {
 
       let actual!: Error
       try {
-        await pageLogic.setStorageNodeShareSettings([``], NEW_SHARE_SETTINGS)
+        await pageLogic.setStorageNodeShareSettings([``], InitialShareSettings())
       } catch (err) {
         actual = err
       }
@@ -2969,7 +2966,7 @@ describe('StoragePageLogic', () => {
 
       let actual!: Error
       try {
-        await pageLogic.setStorageNodeShareSettings([`dXXX`], NEW_SHARE_SETTINGS)
+        await pageLogic.setStorageNodeShareSettings([`dXXX`], InitialShareSettings())
       } catch (err) {
         actual = err
       }
@@ -2997,19 +2994,19 @@ describe('StoragePageLogic', () => {
 
       // モック設定
       {
-        const to_d1 = cloneTreeNodeInput(d1, { share: NEW_SHARE_SETTINGS })
-        const to_fileB = cloneTreeNodeInput(fileB, { share: NEW_SHARE_SETTINGS })
+        const to_d1 = cloneTreeNodeInput(d1, { share: InitialShareSettings() })
+        const to_fileB = cloneTreeNodeInput(fileB, { share: InitialShareSettings() })
 
         td.when(storageLogic.sgetNode({ path: `dA/d1` })).thenReturn(toStorageNode(d1))
         td.when(storageLogic.sgetNode({ path: `dA/fileB.txt` })).thenReturn(toStorageNode(fileB))
 
         // 'dA/d1'の共有設定でAPIエラーを発生させる
-        td.when(storageLogic.setDirShareSettings(to_d1.path, NEW_SHARE_SETTINGS)).thenReject(new Error())
-        td.when(storageLogic.setFileShareSettings(to_fileB.path, NEW_SHARE_SETTINGS)).thenResolve(toStorageNode(to_fileB))
+        td.when(storageLogic.setDirShareSettings(to_d1.path, InitialShareSettings())).thenReject(new Error())
+        td.when(storageLogic.setFileShareSettings(to_fileB.path, InitialShareSettings())).thenResolve(toStorageNode(to_fileB))
       }
 
       // 'dA/d1'と'dA/fileB.txt'に共有設定
-      await pageLogic.setStorageNodeShareSettings([`dA/d1`, `dA/fileB.txt`], NEW_SHARE_SETTINGS)
+      await pageLogic.setStorageNodeShareSettings([`dA/d1`, `dA/fileB.txt`], InitialShareSettings())
 
       // root
       // └dA
@@ -3022,11 +3019,11 @@ describe('StoragePageLogic', () => {
       const _dA_descendants = _dA.getDescendants()
       const [_d1, _d11, _fileA, _fileB, _fileC] = _dA_descendants
       expect(_dA_descendants.length).toBe(5)
-      expect(_d1.share).toEqual(EMPTY_SHARE_SETTINGS)
-      expect(_d11.share).toEqual(EMPTY_SHARE_SETTINGS)
-      expect(_fileA.share).toEqual(EMPTY_SHARE_SETTINGS)
-      expect(_fileB.share).toEqual(NEW_SHARE_SETTINGS)
-      expect(_fileC.share).toEqual(EMPTY_SHARE_SETTINGS)
+      expect(_d1.share).toEqual(EmptyShareSettings())
+      expect(_d11.share).toEqual(EmptyShareSettings())
+      expect(_fileA.share).toEqual(EmptyShareSettings())
+      expect(_fileB.share).toEqual(InitialShareSettings())
+      expect(_fileC.share).toEqual(EmptyShareSettings())
 
       verifyParentChildRelationForTree(treeView)
     })
@@ -3043,18 +3040,18 @@ describe('StoragePageLogic', () => {
 
       // モック設定
       {
-        const to_d1 = cloneTreeNodeInput(d1, { share: NEW_SHARE_SETTINGS })
-        const to_f1 = cloneTreeNodeInput(f1, { share: NEW_SHARE_SETTINGS })
+        const to_d1 = cloneTreeNodeInput(d1, { share: InitialShareSettings() })
+        const to_f1 = cloneTreeNodeInput(f1, { share: InitialShareSettings() })
 
         td.when(storageLogic.sgetNode({ path: `d1` })).thenReturn(toStorageNode(d1))
         td.when(storageLogic.sgetNode({ path: `f1.txt` })).thenReturn(toStorageNode(f1))
 
-        td.when(storageLogic.setDirShareSettings(to_d1.path, NEW_SHARE_SETTINGS)).thenResolve(toStorageNode(to_d1))
-        td.when(storageLogic.setFileShareSettings(to_f1.path, NEW_SHARE_SETTINGS)).thenResolve(toStorageNode(to_f1))
+        td.when(storageLogic.setDirShareSettings(to_d1.path, InitialShareSettings())).thenResolve(toStorageNode(to_d1))
+        td.when(storageLogic.setFileShareSettings(to_f1.path, InitialShareSettings())).thenResolve(toStorageNode(to_f1))
       }
 
       // 'd1'と'f1.txt'に共有設定
-      await pageLogic.setStorageNodeShareSettings([`d1`, `f1.txt`], NEW_SHARE_SETTINGS)
+      await pageLogic.setStorageNodeShareSettings([`d1`, `f1.txt`], InitialShareSettings())
 
       // root
       // ├d1
@@ -3062,7 +3059,7 @@ describe('StoragePageLogic', () => {
       const _descendants = pageLogic.getRootTreeNode().getDescendants()
       const [_d1] = _descendants
       expect(_descendants.length).toBe(1)
-      expect(_d1.share).toEqual(NEW_SHARE_SETTINGS)
+      expect(_d1.share).toEqual(InitialShareSettings())
 
       verifyParentChildRelationForTree(treeView)
     })
@@ -3088,7 +3085,7 @@ describe('StoragePageLogic', () => {
         articleNodeName: 'バンドル2',
         articleSortOrder: 1,
       })
-      const assets = newTestStorageDirNode(`${config.storage.article.assetsName}`)
+      const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
       pageLogic.setAllTreeNodes([bundle1, bundle2, assets])
 
       // モック設定
@@ -3137,7 +3134,7 @@ describe('StoragePageLogic', () => {
         articleNodeName: 'バンドル2',
         articleSortOrder: 1,
       })
-      const assets = newTestStorageDirNode(`${config.storage.article.assetsName}`)
+      const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
       pageLogic.setAllTreeNodes([bundle1, bundle2, assets])
 
       // モック設定
@@ -3319,7 +3316,7 @@ describe('StoragePageLogic', () => {
 
       // root
       // └d1 ← 対象ノードに指定
-      const d1 = newTestStorageDirNode(`d1`)
+      const d1 = newStorageDirNode(`d1`)
 
       const actual = pageLogic.getDisplayNodeName(d1)
 
@@ -3346,7 +3343,7 @@ describe('StoragePageLogic', () => {
       // ├ブログ
       // │└記事1
       // └アセット ← 対象ノードに指定
-      const assets = newTestStorageDirNode(`${config.storage.article.assetsName}`)
+      const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
 
       const actual = pageLogic.getDisplayNodeName(assets)
 
@@ -3362,7 +3359,7 @@ describe('StoragePageLogic', () => {
       // ├ブログ
       // │└記事1
       // └アセット ← 対象ノードに指定
-      const assets = newTestStorageDirNode(`${config.storage.article.assetsName}`)
+      const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
 
       const actual = pageLogic.getDisplayNodeName(assets)
 
@@ -3377,8 +3374,8 @@ describe('StoragePageLogic', () => {
       // root
       // └d1
       //   └fileA.txt ← 対象ノードに指定
-      const d1 = newTestStorageDirNode(`d1`)
-      const fileA = newTestStorageFileNode(`d1/fileA.txt`)
+      const d1 = newStorageDirNode(`d1`)
+      const fileA = newStorageFileNode(`d1/fileA.txt`)
 
       // モック設定
       td.when(storageLogic.getNode({ path: `${fileA.path}` })).thenReturn(fileA)
@@ -3413,7 +3410,7 @@ describe('StoragePageLogic', () => {
 
       // root
       // └d1 ← 対象ノードに指定
-      const d1 = newTestStorageDirNode(`d1`)
+      const d1 = newStorageDirNode(`d1`)
 
       const actual = pageLogic.getNodeIcon(d1)
 
@@ -3438,7 +3435,7 @@ describe('StoragePageLogic', () => {
 
       // articles
       // └アセット ← 対象ノードに指定
-      const assets = newTestStorageDirNode(`${config.storage.article.assetsName}`)
+      const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
 
       const actual = pageLogic.getNodeIcon(assets)
 
@@ -3451,7 +3448,7 @@ describe('StoragePageLogic', () => {
 
       // articles
       // └アセット ← 対象ノードに指定
-      const assets = newTestStorageDirNode(`${config.storage.article.assetsName}`)
+      const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
 
       const actual = pageLogic.getNodeIcon(assets)
 
@@ -3462,7 +3459,7 @@ describe('StoragePageLogic', () => {
   describe('getNodeTypeLabel', () => {
     it('一般ディレクトリの場合', () => {
       const { pageLogic } = newStoragePageLogic()
-      const d1 = newTestStorageDirNode(`d1`)
+      const d1 = newStorageDirNode(`d1`)
 
       const actual = pageLogic.getNodeTypeLabel(d1)
 
@@ -3480,7 +3477,7 @@ describe('StoragePageLogic', () => {
 
     it('ファイルの場合', () => {
       const { pageLogic } = newStoragePageLogic()
-      const fileA = newTestStorageFileNode('fileA.txt')
+      const fileA = newStorageFileNode('fileA.txt')
 
       const actual = pageLogic.getNodeTypeLabel(fileA)
 
@@ -3497,7 +3494,7 @@ describe('StoragePageLogic', () => {
       // ├ブログ
       // │└記事1
       // └アセット ← 対象ノードに指定
-      const assets = newTestStorageDirNode(`${config.storage.article.assetsName}`)
+      const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
 
       // モック設定
       td.when(storageLogic.getNode({ path: `${assets.path}` })).thenReturn(assets)
@@ -3516,7 +3513,7 @@ describe('StoragePageLogic', () => {
       // │└記事1
       // └アセット ← 対象ノードに指定
       const { blog } = newListBundleFamilyNodes()
-      const assets = newTestStorageDirNode(`${config.storage.article.assetsName}`)
+      const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
 
       // モック設定
       td.when(storageLogic.getNode({ path: `${blog.path}` })).thenReturn(blog)
@@ -3720,8 +3717,8 @@ describe('StoragePageLogic', () => {
       //     └images
       //       └img1.png ← 対象ノードに指定
       const { art1 } = newListBundleFamilyNodes()
-      const images = newTestStorageDirNode(`${art1.path}/images`)
-      const img1 = newTestStorageFileNode(`${images.path}/img1.png`)
+      const images = newStorageDirNode(`${art1.path}/images`)
+      const img1 = newStorageFileNode(`${images.path}/img1.png`)
 
       // モック設定
       td.when(storageLogic.getNode({ path: `${img1.path}` })).thenReturn(img1)
@@ -3742,8 +3739,8 @@ describe('StoragePageLogic', () => {
       //     └memo.txt ← 対象ノードに指定 ※祖先に記事がない
       // ※リストバンドル配下に`tmp`のような一般ディレクトリは作成できない。テスト用に作成。
       const { blog } = newListBundleFamilyNodes()
-      const tmp = newTestStorageDirNode(`${blog.path}/tmp`)
-      const memo = newTestStorageFileNode(`${tmp.path}/memo.txt`)
+      const tmp = newStorageDirNode(`${blog.path}/tmp`)
+      const memo = newStorageFileNode(`${tmp.path}/memo.txt`)
 
       // モック設定
       td.when(storageLogic.getNode({ path: `${memo.path}` })).thenReturn(memo)

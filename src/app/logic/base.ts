@@ -305,6 +305,10 @@ function generateEntityId(entityName: string): string {
 }
 
 namespace UserInfo {
+  export function generateId(): string {
+    return generateEntityId(Entities.Users.Name)
+  }
+
   export function populate(from: DeepPartial<DeepReadonly<UserInfo>>, to: DeepPartial<UserInfo>): UserInfo {
     if (typeof from.id === 'string') to.id = from.id
     if (typeof from.email === 'string') to.email = from.email

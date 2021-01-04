@@ -1,10 +1,10 @@
 import {
-  GENERAL_TOKEN,
+  GeneralToken,
   TestUserStorageLogic,
-  cloneTestStorageNode,
+  cloneStorageNode,
   mockStorageLogicAPIMethods,
-  newTestStorageDirNode,
-  newTestStorageFileNode,
+  newStorageDirNode,
+  newStorageFileNode,
   provideDependency,
 } from '../../../../../helpers/app'
 import { StorageArticleNodeType, StorageNode } from '@/app/logic'
@@ -31,13 +31,13 @@ describe('AppStorageLogic', () => {
     provideDependency(({ logic }) => {
       // ベースパスをモック化
       const config = useConfig()
-      basePath = _path.join(config.storage.user.rootName, GENERAL_TOKEN.uid, config.storage.article.rootName)
+      basePath = _path.join(config.storage.user.rootName, GeneralToken().uid, config.storage.article.rootName)
       logic.articleStorage.basePath.value = basePath
       // ベースパスノードの作成
-      users = newTestStorageDirNode(`${config.storage.user.rootName}`)
-      user = newTestStorageDirNode(`${users.path}/${GENERAL_TOKEN.uid}`)
-      articles = newTestStorageDirNode(`${user.path}/${config.storage.article.rootName}`)
-      assets = newTestStorageDirNode(`${articles.path}/${config.storage.article.assetsName}`)
+      users = newStorageDirNode(`${config.storage.user.rootName}`)
+      user = newStorageDirNode(`${users.path}/${GeneralToken().uid}`)
+      articles = newStorageDirNode(`${user.path}/${config.storage.article.rootName}`)
+      assets = newStorageDirNode(`${articles.path}/${config.storage.article.assetsName}`)
       // ロジックのAPI系メソッドをモック化
       mockStorageLogicAPIMethods(logic)
       // ショートハンド用変数にメソッドを設定
@@ -93,7 +93,7 @@ describe('AppStorageLogic', () => {
 
   describe('renameDir', () => {
     it('ベーシックケース - 記事系ノード', async () => {
-      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
+      const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         version: 1,
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.CategoryBundle,
@@ -106,7 +106,7 @@ describe('AppStorageLogic', () => {
       })
 
       // モック設定
-      const renamed_bundle = cloneTestStorageNode(bundle, { articleNodeName: `Bundle`, version: bundle.version + 1 })
+      const renamed_bundle = cloneStorageNode(bundle, { articleNodeName: `Bundle`, version: bundle.version + 1 })
       td.when(articleStorage.renameArticleNodeAPI(bundle.path, bundle.articleNodeName!)).thenResolve(renamed_bundle)
 
       // テスト対象実行
@@ -138,7 +138,7 @@ describe('AppStorageLogic', () => {
     })
 
     it('ベーシックケース - 一般ノード', async () => {
-      const d1 = newTestStorageDirNode(`${assets.path}/d1`)
+      const d1 = newStorageDirNode(`${assets.path}/d1`)
       const {
         logic: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -146,7 +146,7 @@ describe('AppStorageLogic', () => {
       })
 
       // モック設定
-      const renamed_x1 = cloneTestStorageNode(d1, { name: `x1`, path: `${assets.path}/x1`, version: d1.version + 1 })
+      const renamed_x1 = cloneStorageNode(d1, { name: `x1`, path: `${assets.path}/x1`, version: d1.version + 1 })
       td.when(articleStorage.getNodesAPI({ ids: [renamed_x1.id] })).thenResolve([renamed_x1])
 
       // テスト対象実行
@@ -184,7 +184,7 @@ describe('AppStorageLogic', () => {
 
   describe('renameFile', () => {
     it('ベーシックケース - 一般ノード', async () => {
-      const f1 = newTestStorageFileNode(`${assets.path}/f1.txt`)
+      const f1 = newStorageFileNode(`${assets.path}/f1.txt`)
       const {
         logic: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -192,7 +192,7 @@ describe('AppStorageLogic', () => {
       })
 
       // モック設定
-      const renamed_x1 = cloneTestStorageNode(f1, { name: `x1.txt`, path: `${assets.path}/x1.txt`, version: f1.version + 1 })
+      const renamed_x1 = cloneStorageNode(f1, { name: `x1.txt`, path: `${assets.path}/x1.txt`, version: f1.version + 1 })
       td.when(articleStorage.renameFileAPI(f1.path, 'x1.txt')).thenResolve(renamed_x1)
 
       // テスト対象実行
@@ -227,22 +227,22 @@ describe('AppStorageLogic', () => {
 
   describe('createDir', () => {
     it('ベーシックケース', async () => {
-      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
+      const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleSortOrder: 1,
       })
-      const cat1 = newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
+      const cat1 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'カテゴリ1',
         articleNodeType: StorageArticleNodeType.Category,
         articleSortOrder: 1,
       })
-      const art1 = newTestStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
+      const art1 = newStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
         articleNodeName: '記事1',
         articleNodeType: StorageArticleNodeType.Article,
         articleSortOrder: 1,
       })
-      const d1 = newTestStorageDirNode(`${art1.path}/d1`)
+      const d1 = newStorageDirNode(`${art1.path}/d1`)
       const {
         logic: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -273,22 +273,22 @@ describe('AppStorageLogic', () => {
     })
 
     it('階層を構成するノードが欠けていた場合', async () => {
-      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
+      const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleSortOrder: 1,
       })
-      const cat1 = newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
+      const cat1 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'カテゴリ1',
         articleNodeType: StorageArticleNodeType.Category,
         articleSortOrder: 1,
       })
-      const art1 = newTestStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
+      const art1 = newStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
         articleNodeName: '記事1',
         articleNodeType: StorageArticleNodeType.Article,
         articleSortOrder: 1,
       })
-      const d1 = newTestStorageDirNode(`${art1.path}/d1`)
+      const d1 = newStorageDirNode(`${art1.path}/d1`)
       const {
         logic: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -310,7 +310,7 @@ describe('AppStorageLogic', () => {
 
   describe('createArticleTypeDir', () => {
     it('ベーシックケース - バンドル作成', async () => {
-      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
+      const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.ListBundle,
         articleSortOrder: 1,
@@ -353,22 +353,22 @@ describe('AppStorageLogic', () => {
 
     it('ベーシックケース - 記事作成', async () => {
       const config = useConfig()
-      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
+      const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleSortOrder: 1,
       })
-      const cat1 = newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
+      const cat1 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'カテゴリ1',
         articleNodeType: StorageArticleNodeType.Category,
         articleSortOrder: 1,
       })
-      const art1 = newTestStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
+      const art1 = newStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
         articleNodeName: '記事1',
         articleNodeType: StorageArticleNodeType.Article,
         articleSortOrder: 1,
       })
-      const art1Index = newTestStorageFileNode(`${art1.path}/${config.storage.article.fileName}`, {
+      const art1Index = newStorageFileNode(`${art1.path}/${config.storage.article.fileName}`, {
         isArticleFile: true,
       })
       const {
@@ -412,17 +412,17 @@ describe('AppStorageLogic', () => {
     })
 
     it('階層を構成するノードが欠けていた場合', async () => {
-      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
+      const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleSortOrder: 1,
       })
-      const cat1 = newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
+      const cat1 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'カテゴリ1',
         articleNodeType: StorageArticleNodeType.Category,
         articleSortOrder: 1,
       })
-      const art1 = newTestStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
+      const art1 = newStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
         articleNodeName: '記事1',
         articleNodeType: StorageArticleNodeType.Article,
         articleSortOrder: 1,
@@ -452,16 +452,16 @@ describe('AppStorageLogic', () => {
 
   describe('setArticleSortOrder', () => {
     it('ベーシックケース', async () => {
-      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
+      const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.ListBundle,
         articleSortOrder: 1,
       })
-      const art1 = newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
+      const art1 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeName: '記事1',
         articleNodeType: StorageArticleNodeType.Article,
       })
-      const art2 = newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
+      const art2 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeName: '記事2',
         articleNodeType: StorageArticleNodeType.Article,
       })
@@ -503,7 +503,7 @@ describe('AppStorageLogic', () => {
     it('大量データの場合', async () => {
       const Num = 101
 
-      const bundle = newTestStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
+      const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.ListBundle,
         articleSortOrder: 1,
@@ -511,7 +511,7 @@ describe('AppStorageLogic', () => {
       const arts: StorageNode[] = []
       for (let i = 0; i < Num; i++) {
         arts.push(
-          newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
+          newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
             articleNodeName: `記事${i + 1}`,
             articleNodeType: StorageArticleNodeType.Article,
           })

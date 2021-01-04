@@ -1,10 +1,19 @@
 import { DeepPartial, removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
-import { StorageNode, StorageNodeShareSettings, StorageNodeType } from '@/app/logic'
+import { StorageNode, StorageNodeType } from '@/app/logic'
 import { cloneDeep, merge } from 'lodash'
 import { StorageLogic } from '@/app/logic/modules/storage'
 import { TestLogicContainer } from '../index'
 import _path from 'path'
 import dayjs from 'dayjs'
+const { EmptyShareSettings } = StorageLogic
+
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
+
+type NewTestStorageNodeData = DeepPartial<Omit<StorageNode, 'name' | 'dir' | 'path' | 'nodeType'>>
 
 //========================================================================
 //
@@ -12,15 +21,7 @@ import dayjs from 'dayjs'
 //
 //========================================================================
 
-const EMPTY_SHARE_SETTINGS: StorageNodeShareSettings = {
-  isPublic: null,
-  readUIds: null,
-  writeUIds: null,
-}
-
-type NewTestStorageNodeData = DeepPartial<Omit<StorageNode, 'name' | 'dir' | 'path' | 'nodeType'>>
-
-function newTestStorageDirNode(dirPath: string, data?: NewTestStorageNodeData): StorageNode {
+function newStorageDirNode(dirPath: string, data?: NewTestStorageNodeData): StorageNode {
   dirPath = removeBothEndsSlash(dirPath)
   data = data || {}
   const name = _path.basename(dirPath)
@@ -40,7 +41,7 @@ function newTestStorageDirNode(dirPath: string, data?: NewTestStorageNodeData): 
     url: StorageLogic.getNodeURL(nodeId),
     contentType: data.contentType || '',
     size: data.size || 0,
-    share: merge(cloneDeep(EMPTY_SHARE_SETTINGS), data.share),
+    share: merge(EmptyShareSettings(), data.share),
     articleNodeName: data.articleNodeName || null,
     articleNodeType: data.articleNodeType || null,
     articleSortOrder: data.articleSortOrder || null,
@@ -52,7 +53,7 @@ function newTestStorageDirNode(dirPath: string, data?: NewTestStorageNodeData): 
   return result
 }
 
-function newTestStorageFileNode(filePath: string, data?: NewTestStorageNodeData): StorageNode {
+function newStorageFileNode(filePath: string, data?: NewTestStorageNodeData): StorageNode {
   filePath = removeBothEndsSlash(filePath)
   data = data || {}
   const name = _path.basename(filePath)
@@ -67,7 +68,7 @@ function newTestStorageFileNode(filePath: string, data?: NewTestStorageNodeData)
     url: StorageLogic.getNodeURL(nodeId),
     contentType: data.contentType || 'text/plain; charset=utf-8',
     size: data.size || 5,
-    share: merge(cloneDeep(EMPTY_SHARE_SETTINGS), data.share),
+    share: merge(EmptyShareSettings(), data.share),
     articleNodeName: data.articleNodeName || null,
     articleNodeType: data.articleNodeType || null,
     articleSortOrder: data.articleSortOrder || null,
@@ -79,7 +80,7 @@ function newTestStorageFileNode(filePath: string, data?: NewTestStorageNodeData)
   return result
 }
 
-function cloneTestStorageNode(target: StorageNode, source: Partial<StorageNode>): StorageNode {
+function cloneStorageNode(target: StorageNode, source: Partial<StorageNode>): StorageNode {
   return Object.assign({}, cloneDeep(target), cloneDeep(source))
 }
 
@@ -122,11 +123,4 @@ function mockStorageLogicAPIMethods(params: Pick<TestLogicContainer, 'appStorage
 //
 //========================================================================
 
-export {
-  EMPTY_SHARE_SETTINGS,
-  NewTestStorageNodeData,
-  cloneTestStorageNode,
-  mockStorageLogicAPIMethods,
-  newTestStorageDirNode,
-  newTestStorageFileNode,
-}
+export { NewTestStorageNodeData, cloneStorageNode, mockStorageLogicAPIMethods, newStorageDirNode, newStorageFileNode }

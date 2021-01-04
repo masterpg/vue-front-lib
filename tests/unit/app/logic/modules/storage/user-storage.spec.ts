@@ -1,10 +1,10 @@
 import {
-  GENERAL_TOKEN,
+  GeneralToken,
   TestUserStorageLogic,
-  cloneTestStorageNode,
+  cloneStorageNode,
   mockStorageLogicAPIMethods,
-  newTestStorageDirNode,
-  newTestStorageFileNode,
+  newStorageDirNode,
+  newStorageFileNode,
   provideDependency,
 } from '../../../../../helpers/app'
 import { StorageNode, StorageNodeShareSettings } from '@/app/logic'
@@ -31,12 +31,12 @@ describe('AppStorageLogic', () => {
     provideDependency(({ logic }) => {
       // ベースパスをモック化
       const config = useConfig()
-      basePath = _path.join(config.storage.user.rootName, GENERAL_TOKEN.uid)
+      basePath = _path.join(config.storage.user.rootName, GeneralToken().uid)
       logic.userStorage.basePath.value = basePath
       // ベースパスノードの作成
       basePathNodes = []
       for (const dirPath of splitHierarchicalPaths(basePath)) {
-        basePathNodes.push(newTestStorageDirNode(dirPath))
+        basePathNodes.push(newStorageDirNode(dirPath))
       }
       basePathRoot = basePathNodes[basePathNodes.length - 1]
       // ロジックのAPI系メソッドをモック化
@@ -56,11 +56,11 @@ describe('AppStorageLogic', () => {
       // ││└f111.txt
       // │└d12
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage },
       } = provideDependency(({ store }) => {
@@ -76,7 +76,7 @@ describe('AppStorageLogic', () => {
 
   describe('getNode', () => {
     it('ベーシックケース', () => {
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
       const {
         logic: { userStorage },
       } = provideDependency(({ store }) => {
@@ -91,7 +91,7 @@ describe('AppStorageLogic', () => {
 
   describe('sgetNode', () => {
     it('ベーシックケース - ノードIDで取得', () => {
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
       const {
         logic: { userStorage },
       } = provideDependency(({ store }) => {
@@ -104,7 +104,7 @@ describe('AppStorageLogic', () => {
     })
 
     it('ベーシックケース - ノードパスで取得', () => {
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
       const {
         logic: { userStorage },
       } = provideDependency(({ store }) => {
@@ -125,11 +125,11 @@ describe('AppStorageLogic', () => {
       // ││└f111.txt
       // │└d12
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage },
       } = provideDependency(({ store }) => {
@@ -148,11 +148,11 @@ describe('AppStorageLogic', () => {
       // ││└f111.txt
       // │└d12
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage },
       } = provideDependency(({ store }) => {
@@ -173,11 +173,11 @@ describe('AppStorageLogic', () => {
       // ││└f111.txt
       // │└d12
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage },
       } = provideDependency(({ store }) => {
@@ -196,11 +196,11 @@ describe('AppStorageLogic', () => {
       // ││└f111.txt
       // │└d12
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage },
       } = provideDependency(({ store }) => {
@@ -221,11 +221,11 @@ describe('AppStorageLogic', () => {
       // ││└f111.txt
       // │└d12
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage },
       } = provideDependency(({ store }) => {
@@ -244,11 +244,11 @@ describe('AppStorageLogic', () => {
       // ││└f111.txt
       // │└d12
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage },
       } = provideDependency(({ store }) => {
@@ -269,11 +269,11 @@ describe('AppStorageLogic', () => {
       // ││└f111.txt
       // │└d12
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage },
       } = provideDependency(({ store }) => {
@@ -292,11 +292,11 @@ describe('AppStorageLogic', () => {
       // ││└f111.txt
       // │└d12
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage },
       } = provideDependency(({ store }) => {
@@ -317,11 +317,11 @@ describe('AppStorageLogic', () => {
       // ││└f111.txt ← 対象ノードに指定
       // │└d12
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage },
       } = provideDependency(({ store }) => {
@@ -350,9 +350,9 @@ describe('AppStorageLogic', () => {
       // └d1
       //   └d11
       //     └f111.txt
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`, {
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`, {
         share: {
           isPublic: true,
           readUIds: ['saburo'],
@@ -398,11 +398,11 @@ describe('AppStorageLogic', () => {
       // ││└f111.txt
       // │└f11.txt
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const f11 = newTestStorageFileNode(`${basePath}/d1/f11.txt`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const f11 = newStorageFileNode(`${basePath}/d1/f11.txt`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -411,7 +411,7 @@ describe('AppStorageLogic', () => {
 
       // APIから以下の状態のノードリストが取得される
       // ・'d1'が更新された
-      const updated_d1 = cloneTestStorageNode(d1, { updatedAt: dayjs() })
+      const updated_d1 = cloneStorageNode(d1, { updatedAt: dayjs() })
       td.when(userStorage.getNodeAPI({ path: d1.path })).thenResolve(updated_d1)
 
       const actual = await userStorage.fetchNode({ path: toBasePath(d1.path) })
@@ -429,7 +429,7 @@ describe('AppStorageLogic', () => {
     it('ベースパスルートを指定した場合', async () => {
       // basePathRoot ← 対象ノードに指定
       // └d1
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -453,11 +453,11 @@ describe('AppStorageLogic', () => {
       // ││└f111.txt
       // │└f11.txt
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const f11 = newTestStorageFileNode(`${basePath}/d1/f11.txt`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const f11 = newStorageFileNode(`${basePath}/d1/f11.txt`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -466,7 +466,7 @@ describe('AppStorageLogic', () => {
 
       // APIから以下の状態のノードリストが取得される
       // ・'d1'が更新された
-      const updated_d1 = cloneTestStorageNode(d1, { updatedAt: dayjs() })
+      const updated_d1 = cloneStorageNode(d1, { updatedAt: dayjs() })
       td.when(userStorage.getNodesAPI({ paths: [d1.path] })).thenResolve([updated_d1])
 
       const actual = await userStorage.fetchNodes({ paths: toBasePath([d1.path]) })
@@ -484,7 +484,7 @@ describe('AppStorageLogic', () => {
     it('ベースパスルートを指定した場合', async () => {
       // basePathRoot ← 対象ノードに指定
       // └d1
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -509,10 +509,10 @@ describe('AppStorageLogic', () => {
       //   └[dB]
       //     └[dC]
       //       └[fileC.txt] ← 対象ノードに指定
-      const dA = newTestStorageDirNode(`${basePath}/dA`)
-      const dB = newTestStorageDirNode(`${basePath}/dA/dB`)
-      const dC = newTestStorageDirNode(`${basePath}/dA/dB/dC`)
-      const fileC = newTestStorageDirNode(`${basePath}/dA/dB/dC/fileC.txt`)
+      const dA = newStorageDirNode(`${basePath}/dA`)
+      const dB = newStorageDirNode(`${basePath}/dA/dB`)
+      const dC = newStorageDirNode(`${basePath}/dA/dB/dC`)
+      const fileC = newStorageDirNode(`${basePath}/dA/dB/dC/fileC.txt`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -555,9 +555,9 @@ describe('AppStorageLogic', () => {
       //   └[dB]
       //     └[dC]
       //       └[fileC.txt] ← 対象ノードに指定
-      const dA = newTestStorageDirNode(`${basePath}/dA`)
-      const dB = newTestStorageDirNode(`${basePath}/dA/dB`)
-      const dC = newTestStorageDirNode(`${basePath}/dA/dB/dC`)
+      const dA = newStorageDirNode(`${basePath}/dA`)
+      const dB = newStorageDirNode(`${basePath}/dA/dB`)
+      const dC = newStorageDirNode(`${basePath}/dA/dB/dC`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -603,11 +603,11 @@ describe('AppStorageLogic', () => {
       // ││└[f111.txt]
       // │└[d12]
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -634,10 +634,10 @@ describe('AppStorageLogic', () => {
       //   ├[d11]
       //   │└[f111.txt]
       //   └[d12]
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency()
@@ -666,11 +666,11 @@ describe('AppStorageLogic', () => {
       // ││└[f111.txt]
       // │└[d12]
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -697,10 +697,10 @@ describe('AppStorageLogic', () => {
       //   ├[d11]
       //   │└[f111.txt]
       //   └[d12]
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -728,10 +728,10 @@ describe('AppStorageLogic', () => {
       // │├[d11]
       // │└[d12]
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -755,8 +755,8 @@ describe('AppStorageLogic', () => {
       // [basePathRoot] ← 対象ノードに指定
       // ├[d1]
       // └[d2]
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency()
@@ -782,10 +782,10 @@ describe('AppStorageLogic', () => {
       // │├[d11]
       // │└[d12]
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -809,8 +809,8 @@ describe('AppStorageLogic', () => {
       // basePathRoot ← 対象ノードに指定
       // ├[d1]
       // └[d2]
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -835,11 +835,11 @@ describe('AppStorageLogic', () => {
       //     ├[d111]
       //     │└[f1111.txt]
       //     └[f111.txt]
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const d111 = newTestStorageDirNode(`${basePath}/d1/d11/d111`)
-      const f1111 = newTestStorageFileNode(`${basePath}/d1/d11/d111/f1111.txt`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const d111 = newStorageDirNode(`${basePath}/d1/d11/d111`)
+      const f1111 = newStorageFileNode(`${basePath}/d1/d11/d111/f1111.txt`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency()
@@ -867,11 +867,11 @@ describe('AppStorageLogic', () => {
       //     ├[d111]
       //     │└[f1111.txt]
       //     └[f111.txt]
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const d111 = newTestStorageDirNode(`${basePath}/d1/d11/d111`)
-      const f1111 = newTestStorageFileNode(`${basePath}/d1/d11/d111/f1111.txt`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const d111 = newStorageDirNode(`${basePath}/d1/d11/d111`)
+      const f1111 = newStorageFileNode(`${basePath}/d1/d11/d111/f1111.txt`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency()
@@ -900,10 +900,10 @@ describe('AppStorageLogic', () => {
       //   └[d11] ← 対象ノードに指定
       //     ├[d111]
       //     └[f111.txt]
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const d111 = newTestStorageDirNode(`${basePath}/d1/d11/d111`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const d111 = newStorageDirNode(`${basePath}/d1/d11/d111`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency()
@@ -929,10 +929,10 @@ describe('AppStorageLogic', () => {
       //   └[d11]
       //     ├[d111]
       //     └[f111.txt]
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const d111 = newTestStorageDirNode(`${basePath}/d1/d11/d111`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const d111 = newStorageDirNode(`${basePath}/d1/d11/d111`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency()
@@ -957,8 +957,8 @@ describe('AppStorageLogic', () => {
       // basePathRoot
       // └d1
       //   └[d11] ← 作成
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -984,10 +984,10 @@ describe('AppStorageLogic', () => {
       //   ├[d11]
       //   │└[d111] ← 作成
       //   └[d12] ← 作成
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const d111 = newTestStorageDirNode(`${basePath}/d1/d11/d111`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const d111 = newStorageDirNode(`${basePath}/d1/d11/d111`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency()
@@ -1013,10 +1013,10 @@ describe('AppStorageLogic', () => {
       //   ├d11 ← 削除
       //   │└f111.txt
       //   └d12
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -1042,10 +1042,10 @@ describe('AppStorageLogic', () => {
       // │└d11
       // │  └f111.txt ← 削除
       // └f1.txt
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const f1 = newTestStorageFileNode(`${basePath}/f1.txt`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const f1 = newStorageFileNode(`${basePath}/f1.txt`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -1072,10 +1072,10 @@ describe('AppStorageLogic', () => {
       // │└d11 ← d2へ移動
       // │  └f111.txt
       // └d2
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -1083,8 +1083,8 @@ describe('AppStorageLogic', () => {
       })
 
       // モック設定
-      const moved_d11 = cloneTestStorageNode(d11, { dir: `${basePath}/d2`, path: `${basePath}/d2/d11`, updatedAt: dayjs() })
-      const moved_f111 = cloneTestStorageNode(f111, { dir: `${basePath}/d2/d11`, path: `${basePath}/d2/d11/f111.txt` })
+      const moved_d11 = cloneStorageNode(d11, { dir: `${basePath}/d2`, path: `${basePath}/d2/d11`, updatedAt: dayjs() })
+      const moved_f111 = cloneStorageNode(f111, { dir: `${basePath}/d2/d11`, path: `${basePath}/d2/d11/f111.txt` })
       td.when(userStorage.getNodesAPI({ ids: [moved_d11.id, moved_f111.id] })).thenResolve([moved_d11, moved_f111])
 
       // 'd1/d11'を'd2'へ移動
@@ -1110,10 +1110,10 @@ describe('AppStorageLogic', () => {
       // │└d11 ← d2へ移動
       // │  └f111.txt
       // └d2 ← 読み込まれていないのでストアには存在しない
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d2 = newTestStorageDirNode(`${basePath}/d2`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -1121,8 +1121,8 @@ describe('AppStorageLogic', () => {
       })
 
       // モック設定
-      const moved_d11 = cloneTestStorageNode(d11, { dir: `${basePath}/d2`, path: `${basePath}/d2/d11`, updatedAt: dayjs() })
-      const moved_f111 = cloneTestStorageNode(f111, { dir: `${basePath}/d2/d11`, path: `${basePath}/d2/d11/f111.txt` })
+      const moved_d11 = cloneStorageNode(d11, { dir: `${basePath}/d2`, path: `${basePath}/d2/d11`, updatedAt: dayjs() })
+      const moved_f111 = cloneStorageNode(f111, { dir: `${basePath}/d2/d11`, path: `${basePath}/d2/d11/f111.txt` })
       td.when(userStorage.getHierarchicalNodesAPI(d2.path)).thenResolve([...basePathNodes, d2])
       td.when(userStorage.getNodesAPI({ ids: [moved_d11.id, moved_f111.id] })).thenResolve([moved_d11, moved_f111])
 
@@ -1151,10 +1151,10 @@ describe('AppStorageLogic', () => {
       //   ├d11
       //   │└f111.txt ← d12へ移動
       //   └d12
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newTestStorageDirNode(`${basePath}/d1/d12`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -1162,7 +1162,7 @@ describe('AppStorageLogic', () => {
       })
 
       // モック設定
-      const moved_f111 = cloneTestStorageNode(f111, { dir: `${basePath}/d1/d12`, path: `${basePath}/d1/d12/f111.txt`, updatedAt: dayjs() })
+      const moved_f111 = cloneStorageNode(f111, { dir: `${basePath}/d1/d12`, path: `${basePath}/d1/d12/f111.txt`, updatedAt: dayjs() })
       td.when(userStorage.moveFileAPI(f111.path, moved_f111.path)).thenResolve(moved_f111)
 
       // 'd1/d11/f111.txt'を'd1/d12/f111.txt'へ移動
@@ -1184,9 +1184,9 @@ describe('AppStorageLogic', () => {
       // └d1
       //   └d11 ← x11へリネーム
       //     └f111.txt
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -1194,8 +1194,8 @@ describe('AppStorageLogic', () => {
       })
 
       // モック設定
-      const renamed_x11 = cloneTestStorageNode(d11, { name: `${basePath}/x11`, path: `${basePath}/d1/x11`, updatedAt: dayjs() })
-      const renamed_f111 = cloneTestStorageNode(f111, { dir: `${basePath}/d1/x11`, path: `${basePath}/d1/x11/f111.txt` })
+      const renamed_x11 = cloneStorageNode(d11, { name: `${basePath}/x11`, path: `${basePath}/d1/x11`, updatedAt: dayjs() })
+      const renamed_f111 = cloneStorageNode(f111, { dir: `${basePath}/d1/x11`, path: `${basePath}/d1/x11/f111.txt` })
       td.when(userStorage.getNodesAPI({ ids: [renamed_x11.id, renamed_f111.id] })).thenResolve([renamed_x11, renamed_f111])
 
       // 'd1/d11'を'd1/x11'へリネーム
@@ -1221,9 +1221,9 @@ describe('AppStorageLogic', () => {
       // └d1
       //   └d11
       //     └f111.txt ← f11X.txtへリネーム
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
@@ -1231,7 +1231,7 @@ describe('AppStorageLogic', () => {
       })
 
       // モック設定
-      const renamed_f11X = cloneTestStorageNode(f111, { name: `${basePath}/f11X.txt`, path: `${basePath}/d1/d11/f11X.txt`, updatedAt: dayjs() })
+      const renamed_f11X = cloneStorageNode(f111, { name: `${basePath}/f11X.txt`, path: `${basePath}/d1/d11/f11X.txt`, updatedAt: dayjs() })
       td.when(userStorage.renameFileAPI(f111.path, renamed_f11X.name)).thenResolve(renamed_f11X)
 
       // 'd1/d11/f111.txt'を'd1/d11/f11X.txt'へリネーム
@@ -1254,16 +1254,16 @@ describe('AppStorageLogic', () => {
     }
 
     it('ベーシックケース', async () => {
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
         store.storage.setAll([...basePathNodes, d1, d11, f111])
       })
 
-      const updated_d11 = cloneTestStorageNode(d11, { share: NEW_SHARE_SETTINGS, updatedAt: dayjs() })
+      const updated_d11 = cloneStorageNode(d11, { share: NEW_SHARE_SETTINGS, updatedAt: dayjs() })
       td.when(userStorage.setDirShareSettingsAPI(d11.path, NEW_SHARE_SETTINGS)).thenResolve(updated_d11)
 
       const actual = await userStorage.setDirShareSettings(toBasePath(d11.path), NEW_SHARE_SETTINGS)
@@ -1281,16 +1281,16 @@ describe('AppStorageLogic', () => {
     }
 
     it('ベーシックケース', async () => {
-      const d1 = newTestStorageDirNode(`${basePath}/d1`)
-      const d11 = newTestStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newTestStorageFileNode(`${basePath}/d1/d11/f111.txt`)
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
+      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
       const {
         logic: { userStorage, appStorage },
       } = provideDependency(({ store }) => {
         store.storage.setAll([...basePathNodes, d1, d11, f111])
       })
 
-      const updatedFileA = cloneTestStorageNode(f111, { share: NEW_SHARE_SETTINGS, updatedAt: dayjs() })
+      const updatedFileA = cloneStorageNode(f111, { share: NEW_SHARE_SETTINGS, updatedAt: dayjs() })
       td.when(userStorage.setFileShareSettingsAPI(f111.path, NEW_SHARE_SETTINGS)).thenResolve(updatedFileA)
 
       const actual = await userStorage.setFileShareSettings(toBasePath(f111.path), NEW_SHARE_SETTINGS)

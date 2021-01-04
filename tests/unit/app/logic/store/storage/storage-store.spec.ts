@@ -1,5 +1,5 @@
 import { DeepReadonly, removeStartDirChars } from 'web-base-lib'
-import { GENERAL_USER, cloneTestStorageNode, newTestStorageDirNode, newTestStorageFileNode, provideDependency } from '../../../../../helpers/app'
+import { GeneralUser, cloneStorageNode, newStorageDirNode, newStorageFileNode, provideDependency } from '../../../../../helpers/app'
 import { StorageArticleNodeType, StorageNode, StorageNodeShareSettings, StorageNodeType, sortStorageTree } from '@/app/logic'
 import dayjs from 'dayjs'
 import path from 'path'
@@ -85,16 +85,16 @@ function toBeCopy<T extends DeepReadonly<StorageNode>>(actual: T | T[]): void {
 describe('StorageStore', () => {
   describe('all', () => {
     it('ベーシックケース', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const d111 = newTestStorageDirNode('d1/d11/d111')
-      const f1111 = newTestStorageFileNode('d1/d11/d111/f1111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const f11 = newTestStorageFileNode('d1/f11.txt')
-      const d2 = newTestStorageDirNode('d2')
-      const d21 = newTestStorageDirNode('d2/d21')
-      const f211 = newTestStorageFileNode('d2/d21/f211.txt')
-      const f1 = newTestStorageFileNode('f1.txt')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const d111 = newStorageDirNode('d1/d11/d111')
+      const f1111 = newStorageFileNode('d1/d11/d111/f1111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const f11 = newStorageFileNode('d1/f11.txt')
+      const d2 = newStorageDirNode('d2')
+      const d21 = newStorageDirNode('d2/d21')
+      const f211 = newStorageFileNode('d2/d21/f211.txt')
+      const f1 = newStorageFileNode('f1.txt')
       const all = [d1, d11, d111, f1111, d12, f11, d2, d21, f211, f1]
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll(all)
@@ -109,11 +109,11 @@ describe('StorageStore', () => {
 
   describe('get', () => {
     it('ベーシックケース - id検索', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const all = [d1, d11, f111, d12, d2]
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll(all)
@@ -126,11 +126,11 @@ describe('StorageStore', () => {
     })
 
     it('ベーシックケース - path検索', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -160,11 +160,11 @@ describe('StorageStore', () => {
 
   describe('getList', () => {
     it('ベーシックケース - id検索', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const all = [d1, d11, f111, d12, d2]
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll(all)
@@ -177,11 +177,11 @@ describe('StorageStore', () => {
     })
 
     it('ベーシックケース - path検索', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -193,11 +193,11 @@ describe('StorageStore', () => {
     })
 
     it('ベーシックケース - idとpathを両方指定した場合', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -219,11 +219,11 @@ describe('StorageStore', () => {
 
   describe('getChildren', () => {
     it('ベーシックケース', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -239,11 +239,11 @@ describe('StorageStore', () => {
 
   describe('getDirChildren', () => {
     it('ベーシックケース', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -258,11 +258,11 @@ describe('StorageStore', () => {
     })
 
     it('dirPathを指定しない場合', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -278,11 +278,11 @@ describe('StorageStore', () => {
 
   describe('getDescendants', () => {
     it('ベーシックケース', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -299,11 +299,11 @@ describe('StorageStore', () => {
 
   describe('getDirDescendants', () => {
     it('ベーシックケース', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -319,11 +319,11 @@ describe('StorageStore', () => {
     })
 
     it('dirPathを指定しない場合', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -342,11 +342,11 @@ describe('StorageStore', () => {
 
   describe('getHierarchical', () => {
     it('ベーシックケース', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -363,11 +363,11 @@ describe('StorageStore', () => {
 
   describe('getAncestors', () => {
     it('ベーシックケース', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -383,12 +383,12 @@ describe('StorageStore', () => {
 
   describe('setAll', () => {
     it('ベーシックケース', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
-      const f1 = newTestStorageFileNode('f1.txt')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
+      const f1 = newStorageFileNode('f1.txt')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -405,11 +405,11 @@ describe('StorageStore', () => {
 
   describe('setList', () => {
     it('ベーシックケース', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -421,8 +421,8 @@ describe('StorageStore', () => {
         writeUIds: ['ichiro'],
       }
       const actual = store.storage.setList([
-        cloneTestStorageNode(d11, { share: NEW_SHARE_SETTINGS, createdAt: UPDATED_AT, updatedAt: UPDATED_AT }),
-        cloneTestStorageNode(f111, { share: NEW_SHARE_SETTINGS, createdAt: UPDATED_AT, updatedAt: UPDATED_AT }),
+        cloneStorageNode(d11, { share: NEW_SHARE_SETTINGS, createdAt: UPDATED_AT, updatedAt: UPDATED_AT }),
+        cloneStorageNode(f111, { share: NEW_SHARE_SETTINGS, createdAt: UPDATED_AT, updatedAt: UPDATED_AT }),
       ])
 
       sortStorageTree(actual)
@@ -444,11 +444,11 @@ describe('StorageStore', () => {
 
   describe('set', () => {
     it('ベーシックケース - 一般ノード', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -460,7 +460,7 @@ describe('StorageStore', () => {
         writeUIds: ['ichiro'],
       }
       const actual = store.storage.set(
-        cloneTestStorageNode(f111, {
+        cloneStorageNode(f111, {
           name: 'new_f111.txt',
           dir: 'd1',
           path: 'd1/new_f111.txt',
@@ -496,9 +496,9 @@ describe('StorageStore', () => {
     it('ベーシックケース - 記事系ノード', () => {
       const config = useConfig()
       const usersPath = `${config.storage.user.rootName}`
-      const userRootPath = `${usersPath}/${GENERAL_USER.uid}`
+      const userRootPath = `${usersPath}/${GeneralUser().uid}`
       const articleRootPath = `${userRootPath}/${config.storage.article.rootName}`
-      const bundle = newTestStorageDirNode(`${articleRootPath}/${StorageNode.generateId()}`, {
+      const bundle = newStorageDirNode(`${articleRootPath}/${StorageNode.generateId()}`, {
         articleNodeName: 'Bundle',
         articleNodeType: StorageArticleNodeType.ListBundle,
         articleSortOrder: 1,
@@ -508,7 +508,7 @@ describe('StorageStore', () => {
       })
 
       const actual = store.storage.set(
-        cloneTestStorageNode(bundle, {
+        cloneStorageNode(bundle, {
           articleNodeName: 'バンドル',
           articleNodeType: StorageArticleNodeType.CategoryBundle,
           articleSortOrder: 2,
@@ -528,7 +528,7 @@ describe('StorageStore', () => {
     })
 
     it('プロパティの変更がない場合', () => {
-      const d1 = newTestStorageDirNode('d1')
+      const d1 = newStorageDirNode('d1')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1])
       })
@@ -557,11 +557,11 @@ describe('StorageStore', () => {
     })
 
     it('存在しないパスを指定した場合', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -580,12 +580,12 @@ describe('StorageStore', () => {
 
   describe('addList', () => {
     it('ベーシックケース', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const f121 = newTestStorageFileNode('d1/d12/f121.txt')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const f121 = newStorageFileNode('d1/d12/f121.txt')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -604,12 +604,12 @@ describe('StorageStore', () => {
 
   describe('add', () => {
     it('ベーシックケース', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const f121 = newTestStorageFileNode('d1/d12/f121.txt')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const f121 = newStorageFileNode('d1/d12/f121.txt')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -627,11 +627,11 @@ describe('StorageStore', () => {
   describe('removeList', () => {
     describe('pathバージョン', () => {
       it('ベーシックケース', () => {
-        const d1 = newTestStorageDirNode('d1')
-        const d11 = newTestStorageDirNode('d1/d11')
-        const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-        const d12 = newTestStorageDirNode('d1/d12')
-        const d2 = newTestStorageDirNode('d2')
+        const d1 = newStorageDirNode('d1')
+        const d11 = newStorageDirNode('d1/d11')
+        const f111 = newStorageFileNode('d1/d11/f111.txt')
+        const d12 = newStorageDirNode('d1/d12')
+        const d2 = newStorageDirNode('d2')
         const { store } = provideDependency(({ store }) => {
           store.storage.setAll([d1, d11, f111, d12, d2])
         })
@@ -646,11 +646,11 @@ describe('StorageStore', () => {
       })
 
       it(`'d1/d11'と親である'd1'をで同時に指定した場合`, () => {
-        const d1 = newTestStorageDirNode('d1')
-        const d11 = newTestStorageDirNode('d1/d11')
-        const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-        const d12 = newTestStorageDirNode('d1/d12')
-        const d2 = newTestStorageDirNode('d2')
+        const d1 = newStorageDirNode('d1')
+        const d11 = newStorageDirNode('d1/d11')
+        const f111 = newStorageFileNode('d1/d11/f111.txt')
+        const d12 = newStorageDirNode('d1/d12')
+        const d2 = newStorageDirNode('d2')
         const { store } = provideDependency(({ store }) => {
           store.storage.setAll([d1, d11, f111, d12, d2])
         })
@@ -667,11 +667,11 @@ describe('StorageStore', () => {
       })
 
       it('存在しないパスを含んでいた場合', () => {
-        const d1 = newTestStorageDirNode('d1')
-        const d11 = newTestStorageDirNode('d1/d11')
-        const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-        const d12 = newTestStorageDirNode('d1/d12')
-        const d2 = newTestStorageDirNode('d2')
+        const d1 = newStorageDirNode('d1')
+        const d11 = newStorageDirNode('d1/d11')
+        const f111 = newStorageFileNode('d1/d11/f111.txt')
+        const d12 = newStorageDirNode('d1/d12')
+        const d2 = newStorageDirNode('d2')
         const { store } = provideDependency(({ store }) => {
           store.storage.setAll([d1, d11, f111, d12, d2])
         })
@@ -688,11 +688,11 @@ describe('StorageStore', () => {
 
     describe('idバージョン', () => {
       it('ベーシックケース - idバージョン', () => {
-        const d1 = newTestStorageDirNode('d1')
-        const d11 = newTestStorageDirNode('d1/d11')
-        const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-        const d12 = newTestStorageDirNode('d1/d12')
-        const d2 = newTestStorageDirNode('d2')
+        const d1 = newStorageDirNode('d1')
+        const d11 = newStorageDirNode('d1/d11')
+        const f111 = newStorageFileNode('d1/d11/f111.txt')
+        const d12 = newStorageDirNode('d1/d12')
+        const d2 = newStorageDirNode('d2')
         const { store } = provideDependency(({ store }) => {
           store.storage.setAll([d1, d11, f111, d12, d2])
         })
@@ -709,11 +709,11 @@ describe('StorageStore', () => {
       })
 
       it(`'d1/d11'と親である'd1'を同時に指定した場合 - idバージョン`, () => {
-        const d1 = newTestStorageDirNode('d1')
-        const d11 = newTestStorageDirNode('d1/d11')
-        const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-        const d12 = newTestStorageDirNode('d1/d12')
-        const d2 = newTestStorageDirNode('d2')
+        const d1 = newStorageDirNode('d1')
+        const d11 = newStorageDirNode('d1/d11')
+        const f111 = newStorageFileNode('d1/d11/f111.txt')
+        const d12 = newStorageDirNode('d1/d12')
+        const d2 = newStorageDirNode('d2')
         const { store } = provideDependency(({ store }) => {
           store.storage.setAll([d1, d11, f111, d12, d2])
         })
@@ -732,11 +732,11 @@ describe('StorageStore', () => {
       })
 
       it('存在しないIDを含んでいた場合', () => {
-        const d1 = newTestStorageDirNode('d1')
-        const d11 = newTestStorageDirNode('d1/d11')
-        const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-        const d12 = newTestStorageDirNode('d1/d12')
-        const d2 = newTestStorageDirNode('d2')
+        const d1 = newStorageDirNode('d1')
+        const d11 = newStorageDirNode('d1/d11')
+        const f111 = newStorageFileNode('d1/d11/f111.txt')
+        const d12 = newStorageDirNode('d1/d12')
+        const d2 = newStorageDirNode('d2')
         const { store } = provideDependency(({ store }) => {
           store.storage.setAll([d1, d11, f111, d12, d2])
         })
@@ -769,11 +769,11 @@ describe('StorageStore', () => {
 
   describe('remove', () => {
     it('ベーシックケース - pathバージョン', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -789,11 +789,11 @@ describe('StorageStore', () => {
     })
 
     it('ベーシックケース - idバージョン', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -817,13 +817,13 @@ describe('StorageStore', () => {
       //  │└fileB.txt
       //  └d11_bk
       //     └fileC.txt
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const d111 = newTestStorageDirNode('d1/d11/d111')
-      const fileA = newTestStorageDirNode('d1/d11/d111/fileA.txt')
-      const fileB = newTestStorageDirNode('d1/d11/fileB.txt')
-      const d11_bk = newTestStorageDirNode('d1/d11_bk')
-      const fileC = newTestStorageDirNode('d1/d11_bk/fileC.txt')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const d111 = newStorageDirNode('d1/d11/d111')
+      const fileA = newStorageDirNode('d1/d11/d111/fileA.txt')
+      const fileB = newStorageDirNode('d1/d11/fileB.txt')
+      const d11_bk = newStorageDirNode('d1/d11_bk')
+      const fileC = newStorageDirNode('d1/d11_bk/fileC.txt')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, d111, fileA, fileB, d11_bk, fileC])
       })
@@ -841,7 +841,7 @@ describe('StorageStore', () => {
     })
 
     it('存在しないパスを指定した場合', () => {
-      const d1 = newTestStorageDirNode('d1')
+      const d1 = newStorageDirNode('d1')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1])
       })
@@ -852,7 +852,7 @@ describe('StorageStore', () => {
     })
 
     it('存在しないIDを指定した場合', () => {
-      const d1 = newTestStorageDirNode('d1')
+      const d1 = newStorageDirNode('d1')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1])
       })
@@ -865,11 +865,11 @@ describe('StorageStore', () => {
 
   describe('move', () => {
     it('ディレクトリの移動 - ディレクトリへ移動', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -889,11 +889,11 @@ describe('StorageStore', () => {
     })
 
     it('ディレクトリの移動 - ルートディレクトリへ移動', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -910,11 +910,11 @@ describe('StorageStore', () => {
     })
 
     it('ファイルの移動 - ディレクトリへ移動', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -931,11 +931,11 @@ describe('StorageStore', () => {
     })
 
     it('ファイルの移動 - ルートディレクトリへ移動', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -971,24 +971,24 @@ describe('StorageStore', () => {
       //     ├d13
       //     ├fileX.txt
       //     └fileZ.txt
-      const dA = newTestStorageDirNode('dA')
-      const dA_d1 = newTestStorageDirNode('dA/d1')
-      const dA_d11 = newTestStorageDirNode('dA/d1/d11')
-      const dA_d111 = newTestStorageDirNode('dA/d1/d11/d111')
-      const dA_fileA = newTestStorageFileNode('dA/d1/d11/d111/fileA.txt')
-      const dA_fileB = newTestStorageFileNode('dA/d1/d11/d111/fileB.txt')
-      const dA_d12 = newTestStorageDirNode('dA/d1/d12')
-      const dA_fileX = newTestStorageFileNode('dA/d1/fileX.txt')
-      const dA_fileY = newTestStorageFileNode('dA/d1/fileY.txt')
-      const dB = newTestStorageDirNode('dB')
-      const dB_d1 = newTestStorageDirNode('dB/d1')
-      const dB_d11 = newTestStorageDirNode('dB/d1/d11')
-      const dB_d111 = newTestStorageDirNode('dB/d1/d11/d111')
-      const dB_fileA = newTestStorageFileNode('dB/d1/d11/d111/fileA.txt')
-      const dB_fileC = newTestStorageFileNode('dB/d1/d11/d111/fileC.txt')
-      const dB_d13 = newTestStorageDirNode('dB/d1/d13')
-      const dB_fileX = newTestStorageFileNode('dB/d1/fileX.txt')
-      const dB_fileZ = newTestStorageFileNode('dB/d1/fileZ.txt')
+      const dA = newStorageDirNode('dA')
+      const dA_d1 = newStorageDirNode('dA/d1')
+      const dA_d11 = newStorageDirNode('dA/d1/d11')
+      const dA_d111 = newStorageDirNode('dA/d1/d11/d111')
+      const dA_fileA = newStorageFileNode('dA/d1/d11/d111/fileA.txt')
+      const dA_fileB = newStorageFileNode('dA/d1/d11/d111/fileB.txt')
+      const dA_d12 = newStorageDirNode('dA/d1/d12')
+      const dA_fileX = newStorageFileNode('dA/d1/fileX.txt')
+      const dA_fileY = newStorageFileNode('dA/d1/fileY.txt')
+      const dB = newStorageDirNode('dB')
+      const dB_d1 = newStorageDirNode('dB/d1')
+      const dB_d11 = newStorageDirNode('dB/d1/d11')
+      const dB_d111 = newStorageDirNode('dB/d1/d11/d111')
+      const dB_fileA = newStorageFileNode('dB/d1/d11/d111/fileA.txt')
+      const dB_fileC = newStorageFileNode('dB/d1/d11/d111/fileC.txt')
+      const dB_d13 = newStorageDirNode('dB/d1/d13')
+      const dB_fileX = newStorageFileNode('dB/d1/fileX.txt')
+      const dB_fileZ = newStorageFileNode('dB/d1/fileZ.txt')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([
           dA,
@@ -1081,8 +1081,8 @@ describe('StorageStore', () => {
     })
 
     it('存在しないパスを指定した場合', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d2])
       })
@@ -1098,11 +1098,11 @@ describe('StorageStore', () => {
     })
 
     it('移動先ディレクトリが移動元のサブディレクトリの場合', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -1120,11 +1120,11 @@ describe('StorageStore', () => {
 
   describe('rename', () => {
     it('ディレクトリのリネーム - ベーシックケース', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -1144,11 +1144,11 @@ describe('StorageStore', () => {
     })
 
     it('ディレクトリのリネーム - 既存のディレクトリ名に文字を付け加える形でリネームをした場合', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -1169,9 +1169,9 @@ describe('StorageStore', () => {
     })
 
     it('ファイルのリネーム', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111])
       })
@@ -1188,8 +1188,8 @@ describe('StorageStore', () => {
     })
 
     it('存在しないパスを指定した場合', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d2])
       })
@@ -1207,11 +1207,11 @@ describe('StorageStore', () => {
 
   describe('clear', () => {
     it('ベーシックケース', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const d2 = newTestStorageDirNode('d2')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([d1, d11, f111, d12, d2])
       })
@@ -1227,14 +1227,14 @@ describe('StorageStore', () => {
 
   describe('sort', () => {
     it('ベーシックケース', () => {
-      const d1 = newTestStorageDirNode('d1')
-      const d11 = newTestStorageDirNode('d1/d11')
-      const f111 = newTestStorageFileNode('d1/d11/f111.txt')
-      const d12 = newTestStorageDirNode('d1/d12')
-      const f121 = newTestStorageFileNode('d1/d12/f121.txt')
-      const d2 = newTestStorageDirNode('d2')
-      const d21 = newTestStorageDirNode('d2/d21')
-      const f1 = newTestStorageFileNode('f1.txt')
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const f121 = newStorageFileNode('d1/d12/f121.txt')
+      const d2 = newStorageDirNode('d2')
+      const d21 = newStorageDirNode('d2/d21')
+      const f1 = newStorageFileNode('f1.txt')
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([f111, f121, f1, d1, d2, d11, d12, d21])
       })
@@ -1255,7 +1255,7 @@ describe('StorageStore', () => {
   describe('clone', () => {
     it('ベーシックケース', () => {
       const config = useConfig()
-      const bundle = newTestStorageDirNode(`${StorageNode.generateId()}`, {
+      const bundle = newStorageDirNode(`${StorageNode.generateId()}`, {
         articleNodeName: 'バンドル',
         articleNodeType: StorageArticleNodeType.CategoryBundle,
         articleSortOrder: 1,
@@ -1265,17 +1265,17 @@ describe('StorageStore', () => {
           writeUIds: ['ichiro'],
         },
       })
-      const cat1 = newTestStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
+      const cat1 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
         articleNodeName: 'カテゴリ1',
         articleNodeType: StorageArticleNodeType.Category,
         articleSortOrder: 1,
       })
-      const art1 = newTestStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
+      const art1 = newStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
         articleNodeName: '記事1',
         articleNodeType: StorageArticleNodeType.Article,
         articleSortOrder: 1,
       })
-      const art1Index = newTestStorageFileNode(`${art1.path}/${config.storage.article.fileName}`, {
+      const art1Index = newStorageFileNode(`${art1.path}/${config.storage.article.fileName}`, {
         isArticleFile: true,
       })
 
