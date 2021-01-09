@@ -5,7 +5,7 @@ import {
   CreateStorageNodeInput,
   PublicProfile,
   SignedUploadUrlInput,
-  StorageArticleNodeType,
+  StorageArticleDirType,
   StorageNodeGetKeyInput,
   StorageNodeGetKeysInput,
   StorageNodeKeyInput,
@@ -15,7 +15,7 @@ import {
   UserInfo,
   UserInfoInput,
 } from '@/app/logic/base'
-import { RawEntity, toEntity } from '@/app/logic/api/base'
+import { RawEntity, ToEntity, toEntity } from '@/app/logic/api/base'
 import { GQLAPIClient } from '@/app/logic/api/gql/client'
 import { StorageConfig } from '@/app/config'
 import gql from 'graphql-tag'
@@ -95,7 +95,7 @@ interface GQLAPIContainer {
 
   setArticleSortOrder(orderNodePaths: string[]): Promise<void>
 
-  getArticleChildren(dirPath: string, articleTypes: StorageArticleNodeType[], input?: StoragePaginationInput): Promise<StoragePaginationResult>
+  getArticleChildren(dirPath: string, types: StorageArticleDirType[], input?: StoragePaginationInput): Promise<StoragePaginationResult>
 
   //--------------------------------------------------
   //  Helpers
@@ -316,19 +316,48 @@ namespace GQLAPIContainer {
         contentType
         size
         share {
-        isPublic
-        readUIds
-        writeUIds
+          isPublic
+          readUIds
+          writeUIds
         }
-        articleNodeName
-        articleNodeType
-        articleSortOrder
-        isArticleFile
+        article {
+          dir {
+            name
+            type
+            sortOrder
+          }
+          file {
+            type
+            content
+          }
+        }
         version
         createdAt
         updatedAt
       }
     `
+
+    function toStorageNode<T extends RawStorageNode | RawStorageNode[] | undefined | null>(rawEntity_or_rawEntities: T): ToEntity<T> {
+      if (!rawEntity_or_rawEntities) return undefined as ToEntity<T>
+
+      function to(rawEntity: RawStorageNode): ToEntity<RawStorageNode> {
+        if (rawEntity.article) {
+          rawEntity.article.dir = rawEntity.article.dir ?? undefined
+          rawEntity.article.file = rawEntity.article.file ?? undefined
+        } else {
+          rawEntity.article = undefined
+        }
+        return toEntity(rawEntity)
+      }
+
+      if (Array.isArray(rawEntity_or_rawEntities)) {
+        const rawEntities = rawEntity_or_rawEntities as RawStorageNode[]
+        return rawEntities.map(rawEntity => to(rawEntity)) as ToEntity<T>
+      } else {
+        const rawEntity = rawEntity_or_rawEntities as RawStorageNode
+        return to(rawEntity) as ToEntity<T>
+      }
+    }
 
     const getStorageNode: GQLAPIContainer['getStorageNode'] = async input => {
       const response = await clientLv1.query<{ storageNode: RawStorageNode | null }, { input: StorageNodeGetKeyInput }>({
@@ -345,7 +374,7 @@ namespace GQLAPIContainer {
         },
         isAuth: true,
       })
-      return toEntity(response.data.storageNode)
+      return toStorageNode(response.data.storageNode)
     }
 
     const getStorageNodes: GQLAPIContainer['getStorageNodes'] = async input => {
@@ -363,7 +392,7 @@ namespace GQLAPIContainer {
         },
         isAuth: true,
       })
-      return toEntity(response.data.storageNodes)
+      return toStorageNode(response.data.storageNodes)
     }
 
     const getStorageDirDescendants: GQLAPIContainer['getStorageDirDescendants'] = async (dirPath, input) => {
@@ -390,7 +419,7 @@ namespace GQLAPIContainer {
         isAuth: true,
       })
       return {
-        list: toEntity(response.data.storageDirDescendants.list),
+        list: toStorageNode(response.data.storageDirDescendants.list),
         nextPageToken: response.data.storageDirDescendants.nextPageToken || undefined,
         isPaginationTimeout: response.data.storageDirDescendants.isPaginationTimeout ?? false,
       }
@@ -420,7 +449,7 @@ namespace GQLAPIContainer {
         isAuth: true,
       })
       return {
-        list: toEntity(response.data.storageDescendants.list),
+        list: toStorageNode(response.data.storageDescendants.list),
         nextPageToken: response.data.storageDescendants.nextPageToken || undefined,
         isPaginationTimeout: response.data.storageDescendants.isPaginationTimeout ?? false,
       }
@@ -450,7 +479,7 @@ namespace GQLAPIContainer {
         isAuth: true,
       })
       return {
-        list: toEntity(response.data.storageDirChildren.list),
+        list: toStorageNode(response.data.storageDirChildren.list),
         nextPageToken: response.data.storageDirChildren.nextPageToken || undefined,
         isPaginationTimeout: response.data.storageDirChildren.isPaginationTimeout ?? false,
       }
@@ -477,7 +506,7 @@ namespace GQLAPIContainer {
         isAuth: true,
       })
       return {
-        list: toEntity(response.data.storageChildren.list),
+        list: toStorageNode(response.data.storageChildren.list),
         nextPageToken: response.data.storageChildren.nextPageToken || undefined,
         isPaginationTimeout: response.data.storageChildren.isPaginationTimeout ?? false,
       }
@@ -496,7 +525,7 @@ namespace GQLAPIContainer {
         variables: { nodePath },
         isAuth: true,
       })
-      return toEntity(response.data!.storageHierarchicalNodes)
+      return toStorageNode(response.data!.storageHierarchicalNodes)
     }
 
     const getStorageAncestorDirs: GQLAPIContainer['getStorageAncestorDirs'] = async nodePath => {
@@ -512,7 +541,7 @@ namespace GQLAPIContainer {
         variables: { nodePath },
         isAuth: true,
       })
-      return toEntity(response.data!.storageAncestorDirs)
+      return toStorageNode(response.data!.storageAncestorDirs)
     }
 
     const createStorageDir: GQLAPIContainer['createStorageDir'] = async (dirPath, input) => {
@@ -531,7 +560,7 @@ namespace GQLAPIContainer {
         },
         isAuth: true,
       })
-      return toEntity(response.data!.createStorageDir)
+      return toStorageNode(response.data!.createStorageDir)
     }
 
     const createStorageHierarchicalDirs: GQLAPIContainer['createStorageHierarchicalDirs'] = async dirPaths => {
@@ -547,7 +576,7 @@ namespace GQLAPIContainer {
         variables: { dirPaths },
         isAuth: true,
       })
-      return toEntity(response.data!.createStorageHierarchicalDirs)
+      return toStorageNode(response.data!.createStorageHierarchicalDirs)
     }
 
     const removeStorageDir: GQLAPIContainer['removeStorageDir'] = async dirPath => {
@@ -575,7 +604,7 @@ namespace GQLAPIContainer {
         variables: { filePath },
         isAuth: true,
       })
-      return toEntity(response.data!.removeStorageFile)
+      return toStorageNode(response.data!.removeStorageFile)
     }
 
     const moveStorageDir: GQLAPIContainer['moveStorageDir'] = async (fromDirPath, toDirPath) => {
@@ -603,7 +632,7 @@ namespace GQLAPIContainer {
         variables: { fromFilePath, toFilePath },
         isAuth: true,
       })
-      return toEntity(response.data!.moveStorageFile)
+      return toStorageNode(response.data!.moveStorageFile)
     }
 
     const renameStorageDir: GQLAPIContainer['renameStorageDir'] = async (dirPath, newName) => {
@@ -631,7 +660,7 @@ namespace GQLAPIContainer {
         variables: { filePath, newName },
         isAuth: true,
       })
-      return toEntity(response.data!.renameStorageFile)
+      return toStorageNode(response.data!.renameStorageFile)
     }
 
     const setStorageDirShareSettings: GQLAPIContainer['setStorageDirShareSettings'] = async (dirPath, input) => {
@@ -653,7 +682,7 @@ namespace GQLAPIContainer {
         },
         isAuth: true,
       })
-      return toEntity(response.data!.setStorageDirShareSettings)
+      return toStorageNode(response.data!.setStorageDirShareSettings)
     }
 
     const handleUploadedFile: GQLAPIContainer['handleUploadedFile'] = async input => {
@@ -671,7 +700,7 @@ namespace GQLAPIContainer {
         },
         isAuth: true,
       })
-      return toEntity(response.data!.handleUploadedFile)
+      return toStorageNode(response.data!.handleUploadedFile)
     }
 
     const setStorageFileShareSettings: GQLAPIContainer['setStorageFileShareSettings'] = async (filePath, input) => {
@@ -693,7 +722,7 @@ namespace GQLAPIContainer {
         },
         isAuth: true,
       })
-      return toEntity(response.data!.setStorageFileShareSettings)
+      return toStorageNode(response.data!.setStorageFileShareSettings)
     }
 
     const getSignedUploadUrls: GQLAPIContainer['getSignedUploadUrls'] = async inputs => {
@@ -728,7 +757,7 @@ namespace GQLAPIContainer {
         variables: { input: CreateArticleTypeDirInput.rigidify(input) },
         isAuth: true,
       })
-      return toEntity(response.data!.createArticleTypeDir)
+      return toStorageNode(response.data!.createArticleTypeDir)
     }
 
     const createArticleGeneralDir: GQLAPIContainer['createArticleGeneralDir'] = async dirPath => {
@@ -744,7 +773,7 @@ namespace GQLAPIContainer {
         variables: { dirPath },
         isAuth: true,
       })
-      return toEntity(response.data!.createArticleGeneralDir)
+      return toStorageNode(response.data!.createArticleGeneralDir)
     }
 
     const renameArticleNode: GQLAPIContainer['renameArticleNode'] = async (nodePath, newName) => {
@@ -760,7 +789,7 @@ namespace GQLAPIContainer {
         variables: { nodePath, newName },
         isAuth: true,
       })
-      return toEntity(response.data!.renameArticleNode)
+      return toStorageNode(response.data!.renameArticleNode)
     }
 
     const setArticleSortOrder: GQLAPIContainer['setArticleSortOrder'] = async orderNodePaths => {
@@ -775,14 +804,14 @@ namespace GQLAPIContainer {
       })
     }
 
-    const getArticleChildren: GQLAPIContainer['getArticleChildren'] = async (dirPath, articleTypes, input) => {
+    const getArticleChildren: GQLAPIContainer['getArticleChildren'] = async (dirPath, types, input) => {
       const response = await clientLv1.query<
         { articleChildren: RawStoragePaginationResult },
-        { dirPath: string; articleTypes: StorageArticleNodeType[]; input: StoragePaginationInput }
+        { dirPath: string; types: StorageArticleDirType[]; input: StoragePaginationInput }
       >({
         query: gql`
-          query GetArticleChildren($dirPath: String!, $articleTypes: [StorageArticleNodeType!]!, $input: StoragePaginationInput) {
-            articleChildren(dirPath: $dirPath, articleTypes: $articleTypes, input: $input) {
+          query GetArticleChildren($dirPath: String!, $types: [StorageArticleDirType!]!, $input: StoragePaginationInput) {
+            articleChildren(dirPath: $dirPath, types: $types, input: $input) {
               list {
                 ...${StorageNodeFieldsName}
               }
@@ -794,13 +823,13 @@ namespace GQLAPIContainer {
         `,
         variables: {
           dirPath,
-          articleTypes,
+          types,
           input: StoragePaginationInput.rigidify(input),
         },
         isAuth: true,
       })
       return {
-        list: toEntity(response.data.articleChildren.list),
+        list: toStorageNode(response.data.articleChildren.list),
         nextPageToken: response.data.articleChildren.nextPageToken || undefined,
         isPaginationTimeout: response.data.articleChildren.isPaginationTimeout ?? false,
       }

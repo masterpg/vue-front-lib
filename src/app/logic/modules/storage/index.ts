@@ -1,4 +1,4 @@
-export { StorageLogic, StorageType } from '@/app/logic/modules/storage/base'
+export { StorageLogic } from '@/app/logic/modules/storage/base'
 export { AppStorageLogic } from '@/app/logic/modules/storage/app-storage'
 export { ArticleStorageLogic } from '@/app/logic/modules/storage/article-storage'
 export { UserStorageLogic } from '@/app/logic/modules/storage/user-storage'

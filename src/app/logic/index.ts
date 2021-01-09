@@ -73,4 +73,4 @@ function injectLogic(): LogicContainer {
 export { LogicContainer, injectLogic, provideLogic }
 export * from '@/app/logic/base'
 export { AuthProviderType } from '@/app/logic/modules/auth'
-export { StorageType } from '@/app/logic/modules/storage'
+export { StorageLogic } from '@/app/logic/modules/storage'

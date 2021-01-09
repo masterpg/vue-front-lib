@@ -7,7 +7,7 @@ import {
   newStorageFileNode,
   provideDependency,
 } from '../../../../../helpers/app'
-import { StorageArticleNodeType, StorageNode } from '@/app/logic'
+import { StorageArticleDirType, StorageArticleFileType, StorageNode } from '@/app/logic'
 import _path from 'path'
 import { useConfig } from '@/app/config'
 
@@ -95,9 +95,13 @@ describe('AppStorageLogic', () => {
     it('ベーシックケース - 記事系ノード', async () => {
       const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         version: 1,
-        articleNodeName: 'バンドル',
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'バンドル',
+            type: StorageArticleDirType.CategoryBundle,
+            sortOrder: 1,
+          },
+        },
       })
       const {
         logic: { articleStorage, appStorage },
@@ -106,28 +110,31 @@ describe('AppStorageLogic', () => {
       })
 
       // モック設定
-      const renamed_bundle = cloneStorageNode(bundle, { articleNodeName: `Bundle`, version: bundle.version + 1 })
-      td.when(articleStorage.renameArticleNodeAPI(bundle.path, bundle.articleNodeName!)).thenResolve(renamed_bundle)
+      const renamed_bundle = cloneStorageNode(bundle, {
+        article: { dir: { name: `Bundle` } },
+        version: bundle.version + 1,
+      })
+      td.when(articleStorage.renameArticleNodeAPI(bundle.path, renamed_bundle.article?.dir?.name!)).thenResolve(renamed_bundle)
 
       // テスト対象実行
-      const [actual] = await articleStorage.renameDir(toBasePath(bundle.path), bundle.articleNodeName!)
+      const [actual] = await articleStorage.renameDir(toBasePath(bundle.path), renamed_bundle.article?.dir?.name!)
 
       expect(actual.id).toBe(renamed_bundle.id)
       expect(actual.path).toBe(toBasePath(renamed_bundle.path))
       expect(actual.name).toBe(renamed_bundle.name)
       expect(actual.version).toBe(renamed_bundle.version)
-      expect(actual.articleNodeName).toBe(renamed_bundle.articleNodeName)
-      expect(actual.articleNodeType).toBe(renamed_bundle.articleNodeType)
-      expect(actual.articleSortOrder).toBe(renamed_bundle.articleSortOrder)
+      expect(actual.article?.dir?.name).toBe(renamed_bundle.article?.dir?.name)
+      expect(actual.article?.dir?.type).toBe(renamed_bundle.article?.dir?.type)
+      expect(actual.article?.dir?.sortOrder).toBe(renamed_bundle.article?.dir?.sortOrder)
 
       const updated_bundle = articleStorage.sgetNode({ id: renamed_bundle.id })
       expect(updated_bundle.id).toBe(renamed_bundle.id)
       expect(updated_bundle.path).toBe(toBasePath(renamed_bundle.path))
       expect(updated_bundle.name).toBe(renamed_bundle.name)
       expect(updated_bundle.version).toBe(renamed_bundle.version)
-      expect(updated_bundle.articleNodeName).toBe(renamed_bundle.articleNodeName)
-      expect(updated_bundle.articleNodeType).toBe(renamed_bundle.articleNodeType)
-      expect(updated_bundle.articleSortOrder).toBe(renamed_bundle.articleSortOrder)
+      expect(updated_bundle.article?.dir?.name).toBe(renamed_bundle.article?.dir?.name)
+      expect(updated_bundle.article?.dir?.type).toBe(renamed_bundle.article?.dir?.type)
+      expect(updated_bundle.article?.dir?.sortOrder).toBe(renamed_bundle.article?.dir?.sortOrder)
 
       const hierarchicalNodes = appStorage.getHierarchicalNodes(renamed_bundle.path)
       expect(hierarchicalNodes.length).toBe(4)
@@ -156,18 +163,14 @@ describe('AppStorageLogic', () => {
       expect(actual.path).toBe(toBasePath(renamed_x1.path))
       expect(actual.name).toBe(renamed_x1.name)
       expect(actual.version).toBe(renamed_x1.version)
-      expect(actual.articleNodeName).toBeNull()
-      expect(actual.articleNodeType).toBeNull()
-      expect(actual.articleSortOrder).toBeNull()
+      expect(actual.article).toBeUndefined()
 
       const updated_x1 = articleStorage.sgetNode({ id: renamed_x1.id })
       expect(updated_x1.id).toBe(renamed_x1.id)
       expect(updated_x1.path).toBe(toBasePath(renamed_x1.path))
       expect(updated_x1.name).toBe(renamed_x1.name)
       expect(updated_x1.version).toBe(renamed_x1.version)
-      expect(updated_x1.articleNodeName).toBeNull()
-      expect(updated_x1.articleNodeType).toBeNull()
-      expect(updated_x1.articleSortOrder).toBeNull()
+      expect(updated_x1.article).toBeUndefined()
 
       const hierarchicalNodes = appStorage.getHierarchicalNodes(renamed_x1.path)
       expect(hierarchicalNodes.length).toBe(5)
@@ -202,18 +205,14 @@ describe('AppStorageLogic', () => {
       expect(actual.path).toBe(toBasePath(renamed_x1.path))
       expect(actual.name).toBe(renamed_x1.name)
       expect(actual.version).toBe(renamed_x1.version)
-      expect(actual.articleNodeName).toBeNull()
-      expect(actual.articleNodeType).toBeNull()
-      expect(actual.articleSortOrder).toBeNull()
+      expect(actual.article).toBeUndefined()
 
       const updated_x1 = articleStorage.sgetNode({ id: renamed_x1.id })
       expect(updated_x1.id).toBe(renamed_x1.id)
       expect(updated_x1.path).toBe(toBasePath(renamed_x1.path))
       expect(updated_x1.name).toBe(renamed_x1.name)
       expect(updated_x1.version).toBe(renamed_x1.version)
-      expect(updated_x1.articleNodeName).toBeNull()
-      expect(updated_x1.articleNodeType).toBeNull()
-      expect(updated_x1.articleSortOrder).toBeNull()
+      expect(updated_x1.article).toBeUndefined()
 
       const hierarchicalNodes = appStorage.getHierarchicalNodes(renamed_x1.path)
       expect(hierarchicalNodes.length).toBe(5)
@@ -228,19 +227,31 @@ describe('AppStorageLogic', () => {
   describe('createDir', () => {
     it('ベーシックケース', async () => {
       const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
-        articleNodeName: 'バンドル',
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'バンドル',
+            type: StorageArticleDirType.CategoryBundle,
+            sortOrder: 1,
+          },
+        },
       })
       const cat1 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
-        articleNodeName: 'カテゴリ1',
-        articleNodeType: StorageArticleNodeType.Category,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'カテゴリ1',
+            type: StorageArticleDirType.Category,
+            sortOrder: 1,
+          },
+        },
       })
       const art1 = newStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
-        articleNodeName: '記事1',
-        articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: '記事1',
+            type: StorageArticleDirType.Article,
+            sortOrder: 1,
+          },
+        },
       })
       const d1 = newStorageDirNode(`${art1.path}/d1`)
       const {
@@ -257,9 +268,7 @@ describe('AppStorageLogic', () => {
 
       expect(actual.id).toBe(d1.id)
       expect(actual.path).toBe(toBasePath(d1.path))
-      expect(actual.articleNodeName).toBeNull()
-      expect(actual.articleNodeType).toBeNull()
-      expect(actual.articleSortOrder).toBeNull()
+      expect(actual.article).toBeUndefined()
 
       const hierarchicalNodes = appStorage.getHierarchicalNodes(d1.path)
       expect(hierarchicalNodes.length).toBe(7)
@@ -274,19 +283,31 @@ describe('AppStorageLogic', () => {
 
     it('階層を構成するノードが欠けていた場合', async () => {
       const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
-        articleNodeName: 'バンドル',
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'バンドル',
+            type: StorageArticleDirType.CategoryBundle,
+            sortOrder: 1,
+          },
+        },
       })
       const cat1 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
-        articleNodeName: 'カテゴリ1',
-        articleNodeType: StorageArticleNodeType.Category,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'カテゴリ1',
+            type: StorageArticleDirType.Category,
+            sortOrder: 1,
+          },
+        },
       })
       const art1 = newStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
-        articleNodeName: '記事1',
-        articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: '記事1',
+            type: StorageArticleDirType.Article,
+            sortOrder: 1,
+          },
+        },
       })
       const d1 = newStorageDirNode(`${art1.path}/d1`)
       const {
@@ -311,9 +332,13 @@ describe('AppStorageLogic', () => {
   describe('createArticleTypeDir', () => {
     it('ベーシックケース - バンドル作成', async () => {
       const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
-        articleNodeName: 'バンドル',
-        articleNodeType: StorageArticleNodeType.ListBundle,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'バンドル',
+            type: StorageArticleDirType.ListBundle,
+            sortOrder: 1,
+          },
+        },
       })
       const {
         logic: { articleStorage, appStorage },
@@ -325,23 +350,23 @@ describe('AppStorageLogic', () => {
       td.when(
         articleStorage.createArticleTypeDirAPI({
           dir: bundle.dir,
-          articleNodeName: bundle.articleNodeName!,
-          articleNodeType: bundle.articleNodeType!,
+          name: bundle.article?.dir?.name!,
+          type: bundle.article?.dir?.type!,
         })
       ).thenResolve(bundle)
 
       // テスト対象実行
       const actual = await articleStorage.createArticleTypeDir({
         dir: ``,
-        articleNodeName: bundle.articleNodeName!,
-        articleNodeType: bundle.articleNodeType!,
+        name: bundle.article?.dir?.name!,
+        type: bundle.article?.dir?.type!,
       })
 
       expect(actual.id).toBe(bundle.id)
       expect(actual.path).toBe(toBasePath(bundle.path))
-      expect(actual.articleNodeName).toBe(bundle.articleNodeName)
-      expect(actual.articleNodeType).toBe(bundle.articleNodeType)
-      expect(actual.articleSortOrder).toBe(bundle.articleSortOrder)
+      expect(actual.article?.dir?.name).toBe(bundle.article?.dir?.name)
+      expect(actual.article?.dir?.type).toBe(bundle.article?.dir?.type)
+      expect(actual.article?.dir?.sortOrder).toBe(bundle.article?.dir?.sortOrder)
 
       const hierarchicalNodes = appStorage.getHierarchicalNodes(bundle.path)
       expect(hierarchicalNodes.length).toBe(4)
@@ -354,22 +379,39 @@ describe('AppStorageLogic', () => {
     it('ベーシックケース - 記事作成', async () => {
       const config = useConfig()
       const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
-        articleNodeName: 'バンドル',
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'バンドル',
+            type: StorageArticleDirType.CategoryBundle,
+            sortOrder: 1,
+          },
+        },
       })
       const cat1 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
-        articleNodeName: 'カテゴリ1',
-        articleNodeType: StorageArticleNodeType.Category,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'カテゴリ1',
+            type: StorageArticleDirType.Category,
+            sortOrder: 1,
+          },
+        },
       })
       const art1 = newStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
-        articleNodeName: '記事1',
-        articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: '記事1',
+            type: StorageArticleDirType.Article,
+            sortOrder: 1,
+          },
+        },
       })
       const art1Index = newStorageFileNode(`${art1.path}/${config.storage.article.fileName}`, {
-        isArticleFile: true,
+        article: {
+          file: {
+            type: StorageArticleFileType.Index,
+            content: '',
+          },
+        },
       })
       const {
         logic: { articleStorage, appStorage },
@@ -381,8 +423,8 @@ describe('AppStorageLogic', () => {
       td.when(
         articleStorage.createArticleTypeDirAPI({
           dir: art1.dir,
-          articleNodeName: art1.articleNodeName!,
-          articleNodeType: art1.articleNodeType!,
+          name: art1.article?.dir?.name!,
+          type: art1.article?.dir?.type!,
         })
       ).thenResolve(art1)
       td.when(articleStorage.getChildrenAPI(art1.path)).thenResolve([art1Index])
@@ -390,15 +432,15 @@ describe('AppStorageLogic', () => {
       // テスト対象実行
       const actual = await articleStorage.createArticleTypeDir({
         dir: `${bundle.id}/${cat1.id}`,
-        articleNodeName: art1.articleNodeName!,
-        articleNodeType: art1.articleNodeType!,
+        name: art1.article?.dir?.name!,
+        type: art1.article?.dir?.type!,
       })
 
       expect(actual.id).toBe(art1.id)
       expect(actual.path).toBe(toBasePath(art1.path))
-      expect(actual.articleNodeName).toBe(art1.articleNodeName)
-      expect(actual.articleNodeType).toBe(art1.articleNodeType)
-      expect(actual.articleSortOrder).toBe(art1.articleSortOrder)
+      expect(actual.article?.dir?.name).toBe(art1.article?.dir?.name)
+      expect(actual.article?.dir?.type).toBe(art1.article?.dir?.type)
+      expect(actual.article?.dir?.sortOrder).toBe(art1.article?.dir?.sortOrder)
 
       const hierarchicalNodes = appStorage.getHierarchicalNodes(art1Index.path)
       expect(hierarchicalNodes.length).toBe(7)
@@ -413,19 +455,31 @@ describe('AppStorageLogic', () => {
 
     it('階層を構成するノードが欠けていた場合', async () => {
       const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
-        articleNodeName: 'バンドル',
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'バンドル',
+            type: StorageArticleDirType.CategoryBundle,
+            sortOrder: 1,
+          },
+        },
       })
       const cat1 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
-        articleNodeName: 'カテゴリ1',
-        articleNodeType: StorageArticleNodeType.Category,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'カテゴリ1',
+            type: StorageArticleDirType.Category,
+            sortOrder: 1,
+          },
+        },
       })
       const art1 = newStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
-        articleNodeName: '記事1',
-        articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: '記事1',
+            type: StorageArticleDirType.Article,
+            sortOrder: 1,
+          },
+        },
       })
       const {
         logic: { articleStorage, appStorage },
@@ -439,8 +493,8 @@ describe('AppStorageLogic', () => {
         // テスト対象実行
         await articleStorage.createArticleTypeDir({
           dir: `${bundle.id}/${cat1.id}`,
-          articleNodeName: art1.articleNodeName!,
-          articleNodeType: art1.articleNodeType!,
+          name: art1.article?.dir?.name!,
+          type: art1.article?.dir?.type!,
         })
       } catch (err) {
         actual = err
@@ -453,17 +507,31 @@ describe('AppStorageLogic', () => {
   describe('setArticleSortOrder', () => {
     it('ベーシックケース', async () => {
       const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
-        articleNodeName: 'バンドル',
-        articleNodeType: StorageArticleNodeType.ListBundle,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'バンドル',
+            type: StorageArticleDirType.ListBundle,
+            sortOrder: 1,
+          },
+        },
       })
       const art1 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
-        articleNodeName: '記事1',
-        articleNodeType: StorageArticleNodeType.Article,
+        article: {
+          dir: {
+            name: '記事1',
+            type: StorageArticleDirType.Article,
+            sortOrder: 1,
+          },
+        },
       })
       const art2 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
-        articleNodeName: '記事2',
-        articleNodeType: StorageArticleNodeType.Article,
+        article: {
+          dir: {
+            name: '記事2',
+            type: StorageArticleDirType.Article,
+            sortOrder: 2,
+          },
+        },
       })
       const {
         logic: { articleStorage, appStorage },
@@ -472,28 +540,28 @@ describe('AppStorageLogic', () => {
       })
 
       // モック設定
+      art1.article!.dir!.sortOrder = 2
+      art2.article!.dir!.sortOrder = 1
       td.when(articleStorage.getNodesAPI({ paths: [art1.path, art2.path] })).thenResolve([art1, art2])
 
       // テスト対象実行
-      art1.articleSortOrder = 2
-      art2.articleSortOrder = 1
       const actual = await articleStorage.setArticleSortOrder(toBasePath([art1.path, art2.path]))
 
       // 戻り値の検証
       {
         const [_art1, _art2] = actual
         expect(_art1.path).toBe(toBasePath(art1.path))
-        expect(_art1.articleSortOrder).toBe(2)
+        expect(_art1.article?.dir?.sortOrder).toBe(2)
         expect(_art2.path).toBe(toBasePath(art2.path))
-        expect(_art2.articleSortOrder).toBe(1)
+        expect(_art2.article?.dir?.sortOrder).toBe(1)
       }
       // ストアの検証
       {
         const [_art1, _art2] = articleStorage.getNodes({ ids: [art1.id, art2.id] })
         expect(_art1.path).toBe(toBasePath(art1.path))
-        expect(_art1.articleSortOrder).toBe(2)
+        expect(_art1.article?.dir?.sortOrder).toBe(2)
         expect(_art2.path).toBe(toBasePath(art2.path))
-        expect(_art2.articleSortOrder).toBe(1)
+        expect(_art2.article?.dir?.sortOrder).toBe(1)
       }
 
       const exp = td.explain(articleStorage.setArticleSortOrderAPI.value)
@@ -504,16 +572,25 @@ describe('AppStorageLogic', () => {
       const Num = 101
 
       const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
-        articleNodeName: 'バンドル',
-        articleNodeType: StorageArticleNodeType.ListBundle,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'バンドル',
+            type: StorageArticleDirType.ListBundle,
+            sortOrder: 1,
+          },
+        },
       })
       const arts: StorageNode[] = []
       for (let i = 0; i < Num; i++) {
         arts.push(
           newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
-            articleNodeName: `記事${i + 1}`,
-            articleNodeType: StorageArticleNodeType.Article,
+            article: {
+              dir: {
+                name: `記事${i + 1}`,
+                type: StorageArticleDirType.Article,
+                sortOrder: -1,
+              },
+            },
           })
         )
       }
@@ -524,7 +601,7 @@ describe('AppStorageLogic', () => {
       })
 
       // モック設定
-      arts.forEach((art, index) => (art.articleSortOrder = Num - index))
+      arts.forEach((art, index) => (art.article!.dir!.sortOrder = Num - index))
       const art1to50 = arts.slice(0, 50)
       const art51to100 = arts.slice(50, 100)
       const art101to = arts.slice(100, Num)
@@ -540,14 +617,14 @@ describe('AppStorageLogic', () => {
         const art = arts[i]
         const _art = actual[i]
         expect(_art.path).toBe(toBasePath(art.path))
-        expect(_art.articleSortOrder).toBe(Num - i)
+        expect(_art.article?.dir?.sortOrder).toBe(Num - i)
       }
       // ストアの検証
       for (let i = 0; i < Num; i++) {
         const art = arts[i]
         const _art = articleStorage.sgetNode({ id: art.id })
         expect(_art.path).toBe(toBasePath(art.path))
-        expect(_art.articleSortOrder).toBe(Num - i)
+        expect(_art.article?.dir?.sortOrder).toBe(Num - i)
       }
 
       const exp = td.explain(articleStorage.setArticleSortOrderAPI.value)

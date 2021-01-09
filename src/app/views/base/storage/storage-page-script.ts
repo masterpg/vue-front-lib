@@ -1,5 +1,5 @@
+import { CreateArticleTypeDirInput, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/logic'
 import { SetupContext, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
-import { StorageArticleNodeType, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/logic'
 import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'
 import { TreeView, TreeViewLazyLoadEvent, TreeViewSelectEvent } from '@/app/components/tree-view'
 import { Loading } from 'quasar'
@@ -371,15 +371,11 @@ namespace StoragePage {
      * 記事系ディレクトリの作成を行います。
      * @param input
      */
-    async function createArticleTypeDir(input: { dir: string; name: string; articleNodeType: StorageArticleNodeType }): Promise<void> {
+    async function createArticleTypeDir(input: CreateArticleTypeDirInput): Promise<void> {
       Loading.show()
 
       // 記事系ディレクトリの作成
-      await pageLogic.createArticleTypeDir({
-        dir: input.dir,
-        articleNodeName: input.name,
-        articleNodeType: input.articleNodeType,
-      })
+      await pageLogic.createArticleTypeDir(input)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
       changeDirOnPage(pageLogic.selectedTreeNodePath.value)
@@ -491,11 +487,16 @@ namespace StoragePage {
           break
         }
         case 'createArticleTypeDir': {
-          const articleNodeType = e.articleNodeType!
           const dirPath = e.nodePaths[0]
-          const pathData = await dirCreateDialog.value!.open({ parentPath: dirPath, articleNodeType })
+          const pathData = await dirCreateDialog.value!.open({
+            parentPath: dirPath,
+            article: e.article,
+          })
           if (pathData) {
-            await createArticleTypeDir({ ...pathData, articleNodeType })
+            await createArticleTypeDir({
+              ...pathData,
+              type: e.article?.dir?.type!,
+            })
           }
           break
         }

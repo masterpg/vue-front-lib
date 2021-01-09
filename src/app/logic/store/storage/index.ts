@@ -1,6 +1,6 @@
 import { ComputedRef, computed, reactive } from '@vue/composition-api'
 import { DeepReadonly, arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
-import { StorageNode, StorageNodeGetKeysInput, StorageNodeType, sortStorageTree } from '@/app/logic/base'
+import { StorageNode, StorageNodeGetKeysInput, StorageNodeType, StorageUtil } from '@/app/logic/base'
 import _path from 'path'
 
 //========================================================================
@@ -312,7 +312,7 @@ namespace StorageStore {
     }
 
     const sort: StorageStore['sort'] = () => {
-      sortStorageTree(state.all)
+      StorageUtil.sortNodes(state.all)
     }
 
     //----------------------------------------------------------------------

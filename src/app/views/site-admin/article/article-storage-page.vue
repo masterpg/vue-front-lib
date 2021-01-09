@@ -102,8 +102,6 @@ import { StoragePage, StoragePageLogic } from '@/app/views/base/storage'
 import { defineComponent, ref } from '@vue/composition-api'
 import { ArticleDirView } from '@/app/views/site-admin/article/article-dir-view.vue'
 import { ArticleWritingView } from '@/app/views/site-admin/article/article-writing-view.vue'
-import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
-import { TreeViewSelectEvent } from '@/app/components/tree-view/base'
 
 namespace ArticleStoragePage {
   export const clazz = defineComponent({
@@ -161,7 +159,7 @@ namespace ArticleStoragePage {
             break
           }
           case StorageNodeType.File: {
-            if (node.isArticleFile) {
+            if (node.article?.file) {
               // 記事編集ビューを表示
               showWritingView(node.path)
             }
@@ -202,7 +200,7 @@ namespace ArticleStoragePage {
         // 選択ノードがファイルの場合
         if (selectedNode.nodeType === StorageNodeType.File) {
           // 選択ノードが｢記事ファイル｣の場合
-          if (selectedNode.nodeType === StorageNodeType.File && selectedNode.isArticleFile) {
+          if (selectedNode.nodeType === StorageNodeType.File && selectedNode.article?.file) {
             // 選択ノードのパスをURLに付与
             // ※記事編集ビューが表示されることになる
             base.changeDirOnPage(selectedNode.path)

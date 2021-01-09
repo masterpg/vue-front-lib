@@ -1,9 +1,8 @@
 <script lang="ts">
 import { Img, ImgTemplate } from '@/app/components/img'
+import { StorageUtil, getIdToken } from '@/app/logic'
 import axios, { AxiosResponse, Canceler } from 'axios'
 import { defineComponent, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
-import { StorageLogic } from '@/app/logic/modules/storage'
-import { getIdToken } from '@/app/logic'
 
 interface StorageImg extends StorageImg.Props, Img {}
 
@@ -82,7 +81,7 @@ namespace StorageImg {
         // 画像の入力ソースを取得
         let src: string
         if (props.nodeId) {
-          src = StorageLogic.getNodeURL(props.nodeId)
+          src = StorageUtil.getNodeURL(props.nodeId)
         } else {
           src = props.src
         }

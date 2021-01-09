@@ -1,4 +1,4 @@
-import { CreateArticleTypeDirInput, StorageArticleNodeType, StorageNode, StoragePaginationInput, StoragePaginationResult } from '@/app/logic/base'
+import { CreateArticleTypeDirInput, StorageArticleDirType, StorageNode, StoragePaginationInput, StoragePaginationResult } from '@/app/logic/base'
 import { AppStorageLogic } from '@/app/logic/modules/storage/app-storage'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import _path from 'path'
@@ -21,7 +21,7 @@ interface ArticleStorageLogic extends StorageLogic {
   setArticleSortOrder(orderNodePaths: string[]): Promise<StorageNode[]>
   fetchArticleChildren(
     dirPath: string,
-    articleTypes: StorageArticleNodeType[],
+    articleTypes: StorageArticleDirType[],
     input?: StoragePaginationInput
   ): Promise<StoragePaginationResult<StorageNode>>
 }
@@ -99,7 +99,7 @@ namespace ArticleStorageLogic {
 
     base.renameDir.value = async (dirPath, newName) => {
       const dirNode = base.sgetNode({ path: dirPath })
-      if (dirNode.articleNodeType) {
+      if (dirNode.article?.dir) {
         const apiNode = await renameArticleNodeAPI(base.toFullPath(dirPath), newName)
         const dirNode = base.setAPINodeToStore(apiNode)
         return base.toBasePathNode([dirNode])
@@ -140,7 +140,7 @@ namespace ArticleStorageLogic {
       const dirNode = base.setAPINodeToStore(apiNode)
 
       // 記事作成時は記事ファイルも作成されるので読み込みを行う
-      if (apiNode.articleNodeType === StorageArticleNodeType.Article) {
+      if (apiNode.article?.dir?.type === StorageArticleDirType.Article) {
         await base.fetchChildren(base.toBasePath(apiNode.path))
       }
 
@@ -201,7 +201,7 @@ namespace ArticleStorageLogic {
       const apiNode = await api.setArticleSortOrder(orderNodePaths)
     })
 
-    const getArticleChildrenAPI = extendedMethod(async (dirPath: string, articleTypes: StorageArticleNodeType[], input?: StoragePaginationInput) => {
+    const getArticleChildrenAPI = extendedMethod(async (dirPath: string, articleTypes: StorageArticleDirType[], input?: StoragePaginationInput) => {
       const pagination = await api.getArticleChildren(dirPath, articleTypes, input)
       return {
         nextPageToken: pagination.nextPageToken,

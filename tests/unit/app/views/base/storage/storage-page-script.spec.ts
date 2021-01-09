@@ -1,5 +1,14 @@
 import { ArticleStorageLogic, StorageLogic } from '@/app/logic/modules/storage'
-import { CreateArticleTypeDirInput, StorageArticleNodeType, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/logic'
+import {
+  CreateArticleTypeDirInput,
+  StorageArticleDirType,
+  StorageArticleFileType,
+  StorageNode,
+  StorageNodeShareSettings,
+  StorageNodeType,
+  StorageType,
+  StorageUtil,
+} from '@/app/logic'
 import { NewTestStorageNodeData, TestLogicContainer, newStorageDirNode, newStorageFileNode } from '../../../../../helpers/app'
 import { Ref, ref } from '@vue/composition-api'
 import { StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/storage/base'
@@ -8,13 +17,13 @@ import { StoragePageLogic } from '@/app/views/base/storage'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
 import { UploadEndedEvent } from '@/app/components/storage'
 import { VueRouter } from 'vue-router/types/router'
-import { cloneDeep } from 'lodash'
 import dayjs from 'dayjs'
+import { merge } from 'lodash'
 import { mount } from '@vue/test-utils'
 import { shuffleArray } from 'web-base-lib'
 import { useConfig } from '@/app/config'
 import { useI18n } from '@/app/i18n'
-const { EmptyShareSettings } = StorageLogic
+const { EmptyShareSettings } = StorageUtil
 
 //========================================================================
 //
@@ -60,7 +69,7 @@ function newStoragePageLogic(
       case 'article':
         return logic.articleStorage
     }
-  })()
+  })() as StorageLogic
   td.replace(require('@/app/logic'), 'injectLogic', () => logic)
 
   // ルーターをモック化
@@ -134,7 +143,7 @@ function newTreeFileNodeInput(filePath: string, data?: NewTreeFileNodeInputData)
 }
 
 function cloneTreeNodeInput(source: StorageTreeNodeInput, input: Partial<StorageTreeNodeInput>): StorageTreeNodeInput {
-  return Object.assign({}, cloneDeep(source), cloneDeep(input))
+  return merge({}, source, input)
 }
 
 /**
@@ -189,23 +198,42 @@ function newListBundleFamilyNodes() {
   const articleFileName = config.storage.article.fileName
 
   const blog = newStorageDirNode(`${StorageNode.generateId()}`, {
-    articleNodeName: 'ブログ',
-    articleNodeType: StorageArticleNodeType.ListBundle,
-    articleSortOrder: 1,
+    article: {
+      dir: {
+        name: 'ブログ',
+        type: StorageArticleDirType.ListBundle,
+        sortOrder: 1,
+      },
+    },
   })
 
   const art2 = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
-    articleNodeName: '記事2',
-    articleNodeType: StorageArticleNodeType.Article,
-    articleSortOrder: 2,
+    article: {
+      dir: {
+        name: '記事2',
+        type: StorageArticleDirType.Article,
+        sortOrder: 2,
+      },
+    },
   })
 
-  const art2_index = newStorageDirNode(`${art2.path}/${articleFileName}`)
+  const art2_index = newStorageDirNode(`${art2.path}/${articleFileName}`, {
+    article: {
+      file: {
+        type: StorageArticleFileType.Index,
+        content: '',
+      },
+    },
+  })
 
   const art1 = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
-    articleNodeName: '記事1',
-    articleNodeType: StorageArticleNodeType.Article,
-    articleSortOrder: 1,
+    article: {
+      dir: {
+        name: '記事1',
+        type: StorageArticleDirType.Article,
+        sortOrder: 1,
+      },
+    },
   })
 
   const art1_index = newStorageDirNode(`${art1.path}/${articleFileName}`)
@@ -229,29 +257,52 @@ function newCategoryBundleFamilyNodes() {
   const articleFileName = config.storage.article.fileName
 
   const programming = newStorageDirNode(`${StorageNode.generateId()}`, {
-    articleNodeName: 'プログラミング',
-    articleNodeType: StorageArticleNodeType.CategoryBundle,
-    articleSortOrder: 1,
+    article: {
+      dir: {
+        name: 'プログラミング',
+        type: StorageArticleDirType.CategoryBundle,
+        sortOrder: 1,
+      },
+    },
   })
 
   const ts = newStorageDirNode(`${programming.path}/${StorageNode.generateId()}`, {
-    articleNodeName: 'TypeScript',
-    articleNodeType: StorageArticleNodeType.Category,
-    articleSortOrder: 1,
+    article: {
+      dir: {
+        name: 'TypeScript',
+        type: StorageArticleDirType.Category,
+        sortOrder: 1,
+      },
+    },
   })
 
   const variable = newStorageDirNode(`${ts.path}/${StorageNode.generateId()}`, {
-    articleNodeName: '変数',
-    articleNodeType: StorageArticleNodeType.Article,
-    articleSortOrder: 2,
+    article: {
+      dir: {
+        name: '変数',
+        type: StorageArticleDirType.Article,
+        sortOrder: 2,
+      },
+    },
   })
 
-  const variable_index = newStorageDirNode(`${variable.path}/${articleFileName}`)
+  const variable_index = newStorageDirNode(`${variable.path}/${articleFileName}`, {
+    article: {
+      file: {
+        type: StorageArticleFileType.Index,
+        content: '',
+      },
+    },
+  })
 
   const clazz = newStorageDirNode(`${ts.path}/${StorageNode.generateId()}`, {
-    articleNodeName: 'クラス',
-    articleNodeType: StorageArticleNodeType.Article,
-    articleSortOrder: 1,
+    article: {
+      dir: {
+        name: 'クラス',
+        type: StorageArticleDirType.Article,
+        sortOrder: 1,
+      },
+    },
   })
 
   const clazz_index = newStorageDirNode(`${clazz.path}/${articleFileName}`)
@@ -1752,17 +1803,21 @@ describe('StoragePageLogic', () => {
       // articles
       // └[バンドル]
       const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleNodeName: 'バンドル',
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            type: StorageArticleDirType.CategoryBundle,
+            name: 'バンドル',
+            sortOrder: 1,
+          },
+        },
         lazyLoadStatus: 'none',
       })
       pageLogic.setAllTreeNodes([])
 
       const bundleInput: CreateArticleTypeDirInput = {
         dir: bundle.dir,
-        articleNodeType: bundle.articleNodeType!,
-        articleNodeName: bundle.articleNodeName!,
+        name: bundle.article?.dir?.name!,
+        type: bundle.article?.dir?.type!,
       }
 
       // モック設定
@@ -1789,23 +1844,31 @@ describe('StoragePageLogic', () => {
       // └バンドル
       //   └[カテゴリ1]
       const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleNodeName: 'バンドル',
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            type: StorageArticleDirType.CategoryBundle,
+            name: 'バンドル',
+            sortOrder: 1,
+          },
+        },
         lazyLoadStatus: 'loaded',
       })
       const cat1 = newTreeDirNodeInput(`${bundle.path}/${StorageNode.generateId()}`, {
-        articleNodeType: StorageArticleNodeType.Category,
-        articleNodeName: 'カテゴリ1',
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            type: StorageArticleDirType.Category,
+            name: 'カテゴリ1',
+            sortOrder: 1,
+          },
+        },
         lazyLoadStatus: 'none',
       })
       pageLogic.setAllTreeNodes([bundle])
 
       const cat1Input: CreateArticleTypeDirInput = {
         dir: cat1.dir,
-        articleNodeType: cat1.articleNodeType!,
-        articleNodeName: cat1.articleNodeName!,
+        name: cat1.article?.dir?.name!,
+        type: cat1.article?.dir?.type!,
       }
 
       // モック設定
@@ -1840,15 +1903,23 @@ describe('StoragePageLogic', () => {
       //   └[記事1]
       //     └[index1.md]
       const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleNodeName: 'バンドル',
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            type: StorageArticleDirType.CategoryBundle,
+            name: 'バンドル',
+            sortOrder: 1,
+          },
+        },
         lazyLoadStatus: 'loaded',
       })
       const art1 = newTreeDirNodeInput(`${bundle.path}/${StorageNode.generateId()}`, {
-        articleNodeType: StorageArticleNodeType.Article,
-        articleNodeName: '記事1',
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            type: StorageArticleDirType.Article,
+            name: '記事1',
+            sortOrder: 1,
+          },
+        },
         lazyLoadStatus: 'none',
       })
       const art1_index = newTreeFileNodeInput(`${art1.path}/${articleFileName}`)
@@ -1856,8 +1927,8 @@ describe('StoragePageLogic', () => {
 
       const art1Input: CreateArticleTypeDirInput = {
         dir: art1.dir,
-        articleNodeType: art1.articleNodeType!,
-        articleNodeName: art1.articleNodeName!,
+        name: art1.article?.dir?.name!,
+        type: art1.article?.dir?.type!,
       }
 
       // モック設定
@@ -1889,17 +1960,21 @@ describe('StoragePageLogic', () => {
       const articleLogic = storageLogic as ArticleStorageLogic
 
       const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleNodeName: 'バンドル',
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            type: StorageArticleDirType.CategoryBundle,
+            name: 'バンドル',
+            sortOrder: 1,
+          },
+        },
         lazyLoadStatus: 'none',
       })
       pageLogic.setAllTreeNodes([])
 
       const bundleInput: CreateArticleTypeDirInput = {
         dir: bundle.dir,
-        articleNodeType: bundle.articleNodeType!,
-        articleNodeName: bundle.articleNodeName!,
+        name: bundle.article?.dir?.name!,
+        type: bundle.article?.dir?.type!,
       }
 
       td.when(articleLogic.createArticleTypeDir(bundleInput)).thenReject(new Error())
@@ -1914,17 +1989,21 @@ describe('StoragePageLogic', () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ storageType: 'app' })
 
       const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleNodeName: 'バンドル',
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            type: StorageArticleDirType.CategoryBundle,
+            name: 'バンドル',
+            sortOrder: 1,
+          },
+        },
         lazyLoadStatus: 'none',
       })
       pageLogic.setAllTreeNodes([])
 
       const bundleInput: CreateArticleTypeDirInput = {
         dir: bundle.dir,
-        articleNodeType: bundle.articleNodeType!,
-        articleNodeName: bundle.articleNodeName!,
+        name: bundle.article?.dir?.name!,
+        type: bundle.article?.dir?.type!,
       }
 
       let actual!: Error
@@ -3076,14 +3155,22 @@ describe('StoragePageLogic', () => {
       // ├バンドル2
       // └アセット
       const bundle1 = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleNodeName: 'バンドル1',
-        articleSortOrder: 2,
+        article: {
+          dir: {
+            type: StorageArticleDirType.CategoryBundle,
+            name: 'バンドル1',
+            sortOrder: 2,
+          },
+        },
       })
       const bundle2 = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleNodeName: 'バンドル2',
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            type: StorageArticleDirType.CategoryBundle,
+            name: 'バンドル2',
+            sortOrder: 1,
+          },
+        },
       })
       const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
       pageLogic.setAllTreeNodes([bundle1, bundle2, assets])
@@ -3093,8 +3180,8 @@ describe('StoragePageLogic', () => {
         td.when(articleLogic.sgetNode({ path: bundle2.path })).thenReturn(toStorageNode(bundle2))
         td.when(articleLogic.sgetNode({ path: bundle1.path })).thenReturn(toStorageNode(bundle1))
 
-        bundle1.articleSortOrder = 1
-        bundle2.articleSortOrder = 2
+        bundle1.article!.dir!.sortOrder = 1
+        bundle2.article!.dir!.sortOrder = 2
         td.when(articleLogic.setArticleSortOrder([bundle2.path, bundle1.path])).thenResolve(toStorageNode([bundle2, bundle1]))
       }
 
@@ -3107,9 +3194,9 @@ describe('StoragePageLogic', () => {
       // └アセット
       const [_root, _bundle2, _bundle1, _assets] = pageLogic.getAllTreeNodes()
       expect(_bundle2.path).toBe(bundle2.path)
-      expect(_bundle2.articleSortOrder).toBe(bundle2.articleSortOrder)
+      expect(_bundle2.article?.dir?.sortOrder).toBe(bundle2.article?.dir?.sortOrder)
       expect(_bundle1.path).toBe(bundle1.path)
-      expect(_bundle1.articleSortOrder).toBe(bundle1.articleSortOrder)
+      expect(_bundle1.article?.dir?.sortOrder).toBe(bundle1.article?.dir?.sortOrder)
       expect(_assets.path).toBe(assets.path)
 
       verifyParentChildRelationForTree(treeView)
@@ -3125,14 +3212,22 @@ describe('StoragePageLogic', () => {
       // ├バンドル2
       // └アセット
       const bundle1 = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleNodeName: 'バンドル1',
-        articleSortOrder: 2,
+        article: {
+          dir: {
+            type: StorageArticleDirType.CategoryBundle,
+            name: 'バンドル1',
+            sortOrder: 2,
+          },
+        },
       })
       const bundle2 = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleNodeName: 'バンドル2',
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            type: StorageArticleDirType.CategoryBundle,
+            name: 'バンドル2',
+            sortOrder: 1,
+          },
+        },
       })
       const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
       pageLogic.setAllTreeNodes([bundle1, bundle2, assets])
@@ -3332,7 +3427,7 @@ describe('StoragePageLogic', () => {
 
       const actual = pageLogic.getDisplayNodeName(blog)
 
-      expect(actual).toBe(blog.articleNodeName)
+      expect(actual).toBe(blog.article?.dir?.name)
     })
 
     it('アセットディレクトリの場合 - ストレージタイプが｢記事｣以外の場合', () => {
@@ -3400,7 +3495,7 @@ describe('StoragePageLogic', () => {
 
       const actual = pageLogic.getDisplayNodePath({ path: art1.path })
 
-      expect(actual).toBe(`${blog.articleNodeName}/${art1.articleNodeName}`)
+      expect(actual).toBe(`${blog.article?.dir?.name}/${art1.article?.dir?.name}`)
     })
   })
 
@@ -3426,7 +3521,7 @@ describe('StoragePageLogic', () => {
 
       const actual = pageLogic.getNodeIcon(blog)
 
-      expect(actual).toBe(StorageArticleNodeType.getIcon(blog.articleNodeType))
+      expect(actual).toBe(StorageArticleDirType.getIcon(blog.article?.dir?.type!))
     })
 
     it(`アセットディレクトリの場合 - ストレージタイプが｢記事｣以外の場合`, () => {
@@ -3472,7 +3567,7 @@ describe('StoragePageLogic', () => {
 
       const actual = pageLogic.getNodeTypeLabel(blog)
 
-      expect(actual).toBe(StorageArticleNodeType.getLabel(blog.articleNodeType))
+      expect(actual).toBe(StorageArticleDirType.getLabel(blog.article?.dir?.type!))
     })
 
     it('ファイルの場合', () => {

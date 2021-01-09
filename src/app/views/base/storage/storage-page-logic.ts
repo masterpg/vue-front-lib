@@ -11,17 +11,19 @@ import { ComputedRef, Ref, WritableComputedRef, computed, ref, watch } from '@vu
 import {
   CreateArticleTypeDirInput,
   RequiredStorageNodeShareSettings,
-  StorageArticleNodeType,
+  StorageArticleDirType,
+  StorageArticleSettings,
   StorageNode,
   StorageNodeGetKeyInput,
   StorageNodeShareSettings,
   StorageNodeType,
   StorageType,
+  StorageUtil,
   injectLogic,
 } from '@/app/logic'
-import { StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/storage/base'
+import { StorageArticleTypeInput, StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/storage/base'
 import { TreeView, TreeViewLazyLoadStatus, newTreeNode } from '@/app/components/tree-view'
-import { arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
+import { arrayToDict, pickProps, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
 import router, { StorageRoute } from '@/app/router'
 import { Notify } from 'quasar'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
@@ -253,12 +255,7 @@ interface StoragePageLogic {
    * ノードの表示用の名前を取得します。
    * @param node
    */
-  getDisplayNodeName(node: {
-    path: StorageNode['path']
-    name: StorageNode['name']
-    articleNodeName: StorageNode['articleNodeName']
-    articleNodeType: StorageNode['articleNodeType']
-  }): string
+  getDisplayNodeName(node: Pick<StorageNode, 'path' | 'name' | 'article'>): string
   /**
    * ノードの表示用パスを取得します。
    * @param key
@@ -268,26 +265,17 @@ interface StoragePageLogic {
    * ノードのアイコンを取得します。
    * @param node
    */
-  getNodeIcon(node: {
-    path: StorageNode['path']
-    nodeType: StorageNode['nodeType']
-    articleNodeType: StorageNode['articleNodeType']
-    isArticleFile: StorageNode['isArticleFile']
-  }): string
+  getNodeIcon(node: { path: string; nodeType: StorageNodeType; article?: StorageArticleTypeInput }): string
   /**
    * ノードタイプのアイコンを取得します。
    * @param node
    */
-  getNodeTypeIcon(node: {
-    nodeType: StorageNode['nodeType']
-    articleNodeType: StorageNode['articleNodeType']
-    isArticleFile: StorageNode['isArticleFile']
-  }): string
+  getNodeTypeIcon(node: { nodeType: StorageNodeType; article?: StorageArticleTypeInput }): string
   /**
    * ノードタイプの表示ラベルを取得します。
    * @param node
    */
-  getNodeTypeLabel(node: { nodeType: StorageNode['nodeType']; articleNodeType: StorageNode['articleNodeType'] }): string
+  getNodeTypeLabel(node: { nodeType: StorageNodeType; article?: StorageArticleTypeInput }): string
   /**
    * 指定されたノードが｢アセットディレクトリ｣か否かを取得します。
    * @param key
@@ -674,7 +662,8 @@ namespace StoragePageLogic {
     }
 
     const setTreeNodes: StoragePageLogic['setTreeNodes'] = nodes => {
-      nodes = StorageLogic.sortTree([...nodes])
+      // 上位ノードから順に追加または更新する必要があるためソートする
+      nodes = StorageUtil.sortNodes([...nodes])
 
       for (const node of nodes) {
         setTreeNode(node)
@@ -756,7 +745,7 @@ namespace StoragePageLogic {
 
     const mergeAllTreeNodes: StoragePageLogic['mergeAllTreeNodes'] = nodes => {
       let filteredNodes = nodes.filter(nodeFilter)
-      filteredNodes = StorageLogic.sortTree([...filteredNodes])
+      filteredNodes = StorageUtil.sortNodes([...filteredNodes])
 
       const nodeDict = arrayToDict(filteredNodes, 'path')
 
@@ -865,13 +854,13 @@ namespace StoragePageLogic {
         dirNode = await articleLogic.createArticleTypeDir(input)
       } catch (err) {
         console.error(err)
-        showNotification('error', String(t('storage.create.creatingDirError', { nodeName: input.articleNodeName })))
+        showNotification('error', String(t('storage.create.creatingDirError', { nodeName: input.name })))
         return
       }
 
       // 記事ディレクトリ作成時は記事ファイルも作成されるので読み込みを行う
       let dirChildren: StorageNode[] = []
-      if (dirNode.articleNodeType === StorageArticleNodeType.Article) {
+      if (dirNode.article?.dir?.type === StorageArticleDirType.Article) {
         dirChildren = articleLogic.getChildren(dirNode.path)
       }
 
@@ -1061,9 +1050,8 @@ namespace StoragePageLogic {
       // 引数チェック
       for (const nodePath of orderNodePaths) {
         const node = articleLogic.sgetNode({ path: nodePath })
-        if (!node.articleNodeType) {
-          const { id, path, articleNodeName, articleNodeType } = node
-          const nodeDetail = JSON.stringify({ id, path, articleNodeName, articleNodeType }, null, 2)
+        if (!node.article?.dir) {
+          const nodeDetail = JSON.stringify(pickProps(node, ['id', 'path', 'article']), null, 2)
           throw new Error(`A node is specified for which the sort order cannot be set: ${nodeDetail}`)
         }
       }
@@ -1158,7 +1146,7 @@ namespace StoragePageLogic {
         label: getDisplayNodeName(source),
         icon: getNodeIcon(source),
         lazy: source.nodeType === StorageNodeType.Dir,
-        sortFunc: StorageLogic.childrenSortFunc,
+        sortFunc: StorageUtil.childrenSortFunc,
         id: source.id,
         nodeType: source.nodeType,
         contentType: source.contentType,
@@ -1168,10 +1156,7 @@ namespace StoragePageLogic {
           readUIds: source.share.readUIds ? [...source.share.readUIds] : null,
           writeUIds: source.share.writeUIds ? [...source.share.writeUIds] : null,
         },
-        articleNodeName: source.articleNodeName,
-        articleNodeType: source.articleNodeType,
-        articleSortOrder: source.articleSortOrder,
-        isArticleFile: source.isArticleFile,
+        article: StorageArticleSettings.clone(source.article),
         url: source.url,
         createdAt: source.createdAt,
         updatedAt: source.updatedAt,
@@ -1196,10 +1181,7 @@ namespace StoragePageLogic {
       if (storageType === 'article' && node.path === config.storage.article.assetsName) {
         return String(tc('storage.asset', 2))
       }
-      if (node.articleNodeName) {
-        return node.articleNodeName
-      }
-      return node.name
+      return node.article?.dir?.name || node.name
     }
 
     const getDisplayNodePath: StoragePageLogic['getDisplayNodePath'] = key => {
@@ -1223,10 +1205,10 @@ namespace StoragePageLogic {
     }
 
     const getNodeTypeIcon: StoragePageLogic['getNodeTypeIcon'] = node => {
-      if (node.articleNodeType) {
-        return StorageArticleNodeType.getIcon(node.articleNodeType)
+      if (node.article?.dir) {
+        return StorageArticleDirType.getIcon(node.article.dir.type)
       } else {
-        if (node.isArticleFile) {
+        if (node.article?.file) {
           return 'fas fa-pen-square'
         } else {
           return StorageNodeType.getIcon(node.nodeType)
@@ -1237,8 +1219,8 @@ namespace StoragePageLogic {
     const getNodeTypeLabel: StoragePageLogic['getNodeTypeLabel'] = node => {
       switch (node.nodeType) {
         case StorageNodeType.Dir: {
-          if (node.articleNodeType) {
-            return StorageArticleNodeType.getLabel(node.articleNodeType)
+          if (node.article?.dir) {
+            return StorageArticleDirType.getLabel(node.article.dir.type)
           }
           return StorageNodeType.getLabel(node.nodeType)
         }
@@ -1263,28 +1245,28 @@ namespace StoragePageLogic {
       if (storageType !== 'article') return false
       const node = storageLogic.getNode(key)
       if (!node) return false
-      return node.articleNodeType === StorageArticleNodeType.ListBundle
+      return node.article?.dir?.type === StorageArticleDirType.ListBundle
     }
 
     const isCategoryBundle: StoragePageLogic['isCategoryBundle'] = key => {
       if (storageType !== 'article') return false
       const node = storageLogic.getNode(key)
       if (!node) return false
-      return node.articleNodeType === StorageArticleNodeType.CategoryBundle
+      return node.article?.dir?.type === StorageArticleDirType.CategoryBundle
     }
 
     const isCategory: StoragePageLogic['isCategory'] = key => {
       if (storageType !== 'article') return false
       const node = storageLogic.getNode(key)
       if (!node) return false
-      return node.articleNodeType === StorageArticleNodeType.Category
+      return node.article?.dir?.type === StorageArticleDirType.Category
     }
 
     const isArticle: StoragePageLogic['isArticle'] = key => {
       if (storageType !== 'article') return false
       const node = storageLogic.getNode(key)
       if (!node) return false
-      return node.articleNodeType === StorageArticleNodeType.Article
+      return node.article?.dir?.type === StorageArticleDirType.Article
     }
 
     const isArticleFile: StoragePageLogic['isArticleFile'] = key => {
@@ -1297,7 +1279,7 @@ namespace StoragePageLogic {
       const parent = storageLogic.getNode({ path: parentPath })
       if (!parent) return false
 
-      return parent.articleNodeType === StorageArticleNodeType.Article && node.name === config.storage.article.fileName
+      return parent.article?.dir?.type === StorageArticleDirType.Article && node.name === config.storage.article.fileName
     }
 
     const isArticleDescendant: StoragePageLogic['isArticleDescendant'] = key => {
@@ -1314,7 +1296,7 @@ namespace StoragePageLogic {
         const parentNode = storageLogic.getNode({ path: parentPath })
         if (!parentNode) return false
 
-        if (parentNode.articleNodeType === StorageArticleNodeType.Article) {
+        if (parentNode.article?.dir?.type === StorageArticleDirType.Article) {
           return true
         } else {
           return existsArticle(parentPath)
@@ -1486,7 +1468,7 @@ namespace StoragePageLogic {
       opened: false,
       lazy: false,
       lazyLoadStatus: 'none',
-      sortFunc: StorageLogic.childrenSortFunc,
+      sortFunc: StorageUtil.childrenSortFunc,
       selected: false,
       id: '',
       nodeType: StorageNodeType.Dir,
@@ -1497,10 +1479,7 @@ namespace StoragePageLogic {
         readUIds: [],
         writeUIds: [],
       },
-      articleNodeName: null,
-      articleNodeType: null,
-      articleSortOrder: null,
-      isArticleFile: false,
+      article: undefined,
       url: '',
       createdAt: dayjs(0),
       updatedAt: dayjs(0),

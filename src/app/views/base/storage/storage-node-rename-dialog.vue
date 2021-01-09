@@ -188,10 +188,10 @@ namespace StorageNodeRenameDialog {
 
       // リネームされているかチェック(入力値が変更されていること)
       let nameChange = false
-      if (!targetNode.value.articleNodeName) {
+      if (!targetNode.value?.article?.dir?.name) {
         nameChange = newName.value !== targetNode.value.name
       } else {
-        nameChange = newName.value !== targetNode.value.articleNodeName
+        nameChange = newName.value !== targetNode.value?.article.dir.name
       }
       if (!nameChange) {
         errorMessage.value = String(t('storage.rename.renamingNodeNameIsNotChanged'))
@@ -205,7 +205,7 @@ namespace StorageNodeRenameDialog {
         if (siblingNode === targetNode.value) continue
 
         const existsSameName = siblingNode.name === newName.value
-        const existsSameArticleName = siblingNode.articleNodeName && siblingNode.articleNodeName === newName.value
+        const existsSameArticleName = siblingNode.article?.dir?.name && siblingNode.article?.dir?.name === newName.value
         if (existsSameName || existsSameArticleName) {
           errorMessage.value = String(t('storage.nodeAlreadyExists', { nodeName: newName.value, nodeType: pageLogic.getNodeTypeLabel(siblingNode) }))
           return false

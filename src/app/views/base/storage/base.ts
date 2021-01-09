@@ -1,7 +1,16 @@
-import { StorageArticleNodeType, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/logic'
+import { DeepPartial, RequiredAre } from 'web-base-lib'
+import {
+  StorageArticleDirSettings,
+  StorageArticleDirType,
+  StorageArticleFileSettings,
+  StorageArticleSettings,
+  StorageNode,
+  StorageNodeShareSettings,
+  StorageNodeType,
+  StorageType,
+} from '@/app/logic'
 import { TreeNodeData, TreeViewLazyLoadStatus } from '@/app/components/tree-view'
 import { Dayjs } from 'dayjs'
-import { RequiredAre } from 'web-base-lib'
 import { useI18n } from '@/app/i18n'
 
 //========================================================================
@@ -17,14 +26,20 @@ interface StorageTreeNodeData extends RequiredAre<TreeNodeData, 'icon' | 'opened
   contentType: string
   size: number
   share: StorageNodeShareSettings
-  articleNodeName: string | null
-  articleNodeType: StorageArticleNodeType | null
-  articleSortOrder: number | null
-  isArticleFile: boolean
+  article?: StorageArticleSettings
   url: string
   createdAt: Dayjs
   updatedAt: Dayjs
   disableContextMenu: boolean
+}
+
+interface StorageTreeNodeEditData extends Partial<Omit<StorageTreeNodeData, 'article'>> {
+  article?: DeepPartial<StorageTreeNodeData['article']>
+}
+
+interface StorageArticleTypeInput {
+  dir?: Pick<StorageArticleDirSettings, 'type'>
+  file?: Pick<StorageArticleFileSettings, 'type'>
 }
 
 /**
@@ -36,11 +51,6 @@ interface StorageTreeNodeInput extends StorageNode {
   opened?: boolean
   lazyLoadStatus?: TreeViewLazyLoadStatus
   disableContextMenu?: boolean
-}
-
-interface StorageNodePopupMenuItem {
-  type: string
-  label: string
 }
 
 type StorageNodeActionType = 'createDir' | 'uploadFiles' | 'uploadDir' | 'move' | 'rename' | 'share' | 'delete' | 'reload' | 'createArticleTypeDir'
@@ -56,11 +66,11 @@ type StorageNodeActionType = 'createDir' | 'uploadFiles' | 'uploadDir' | 'move' 
 //--------------------------------------------------
 
 class StorageNodeActionEvent<T extends string = StorageNodeActionType> {
-  constructor(type: T, nodePaths: string[], articleNodeType?: StorageArticleNodeType) {
+  constructor(type: T, nodePaths: string[], article?: StorageArticleTypeInput) {
     const { t, tc } = useI18n()
     this.type = type
     this.nodePaths = nodePaths
-    this.articleNodeType = articleNodeType
+    this.article = article
 
     switch (this.type) {
       case 'createDir':
@@ -88,17 +98,17 @@ class StorageNodeActionEvent<T extends string = StorageNodeActionType> {
         this.label = String(t('common.reload'))
         break
       case 'createArticleTypeDir': {
-        switch (this.articleNodeType) {
-          case StorageArticleNodeType.ListBundle:
+        switch (this.article?.dir?.type) {
+          case StorageArticleDirType.ListBundle:
             this.label = String(t('common.createSth', { sth: t('article.nodeType.listBundle') }))
             break
-          case StorageArticleNodeType.CategoryBundle:
+          case StorageArticleDirType.CategoryBundle:
             this.label = String(t('common.createSth', { sth: t('article.nodeType.categoryBundle') }))
             break
-          case StorageArticleNodeType.Category:
+          case StorageArticleDirType.Category:
             this.label = String(t('common.createSth', { sth: t('article.nodeType.category') }))
             break
-          case StorageArticleNodeType.Article:
+          case StorageArticleDirType.Article:
             this.label = String(t('common.createSth', { sth: t('article.nodeType.article') }))
             break
         }
@@ -113,7 +123,7 @@ class StorageNodeActionEvent<T extends string = StorageNodeActionType> {
 
   readonly nodePaths: string[]
 
-  readonly articleNodeType?: StorageArticleNodeType
+  readonly article?: StorageArticleTypeInput
 }
 
 //========================================================================
@@ -122,4 +132,4 @@ class StorageNodeActionEvent<T extends string = StorageNodeActionType> {
 //
 //========================================================================
 
-export { StorageNodeActionEvent, StorageNodeActionType, StorageNodePopupMenuItem, StorageTreeNodeData, StorageTreeNodeInput }
+export { StorageArticleTypeInput, StorageNodeActionEvent, StorageNodeActionType, StorageTreeNodeData, StorageTreeNodeEditData, StorageTreeNodeInput }

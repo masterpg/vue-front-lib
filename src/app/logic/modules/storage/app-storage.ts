@@ -16,6 +16,7 @@ import { StorageFileUploader, StorageUploader } from '@/app/logic/modules/storag
 import { computed, reactive } from '@vue/composition-api'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import { StorageURLUploader } from '@/app/logic/modules/storage/upload-url'
+import { StorageUtil } from '@/app/logic/base'
 import { extendedMethod } from '@/app/base'
 import { injectAPI } from '@/app/logic/api'
 import { injectStore } from '@/app/logic/store'
@@ -694,7 +695,7 @@ namespace AppStorageLogic {
 
     const apiNodesToStorageNodes: AppStorageLogic['apiNodesToStorageNodes'] = apiNodes => {
       return apiNodes.map(apiNode => {
-        return { ...apiNode, url: StorageLogic.getNodeURL(apiNode.id) }
+        return { ...apiNode, url: StorageUtil.getNodeURL(apiNode.id) }
       })
     }
 
@@ -772,15 +773,15 @@ namespace AppStorageLogic {
     }
 
     const toFullPath: AppStorageLogic['toFullPath'] = nodePath_or_nodePaths => {
-      return StorageLogic.toFullPath(basePath.value, nodePath_or_nodePaths)
+      return StorageUtil.toFullPath(basePath.value, nodePath_or_nodePaths)
     }
 
     const toBasePath: AppStorageLogic['toBasePath'] = nodePath_or_nodePaths => {
-      return StorageLogic.toBasePath(basePath.value, nodePath_or_nodePaths)
+      return StorageUtil.toBasePath(basePath.value, nodePath_or_nodePaths)
     }
 
     const toBasePathNode: AppStorageLogic['toBasePathNode'] = node_or_nodes => {
-      return StorageLogic.toBasePathNode(basePath.value, node_or_nodes)
+      return StorageUtil.toBasePathNode(basePath.value, node_or_nodes)
     }
 
     /**

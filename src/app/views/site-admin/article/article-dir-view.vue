@@ -102,13 +102,11 @@
 
 <script lang="ts">
 import { StorageDirTableRow, StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
-import { computed, defineComponent, ref } from '@vue/composition-api'
-import { StorageArticleNodeType } from '@/app/logic'
+import { computed, defineComponent, reactive, ref } from '@vue/composition-api'
 import { StorageDirTable } from '@/app/views/base/storage/storage-dir-table.vue'
-import { StorageLogic } from '@/app/logic/modules/storage'
 import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'
 import { StoragePageLogic } from '@/app/views/base/storage'
-import { useConfig } from '@/app/config'
+import { StorageUtil } from '@/app/logic'
 import { useI18n } from '@/app/i18n'
 
 interface ArticleDirView extends ArticleDirView.Props {}
@@ -152,12 +150,7 @@ namespace ArticleDirView {
        * - これが無効な場合、一般的なディレクトリのソートが行われます。
        */
       const enableArticleSortOrder = computed<boolean>(() => {
-        return (
-          base.targetDir.value?.path === pageLogic.getRootTreeNode().path ||
-          base.targetDir.value?.articleNodeType === StorageArticleNodeType.ListBundle ||
-          base.targetDir.value?.articleNodeType === StorageArticleNodeType.CategoryBundle ||
-          base.targetDir.value?.articleNodeType === StorageArticleNodeType.Category
-        )
+        return base.targetDir.value?.path === pageLogic.getRootTreeNode().path || Boolean(base.targetDir.value?.article?.dir)
       })
 
       /**
@@ -170,10 +163,10 @@ namespace ArticleDirView {
         const lastNode = base.dirChildNodes.value[base.dirChildNodes.value.length - 1]
         if (lastNode.selected) return false
 
-        // 選択ノードの中に記事系ノード以外のものがあった場合、使用不可
+        // 選択ノードの中に記事系ディレクトリ以外のものがあった場合、使用不可
         for (const selectedIndex of selectedIndices.value) {
           const selectedNode = base.dirChildNodes.value[selectedIndex]
-          if (!selectedNode.articleNodeType) return false
+          if (!selectedNode.article?.dir) return false
         }
 
         // 最後尾の選択ノードの次のノードを取得
@@ -187,8 +180,8 @@ namespace ArticleDirView {
           }
         })()
 
-        // 最後尾の選択ノードの次のノードが記事系ノード以外(例: アセットなど)の場合、使用不可
-        if (!lastSelectedNextNode?.articleNodeType) return false
+        // 最後尾の選択ノードの次のノードが記事系ディレクトリ以外(例: アセットなど)の場合、使用不可
+        if (!lastSelectedNextNode?.article?.dir) return false
 
         return true
       })
@@ -203,10 +196,10 @@ namespace ArticleDirView {
         const firstNode = base.dirChildNodes.value[0]
         if (firstNode.selected) return false
 
-        // 選択ノードの中に記事系ノード以外のものがあった場合、使用不可
+        // 選択ノードの中に記事系ディレクトリ以外のものがあった場合、使用不可
         for (const selectedIndex of selectedIndices.value) {
           const selectedNode = base.dirChildNodes.value[selectedIndex]
-          if (!selectedNode.articleNodeType) return false
+          if (!selectedNode.article?.dir) return false
         }
 
         // 先頭の選択ノードの前のノードを取得
@@ -219,8 +212,8 @@ namespace ArticleDirView {
           }
         })()
 
-        // 先頭の選択ノードの前のノードが記事系ノード以外(例: アセットなど)の場合、使用不可
-        if (!firstSelectedPrevNode?.articleNodeType) return false
+        // 先頭の選択ノードの前のノードが記事系ディレクトリ以外(例: アセットなど)の場合、使用不可
+        if (!firstSelectedPrevNode?.article?.dir) return false
 
         return true
       })
@@ -275,7 +268,7 @@ namespace ArticleDirView {
         if (enableArticleSortOrder.value) {
           return rows
         } else {
-          return StorageLogic.sortChildren(rows)
+          return StorageUtil.sortChildren(rows)
         }
       }
 
@@ -288,8 +281,8 @@ namespace ArticleDirView {
       async function onSelection(e: { rows: StorageDirTableRow[]; keys: string[]; added: boolean; evt: any }) {
         // 対象ディレクトリが記事の場合
         if (base.targetDir.value && pageLogic.isArticle(base.targetDir.value)) {
-          // 選択に記事ファイル含まれていた場合、選択から記事ファイルを除去
-          const articleFileIndex = e.rows.findIndex(row => row.isArticleFile)
+          // 選択に記事ファイルが含まれていた場合、選択から記事ファイルを除去
+          const articleFileIndex = e.rows.findIndex(row => row.article?.file)
           if (articleFileIndex >= 0) {
             e.rows.splice(articleFileIndex, 1)
           }
@@ -328,7 +321,7 @@ namespace ArticleDirView {
         spinning.value = true
 
         const orderNodePaths = base.dirChildNodes.value.reduce((result, node) => {
-          node.articleNodeType && result.push(node.path)
+          node.article?.dir && result.push(node.path)
           return result
         }, [] as string[])
         await pageLogic.setArticleSortOrder(orderNodePaths)

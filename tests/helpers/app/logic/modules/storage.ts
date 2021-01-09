@@ -1,11 +1,10 @@
 import { DeepPartial, removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
-import { StorageNode, StorageNodeType } from '@/app/logic'
-import { cloneDeep, merge } from 'lodash'
-import { StorageLogic } from '@/app/logic/modules/storage'
+import { StorageArticleSettings, StorageNode, StorageNodeType, StorageUtil } from '@/app/logic'
 import { TestLogicContainer } from '../index'
 import _path from 'path'
 import dayjs from 'dayjs'
-const { EmptyShareSettings } = StorageLogic
+import { merge } from 'lodash'
+const { EmptyShareSettings } = StorageUtil
 
 //========================================================================
 //
@@ -13,7 +12,9 @@ const { EmptyShareSettings } = StorageLogic
 //
 //========================================================================
 
-type NewTestStorageNodeData = DeepPartial<Omit<StorageNode, 'name' | 'dir' | 'path' | 'nodeType'>>
+type NewTestStorageNodeData = DeepPartial<Omit<StorageNode, 'name' | 'dir' | 'path' | 'nodeType'>> & {
+  article?: Partial<StorageArticleSettings> | null
+}
 
 //========================================================================
 //
@@ -27,7 +28,7 @@ function newStorageDirNode(dirPath: string, data?: NewTestStorageNodeData): Stor
   const name = _path.basename(dirPath)
   const dir = removeStartDirChars(_path.dirname(dirPath))
   let nodeId: string
-  if (data.articleNodeType) {
+  if (data.article?.dir) {
     nodeId = _path.basename(dirPath)
   } else {
     nodeId = data.id || StorageNode.generateId()
@@ -38,14 +39,17 @@ function newStorageDirNode(dirPath: string, data?: NewTestStorageNodeData): Stor
     name,
     dir,
     path: dirPath,
-    url: StorageLogic.getNodeURL(nodeId),
+    url: StorageUtil.getNodeURL(nodeId),
     contentType: data.contentType || '',
     size: data.size || 0,
     share: merge(EmptyShareSettings(), data.share),
-    articleNodeName: data.articleNodeName || null,
-    articleNodeType: data.articleNodeType || null,
-    articleSortOrder: data.articleSortOrder || null,
-    isArticleFile: data.isArticleFile ?? false,
+    article: (() => {
+      if (!data.article) return undefined
+      return {
+        dir: data.article?.dir ?? undefined,
+        file: data.article?.file ?? undefined,
+      }
+    })(),
     version: 1,
     createdAt: dayjs.isDayjs(data.createdAt) ? data.createdAt : dayjs(),
     updatedAt: dayjs.isDayjs(data.updatedAt) ? data.updatedAt : dayjs(),
@@ -65,14 +69,17 @@ function newStorageFileNode(filePath: string, data?: NewTestStorageNodeData): St
     name,
     dir,
     path: filePath,
-    url: StorageLogic.getNodeURL(nodeId),
+    url: StorageUtil.getNodeURL(nodeId),
     contentType: data.contentType || 'text/plain; charset=utf-8',
     size: data.size || 5,
     share: merge(EmptyShareSettings(), data.share),
-    articleNodeName: data.articleNodeName || null,
-    articleNodeType: data.articleNodeType || null,
-    articleSortOrder: data.articleSortOrder || null,
-    isArticleFile: data.isArticleFile ?? false,
+    article: (() => {
+      if (!data.article) return undefined
+      return {
+        dir: data.article?.dir ?? undefined,
+        file: data.article?.file ?? undefined,
+      }
+    })(),
     version: 1,
     createdAt: dayjs.isDayjs(data.createdAt) ? data.createdAt : dayjs(),
     updatedAt: dayjs.isDayjs(data.updatedAt) ? data.updatedAt : dayjs(),
@@ -80,8 +87,8 @@ function newStorageFileNode(filePath: string, data?: NewTestStorageNodeData): St
   return result
 }
 
-function cloneStorageNode(target: StorageNode, source: Partial<StorageNode>): StorageNode {
-  return Object.assign({}, cloneDeep(target), cloneDeep(source))
+function cloneStorageNode(target: StorageNode, source: DeepPartial<StorageNode>): StorageNode {
+  return merge({}, target, source)
 }
 
 function mockStorageLogicAPIMethods(params: Pick<TestLogicContainer, 'appStorage' | 'userStorage' | 'articleStorage'>): void {

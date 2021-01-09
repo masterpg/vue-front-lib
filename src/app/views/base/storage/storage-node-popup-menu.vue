@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts">
-import { StorageArticleNodeType, StorageNodeType, StorageType } from '@/app/logic'
+import { StorageArticleDirType, StorageNodeType, StorageType } from '@/app/logic'
 import { StorageNodeActionEvent as _StorageNodeActionEvent, StorageNodeActionType as _StorageNodeActionType } from '@/app/views/base/storage/base'
 import { computed, defineComponent, ref } from '@vue/composition-api'
 import { QMenu } from 'quasar'
@@ -33,7 +33,6 @@ interface StorageNodePopupMenu extends StorageNodePopupMenu.Props {}
 interface Node {
   path: string
   nodeType: StorageNodeType
-  articleNodeType: StorageArticleNodeType
 }
 
 type StorageNodeActionType = _StorageNodeActionType | 'separator'
@@ -144,14 +143,14 @@ namespace StorageNodePopupMenu {
           // 記事ルート用メニュー
           else if (props.isRoot) {
             return [
-              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, StorageArticleNodeType.ListBundle),
-              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, StorageArticleNodeType.CategoryBundle),
+              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, { dir: { type: StorageArticleDirType.ListBundle } }),
+              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, { dir: { type: StorageArticleDirType.CategoryBundle } }),
             ]
           }
           // リストバンドル用メニュー
           else if (isListBundle.value) {
             return [
-              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, StorageArticleNodeType.Article),
+              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, { dir: { type: StorageArticleDirType.Article } }),
               new StorageNodeActionEvent('separator', selectedNodePaths.value),
               new StorageNodeActionEvent('rename', selectedNodePaths.value),
               new StorageNodeActionEvent('share', selectedNodePaths.value),
@@ -162,8 +161,8 @@ namespace StorageNodePopupMenu {
           // カテゴリバンドル用メニュー
           else if (isCategoryBundle.value) {
             return [
-              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, StorageArticleNodeType.Category),
-              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, StorageArticleNodeType.Article),
+              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, { dir: { type: StorageArticleDirType.Category } }),
+              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, { dir: { type: StorageArticleDirType.Article } }),
               new StorageNodeActionEvent('separator', selectedNodePaths.value),
               new StorageNodeActionEvent('rename', selectedNodePaths.value),
               new StorageNodeActionEvent('share', selectedNodePaths.value),
@@ -174,8 +173,8 @@ namespace StorageNodePopupMenu {
           // カテゴリ用メニュー
           else if (isCategory.value) {
             return [
-              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, StorageArticleNodeType.Category),
-              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, StorageArticleNodeType.Article),
+              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, { dir: { type: StorageArticleDirType.Category } }),
+              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, { dir: { type: StorageArticleDirType.Article } }),
               new StorageNodeActionEvent('separator', selectedNodePaths.value),
               new StorageNodeActionEvent('rename', selectedNodePaths.value),
               new StorageNodeActionEvent('share', selectedNodePaths.value),

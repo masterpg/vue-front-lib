@@ -1,6 +1,6 @@
 import { DeepReadonly, removeStartDirChars } from 'web-base-lib'
 import { GeneralUser, cloneStorageNode, newStorageDirNode, newStorageFileNode, provideDependency } from '../../../../../helpers/app'
-import { StorageArticleNodeType, StorageNode, StorageNodeShareSettings, StorageNodeType, sortStorageTree } from '@/app/logic'
+import { StorageArticleDirType, StorageArticleFileType, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageUtil } from '@/app/logic'
 import dayjs from 'dayjs'
 import path from 'path'
 import { useConfig } from '@/app/config'
@@ -55,9 +55,14 @@ function verifyStateNodes() {
       expect(node.contentType).toBeDefined()
       expect(node.size).toBeGreaterThan(0)
     }
-    if (node.articleNodeType) {
-      expect(node.articleNodeName).toBeDefined()
-      expect(node.articleSortOrder).toBeGreaterThan(0)
+    if (node.article?.dir) {
+      expect(typeof node.article.dir.name === 'string').toBeTruthy()
+      expect(typeof node.article.dir.type === 'string').toBeTruthy()
+      expect(node.article.dir.sortOrder).toBeGreaterThan(0)
+    }
+    if (node.article?.file) {
+      expect(typeof node.article.file.type === 'string').toBeTruthy()
+      expect(typeof node.article.file.content === 'string').toBeTruthy()
     }
     expect(node.createdAt).toBeDefined()
     expect(node.updatedAt).toBeDefined()
@@ -425,7 +430,7 @@ describe('StorageStore', () => {
         cloneStorageNode(f111, { share: NEW_SHARE_SETTINGS, createdAt: UPDATED_AT, updatedAt: UPDATED_AT }),
       ])
 
-      sortStorageTree(actual)
+      StorageUtil.sortNodes(actual)
       expect(actual.length).toBe(2)
       expect(actual[0].id).toBe(d11.id)
       expect(actual[0].share).toEqual(NEW_SHARE_SETTINGS)
@@ -499,9 +504,13 @@ describe('StorageStore', () => {
       const userRootPath = `${usersPath}/${GeneralUser().uid}`
       const articleRootPath = `${userRootPath}/${config.storage.article.rootName}`
       const bundle = newStorageDirNode(`${articleRootPath}/${StorageNode.generateId()}`, {
-        articleNodeName: 'Bundle',
-        articleNodeType: StorageArticleNodeType.ListBundle,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'Bundle',
+            type: StorageArticleDirType.ListBundle,
+            sortOrder: 1,
+          },
+        },
       })
       const { store } = provideDependency(({ store }) => {
         store.storage.setAll([bundle])
@@ -509,17 +518,25 @@ describe('StorageStore', () => {
 
       const actual = store.storage.set(
         cloneStorageNode(bundle, {
-          articleNodeName: 'バンドル',
-          articleNodeType: StorageArticleNodeType.CategoryBundle,
-          articleSortOrder: 2,
+          article: {
+            dir: {
+              name: 'バンドル',
+              type: StorageArticleDirType.CategoryBundle,
+              sortOrder: 2,
+            },
+          },
         })
       )
 
       expect(actual).toEqual({
         ...bundle,
-        articleNodeName: 'バンドル',
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleSortOrder: 2,
+        article: {
+          dir: {
+            name: 'バンドル',
+            type: StorageArticleDirType.CategoryBundle,
+            sortOrder: 2,
+          },
+        },
       })
 
       verifyStateNodes()
@@ -592,7 +609,7 @@ describe('StorageStore', () => {
 
       const actual = store.storage.addList([d12, f121])
 
-      sortStorageTree(actual)
+      StorageUtil.sortNodes(actual)
       expect(actual[0]).toEqual(d12)
       expect(actual[1]).toEqual(f121)
 
@@ -657,7 +674,7 @@ describe('StorageStore', () => {
 
         const actual = store.storage.removeList({ paths: [d11.path, d1.path] })
 
-        sortStorageTree(actual)
+        StorageUtil.sortNodes(actual)
         expect(actual.length).toBe(4)
         expect(actual[0].path).toBe('d1')
         expect(actual[1].path).toBe('d1/d11')
@@ -720,7 +737,7 @@ describe('StorageStore', () => {
 
         const actual = store.storage.removeList({ ids: [d11.id, d1.id] })
 
-        sortStorageTree(actual)
+        StorageUtil.sortNodes(actual)
         expect(actual.length).toBe(4)
         expect(actual[0].path).toBe('d1')
         expect(actual[1].path).toBe('d1/d11')
@@ -876,7 +893,7 @@ describe('StorageStore', () => {
 
       const actual = store.storage.move('d1', 'd2/d1')
 
-      sortStorageTree(actual)
+      StorageUtil.sortNodes(actual)
       expect(actual.length).toBe(4)
       expect(actual[0].path).toBe('d2/d1')
       expect(actual[1].path).toBe('d2/d1/d11')
@@ -900,7 +917,7 @@ describe('StorageStore', () => {
 
       const actual = store.storage.move('d1/d12', 'd12')
 
-      sortStorageTree(actual)
+      StorageUtil.sortNodes(actual)
       expect(actual.length).toBe(1)
       expect(actual[0].path).toBe('d12')
 
@@ -921,7 +938,7 @@ describe('StorageStore', () => {
 
       const actual = store.storage.move('d1/d11/f111.txt', 'd1/d12/f111.txt')
 
-      sortStorageTree(actual)
+      StorageUtil.sortNodes(actual)
       expect(actual.length).toBe(1)
       expect(actual[0].path).toBe('d1/d12/f111.txt')
 
@@ -942,7 +959,7 @@ describe('StorageStore', () => {
 
       const actual = store.storage.move('d1/d11/f111.txt', 'f111.txt')
 
-      sortStorageTree(actual)
+      StorageUtil.sortNodes(actual)
       expect(actual.length).toBe(1)
       expect(actual[0].path).toBe('f111.txt')
 
@@ -1031,7 +1048,7 @@ describe('StorageStore', () => {
       //     └fileZ.txt
 
       // 戻り値の検証
-      sortStorageTree(actual)
+      StorageUtil.sortNodes(actual)
       expect(actual.map(node => node.path)).toEqual([
         'dB/d1',
         'dB/d1/d11',
@@ -1256,9 +1273,13 @@ describe('StorageStore', () => {
     it('ベーシックケース', () => {
       const config = useConfig()
       const bundle = newStorageDirNode(`${StorageNode.generateId()}`, {
-        articleNodeName: 'バンドル',
-        articleNodeType: StorageArticleNodeType.CategoryBundle,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'バンドル',
+            type: StorageArticleDirType.CategoryBundle,
+            sortOrder: 1,
+          },
+        },
         share: {
           isPublic: true,
           readUIds: ['ichiro'],
@@ -1266,17 +1287,30 @@ describe('StorageStore', () => {
         },
       })
       const cat1 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
-        articleNodeName: 'カテゴリ1',
-        articleNodeType: StorageArticleNodeType.Category,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: 'カテゴリ1',
+            type: StorageArticleDirType.Category,
+            sortOrder: 1,
+          },
+        },
       })
       const art1 = newStorageDirNode(`${cat1.path}/${StorageNode.generateId()}`, {
-        articleNodeName: '記事1',
-        articleNodeType: StorageArticleNodeType.Article,
-        articleSortOrder: 1,
+        article: {
+          dir: {
+            name: '記事1',
+            type: StorageArticleDirType.Article,
+            sortOrder: 1,
+          },
+        },
       })
       const art1Index = newStorageFileNode(`${art1.path}/${config.storage.article.fileName}`, {
-        isArticleFile: true,
+        article: {
+          file: {
+            type: StorageArticleFileType.Index,
+            content: '',
+          },
+        },
       })
 
       expect(bundle).toEqual(StorageNode.clone(bundle))

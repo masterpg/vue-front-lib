@@ -58,7 +58,7 @@
 
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
-import { StorageNode, StorageNodeType, StorageType } from '@/app/logic'
+import { StorageArticleSettings, StorageNode, StorageNodeType, StorageType } from '@/app/logic'
 import { extendedMethod, isFontAwesome } from '@/app/base'
 import { QTableColumn } from 'quasar'
 import { StorageDirTable } from '@/app/views/base/storage/storage-dir-table.vue'
@@ -105,13 +105,12 @@ interface StorageDirTableRow {
   readonly path: string
   readonly share: { icon: string }
   readonly size: string
-  readonly articleNodeType: StorageNode['articleNodeType']
-  readonly articleSortOrder: StorageNode['articleSortOrder']
-  readonly isArticleFile: boolean
+  readonly article?: StorageArticleSettings
   readonly updatedAt: string
   readonly updatedAtNum: number
   readonly isDir: boolean
   readonly isFile: boolean
+  readonly isArticleFile: boolean
   readonly selected: boolean
   populate(source: StorageNode): void
 }
@@ -182,11 +181,7 @@ namespace StorageDirTableRow {
       return nodeType.value === StorageNodeType.Dir ? '' : bytes(node.size)
     })
 
-    const articleNodeType = computed(() => node.articleNodeType)
-
-    const articleSortOrder = computed(() => node.articleSortOrder)
-
-    const isArticleFile = computed(() => node.isArticleFile)
+    const article = computed(() => node.article)
 
     const updatedAt = computed(() => String(d(node.updatedAt.toDate(), 'dateTime')))
 
@@ -195,6 +190,8 @@ namespace StorageDirTableRow {
     const isDir = computed(() => nodeType.value === StorageNodeType.Dir)
 
     const isFile = computed(() => nodeType.value === StorageNodeType.File)
+
+    const isArticleFile = computed(() => Boolean(node.article?.file))
 
     const selected = computed<boolean>(() => {
       if (!table.selected) return false
@@ -217,13 +214,12 @@ namespace StorageDirTableRow {
       path,
       share,
       size,
-      articleNodeType,
-      articleSortOrder,
-      isArticleFile,
+      article,
       updatedAt,
       updatedAtNum,
       isDir,
       isFile,
+      isArticleFile,
       selected,
       populate,
     })

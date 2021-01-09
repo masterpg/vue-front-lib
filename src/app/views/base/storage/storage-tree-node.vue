@@ -99,7 +99,7 @@
         <!-- コンテキストメニュー -->
         <StorageNodePopupMenu
           :storage-type="storageType"
-          :node="{ path, nodeType, articleNodeType }"
+          :node="{ path, nodeType }"
           :is-root="isRoot"
           :disabled="disableContextMenu"
           context-menu
@@ -115,9 +115,9 @@
 
 <script lang="ts">
 import { ComputedRef, SetupContext, computed, defineComponent, reactive } from '@vue/composition-api'
-import { RequiredStorageNodeShareSettings, StorageArticleNodeType, StorageNodeShareSettings, StorageNodeType } from '@/app/logic'
-import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'
-import { TreeNode, TreeNodeEditData, TreeNodeImpl } from '@/app/components/tree-view'
+import { RequiredStorageNodeShareSettings, StorageArticleSettings, StorageNodeShareSettings, StorageNodeType } from '@/app/logic'
+import { StorageNodeActionEvent, StorageTreeNodeData, StorageTreeNodeEditData } from '@/app/views/base/storage/base'
+import { TreeNode, TreeNodeImpl } from '@/app/components/tree-view'
 import { Dayjs } from 'dayjs'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
 import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'
@@ -141,10 +141,7 @@ interface StorageTreeNodeMembers {
   readonly contentType: string
   readonly size: number
   readonly share: StorageNodeShareSettings
-  readonly articleNodeName: string | null
-  readonly articleNodeType: StorageArticleNodeType | null
-  readonly articleSortOrder: number | null
-  readonly isArticleFile: boolean
+  readonly article?: StorageArticleSettings
   readonly url: string
   readonly createdAt: Dayjs
   readonly updatedAt: Dayjs
@@ -244,20 +241,8 @@ namespace StorageTreeNode {
       return nodeData.value.share
     })
 
-    const articleNodeName = computed(() => {
-      return nodeData.value.articleNodeName
-    })
-
-    const articleNodeType = computed(() => {
-      return nodeData.value.articleNodeType
-    })
-
-    const articleSortOrder = computed(() => {
-      return nodeData.value.articleSortOrder
-    })
-
-    const isArticleFile = computed(() => {
-      return nodeData.value.isArticleFile
+    const article = computed(() => {
+      return nodeData.value.article
     })
 
     const url = computed(() => {
@@ -294,7 +279,7 @@ namespace StorageTreeNode {
     //
     //----------------------------------------------------------------------
 
-    base.setNodeData_sub.value = (editData: TreeNodeEditData<StorageTreeNodeData>) => {
+    base.setNodeData_sub.value = (editData: StorageTreeNodeEditData) => {
       if (typeof editData.id === 'string') {
         nodeData.value.id = editData.id
       }
@@ -309,17 +294,8 @@ namespace StorageTreeNode {
         nodeData.value.share.readUIds = editData.share.readUIds
         nodeData.value.share.writeUIds = editData.share.writeUIds
       }
-      if (typeof editData.articleNodeName === 'string' || editData.articleNodeName === null) {
-        nodeData.value.articleNodeName = editData.articleNodeName
-      }
-      if (typeof editData.articleNodeType === 'string' || editData.articleNodeType === null) {
-        nodeData.value.articleNodeType = editData.articleNodeType
-      }
-      if (typeof editData.articleSortOrder === 'number' || editData.articleSortOrder === null) {
-        nodeData.value.articleSortOrder = editData.articleSortOrder
-      }
-      if (typeof editData.isArticleFile === 'boolean') {
-        nodeData.value.isArticleFile = editData.isArticleFile
+      if (editData.article) {
+        nodeData.value.article = StorageArticleSettings.populate(editData.article, nodeData.value.article ?? {})
       }
       if (typeof editData.url === 'string') {
         nodeData.value.url = editData.url
@@ -416,10 +392,7 @@ namespace StorageTreeNode {
       contentType,
       size,
       share,
-      articleNodeName,
-      articleNodeType,
-      articleSortOrder,
-      isArticleFile,
+      article,
       url,
       createdAt,
       updatedAt,

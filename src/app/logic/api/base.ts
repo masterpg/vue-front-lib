@@ -22,10 +22,8 @@ type ToEntity<T> = T extends undefined ? undefined : T extends null ? undefined 
 //
 //========================================================================
 
-function toEntity<T extends RawEntity | RawEntity[] | undefined | null>(entity_or_entities: T): ToEntity<T> {
-  if (!entity_or_entities) {
-    return undefined as any
-  }
+function toEntity<T extends RawEntity | RawEntity[] | undefined | null>(rawEntity_or_rawEntities: T): ToEntity<T> {
+  if (!rawEntity_or_rawEntities) return undefined as ToEntity<T>
 
   function to<U extends RawEntity>(entity: U): TimestampEntity<U> {
     const { createdAt, updatedAt, ...others } = entity
@@ -36,16 +34,12 @@ function toEntity<T extends RawEntity | RawEntity[] | undefined | null>(entity_o
     }
   }
 
-  if (Array.isArray(entity_or_entities)) {
-    const entities = entity_or_entities as RawEntity[]
-    const result: TimestampEntity<RawEntity>[] = []
-    for (const entity of entities) {
-      result.push(to(entity))
-    }
-    return result as ToEntity<T>
+  if (Array.isArray(rawEntity_or_rawEntities)) {
+    const rawEntities = rawEntity_or_rawEntities as RawEntity[]
+    return rawEntities.map(rawEntity => to(rawEntity)) as ToEntity<T>
   } else {
-    const entity = entity_or_entities as RawEntity
-    return to(entity) as ToEntity<T>
+    const rawEntity = rawEntity_or_rawEntities as RawEntity
+    return to(rawEntity) as ToEntity<T>
   }
 }
 
@@ -55,4 +49,4 @@ function toEntity<T extends RawEntity | RawEntity[] | undefined | null>(entity_o
 //
 //========================================================================
 
-export { RawEntity, toEntity }
+export { RawEntity, ToEntity, toEntity }

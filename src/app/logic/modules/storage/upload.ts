@@ -1,7 +1,7 @@
 import { ComputedRef, Ref, UnwrapRef, computed, reactive, ref, watch } from '@vue/composition-api'
+import { StorageNode, StorageUtil } from '@/app/logic/base'
 import { removeBothEndsSlash, splitHierarchicalPaths } from 'web-base-lib'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
-import { StorageNode } from '@/app/logic'
 import _path from 'path'
 import { extendedMethod } from '@/app/base'
 
@@ -477,7 +477,7 @@ namespace StorageFileUploader {
       // ファイルノード情報を取得
       const node = storageLogic.getNode({ path: path.value })
       const nodeId = node?.id || StorageNode.generateId()
-      const uid = StorageLogic.extractUId(storageLogic.basePath.value) || undefined
+      const uid = StorageUtil.extractUId(storageLogic.basePath.value) || undefined
 
       // アップロード先の参照を取得
       const fileRef = firebase.storage().ref(nodeId)

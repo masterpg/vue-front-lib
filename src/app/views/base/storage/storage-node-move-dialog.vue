@@ -66,13 +66,12 @@
 
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, ref } from '@vue/composition-api'
-import { StorageArticleNodeType, StorageNode, StorageNodeType, StorageType } from '@/app/logic'
+import { StorageArticleDirType, StorageNode, StorageNodeType, StorageType, StorageUtil } from '@/app/logic'
 import { TreeView, TreeViewEvent, TreeViewLazyLoadEvent } from '@/app/components/tree-view'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { Dialog } from '@/app/components/dialog'
 import { Dialogs } from '@/app/dialogs'
 import { QDialog } from 'quasar'
-import { StorageLogic } from '@/app/logic/modules/storage'
 import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
 import { StorageTreeNodeData } from '@/app/views/base/storage/base'
@@ -183,7 +182,7 @@ namespace StorageNodeMoveDialog {
         }
       }
 
-      StorageLogic.sortTree(movingNodes.value)
+      StorageUtil.sortNodes(movingNodes.value)
 
       return base.open({
         opened: async () => {
@@ -337,14 +336,14 @@ namespace StorageNodeMoveDialog {
      * 移動ノードに｢カテゴリ｣を含んでいるかを取得します。
      */
     function containsCategory(): boolean {
-      return movingNodes.value.some(node => node.articleNodeType === StorageArticleNodeType.Category)
+      return movingNodes.value.some(node => node.article?.dir?.type === StorageArticleDirType.Category)
     }
 
     /**
      * 移動ノードに｢記事｣を含んでいるかを取得します。
      */
     function containsArticle(): boolean {
-      return movingNodes.value.some(node => node.articleNodeType === StorageArticleNodeType.Article)
+      return movingNodes.value.some(node => node.article?.dir?.type === StorageArticleDirType.Article)
     }
 
     //--------------------------------------------------
@@ -359,8 +358,9 @@ namespace StorageNodeMoveDialog {
     function filter(childNodeDataList: StorageTreeNodeData[]): StorageTreeNodeData[] {
       for (let i = 0; i < childNodeDataList.length; i++) {
         const nodeData = childNodeDataList[i]
-        // 一般的なディレクトリまたはファイルは｢一般ディレクトリ、記事｣へのみ移動可能であり、それ以外は選択不可
-        if (!(!nodeData.articleNodeType || nodeData.articleNodeType === StorageArticleNodeType.Article)) {
+        // 一般ディレクトリまたはファイルは｢一般ディレクトリ、記事｣へのみ移動可能であり、それ以外は選択不可
+        const articleDirType = nodeData.article?.dir?.type
+        if (!(!articleDirType || articleDirType === StorageArticleDirType.Article)) {
           nodeData.unselectable = true
         }
       }
@@ -377,7 +377,8 @@ namespace StorageNodeMoveDialog {
       for (let i = 0; i < childNodeDataList.length; i++) {
         const nodeData = childNodeDataList[i]
         // カテゴリは｢カテゴリバンドル、カテゴリ｣へのみ移動可能であり、それ以外の移動先ノードは除去
-        if (!(nodeData.articleNodeType === StorageArticleNodeType.CategoryBundle || nodeData.articleNodeType === StorageArticleNodeType.Category)) {
+        const articleDirType = nodeData.article?.dir?.type
+        if (!(articleDirType === StorageArticleDirType.CategoryBundle || articleDirType === StorageArticleDirType.Category)) {
           childNodeDataList.splice(i--, 1)
         }
       }
@@ -394,11 +395,12 @@ namespace StorageNodeMoveDialog {
       for (let i = 0; i < childNodeDataList.length; i++) {
         const nodeData = childNodeDataList[i]
         // 記事は｢リストバンドル、カテゴリバンドル、カテゴリ｣へのみ移動可能であり、それ以外の移動先ノードは除去
+        const articleDirType = nodeData.article?.dir?.type
         if (
           !(
-            nodeData.articleNodeType === StorageArticleNodeType.ListBundle ||
-            nodeData.articleNodeType === StorageArticleNodeType.CategoryBundle ||
-            nodeData.articleNodeType === StorageArticleNodeType.Category
+            articleDirType === StorageArticleDirType.ListBundle ||
+            articleDirType === StorageArticleDirType.CategoryBundle ||
+            articleDirType === StorageArticleDirType.Category
           )
         ) {
           childNodeDataList.splice(i--, 1)
