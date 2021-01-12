@@ -18,7 +18,7 @@
       :data="dirChildNodes"
       :columns="columns"
       :selected.sync="dirSelectedNodes"
-      :sort-method="sortChildNodesMethod"
+      :sort-method="tableSortMethod"
       :loading="loading"
       row-key="id"
     >
@@ -371,7 +371,7 @@ namespace StorageDirView {
      * @param sortBy
      * @param descending
      */
-    const sortChildNodesMethod = extendedMethod<
+    const tableSortMethod = extendedMethod<
       (rows: StorageDirTableRow[], sortBy: 'label' | 'type' | 'size' | 'share' | 'updatedAt', descending: boolean) => StorageDirTableRow[]
     >((rows, sortBy, descending) => {
       const data = [...rows]
@@ -488,7 +488,7 @@ namespace StorageDirView {
       loading,
       setSelectedNode,
       clear,
-      sortChildNodesMethod,
+      tableSortMethod,
       buildDirChildNodes,
       rowOnClick,
       nameCellOnClick,

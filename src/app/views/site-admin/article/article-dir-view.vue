@@ -58,7 +58,7 @@
       :data="dirChildNodes"
       :columns="columns"
       :selected.sync="dirSelectedNodes"
-      :sort-method="sortChildNodesMethod"
+      :sort-method="tableSortMethod"
       :loading="loading"
       row-key="id"
       @selection="onSelection"
@@ -264,12 +264,8 @@ namespace ArticleDirView {
         enableSaveSort.value = false
       }
 
-      base.sortChildNodesMethod.value = rows => {
-        if (enableArticleSortOrder.value) {
-          return rows
-        } else {
-          return StorageUtil.sortChildren(rows)
-        }
+      base.tableSortMethod.value = rows => {
+        return StorageUtil.sortChildren(rows)
       }
 
       //----------------------------------------------------------------------

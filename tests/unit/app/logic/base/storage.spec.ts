@@ -14,115 +14,131 @@ describe('StorageUtil', () => {
     it('パターン①', async () => {
       // users
       // └test.general
-      //   ├blog
-      //   │├art1
-      //   ││└index.md
-      //   │└art2
-      //   │  └index.md
-      //   └category
-      //     ├art1
-      //     ├art2
-      //     ├TypeScript
-      //     │├art1
-      //     ││└index.md
-      //     │└art2
+      //   └articles
+      //     ├blog
+      //     │├artA
+      //     ││├index.md
+      //     ││├images
+      //     │││├picA.png
+      //     │││└picB.png
+      //     ││└memo.txt
+      //     │└artB
       //     │  └index.md
-      //     └JavaScript
-      //       ├art1
-      //       │︙
-      //       └art2
-      //         ︙
+      //     ├programming
+      //     │├artC
+      //     │├artD
+      //     │├TypeScript
+      //     ││├artE
+      //     │││└index.md
+      //     ││└artF
+      //     ││  └index.md
+      //     │└JavaScript
+      //     └assets
+      //       ├picC.png
+      //       └picD.png
 
       const articleRootPath = StorageUtil.toArticleRootPath(GeneralUser().uid)
 
       const blog = newStorageDirNode(`${articleRootPath}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'blog', type: StorageArticleDirType.ListBundle, sortOrder: 2 } },
       })
-      const blog_art1 = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
+      const blog_artA = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art1', type: StorageArticleDirType.Article, sortOrder: 2 } },
       })
-      const blog_art1_index = newStorageFileNode(`${blog_art1.path}/index.md`, {
+      const blog_artA_index = newStorageFileNode(`${blog_artA.path}/index.md`, {
         article: { file: { type: StorageArticleFileType.Index, content: '' } },
       })
-      const blog_art2 = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
+      const blog_artA_images = newStorageDirNode(`${blog_artA.path}/images`)
+      const blog_artA_images_picA = newStorageFileNode(`${blog_artA_images.path}/picA.png`)
+      const blog_artA_images_picB = newStorageFileNode(`${blog_artA_images.path}/picB.png`)
+      const blog_artA_memo = newStorageFileNode(`${blog_artA.path}/memo.txt`)
+      const blog_artB = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art2', type: StorageArticleDirType.Article, sortOrder: 1 } },
       })
-      const blog_art2_index = newStorageFileNode(`${blog_art2.path}/index.md`, {
+      const blog_artB_index = newStorageFileNode(`${blog_artB.path}/index.md`, {
         article: { file: { type: StorageArticleFileType.Index, content: '' } },
       })
 
-      const category = newStorageDirNode(`${articleRootPath}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'category', type: StorageArticleDirType.CategoryBundle, sortOrder: 1 } },
+      const programming = newStorageDirNode(`${articleRootPath}/${StorageNode.generateId()}`, {
+        article: { dir: { name: 'programming', type: StorageArticleDirType.CategoryBundle, sortOrder: 1 } },
       })
-      const category_art1 = newStorageDirNode(`${category.path}/${StorageNode.generateId()}`, {
+      const programming_artC = newStorageDirNode(`${programming.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art1', type: StorageArticleDirType.Article, sortOrder: 4 } },
       })
-      const category_art2 = newStorageDirNode(`${category.path}/${StorageNode.generateId()}`, {
+      const programming_artD = newStorageDirNode(`${programming.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art2', type: StorageArticleDirType.Article, sortOrder: 3 } },
       })
-      const category_ts = newStorageDirNode(`${category.path}/${StorageNode.generateId()}`, {
+      const programming_ts = newStorageDirNode(`${programming.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'TypeScript', type: StorageArticleDirType.Category, sortOrder: 2 } },
       })
-      const category_ts_art1 = newStorageDirNode(`${category_ts.path}/${StorageNode.generateId()}`, {
+      const programming_ts_artE = newStorageDirNode(`${programming_ts.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art1', type: StorageArticleDirType.Article, sortOrder: 2 } },
       })
-      const category_ts_art1_index = newStorageFileNode(`${category_ts_art1.path}/index.md`, {
+      const programming_ts_artE_index = newStorageFileNode(`${programming_ts_artE.path}/index.md`, {
         article: { file: { type: StorageArticleFileType.Index, content: '' } },
       })
-      const category_ts_art2 = newStorageDirNode(`${category_ts.path}/${StorageNode.generateId()}`, {
+      const programming_ts_artF = newStorageDirNode(`${programming_ts.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art2', type: StorageArticleDirType.Article, sortOrder: 1 } },
       })
-      const category_ts_art2_index = newStorageFileNode(`${category_ts_art2.path}/index.md`, {
+      const programming_ts_artF_index = newStorageFileNode(`${programming_ts_artF.path}/index.md`, {
         article: { file: { type: StorageArticleFileType.Index, content: '' } },
       })
-      const category_js = newStorageDirNode(`${category.path}/${StorageNode.generateId()}`, {
+      const programming_js = newStorageDirNode(`${programming.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'JavaScript', type: StorageArticleDirType.Category, sortOrder: 1 } },
       })
-      const category_js_art1 = newStorageDirNode(`${category_js.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'art1', type: StorageArticleDirType.Article, sortOrder: 2 } },
-      })
-      const category_js_art2 = newStorageDirNode(`${category_js.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'art2', type: StorageArticleDirType.Article, sortOrder: 1 } },
-      })
+
+      const assets = newStorageDirNode(StorageUtil.toArticleAssetPath(GeneralUser().uid))
+      const assets_picC = newStorageFileNode(`${assets.path}/picC.png`)
+      const assets_picD = newStorageFileNode(`${assets.path}/picD.png`)
 
       const nodes = shuffleArray([
         blog,
-        blog_art1,
-        blog_art1_index,
-        blog_art2,
-        blog_art2_index,
-        category,
-        category_art1,
-        category_art2,
-        category_ts,
-        category_ts_art1,
-        category_ts_art1_index,
-        category_ts_art2,
-        category_ts_art2_index,
-        category_js,
-        category_js_art1,
-        category_js_art2,
+        blog_artA,
+        blog_artA_index,
+        blog_artA_images,
+        blog_artA_images_picA,
+        blog_artA_images_picB,
+        blog_artA_memo,
+        blog_artB,
+        blog_artB_index,
+        programming,
+        programming_artC,
+        programming_artD,
+        programming_ts,
+        programming_ts_artE,
+        programming_ts_artE_index,
+        programming_ts_artF,
+        programming_ts_artF_index,
+        programming_js,
+        assets,
+        assets_picC,
+        assets_picD,
       ])
 
       // テスト対象実行
       StorageUtil.sortNodes(nodes)
 
       expect(nodes[0]).toBe(blog)
-      expect(nodes[1]).toBe(blog_art1)
-      expect(nodes[2]).toBe(blog_art1_index)
-      expect(nodes[3]).toBe(blog_art2)
-      expect(nodes[4]).toBe(blog_art2_index)
-      expect(nodes[5]).toBe(category)
-      expect(nodes[6]).toBe(category_art1)
-      expect(nodes[7]).toBe(category_art2)
-      expect(nodes[8]).toBe(category_ts)
-      expect(nodes[9]).toBe(category_ts_art1)
-      expect(nodes[10]).toBe(category_ts_art1_index)
-      expect(nodes[11]).toBe(category_ts_art2)
-      expect(nodes[12]).toBe(category_ts_art2_index)
-      expect(nodes[13]).toBe(category_js)
-      expect(nodes[14]).toBe(category_js_art1)
-      expect(nodes[15]).toBe(category_js_art2)
+      expect(nodes[1]).toBe(blog_artA)
+      expect(nodes[2]).toBe(blog_artA_index)
+      expect(nodes[3]).toBe(blog_artA_images)
+      expect(nodes[4]).toBe(blog_artA_images_picA)
+      expect(nodes[5]).toBe(blog_artA_images_picB)
+      expect(nodes[6]).toBe(blog_artA_memo)
+      expect(nodes[7]).toBe(blog_artB)
+      expect(nodes[8]).toBe(blog_artB_index)
+      expect(nodes[9]).toBe(programming)
+      expect(nodes[10]).toBe(programming_artC)
+      expect(nodes[11]).toBe(programming_artD)
+      expect(nodes[12]).toBe(programming_ts)
+      expect(nodes[13]).toBe(programming_ts_artE)
+      expect(nodes[14]).toBe(programming_ts_artE_index)
+      expect(nodes[15]).toBe(programming_ts_artF)
+      expect(nodes[16]).toBe(programming_ts_artF_index)
+      expect(nodes[17]).toBe(programming_js)
+      expect(nodes[18]).toBe(assets)
+      expect(nodes[19]).toBe(assets_picC)
+      expect(nodes[20]).toBe(assets_picD)
     })
 
     it('パターン②', async () => {
@@ -137,56 +153,56 @@ describe('StorageUtil', () => {
       //     └art2
 
       const articleRootPath = StorageUtil.toArticleRootPath(GeneralUser().uid)
-      const categoryPath = `${articleRootPath}/category`
+      const programmingPath = `${articleRootPath}/programming`
 
-      const category_art1 = newStorageDirNode(`${categoryPath}/${StorageNode.generateId()}`, {
+      const programming_art1 = newStorageDirNode(`${programmingPath}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art1', type: StorageArticleDirType.Article, sortOrder: 4 } },
       })
-      const category_art2 = newStorageDirNode(`${categoryPath}/${StorageNode.generateId()}`, {
+      const programming_art2 = newStorageDirNode(`${programmingPath}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art2', type: StorageArticleDirType.Article, sortOrder: 3 } },
       })
-      const category_ts = newStorageDirNode(`${categoryPath}/${StorageNode.generateId()}`, {
+      const programming_ts = newStorageDirNode(`${programmingPath}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'TypeScript', type: StorageArticleDirType.Category, sortOrder: 2 } },
       })
-      const category_ts_art1 = newStorageDirNode(`${category_ts.path}/${StorageNode.generateId()}`, {
+      const programming_ts_art1 = newStorageDirNode(`${programming_ts.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art1', type: StorageArticleDirType.Article, sortOrder: 2 } },
       })
-      const category_ts_art2 = newStorageDirNode(`${category_ts.path}/${StorageNode.generateId()}`, {
+      const programming_ts_art2 = newStorageDirNode(`${programming_ts.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art2', type: StorageArticleDirType.Article, sortOrder: 1 } },
       })
-      const category_js = newStorageDirNode(`${categoryPath}/${StorageNode.generateId()}`, {
+      const programming_js = newStorageDirNode(`${programmingPath}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'JavaScript', type: StorageArticleDirType.Category, sortOrder: 1 } },
       })
-      const category_js_art1 = newStorageDirNode(`${category_js.path}/${StorageNode.generateId()}`, {
+      const programming_js_art1 = newStorageDirNode(`${programming_js.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art1', type: StorageArticleDirType.Article, sortOrder: 2 } },
       })
-      const category_js_art2 = newStorageDirNode(`${category_js.path}/${StorageNode.generateId()}`, {
+      const programming_js_art2 = newStorageDirNode(`${programming_js.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art2', type: StorageArticleDirType.Article, sortOrder: 1 } },
       })
 
-      // 実際は上位ディレクトリ(category)は存在するが、配列には追加されないパターン
+      // 実際は上位ディレクトリ(programming)は存在するが、配列には追加されないパターン
       const nodes = shuffleArray([
-        category_art1,
-        category_art2,
-        category_ts,
-        category_ts_art1,
-        category_ts_art2,
-        category_js,
-        category_js_art1,
-        category_js_art2,
+        programming_art1,
+        programming_art2,
+        programming_ts,
+        programming_ts_art1,
+        programming_ts_art2,
+        programming_js,
+        programming_js_art1,
+        programming_js_art2,
       ])
 
       // テスト対象実行
       StorageUtil.sortNodes(nodes)
 
-      expect(nodes[0]).toBe(category_art1)
-      expect(nodes[1]).toBe(category_art2)
-      expect(nodes[2]).toBe(category_ts)
-      expect(nodes[3]).toBe(category_ts_art1)
-      expect(nodes[4]).toBe(category_ts_art2)
-      expect(nodes[5]).toBe(category_js)
-      expect(nodes[6]).toBe(category_js_art1)
-      expect(nodes[7]).toBe(category_js_art2)
+      expect(nodes[0]).toBe(programming_art1)
+      expect(nodes[1]).toBe(programming_art2)
+      expect(nodes[2]).toBe(programming_ts)
+      expect(nodes[3]).toBe(programming_ts_art1)
+      expect(nodes[4]).toBe(programming_ts_art2)
+      expect(nodes[5]).toBe(programming_js)
+      expect(nodes[6]).toBe(programming_js_art1)
+      expect(nodes[7]).toBe(programming_js_art2)
     })
 
     it('パターン③', async () => {

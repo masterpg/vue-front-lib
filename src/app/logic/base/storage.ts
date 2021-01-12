@@ -396,19 +396,7 @@ namespace StorageUtil {
       children.sort((treeNodeA, treeNodeB) => {
         const a = treeNodeA.item
         const b = treeNodeB.item
-        if (a.nodeType === b.nodeType) {
-          const orderA = a.article?.dir?.sortOrder ?? 0
-          const orderB = b.article?.dir?.sortOrder ?? 0
-          if (orderA === orderB) {
-            const nameA = a.article?.dir?.name || a.name
-            const nameB = b.article?.dir?.name || b.name
-            return nameA < nameB ? -1 : nameA > nameB ? 1 : 0
-          } else {
-            return orderB - orderA
-          }
-        } else {
-          return a.nodeType === StorageNodeType.Dir ? -1 : 1
-        }
+        return childrenSortFunc(a, b)
       })
     }
 
@@ -488,11 +476,18 @@ namespace StorageUtil {
    * ディレクトリの子ノードをソートする関数です。
    */
   export function childrenSortFunc<NODE extends SortStorageNode>(a: NODE, b: NODE): number {
+    if (a.article?.file?.type === 'Index') return -1
+    if (b.article?.file?.type === 'Index') return 1
+    if (a.article?.file?.type === 'Draft') return -1
+    if (b.article?.file?.type === 'Draft') return 1
+
     if (a.nodeType === b.nodeType) {
-      const orderA = a.article?.dir?.sortOrder || 0
-      const orderB = b.article?.dir?.sortOrder || 0
+      const orderA = a.article?.dir?.sortOrder ?? 0
+      const orderB = b.article?.dir?.sortOrder ?? 0
       if (orderA === orderB) {
-        return a.name < b.name ? -1 : a.name > b.name ? 1 : 0
+        const nameA = a.article?.dir?.name || a.name
+        const nameB = b.article?.dir?.name || b.name
+        return nameA < nameB ? -1 : nameA > nameB ? 1 : 0
       } else {
         return orderB - orderA
       }
