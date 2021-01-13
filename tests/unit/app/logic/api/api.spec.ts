@@ -43,16 +43,9 @@ function getAPIErrorResponse(error: any): { statusCode: number; error: string; m
 //
 //========================================================================
 
-describe('Foundation API', () => {
-  describe('getAppConfig', () => {
-    it('疎通確認', async () => {
-      const config = useConfig()
-      const { api } = provideDependency()
-      const actual = await api.getAppConfig()
-
-      expect(actual.storage.user).toMatchObject(config.storage.user)
-      expect(actual.storage.article).toMatchObject(config.storage.article)
-    })
+describe('Env API', () => {
+  describe('dummyTest', () => {
+    it('疎通確認', async () => {})
   })
 })
 

@@ -27,7 +27,9 @@ import gql from 'graphql-tag'
 //========================================================================
 
 interface GQLAPIContainer {
-  getAppConfig(): Promise<AppConfig>
+  //--------------------------------------------------
+  //  Env
+  //--------------------------------------------------
 
   //--------------------------------------------------
   //  User
@@ -119,10 +121,6 @@ interface GQLAPIContainer {
 //  Env
 //--------------------------------------------------
 
-interface AppConfig {
-  storage: StorageConfig
-}
-
 //--------------------------------------------------
 //  User
 //--------------------------------------------------
@@ -185,28 +183,6 @@ namespace GQLAPIContainer {
     //  Methods
     //
     //----------------------------------------------------------------------
-
-    const getAppConfig: GQLAPIContainer['getAppConfig'] = async () => {
-      const response = await clientLv1.query<{ appConfig: AppConfig }>({
-        query: gql`
-          query GetAppConfig {
-            appConfig {
-              storage {
-                user {
-                  rootName
-                }
-                article {
-                  rootName
-                  fileName
-                  assetsName
-                }
-              }
-            }
-          }
-        `,
-      })
-      return response.data.appConfig
-    }
 
     //--------------------------------------------------
     //  User
@@ -877,7 +853,6 @@ namespace GQLAPIContainer {
     //----------------------------------------------------------------------
 
     return {
-      getAppConfig,
       getAuthData,
       setOwnUserInfo,
       deleteOwnUser,
