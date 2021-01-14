@@ -17,7 +17,6 @@ import {
 } from '@/app/logic/base'
 import { RawEntity, ToEntity, toEntity } from '@/app/logic/api/base'
 import { GQLAPIClient } from '@/app/logic/api/gql/client'
-import { StorageConfig } from '@/app/config'
 import gql from 'graphql-tag'
 
 //========================================================================
@@ -96,6 +95,8 @@ interface GQLAPIContainer {
   renameArticleNode(nodePath: string, newName: string): Promise<APIStorageNode>
 
   setArticleSortOrder(orderNodePaths: string[]): Promise<void>
+
+  saveDraftArticle(input: StorageNodeGetKeyInput): Promise<APIStorageNode>
 
   getArticleChildren(dirPath: string, types: StorageArticleDirType[], input?: StoragePaginationInput): Promise<StoragePaginationResult>
 
@@ -302,10 +303,11 @@ namespace GQLAPIContainer {
             type
             sortOrder
           }
-          file {
-            type
-            content
+          src {
+            isPublished
+            textContent
           }
+          draft
         }
         version
         createdAt
@@ -319,7 +321,8 @@ namespace GQLAPIContainer {
       function to(rawEntity: RawStorageNode): ToEntity<RawStorageNode> {
         if (rawEntity.article) {
           rawEntity.article.dir = rawEntity.article.dir ?? undefined
-          rawEntity.article.file = rawEntity.article.file ?? undefined
+          rawEntity.article.src = rawEntity.article.src ?? undefined
+          rawEntity.article.draft = typeof rawEntity.article.draft === 'boolean' ? rawEntity.article.draft : undefined
         } else {
           rawEntity.article = undefined
         }
@@ -780,6 +783,22 @@ namespace GQLAPIContainer {
       })
     }
 
+    const saveDraftArticle: GQLAPIContainer['saveDraftArticle'] = async input => {
+      const response = await clientLv1.mutate<{ saveDraftArticle: RawStorageNode }, { input: StorageNodeGetKeyInput }>({
+        mutation: gql`
+          mutation SaveDraftArticle($input: StorageNodeGetKeyInput!) {
+            saveDraftArticle(input: $input) {
+              ...${StorageNodeFieldsName}
+            }
+          }
+          ${StorageNodeFields}
+        `,
+        variables: { input: StorageNodeGetKeyInput.rigidify(input) },
+        isAuth: true,
+      })
+      return toStorageNode(response.data!.saveDraftArticle)
+    }
+
     const getArticleChildren: GQLAPIContainer['getArticleChildren'] = async (dirPath, types, input) => {
       const response = await clientLv1.query<
         { articleChildren: RawStoragePaginationResult },
@@ -880,6 +899,7 @@ namespace GQLAPIContainer {
       createArticleGeneralDir,
       renameArticleNode,
       setArticleSortOrder,
+      saveDraftArticle,
       getArticleChildren,
       callStoragePaginationAPI,
     }

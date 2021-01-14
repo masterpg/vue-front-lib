@@ -7,8 +7,9 @@ import {
   newStorageFileNode,
   provideDependency,
 } from '../../../../../helpers/app'
-import { StorageArticleDirType, StorageArticleFileType, StorageNode } from '@/app/logic'
+import { StorageArticleDirType, StorageNode } from '@/app/logic'
 import _path from 'path'
+import dayjs from 'dayjs'
 import { useConfig } from '@/app/config'
 
 //========================================================================
@@ -405,12 +406,17 @@ describe('AppStorageLogic', () => {
           },
         },
       })
-      const art1Index = newStorageFileNode(`${art1.path}/${config.storage.article.fileName}`, {
+      const art1_src = newStorageFileNode(`${art1.path}/${config.storage.article.srcFileName}`, {
         article: {
-          file: {
-            type: StorageArticleFileType.Index,
-            content: '',
+          src: {
+            isPublished: false,
+            textContent: '',
           },
+        },
+      })
+      const art1_draft = newStorageFileNode(`${art1.path}/${config.storage.article.draftFileName}`, {
+        article: {
+          draft: true,
         },
       })
       const {
@@ -427,7 +433,7 @@ describe('AppStorageLogic', () => {
           type: art1.article?.dir?.type!,
         })
       ).thenResolve(art1)
-      td.when(articleStorage.getChildrenAPI(art1.path)).thenResolve([art1Index])
+      td.when(articleStorage.getChildrenAPI(art1.path)).thenResolve([art1_src, art1_draft])
 
       // テスト対象実行
       const actual = await articleStorage.createArticleTypeDir({
@@ -442,15 +448,19 @@ describe('AppStorageLogic', () => {
       expect(actual.article?.dir?.type).toBe(art1.article?.dir?.type)
       expect(actual.article?.dir?.sortOrder).toBe(art1.article?.dir?.sortOrder)
 
-      const hierarchicalNodes = appStorage.getHierarchicalNodes(art1Index.path)
-      expect(hierarchicalNodes.length).toBe(7)
+      const hierarchicalNodes = appStorage.getHierarchicalNodes(art1.path)
+      expect(hierarchicalNodes.length).toBe(6)
       expect(hierarchicalNodes[0].path).toBe(users.path)
       expect(hierarchicalNodes[1].path).toBe(user.path)
       expect(hierarchicalNodes[2].path).toBe(articles.path)
       expect(hierarchicalNodes[3].path).toBe(bundle.path)
       expect(hierarchicalNodes[4].path).toBe(cat1.path)
       expect(hierarchicalNodes[5].path).toBe(art1.path)
-      expect(hierarchicalNodes[6].path).toBe(art1Index.path)
+
+      const childNodes = appStorage.getChildren(art1.path)
+      expect(childNodes.length).toBe(2)
+      expect(childNodes[0].path).toBe(art1_src.path)
+      expect(childNodes[1].path).toBe(art1_draft.path)
     })
 
     it('階層を構成するノードが欠けていた場合', async () => {
@@ -629,6 +639,62 @@ describe('AppStorageLogic', () => {
 
       const exp = td.explain(articleStorage.setArticleSortOrderAPI.value)
       expect(exp.calls[0].args).toEqual([arts.map(art => art.path)])
+    })
+  })
+
+  describe('saveDraftArticle', () => {
+    it('ベーシックケース', async () => {
+      const config = useConfig()
+      const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
+        article: {
+          dir: {
+            name: 'バンドル',
+            type: StorageArticleDirType.ListBundle,
+            sortOrder: 1,
+          },
+        },
+      })
+      const art1 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
+        article: {
+          dir: {
+            name: '記事1',
+            type: StorageArticleDirType.Article,
+            sortOrder: 1,
+          },
+        },
+      })
+      const art1_draft = newStorageFileNode(`${art1.path}/${config.storage.article.draftFileName}`, {
+        article: {
+          draft: true,
+        },
+      })
+      const {
+        logic: { articleStorage, appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([users, user, articles, bundle, art1, art1_draft])
+      })
+
+      // モック設定
+      art1_draft.size = 4
+      art1_draft.updatedAt = dayjs()
+      art1_draft.version += 1
+      td.when(articleStorage.saveDraftArticleAPI({ id: art1_draft.id })).thenResolve(art1_draft)
+
+      // テスト対象実行
+      const actual = await articleStorage.saveDraftArticle({ id: art1_draft.id })
+
+      expect(actual.id).toBe(art1_draft.id)
+      expect(actual.path).toBe(toBasePath(art1_draft.path))
+      expect(actual.size).toBe(art1_draft.size)
+      expect(actual.updatedAt).toEqual(art1_draft.updatedAt)
+      expect(actual.version).toBe(art1_draft.version)
+
+      const _art1_draft = appStorage.sgetNode(art1_draft)
+      expect(_art1_draft.id).toBe(art1_draft.id)
+      expect(_art1_draft.path).toBe(art1_draft.path)
+      expect(_art1_draft.size).toBe(art1_draft.size)
+      expect(_art1_draft.updatedAt).toEqual(art1_draft.updatedAt)
+      expect(_art1_draft.version).toBe(art1_draft.version)
     })
   })
 })

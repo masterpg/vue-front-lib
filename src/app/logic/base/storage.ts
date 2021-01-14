@@ -51,7 +51,8 @@ interface StorageNodeShareSettings {
 
 interface StorageArticleSettings {
   dir?: StorageArticleDirSettings
-  file?: StorageArticleFileSettings
+  src?: StorageArticleFileSettings
+  draft?: boolean
 }
 
 interface StorageArticleDirSettings {
@@ -61,8 +62,8 @@ interface StorageArticleDirSettings {
 }
 
 interface StorageArticleFileSettings {
-  type: StorageArticleFileType
-  content: string
+  isPublished: boolean
+  textContent: string
 }
 
 interface StoragePaginationInput {
@@ -351,6 +352,18 @@ namespace StorageUtil {
   }
 
   /**
+   * 指定されたパスが記事ルートを含めたファミリーノードか否かを取得します。
+   * @param nodePath
+   */
+  export function isArticleRootFamily(nodePath: string): boolean {
+    const config = useConfig()
+    const userRootName = config.storage.user.rootName
+    const articleRootName = config.storage.article.rootName
+    const reg = new RegExp(`^${userRootName}/[^/]+/(?:${articleRootName}$|${articleRootName}/)`)
+    return reg.test(nodePath)
+  }
+
+  /**
    * 指定されたパスが記事ルートの配下ノードか否かを取得します。
    * @param nodePath
    */
@@ -363,14 +376,15 @@ namespace StorageUtil {
   }
 
   /**
-   * 指定されたパスが記事ルートを含めたファミリーノードか否かを取得します。
+   * 指定されたパスがアセットディレクトリを含めたファミリーノードか否かを取得します。
    * @param nodePath
    */
-  export function isArticleRootFamily(nodePath: string): boolean {
+  export function isArticleAssetsDir(nodePath: string): boolean {
     const config = useConfig()
     const userRootName = config.storage.user.rootName
     const articleRootName = config.storage.article.rootName
-    const reg = new RegExp(`^${userRootName}/[^/]+/(?:${articleRootName}$|${articleRootName}/)`)
+    const assetsName = config.storage.article.assetsName
+    const reg = new RegExp(`^${userRootName}/[^/]+/${articleRootName}/${assetsName}$`)
     return reg.test(nodePath)
   }
 
@@ -476,10 +490,10 @@ namespace StorageUtil {
    * ディレクトリの子ノードをソートする関数です。
    */
   export function childrenSortFunc<NODE extends SortStorageNode>(a: NODE, b: NODE): number {
-    if (a.article?.file?.type === 'Index') return -1
-    if (b.article?.file?.type === 'Index') return 1
-    if (a.article?.file?.type === 'Draft') return -1
-    if (b.article?.file?.type === 'Draft') return 1
+    if (a.article?.src) return -1
+    if (b.article?.src) return 1
+    if (a.article?.draft) return -1
+    if (b.article?.draft) return 1
 
     if (a.nodeType === b.nodeType) {
       const orderA = a.article?.dir?.sortOrder ?? 0
@@ -637,7 +651,7 @@ namespace StorageNodeType {
 }
 
 namespace StorageArticleDirType {
-  export function getLabel(nodeType: StorageArticleDirType | null, choice = 1): string {
+  export function getLabel(nodeType?: StorageArticleDirType, choice = 1): string {
     const { tc } = useI18n()
     switch (nodeType) {
       case StorageArticleDirType.ListBundle:
@@ -653,7 +667,7 @@ namespace StorageArticleDirType {
     }
   }
 
-  export function getIcon(nodeType: StorageArticleDirType | null): string {
+  export function getIcon(nodeType?: StorageArticleDirType): string {
     switch (nodeType) {
       case StorageArticleDirType.ListBundle:
         return 'fas fa-bars'
@@ -672,7 +686,8 @@ namespace StorageArticleDirType {
 namespace StorageArticleSettings {
   export function populate(from: DeepPartial<DeepReadonly<StorageArticleSettings>>, to: DeepPartial<StorageArticleSettings>): StorageArticleSettings {
     if (from.dir) {
-      to.file = undefined
+      to.src = undefined
+      to.draft = undefined
       to.dir = to.dir ?? { name: null as any, type: null as any, sortOrder: null as any }
       if (typeof from.dir.name === 'string') to.dir.name = from.dir.name
       if (typeof from.dir.type === 'string') to.dir.type = from.dir.type
@@ -681,15 +696,20 @@ namespace StorageArticleSettings {
         const detail = JSON.stringify(to, null, 2)
         throw new Error(`The required field for 'StorageArticleSettings' has not been set: ${detail}`)
       }
-    } else if (from.file) {
+    } else if (from.src) {
       to.dir = undefined
-      to.file = to.file ?? { type: null as any, content: null as any }
-      if (typeof from.file.type === 'string') to.file.type = from.file.type
-      if (typeof from.file.content === 'string') to.file.content = from.file.content
-      if (to.file.type === null || to.file.content === null) {
+      to.draft = undefined
+      to.src = to.src ?? { isPublished: null as any, textContent: null as any }
+      if (typeof from.src.isPublished === 'boolean') to.src.isPublished = from.src.isPublished
+      if (typeof from.src.textContent === 'string') to.src.textContent = from.src.textContent
+      if (to.src.isPublished === null || to.src.textContent === null) {
         const detail = JSON.stringify(to, null, 2)
         throw new Error(`The required field for 'StorageArticleSettings' has not been set: ${detail}`)
       }
+    } else if (from.draft) {
+      to.dir = undefined
+      to.src = undefined
+      to.draft = true
     }
     return to as StorageArticleSettings
   }

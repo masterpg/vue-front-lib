@@ -17,9 +17,9 @@
 
 <script lang="ts">
 import { StorageArticleDirType, StorageNodeType, StorageType } from '@/app/logic'
-import { StorageNodeActionEvent as _StorageNodeActionEvent, StorageNodeActionType as _StorageNodeActionType } from '@/app/views/base/storage/base'
 import { computed, defineComponent, ref } from '@vue/composition-api'
 import { QMenu } from 'quasar'
+import { StorageNodeActionEvent } from '@/app/views/base/storage/base'
 import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 
 //========================================================================
@@ -34,10 +34,6 @@ interface Node {
   path: string
   nodeType: StorageNodeType
 }
-
-type StorageNodeActionType = _StorageNodeActionType | 'separator'
-
-class StorageNodeActionEvent extends _StorageNodeActionEvent<StorageNodeActionType> {}
 
 //========================================================================
 //
@@ -84,40 +80,40 @@ namespace StorageNodePopupMenu {
           // 複数選択用メニュー
           if (isMulti.value) {
             return [
-              new StorageNodeActionEvent('move', selectedNodePaths.value),
-              new StorageNodeActionEvent('share', selectedNodePaths.value),
-              new StorageNodeActionEvent('delete', selectedNodePaths.value),
+              new StorageNodeActionEvent('move', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('delete', { targetPaths: selectedNodePaths.value }),
             ]
           }
           // ルートノード用メニュー
           else if (props.isRoot) {
             return [
-              new StorageNodeActionEvent('createDir', selectedNodePaths.value),
-              new StorageNodeActionEvent('uploadDir', selectedNodePaths.value),
-              new StorageNodeActionEvent('uploadFiles', selectedNodePaths.value),
-              new StorageNodeActionEvent('reload', selectedNodePaths.value),
+              new StorageNodeActionEvent('createDir', { parentPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('uploadDir', { parentPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('uploadFiles', { parentPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('reload', { targetPath: selectedNodePaths.value[0] }),
             ]
           }
           // フォルダ用メニュー
           else if (isStorageDir.value) {
             return [
-              new StorageNodeActionEvent('createDir', selectedNodePaths.value),
-              new StorageNodeActionEvent('uploadDir', selectedNodePaths.value),
-              new StorageNodeActionEvent('uploadFiles', selectedNodePaths.value),
-              new StorageNodeActionEvent('move', selectedNodePaths.value),
-              new StorageNodeActionEvent('rename', selectedNodePaths.value),
-              new StorageNodeActionEvent('share', selectedNodePaths.value),
-              new StorageNodeActionEvent('delete', selectedNodePaths.value),
-              new StorageNodeActionEvent('reload', selectedNodePaths.value),
+              new StorageNodeActionEvent('createDir', { parentPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('uploadDir', { parentPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('uploadFiles', { parentPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('move', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('delete', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('reload', { targetPath: selectedNodePaths.value[0] }),
             ]
           }
           // ファイル用メニュー
           else if (isStorageFile.value) {
             return [
-              new StorageNodeActionEvent('move', selectedNodePaths.value),
-              new StorageNodeActionEvent('rename', selectedNodePaths.value),
-              new StorageNodeActionEvent('share', selectedNodePaths.value),
-              new StorageNodeActionEvent('delete', selectedNodePaths.value),
+              new StorageNodeActionEvent('move', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('delete', { targetPaths: selectedNodePaths.value }),
             ]
           }
         }
@@ -126,9 +122,9 @@ namespace StorageNodePopupMenu {
           // 複数選択用メニュー
           if (isMulti.value) {
             const result = [
-              new StorageNodeActionEvent('move', selectedNodePaths.value),
-              new StorageNodeActionEvent('share', selectedNodePaths.value),
-              new StorageNodeActionEvent('delete', selectedNodePaths.value),
+              new StorageNodeActionEvent('move', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('delete', { targetPaths: selectedNodePaths.value }),
             ]
             if (containsBundle(props.selectedNodes!)) {
               const index = result.findIndex(e => e.type === 'move')
@@ -143,87 +139,90 @@ namespace StorageNodePopupMenu {
           // 記事ルート用メニュー
           else if (props.isRoot) {
             return [
-              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, { dir: { type: StorageArticleDirType.ListBundle } }),
-              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, { dir: { type: StorageArticleDirType.CategoryBundle } }),
+              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.ListBundle }),
+              new StorageNodeActionEvent('createArticleTypeDir', {
+                parentPath: selectedNodePaths.value[0],
+                type: StorageArticleDirType.CategoryBundle,
+              }),
             ]
           }
           // リストバンドル用メニュー
           else if (isListBundle.value) {
             return [
-              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, { dir: { type: StorageArticleDirType.Article } }),
-              new StorageNodeActionEvent('separator', selectedNodePaths.value),
-              new StorageNodeActionEvent('rename', selectedNodePaths.value),
-              new StorageNodeActionEvent('share', selectedNodePaths.value),
-              new StorageNodeActionEvent('delete', selectedNodePaths.value),
-              new StorageNodeActionEvent('reload', selectedNodePaths.value),
+              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Article }),
+              new StorageNodeActionEvent('separator', undefined),
+              new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('delete', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('reload', { targetPath: selectedNodePaths.value[0] }),
             ]
           }
           // カテゴリバンドル用メニュー
           else if (isCategoryBundle.value) {
             return [
-              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, { dir: { type: StorageArticleDirType.Category } }),
-              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, { dir: { type: StorageArticleDirType.Article } }),
-              new StorageNodeActionEvent('separator', selectedNodePaths.value),
-              new StorageNodeActionEvent('rename', selectedNodePaths.value),
-              new StorageNodeActionEvent('share', selectedNodePaths.value),
-              new StorageNodeActionEvent('delete', selectedNodePaths.value),
-              new StorageNodeActionEvent('reload', selectedNodePaths.value),
+              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Category }),
+              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Article }),
+              new StorageNodeActionEvent('separator', undefined),
+              new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('delete', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('reload', { targetPath: selectedNodePaths.value[0] }),
             ]
           }
           // カテゴリ用メニュー
           else if (isCategory.value) {
             return [
-              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, { dir: { type: StorageArticleDirType.Category } }),
-              new StorageNodeActionEvent('createArticleTypeDir', selectedNodePaths.value, { dir: { type: StorageArticleDirType.Article } }),
-              new StorageNodeActionEvent('separator', selectedNodePaths.value),
-              new StorageNodeActionEvent('rename', selectedNodePaths.value),
-              new StorageNodeActionEvent('share', selectedNodePaths.value),
-              new StorageNodeActionEvent('delete', selectedNodePaths.value),
-              new StorageNodeActionEvent('reload', selectedNodePaths.value),
+              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Category }),
+              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Article }),
+              new StorageNodeActionEvent('separator', undefined),
+              new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('delete', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('reload', { targetPath: selectedNodePaths.value[0] }),
             ]
           }
           // 記事用メニュー
           else if (isArticle.value) {
             return [
-              new StorageNodeActionEvent('createDir', selectedNodePaths.value),
-              new StorageNodeActionEvent('uploadDir', selectedNodePaths.value),
-              new StorageNodeActionEvent('uploadFiles', selectedNodePaths.value),
-              new StorageNodeActionEvent('move', selectedNodePaths.value),
-              new StorageNodeActionEvent('rename', selectedNodePaths.value),
-              new StorageNodeActionEvent('share', selectedNodePaths.value),
-              new StorageNodeActionEvent('delete', selectedNodePaths.value),
-              new StorageNodeActionEvent('reload', selectedNodePaths.value),
+              new StorageNodeActionEvent('createDir', { parentPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('uploadDir', { parentPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('uploadFiles', { parentPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('move', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('delete', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('reload', { targetPath: selectedNodePaths.value[0] }),
             ]
           }
           // フォルダ用メニュー
           else if (isStorageDir.value) {
             if (isAssetsDir.value) {
               return [
-                new StorageNodeActionEvent('createDir', selectedNodePaths.value),
-                new StorageNodeActionEvent('uploadDir', selectedNodePaths.value),
-                new StorageNodeActionEvent('uploadFiles', selectedNodePaths.value),
-                new StorageNodeActionEvent('reload', selectedNodePaths.value),
+                new StorageNodeActionEvent('createDir', { parentPath: selectedNodePaths.value[0] }),
+                new StorageNodeActionEvent('uploadDir', { parentPath: selectedNodePaths.value[0] }),
+                new StorageNodeActionEvent('uploadFiles', { parentPath: selectedNodePaths.value[0] }),
+                new StorageNodeActionEvent('reload', { targetPath: selectedNodePaths.value[0] }),
               ]
             } else {
               return [
-                new StorageNodeActionEvent('createDir', selectedNodePaths.value),
-                new StorageNodeActionEvent('uploadDir', selectedNodePaths.value),
-                new StorageNodeActionEvent('uploadFiles', selectedNodePaths.value),
-                new StorageNodeActionEvent('move', selectedNodePaths.value),
-                new StorageNodeActionEvent('rename', selectedNodePaths.value),
-                new StorageNodeActionEvent('share', selectedNodePaths.value),
-                new StorageNodeActionEvent('delete', selectedNodePaths.value),
-                new StorageNodeActionEvent('reload', selectedNodePaths.value),
+                new StorageNodeActionEvent('createDir', { parentPath: selectedNodePaths.value[0] }),
+                new StorageNodeActionEvent('uploadDir', { parentPath: selectedNodePaths.value[0] }),
+                new StorageNodeActionEvent('uploadFiles', { parentPath: selectedNodePaths.value[0] }),
+                new StorageNodeActionEvent('move', { targetPaths: selectedNodePaths.value }),
+                new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
+                new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
+                new StorageNodeActionEvent('delete', { targetPaths: selectedNodePaths.value }),
+                new StorageNodeActionEvent('reload', { targetPath: selectedNodePaths.value[0] }),
               ]
             }
           }
           // ファイル用メニュー
           else if (isStorageFile.value) {
             return [
-              new StorageNodeActionEvent('move', selectedNodePaths.value),
-              new StorageNodeActionEvent('rename', selectedNodePaths.value),
-              new StorageNodeActionEvent('share', selectedNodePaths.value),
-              new StorageNodeActionEvent('delete', selectedNodePaths.value),
+              new StorageNodeActionEvent('move', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
+              new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
+              new StorageNodeActionEvent('delete', { targetPaths: selectedNodePaths.value }),
             ]
           }
         }

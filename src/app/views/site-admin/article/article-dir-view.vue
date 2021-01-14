@@ -55,7 +55,7 @@
     </div>
     <StorageDirTable
       ref="table"
-      :data="dirChildNodes"
+      :data="tableFilter(dirChildNodes)"
       :columns="columns"
       :selected.sync="dirSelectedNodes"
       :sort-method="tableSortMethod"
@@ -66,10 +66,10 @@
       <template v-slot:body="slotProps">
         <q-tr :props="slotProps.tr" @click="rowOnClick(slotProps.tr.row)">
           <q-td auto-width>
-            <q-checkbox v-show="!slotProps.tr.row.isArticleFile" v-model="slotProps.tr.selected" />
+            <q-checkbox v-show="!isArticleSrc(slotProps.tr.row)" v-model="slotProps.tr.selected" />
           </q-td>
           <q-td key="label" :props="slotProps.tr">
-            <span v-if="slotProps.tr.row.isDir || slotProps.tr.row.isArticleFile" class="th label" @click="nameCellOnClick(slotProps.tr.row, $event)">
+            <span v-if="slotProps.tr.row.isDir || isArticleSrc(slotProps.tr.row)" class="th label" @click="nameCellOnClick(slotProps.tr.row, $event)">
               <q-icon :name="slotProps.tr.row.icon" :size="slotProps.tr.row.iconSize" class="app-mr-6" />
               <span>{{ slotProps.tr.row.label }}</span>
             </span>
@@ -102,11 +102,11 @@
 
 <script lang="ts">
 import { StorageDirTableRow, StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
-import { computed, defineComponent, reactive, ref } from '@vue/composition-api'
+import { StorageNodeGetKeyInput, StorageUtil } from '@/app/logic'
+import { computed, defineComponent, ref } from '@vue/composition-api'
 import { StorageDirTable } from '@/app/views/base/storage/storage-dir-table.vue'
 import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'
 import { StoragePageLogic } from '@/app/views/base/storage'
-import { StorageUtil } from '@/app/logic'
 import { useI18n } from '@/app/i18n'
 
 interface ArticleDirView extends ArticleDirView.Props {}
@@ -146,11 +146,15 @@ namespace ArticleDirView {
 
       /**
        * 記事ソートが有効か否かです。<br>
-       * - これが有効な場合、ノードに設定されている記事ソートオーダーをもとにソートが行われます。
+       * - これが有効な場合、記事ソートオーダーをもとにソートが行われます。
        * - これが無効な場合、一般的なディレクトリのソートが行われます。
        */
       const enableArticleSortOrder = computed<boolean>(() => {
-        return base.targetDir.value?.path === pageLogic.getRootTreeNode().path || Boolean(base.targetDir.value?.article?.dir)
+        if (!base.targetDir.value) return false
+        const isAssetsDirNode = pageLogic.isAssetsDir(base.targetDir.value)
+        const isArticleNode = pageLogic.isArticle(base.targetDir.value)
+        // ｢アセット、記事ディレクトリ｣は記事ソートは無効
+        return !isAssetsDirNode && !isArticleNode
       })
 
       /**
@@ -268,6 +272,15 @@ namespace ArticleDirView {
         return StorageUtil.sortChildren(rows)
       }
 
+      function tableFilter(rows: StorageDirTableRow[]): StorageDirTableRow[] {
+        // 下書きファイルはテーブルに表示しない
+        return rows.filter(row => !row.article?.draft)
+      }
+
+      function isArticleSrc(key: StorageNodeGetKeyInput): boolean {
+        return pageLogic.isArticleSrc(key)
+      }
+
       //----------------------------------------------------------------------
       //
       //  Event listeners
@@ -278,7 +291,7 @@ namespace ArticleDirView {
         // 対象ディレクトリが記事の場合
         if (base.targetDir.value && pageLogic.isArticle(base.targetDir.value)) {
           // 選択に記事ファイルが含まれていた場合、選択から記事ファイルを除去
-          const articleFileIndex = e.rows.findIndex(row => row.article?.file)
+          const articleFileIndex = e.rows.findIndex(row => row.article?.src || row.article?.draft)
           if (articleFileIndex >= 0) {
             e.rows.splice(articleFileIndex, 1)
           }
@@ -295,6 +308,11 @@ namespace ArticleDirView {
         const selectedNodes = selectedIndices.value.map(index => base.dirChildNodes.value[index])
         base.dirChildNodes.value.splice(firstSelectedIndex, selectedLength)
         base.dirChildNodes.value.splice(firstSelectedIndex + 1, 0, ...selectedNodes)
+        base.dirChildNodes.value
+          .filter(node => Boolean(node.article?.dir))
+          .forEach((node, index, nodes) => {
+            node.article!.dir!.sortOrder = nodes.length - index
+          })
         enableSaveSort.value = true
       }
 
@@ -307,6 +325,11 @@ namespace ArticleDirView {
         const selectedNodes = selectedIndices.value.map(index => base.dirChildNodes.value[index])
         base.dirChildNodes.value.splice(firstSelectedIndex, selectedLength)
         base.dirChildNodes.value.splice(firstSelectedIndex - 1, 0, ...selectedNodes)
+        base.dirChildNodes.value
+          .filter(node => Boolean(node.article?.dir))
+          .forEach((node, index, nodes) => {
+            node.article!.dir!.sortOrder = nodes.length - index
+          })
         enableSaveSort.value = true
       }
 
@@ -342,6 +365,8 @@ namespace ArticleDirView {
         enableUpSort,
         enableSaveSort,
         spinning,
+        tableFilter,
+        isArticleSrc,
         onSelection,
         downSortButtonOnClick,
         upSortButtonOnClick,

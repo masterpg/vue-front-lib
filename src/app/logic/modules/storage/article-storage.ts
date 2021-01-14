@@ -1,4 +1,11 @@
-import { CreateArticleTypeDirInput, StorageArticleDirType, StorageNode, StoragePaginationInput, StoragePaginationResult } from '@/app/logic/base'
+import {
+  CreateArticleTypeDirInput,
+  StorageArticleDirType,
+  StorageNode,
+  StorageNodeGetKeyInput,
+  StoragePaginationInput,
+  StoragePaginationResult,
+} from '@/app/logic/base'
 import { AppStorageLogic } from '@/app/logic/modules/storage/app-storage'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import _path from 'path'
@@ -19,6 +26,7 @@ import { watch } from '@vue/composition-api'
 interface ArticleStorageLogic extends StorageLogic {
   createArticleTypeDir(input: CreateArticleTypeDirInput): Promise<StorageNode>
   setArticleSortOrder(orderNodePaths: string[]): Promise<StorageNode[]>
+  saveDraftArticle(input: StorageNodeGetKeyInput): Promise<StorageNode>
   fetchArticleChildren(
     dirPath: string,
     articleTypes: StorageArticleDirType[],
@@ -162,6 +170,18 @@ namespace ArticleStorageLogic {
       return nodes
     }
 
+    const saveDraftArticle: ArticleStorageLogic['saveDraftArticle'] = async input => {
+      const fullInput: StorageNodeGetKeyInput = {}
+      input.id && (fullInput.id = input.id)
+      input.path && (fullInput.path = base.toFullPath(input.path))
+      const apiNode = await saveDraftArticleAPI(fullInput)
+
+      // APIノードをストアへ反映
+      const node = base.setAPINodeToStore(apiNode)
+
+      return base.toBasePathNode(node)
+    }
+
     const fetchArticleChildren: ArticleStorageLogic['fetchArticleChildren'] = async (dirPath, articleTypes, input) => {
       // APIノードをストアへ反映
       const { nextPageToken, list: apiNodes, isPaginationTimeout } = await getArticleChildrenAPI(base.toFullPath(dirPath), articleTypes, input)
@@ -201,6 +221,11 @@ namespace ArticleStorageLogic {
       const apiNode = await api.setArticleSortOrder(orderNodePaths)
     })
 
+    const saveDraftArticleAPI = extendedMethod(async (input: StorageNodeGetKeyInput) => {
+      const apiNode = await api.saveDraftArticle(input)
+      return base.apiNodeToStorageNode(apiNode)!
+    })
+
     const getArticleChildrenAPI = extendedMethod(async (dirPath: string, articleTypes: StorageArticleDirType[], input?: StoragePaginationInput) => {
       const pagination = await api.getArticleChildren(dirPath, articleTypes, input)
       return {
@@ -220,11 +245,13 @@ namespace ArticleStorageLogic {
       ...base,
       createArticleTypeDir,
       setArticleSortOrder,
+      saveDraftArticle,
       fetchArticleChildren,
       createArticleTypeDirAPI,
       createArticleGeneralDirAPI,
       renameArticleNodeAPI,
       setArticleSortOrderAPI,
+      saveDraftArticleAPI,
       getArticleChildrenAPI,
     }
   }

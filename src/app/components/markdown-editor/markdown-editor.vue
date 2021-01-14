@@ -109,6 +109,7 @@ import twemoji from 'twemoji'
 
 interface MarkdownEditor extends MarkdownEditor.Props {
   clear(): void
+  getTextContent(): string
 }
 
 /**
@@ -220,6 +221,10 @@ namespace MarkdownEditor {
         editor?.setScrollTop(0)
         previewHTML.value!.innerHTML = ''
         ctx.emit('input', '')
+      }
+
+      const getTextContent: MarkdownEditor['getTextContent'] = () => {
+        return previewHTML.value!.textContent ?? ''
       }
 
       //----------------------------------------------------------------------
@@ -723,6 +728,7 @@ namespace MarkdownEditor {
         splitterModel,
         viewType,
         clear,
+        getTextContent,
         editorOnResize,
         previewOnResize,
         editorContainerOnStartScroll,

@@ -432,71 +432,71 @@ namespace StoragePage {
     async function popupMenuOnNodeAction(e: StorageNodeActionEvent) {
       switch (e.type) {
         case 'reload': {
-          const dirPath = e.nodePaths[0]
-          await pageLogic.reloadStorageDir(dirPath)
+          const { targetPath } = (e as StorageNodeActionEvent<'reload'>).params
+          await pageLogic.reloadStorageDir(targetPath)
           // ページの選択ノードを設定
           // ※ディレクトリビューの更新
           changeDir(pageLogic.selectedTreeNodePath.value)
           break
         }
         case 'createDir': {
-          const dirPath = e.nodePaths[0]
-          const pathData = await dirCreateDialog.value!.open({ parentPath: dirPath })
+          const { parentPath } = (e as StorageNodeActionEvent<'createDir'>).params
+          const pathData = await dirCreateDialog.value!.open({ parentPath })
           if (pathData) {
             await createDir(_path.join(pathData.dir, pathData.name))
           }
           break
         }
         case 'uploadDir': {
-          const dirPath = e.nodePaths[0]
-          uploadProgressFloat.value!.openDirSelectDialog(dirPath)
+          const { parentPath } = (e as StorageNodeActionEvent<'uploadDir'>).params
+          uploadProgressFloat.value!.openDirSelectDialog(parentPath)
           break
         }
         case 'uploadFiles': {
-          const dirPath = e.nodePaths[0]
-          uploadProgressFloat.value!.openFilesSelectDialog(dirPath)
+          const { parentPath } = (e as StorageNodeActionEvent<'uploadFiles'>).params
+          uploadProgressFloat.value!.openFilesSelectDialog(parentPath)
           break
         }
         case 'move': {
-          const toParentPath = await nodeMoveDialog.value!.open(e.nodePaths)
+          const { targetPaths } = (e as StorageNodeActionEvent<'move'>).params
+          const toParentPath = await nodeMoveDialog.value!.open(targetPaths)
           if (typeof toParentPath === 'string') {
-            await moveNodes(e.nodePaths, toParentPath)
+            await moveNodes(targetPaths, toParentPath)
           }
           break
         }
         case 'rename': {
-          const nodePath = e.nodePaths[0]
-          const newName = await nodeRenameDialog.value!.open(nodePath)
+          const { targetPath } = (e as StorageNodeActionEvent<'rename'>).params
+          const newName = await nodeRenameDialog.value!.open(targetPath)
           if (newName) {
-            await renameNode(nodePath, newName)
+            await renameNode(targetPath, newName)
           }
           break
         }
         case 'share': {
-          const input = await nodeShareDialog.value!.open(e.nodePaths)
+          const { targetPaths } = (e as StorageNodeActionEvent<'share'>).params
+          const input = await nodeShareDialog.value!.open(targetPaths)
           if (input) {
-            await setShareSettings(e.nodePaths, input)
+            await setShareSettings(targetPaths, input)
           }
           break
         }
         case 'delete': {
-          const confirmed = await nodeRemoveDialog.value!.open(e.nodePaths)
+          const { targetPaths } = (e as StorageNodeActionEvent<'delete'>).params
+          const confirmed = await nodeRemoveDialog.value!.open(targetPaths)
           if (confirmed) {
-            await removeNodes(e.nodePaths)
+            await removeNodes(targetPaths)
           }
           break
         }
         case 'createArticleTypeDir': {
-          const dirPath = e.nodePaths[0]
+          const { parentPath, type } = (e as StorageNodeActionEvent<'createArticleTypeDir'>).params
           const pathData = await dirCreateDialog.value!.open({
-            parentPath: dirPath,
-            article: e.article,
+            parentPath,
+            article: { dir: { type } },
           })
           if (pathData) {
-            await createArticleTypeDir({
-              ...pathData,
-              type: e.article?.dir?.type!,
-            })
+            await createArticleTypeDir({ ...pathData, type })
           }
           break
         }

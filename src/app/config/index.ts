@@ -1,5 +1,5 @@
 import { DeepPartial, removeEndSlash } from 'web-base-lib'
-import { StorageArticlesConfig, StorageUsersConfig } from 'web-base-lib'
+import { StorageArticleConfig, StorageUserConfig } from 'web-base-lib'
 import URI from 'urijs'
 import merge from 'lodash/merge'
 import { reactive } from '@vue/composition-api'
@@ -41,8 +41,9 @@ interface StorageConfig {
   }
   article: {
     rootName: string
-    fileName: string
     assetsName: string
+    srcFileName: string
+    draftFileName: string
   }
 }
 
@@ -104,12 +105,13 @@ function createConfig(params: CreateConfigParams = {}): Config {
     storage: merge(
       {
         user: {
-          rootName: StorageUsersConfig.RootName,
+          rootName: StorageUserConfig.RootName,
         },
         article: {
-          rootName: StorageArticlesConfig.RootName,
-          fileName: StorageArticlesConfig.FileName,
-          assetsName: StorageArticlesConfig.AssetsName,
+          rootName: StorageArticleConfig.RootName,
+          assetsName: StorageArticleConfig.AssetsName,
+          srcFileName: StorageArticleConfig.SrcFileName,
+          draftFileName: StorageArticleConfig.DraftFileName,
         },
       },
       params.storage

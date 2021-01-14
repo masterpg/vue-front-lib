@@ -110,7 +110,6 @@ interface StorageDirTableRow {
   readonly updatedAtNum: number
   readonly isDir: boolean
   readonly isFile: boolean
-  readonly isArticleFile: boolean
   readonly selected: boolean
   populate(source: StorageNode): void
 }
@@ -191,8 +190,6 @@ namespace StorageDirTableRow {
 
     const isFile = computed(() => nodeType.value === StorageNodeType.File)
 
-    const isArticleFile = computed(() => Boolean(node.article?.file))
-
     const selected = computed<boolean>(() => {
       if (!table.selected) return false
       return Boolean(table.selected.find(row => row.id === id.value))
@@ -219,7 +216,6 @@ namespace StorageDirTableRow {
       updatedAtNum,
       isDir,
       isFile,
-      isArticleFile,
       selected,
       populate,
     })

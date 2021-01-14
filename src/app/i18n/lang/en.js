@@ -150,6 +150,10 @@ export default {
     },
   },
   article: {
+    saveDraft: 'Save Draft',
+    saveDraftError: 'An error occurred while saving the draft.',
+    reflectMaster: 'Reflect Master',
+    reflectMasterError: 'An error occurred while reflecting the master.',
     nodeType: {
       listBundle: 'List Type Bundle | List Type Bundles',
       categoryBundle: 'Category Bundle | Category Bundles',

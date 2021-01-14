@@ -149,6 +149,10 @@ export default {
     },
   },
   article: {
+    saveDraft: '下書き保存',
+    saveDraftError: '下書き保存でエラーが発生しました。',
+    reflectMaster: 'マスター反映',
+    reflectMasterError: 'マスター反映でエラーが発生しました。',
     nodeType: {
       listBundle: 'リスト型バンドル',
       categoryBundle: 'カテゴリ型バンドル',

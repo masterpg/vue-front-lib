@@ -8,10 +8,11 @@
 <template>
   <div class="ArticleWritingView layout vertical">
     <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-      <MarkdownEditor ref="editor" v-model="mdSrc" class="flex-1" />
+      <MarkdownEditor ref="editor" v-model="draft.modifiedContent" class="flex-1" />
     </transition>
     <div class="layout horizontal end-justified">
-      <q-btn flat rounded color="primary" :label="t('common.save')" @click="save" />
+      <q-btn flat rounded color="primary" :label="t('article.reflectMaster')" @click="reflectMaster" />
+      <q-btn flat rounded color="primary" :label="t('article.saveDraft')" :disable="!isDraftModified" @click="saveDraft" />
     </div>
     <q-inner-loading :showing="spinning">
       <q-spinner size="50px" color="primary" />
@@ -20,19 +21,30 @@
 </template>
 
 <script lang="ts">
-import { Ref, defineComponent, ref } from '@vue/composition-api'
-import { StorageNode, StorageNodeType, StorageType } from '@/app/logic'
+import { StorageNode, StorageType } from '@/app/logic'
+import { computed, defineComponent, ref, watch } from '@vue/composition-api'
 import { MarkdownEditor } from '@/app/components/markdown-editor'
 import { StoragePageLogic } from '@/app/views/base/storage'
 import { useI18n } from '@/app/i18n'
 
 interface ArticleWritingView extends ArticleWritingView.Props {
-  load(filePath: string): Promise<void>
+  load(articlePath: string): Promise<void>
 }
 
 namespace ArticleWritingView {
   export interface Props {
     readonly storageType: StorageType
+  }
+
+  interface SrcFileInfo {
+    node: StorageNode
+    content: string
+  }
+
+  interface DraftFileInfo {
+    node: StorageNode
+    modifiedContent: string
+    content: string
   }
 
   export const clazz = defineComponent({
@@ -56,13 +68,25 @@ namespace ArticleWritingView {
       const pageLogic = StoragePageLogic.getInstance(props.storageType)
       const { t } = useI18n()
 
+      const spinning = ref(false)
+
       const editor = ref<MarkdownEditor>()
 
-      const mdSrc = ref('')
+      const src = ref<SrcFileInfo>({
+        node: null as any,
+        content: '',
+      })
 
-      const fileNode: Ref<StorageNode> = ref(null as any)
+      const draft = ref<DraftFileInfo>({
+        node: null as any,
+        modifiedContent: '',
+        content: '',
+      })
 
-      const spinning = ref(false)
+      const isDraftModified = computed<boolean>(() => {
+        const { content, modifiedContent } = draft.value
+        return content !== modifiedContent
+      })
 
       //----------------------------------------------------------------------
       //
@@ -70,18 +94,60 @@ namespace ArticleWritingView {
       //
       //----------------------------------------------------------------------
 
-      const load: ArticleWritingView['load'] = async filePath => {
+      function clear(): void {
+        src.value.node = null as any
+        src.value.content = ''
+
+        draft.value.node = null as any
+        draft.value.content = ''
+        draft.value.modifiedContent = ''
+
         editor.value!.clear()
+      }
+
+      const load: ArticleWritingView['load'] = async articlePath => {
         spinning.value = true
+        clear()
 
-        fileNode.value = pageLogic.sgetStorageNode({ path: filePath })
-        if (fileNode.value.nodeType !== StorageNodeType.File) {
-          throw new Error(`The specified node is not a file: '${filePath}'`)
-        }
+        // 記事ソースを取得
+        await (async () => {
+          const node = pageLogic.getStorageChildren(articlePath).find(node => Boolean(node.article?.src))
+          if (!node) {
+            throw new Error(`Src file node was not found: '${articlePath}'`)
+          }
+          src.value.node = node
 
-        const downloader = pageLogic.newFileDownloader('firebase', fileNode.value.path)
-        const text = await downloader.execute('text')
-        mdSrc.value = text ?? ''
+          const downloader = pageLogic.newFileDownloader('firebase', src.value.node.path)
+          const content = await downloader.execute('text')
+          src.value.content = content ?? ''
+        })()
+
+        // 下書きのソースを取得
+        await (async () => {
+          const node = pageLogic.getStorageChildren(articlePath).find(node => Boolean(node.article?.draft))!
+          if (!node) {
+            throw new Error(`Draft file node was not found: '${articlePath}'`)
+          }
+          draft.value.node = node
+
+          const downloader = pageLogic.newFileDownloader('firebase', draft.value.node.path)
+          const content = await downloader.execute('text')
+          draft.value.content = content ?? ''
+
+          const localDraftData = getLocalDraftData()
+          if (draft.value.node.version === localDraftData.version) {
+            draft.value.modifiedContent = localDraftData.content
+          } else {
+            // 下書きが行われていない場合
+            if (draft.value.content === '') {
+              draft.value.modifiedContent = src.value.content
+            }
+            // 下書きが行われている場合
+            else {
+              draft.value.modifiedContent = draft.value.content
+            }
+          }
+        })()
 
         spinning.value = false
       }
@@ -92,25 +158,58 @@ namespace ArticleWritingView {
       //
       //----------------------------------------------------------------------
 
-      async function save(): Promise<void> {
+      async function reflectMaster(): Promise<void> {
         spinning.value = true
 
-        const uploader = pageLogic.newFileUploader({
-          data: mdSrc.value,
-          name: fileNode.value.name,
-          dir: fileNode.value.dir,
-          contentType: fileNode.value.contentType,
-        })
-
-        try {
-          await uploader.execute()
-        } catch (err) {
-          // TODO 仮のエラーメッセージ
-          pageLogic.showNotification('error', `記事の保存に失敗しました`)
-        }
+        // try {
+        //   // 下書きの内容を記事ソースへ移す
+        //   const uploader = pageLogic.newFileUploader({
+        //     data: draftSrc.value,
+        //     name: srcNode.value.name,
+        //     dir: srcNode.value.dir,
+        //     contentType: srcNode.value.contentType,
+        //   })
+        //   await uploader.execute()
+        // } catch (err) {
+        //   pageLogic.showNotification('error', String(t('article.publishError')))
+        // }
 
         spinning.value = false
       }
+
+      async function saveDraft(): Promise<void> {
+        spinning.value = true
+
+        draft.value.node = await pageLogic.saveDraftArticle(draft.value.node, draft.value.modifiedContent)
+        draft.value.content = draft.value.modifiedContent
+
+        spinning.value = false
+      }
+
+      function setLocalDraftData(content: string): void {
+        localStorage.setItem(`article.draft.${draft.value.node.id}.version`, String(draft.value.node.version))
+        localStorage.setItem(`article.draft.${draft.value.node.id}.content`, content)
+      }
+
+      function getLocalDraftData(): { version: number; content: string } {
+        const version = parseInt(localStorage.getItem(`article.draft.${draft.value.node.id}.version`) ?? '')
+        const content = localStorage.getItem(`article.draft.${draft.value.node.id}.content`) ?? ''
+        return { version, content }
+      }
+
+      //----------------------------------------------------------------------
+      //
+      //  Event listeners
+      //
+      //----------------------------------------------------------------------
+
+      watch(
+        () => draft.value.modifiedContent,
+        (newValue, oldValue) => {
+          if (!draft.value.node) return
+          setLocalDraftData(newValue)
+        }
+      )
 
       //----------------------------------------------------------------------
       //
@@ -121,10 +220,12 @@ namespace ArticleWritingView {
       return {
         t,
         editor,
-        mdSrc,
+        draft,
+        isDraftModified,
         spinning,
         load,
-        save,
+        reflectMaster,
+        saveDraft,
       }
     },
   })

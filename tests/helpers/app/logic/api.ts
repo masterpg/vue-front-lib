@@ -21,6 +21,7 @@ interface TestAPIContainer extends APIContainer {
   putTestStoreData(inputs: PutTestStoreDataInput[]): Promise<void>
   putTestIndexData(input: PutTestIndexDataInput): Promise<void>
   uploadTestFiles(uploadList: TestUploadFileItem[]): Promise<void>
+  uploadTestHierarchyFiles(uploadList: TestUploadFileItem[]): Promise<void>
   uploadTestUserFiles(user: TestAuthToken, uploadList: TestUploadFileItem[]): Promise<void>
   removeTestDir(dirPaths: string[]): Promise<void>
   removeTestUserDir(user: TestAuthToken): Promise<void>
@@ -120,8 +121,7 @@ namespace TestAPIContainer {
 
       const _uploadList = uploadList.map(item => ({ ...item, signedUploadUrl: '' }))
 
-      const inputs = _uploadList.map(item => ({ id: item.id, path: item.path, contentType: item.contentType }))
-      const signedUploadUrls = await api.getSignedUploadUrls(inputs)
+      const signedUploadUrls = await api.getSignedUploadUrls(_uploadList)
       signedUploadUrls.forEach((url, index) => {
         _uploadList[index].signedUploadUrl = url
       })
@@ -136,16 +136,28 @@ namespace TestAPIContainer {
             'content-type': 'application/octet-stream',
           },
         })
-        const parentPath = removeStartDirChars(path.dirname(uploadItem.path))
-        await api.createStorageHierarchicalDirs([parentPath])
         await api.handleUploadedFile({ id: uploadItem.id, path: uploadItem.path })
       }
 
       _setTestAuthToken(tokenBackup)
     }
 
+    const uploadTestHierarchyFiles: TestAPIContainer['uploadTestHierarchyFiles'] = async uploadList => {
+      const tokenBackup = await _getTestAuthToken()
+      setTestAuthToken(AppAdminToken())
+
+      for (const uploadItem of uploadList) {
+        const parentPath = removeStartDirChars(path.dirname(uploadItem.path))
+        await api.createStorageHierarchicalDirs([parentPath])
+      }
+
+      await uploadTestFiles(uploadList)
+
+      _setTestAuthToken(tokenBackup)
+    }
+
     const uploadTestUserFiles: TestAPIContainer['uploadTestUserFiles'] = async (user, uploadList) => {
-      await uploadTestFiles(
+      await uploadTestHierarchyFiles(
         uploadList.map(uploadItem => {
           uploadItem.path = path.join(toUserStorageBasePath(user), uploadItem.path)
           return uploadItem
@@ -316,6 +328,7 @@ namespace TestAPIContainer {
       putTestStoreData,
       putTestIndexData,
       uploadTestFiles,
+      uploadTestHierarchyFiles,
       uploadTestUserFiles,
       removeTestDir,
       removeTestUserDir,

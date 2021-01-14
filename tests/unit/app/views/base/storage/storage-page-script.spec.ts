@@ -2,7 +2,6 @@ import { ArticleStorageLogic, StorageLogic } from '@/app/logic/modules/storage'
 import {
   CreateArticleTypeDirInput,
   StorageArticleDirType,
-  StorageArticleFileType,
   StorageNode,
   StorageNodeShareSettings,
   StorageNodeType,
@@ -195,8 +194,8 @@ function dirNodeFilter(node: StorageNode): boolean {
  */
 function newListBundleFamilyNodes() {
   const config = useConfig()
-  const articleFileName = config.storage.article.fileName
-
+  const { srcFileName, draftFileName } = config.storage.article
+  const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
   const blog = newStorageDirNode(`${StorageNode.generateId()}`, {
     article: {
       dir: {
@@ -206,7 +205,6 @@ function newListBundleFamilyNodes() {
       },
     },
   })
-
   const art2 = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
     article: {
       dir: {
@@ -216,16 +214,19 @@ function newListBundleFamilyNodes() {
       },
     },
   })
-
-  const art2_index = newStorageDirNode(`${art2.path}/${articleFileName}`, {
+  const art2_src = newStorageDirNode(`${art2.path}/${srcFileName}`, {
     article: {
-      file: {
-        type: StorageArticleFileType.Index,
-        content: '',
+      src: {
+        isPublished: false,
+        textContent: '',
       },
     },
   })
-
+  const art2_draft = newStorageDirNode(`${art2.path}/${draftFileName}`, {
+    article: {
+      draft: true,
+    },
+  })
   const art1 = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
     article: {
       dir: {
@@ -235,10 +236,21 @@ function newListBundleFamilyNodes() {
       },
     },
   })
+  const art1_src = newStorageDirNode(`${art1.path}/${srcFileName}`, {
+    article: {
+      src: {
+        isPublished: false,
+        textContent: '',
+      },
+    },
+  })
+  const art1_draft = newStorageDirNode(`${art1.path}/${draftFileName}`, {
+    article: {
+      draft: true,
+    },
+  })
 
-  const art1_index = newStorageDirNode(`${art1.path}/${articleFileName}`)
-
-  return { blog, art2, art2_index, art1, art1_index }
+  return { assets, blog, art2, art2_src, art2_draft, art1, art1_src, art1_draft }
 }
 
 /**
@@ -254,8 +266,8 @@ function newListBundleFamilyNodes() {
  */
 function newCategoryBundleFamilyNodes() {
   const config = useConfig()
-  const articleFileName = config.storage.article.fileName
-
+  const { srcFileName, draftFileName } = config.storage.article
+  const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
   const programming = newStorageDirNode(`${StorageNode.generateId()}`, {
     article: {
       dir: {
@@ -265,7 +277,6 @@ function newCategoryBundleFamilyNodes() {
       },
     },
   })
-
   const ts = newStorageDirNode(`${programming.path}/${StorageNode.generateId()}`, {
     article: {
       dir: {
@@ -275,7 +286,6 @@ function newCategoryBundleFamilyNodes() {
       },
     },
   })
-
   const variable = newStorageDirNode(`${ts.path}/${StorageNode.generateId()}`, {
     article: {
       dir: {
@@ -285,16 +295,19 @@ function newCategoryBundleFamilyNodes() {
       },
     },
   })
-
-  const variable_index = newStorageDirNode(`${variable.path}/${articleFileName}`, {
+  const variable_src = newStorageDirNode(`${variable.path}/${srcFileName}`, {
     article: {
-      file: {
-        type: StorageArticleFileType.Index,
-        content: '',
+      src: {
+        isPublished: false,
+        textContent: '',
       },
     },
   })
-
+  const variable_draft = newStorageDirNode(`${variable.path}/${draftFileName}`, {
+    article: {
+      draft: true,
+    },
+  })
   const clazz = newStorageDirNode(`${ts.path}/${StorageNode.generateId()}`, {
     article: {
       dir: {
@@ -304,10 +317,21 @@ function newCategoryBundleFamilyNodes() {
       },
     },
   })
+  const clazz_src = newStorageDirNode(`${clazz.path}/${srcFileName}`, {
+    article: {
+      src: {
+        isPublished: false,
+        textContent: '',
+      },
+    },
+  })
+  const clazz_draft = newStorageDirNode(`${clazz.path}/${draftFileName}`, {
+    article: {
+      draft: true,
+    },
+  })
 
-  const clazz_index = newStorageDirNode(`${clazz.path}/${articleFileName}`)
-
-  return { programming, ts, variable, variable_index, clazz, clazz_index }
+  return { assets, programming, ts, variable, variable_src, variable_draft, clazz, clazz_src, clazz_draft }
 }
 
 //========================================================================
@@ -1896,7 +1920,7 @@ describe('StoragePageLogic', () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ storageType: 'article' })
       const articleLogic = storageLogic as ArticleStorageLogic
       const config = useConfig()
-      const articleFileName = config.storage.article.fileName
+      const { srcFileName, draftFileName } = config.storage.article
 
       // articles
       // └バンドル
@@ -1922,7 +1946,19 @@ describe('StoragePageLogic', () => {
         },
         lazyLoadStatus: 'none',
       })
-      const art1_index = newTreeFileNodeInput(`${art1.path}/${articleFileName}`)
+      const art1_src = newTreeFileNodeInput(`${art1.path}/${srcFileName}`, {
+        article: {
+          src: {
+            isPublished: false,
+            textContent: '',
+          },
+        },
+      })
+      const art1_draft = newTreeFileNodeInput(`${art1.path}/${draftFileName}`, {
+        article: {
+          draft: true,
+        },
+      })
       pageLogic.setAllTreeNodes([bundle])
 
       const art1Input: CreateArticleTypeDirInput = {
@@ -1933,7 +1969,7 @@ describe('StoragePageLogic', () => {
 
       // モック設定
       td.when(articleLogic.createArticleTypeDir(art1Input)).thenResolve(toStorageNode(art1))
-      td.when(articleLogic.getChildren(art1.path)).thenReturn(toStorageNode([art1_index]))
+      td.when(articleLogic.getChildren(art1.path)).thenReturn(toStorageNode([art1_src, art1_draft]))
 
       // 'バンドル/記事1'を作成
       await pageLogic.createArticleTypeDir(art1Input)
@@ -1944,10 +1980,11 @@ describe('StoragePageLogic', () => {
       //     └index1.md
       const _bundle = pageLogic.getTreeNode(bundle.path)!
       const _bundle_descendants = _bundle.getDescendants()
-      const [_art1, _art1_index] = _bundle_descendants
-      expect(_bundle_descendants.length).toBe(2)
+      const [_art1, _art1_src, _art1_draft] = _bundle_descendants
+      expect(_bundle_descendants.length).toBe(3)
       expect(_art1.path).toBe(art1.path)
-      expect(_art1_index.path).toBe(art1_index.path)
+      expect(_art1_src.path).toBe(art1_src.path)
+      expect(_art1_draft.path).toBe(art1_draft.path)
 
       expect(_bundle.lazyLoadStatus).toBe('loaded')
       expect(_art1.lazyLoadStatus).toBe('loaded')
@@ -3446,15 +3483,17 @@ describe('StoragePageLogic', () => {
     })
 
     it('アセットディレクトリの場合 - ストレージタイプが｢記事｣の場合', () => {
-      const { pageLogic } = newStoragePageLogic({ storageType: 'article' })
-      const config = useConfig()
+      const { pageLogic, storageLogic } = newStoragePageLogic({ storageType: 'article' })
       const { tc } = useI18n()
 
       // articles
       // ├ブログ
       // │└記事1
       // └アセット ← 対象ノードに指定
-      const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
+      const { assets } = newListBundleFamilyNodes()
+
+      // モック設定
+      td.when(storageLogic.getNode(td.matchers.contains({ path: `${assets.path}` }))).thenReturn(assets)
 
       const actual = pageLogic.getDisplayNodeName(assets)
 
@@ -3538,12 +3577,15 @@ describe('StoragePageLogic', () => {
     })
 
     it('アセットディレクトリの場合 - ストレージタイプが｢記事｣の場合', () => {
-      const { pageLogic } = newStoragePageLogic({ storageType: 'article' })
+      const { pageLogic, storageLogic } = newStoragePageLogic({ storageType: 'article' })
       const config = useConfig()
 
       // articles
       // └アセット ← 対象ノードに指定
-      const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
+      const { assets } = newListBundleFamilyNodes()
+
+      // モック設定
+      td.when(storageLogic.getNode(td.matchers.contains({ path: `${assets.path}` }))).thenReturn(assets)
 
       const actual = pageLogic.getNodeIcon(assets)
 
@@ -3589,10 +3631,10 @@ describe('StoragePageLogic', () => {
       // ├ブログ
       // │└記事1
       // └アセット ← 対象ノードに指定
-      const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
+      const { assets } = newListBundleFamilyNodes()
 
       // モック設定
-      td.when(storageLogic.getNode({ path: `${assets.path}` })).thenReturn(assets)
+      td.when(storageLogic.getNode(td.matchers.contains({ path: `${assets.path}` }))).thenReturn(assets)
 
       const actual = pageLogic.isAssetsDir({ path: `${assets.path}` })
 
@@ -3608,7 +3650,6 @@ describe('StoragePageLogic', () => {
       // │└記事1
       // └アセット ← 対象ノードに指定
       const { blog } = newListBundleFamilyNodes()
-      const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
 
       // モック設定
       td.when(storageLogic.getNode({ path: `${blog.path}` })).thenReturn(blog)
@@ -3733,7 +3774,7 @@ describe('StoragePageLogic', () => {
       // └ブログ
       //   └記事1 ← 対象ノードに指定
       //     └index.md
-      const { art1, art1_index } = newListBundleFamilyNodes()
+      const { art1, art1_src } = newListBundleFamilyNodes()
 
       // モック設定
       td.when(storageLogic.getNode({ path: `${art1.path}` })).thenReturn(art1)
@@ -3751,18 +3792,18 @@ describe('StoragePageLogic', () => {
       // └ブログ
       //   └記事1
       //     └index.md ← 対象ノードに指定
-      const { art1, art1_index } = newListBundleFamilyNodes()
+      const { art1, art1_src } = newListBundleFamilyNodes()
 
       // モック設定
-      td.when(storageLogic.getNode({ path: `${art1_index.path}` })).thenReturn(art1_index)
+      td.when(storageLogic.getNode({ path: `${art1_src.path}` })).thenReturn(art1_src)
 
-      const actual = pageLogic.isArticle({ path: `${art1_index.path}` })
+      const actual = pageLogic.isArticle({ path: `${art1_src.path}` })
 
       expect(actual).toBeFalsy()
     })
   })
 
-  describe('isArticleFile', () => {
+  describe('isArticleSrc', () => {
     it('記事ファイルを指定', () => {
       const { pageLogic, storageLogic } = newStoragePageLogic({ storageType: 'article' })
       const config = useConfig()
@@ -3771,13 +3812,13 @@ describe('StoragePageLogic', () => {
       // └ブログ
       //   └記事1
       //     └index.md ← 対象ノードに指定
-      const { art1, art1_index } = newListBundleFamilyNodes()
+      const { art1, art1_src } = newListBundleFamilyNodes()
 
       // モック設定
-      td.when(storageLogic.getNode({ path: `${art1_index.path}` })).thenReturn(art1_index)
+      td.when(storageLogic.getNode({ path: `${art1_src.path}` })).thenReturn(art1_src)
       td.when(storageLogic.getNode({ path: `${art1.path}` })).thenReturn(art1)
 
-      const actual = pageLogic.isArticleFile({ path: `${art1_index.path}` })
+      const actual = pageLogic.isArticleSrc({ path: `${art1_src.path}` })
 
       expect(actual).toBeTruthy()
     })
@@ -3790,19 +3831,19 @@ describe('StoragePageLogic', () => {
       // └ブログ
       //   └記事1 ← 対象ノードに指定
       //     └index.md
-      const { blog, art1, art1_index } = newListBundleFamilyNodes()
+      const { blog, art1, art1_src } = newListBundleFamilyNodes()
 
       // モック設定
       td.when(storageLogic.getNode({ path: `${art1.path}` })).thenReturn(art1)
       td.when(storageLogic.getNode({ path: `${blog.path}` })).thenReturn(blog)
 
-      const actual = pageLogic.isArticleFile({ path: `${art1.path}` })
+      const actual = pageLogic.isArticleSrc({ path: `${art1.path}` })
 
       expect(actual).toBeFalsy()
     })
   })
 
-  describe('isArticleDescendant', () => {
+  describe('isArticleUnder', () => {
     it('ベーシックケース', () => {
       const { pageLogic, storageLogic } = newStoragePageLogic({ storageType: 'article' })
 
@@ -3820,7 +3861,7 @@ describe('StoragePageLogic', () => {
       td.when(storageLogic.getNode({ path: `${images.path}` })).thenReturn(images)
       td.when(storageLogic.getNode({ path: `${art1.path}` })).thenReturn(art1)
 
-      const actual = pageLogic.isArticleDescendant({ path: `${img1.path}` })
+      const actual = pageLogic.isArticleUnder({ path: `${img1.path}` })
 
       expect(actual).toBeTruthy()
     })
@@ -3842,7 +3883,7 @@ describe('StoragePageLogic', () => {
       td.when(storageLogic.getNode({ path: `${tmp.path}` })).thenReturn(tmp)
       td.when(storageLogic.getNode({ path: `${blog.path}` })).thenReturn(blog)
 
-      const actual = pageLogic.isArticleDescendant({ path: `${memo.path}` })
+      const actual = pageLogic.isArticleUnder({ path: `${memo.path}` })
 
       expect(actual).toBeFalsy()
     })

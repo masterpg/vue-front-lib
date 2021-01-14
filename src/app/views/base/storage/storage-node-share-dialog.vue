@@ -139,7 +139,7 @@ namespace StorageNodeShareDialog {
 
     const targetNodeName = computed(() => {
       if (sharingNodes.value.length === 1) {
-        return sharingNodes.value[0].name
+        return pageLogic.getDisplayNodeName(sharingNodes.value[0])
       }
       return ''
     })

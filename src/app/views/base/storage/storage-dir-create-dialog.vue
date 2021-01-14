@@ -42,9 +42,9 @@
 <script lang="ts">
 import { QDialog, QInput } from 'quasar'
 import { Ref, SetupContext, computed, defineComponent, reactive, ref } from '@vue/composition-api'
-import { StorageNode, StorageNodeType, StorageType } from '@/app/logic'
+import { StorageArticleSettings, StorageNode, StorageNodeType, StorageType } from '@/app/logic'
+import { DeepPartial } from 'web-base-lib'
 import { Dialog } from '@/app/components/dialog'
-import { StorageArticleTypeInput } from '@/app/views/base/storage/base'
 import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import _path from 'path'
 import { isFontAwesome } from '@/app/base'
@@ -54,7 +54,7 @@ interface StorageDirCreateDialog extends Dialog<DialogParams, DialogResult | und
 
 interface DialogParams {
   parentPath: string
-  article?: StorageArticleTypeInput
+  article?: DeepPartial<StorageArticleSettings>
 }
 
 interface DialogResult {
@@ -92,16 +92,13 @@ namespace StorageDirCreateDialog {
     const dirNameInput = ref<QInput>()
 
     const state = reactive({
-      article: undefined as StorageArticleTypeInput | undefined,
+      article: undefined as DeepPartial<StorageArticleSettings> | undefined,
     })
 
     const parentNode: Ref<StorageNode | null> = ref(null)
 
     const icon = computed(() => {
-      return pageLogic.getNodeTypeIcon({
-        nodeType: StorageNodeType.Dir,
-        article: state.article ?? undefined,
-      })
+      return pageLogic.getNodeTypeIcon({ nodeType: StorageNodeType.Dir, article: state.article })
     })
 
     const iconSize = computed(() => {
@@ -109,10 +106,7 @@ namespace StorageDirCreateDialog {
     })
 
     const title = computed(() => {
-      const nodeTypeLabel = pageLogic.getNodeTypeLabel({
-        nodeType: StorageNodeType.Dir,
-        article: state.article ?? undefined,
-      })
+      const nodeTypeLabel = pageLogic.getNodeTypeLabel({ nodeType: StorageNodeType.Dir, article: state.article })
       return String(t('common.createSth', { sth: nodeTypeLabel }))
     })
 
@@ -143,7 +137,7 @@ namespace StorageDirCreateDialog {
         parentNode.value = pageLogic.sgetStorageNode({ path: params.parentPath })
       }
 
-      state.article = params.article || undefined
+      state.article = params.article
 
       return base.open()
     }

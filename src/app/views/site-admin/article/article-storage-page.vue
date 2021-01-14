@@ -123,7 +123,8 @@ namespace ArticleStoragePage {
       const storageType: StorageType = 'article'
 
       const nodeFilter = (node: StorageNode) => {
-        return true // ツリーに全てのノードを表示
+        // 下書きファイルはツリーに表示しない
+        return !node.article?.draft
       }
 
       const base = StoragePage.setup({ ctx, storageType, nodeFilter })
@@ -159,9 +160,9 @@ namespace ArticleStoragePage {
             break
           }
           case StorageNodeType.File: {
-            if (node.article?.file) {
+            if (node.article?.src) {
               // 記事編集ビューを表示
-              showWritingView(node.path)
+              showWritingView(node.dir)
             }
             break
           }
@@ -178,13 +179,13 @@ namespace ArticleStoragePage {
 
       /**
        * 記事編集ビューを表示します。
-       * @param nodePath
+       * @param articlePath
        */
-      async function showWritingView(nodePath: string): Promise<void> {
+      async function showWritingView(articlePath: string): Promise<void> {
         visibleDirView.value = false
         visibleWritingView.value = true
 
-        await writingView.value!.load(nodePath)
+        await writingView.value!.load(articlePath)
       }
 
       //----------------------------------------------------------------------
@@ -200,7 +201,7 @@ namespace ArticleStoragePage {
         // 選択ノードがファイルの場合
         if (selectedNode.nodeType === StorageNodeType.File) {
           // 選択ノードが｢記事ファイル｣の場合
-          if (selectedNode.nodeType === StorageNodeType.File && selectedNode.article?.file) {
+          if (selectedNode.article?.src) {
             // 選択ノードのパスをURLに付与
             // ※記事編集ビューが表示されることになる
             base.changeDirOnPage(selectedNode.path)

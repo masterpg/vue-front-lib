@@ -43,13 +43,7 @@ function newStorageDirNode(dirPath: string, data?: NewTestStorageNodeData): Stor
     contentType: data.contentType || '',
     size: data.size || 0,
     share: merge(EmptyShareSettings(), data.share),
-    article: (() => {
-      if (!data.article) return undefined
-      return {
-        dir: data.article?.dir ?? undefined,
-        file: data.article?.file ?? undefined,
-      }
-    })(),
+    article: data.article,
     version: 1,
     createdAt: dayjs.isDayjs(data.createdAt) ? data.createdAt : dayjs(),
     updatedAt: dayjs.isDayjs(data.updatedAt) ? data.updatedAt : dayjs(),
@@ -73,13 +67,7 @@ function newStorageFileNode(filePath: string, data?: NewTestStorageNodeData): St
     contentType: data.contentType || 'text/plain; charset=utf-8',
     size: data.size || 5,
     share: merge(EmptyShareSettings(), data.share),
-    article: (() => {
-      if (!data.article) return undefined
-      return {
-        dir: data.article?.dir ?? undefined,
-        file: data.article?.file ?? undefined,
-      }
-    })(),
+    article: data.article,
     version: 1,
     createdAt: dayjs.isDayjs(data.createdAt) ? data.createdAt : dayjs(),
     updatedAt: dayjs.isDayjs(data.updatedAt) ? data.updatedAt : dayjs(),
@@ -121,6 +109,7 @@ function mockStorageLogicAPIMethods(params: Pick<TestLogicContainer, 'appStorage
   articleStorage.createArticleGeneralDirAPI.value = td.func() as any
   articleStorage.renameArticleNodeAPI.value = td.func() as any
   articleStorage.setArticleSortOrderAPI.value = td.func() as any
+  articleStorage.saveDraftArticleAPI.value = td.func() as any
   articleStorage.getArticleChildrenAPI.value = td.func() as any
 }
 
