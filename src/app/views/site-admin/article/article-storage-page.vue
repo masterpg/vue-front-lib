@@ -97,7 +97,7 @@
 </template>
 
 <script lang="ts">
-import { StorageNode, StorageNodeType, StorageType } from '@/app/logic'
+import { StorageArticleFileType, StorageNode, StorageNodeType, StorageType } from '@/app/logic'
 import { StoragePage, StoragePageLogic } from '@/app/views/base/storage'
 import { defineComponent, ref } from '@vue/composition-api'
 import { ArticleDirView } from '@/app/views/site-admin/article/article-dir-view.vue'
@@ -124,7 +124,7 @@ namespace ArticleStoragePage {
 
       const nodeFilter = (node: StorageNode) => {
         // 下書きファイルはツリーに表示しない
-        return !node.article?.draft
+        return node.article?.file?.type !== StorageArticleFileType.Draft
       }
 
       const base = StoragePage.setup({ ctx, storageType, nodeFilter })
@@ -160,7 +160,7 @@ namespace ArticleStoragePage {
             break
           }
           case StorageNodeType.File: {
-            if (node.article?.src) {
+            if (node.article?.file?.type === StorageArticleFileType.Master) {
               // 記事編集ビューを表示
               showWritingView(node.dir)
             }
@@ -200,8 +200,8 @@ namespace ArticleStoragePage {
 
         // 選択ノードがファイルの場合
         if (selectedNode.nodeType === StorageNodeType.File) {
-          // 選択ノードが｢記事ファイル｣の場合
-          if (selectedNode.article?.src) {
+          // 選択ノードが｢記事ソースファイル｣の場合
+          if (selectedNode.article?.file?.type === StorageArticleFileType.Master) {
             // 選択ノードのパスをURLに付与
             // ※記事編集ビューが表示されることになる
             base.changeDirOnPage(selectedNode.path)

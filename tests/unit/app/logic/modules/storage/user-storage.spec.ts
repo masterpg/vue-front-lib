@@ -75,7 +75,7 @@ describe('AppStorageLogic', () => {
   })
 
   describe('getNode', () => {
-    it('ベーシックケース', () => {
+    it('ベーシックケース - ノードパスで取得', () => {
       const d1 = newStorageDirNode(`${basePath}/d1`)
       const {
         logic: { userStorage },

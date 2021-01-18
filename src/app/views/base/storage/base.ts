@@ -99,8 +99,8 @@ class StorageNodeActionEvent<T extends keyof StorageNodeActionEventType = any> {
           case StorageArticleDirType.ListBundle:
             this.label = String(t('common.createSth', { sth: t('article.nodeType.listBundle') }))
             break
-          case StorageArticleDirType.CategoryBundle:
-            this.label = String(t('common.createSth', { sth: t('article.nodeType.categoryBundle') }))
+          case StorageArticleDirType.TreeBundle:
+            this.label = String(t('common.createSth', { sth: t('article.nodeType.treeBundle') }))
             break
           case StorageArticleDirType.Category:
             this.label = String(t('common.createSth', { sth: t('article.nodeType.category') }))

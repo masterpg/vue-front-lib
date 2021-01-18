@@ -577,7 +577,9 @@ describe('Storage API', () => {
       api.setTestAuthToken(AppAdminToken())
 
       await api.createStorageHierarchicalDirs([`${TEST_DIR}/d1`, `${TEST_DIR}/d2`])
-      await api.uploadTestHierarchyFiles([{ id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileA.txt`, contentType: 'text/plain', data: 'test' }])
+      await api.uploadTestHierarchyFiles([
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileA.txt`, contentType: 'text/plain', data: 'test' },
+      ])
 
       const actual = await api.moveStorageFile(`${TEST_DIR}/d1/fileA.txt`, `${TEST_DIR}/d2/fileA.txt`)
 
@@ -618,7 +620,9 @@ describe('Storage API', () => {
       api.setTestAuthToken(AppAdminToken())
 
       await api.createStorageHierarchicalDirs([`${TEST_DIR}/d1`])
-      await api.uploadTestHierarchyFiles([{ id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileA.txt`, contentType: 'text/plain', data: 'test' }])
+      await api.uploadTestHierarchyFiles([
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileA.txt`, contentType: 'text/plain', data: 'test' },
+      ])
 
       const actual = await api.renameStorageFile(`${TEST_DIR}/d1/fileA.txt`, `fileB.txt`)
 
@@ -631,7 +635,9 @@ describe('Storage API', () => {
       const { api } = provideDependency()
       api.setTestAuthToken(AppAdminToken())
       await api.createStorageHierarchicalDirs([`${TEST_DIR}/dir1`])
-      await api.uploadTestHierarchyFiles([{ id: StorageNode.generateId(), path: `${TEST_DIR}/dir1/fileA.txt`, contentType: 'text/plain', data: 'test' }])
+      await api.uploadTestHierarchyFiles([
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/dir1/fileA.txt`, contentType: 'text/plain', data: 'test' },
+      ])
 
       const actual = await api.setStorageDirShareSettings(`${TEST_DIR}/dir1`, { isPublic: true, readUIds: ['ichiro'], writeUIds: ['ichiro'] })
 
@@ -645,7 +651,9 @@ describe('Storage API', () => {
       const { api } = provideDependency()
       api.setTestAuthToken(AppAdminToken())
       await api.createStorageHierarchicalDirs([`${TEST_DIR}/dir1`])
-      await api.uploadTestHierarchyFiles([{ id: StorageNode.generateId(), path: `${TEST_DIR}/dir1/fileA.txt`, contentType: 'text/plain', data: 'test' }])
+      await api.uploadTestHierarchyFiles([
+        { id: StorageNode.generateId(), path: `${TEST_DIR}/dir1/fileA.txt`, contentType: 'text/plain', data: 'test' },
+      ])
 
       const actual = await api.setStorageFileShareSettings(`${TEST_DIR}/dir1/fileA.txt`, {
         isPublic: true,
@@ -675,11 +683,11 @@ describe('Storage API', () => {
       bundle = await api.createArticleTypeDir({
         dir: `${articleRootPath}`,
         name: 'バンドル',
-        type: StorageArticleDirType.CategoryBundle,
+        type: StorageArticleDirType.TreeBundle,
       })
     }
 
-    it('疎通確認 - カテゴリ', async () => {
+    it('疎通確認 - カテゴリディレクトリ', async () => {
       // ユーザーの記事ルートを事前に作成
       await setupArticleNodes()
 
@@ -696,11 +704,10 @@ describe('Storage API', () => {
       expect(actual.article?.dir?.name).toBe('カテゴリ1')
       expect(actual.article?.dir?.type).toBe(StorageArticleDirType.Category)
       expect(typeof actual.article?.dir?.sortOrder === 'number').toBeTruthy()
-      expect(actual.article?.src).toBeUndefined()
-      expect(actual.article?.draft).toBeUndefined()
+      expect(actual.article?.file).toBeUndefined()
     })
 
-    it('疎通確認 - 記事', async () => {
+    it('疎通確認 - 記事ディレクトリ', async () => {
       // ユーザーの記事ルートを事前に作成
       await setupArticleNodes()
 
@@ -717,21 +724,19 @@ describe('Storage API', () => {
       expect(actual.article?.dir?.name).toBe('記事1')
       expect(actual.article?.dir?.type).toBe(StorageArticleDirType.Article)
       expect(typeof actual.article?.dir?.sortOrder === 'number').toBeTruthy()
-      expect(actual.article?.src).toBeUndefined()
-      expect(actual.article?.draft).toBeUndefined()
+      expect(actual.article?.file).toBeUndefined()
 
-      // 記事ファイルが作成されていることを検証
-      const srcFileNode = (await api.getStorageChildren(actual.path)).list.find(node => Boolean(node.article?.src))!
-      expect(srcFileNode.article?.src?.isPublished).toBeFalsy()
-      expect(srcFileNode.article?.src?.textContent).toBe('')
-      expect(srcFileNode.article?.dir).toBeUndefined()
-      expect(srcFileNode.article?.draft).toBeUndefined()
+      // 記事ソースファイルが作成されていることを検証
+      const masterFileNode = (await api.getStorageChildren(actual.path)).list.find(
+        node => node.article?.file?.type === StorageArticleFileType.Master
+      )!
+      expect(masterFileNode.article?.file?.type).toBe(StorageArticleFileType.Master)
+      expect(masterFileNode.article?.dir).toBeUndefined()
 
       // 下書きファイルが作成されていることを検証
-      const draftFileNode = (await api.getStorageChildren(actual.path)).list.find(node => Boolean(node.article?.draft))!
-      expect(draftFileNode.article?.draft).toBeTruthy()
+      const draftFileNode = (await api.getStorageChildren(actual.path)).list.find(node => node.article?.file?.type === StorageArticleFileType.Draft)!
+      expect(draftFileNode.article?.file?.type).toBe(StorageArticleFileType.Draft)
       expect(draftFileNode.article?.dir).toBeUndefined()
-      expect(draftFileNode.article?.src).toBeUndefined()
     })
   })
 
@@ -775,7 +780,7 @@ describe('Storage API', () => {
     })
   })
 
-  describe('renameArticleNode', () => {
+  describe('renameArticleDir', () => {
     let articleRootPath: string
     let bundle: APIStorageNode
 
@@ -800,7 +805,7 @@ describe('Storage API', () => {
       const { api } = provideDependency()
       api.setTestAuthToken(GeneralToken())
 
-      const actual = await api.renameArticleNode(`${bundle.path}`, 'Bundle')
+      const actual = await api.renameArticleDir(`${bundle.path}`, 'Bundle')
 
       const expected: APIStorageNode = { ...bundle }
       expected.article!.dir!.name = 'Bundle'
@@ -857,7 +862,7 @@ describe('Storage API', () => {
     })
   })
 
-  describe('saveDraftArticle', () => {
+  describe('saveArticleSrcDraftFile', () => {
     let articleRootPath: string
     let bundle: APIStorageNode
     let art1: APIStorageNode
@@ -884,7 +889,7 @@ describe('Storage API', () => {
       })
 
       art1_draft = (await api.getStorageNode({
-        path: `${art1.path}/${config.storage.article.draftFileName}`,
+        path: StorageUtil.toArticleSrcDraftPath(art1.path),
       }))!
     }
 
@@ -894,19 +899,11 @@ describe('Storage API', () => {
       const { api } = provideDependency()
       api.setTestAuthToken(GeneralToken())
 
-      // 記事1の下書きの内容を更新
-      const art1_uploadItem = {
-        id: art1_draft.id,
-        path: `${art1_draft.path}`,
-        contentType: 'text/markdown',
-        data: 'test',
-      }
-      await api.uploadTestFiles([art1_uploadItem])
-
-      const actual = await api.saveDraftArticle(art1_draft)
+      const srcContent = 'test'
+      const actual = await api.saveArticleSrcDraftFile(art1.path, srcContent)
 
       expect(actual.id).toBe(art1_draft.id)
-      expect(actual.size).toBe(Buffer.byteLength(art1_uploadItem.data))
+      expect(actual.size).toBe(Buffer.byteLength(srcContent))
       expect(actual.updatedAt.isAfter(art1.updatedAt)).toBeTruthy()
       expect(actual.version).toBe(art1.version + 1)
     })

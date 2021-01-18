@@ -322,14 +322,18 @@ namespace StorageStore {
     //----------------------------------------------------------------------
 
     function getStateNode(key: { id?: string; path?: string }): StorageNode | undefined {
-      if (!key.id && !key.path) {
+      const id = key.id
+      let path = key.path
+      if (typeof id !== 'string' && typeof path !== 'string') {
         return undefined
       }
 
-      key.path = removeBothEndsSlash(key.path)
+      if (typeof path === 'string') {
+        path = removeBothEndsSlash(path)
+      }
       for (const node of state.all) {
-        if (node.id === key.id) return node
-        if (node.path === key.path) return node
+        if (typeof id === 'string' && node.id === id) return node
+        if (typeof path === 'string' && node.path === path) return node
       }
       return undefined
     }

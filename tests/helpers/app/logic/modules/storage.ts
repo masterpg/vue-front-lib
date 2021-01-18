@@ -107,9 +107,9 @@ function mockStorageLogicAPIMethods(params: Pick<TestLogicContainer, 'appStorage
 
   articleStorage.createArticleTypeDirAPI.value = td.func() as any
   articleStorage.createArticleGeneralDirAPI.value = td.func() as any
-  articleStorage.renameArticleNodeAPI.value = td.func() as any
+  articleStorage.renameArticleDirAPI.value = td.func() as any
   articleStorage.setArticleSortOrderAPI.value = td.func() as any
-  articleStorage.saveDraftArticleAPI.value = td.func() as any
+  articleStorage.saveArticleSrcDraftFileAPI.value = td.func() as any
   articleStorage.getArticleChildrenAPI.value = td.func() as any
 }
 

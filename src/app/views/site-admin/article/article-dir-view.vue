@@ -55,10 +55,10 @@
     </div>
     <StorageDirTable
       ref="table"
-      :data="tableFilter(dirChildNodes)"
+      :data="rowFilter(rows)"
       :columns="columns"
-      :selected.sync="dirSelectedNodes"
-      :sort-method="tableSortMethod"
+      :selected.sync="selectedRows"
+      :sort-method="sortMethod"
       :loading="loading"
       row-key="id"
       @selection="onSelection"
@@ -66,10 +66,14 @@
       <template v-slot:body="slotProps">
         <q-tr :props="slotProps.tr" @click="rowOnClick(slotProps.tr.row)">
           <q-td auto-width>
-            <q-checkbox v-show="!isArticleSrc(slotProps.tr.row)" v-model="slotProps.tr.selected" />
+            <q-checkbox v-show="!isArticleSrcMaster(slotProps.tr.row)" v-model="slotProps.tr.selected" />
           </q-td>
           <q-td key="label" :props="slotProps.tr">
-            <span v-if="slotProps.tr.row.isDir || isArticleSrc(slotProps.tr.row)" class="th label" @click="nameCellOnClick(slotProps.tr.row, $event)">
+            <span
+              v-if="slotProps.tr.row.isDir || isArticleSrcMaster(slotProps.tr.row)"
+              class="th label"
+              @click="nameCellOnClick(slotProps.tr.row, $event)"
+            >
               <q-icon :name="slotProps.tr.row.icon" :size="slotProps.tr.row.iconSize" class="app-mr-6" />
               <span>{{ slotProps.tr.row.label }}</span>
             </span>
@@ -101,9 +105,9 @@
 </template>
 
 <script lang="ts">
+import { StorageArticleFileType, StorageUtil } from '@/app/logic'
 import { StorageDirTableRow, StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
-import { StorageNodeGetKeyInput, StorageUtil } from '@/app/logic'
-import { computed, defineComponent, ref } from '@vue/composition-api'
+import { computed, defineComponent, nextTick, ref } from '@vue/composition-api'
 import { StorageDirTable } from '@/app/views/base/storage/storage-dir-table.vue'
 import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'
 import { StoragePageLogic } from '@/app/views/base/storage'
@@ -150,11 +154,13 @@ namespace ArticleDirView {
        * - これが無効な場合、一般的なディレクトリのソートが行われます。
        */
       const enableArticleSortOrder = computed<boolean>(() => {
-        if (!base.targetDir.value) return false
-        const isAssetsDirNode = pageLogic.isAssetsDir(base.targetDir.value)
-        const isArticleNode = pageLogic.isArticle(base.targetDir.value)
-        // ｢アセット、記事ディレクトリ｣は記事ソートは無効
-        return !isAssetsDirNode && !isArticleNode
+        // 記事ルートの場合、有効
+        if (!base.targetDir.value) return true
+        // バンドル、カテゴリの場合、有効
+        const isListBundle = pageLogic.isListBundle(base.targetDir.value)
+        const isTreeBundle = pageLogic.isTreeBundle(base.targetDir.value)
+        const isCategoryDir = pageLogic.isCategoryDir(base.targetDir.value)
+        return isListBundle || isTreeBundle || isCategoryDir
       })
 
       /**
@@ -162,30 +168,33 @@ namespace ArticleDirView {
        */
       const enableDownSort = computed<boolean>(() => {
         if (!isSequenceSelected.value) return false
+        const rows = base.sortMethod(base.rows.value)
 
         // 最後尾のノードが選択されている場合、使用不可
-        const lastNode = base.dirChildNodes.value[base.dirChildNodes.value.length - 1]
+        const lastNode = rows[rows.length - 1]
         if (lastNode.selected) return false
 
         // 選択ノードの中に記事系ディレクトリ以外のものがあった場合、使用不可
         for (const selectedIndex of selectedIndices.value) {
-          const selectedNode = base.dirChildNodes.value[selectedIndex]
+          const selectedNode = rows[selectedIndex]
           if (!selectedNode.article?.dir) return false
         }
 
         // 最後尾の選択ノードの次のノードを取得
         const lastSelectedNextNode = (() => {
-          const nodesLength = base.dirChildNodes.value.length
+          const nodesLength = rows.length
           const lastSelectedIndex = selectedIndices.value[selectedIndices.value.length - 1]
           if (lastSelectedIndex + 1 <= nodesLength) {
-            return base.dirChildNodes.value[lastSelectedIndex + 1]
+            return rows[lastSelectedIndex + 1]
           } else {
             return null
           }
         })()
 
         // 最後尾の選択ノードの次のノードが記事系ディレクトリ以外(例: アセットなど)の場合、使用不可
-        if (!lastSelectedNextNode?.article?.dir) return false
+        if (lastSelectedNextNode && !lastSelectedNextNode.article) {
+          return false
+        }
 
         return true
       })
@@ -195,14 +204,15 @@ namespace ArticleDirView {
        */
       const enableUpSort = computed<boolean>(() => {
         if (!isSequenceSelected.value) return false
+        const rows = base.sortMethod(base.rows.value)
 
         // 先頭のノードが選択されている場合、使用不可
-        const firstNode = base.dirChildNodes.value[0]
+        const firstNode = rows[0]
         if (firstNode.selected) return false
 
         // 選択ノードの中に記事系ディレクトリ以外のものがあった場合、使用不可
         for (const selectedIndex of selectedIndices.value) {
-          const selectedNode = base.dirChildNodes.value[selectedIndex]
+          const selectedNode = rows[selectedIndex]
           if (!selectedNode.article?.dir) return false
         }
 
@@ -210,14 +220,16 @@ namespace ArticleDirView {
         const firstSelectedPrevNode = (() => {
           const firstSelectedIndex = selectedIndices.value[0]
           if (firstSelectedIndex - 1 >= 0) {
-            return base.dirChildNodes.value[firstSelectedIndex - 1]
+            return rows[firstSelectedIndex - 1]
           } else {
             return null
           }
         })()
 
         // 先頭の選択ノードの前のノードが記事系ディレクトリ以外(例: アセットなど)の場合、使用不可
-        if (!firstSelectedPrevNode?.article?.dir) return false
+        if (firstSelectedPrevNode && !firstSelectedPrevNode.article) {
+          return false
+        }
 
         return true
       })
@@ -249,7 +261,7 @@ namespace ArticleDirView {
        * 選択ノードのインデックスリストです。
        */
       const selectedIndices = computed<number[]>(() => {
-        return base.dirChildNodes.value.reduce((result, node, index) => {
+        return base.rows.value.reduce((result, node, index) => {
           node.selected && result.push(index)
           return result
         }, [] as number[])
@@ -268,17 +280,17 @@ namespace ArticleDirView {
         enableSaveSort.value = false
       }
 
-      base.tableSortMethod.value = rows => {
-        return StorageUtil.sortChildren(rows)
+      base.sortMethod.value = rows => {
+        return StorageUtil.sortChildren([...rows]) as any
       }
 
-      function tableFilter(rows: StorageDirTableRow[]): StorageDirTableRow[] {
+      function rowFilter(rows: StorageDirTableRow[]): StorageDirTableRow[] {
         // 下書きファイルはテーブルに表示しない
-        return rows.filter(row => !row.article?.draft)
+        return rows.filter(row => row.article?.file?.type !== StorageArticleFileType.Draft)
       }
 
-      function isArticleSrc(key: StorageNodeGetKeyInput): boolean {
-        return pageLogic.isArticleSrc(key)
+      function isArticleSrcMaster(row: StorageDirTableRow): boolean {
+        return row.article?.file?.type === StorageArticleFileType.Master
       }
 
       //----------------------------------------------------------------------
@@ -289,13 +301,13 @@ namespace ArticleDirView {
 
       async function onSelection(e: { rows: StorageDirTableRow[]; keys: string[]; added: boolean; evt: any }) {
         // 対象ディレクトリが記事の場合
-        if (base.targetDir.value && pageLogic.isArticle(base.targetDir.value)) {
-          // 選択に記事ファイルが含まれていた場合、選択から記事ファイルを除去
-          const articleFileIndex = e.rows.findIndex(row => row.article?.src || row.article?.draft)
+        if (base.targetDir.value && pageLogic.isArticleDir(base.targetDir.value)) {
+          // 選択に記事ソースファイルが含まれていた場合、選択から記事ファイルを除去
+          const articleFileIndex = e.rows.findIndex(row => row.article?.file?.type === StorageArticleFileType.Master)
           if (articleFileIndex >= 0) {
             e.rows.splice(articleFileIndex, 1)
           }
-          base.dirSelectedNodes.value = e.rows
+          base.selectedRows.value = e.rows
         }
       }
 
@@ -305,10 +317,10 @@ namespace ArticleDirView {
       function downSortButtonOnClick() {
         const selectedLength = selectedIndices.value.length
         const firstSelectedIndex = selectedIndices.value[0]
-        const selectedNodes = selectedIndices.value.map(index => base.dirChildNodes.value[index])
-        base.dirChildNodes.value.splice(firstSelectedIndex, selectedLength)
-        base.dirChildNodes.value.splice(firstSelectedIndex + 1, 0, ...selectedNodes)
-        base.dirChildNodes.value
+        const selectedNodes = selectedIndices.value.map(index => base.rows.value[index])
+        base.rows.value.splice(firstSelectedIndex, selectedLength)
+        base.rows.value.splice(firstSelectedIndex + 1, 0, ...selectedNodes)
+        base.rows.value
           .filter(node => Boolean(node.article?.dir))
           .forEach((node, index, nodes) => {
             node.article!.dir!.sortOrder = nodes.length - index
@@ -322,10 +334,10 @@ namespace ArticleDirView {
       function upSortButtonOnClick() {
         const selectedLength = selectedIndices.value.length
         const firstSelectedIndex = selectedIndices.value[0]
-        const selectedNodes = selectedIndices.value.map(index => base.dirChildNodes.value[index])
-        base.dirChildNodes.value.splice(firstSelectedIndex, selectedLength)
-        base.dirChildNodes.value.splice(firstSelectedIndex - 1, 0, ...selectedNodes)
-        base.dirChildNodes.value
+        const selectedNodes = selectedIndices.value.map(index => base.rows.value[index])
+        base.rows.value.splice(firstSelectedIndex, selectedLength)
+        base.rows.value.splice(firstSelectedIndex - 1, 0, ...selectedNodes)
+        base.rows.value
           .filter(node => Boolean(node.article?.dir))
           .forEach((node, index, nodes) => {
             node.article!.dir!.sortOrder = nodes.length - index
@@ -339,14 +351,14 @@ namespace ArticleDirView {
       async function saveSortOnClick() {
         spinning.value = true
 
-        const orderNodePaths = base.dirChildNodes.value.reduce((result, node) => {
+        const orderNodePaths = base.rows.value.reduce((result, node) => {
           node.article?.dir && result.push(node.path)
           return result
         }, [] as string[])
         await pageLogic.setArticleSortOrder(orderNodePaths)
 
         enableSaveSort.value = false
-        base.buildDirChildNodes(base.targetDir.value!.path)
+        base.buildDirChildNodes(base.targetDir.value?.path)
 
         spinning.value = false
       }
@@ -365,8 +377,8 @@ namespace ArticleDirView {
         enableUpSort,
         enableSaveSort,
         spinning,
-        tableFilter,
-        isArticleSrc,
+        rowFilter,
+        isArticleSrcMaster,
         onSelection,
         downSortButtonOnClick,
         upSortButtonOnClick,

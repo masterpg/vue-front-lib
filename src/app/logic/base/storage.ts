@@ -33,13 +33,13 @@ enum StorageNodeType {
 
 enum StorageArticleDirType {
   ListBundle = 'ListBundle',
-  CategoryBundle = 'CategoryBundle',
+  TreeBundle = 'TreeBundle',
   Category = 'Category',
   Article = 'Article',
 }
 
 enum StorageArticleFileType {
-  Index = 'Index',
+  Master = 'Master',
   Draft = 'Draft',
 }
 
@@ -51,8 +51,7 @@ interface StorageNodeShareSettings {
 
 interface StorageArticleSettings {
   dir?: StorageArticleDirSettings
-  src?: StorageArticleFileSettings
-  draft?: boolean
+  file?: StorageArticleFileSettings
 }
 
 interface StorageArticleDirSettings {
@@ -62,8 +61,7 @@ interface StorageArticleDirSettings {
 }
 
 interface StorageArticleFileSettings {
-  isPublished: boolean
-  textContent: string
+  type: StorageArticleFileType
 }
 
 interface StoragePaginationInput {
@@ -231,9 +229,7 @@ namespace StorageUtil {
       const nodes = node_or_nodes as DeepReadonly<StorageNode>[]
       const result: DeepReadonly<StorageNode>[] = []
       for (const node of nodes) {
-        if (node.path.startsWith(`${basePath}/`)) {
-          result.push(to(basePath, node))
-        }
+        result.push(to(basePath, node))
       }
       return result as T
     } else {
@@ -255,10 +251,19 @@ namespace StorageUtil {
     if (!node_or_nodes) return node_or_nodes as T
 
     function to<U extends StorageNode | DeepReadonly<StorageNode>>(basePath: string, node: U): U {
-      return {
-        ...node,
-        dir: toBasePath(basePath, node.dir),
-        path: toBasePath(basePath, node.path),
+      basePath = removeBothEndsSlash(basePath)
+      if (basePath === removeBothEndsSlash(node.path)) {
+        return {
+          ...node,
+          dir: '',
+          path: node.name,
+        }
+      } else {
+        return {
+          ...node,
+          dir: toBasePath(basePath, node.dir),
+          path: toBasePath(basePath, node.path),
+        }
       }
     }
 
@@ -275,33 +280,6 @@ namespace StorageUtil {
       const node = node_or_nodes as DeepReadonly<StorageNode>
       return to(basePath, node) as T
     }
-  }
-
-  /**
-   * 指定されたユーザーのルートディレクトリを取得します。
-   * @param uid
-   */
-  export function toUserRootPath(uid: string): string {
-    const config = useConfig()
-    return _path.join(config.storage.user.rootName, uid)
-  }
-
-  /**
-   * ユーザーの記事ルートのパスを取得します。
-   * @param uid
-   */
-  export function toArticleRootPath(uid: string): string {
-    const config = useConfig()
-    return _path.join(toUserRootPath(uid), config.storage.article.rootName)
-  }
-
-  /**
-   * 記事用のアッセトディレクトリのパスを取得します。
-   * @param uid
-   */
-  export function toArticleAssetPath(uid: string): string {
-    const config = useConfig()
-    return _path.join(toArticleRootPath(uid), config.storage.article.assetsName)
   }
 
   /**
@@ -349,6 +327,53 @@ namespace StorageUtil {
       const result = to(basePath, nodePath)
       return result as T
     }
+  }
+
+  /**
+   * 指定されたユーザーのルートディレクトリを取得します。
+   * @param uid
+   */
+  export function toUserRootPath(uid: string): string {
+    const config = useConfig()
+    return _path.join(config.storage.user.rootName, uid)
+  }
+
+  /**
+   * ユーザーの記事ルートのパスを取得します。
+   * @param uid
+   */
+  export function toArticleRootPath(uid: string): string {
+    const config = useConfig()
+    return _path.join(toUserRootPath(uid), config.storage.article.rootName)
+  }
+
+  /**
+   * 記事用のアッセトディレクトリのパスを取得します。
+   * @param uid
+   */
+  export function toArticleAssetsPath(uid: string): string {
+    const config = useConfig()
+    return _path.join(toArticleRootPath(uid), config.storage.article.assetsName)
+  }
+
+  /**
+   * 記事ソースのマスターファイルパスを取得します。
+   * @param articleDirPath 記事ディレクトリパス
+   */
+  export function toArticleSrcMasterPath(articleDirPath: string): string {
+    const config = useConfig()
+    articleDirPath = removeStartDirChars(articleDirPath)
+    return _path.join(articleDirPath, config.storage.article.srcMasterFileName)
+  }
+
+  /**
+   * 記事ソースの下書きファイルパスを取得します。
+   * @param articleDirPath 記事ディレクトリパス
+   */
+  export function toArticleSrcDraftPath(articleDirPath: string): string {
+    const config = useConfig()
+    articleDirPath = removeStartDirChars(articleDirPath)
+    return _path.join(articleDirPath, config.storage.article.srcDraftFileName)
   }
 
   /**
@@ -490,10 +515,10 @@ namespace StorageUtil {
    * ディレクトリの子ノードをソートする関数です。
    */
   export function childrenSortFunc<NODE extends SortStorageNode>(a: NODE, b: NODE): number {
-    if (a.article?.src) return -1
-    if (b.article?.src) return 1
-    if (a.article?.draft) return -1
-    if (b.article?.draft) return 1
+    if (a.article?.file?.type === StorageArticleFileType.Master) return -1
+    if (b.article?.file?.type === StorageArticleFileType.Master) return 1
+    if (a.article?.file?.type === StorageArticleFileType.Draft) return -1
+    if (b.article?.file?.type === StorageArticleFileType.Draft) return 1
 
     if (a.nodeType === b.nodeType) {
       const orderA = a.article?.dir?.sortOrder ?? 0
@@ -656,8 +681,8 @@ namespace StorageArticleDirType {
     switch (nodeType) {
       case StorageArticleDirType.ListBundle:
         return String(tc('article.nodeType.listBundle', choice))
-      case StorageArticleDirType.CategoryBundle:
-        return String(tc('article.nodeType.categoryBundle', choice))
+      case StorageArticleDirType.TreeBundle:
+        return String(tc('article.nodeType.treeBundle', choice))
       case StorageArticleDirType.Category:
         return String(tc('article.nodeType.category', choice))
       case StorageArticleDirType.Article:
@@ -671,7 +696,7 @@ namespace StorageArticleDirType {
     switch (nodeType) {
       case StorageArticleDirType.ListBundle:
         return 'fas fa-bars'
-      case StorageArticleDirType.CategoryBundle:
+      case StorageArticleDirType.TreeBundle:
         return 'fas fa-stream'
       case StorageArticleDirType.Category:
         return 'fas fa-list-alt'
@@ -686,8 +711,7 @@ namespace StorageArticleDirType {
 namespace StorageArticleSettings {
   export function populate(from: DeepPartial<DeepReadonly<StorageArticleSettings>>, to: DeepPartial<StorageArticleSettings>): StorageArticleSettings {
     if (from.dir) {
-      to.src = undefined
-      to.draft = undefined
+      to.file = undefined
       to.dir = to.dir ?? { name: null as any, type: null as any, sortOrder: null as any }
       if (typeof from.dir.name === 'string') to.dir.name = from.dir.name
       if (typeof from.dir.type === 'string') to.dir.type = from.dir.type
@@ -696,20 +720,14 @@ namespace StorageArticleSettings {
         const detail = JSON.stringify(to, null, 2)
         throw new Error(`The required field for 'StorageArticleSettings' has not been set: ${detail}`)
       }
-    } else if (from.src) {
+    } else if (from.file) {
       to.dir = undefined
-      to.draft = undefined
-      to.src = to.src ?? { isPublished: null as any, textContent: null as any }
-      if (typeof from.src.isPublished === 'boolean') to.src.isPublished = from.src.isPublished
-      if (typeof from.src.textContent === 'string') to.src.textContent = from.src.textContent
-      if (to.src.isPublished === null || to.src.textContent === null) {
+      to.file = to.file ?? { type: null as any }
+      if (typeof from.file.type === 'string') to.file.type = from.file.type
+      if (to.file.type === null) {
         const detail = JSON.stringify(to, null, 2)
         throw new Error(`The required field for 'StorageArticleSettings' has not been set: ${detail}`)
       }
-    } else if (from.draft) {
-      to.dir = undefined
-      to.src = undefined
-      to.draft = true
     }
     return to as StorageArticleSettings
   }

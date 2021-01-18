@@ -15,10 +15,10 @@
   <div class="StorageDirView">
     <StorageDirTable
       ref="table"
-      :data="dirChildNodes"
+      :data="rows"
       :columns="columns"
-      :selected.sync="dirSelectedNodes"
-      :sort-method="tableSortMethod"
+      :selected.sync="selectedRows"
+      :sort-method="sortMethod"
       :loading="loading"
       row-key="id"
     >
@@ -272,15 +272,6 @@ namespace StorageDirView {
       dirPath: null as string | null,
     })
 
-    const dirSelectedNodes: Ref<StorageDirTableRow[]> = ref([])
-
-    const dirChildNodes: Ref<StorageDirTableRow[]> = ref([])
-
-    const targetDir = computed(() => {
-      if (typeof state.dirPath !== 'string') return null
-      return pageLogic.getStorageNode({ path: state.dirPath }) ?? null
-    })
-
     const columns: Ref<QTableColumn[]> = ref([
       { name: 'label', align: 'left', label: String(t('storage.nodeDetail.name')), field: 'label', sortable: true },
       { name: 'type', align: 'left', label: String(t('storage.nodeDetail.type')), field: 'type', sortable: true },
@@ -288,6 +279,17 @@ namespace StorageDirView {
       { name: 'share', align: 'center', label: String(t('storage.nodeDetail.share')), field: 'share', sortable: true },
       { name: 'updatedAt', align: 'left', label: String(t('storage.nodeDetail.updatedAt')), field: 'updatedAt', sortable: true },
     ])
+
+    const rows: Ref<StorageDirTableRow[]> = ref([])
+
+    const selectedRows: Ref<StorageDirTableRow[]> = ref([])
+
+    const targetDir = computed(() => {
+      if (typeof state.dirPath !== 'string') return null
+      return pageLogic.getStorageNode({ path: state.dirPath }) ?? null
+    })
+
+    const filteredSortedRows = computed<StorageDirTableRow[]>(() => table.value!.filteredSortedRows)
 
     //----------------------------------------------------------------------
     //
@@ -342,7 +344,7 @@ namespace StorageDirView {
 
     const clear = extendedMethod(() => {
       state.dirPath = null
-      dirChildNodes.value.splice(0)
+      rows.value.splice(0)
       // 選択状態を初期化
       table.value!.selected && table.value!.selected.splice(0)
       // スクロール位置を先頭へ初期化
@@ -367,27 +369,26 @@ namespace StorageDirView {
      * @param sortBy
      * @param descending
      */
-    const tableSortMethod = extendedMethod<
-      (rows: StorageDirTableRow[], sortBy: 'label' | 'type' | 'size' | 'share' | 'updatedAt', descending: boolean) => StorageDirTableRow[]
-    >((rows, sortBy, descending) => {
+    const sortMethod = extendedMethod<StorageDirTable.SortMethod<StorageDirTableRow>>((rows, sortBy, descending) => {
       const data = [...rows]
+      const sortBy_: 'label' | 'type' | 'size' | 'share' | 'updatedAt' = sortBy as any
 
-      if (sortBy) {
+      if (sortBy_) {
         data.sort((a, b) => {
           const x = descending ? b : a
           const y = descending ? a : b
 
-          if (sortBy === 'label') {
+          if (sortBy_ === 'label') {
             if (x.nodeType === StorageNodeType.Dir && y.nodeType === StorageNodeType.File) {
               return -1
             } else if (x.nodeType === StorageNodeType.File && y.nodeType === StorageNodeType.Dir) {
               return 1
             }
-            return x[sortBy] > y[sortBy] ? 1 : x[sortBy] < y[sortBy] ? -1 : 0
-          } else if (sortBy === 'updatedAt') {
+            return x[sortBy_] > y[sortBy_] ? 1 : x[sortBy_] < y[sortBy_] ? -1 : 0
+          } else if (sortBy_ === 'updatedAt') {
             return x.updatedAtNum - y.updatedAtNum
           } else {
-            return x[sortBy] > y[sortBy] ? 1 : x[sortBy] < y[sortBy] ? -1 : 0
+            return x[sortBy_] > y[sortBy_] ? 1 : x[sortBy_] < y[sortBy_] ? -1 : 0
           }
         })
       }
@@ -395,7 +396,7 @@ namespace StorageDirView {
       return data
     })
 
-    function buildDirChildNodes(dirPath: string): void {
+    function buildDirChildNodes(dirPath?: string): void {
       // ロジックストアから最新の子ノードを取得
       const latestChildNodes: StorageNode[] = []
       const latestChildDict: { [path: string]: StorageNode } = {}
@@ -404,15 +405,15 @@ namespace StorageDirView {
         latestChildDict[child.path] = child
       }
 
-      const childDict = arrayToDict(dirChildNodes.value, 'path')
+      const childDict = arrayToDict(rows.value, 'path')
 
       // 最新データにはないがビューには存在するノードを削除
-      for (let i = 0; i < dirChildNodes.value.length; i++) {
-        const child = dirChildNodes.value[i]
+      for (let i = 0; i < rows.value.length; i++) {
+        const child = rows.value[i]
         const latestChild = latestChildDict[child.path]
         if (!latestChild) {
           // 最新データにはないビューノードを削除
-          dirChildNodes.value.splice(i--, 1)
+          rows.value.splice(i--, 1)
           delete childDict[child.path]
           // 選択ノードを格納している配列から最新データにないビューノードを削除
           if (table.value!.selected) {
@@ -431,7 +432,7 @@ namespace StorageDirView {
           child.populate(latestChild)
         } else {
           const row = toTableRow(latestChild)
-          dirChildNodes.value.push(row)
+          rows.value.push(row)
         }
       }
     }
@@ -477,14 +478,15 @@ namespace StorageDirView {
     return {
       table,
       state,
-      targetDir,
       columns,
-      dirSelectedNodes,
-      dirChildNodes,
+      rows,
+      selectedRows,
+      targetDir,
+      filteredSortedRows,
       loading,
       setSelectedNode,
       clear,
-      tableSortMethod,
+      sortMethod,
       buildDirChildNodes,
       rowOnClick,
       nameCellOnClick,

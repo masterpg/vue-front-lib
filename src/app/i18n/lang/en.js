@@ -156,7 +156,7 @@ export default {
     reflectMasterError: 'An error occurred while reflecting the master.',
     nodeType: {
       listBundle: 'List Type Bundle | List Type Bundles',
-      categoryBundle: 'Category Bundle | Category Bundles',
+      treeBundle: 'Tree Bundle | Tree Bundles',
       category: 'Category | Categories',
       article: 'Article | Articles',
     },

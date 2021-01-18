@@ -60,9 +60,8 @@ function verifyStateNodes() {
       expect(typeof node.article.dir.type === 'string').toBeTruthy()
       expect(node.article.dir.sortOrder).toBeGreaterThan(0)
     }
-    if (node.article?.src) {
-      expect(typeof node.article.src.isPublished === 'boolean').toBeTruthy()
-      expect(typeof node.article.src.textContent === 'string').toBeTruthy()
+    if (node.article?.file) {
+      expect(typeof node.article.file.type === 'string').toBeTruthy()
     }
     expect(node.createdAt).toBeDefined()
     expect(node.updatedAt).toBeDefined()
@@ -521,7 +520,7 @@ describe('StorageStore', () => {
           article: {
             dir: {
               name: 'バンドル',
-              type: StorageArticleDirType.CategoryBundle,
+              type: StorageArticleDirType.TreeBundle,
               sortOrder: 2,
             },
           },
@@ -533,7 +532,7 @@ describe('StorageStore', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.CategoryBundle,
+            type: StorageArticleDirType.TreeBundle,
             sortOrder: 2,
           },
         },
@@ -1276,7 +1275,7 @@ describe('StorageStore', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.CategoryBundle,
+            type: StorageArticleDirType.TreeBundle,
             sortOrder: 1,
           },
         },
@@ -1304,24 +1303,17 @@ describe('StorageStore', () => {
           },
         },
       })
-      const art1_src = newStorageFileNode(`${art1.path}/${config.storage.article.srcFileName}`, {
-        article: {
-          src: {
-            isPublished: false,
-            textContent: '',
-          },
-        },
+      const art1_master = newStorageFileNode(`${art1.path}/${config.storage.article.srcMasterFileName}`, {
+        article: { file: { type: StorageArticleFileType.Master } },
       })
-      const art1_draft = newStorageFileNode(`${art1.path}/${config.storage.article.draftFileName}`, {
-        article: {
-          draft: true,
-        },
+      const art1_draft = newStorageFileNode(`${art1.path}/${config.storage.article.srcDraftFileName}`, {
+        article: { file: { type: StorageArticleFileType.Draft } },
       })
 
       expect(bundle).toEqual(StorageNode.clone(bundle))
       expect(cat1).toEqual(StorageNode.clone(cat1))
       expect(art1).toEqual(StorageNode.clone(art1))
-      expect(art1_src).toEqual(StorageNode.clone(art1_src))
+      expect(art1_master).toEqual(StorageNode.clone(art1_master))
       expect(art1_draft).toEqual(StorageNode.clone(art1_draft))
     })
   })

@@ -154,8 +154,8 @@ export default {
     reflectMaster: 'マスター反映',
     reflectMasterError: 'マスター反映でエラーが発生しました。',
     nodeType: {
-      listBundle: 'リスト型バンドル',
-      categoryBundle: 'カテゴリ型バンドル',
+      listBundle: 'リストバンドル',
+      treeBundle: 'ツリーバンドル',
       category: 'カテゴリ',
       article: '記事',
     },

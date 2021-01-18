@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { StorageNode, StorageType } from '@/app/logic'
+import { StorageArticleFileType, StorageNode, StorageType } from '@/app/logic'
 import { computed, defineComponent, ref, watch } from '@vue/composition-api'
 import { MarkdownEditor } from '@/app/components/markdown-editor'
 import { StoragePageLogic } from '@/app/views/base/storage'
@@ -72,7 +72,7 @@ namespace ArticleWritingView {
 
       const editor = ref<MarkdownEditor>()
 
-      const src = ref<SrcFileInfo>({
+      const master = ref<SrcFileInfo>({
         node: null as any,
         content: '',
       })
@@ -95,8 +95,8 @@ namespace ArticleWritingView {
       //----------------------------------------------------------------------
 
       function clear(): void {
-        src.value.node = null as any
-        src.value.content = ''
+        master.value.node = null as any
+        master.value.content = ''
 
         draft.value.node = null as any
         draft.value.content = ''
@@ -111,22 +111,22 @@ namespace ArticleWritingView {
 
         // 記事ソースを取得
         await (async () => {
-          const node = pageLogic.getStorageChildren(articlePath).find(node => Boolean(node.article?.src))
+          const node = pageLogic.getStorageChildren(articlePath).find(node => node.article?.file?.type === StorageArticleFileType.Master)
           if (!node) {
-            throw new Error(`Src file node was not found: '${articlePath}'`)
+            throw new Error(`Article source master file node was not found: '${articlePath}'`)
           }
-          src.value.node = node
+          master.value.node = node
 
-          const downloader = pageLogic.newFileDownloader('firebase', src.value.node.path)
+          const downloader = pageLogic.newFileDownloader('firebase', master.value.node.path)
           const content = await downloader.execute('text')
-          src.value.content = content ?? ''
+          master.value.content = content ?? ''
         })()
 
         // 下書きのソースを取得
         await (async () => {
-          const node = pageLogic.getStorageChildren(articlePath).find(node => Boolean(node.article?.draft))!
+          const node = pageLogic.getStorageChildren(articlePath).find(node => node.article?.file?.type === StorageArticleFileType.Draft)
           if (!node) {
-            throw new Error(`Draft file node was not found: '${articlePath}'`)
+            throw new Error(`Article source draft file node was not found: '${articlePath}'`)
           }
           draft.value.node = node
 
@@ -140,7 +140,7 @@ namespace ArticleWritingView {
           } else {
             // 下書きが行われていない場合
             if (draft.value.content === '') {
-              draft.value.modifiedContent = src.value.content
+              draft.value.modifiedContent = master.value.content
             }
             // 下書きが行われている場合
             else {
@@ -180,7 +180,7 @@ namespace ArticleWritingView {
       async function saveDraft(): Promise<void> {
         spinning.value = true
 
-        draft.value.node = await pageLogic.saveDraftArticle(draft.value.node, draft.value.modifiedContent)
+        draft.value.node = await pageLogic.saveArticleSrcDraftFile(draft.value.node.dir, draft.value.modifiedContent)
         draft.value.content = draft.value.modifiedContent
 
         spinning.value = false

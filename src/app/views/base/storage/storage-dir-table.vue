@@ -72,11 +72,13 @@ namespace StorageDirTable {
     columns: QTableColumn[]
     data: T[]
     selected: T[]
-    syncSelected: T[]
     loading: boolean
     rowKey: string
-    sortMethod: (rows: T[], sortBy: string, descending: boolean) => T[]
+    sortMethod?: SortMethod<T>
+    filteredSortedRows: T[]
   }
+
+  export type SortMethod<T = any, U = string> = (rows: T[], sortBy?: U, descending?: boolean) => T[]
 
   export const clazz = defineComponent({
     name: 'StorageDirTable',
@@ -118,6 +120,14 @@ namespace StorageDirTable {
         get: () => state.pagination,
         set: value => (state.pagination = value),
       })
+
+      //----------------------------------------------------------------------
+      //
+      //  Properties
+      //
+      //----------------------------------------------------------------------
+
+      const filteredSortedRows = computed(() => (table.value as any).filteredSortedRows)
 
       //----------------------------------------------------------------------
       //
@@ -166,6 +176,7 @@ namespace StorageDirTable {
         state,
         syncSelected,
         pagination,
+        filteredSortedRows,
         sort,
         setScrollTop,
         onSelection,

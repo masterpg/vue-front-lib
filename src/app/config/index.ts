@@ -42,8 +42,8 @@ interface StorageConfig {
   article: {
     rootName: string
     assetsName: string
-    srcFileName: string
-    draftFileName: string
+    srcMasterFileName: string
+    srcDraftFileName: string
   }
 }
 
@@ -110,8 +110,8 @@ function createConfig(params: CreateConfigParams = {}): Config {
         article: {
           rootName: StorageArticleConfig.RootName,
           assetsName: StorageArticleConfig.AssetsName,
-          srcFileName: StorageArticleConfig.SrcFileName,
-          draftFileName: StorageArticleConfig.DraftFileName,
+          srcMasterFileName: StorageArticleConfig.SrcMasterFileName,
+          srcDraftFileName: StorageArticleConfig.SrcDraftFileName,
         },
       },
       params.storage

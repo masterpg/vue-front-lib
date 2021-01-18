@@ -142,7 +142,7 @@ namespace StorageNodePopupMenu {
               new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.ListBundle }),
               new StorageNodeActionEvent('createArticleTypeDir', {
                 parentPath: selectedNodePaths.value[0],
-                type: StorageArticleDirType.CategoryBundle,
+                type: StorageArticleDirType.TreeBundle,
               }),
             ]
           }
@@ -157,8 +157,8 @@ namespace StorageNodePopupMenu {
               new StorageNodeActionEvent('reload', { targetPath: selectedNodePaths.value[0] }),
             ]
           }
-          // カテゴリバンドル用メニュー
-          else if (isCategoryBundle.value) {
+          // ツリーバンドル用メニュー
+          else if (isTreeBundle.value) {
             return [
               new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Category }),
               new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Article }),
@@ -170,7 +170,7 @@ namespace StorageNodePopupMenu {
             ]
           }
           // カテゴリ用メニュー
-          else if (isCategory.value) {
+          else if (isCategoryDir.value) {
             return [
               new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Category }),
               new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Article }),
@@ -182,7 +182,7 @@ namespace StorageNodePopupMenu {
             ]
           }
           // 記事用メニュー
-          else if (isArticle.value) {
+          else if (isArticleDir.value) {
             return [
               new StorageNodeActionEvent('createDir', { parentPath: selectedNodePaths.value[0] }),
               new StorageNodeActionEvent('uploadDir', { parentPath: selectedNodePaths.value[0] }),
@@ -264,16 +264,16 @@ namespace StorageNodePopupMenu {
         return !props.isRoot && !isMulti.value && pageLogic.isListBundle(props.node)
       })
 
-      const isCategoryBundle = computed(() => {
-        return !props.isRoot && !isMulti.value && pageLogic.isCategoryBundle(props.node)
+      const isTreeBundle = computed(() => {
+        return !props.isRoot && !isMulti.value && pageLogic.isTreeBundle(props.node)
       })
 
-      const isCategory = computed(() => {
-        return !props.isRoot && !isMulti.value && pageLogic.isCategory(props.node)
+      const isCategoryDir = computed(() => {
+        return !props.isRoot && !isMulti.value && pageLogic.isCategoryDir(props.node)
       })
 
-      const isArticle = computed(() => {
-        return !props.isRoot && !isMulti.value && pageLogic.isArticle(props.node)
+      const isArticleDir = computed(() => {
+        return !props.isRoot && !isMulti.value && pageLogic.isArticleDir(props.node)
       })
 
       const isAssetsDir = computed(() => {
@@ -299,7 +299,7 @@ namespace StorageNodePopupMenu {
 
       function containsBundle(nodes: Node[]): boolean {
         for (const node of nodes) {
-          if (pageLogic.isListBundle(node) || pageLogic.isCategoryBundle(node)) {
+          if (pageLogic.isListBundle(node) || pageLogic.isTreeBundle(node)) {
             return true
           }
         }

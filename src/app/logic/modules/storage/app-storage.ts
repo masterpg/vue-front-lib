@@ -171,8 +171,11 @@ namespace AppStorageLogic {
       return result
     }
 
-    const getNode: AppStorageLogic['getNode'] = key => {
-      const node = store.storage.get({ id: key.id, path: toFullPath(key.path) })
+    const getNode: AppStorageLogic['getNode'] = ({ id, path }) => {
+      if (typeof path === 'string') {
+        path = toFullPath(path)
+      }
+      const node = store.storage.get({ id, path })
       return toBasePathNode(node)
     }
 
@@ -182,7 +185,9 @@ namespace AppStorageLogic {
     }
 
     const sgetNode: AppStorageLogic['sgetNode'] = ({ id, path }) => {
-      if (path) path = toFullPath(path)
+      if (typeof path === 'string') {
+        path = toFullPath(path)
+      }
       const node = store.storage.get({ id, path })
       if (!node) {
         let key = {}

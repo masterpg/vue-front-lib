@@ -7,7 +7,7 @@ import {
   newStorageFileNode,
   provideDependency,
 } from '../../../../../helpers/app'
-import { StorageArticleDirType, StorageNode } from '@/app/logic'
+import { StorageArticleDirType, StorageArticleFileType, StorageNode, StorageUtil } from '@/app/logic'
 import _path from 'path'
 import dayjs from 'dayjs'
 import { useConfig } from '@/app/config'
@@ -99,7 +99,7 @@ describe('AppStorageLogic', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.CategoryBundle,
+            type: StorageArticleDirType.TreeBundle,
             sortOrder: 1,
           },
         },
@@ -115,7 +115,7 @@ describe('AppStorageLogic', () => {
         article: { dir: { name: `Bundle` } },
         version: bundle.version + 1,
       })
-      td.when(articleStorage.renameArticleNodeAPI(bundle.path, renamed_bundle.article?.dir?.name!)).thenResolve(renamed_bundle)
+      td.when(articleStorage.renameArticleDirAPI(bundle.path, renamed_bundle.article?.dir?.name!)).thenResolve(renamed_bundle)
 
       // テスト対象実行
       const [actual] = await articleStorage.renameDir(toBasePath(bundle.path), renamed_bundle.article?.dir?.name!)
@@ -231,7 +231,7 @@ describe('AppStorageLogic', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.CategoryBundle,
+            type: StorageArticleDirType.TreeBundle,
             sortOrder: 1,
           },
         },
@@ -287,7 +287,7 @@ describe('AppStorageLogic', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.CategoryBundle,
+            type: StorageArticleDirType.TreeBundle,
             sortOrder: 1,
           },
         },
@@ -377,13 +377,12 @@ describe('AppStorageLogic', () => {
       expect(hierarchicalNodes[3].path).toBe(bundle.path)
     })
 
-    it('ベーシックケース - 記事作成', async () => {
-      const config = useConfig()
+    it('ベーシックケース - 記事ディレクトリ作成', async () => {
       const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.CategoryBundle,
+            type: StorageArticleDirType.TreeBundle,
             sortOrder: 1,
           },
         },
@@ -406,17 +405,18 @@ describe('AppStorageLogic', () => {
           },
         },
       })
-      const art1_src = newStorageFileNode(`${art1.path}/${config.storage.article.srcFileName}`, {
+      const art1_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(art1.path), {
         article: {
-          src: {
-            isPublished: false,
-            textContent: '',
+          file: {
+            type: StorageArticleFileType.Master,
           },
         },
       })
-      const art1_draft = newStorageFileNode(`${art1.path}/${config.storage.article.draftFileName}`, {
+      const art1_draft = newStorageFileNode(StorageUtil.toArticleSrcDraftPath(art1.path), {
         article: {
-          draft: true,
+          file: {
+            type: StorageArticleFileType.Draft,
+          },
         },
       })
       const {
@@ -433,7 +433,7 @@ describe('AppStorageLogic', () => {
           type: art1.article?.dir?.type!,
         })
       ).thenResolve(art1)
-      td.when(articleStorage.getChildrenAPI(art1.path)).thenResolve([art1_src, art1_draft])
+      td.when(articleStorage.getChildrenAPI(art1.path)).thenResolve([art1_master, art1_draft])
 
       // テスト対象実行
       const actual = await articleStorage.createArticleTypeDir({
@@ -459,7 +459,7 @@ describe('AppStorageLogic', () => {
 
       const childNodes = appStorage.getChildren(art1.path)
       expect(childNodes.length).toBe(2)
-      expect(childNodes[0].path).toBe(art1_src.path)
+      expect(childNodes[0].path).toBe(art1_master.path)
       expect(childNodes[1].path).toBe(art1_draft.path)
     })
 
@@ -468,7 +468,7 @@ describe('AppStorageLogic', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.CategoryBundle,
+            type: StorageArticleDirType.TreeBundle,
             sortOrder: 1,
           },
         },
@@ -642,9 +642,8 @@ describe('AppStorageLogic', () => {
     })
   })
 
-  describe('saveDraftArticle', () => {
+  describe('saveArticleSrcDraftFile', () => {
     it('ベーシックケース', async () => {
-      const config = useConfig()
       const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
         article: {
           dir: {
@@ -663,25 +662,26 @@ describe('AppStorageLogic', () => {
           },
         },
       })
-      const art1_draft = newStorageFileNode(`${art1.path}/${config.storage.article.draftFileName}`, {
-        article: {
-          draft: true,
-        },
+      const art1_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(art1.path), {
+        article: { file: { type: StorageArticleFileType.Master } },
+      })
+      const art1_draft = newStorageFileNode(StorageUtil.toArticleSrcDraftPath(art1.path), {
+        article: { file: { type: StorageArticleFileType.Draft } },
       })
       const {
         logic: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
-        store.storage.setAll([users, user, articles, bundle, art1, art1_draft])
+        store.storage.setAll([users, user, articles, bundle, art1, art1_master, art1_draft])
       })
 
       // モック設定
       art1_draft.size = 4
       art1_draft.updatedAt = dayjs()
       art1_draft.version += 1
-      td.when(articleStorage.saveDraftArticleAPI({ id: art1_draft.id })).thenResolve(art1_draft)
+      td.when(articleStorage.saveArticleSrcDraftFileAPI(toFullPath(art1.path), 'test')).thenResolve(art1_draft)
 
       // テスト対象実行
-      const actual = await articleStorage.saveDraftArticle({ id: art1_draft.id })
+      const actual = await articleStorage.saveArticleSrcDraftFile(art1.path, 'test')
 
       expect(actual.id).toBe(art1_draft.id)
       expect(actual.path).toBe(toBasePath(art1_draft.path))

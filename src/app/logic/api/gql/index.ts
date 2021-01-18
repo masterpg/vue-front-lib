@@ -92,11 +92,11 @@ interface GQLAPIContainer {
 
   createArticleGeneralDir(dirPath: string): Promise<APIStorageNode>
 
-  renameArticleNode(nodePath: string, newName: string): Promise<APIStorageNode>
+  renameArticleDir(dirPath: string, newName: string): Promise<APIStorageNode>
 
   setArticleSortOrder(orderNodePaths: string[]): Promise<void>
 
-  saveDraftArticle(input: StorageNodeGetKeyInput): Promise<APIStorageNode>
+  saveArticleSrcDraftFile(articleDirPath: string, srcContent: string): Promise<APIStorageNode>
 
   getArticleChildren(dirPath: string, types: StorageArticleDirType[], input?: StoragePaginationInput): Promise<StoragePaginationResult>
 
@@ -303,11 +303,9 @@ namespace GQLAPIContainer {
             type
             sortOrder
           }
-          src {
-            isPublished
-            textContent
+          file {
+            type
           }
-          draft
         }
         version
         createdAt
@@ -321,8 +319,7 @@ namespace GQLAPIContainer {
       function to(rawEntity: RawStorageNode): ToEntity<RawStorageNode> {
         if (rawEntity.article) {
           rawEntity.article.dir = rawEntity.article.dir ?? undefined
-          rawEntity.article.src = rawEntity.article.src ?? undefined
-          rawEntity.article.draft = typeof rawEntity.article.draft === 'boolean' ? rawEntity.article.draft : undefined
+          rawEntity.article.file = rawEntity.article.file ?? undefined
         } else {
           rawEntity.article = undefined
         }
@@ -755,20 +752,20 @@ namespace GQLAPIContainer {
       return toStorageNode(response.data!.createArticleGeneralDir)
     }
 
-    const renameArticleNode: GQLAPIContainer['renameArticleNode'] = async (nodePath, newName) => {
-      const response = await clientLv1.mutate<{ renameArticleNode: RawStorageNode }, { nodePath: string; newName: string }>({
+    const renameArticleDir: GQLAPIContainer['renameArticleDir'] = async (dirPath, newName) => {
+      const response = await clientLv1.mutate<{ renameArticleDir: RawStorageNode }, { dirPath: string; newName: string }>({
         mutation: gql`
-          mutation RenameArticleNode($nodePath: String!, $newName: String!) {
-            renameArticleNode(nodePath: $nodePath, newName: $newName) {
+          mutation RenameArticleNode($dirPath: String!, $newName: String!) {
+            renameArticleDir(dirPath: $dirPath, newName: $newName) {
               ...${StorageNodeFieldsName}
             }
           }
           ${StorageNodeFields}
         `,
-        variables: { nodePath, newName },
+        variables: { dirPath, newName },
         isAuth: true,
       })
-      return toStorageNode(response.data!.renameArticleNode)
+      return toStorageNode(response.data!.renameArticleDir)
     }
 
     const setArticleSortOrder: GQLAPIContainer['setArticleSortOrder'] = async orderNodePaths => {
@@ -783,20 +780,20 @@ namespace GQLAPIContainer {
       })
     }
 
-    const saveDraftArticle: GQLAPIContainer['saveDraftArticle'] = async input => {
-      const response = await clientLv1.mutate<{ saveDraftArticle: RawStorageNode }, { input: StorageNodeGetKeyInput }>({
+    const saveArticleSrcDraftFile: GQLAPIContainer['saveArticleSrcDraftFile'] = async (articleDirPath, srcContent) => {
+      const response = await clientLv1.mutate<{ saveArticleSrcDraftFile: RawStorageNode }, { articleDirPath: string; srcContent: string }>({
         mutation: gql`
-          mutation SaveDraftArticle($input: StorageNodeGetKeyInput!) {
-            saveDraftArticle(input: $input) {
+          mutation SaveArticleSrcDraftFile($articleDirPath: String!, $srcContent: String!) {
+            saveArticleSrcDraftFile(articleDirPath: $articleDirPath, srcContent: $srcContent) {
               ...${StorageNodeFieldsName}
             }
           }
           ${StorageNodeFields}
         `,
-        variables: { input: StorageNodeGetKeyInput.rigidify(input) },
+        variables: { articleDirPath, srcContent },
         isAuth: true,
       })
-      return toStorageNode(response.data!.saveDraftArticle)
+      return toStorageNode(response.data!.saveArticleSrcDraftFile)
     }
 
     const getArticleChildren: GQLAPIContainer['getArticleChildren'] = async (dirPath, types, input) => {
@@ -897,9 +894,9 @@ namespace GQLAPIContainer {
       getSignedUploadUrls,
       createArticleTypeDir,
       createArticleGeneralDir,
-      renameArticleNode,
+      renameArticleDir,
       setArticleSortOrder,
-      saveDraftArticle,
+      saveArticleSrcDraftFile,
       getArticleChildren,
       callStoragePaginationAPI,
     }

@@ -12,6 +12,7 @@ import {
   CreateArticleTypeDirInput,
   RequiredStorageNodeShareSettings,
   StorageArticleDirType,
+  StorageArticleFileType,
   StorageArticleSettings,
   StorageNode,
   StorageNodeGetKeyInput,
@@ -206,10 +207,10 @@ interface StoragePageLogic {
   setArticleSortOrder(orderNodePaths: string[]): Promise<void>
   /**
    * 下書きファイルを保存します。
-   * @param key 下書きファイルノードを特定するためのキー
-   * @param src 下書きファイルの保存する内容
+   * @param articleDirPath 記事ディレクトリパス
+   * @param srcContent 下書きファイルの保存する内容
    */
-  saveDraftArticle(key: StorageNodeGetKeyInput, src: string): Promise<StorageNode>
+  saveArticleSrcDraftFile(articleDirPath: string, srcContent: string): Promise<StorageNode>
   /**
    * アップロードが行われた後のツリーの更新処理を行います。
    * @param e
@@ -293,30 +294,25 @@ interface StoragePageLogic {
    */
   isListBundle(key: StorageNodeGetKeyInput): boolean
   /**
-   * 指定されたノードが｢カテゴリバンドル｣か否かを取得します。
+   * 指定されたノードが｢ツリーバンドル｣か否かを取得します。
    * @param key
    */
-  isCategoryBundle(key: StorageNodeGetKeyInput): boolean
+  isTreeBundle(key: StorageNodeGetKeyInput): boolean
   /**
-   * 指定されたノードが｢カテゴリ｣か否かを取得します。
+   * 指定されたノードが｢カテゴリディレクトリ｣か否かを取得します。
    * @param key
    */
-  isCategory(key: StorageNodeGetKeyInput): boolean
+  isCategoryDir(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢記事ディレクトリ｣か否かを取得します。
    * @param key
    */
-  isArticle(key: StorageNodeGetKeyInput): boolean
-  /**
-   * 指定されたノードが｢記事ソース｣か否かを取得します。
-   * @param key
-   */
-  isArticleSrc(key: StorageNodeGetKeyInput): boolean
+  isArticleDir(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢記事ディレクトリ｣配下のノードか否かを取得します。
    * @param key
    */
-  isArticleUnder(key: StorageNodeGetKeyInput): boolean
+  isArticleDirUnder(key: StorageNodeGetKeyInput): boolean
 }
 
 interface StoragePageStore {
@@ -1076,25 +1072,17 @@ namespace StoragePageLogic {
       setTreeNodes(processedDirNodes)
     }
 
-    const saveDraftArticle: StoragePageLogic['saveDraftArticle'] = async (key, src) => {
+    const saveArticleSrcDraftFile: StoragePageLogic['saveArticleSrcDraftFile'] = async (articleDirPath, srcContent) => {
       if (storageType !== 'article') {
         throw new Error(`This method cannot be executed by storageType '${storageType}'.`)
       }
 
       const articleLogic = storageLogic as ArticleStorageLogic
 
+      // APIによる下書き保存を実行
       let processedDraftNode!: StorageNode
       try {
-        const draftNode = articleLogic.sgetNode(key)
-        // ストレージに下書き内容を保存
-        await newFileUploader({
-          data: src,
-          name: draftNode.name,
-          dir: draftNode.dir,
-          contentType: draftNode.contentType,
-        }).execute()
-        // APIによる下書き保存を実行
-        processedDraftNode = await articleLogic.saveDraftArticle(key)
+        processedDraftNode = await articleLogic.saveArticleSrcDraftFile(articleDirPath, srcContent)
       } catch (err) {
         console.error(err)
         showNotification('error', String(t('article.saveDraftError')))
@@ -1239,7 +1227,7 @@ namespace StoragePageLogic {
       if (node.article?.dir) {
         return StorageArticleDirType.getIcon(node.article.dir.type)
       } else {
-        if (node.article?.src) {
+        if (node.article?.file?.type === StorageArticleFileType.Master) {
           return 'fas fa-pen-square'
         } else {
           return StorageNodeType.getIcon(node.nodeType)
@@ -1278,31 +1266,25 @@ namespace StoragePageLogic {
       return node.article?.dir?.type === StorageArticleDirType.ListBundle
     }
 
-    const isCategoryBundle: StoragePageLogic['isCategoryBundle'] = key => {
+    const isTreeBundle: StoragePageLogic['isTreeBundle'] = key => {
       const node = storageLogic.getNode(key)
       if (!node) return false
-      return node.article?.dir?.type === StorageArticleDirType.CategoryBundle
+      return node.article?.dir?.type === StorageArticleDirType.TreeBundle
     }
 
-    const isCategory: StoragePageLogic['isCategory'] = key => {
+    const isCategoryDir: StoragePageLogic['isCategoryDir'] = key => {
       const node = storageLogic.getNode(key)
       if (!node) return false
       return node.article?.dir?.type === StorageArticleDirType.Category
     }
 
-    const isArticle: StoragePageLogic['isArticle'] = key => {
+    const isArticleDir: StoragePageLogic['isArticleDir'] = key => {
       const node = storageLogic.getNode(key)
       if (!node) return false
       return node.article?.dir?.type === StorageArticleDirType.Article
     }
 
-    const isArticleSrc: StoragePageLogic['isArticleSrc'] = key => {
-      const node = storageLogic.getNode(key)
-      if (!node) return false
-      return Boolean(node.article?.src)
-    }
-
-    const isArticleUnder: StoragePageLogic['isArticleUnder'] = key => {
+    const isArticleDirUnder: StoragePageLogic['isArticleDirUnder'] = key => {
       function existsArticle(nodePath: string): boolean {
         const parentPath = removeStartDirChars(_path.dirname(nodePath))
         if (!parentPath) return false
@@ -1432,7 +1414,7 @@ namespace StoragePageLogic {
       renameStorageNode,
       setStorageNodeShareSettings,
       setArticleSortOrder,
-      saveDraftArticle,
+      saveArticleSrcDraftFile,
       onUploaded,
       newDownloader,
       newFileDownloader,
@@ -1448,11 +1430,10 @@ namespace StoragePageLogic {
       getNodeTypeLabel,
       isAssetsDir,
       isListBundle,
-      isCategoryBundle,
-      isCategory,
-      isArticle,
-      isArticleSrc,
-      isArticleUnder,
+      isTreeBundle,
+      isCategoryDir,
+      isArticleDir,
+      isArticleDirUnder,
     }
   }
 

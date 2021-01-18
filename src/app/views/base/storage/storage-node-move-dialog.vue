@@ -370,15 +370,15 @@ namespace StorageNodeMoveDialog {
 
     /**
      * カテゴリの移動先を絞り込みます。
-     * カテゴリは｢カテゴリバンドル、カテゴリ｣へのみ移動可能です。
+     * カテゴリは｢ツリーバンドル、カテゴリ｣へのみ移動可能です。
      * @param childNodeDataList
      */
     function filterForCategory(childNodeDataList: StorageTreeNodeData[]): StorageTreeNodeData[] {
       for (let i = 0; i < childNodeDataList.length; i++) {
         const nodeData = childNodeDataList[i]
-        // カテゴリは｢カテゴリバンドル、カテゴリ｣へのみ移動可能であり、それ以外の移動先ノードは除去
+        // カテゴリは｢ツリーバンドル、カテゴリ｣へのみ移動可能であり、それ以外の移動先ノードは除去
         const articleDirType = nodeData.article?.dir?.type
-        if (!(articleDirType === StorageArticleDirType.CategoryBundle || articleDirType === StorageArticleDirType.Category)) {
+        if (!(articleDirType === StorageArticleDirType.TreeBundle || articleDirType === StorageArticleDirType.Category)) {
           childNodeDataList.splice(i--, 1)
         }
       }
@@ -388,18 +388,18 @@ namespace StorageNodeMoveDialog {
 
     /**
      * 記事の移動先を絞り込みます。
-     * 記事は｢リストバンドル、カテゴリバンドル、カテゴリ｣へのみ移動可能です。
+     * 記事は｢リストバンドル、ツリーバンドル、カテゴリ｣へのみ移動可能です。
      * @param childNodeDataList
      */
     function filterForArticle(childNodeDataList: StorageTreeNodeData[]): StorageTreeNodeData[] {
       for (let i = 0; i < childNodeDataList.length; i++) {
         const nodeData = childNodeDataList[i]
-        // 記事は｢リストバンドル、カテゴリバンドル、カテゴリ｣へのみ移動可能であり、それ以外の移動先ノードは除去
+        // 記事は｢リストバンドル、ツリーバンドル、カテゴリ｣へのみ移動可能であり、それ以外の移動先ノードは除去
         const articleDirType = nodeData.article?.dir?.type
         if (
           !(
             articleDirType === StorageArticleDirType.ListBundle ||
-            articleDirType === StorageArticleDirType.CategoryBundle ||
+            articleDirType === StorageArticleDirType.TreeBundle ||
             articleDirType === StorageArticleDirType.Category
           )
         ) {
