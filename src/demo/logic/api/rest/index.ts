@@ -1,7 +1,7 @@
 import { RawCartItem, RawCartItemEditResponse, RawProduct, ShopAPIContainer } from '@/demo/logic/api/base'
 import { RESTAPIClient } from '@/app/logic/api/rest/client'
 import { RESTAPIContainer } from '@/app/logic/api/rest'
-import { toEntity } from '@/app/logic/api/base'
+import { toEntities } from '@/app/logic/api/base'
 
 //========================================================================
 //
@@ -45,14 +45,14 @@ namespace DemoRESTAPIContainer {
         params: { ids: [id] },
       })
       if (response.data.length === 0) return
-      return toEntity(response.data)[0]
+      return toEntities(response.data)[0]
     }
 
     const getProducts: DemoRESTAPIContainer['getProducts'] = async ids => {
       const response = await client.get<RawProduct[]>(`${PREFIX}/products`, {
         params: { ids },
       })
-      return toEntity(response.data)
+      return toEntities(response.data)
     }
 
     const getCartItem: DemoRESTAPIContainer['getCartItem'] = async id => {
@@ -61,7 +61,7 @@ namespace DemoRESTAPIContainer {
         params: { ids: [id] },
       })
       if (response.data.length === 0) return
-      return toEntity(response.data)[0]
+      return toEntities(response.data)[0]
     }
 
     const getCartItems: DemoRESTAPIContainer['getCartItems'] = async ids => {
@@ -69,17 +69,17 @@ namespace DemoRESTAPIContainer {
         isAuth: true,
         params: { ids },
       })
-      return toEntity(response.data)
+      return toEntities(response.data)
     }
 
     const addCartItems: DemoRESTAPIContainer['addCartItems'] = async inputs => {
       const response = await client.post<RawCartItemEditResponse[]>(`${PREFIX}/cartItems`, inputs, { isAuth: true })
-      return toEntity(response.data)
+      return toEntities(response.data)
     }
 
     const updateCartItems: DemoRESTAPIContainer['updateCartItems'] = async inputs => {
       const response = await client.put<RawCartItemEditResponse[]>(`${PREFIX}/cartItems`, inputs, { isAuth: true })
-      return toEntity(response.data)
+      return toEntities(response.data)
     }
 
     const removeCartItems: DemoRESTAPIContainer['removeCartItems'] = async cartItemIds => {
@@ -87,7 +87,7 @@ namespace DemoRESTAPIContainer {
         isAuth: true,
         params: { ids: cartItemIds },
       })
-      return toEntity(response.data)
+      return toEntities(response.data)
     }
 
     const checkoutCart: DemoRESTAPIContainer['checkoutCart'] = async () => {

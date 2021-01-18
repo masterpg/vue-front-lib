@@ -44,7 +44,8 @@ namespace UserStorageLogic {
       // サーバーからユーザールートを読み込んだ後でも、ユーザールートが存在しない場合
       if (!base.existsHierarchicalOnStore()) {
         // ユーザールートを作成
-        await base.createHierarchicalDirs([''])
+        const apiNodes = await base.createHierarchicalDirsAPI([base.toFullPath('')])
+        base.setAPINodesToStore(apiNodes)
       }
     }
 

@@ -1573,7 +1573,7 @@ describe('AppStorageLogic', () => {
       }
 
       // スローされたエラーを検証
-      expect(actual.message).toBe(`Bucket root is set for 'dirPaths'.`)
+      expect(actual.message).toBe(`Base path root is set for 'dirPaths'.`)
     })
 
     it('APIでエラーが発生した場合', async () => {

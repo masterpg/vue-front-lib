@@ -313,26 +313,20 @@ namespace GQLAPIContainer {
       }
     `
 
-    function toStorageNode<T extends RawStorageNode | RawStorageNode[] | undefined | null>(rawEntity_or_rawEntities: T): ToEntity<T> {
-      if (!rawEntity_or_rawEntities) return undefined as ToEntity<T>
+    function toStorageNode<T extends RawStorageNode | undefined | null>(rawEntity: T): ToEntity<T> {
+      if (!rawEntity) return undefined as ToEntity<T>
 
-      function to(rawEntity: RawStorageNode): ToEntity<RawStorageNode> {
-        if (rawEntity.article) {
-          rawEntity.article.dir = rawEntity.article.dir ?? undefined
-          rawEntity.article.file = rawEntity.article.file ?? undefined
-        } else {
-          rawEntity.article = undefined
-        }
-        return toEntity(rawEntity)
-      }
-
-      if (Array.isArray(rawEntity_or_rawEntities)) {
-        const rawEntities = rawEntity_or_rawEntities as RawStorageNode[]
-        return rawEntities.map(rawEntity => to(rawEntity)) as ToEntity<T>
+      if (rawEntity.article) {
+        rawEntity.article.dir = rawEntity.article.dir ?? undefined
+        rawEntity.article.file = rawEntity.article.file ?? undefined
       } else {
-        const rawEntity = rawEntity_or_rawEntities as RawStorageNode
-        return to(rawEntity) as ToEntity<T>
+        rawEntity.article = undefined
       }
+      return toEntity(rawEntity)
+    }
+
+    function toStorageNodes<T extends RawStorageNode>(rawEntities: T[]): ToEntity<T>[] {
+      return rawEntities.map(rawEntity => toStorageNode(rawEntity))
     }
 
     const getStorageNode: GQLAPIContainer['getStorageNode'] = async input => {
@@ -368,7 +362,7 @@ namespace GQLAPIContainer {
         },
         isAuth: true,
       })
-      return toStorageNode(response.data.storageNodes)
+      return toStorageNodes(response.data.storageNodes)
     }
 
     const getStorageDirDescendants: GQLAPIContainer['getStorageDirDescendants'] = async (dirPath, input) => {
@@ -395,7 +389,7 @@ namespace GQLAPIContainer {
         isAuth: true,
       })
       return {
-        list: toStorageNode(response.data.storageDirDescendants.list),
+        list: toStorageNodes(response.data.storageDirDescendants.list),
         nextPageToken: response.data.storageDirDescendants.nextPageToken || undefined,
         isPaginationTimeout: response.data.storageDirDescendants.isPaginationTimeout ?? false,
       }
@@ -425,7 +419,7 @@ namespace GQLAPIContainer {
         isAuth: true,
       })
       return {
-        list: toStorageNode(response.data.storageDescendants.list),
+        list: toStorageNodes(response.data.storageDescendants.list),
         nextPageToken: response.data.storageDescendants.nextPageToken || undefined,
         isPaginationTimeout: response.data.storageDescendants.isPaginationTimeout ?? false,
       }
@@ -455,7 +449,7 @@ namespace GQLAPIContainer {
         isAuth: true,
       })
       return {
-        list: toStorageNode(response.data.storageDirChildren.list),
+        list: toStorageNodes(response.data.storageDirChildren.list),
         nextPageToken: response.data.storageDirChildren.nextPageToken || undefined,
         isPaginationTimeout: response.data.storageDirChildren.isPaginationTimeout ?? false,
       }
@@ -482,7 +476,7 @@ namespace GQLAPIContainer {
         isAuth: true,
       })
       return {
-        list: toStorageNode(response.data.storageChildren.list),
+        list: toStorageNodes(response.data.storageChildren.list),
         nextPageToken: response.data.storageChildren.nextPageToken || undefined,
         isPaginationTimeout: response.data.storageChildren.isPaginationTimeout ?? false,
       }
@@ -501,7 +495,7 @@ namespace GQLAPIContainer {
         variables: { nodePath },
         isAuth: true,
       })
-      return toStorageNode(response.data!.storageHierarchicalNodes)
+      return toStorageNodes(response.data!.storageHierarchicalNodes)
     }
 
     const getStorageAncestorDirs: GQLAPIContainer['getStorageAncestorDirs'] = async nodePath => {
@@ -517,7 +511,7 @@ namespace GQLAPIContainer {
         variables: { nodePath },
         isAuth: true,
       })
-      return toStorageNode(response.data!.storageAncestorDirs)
+      return toStorageNodes(response.data!.storageAncestorDirs)
     }
 
     const createStorageDir: GQLAPIContainer['createStorageDir'] = async (dirPath, input) => {
@@ -552,7 +546,7 @@ namespace GQLAPIContainer {
         variables: { dirPaths },
         isAuth: true,
       })
-      return toStorageNode(response.data!.createStorageHierarchicalDirs)
+      return toStorageNodes(response.data!.createStorageHierarchicalDirs)
     }
 
     const removeStorageDir: GQLAPIContainer['removeStorageDir'] = async dirPath => {
@@ -821,7 +815,7 @@ namespace GQLAPIContainer {
         isAuth: true,
       })
       return {
-        list: toStorageNode(response.data.articleChildren.list),
+        list: toStorageNodes(response.data.articleChildren.list),
         nextPageToken: response.data.articleChildren.nextPageToken || undefined,
         isPaginationTimeout: response.data.articleChildren.isPaginationTimeout ?? false,
       }

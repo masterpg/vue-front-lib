@@ -25,6 +25,7 @@ describe('AppStorageLogic', () => {
   let assets: StorageNode
   let basePath: string
   let toBasePath: TestUserStorageLogic['toBasePath']
+  let toBasePaths: TestUserStorageLogic['toBasePaths']
   let toBasePathNode: TestUserStorageLogic['toBasePathNode']
   let toFullPath: TestUserStorageLogic['toFullPath']
 
@@ -43,6 +44,7 @@ describe('AppStorageLogic', () => {
       mockStorageLogicAPIMethods(logic)
       // ショートハンド用変数にメソッドを設定
       toBasePath = logic.articleStorage.toBasePath
+      toBasePaths = logic.articleStorage.toBasePaths
       toBasePathNode = logic.articleStorage.toBasePathNode
       toFullPath = logic.articleStorage.toFullPath
     })
@@ -555,7 +557,7 @@ describe('AppStorageLogic', () => {
       td.when(articleStorage.getNodesAPI({ paths: [art1.path, art2.path] })).thenResolve([art1, art2])
 
       // テスト対象実行
-      const actual = await articleStorage.setArticleSortOrder(toBasePath([art1.path, art2.path]))
+      const actual = await articleStorage.setArticleSortOrder(toBasePaths([art1.path, art2.path]))
 
       // 戻り値の検証
       {
@@ -620,7 +622,7 @@ describe('AppStorageLogic', () => {
       td.when(articleStorage.getNodesAPI({ paths: art101to.map(art => art.path) })).thenResolve(art101to)
 
       // テスト対象実行
-      const actual = await articleStorage.setArticleSortOrder(toBasePath(arts.map(art => art.path)))
+      const actual = await articleStorage.setArticleSortOrder(toBasePaths(arts.map(art => art.path)))
 
       // 戻り値の検証
       for (let i = 0; i < Num; i++) {

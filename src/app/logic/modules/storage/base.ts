@@ -165,14 +165,12 @@ interface StorageLogic {
   /**
    * 指定ディレクトリを作成します。
    * @param dirPath 作成するディレクトリを指定します。
-   *   引数が未指定(または空文字)な場合、ベースパスルートを作成します。
    * @param input
    */
-  createDir(dirPath?: string, input?: CreateStorageNodeInput): Promise<StorageNode>
+  createDir(dirPath: string, input?: CreateStorageNodeInput): Promise<StorageNode>
   /**
    * 指定ディレクトリとその階層を構成するディレクトリを作成します。
    * @param dirPaths 作成するディレクトリを指定します。
-   *   配列で指定されたパスが空文字の場合、ベースパスルートとその階層を構成するディレクトリを作成します。
    */
   createHierarchicalDirs(dirPaths: string[]): Promise<StorageNode[]>
   /**

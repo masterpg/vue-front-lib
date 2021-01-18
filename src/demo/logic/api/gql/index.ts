@@ -1,5 +1,5 @@
 import { CartItemAddInput, CartItemEditResponse, CartItemUpdateInput, RawCartItem, RawProduct, ShopAPIContainer } from '@/demo/logic/api/base'
-import { RawEntity, toEntity } from '@/app/logic/api/base'
+import { RawEntity, toEntities, toEntity } from '@/app/logic/api/base'
 import { GQLAPIClient } from '@/app/logic/api/gql/client'
 import { GQLAPIContainer } from '@/app/logic/api/gql'
 import gql from 'graphql-tag'
@@ -65,7 +65,7 @@ namespace DemoGQLAPIContainer {
         variables: { ids },
       })
 
-      return toEntity(response.data.products)
+      return toEntities(response.data.products)
     }
 
     const getCartItem: DemoGQLAPIContainer['getCartItem'] = async id => {
@@ -92,7 +92,7 @@ namespace DemoGQLAPIContainer {
         variables: { ids },
         isAuth: true,
       })
-      return toEntity(response.data.cartItems)
+      return toEntities(response.data.cartItems)
     }
 
     const addCartItems: DemoGQLAPIContainer['addCartItems'] = async inputs => {

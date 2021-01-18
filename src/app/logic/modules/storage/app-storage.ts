@@ -102,19 +102,43 @@ interface AppStorageLogic extends StorageLogic {
   existsAncestorDirsOnStore(targetPath?: string): boolean
   /**
    * ノードパスをフルパスに変換します。
-   * @param nodePath_or_nodePaths
+   * @param nodePath
    */
-  toFullPath<T extends string | string[]>(nodePath_or_nodePaths?: T): T
+  toFullPath(nodePath?: string): string
+  /**
+   * ノードパスをフルパスに変換します。
+   * @param nodePaths
+   */
+  toFullPaths(nodePaths: string[]): string[]
   /**
    * ノードパスをベースパスを基準に変換します。
-   * @param nodePath_or_nodePaths
+   * @param nodePath
    */
-  toBasePath<T extends string | string[]>(nodePath_or_nodePaths?: T): T
+  toBasePath(nodePath?: string): string
+  /**
+   * ノードパスをベースパスを基準に変換します。
+   * @param nodePaths
+   */
+  toBasePaths(nodePaths: string[]): string[]
   /**
    * ノードのパスをベースパスを基準に変換します。
-   * @param node_or_nodes
+   * ベースパスと指定ノードのパスが同じまたは配下ノードでない場合、`undefined`を返します。
+   * @param node
    */
-  toBasePathNode<T extends StorageNode | StorageNode[] | DeepReadonly<StorageNode> | DeepReadonly<StorageNode>[] | undefined>(node_or_nodes: T): T
+  toBasePathNode<T extends StorageNode | DeepReadonly<StorageNode>>(node?: T): T | undefined
+  /**
+   * ノードのパスをベースパスを基準に変換します。
+   * ベースパスと指定ノードのパスが同じまたは配下ノードでない場合、そのノードは除外されます。
+   * @param nodes
+   */
+  toBasePathNodes<T extends StorageNode | DeepReadonly<StorageNode>>(nodes: T[]): T[]
+  /**
+   * 引数パスにベースパスルートが設定されていなことを検証します。
+   * ※引数パスが未設定または空文字の場合、ベースパスルートと判定されます。
+   * @param argName
+   * @param nodePath
+   */
+  validateNotBasePathRoot(argName: string, nodePath?: string): void
 }
 
 //========================================================================
@@ -175,47 +199,45 @@ namespace AppStorageLogic {
       if (typeof path === 'string') {
         path = toFullPath(path)
       }
-      const node = store.storage.get({ id, path })
-      return toBasePathNode(node)
+      return toBasePathNode(store.storage.get({ id, path }))
     }
 
     const getNodes: AppStorageLogic['getNodes'] = input => {
       const nodes = store.storage.getList(input)
-      return toBasePathNode(nodes)
+      return toBasePathNodes(nodes)
     }
 
-    const sgetNode: AppStorageLogic['sgetNode'] = ({ id, path }) => {
+    const sgetNode: AppStorageLogic['sgetNode'] = key => {
+      const id = key.id
+      let path = key.path
       if (typeof path === 'string') {
         path = toFullPath(path)
       }
-      const node = store.storage.get({ id, path })
+      const node = toBasePathNode(store.storage.get({ id, path }))
       if (!node) {
-        let key = {}
-        if (typeof id === 'string') key = { ...key, id }
-        if (typeof path === 'string') key = { ...key, path }
         throw new Error(`Storage store does not have specified node: ${JSON.stringify(key)}`)
       }
-      return toBasePathNode(node)
+      return node
     }
 
     const getDirDescendants: AppStorageLogic['getDirDescendants'] = dirPath => {
       const nodes = store.storage.getDirDescendants(toFullPath(dirPath))
-      return toBasePathNode(nodes)
+      return toBasePathNodes(nodes)
     }
 
     const getDescendants: AppStorageLogic['getDescendants'] = dirPath => {
       const nodes = store.storage.getDescendants(toFullPath(dirPath))
-      return toBasePathNode(nodes)
+      return toBasePathNodes(nodes)
     }
 
     const getDirChildren: AppStorageLogic['getDirChildren'] = dirPath => {
       const nodes = store.storage.getDirChildren(toFullPath(dirPath))
-      return toBasePathNode(nodes)
+      return toBasePathNodes(nodes)
     }
 
     const getChildren: AppStorageLogic['getChildren'] = dirPath => {
       const nodes = store.storage.getChildren(toFullPath(dirPath))
-      return toBasePathNode(nodes)
+      return toBasePathNodes(nodes)
     }
 
     const getHierarchicalNodes: AppStorageLogic['getHierarchicalNodes'] = nodePath => {
@@ -225,7 +247,7 @@ namespace AppStorageLogic {
         iDirNode && result.push(iDirNode)
         return result
       }, [] as StorageNode[])
-      return toBasePathNode(nodes)
+      return toBasePathNodes(nodes)
     }
 
     const getInheritedShare: AppStorageLogic['getInheritedShare'] = nodePath => {
@@ -304,7 +326,7 @@ namespace AppStorageLogic {
       // APIノードにないストアノードを削除
       removeNotExistsStoreNodes(apiNodes, store.storage.getList(fullInput))
 
-      return toBasePathNode(result)
+      return toBasePathNodes(result)
     }
 
     const fetchHierarchicalNodes: AppStorageLogic['fetchHierarchicalNodes'] = async nodePath => {
@@ -323,7 +345,7 @@ namespace AppStorageLogic {
       })()
       removeNotExistsStoreNodes(apiNodes, storeNodes)
 
-      return toBasePathNode(result)
+      return toBasePathNodes(result)
     }
 
     const fetchAncestorDirs: AppStorageLogic['fetchAncestorDirs'] = async nodePath => {
@@ -343,7 +365,7 @@ namespace AppStorageLogic {
       })()
       removeNotExistsStoreNodes(apiNodes, storeNodes)
 
-      return toBasePathNode(result)
+      return toBasePathNodes(result)
     }
 
     const fetchDirDescendants: AppStorageLogic['fetchDirDescendants'] = async dirPath => {
@@ -353,7 +375,7 @@ namespace AppStorageLogic {
       // APIノードにないストアノードを削除
       removeNotExistsStoreNodes(apiNodes, store.storage.getDirDescendants(toFullPath(dirPath)))
 
-      return toBasePathNode(result)
+      return toBasePathNodes(result)
     }
 
     const fetchDescendants: AppStorageLogic['fetchDescendants'] = async dirPath => {
@@ -363,7 +385,7 @@ namespace AppStorageLogic {
       // APIノードにないストアノードを削除
       removeNotExistsStoreNodes(apiNodes, store.storage.getDescendants(toFullPath(dirPath)))
 
-      return toBasePathNode(result)
+      return toBasePathNodes(result)
     }
 
     const fetchDirChildren: AppStorageLogic['fetchDirChildren'] = async dirPath => {
@@ -373,7 +395,7 @@ namespace AppStorageLogic {
       // APIノードにないストアノードを削除
       removeNotExistsStoreNodes(apiNodes, store.storage.getDirChildren(toFullPath(dirPath)))
 
-      return toBasePathNode(result)
+      return toBasePathNodes(result)
     }
 
     const fetchChildren: AppStorageLogic['fetchChildren'] = async dirPath => {
@@ -383,7 +405,7 @@ namespace AppStorageLogic {
       // APIノードにないストアノードを削除
       removeNotExistsStoreNodes(apiNodes, store.storage.getChildren(toFullPath(dirPath)))
 
-      return toBasePathNode(result)
+      return toBasePathNodes(result)
     }
 
     const fetchHierarchicalDescendants: AppStorageLogic['fetchHierarchicalDescendants'] = async dirPath => {
@@ -419,6 +441,8 @@ namespace AppStorageLogic {
     }
 
     const createDir = extendedMethod<AppStorageLogic['createDir']>(async (dirPath, input) => {
+      validateNotBasePathRoot('dirPath', dirPath)
+
       // 指定ディレクトリの祖先が読み込まれていない場合、例外をスロー
       // ※祖先が読み込まれていない状態でディレクトリを作成すると、ストアのディレクトリ構造が不整合になるため
       if (!existsAncestorDirsOnStore(dirPath)) {
@@ -428,16 +452,16 @@ namespace AppStorageLogic {
       const apiNode = await createDirAPI(toFullPath(dirPath), input)
       const node = setAPINodeToStore(apiNode)
 
-      return toBasePathNode(node)
+      return toBasePathNode(node)!
     })
 
     const createHierarchicalDirs: AppStorageLogic['createHierarchicalDirs'] = async dirPaths => {
-      dirPaths.map(dirPath => validateNotBucketRoot('dirPaths', dirPath))
+      dirPaths.map(dirPath => validateNotBasePathRoot('dirPaths', dirPath))
 
       const apiNodes = await createHierarchicalDirsAPI(dirPaths.map(dirPath => toFullPath(dirPath)))
       const nodes = setAPINodesToStore(apiNodes)
 
-      return toBasePathNode(nodes)
+      return toBasePathNodes(nodes)
     }
 
     const removeDir: AppStorageLogic['removeDir'] = async dirPath => {
@@ -484,7 +508,7 @@ namespace AppStorageLogic {
       }
       const nodes = setAPINodesToStore(apiNodes)
 
-      return toBasePathNode(nodes)
+      return toBasePathNodes(nodes)
     }
 
     const moveFile: AppStorageLogic['moveFile'] = async (fromFilePath, toFilePath) => {
@@ -495,7 +519,7 @@ namespace AppStorageLogic {
       store.storage.move(toFullPath(fromFilePath), toFullPath(toFilePath))
       const node = setAPINodeToStore(apiNode)
 
-      return toBasePathNode(node)
+      return toBasePathNode(node)!
     }
 
     const renameDir = extendedMethod<AppStorageLogic['renameDir']>(async (dirPath, newName) => {
@@ -517,7 +541,7 @@ namespace AppStorageLogic {
       }
       const nodes = setAPINodesToStore(apiNodes)
 
-      return toBasePathNode(nodes)
+      return toBasePathNodes(nodes)
     })
 
     const renameFile = extendedMethod<AppStorageLogic['renameFile']>(async (filePath, newName) => {
@@ -527,7 +551,7 @@ namespace AppStorageLogic {
       store.storage.rename(toFullPath(filePath), newName)
       const node = setAPINodeToStore(apiNode)
 
-      return toBasePathNode(node)
+      return toBasePathNode(node)!
     })
 
     const setDirShareSettings: AppStorageLogic['setDirShareSettings'] = async (dirPath, input) => {
@@ -536,7 +560,7 @@ namespace AppStorageLogic {
       const apiNode = await setDirShareSettingsAPI(toFullPath(dirPath), input)
       const node = setAPINodeToStore(apiNode)
 
-      return toBasePathNode(node)
+      return toBasePathNode(node)!
     }
 
     const setFileShareSettings: AppStorageLogic['setFileShareSettings'] = async (filePath, input) => {
@@ -545,7 +569,7 @@ namespace AppStorageLogic {
       const apiNode = await setFileShareSettingsAPI(toFullPath(filePath), input)
       const node = setAPINodeToStore(apiNode)
 
-      return toBasePathNode(node)
+      return toBasePathNode(node)!
     }
 
     const handleUploadedFile: AppStorageLogic['handleUploadedFile'] = async input => {
@@ -556,7 +580,7 @@ namespace AppStorageLogic {
       const apiNode = await handleUploadedFileAPI(fullInput)
       const node = setAPINodeToStore(apiNode)
 
-      return toBasePathNode(node)
+      return toBasePathNode(node)!
     }
 
     const getSignedUploadUrl: AppStorageLogic['getSignedUploadUrl'] = async input => {
@@ -777,25 +801,31 @@ namespace AppStorageLogic {
       return true
     }
 
-    const toFullPath: AppStorageLogic['toFullPath'] = nodePath_or_nodePaths => {
-      return StorageUtil.toFullPath(basePath.value, nodePath_or_nodePaths)
+    const toFullPath: AppStorageLogic['toFullPath'] = nodePath => {
+      return StorageUtil.toFullPath(basePath.value, nodePath)
     }
 
-    const toBasePath: AppStorageLogic['toBasePath'] = nodePath_or_nodePaths => {
-      return StorageUtil.toBasePath(basePath.value, nodePath_or_nodePaths)
+    const toFullPaths: AppStorageLogic['toFullPaths'] = nodePaths => {
+      return StorageUtil.toFullPaths(basePath.value, nodePaths)
     }
 
-    const toBasePathNode: AppStorageLogic['toBasePathNode'] = node_or_nodes => {
-      return StorageUtil.toBasePathNode(basePath.value, node_or_nodes)
+    const toBasePath: AppStorageLogic['toBasePath'] = nodePath => {
+      return StorageUtil.toBasePath(basePath.value, nodePath)
     }
 
-    /**
-     * 引数パスにベースパスルートが設定されていなことを検証します。
-     * ※引数パスが未設定または空文字の場合、ベースパスルートと判定されます。
-     * @param argName
-     * @param nodePath
-     */
-    function validateNotBasePathRoot(argName: string, nodePath?: string): void {
+    const toBasePaths: AppStorageLogic['toBasePaths'] = nodePaths => {
+      return StorageUtil.toBasePaths(basePath.value, nodePaths)
+    }
+
+    const toBasePathNode: AppStorageLogic['toBasePathNode'] = node => {
+      return StorageUtil.toBasePathNode(basePath.value, node)
+    }
+
+    const toBasePathNodes: AppStorageLogic['toBasePathNodes'] = nodes => {
+      return StorageUtil.toBasePathNodes(basePath.value, nodes)
+    }
+
+    const validateNotBasePathRoot: AppStorageLogic['validateNotBasePathRoot'] = (argName, nodePath) => {
       if (!nodePath) {
         throw new Error(`Base path root is set for '${argName}'.`)
       }
@@ -895,8 +925,12 @@ namespace AppStorageLogic {
       fetchUnloadedAncestorDirs,
       existsAncestorDirsOnStore,
       toFullPath,
+      toFullPaths,
       toBasePath,
+      toBasePaths,
       toBasePathNode,
+      toBasePathNodes,
+      validateNotBasePathRoot,
     }
 
     return instance

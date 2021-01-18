@@ -37,22 +37,42 @@ describe('StorageUtil', () => {
   })
 
   describe('toBasePathNode', () => {
-    it('ベーシックケース - 単一指定', async () => {
+    it('ベーシックケース', async () => {
       const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
       const d1 = newStorageDirNode(`${basePath}/d1`)
 
-      const actual = StorageUtil.toBasePathNode(`${basePath}`, d1)
+      const actual = StorageUtil.toBasePathNode(`${basePath}`, d1)!
 
       expect(actual.dir).toBe(``)
       expect(actual.path).toBe(`d1`)
     })
 
-    it('ベーシックケース - 複数指定', async () => {
+    it('指定ノードのパスがベースパスと同じ場合', async () => {
       const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
-      const d1 = newStorageDirNode(`${basePath}/d1`)
-      const d2 = newStorageDirNode(`${basePath}/d2`)
+      const baseNode = newStorageDirNode(`${basePath}`)
 
-      const actual = StorageUtil.toBasePathNode(`${basePath}`, [d1, d2])
+      const actual = StorageUtil.toBasePathNode(`${basePath}`, baseNode)
+
+      expect(actual).toBeUndefined()
+    })
+
+    it('指定ノードのパスがベースパス配下のノードでない場合', async () => {
+      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const d11 = newStorageDirNode(`d1/d11`)
+
+      const actual = StorageUtil.toBasePathNode(`${basePath}`, d11)
+
+      expect(actual).toBeUndefined()
+    })
+  })
+
+  describe('toBasePathNodes', () => {
+    it('ベーシックケース', async () => {
+      const baseNode = newStorageDirNode(StorageUtil.toUserRootPath(GeneralUser().uid))
+      const d1 = newStorageDirNode(`${baseNode.path}/d1`)
+      const d2 = newStorageDirNode(`${baseNode.path}/d2`)
+
+      const actual = StorageUtil.toBasePathNodes(`${baseNode.path}`, [d1, d2])
 
       const [_d1, _d2] = actual
       expect(_d1.dir).toBe(``)
@@ -62,27 +82,36 @@ describe('StorageUtil', () => {
     })
 
     it('指定ノードのパスがベースパスと同じ場合', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
-      const baseNode = newStorageDirNode(`${basePath}`)
+      const baseNode = newStorageDirNode(StorageUtil.toUserRootPath(GeneralUser().uid))
+      const d1 = newStorageDirNode(`${baseNode.path}/d1`)
+      const d2 = newStorageDirNode(`${baseNode.path}/d2`)
 
-      const actual = StorageUtil.toBasePathNode(`${basePath}`, baseNode)
+      const actual = StorageUtil.toBasePathNodes(`${baseNode.path}`, [baseNode, d1, d2])
 
-      expect(actual.dir).toBe(``)
-      expect(actual.path).toBe(baseNode.name)
+      const [_d1, _d2] = actual
+      expect(actual.length).toBe(2)
+      expect(_d1.dir).toBe(``)
+      expect(_d1.path).toBe(`d1`)
+      expect(_d2.dir).toBe(``)
+      expect(_d2.path).toBe(`d2`)
     })
 
     it('指定ノードのパスがベースパス配下のノードでない場合', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
-      const d11 = newStorageDirNode(`d1/d11`)
+      const baseNode = newStorageDirNode(StorageUtil.toUserRootPath(GeneralUser().uid))
+      const d1 = newStorageDirNode(`${baseNode.path}/d1`)
+      const x1 = newStorageDirNode(`x1`)
 
-      const actual = StorageUtil.toBasePathNode(`${basePath}`, d11)
+      const actual = StorageUtil.toBasePathNodes(`${baseNode.path}`, [d1, x1])
 
-      expect(actual).toEqual(d11) // ベースパス変換されない
+      const [_d1] = actual
+      expect(actual.length).toBe(1)
+      expect(_d1.dir).toBe(``)
+      expect(_d1.path).toBe(`d1`)
     })
   })
 
   describe('toFullPath', () => {
-    it('ベーシックケース - 単一指定', async () => {
+    it('ベーシックケース', async () => {
       const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
 
       const actual = StorageUtil.toFullPath(`${basePath}`, `d1`)
@@ -90,13 +119,12 @@ describe('StorageUtil', () => {
       expect(actual).toBe(`${basePath}/d1`)
     })
 
-    it('ベーシックケース - 複数指定', async () => {
+    it('パス指定しなかった場合', async () => {
       const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
 
-      const actual = StorageUtil.toFullPath(`${basePath}`, [`d1`, `d2`])
+      const actual = StorageUtil.toFullPath(`${basePath}`, undefined)
 
-      expect(actual[0]).toBe(`${basePath}/d1`)
-      expect(actual[1]).toBe(`${basePath}/d2`)
+      expect(actual).toBe(`${basePath}`)
     })
 
     it('スラッシュ付き', async () => {
@@ -108,22 +136,24 @@ describe('StorageUtil', () => {
     })
   })
 
+  describe('toFullPaths', () => {
+    it('ベーシックケース - 複数指定', async () => {
+      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+
+      const actual = StorageUtil.toFullPaths(`${basePath}`, [`d1`, `d2`])
+
+      expect(actual[0]).toBe(`${basePath}/d1`)
+      expect(actual[1]).toBe(`${basePath}/d2`)
+    })
+  })
+
   describe('toBasePath', () => {
-    it('ベーシックケース - 単一指定', async () => {
+    it('ベーシックケース', async () => {
       const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
 
       const actual = StorageUtil.toBasePath(`${basePath}`, `${basePath}/d1`)
 
       expect(actual).toBe(`d1`)
-    })
-
-    it('ベーシックケース - 複数指定', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
-
-      const actual = StorageUtil.toBasePath(`${basePath}`, [`${basePath}/d1`, `${basePath}/d2`])
-
-      expect(actual[0]).toBe(`d1`)
-      expect(actual[1]).toBe(`d2`)
     })
 
     it('指定パスがベースパスと同じ場合', async () => {
@@ -156,6 +186,17 @@ describe('StorageUtil', () => {
       const actual = StorageUtil.toBasePath(`${basePath}`, `d1/d11`)
 
       expect(actual).toBe(`d1/d11`) // ベースパス変換されない
+    })
+  })
+
+  describe('toBasePaths', () => {
+    it('ベーシックケース', async () => {
+      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+
+      const actual = StorageUtil.toBasePaths(`${basePath}`, [`${basePath}/d1`, `${basePath}/d2`])
+
+      expect(actual[0]).toBe(`d1`)
+      expect(actual[1]).toBe(`d2`)
     })
   })
 

@@ -24,8 +24,11 @@ describe('AppStorageLogic', () => {
   let basePathRoot: StorageNode
   let basePathNodes: StorageNode[]
   let toBasePath: TestUserStorageLogic['toBasePath']
+  let toBasePaths: TestUserStorageLogic['toBasePaths']
   let toBasePathNode: TestUserStorageLogic['toBasePathNode']
+  let toBasePathNodes: TestUserStorageLogic['toBasePathNodes']
   let toFullPath: TestUserStorageLogic['toFullPath']
+  let toFullPaths: TestUserStorageLogic['toFullPaths']
 
   beforeEach(async () => {
     provideDependency(({ logic }) => {
@@ -43,8 +46,11 @@ describe('AppStorageLogic', () => {
       mockStorageLogicAPIMethods(logic)
       // ショートハンド用変数にメソッドを設定
       toBasePath = logic.userStorage.toBasePath
+      toBasePaths = logic.userStorage.toBasePaths
       toBasePathNode = logic.userStorage.toBasePathNode
+      toBasePathNodes = logic.userStorage.toBasePathNodes
       toFullPath = logic.userStorage.toFullPath
+      toFullPaths = logic.userStorage.toFullPaths
     })
   })
 
@@ -70,11 +76,24 @@ describe('AppStorageLogic', () => {
       const actual = userStorage.getAllNodes()
 
       expect(actual.length).toBe(5)
-      expect(actual).toEqual(toBasePathNode([d1, d11, f111, d12, d2]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, f111, d12, d2]))
     })
   })
 
   describe('getNode', () => {
+    it('ベーシックケース - ノードIDで取得', () => {
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const {
+        logic: { userStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([d1])
+      })
+
+      const actual = userStorage.getNode({ id: d1.id })
+
+      expect(actual).toEqual(toBasePathNode(d1))
+    })
+
     it('ベーシックケース - ノードパスで取得', () => {
       const d1 = newStorageDirNode(`${basePath}/d1`)
       const {
@@ -86,6 +105,20 @@ describe('AppStorageLogic', () => {
       const actual = userStorage.getNode({ path: toBasePath(d1.path) })
 
       expect(actual).toEqual(toBasePathNode(d1))
+    })
+
+    it('ベースパスを指定した場合', () => {
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const {
+        logic: { userStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([...basePathNodes, d1])
+      })
+
+      const actual = userStorage.getNode({ path: `` })
+
+      // ベースパスノードは取得されない
+      expect(actual).toBeUndefined()
     })
   })
 
@@ -138,7 +171,7 @@ describe('AppStorageLogic', () => {
 
       const actual = userStorage.getDirDescendants(toBasePath(d1.path))
 
-      expect(actual).toEqual(toBasePathNode([d1, d11, f111, d12]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, f111, d12]))
     })
 
     it('対象ノードを指定しなかった場合', async () => {
@@ -161,7 +194,7 @@ describe('AppStorageLogic', () => {
 
       const actual = userStorage.getDirDescendants()
 
-      expect(actual).toEqual(toBasePathNode([d1, d11, f111, d12, d2]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, f111, d12, d2]))
     })
   })
 
@@ -186,7 +219,7 @@ describe('AppStorageLogic', () => {
 
       const actual = userStorage.getDescendants(toBasePath(d1.path))
 
-      expect(actual).toEqual(toBasePathNode([d11, f111, d12]))
+      expect(actual).toEqual(toBasePathNodes([d11, f111, d12]))
     })
 
     it('対象ノードを指定しなかった場合', async () => {
@@ -209,7 +242,7 @@ describe('AppStorageLogic', () => {
 
       const actual = userStorage.getDescendants()
 
-      expect(actual).toEqual(toBasePathNode([d1, d11, f111, d12, d2]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, f111, d12, d2]))
     })
   })
 
@@ -234,7 +267,7 @@ describe('AppStorageLogic', () => {
 
       const actual = userStorage.getDirChildren(toBasePath(d1.path))
 
-      expect(actual).toEqual(toBasePathNode([d1, d11, d12]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, d12]))
     })
 
     it('対象ノードを指定しなかった場合', async () => {
@@ -257,7 +290,7 @@ describe('AppStorageLogic', () => {
 
       const actual = userStorage.getDirChildren()
 
-      expect(actual).toEqual(toBasePathNode([d1, d2]))
+      expect(actual).toEqual(toBasePathNodes([d1, d2]))
     })
   })
 
@@ -282,7 +315,7 @@ describe('AppStorageLogic', () => {
 
       const actual = userStorage.getChildren(toBasePath(d1.path))
 
-      expect(actual).toEqual(toBasePathNode([d11, d12]))
+      expect(actual).toEqual(toBasePathNodes([d11, d12]))
     })
 
     it('対象ノードを指定しなかった場合', async () => {
@@ -305,7 +338,7 @@ describe('AppStorageLogic', () => {
 
       const actual = userStorage.getChildren()
 
-      expect(actual).toEqual(toBasePathNode([d1, d2]))
+      expect(actual).toEqual(toBasePathNodes([d1, d2]))
     })
   })
 
@@ -330,7 +363,7 @@ describe('AppStorageLogic', () => {
 
       const actual = userStorage.getHierarchicalNodes(toBasePath(f111.path))
 
-      expect(actual).toEqual(toBasePathNode([d1, d11, f111]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, f111]))
     })
 
     it('対象ノードに空文字を指定した場合', async () => {
@@ -469,7 +502,7 @@ describe('AppStorageLogic', () => {
       const updated_d1 = cloneStorageNode(d1, { updatedAt: dayjs() })
       td.when(userStorage.getNodesAPI({ paths: [d1.path] })).thenResolve([updated_d1])
 
-      const actual = await userStorage.fetchNodes({ paths: toBasePath([d1.path]) })
+      const actual = await userStorage.fetchNodes({ paths: toBasePaths([d1.path]) })
 
       // basePathRoot
       // ├d1
@@ -477,7 +510,7 @@ describe('AppStorageLogic', () => {
       // ││└f112.txt
       // │└d12
       // └d2
-      expect(actual).toEqual(toBasePathNode([updated_d1]))
+      expect(actual).toEqual(toBasePathNodes([updated_d1]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, updated_d1, d11, f111, f11, d2])
     })
 
@@ -528,7 +561,7 @@ describe('AppStorageLogic', () => {
       //   └dB
       //     └dC
       //       └fileC.txt
-      expect(actual).toEqual(toBasePathNode([dA, dB, dC, fileC]))
+      expect(actual).toEqual(toBasePathNodes([dA, dB, dC, fileC]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, dA, dB, dC, fileC])
     })
 
@@ -543,7 +576,7 @@ describe('AppStorageLogic', () => {
 
       const actual = await userStorage.fetchHierarchicalNodes(``)
 
-      expect(actual).toEqual(toBasePathNode([]))
+      expect(actual).toEqual(toBasePathNodes([]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes])
     })
   })
@@ -572,7 +605,7 @@ describe('AppStorageLogic', () => {
       // └dA
       //   └dB
       //     └dC
-      expect(actual).toEqual(toBasePathNode([dA, dB, dC]))
+      expect(actual).toEqual(toBasePathNodes([dA, dB, dC]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, dA, dB, dC])
     })
 
@@ -590,7 +623,7 @@ describe('AppStorageLogic', () => {
 
       // basePathRoot
       // └dA
-      expect(actual).toEqual(toBasePathNode([]))
+      expect(actual).toEqual(toBasePathNodes([]))
       expect(appStorage.getAllNodes()).toEqual([...basePathAncestors])
     })
   })
@@ -624,7 +657,7 @@ describe('AppStorageLogic', () => {
       // ││└f112.txt
       // │└d12
       // └d2
-      expect(actual).toEqual(toBasePathNode([d1, d11, f111, d12]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, f111, d12]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, f111, d12, d2])
     })
 
@@ -653,7 +686,7 @@ describe('AppStorageLogic', () => {
       //   │└f111.txt
       //   └d12
       // 戻り値にはベースパスルートが含まれないことに注意
-      expect(actual).toEqual(toBasePathNode([d1, d11, f111, d12]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, f111, d12]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, f111, d12])
     })
   })
@@ -687,7 +720,7 @@ describe('AppStorageLogic', () => {
       // ││└f112.txt
       // │└d12
       // └d2
-      expect(actual).toEqual(toBasePathNode([d11, f111, d12]))
+      expect(actual).toEqual(toBasePathNodes([d11, f111, d12]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, f111, d12, d2])
     })
 
@@ -716,7 +749,7 @@ describe('AppStorageLogic', () => {
       //   ├d11
       //   │└f111.txt
       //   └d12
-      expect(actual).toEqual(toBasePathNode([d1, d11, f111, d12]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, f111, d12]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, f111, d12])
     })
   })
@@ -747,7 +780,7 @@ describe('AppStorageLogic', () => {
       // │├d11
       // │└d12
       // └d2
-      expect(actual).toEqual(toBasePathNode([d1, d11, d12]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, d12]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, d12, d2])
     })
 
@@ -770,7 +803,7 @@ describe('AppStorageLogic', () => {
       // ├d1
       // └d2
       // 戻り値にはベースパスルートが含まれないことに注意
-      expect(actual).toEqual(toBasePathNode([d1, d2]))
+      expect(actual).toEqual(toBasePathNodes([d1, d2]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d2])
     })
   })
@@ -801,7 +834,7 @@ describe('AppStorageLogic', () => {
       // │├d11
       // │└d12
       // └d2
-      expect(actual).toEqual(toBasePathNode([d11, d12]))
+      expect(actual).toEqual(toBasePathNodes([d11, d12]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, d12, d2])
     })
 
@@ -822,7 +855,7 @@ describe('AppStorageLogic', () => {
       const actual = await userStorage.fetchChildren()
 
       // 戻り値にはベースパスルートが含まれないことに注意
-      expect(actual).toEqual(toBasePathNode([d1, d2]))
+      expect(actual).toEqual(toBasePathNodes([d1, d2]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d2])
     })
   })
@@ -856,7 +889,7 @@ describe('AppStorageLogic', () => {
       //     │└f1111.txt
       //     └f111.txt
       // 戻り値にはベースパスルートが含まれないことに注意
-      expect(actual).toEqual(toBasePathNode([d1, d11, d111, f1111, f111]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, d111, f1111, f111]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, d111, f1111, f111])
     })
 
@@ -888,7 +921,7 @@ describe('AppStorageLogic', () => {
       //     │└f1111.txt
       //     └f111.txt
       // 戻り値にはベースパスルートが含まれないことに注意
-      expect(actual).toEqual(toBasePathNode([d1, d11, d111, f1111, f111]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, d111, f1111, f111]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, d111, f1111, f111])
     })
   })
@@ -919,7 +952,7 @@ describe('AppStorageLogic', () => {
       //     ├d111
       //     └f111.txt
       // 戻り値にはベースパスルートが含まれないことに注意
-      expect(actual).toEqual(toBasePathNode([d1, d11, d111, f111]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, d111, f111]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, d111, f111])
     })
 
@@ -947,7 +980,7 @@ describe('AppStorageLogic', () => {
       //     ├d111
       //     └f111.txt
       // 戻り値にはベースパスルートが含まれないことに注意
-      expect(actual).toEqual(toBasePathNode([d1, d11, d111, f111]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, d111, f111]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, d111, f111])
     })
   })
@@ -994,14 +1027,14 @@ describe('AppStorageLogic', () => {
 
       td.when(userStorage.createHierarchicalDirsAPI([d111.path, d12.path])).thenResolve([...basePathNodes, d1, d11, d111, d12])
 
-      const actual = await userStorage.createHierarchicalDirs(toBasePath([d111.path, d12.path]))
+      const actual = await userStorage.createHierarchicalDirs(toBasePaths([d111.path, d12.path]))
 
       // basePathRoot ← 上位ノードも作成される
       // └d1 ← 上位ノードも作成される
       //   ├d11 ← 上位ノードも作成される
       //   │└d111
       //   └d12
-      expect(actual).toEqual(toBasePathNode([d1, d11, d111, d12]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, d111, d12]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, d111, d12])
     })
   })

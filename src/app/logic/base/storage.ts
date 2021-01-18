@@ -240,93 +240,80 @@ namespace StorageUtil {
 
   /**
    * 指定されたノードをベースパスを基準に変換したパスに変換して返します。
+   * ベースパスと指定ノードのパスが同じまたは配下ノードでない場合、`undefined`を返します。
    * @param basePath
-   * @param node_or_nodes
+   * @param node
    */
-  export function toBasePathNode<T extends StorageNode | StorageNode[] | DeepReadonly<StorageNode> | DeepReadonly<StorageNode>[] | undefined>(
-    basePath: string,
-    node_or_nodes: T
-  ): T {
-    if (!basePath) return node_or_nodes as T
-    if (!node_or_nodes) return node_or_nodes as T
+  export function toBasePathNode<T extends StorageNode | DeepReadonly<StorageNode>>(basePath: string, node?: T): T | undefined {
+    basePath = removeBothEndsSlash(basePath)
+    if (!basePath) return node
+    if (!node) return node
 
-    function to<U extends StorageNode | DeepReadonly<StorageNode>>(basePath: string, node: U): U {
-      basePath = removeBothEndsSlash(basePath)
-      if (basePath === removeBothEndsSlash(node.path)) {
-        return {
-          ...node,
-          dir: '',
-          path: node.name,
-        }
-      } else {
-        return {
-          ...node,
-          dir: toBasePath(basePath, node.dir),
-          path: toBasePath(basePath, node.path),
-        }
-      }
+    // 指定ノードがベースパス配下でない場合
+    if (!node.path.startsWith(`${basePath}/`)) {
+      return undefined
     }
 
-    if (Array.isArray(node_or_nodes)) {
-      const nodes = node_or_nodes as DeepReadonly<StorageNode>[]
-      const result: DeepReadonly<StorageNode>[] = []
-      for (const node of nodes) {
-        if (node.path.startsWith(`${basePath}/`)) {
-          result.push(to(basePath, node))
-        }
-      }
-      return result as T
-    } else {
-      const node = node_or_nodes as DeepReadonly<StorageNode>
-      return to(basePath, node) as T
+    return {
+      ...node,
+      dir: toBasePath(basePath, node.dir),
+      path: toBasePath(basePath, node.path),
     }
+  }
+
+  /**
+   * 指定されたノードをベースパスを基準に変換したパスに変換して返します。
+   * ベースパスと指定ノードのパスが同じまたは配下ノードでない場合、そのノードは除外されます。
+   * @param basePath
+   * @param nodes
+   */
+  export function toBasePathNodes<T extends StorageNode | DeepReadonly<StorageNode>>(basePath: string, nodes: T[]): T[] {
+    return nodes.reduce<T[]>((result, node) => {
+      const node_ = toBasePathNode(basePath, node)
+      node_ && result.push(node_)
+      return result
+    }, [])
   }
 
   /**
    * ノードパスをフルパスに変換します。
    * @param basePath
-   * @param nodePath_or_nodePaths
+   * @param nodePath
    */
-  export function toFullPath<T extends string | string[]>(basePath: string, nodePath_or_nodePaths?: T): T {
-    function to(basePath: string, nodePath?: string): string {
-      basePath = removeBothEndsSlash(basePath)
-      nodePath = removeBothEndsSlash(nodePath)
-      return removeStartDirChars(_path.join(basePath, nodePath))
-    }
+  export function toFullPath(basePath: string, nodePath?: string): string {
+    basePath = removeBothEndsSlash(basePath)
+    nodePath = removeBothEndsSlash(nodePath)
+    return removeStartDirChars(_path.join(basePath, nodePath))
+  }
 
-    if (Array.isArray(nodePath_or_nodePaths)) {
-      const nodePaths = nodePath_or_nodePaths as string[]
-      const result = nodePaths.map(nodePath => to(basePath, nodePath))
-      return result as T
-    } else {
-      const nodePath = nodePath_or_nodePaths as string | undefined
-      const result = to(basePath, nodePath)
-      return result as T
-    }
+  /**
+   * ノードパスをフルパスに変換します。
+   * @param basePath
+   * @param nodePaths
+   */
+  export function toFullPaths(basePath: string, nodePaths: string[]): string[] {
+    return nodePaths.map(nodePath => toFullPath(basePath, nodePath))
   }
 
   /**
    * ノードパスをベースパスを基準とした相対パスへ変換します。
    * @param basePath
-   * @param nodePath_or_nodePaths
+   * @param nodePath
    */
-  export function toBasePath<T extends string | string[]>(basePath: string, nodePath_or_nodePaths?: T): T {
-    function to(basePath: string, nodePath?: string): string {
-      basePath = removeBothEndsSlash(basePath)
-      nodePath = removeBothEndsSlash(nodePath)
-      const basePathReg = new RegExp(`^${basePath}`)
-      return removeStartDirChars(nodePath.replace(basePathReg, ''))
-    }
+  export function toBasePath(basePath: string, nodePath?: string): string {
+    basePath = removeBothEndsSlash(basePath)
+    nodePath = removeBothEndsSlash(nodePath)
+    const basePathReg = new RegExp(`^${basePath}`)
+    return removeStartDirChars(nodePath.replace(basePathReg, ''))
+  }
 
-    if (Array.isArray(nodePath_or_nodePaths)) {
-      const nodePaths = nodePath_or_nodePaths as string[]
-      const result = nodePaths.map(nodePath => to(basePath, nodePath))
-      return result as T
-    } else {
-      const nodePath = nodePath_or_nodePaths as string | undefined
-      const result = to(basePath, nodePath)
-      return result as T
-    }
+  /**
+   * ノードパスをベースパスを基準とした相対パスへ変換します。
+   * @param basePath
+   * @param nodePaths
+   */
+  export function toBasePaths(basePath: string, nodePaths: string[]): string[] {
+    return nodePaths.map(nodePath => toBasePath(basePath, nodePath))
   }
 
   /**

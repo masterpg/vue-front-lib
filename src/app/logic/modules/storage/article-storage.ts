@@ -1,11 +1,4 @@
-import {
-  CreateArticleTypeDirInput,
-  StorageArticleDirType,
-  StorageNode,
-  StorageNodeGetKeyInput,
-  StoragePaginationInput,
-  StoragePaginationResult,
-} from '@/app/logic/base'
+import { CreateArticleTypeDirInput, StorageArticleDirType, StorageNode, StoragePaginationInput, StoragePaginationResult } from '@/app/logic/base'
 import { AppStorageLogic } from '@/app/logic/modules/storage/app-storage'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import _path from 'path'
@@ -85,7 +78,8 @@ namespace ArticleStorageLogic {
       // サーバーから記事ルートを読み込んだ後でも、記事ルートが存在しない場合
       if (!base.existsHierarchicalOnStore()) {
         // 記事ルートを作成
-        await base.createHierarchicalDirs([''])
+        const apiNodes = await base.createHierarchicalDirsAPI([base.toFullPath('')])
+        base.setAPINodesToStore(apiNodes)
       }
 
       // アセットディレクトリのパスを取得
@@ -110,13 +104,15 @@ namespace ArticleStorageLogic {
       if (dirNode.article?.dir) {
         const apiNode = await renameArticleDirAPI(base.toFullPath(dirPath), newName)
         const dirNode = base.setAPINodeToStore(apiNode)
-        return base.toBasePathNode([dirNode])
+        return base.toBasePathNodes([dirNode])
       } else {
         return await base.renameDir.super(dirPath, newName)
       }
     }
 
     base.createDir.value = async (dirPath, input) => {
+      base.validateNotBasePathRoot('dirPath', dirPath)
+
       // 指定ディレクトリの祖先が読み込まれていない場合、例外をスロー
       // ※祖先が読み込まれていない状態でディレクトリを作成すると、ストアのディレクトリ構造が不整合になるため
       if (!base.existsAncestorDirsOnStore(dirPath)) {
@@ -127,7 +123,7 @@ namespace ArticleStorageLogic {
       const apiNode = await createArticleGeneralDirAPI(base.toFullPath(dirPath))
       const dirNode = base.setAPINodeToStore(apiNode)
 
-      return base.toBasePathNode(dirNode)
+      return base.toBasePathNode(dirNode)!
     }
 
     const createArticleTypeDir: ArticleStorageLogic['createArticleTypeDir'] = async input => {
@@ -152,7 +148,7 @@ namespace ArticleStorageLogic {
         await base.fetchChildren(base.toBasePath(apiNode.path))
       }
 
-      return base.toBasePathNode(dirNode)
+      return base.toBasePathNode(dirNode)!
     }
 
     const setArticleSortOrder: ArticleStorageLogic['setArticleSortOrder'] = async orderNodePaths => {
@@ -178,7 +174,7 @@ namespace ArticleStorageLogic {
       // APIノードをストアへ反映
       const node = base.setAPINodeToStore(apiNode)
 
-      return base.toBasePathNode(node)
+      return base.toBasePathNode(node)!
     }
 
     const fetchArticleChildren: ArticleStorageLogic['fetchArticleChildren'] = async (dirPath, articleTypes, input) => {
