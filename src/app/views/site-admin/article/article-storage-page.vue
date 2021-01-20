@@ -97,8 +97,8 @@
 </template>
 
 <script lang="ts">
-import { StorageArticleFileType, StorageNode, StorageNodeType, StorageType } from '@/app/logic'
-import { StoragePage, StoragePageLogic } from '@/app/views/base/storage'
+import { StorageArticleFileType, StorageNodeType, StorageType } from '@/app/logic'
+import { StoragePage, StoragePageLogic, StorageTreeNodeFilter } from '@/app/views/base/storage'
 import { defineComponent, ref } from '@vue/composition-api'
 import { ArticleDirView } from '@/app/views/site-admin/article/article-dir-view.vue'
 import { ArticleWritingView } from '@/app/views/site-admin/article/article-writing-view.vue'
@@ -122,10 +122,7 @@ namespace ArticleStoragePage {
 
       const storageType: StorageType = 'article'
 
-      const nodeFilter = (node: StorageNode) => {
-        // 下書きファイルはツリーに表示しない
-        return node.article?.file?.type !== StorageArticleFileType.Draft
-      }
+      const nodeFilter = StorageTreeNodeFilter.ArticleFilter
 
       const base = StoragePage.setup({ ctx, storageType, nodeFilter })
 

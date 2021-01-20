@@ -21,6 +21,7 @@ interface StorageTreeNodeData extends RequiredAre<TreeNodeData, 'icon' | 'opened
   url: string
   createdAt: Dayjs
   updatedAt: Dayjs
+  version: number
   disableContextMenu: boolean
 }
 

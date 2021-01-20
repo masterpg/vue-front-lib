@@ -145,6 +145,7 @@ interface StorageTreeNodeMembers {
   readonly url: string
   readonly createdAt: Dayjs
   readonly updatedAt: Dayjs
+  readonly version: number
   readonly disableContextMenu: boolean
   readonly inheritedShare: RequiredStorageNodeShareSettings
 }
@@ -257,6 +258,10 @@ namespace StorageTreeNode {
       return nodeData.value.updatedAt
     })
 
+    const version = computed(() => {
+      return nodeData.value.version
+    })
+
     const disableContextMenu = computed(() => {
       return nodeData.value.disableContextMenu
     })
@@ -305,6 +310,9 @@ namespace StorageTreeNode {
       }
       if (editData.updatedAt) {
         nodeData.value.updatedAt = editData.updatedAt
+      }
+      if (typeof editData.version === 'number') {
+        nodeData.value.version = editData.version
       }
       if (typeof editData.disableContextMenu === 'boolean') {
         nodeData.value.disableContextMenu = editData.disableContextMenu
@@ -396,6 +404,7 @@ namespace StorageTreeNode {
       url,
       createdAt,
       updatedAt,
+      version,
       disableContextMenu,
       inheritedShare,
       getIsPublic,

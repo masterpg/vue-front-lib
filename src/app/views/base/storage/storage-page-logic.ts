@@ -11,6 +11,7 @@ import { ComputedRef, Ref, WritableComputedRef, computed, ref, watch } from '@vu
 import {
   CreateArticleTypeDirInput,
   RequiredStorageNodeShareSettings,
+  SaveArticleSrcMasterFileResult,
   StorageArticleDirType,
   StorageArticleFileType,
   StorageArticleSettings,
@@ -206,9 +207,16 @@ interface StoragePageLogic {
    */
   setArticleSortOrder(orderNodePaths: string[]): Promise<void>
   /**
+   * 記事ソースファイルを保存します。
+   * @param articleDirPath 記事ディレクトリパス
+   * @param srcContent 記事ソース
+   * @param textContent 記事ソースのパース結果からテキストのみ抽出したもの
+   */
+  saveArticleSrcMasterFile(articleDirPath: string, srcContent: string, textContent: string): Promise<SaveArticleSrcMasterFileResult>
+  /**
    * 下書きファイルを保存します。
    * @param articleDirPath 記事ディレクトリパス
-   * @param srcContent 下書きファイルの保存する内容
+   * @param srcContent 記事ソース
    */
   saveArticleSrcDraftFile(articleDirPath: string, srcContent: string): Promise<StorageNode>
   /**
@@ -370,9 +378,7 @@ namespace StoragePageLogic {
     if (params.nodeFilter) {
       nodeFilter = params.nodeFilter
     } else {
-      nodeFilter = (node: StorageNode) => {
-        return node.nodeType === StorageNodeType.Dir
-      }
+      nodeFilter = StorageTreeNodeFilter.DirFilter
     }
 
     //----------------------------------------------------------------------
@@ -1072,6 +1078,29 @@ namespace StoragePageLogic {
       setTreeNodes(processedDirNodes)
     }
 
+    const saveArticleSrcMasterFile: StoragePageLogic['saveArticleSrcMasterFile'] = async (articleDirPath, srcContent, textContent) => {
+      if (storageType !== 'article') {
+        throw new Error(`This method cannot be executed by storageType '${storageType}'.`)
+      }
+
+      const articleLogic = storageLogic as ArticleStorageLogic
+
+      // APIによる記事ソース保存を実行
+      let processed!: SaveArticleSrcMasterFileResult
+      try {
+        processed = await articleLogic.saveArticleSrcMasterFile(articleDirPath, srcContent, textContent)
+      } catch (err) {
+        console.error(err)
+        showNotification('error', String(t('article.saveMasterError')))
+      }
+
+      // ツリービューに処理内容を反映
+      const processedNodes = [processed.master, processed.draft].filter(nodeFilter)
+      setTreeNodes(processedNodes)
+
+      return processed
+    }
+
     const saveArticleSrcDraftFile: StoragePageLogic['saveArticleSrcDraftFile'] = async (articleDirPath, srcContent) => {
       if (storageType !== 'article') {
         throw new Error(`This method cannot be executed by storageType '${storageType}'.`)
@@ -1087,6 +1116,10 @@ namespace StoragePageLogic {
         console.error(err)
         showNotification('error', String(t('article.saveDraftError')))
       }
+
+      // ツリービューに処理内容を反映
+      const processedNodes = [processedDraftNode].filter(nodeFilter)
+      setTreeNodes(processedNodes)
 
       return processedDraftNode
     }
@@ -1181,6 +1214,7 @@ namespace StoragePageLogic {
         url: source.url,
         createdAt: source.createdAt,
         updatedAt: source.updatedAt,
+        version: source.version,
         disableContextMenu: source.disableContextMenu,
       } as StorageTreeNodeData
 
@@ -1414,6 +1448,7 @@ namespace StoragePageLogic {
       renameStorageNode,
       setStorageNodeShareSettings,
       setArticleSortOrder,
+      saveArticleSrcMasterFile,
       saveArticleSrcDraftFile,
       onUploaded,
       newDownloader,
@@ -1484,6 +1519,7 @@ namespace StoragePageLogic {
       url: '',
       createdAt: dayjs(0),
       updatedAt: dayjs(0),
+      version: 0,
       disableContextMenu: false,
     }
   }
@@ -1513,10 +1549,26 @@ namespace StoragePageStore {
   }
 }
 
+namespace StorageTreeNodeFilter {
+  export const AllFilter = (node: StorageNode) => {
+    return true
+  }
+
+  export const DirFilter = (node: StorageNode) => {
+    // ファイルを除外
+    return node.nodeType === StorageNodeType.Dir
+  }
+
+  export const ArticleFilter = (node: StorageNode) => {
+    // 下書きファイルは除外
+    return node.article?.file?.type !== StorageArticleFileType.Draft
+  }
+}
+
 //========================================================================
 //
 //  Exports
 //
 //========================================================================
 
-export { StoragePageLogic }
+export { StoragePageLogic, StorageTreeNodeFilter }

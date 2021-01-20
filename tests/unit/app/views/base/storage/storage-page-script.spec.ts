@@ -11,9 +11,9 @@ import {
 } from '@/app/logic'
 import { NewTestStorageNodeData, TestLogicContainer, newStorageDirNode, newStorageFileNode } from '../../../../../helpers/app'
 import { Ref, ref } from '@vue/composition-api'
+import { StoragePageLogic, StorageTreeNodeFilter } from '@/app/views/base/storage'
 import { StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/storage/base'
 import { TreeNode, TreeView, TreeViewImpl } from '@/app/components/tree-view'
-import { StoragePageLogic } from '@/app/views/base/storage'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
 import { UploadEndedEvent } from '@/app/components/storage'
 import { VueRouter } from 'vue-router/types/router'
@@ -56,22 +56,44 @@ function newStoragePageLogic(
     nodeFilter?: (node: StorageNode) => boolean
   } = {}
 ): { pageLogic: RawStoragePageLogic; treeView: TestStorageTreeView; storageLogic: StorageLogic } {
-  const storageType = params.storageType || 'app'
-  const nodeFilter = params.nodeFilter || allNodeFilter
-
   // ストレージロジックをモック化
   const logic = td.object<TestLogicContainer>()
-  const storageLogic = (() => {
-    switch (storageType) {
-      case 'app':
-        return logic.appStorage
-      case 'user':
-        return logic.userStorage
-      case 'article':
-        return logic.articleStorage
-    }
-  })() as StorageLogic
   td.replace(require('@/app/logic'), 'injectLogic', () => logic)
+  const { storageType, storageLogic, nodeFilter } = (() => {
+    let result: { storageType: StorageType; storageLogic: StorageLogic; nodeFilter: (node: StorageNode) => boolean }
+    switch (params.storageType) {
+      case 'app':
+        result = {
+          storageType: 'app',
+          storageLogic: logic.appStorage,
+          nodeFilter: StorageTreeNodeFilter.DirFilter,
+        }
+        break
+      case 'user':
+        result = {
+          storageType: 'user',
+          storageLogic: logic.userStorage,
+          nodeFilter: StorageTreeNodeFilter.DirFilter,
+        }
+        break
+      case 'article':
+        result = {
+          storageType: 'article',
+          storageLogic: logic.articleStorage,
+          nodeFilter: StorageTreeNodeFilter.ArticleFilter,
+        }
+        break
+      default:
+        result = {
+          storageType: 'app',
+          storageLogic: logic.appStorage,
+          nodeFilter: StorageTreeNodeFilter.AllFilter,
+        }
+        break
+    }
+    params.nodeFilter && (result.nodeFilter = params.nodeFilter)
+    return result
+  })()
 
   // ルーターをモック化
   const router = td.object<VueRouter>()
@@ -174,14 +196,6 @@ function toStorageNode(source: StorageTreeNodeInput | StorageTreeNodeInput[]): S
     const item = source as StorageTreeNodeInput
     return to(item) as StorageNode
   }
-}
-
-function allNodeFilter(node: StorageNode): boolean {
-  return true
-}
-
-function dirNodeFilter(node: StorageNode): boolean {
-  return node.nodeType === StorageNodeType.Dir
 }
 
 /**
@@ -532,7 +546,7 @@ describe('StoragePageLogic', () => {
     })
 
     it('nodeFilterが機能しているか検証', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: dirNodeFilter })
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: StorageTreeNodeFilter.DirFilter })
 
       // root
       // └d1 ← 対象ノードに指定
@@ -642,7 +656,7 @@ describe('StoragePageLogic', () => {
     })
 
     it('nodeFilterが機能しているか検証', () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: dirNodeFilter })
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: StorageTreeNodeFilter.DirFilter })
 
       // root
       // └d1 ← 対象ノードに指定
@@ -1313,7 +1327,7 @@ describe('StoragePageLogic', () => {
     })
 
     it('nodeFilterが機能しているか検証', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: dirNodeFilter })
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: StorageTreeNodeFilter.DirFilter })
 
       // root
       // ├[d1]
@@ -1416,7 +1430,7 @@ describe('StoragePageLogic', () => {
     })
 
     it('nodeFilterが機能しているか検証', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: dirNodeFilter })
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: StorageTreeNodeFilter.DirFilter })
 
       // root ← 対象ノードに指定
       // └d1
@@ -1679,7 +1693,7 @@ describe('StoragePageLogic', () => {
     })
 
     it('nodeFilterが機能しているか検証', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: dirNodeFilter })
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: StorageTreeNodeFilter.DirFilter })
 
       // root ←対象ノードに指定
       // └d1
@@ -1896,7 +1910,8 @@ describe('StoragePageLogic', () => {
       // articles
       // └バンドル
       //   └[記事1]
-      //     └[index1.md]
+      //     ├[index1.md]
+      //     └[index1.draft.md]
       const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         article: {
           dir: {
@@ -1941,14 +1956,14 @@ describe('StoragePageLogic', () => {
       // articles
       // └バンドル
       //   └カテゴリ1
-      //     └index1.md
+      //     ├index1.md
+      //     └[index1.draft.md] ← 下書きはツリーには表示されない
       const _bundle = pageLogic.getTreeNode(bundle.path)!
       const _bundle_descendants = _bundle.getDescendants()
       const [_art1, _art1_master, _art1_draft] = _bundle_descendants
-      expect(_bundle_descendants.length).toBe(3)
+      expect(_bundle_descendants.length).toBe(2)
       expect(_art1.path).toBe(art1.path)
       expect(_art1_master.path).toBe(art1_master.path)
-      expect(_art1_draft.path).toBe(art1_draft.path)
 
       expect(_bundle.lazyLoadStatus).toBe('loaded')
       expect(_art1.lazyLoadStatus).toBe('loaded')
@@ -2610,7 +2625,7 @@ describe('StoragePageLogic', () => {
     })
 
     it('nodeFilterが機能しているか検証', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: dirNodeFilter })
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: StorageTreeNodeFilter.DirFilter })
 
       // root
       // ├dev
@@ -3109,7 +3124,7 @@ describe('StoragePageLogic', () => {
     })
 
     it('nodeFilterが機能しているか検証', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: dirNodeFilter })
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: StorageTreeNodeFilter.DirFilter })
 
       // root
       // ├d1 ← 設定対象
@@ -3253,6 +3268,105 @@ describe('StoragePageLogic', () => {
     })
   })
 
+  describe('saveArticleSrcMasterFile', () => {
+    it('ベーシックケース', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ storageType: 'article' })
+      const articleLogic = storageLogic as ArticleStorageLogic
+
+      // articles
+      // └ブログ
+      //   └記事1
+      //     ├index.md
+      //     └[index.draft.md] ← 下書きはツリーには表示されない
+      const { blog, art1, art1_master, art1_draft } = newListBundleFamilyNodes()
+      pageLogic.setAllTreeNodes([blog, art1, art1_master])
+
+      // モック設定
+      const now = dayjs()
+      const srcContent = '#header1'
+      const textContent = 'header1'
+      const saved_art1_master = cloneTreeNodeInput(art1_master, {
+        size: Buffer.byteLength(srcContent),
+        updatedAt: now,
+        version: art1_master.version + 1,
+      })
+      const saved_art1_draft = cloneTreeNodeInput(art1_draft, {
+        size: 0,
+        updatedAt: now,
+        version: art1_draft.version + 1,
+      })
+      td.when(articleLogic.saveArticleSrcMasterFile(art1.path, srcContent, textContent)).thenResolve({
+        master: saved_art1_master,
+        draft: saved_art1_draft,
+      })
+
+      // 記事ソースの保存
+      const actual = await pageLogic.saveArticleSrcMasterFile(art1.path, srcContent, textContent)
+
+      // 戻り値の検証
+      const { master, draft } = actual
+      expect(master).toEqual(saved_art1_master)
+      expect(draft).toEqual(saved_art1_draft)
+
+      // articles
+      // └ブログ
+      //   └記事1
+      //     ├index.md
+      //     └[index1.draft.md] ← 下書きはツリーには表示されない
+      const tree_art1 = pageLogic.getTreeNode(art1.path)!
+      const tree_art1_descendants = tree_art1.getDescendants()
+      expect(tree_art1_descendants.length).toBe(1)
+
+      const [tree_art1_master] = tree_art1_descendants
+      expect(tree_art1_master.id).toBe(saved_art1_master.id)
+      expect(tree_art1_master.size).toBe(saved_art1_master.size)
+      expect(tree_art1_master.updatedAt).toEqual(saved_art1_master.updatedAt)
+      expect(tree_art1_master.version).toBe(saved_art1_master.version)
+    })
+  })
+
+  describe('saveArticleSrcDraftFile', () => {
+    it('ベーシックケース', async () => {
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ storageType: 'article' })
+      const articleLogic = storageLogic as ArticleStorageLogic
+
+      // articles
+      // └ブログ
+      //   └記事1
+      //     ├index.md
+      //     └[index.draft.md] ← 下書きはツリーには表示されない
+      const { blog, art1, art1_master, art1_draft } = newListBundleFamilyNodes()
+      pageLogic.setAllTreeNodes([blog, art1, art1_master])
+
+      // モック設定
+      const now = dayjs()
+      const srcContent = 'test'
+      const saved_art1_draft = cloneTreeNodeInput(art1_draft, {
+        size: 0,
+        updatedAt: now,
+        version: art1_draft.version + 1,
+      })
+      td.when(articleLogic.saveArticleSrcDraftFile(art1.path, srcContent)).thenResolve(saved_art1_draft)
+
+      // 記事ソースの保存
+      const actual = await pageLogic.saveArticleSrcDraftFile(art1.path, srcContent)
+
+      // 戻り値の検証
+      expect(actual).toEqual(saved_art1_draft)
+
+      // articles
+      // └ブログ
+      //   └記事1
+      //     ├index.md
+      //     └[index1.draft.md] ← 下書きはツリーには表示されない
+      const tree_art1 = pageLogic.getTreeNode(art1.path)!
+      const tree_art1_descendants = tree_art1.getDescendants()
+      expect(tree_art1_descendants.length).toBe(1)
+      const [tree_art1_master] = tree_art1_descendants
+      expect(tree_art1_master.id).toBe(art1_master.id)
+    })
+  })
+
   describe('onUploaded', () => {
     it('ベーシックケース', async () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
@@ -3373,7 +3487,7 @@ describe('StoragePageLogic', () => {
     })
 
     it('nodeFilterが機能しているか検証', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: dirNodeFilter })
+      const { pageLogic, storageLogic, treeView } = newStoragePageLogic({ nodeFilter: StorageTreeNodeFilter.DirFilter })
 
       // root ← アップロードディレクトリ
       // └d1
@@ -3439,7 +3553,7 @@ describe('StoragePageLogic', () => {
       // ├ブログ
       // │└記事1
       // └アセット ← 対象ノードに指定
-      const assets = newStorageDirNode(`${config.storage.article.assetsName}`)
+      const { assets } = newListBundleFamilyNodes()
 
       const actual = pageLogic.getDisplayNodeName(assets)
 

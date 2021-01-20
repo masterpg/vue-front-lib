@@ -862,6 +862,65 @@ describe('Storage API', () => {
     })
   })
 
+  describe('saveArticleSrcMasterFile', () => {
+    let articleRootPath: string
+    let bundle: APIStorageNode
+    let art1: APIStorageNode
+    let art1_master: APIStorageNode
+    let art1_draft: APIStorageNode
+
+    async function setupArticleNodes(): Promise<void> {
+      const { api } = provideDependency()
+      api.setTestAuthToken(GeneralToken())
+
+      articleRootPath = StorageUtil.toArticleRootPath(GeneralToken().uid)
+      await api.createStorageHierarchicalDirs([articleRootPath])
+
+      bundle = await api.createArticleTypeDir({
+        dir: `${articleRootPath}`,
+        name: 'バンドル',
+        type: StorageArticleDirType.ListBundle,
+      })
+
+      art1 = await api.createArticleTypeDir({
+        dir: `${bundle.path}`,
+        name: '記事1',
+        type: StorageArticleDirType.Article,
+      })
+
+      art1_master = (await api.getStorageNode({
+        path: StorageUtil.toArticleSrcMasterPath(art1.path),
+      }))!
+
+      art1_draft = (await api.getStorageNode({
+        path: StorageUtil.toArticleSrcDraftPath(art1.path),
+      }))!
+    }
+
+    it('疎通確認', async () => {
+      await setupArticleNodes()
+
+      const { api } = provideDependency()
+      api.setTestAuthToken(GeneralToken())
+
+      const srcContent = '#header1'
+      const textContent = 'header1'
+      const actual = await api.saveArticleSrcMasterFile(art1.path, srcContent, textContent)
+
+      const { master, draft } = actual
+      // ソースファイル
+      expect(master.id).toBe(art1_master.id)
+      expect(master.size).toBe(Buffer.byteLength(srcContent))
+      expect(master.updatedAt.isAfter(art1_master.updatedAt)).toBeTruthy()
+      expect(master.version).toBe(art1_master.version + 1)
+      // 下書きファイル
+      expect(draft.id).toBe(art1_draft.id)
+      expect(draft.size).toBe(0)
+      expect(draft.updatedAt.isAfter(art1_draft.updatedAt)).toBeTruthy()
+      expect(draft.version).toBe(art1_draft.version + 1)
+    })
+  })
+
   describe('saveArticleSrcDraftFile', () => {
     let articleRootPath: string
     let bundle: APIStorageNode
@@ -869,7 +928,6 @@ describe('Storage API', () => {
     let art1_draft: APIStorageNode
 
     async function setupArticleNodes(): Promise<void> {
-      const config = useConfig()
       const { api } = provideDependency()
       api.setTestAuthToken(GeneralToken())
 
@@ -899,13 +957,13 @@ describe('Storage API', () => {
       const { api } = provideDependency()
       api.setTestAuthToken(GeneralToken())
 
-      const srcContent = 'test'
+      const srcContent = '#header1'
       const actual = await api.saveArticleSrcDraftFile(art1.path, srcContent)
 
       expect(actual.id).toBe(art1_draft.id)
       expect(actual.size).toBe(Buffer.byteLength(srcContent))
-      expect(actual.updatedAt.isAfter(art1.updatedAt)).toBeTruthy()
-      expect(actual.version).toBe(art1.version + 1)
+      expect(actual.updatedAt.isAfter(art1_draft.updatedAt)).toBeTruthy()
+      expect(actual.version).toBe(art1_draft.version + 1)
     })
   })
 

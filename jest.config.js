@@ -4,9 +4,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   // testURL: 'http://localhost:5000',
 
-  // 次の設定はJestがQuasarをパースするよう指定している。(react-*の部分はサンプル)
-  // Jestはデフォルトでnode_modulesをパースしないためQuasarもパースされず、JestはQuasarを解析できない。
-  // このためTypeScriptでインポートしたQuasarをJestが解析できるようにパースする必要がある。
+  // Jestが解析できないモジュールを除外する設定(react-*の部分はサンプル)。
   // 参考: https://jestjs.io/docs/en/tutorial-react-native#transformignorepatterns-customization
   transformIgnorePatterns: ['node_modules/(?!(quasar|react-native|react-native-button)/)'],
 

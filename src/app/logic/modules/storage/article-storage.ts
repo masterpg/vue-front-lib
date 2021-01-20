@@ -1,4 +1,11 @@
-import { CreateArticleTypeDirInput, StorageArticleDirType, StorageNode, StoragePaginationInput, StoragePaginationResult } from '@/app/logic/base'
+import {
+  CreateArticleTypeDirInput,
+  SaveArticleSrcMasterFileResult,
+  StorageArticleDirType,
+  StorageNode,
+  StoragePaginationInput,
+  StoragePaginationResult,
+} from '@/app/logic/base'
 import { AppStorageLogic } from '@/app/logic/modules/storage/app-storage'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import _path from 'path'
@@ -19,6 +26,7 @@ import { watch } from '@vue/composition-api'
 interface ArticleStorageLogic extends StorageLogic {
   createArticleTypeDir(input: CreateArticleTypeDirInput): Promise<StorageNode>
   setArticleSortOrder(orderNodePaths: string[]): Promise<StorageNode[]>
+  saveArticleSrcMasterFile(articleDirPath: string, srcContent: string, textContent: string): Promise<SaveArticleSrcMasterFileResult>
   saveArticleSrcDraftFile(articleDirPath: string, srcContent: string): Promise<StorageNode>
   fetchArticleChildren(
     dirPath: string,
@@ -166,6 +174,21 @@ namespace ArticleStorageLogic {
       return nodes
     }
 
+    const saveArticleSrcMasterFile: ArticleStorageLogic['saveArticleSrcMasterFile'] = async (articleDirPath, srcContent, textContent) => {
+      // APIで記事ソースファイルを保存
+      const fullArticleDirPath = base.toFullPath(articleDirPath)
+      const apiResult = await saveArticleSrcMasterFileAPI(fullArticleDirPath, srcContent, textContent)
+
+      // APIノードをストアへ反映
+      const master = base.setAPINodeToStore(apiResult.master)
+      const draft = base.setAPINodeToStore(apiResult.draft)
+
+      return {
+        master: base.toBasePathNode(master)!,
+        draft: base.toBasePathNode(draft)!,
+      }
+    }
+
     const saveArticleSrcDraftFile: ArticleStorageLogic['saveArticleSrcDraftFile'] = async (articleDirPath, srcContent) => {
       // APIで下書きファイルを保存
       const fullArticleDirPath = base.toFullPath(articleDirPath)
@@ -216,6 +239,14 @@ namespace ArticleStorageLogic {
       const apiNode = await api.setArticleSortOrder(orderNodePaths)
     })
 
+    const saveArticleSrcMasterFileAPI = extendedMethod(async (articleDirPath: string, srcContent: string, textContent: string) => {
+      const apiNode = await api.saveArticleSrcMasterFile(articleDirPath, srcContent, textContent)
+      return {
+        master: base.apiNodeToStorageNode(apiNode.master)!,
+        draft: base.apiNodeToStorageNode(apiNode.draft)!,
+      } as SaveArticleSrcMasterFileResult
+    })
+
     const saveArticleSrcDraftFileAPI = extendedMethod(async (articleDirPath: string, srcContent: string) => {
       const apiNode = await api.saveArticleSrcDraftFile(articleDirPath, srcContent)
       return base.apiNodeToStorageNode(apiNode)!
@@ -240,12 +271,14 @@ namespace ArticleStorageLogic {
       ...base,
       createArticleTypeDir,
       setArticleSortOrder,
+      saveArticleSrcMasterFile,
       saveArticleSrcDraftFile,
       fetchArticleChildren,
       createArticleTypeDirAPI,
       createArticleGeneralDirAPI,
       renameArticleDirAPI,
       setArticleSortOrderAPI,
+      saveArticleSrcMasterFileAPI,
       saveArticleSrcDraftFileAPI,
       getArticleChildrenAPI,
     }

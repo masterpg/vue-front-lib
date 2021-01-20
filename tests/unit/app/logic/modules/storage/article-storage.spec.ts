@@ -644,6 +644,91 @@ describe('AppStorageLogic', () => {
     })
   })
 
+  describe('saveArticleSrcMasterFile', () => {
+    it('ベーシックケース', async () => {
+      const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
+        article: {
+          dir: {
+            name: 'バンドル',
+            type: StorageArticleDirType.ListBundle,
+            sortOrder: 1,
+          },
+        },
+      })
+      const art1 = newStorageDirNode(`${bundle.path}/${StorageNode.generateId()}`, {
+        article: {
+          dir: {
+            name: '記事1',
+            type: StorageArticleDirType.Article,
+            sortOrder: 1,
+          },
+        },
+      })
+      const art1_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(art1.path), {
+        article: { file: { type: StorageArticleFileType.Master } },
+      })
+      const art1_draft = newStorageFileNode(StorageUtil.toArticleSrcDraftPath(art1.path), {
+        article: { file: { type: StorageArticleFileType.Draft } },
+      })
+      const {
+        logic: { articleStorage, appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([users, user, articles, bundle, art1, art1_master, art1_draft])
+      })
+
+      // モック設定
+      const srcContent = '#header1'
+      const textContent = 'header1'
+      const saved_art1_master = cloneStorageNode(art1_master, {
+        size: Buffer.byteLength(srcContent),
+        updatedAt: dayjs(),
+        version: art1_master.version + 1,
+      })
+      const saved_art1_draft = cloneStorageNode(art1_draft, {
+        size: Buffer.byteLength(srcContent),
+        updatedAt: dayjs(),
+        version: art1_draft.version + 1,
+      })
+      td.when(articleStorage.saveArticleSrcMasterFileAPI(toFullPath(art1.path), srcContent, textContent)).thenResolve({
+        master: saved_art1_master,
+        draft: saved_art1_draft,
+      })
+
+      // テスト対象実行
+      const actual = await articleStorage.saveArticleSrcMasterFile(art1.path, srcContent, textContent)
+
+      // 戻り値の検証
+      // ソースファイル
+      expect(actual.master.id).toBe(saved_art1_master.id)
+      expect(actual.master.path).toBe(toBasePath(saved_art1_master.path))
+      expect(actual.master.size).toBe(saved_art1_master.size)
+      expect(actual.master.updatedAt).toEqual(saved_art1_master.updatedAt)
+      expect(actual.master.version).toBe(saved_art1_master.version)
+      // 下書きファイル
+      expect(actual.draft.id).toBe(saved_art1_draft.id)
+      expect(actual.draft.path).toBe(toBasePath(saved_art1_draft.path))
+      expect(actual.draft.size).toBe(saved_art1_draft.size)
+      expect(actual.draft.updatedAt).toEqual(saved_art1_draft.updatedAt)
+      expect(actual.draft.version).toBe(saved_art1_draft.version)
+
+      // ストアの検証
+      // ソースファイル
+      const stored_art1_master = appStorage.sgetNode(saved_art1_master)
+      expect(stored_art1_master.id).toBe(saved_art1_master.id)
+      expect(stored_art1_master.path).toBe(saved_art1_master.path)
+      expect(stored_art1_master.size).toBe(saved_art1_master.size)
+      expect(stored_art1_master.updatedAt).toEqual(saved_art1_master.updatedAt)
+      expect(stored_art1_master.version).toBe(saved_art1_master.version)
+      // 下書きファイル
+      const stored_art1_draft = appStorage.sgetNode(saved_art1_draft)
+      expect(stored_art1_draft.id).toBe(saved_art1_draft.id)
+      expect(stored_art1_draft.path).toBe(saved_art1_draft.path)
+      expect(stored_art1_draft.size).toBe(saved_art1_draft.size)
+      expect(stored_art1_draft.updatedAt).toEqual(saved_art1_draft.updatedAt)
+      expect(stored_art1_draft.version).toBe(saved_art1_draft.version)
+    })
+  })
+
   describe('saveArticleSrcDraftFile', () => {
     it('ベーシックケース', async () => {
       const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
@@ -677,26 +762,31 @@ describe('AppStorageLogic', () => {
       })
 
       // モック設定
-      art1_draft.size = 4
-      art1_draft.updatedAt = dayjs()
-      art1_draft.version += 1
-      td.when(articleStorage.saveArticleSrcDraftFileAPI(toFullPath(art1.path), 'test')).thenResolve(art1_draft)
+      const srcContent = '#header1'
+      const saved_art1_draft = cloneStorageNode(art1_draft, {
+        size: Buffer.byteLength(srcContent),
+        updatedAt: dayjs(),
+        version: art1_draft.version + 1,
+      })
+      td.when(articleStorage.saveArticleSrcDraftFileAPI(toFullPath(art1.path), srcContent)).thenResolve(saved_art1_draft)
 
       // テスト対象実行
-      const actual = await articleStorage.saveArticleSrcDraftFile(art1.path, 'test')
+      const actual = await articleStorage.saveArticleSrcDraftFile(art1.path, srcContent)
 
-      expect(actual.id).toBe(art1_draft.id)
-      expect(actual.path).toBe(toBasePath(art1_draft.path))
-      expect(actual.size).toBe(art1_draft.size)
-      expect(actual.updatedAt).toEqual(art1_draft.updatedAt)
-      expect(actual.version).toBe(art1_draft.version)
+      // 戻り値の検証
+      expect(actual.id).toBe(saved_art1_draft.id)
+      expect(actual.path).toBe(toBasePath(saved_art1_draft.path))
+      expect(actual.size).toBe(saved_art1_draft.size)
+      expect(actual.updatedAt).toEqual(saved_art1_draft.updatedAt)
+      expect(actual.version).toBe(saved_art1_draft.version)
 
-      const _art1_draft = appStorage.sgetNode(art1_draft)
-      expect(_art1_draft.id).toBe(art1_draft.id)
-      expect(_art1_draft.path).toBe(art1_draft.path)
-      expect(_art1_draft.size).toBe(art1_draft.size)
-      expect(_art1_draft.updatedAt).toEqual(art1_draft.updatedAt)
-      expect(_art1_draft.version).toBe(art1_draft.version)
+      // ストアの検証
+      const stored_art1_master = appStorage.sgetNode(saved_art1_draft)
+      expect(stored_art1_master.id).toBe(saved_art1_draft.id)
+      expect(stored_art1_master.path).toBe(saved_art1_draft.path)
+      expect(stored_art1_master.size).toBe(saved_art1_draft.size)
+      expect(stored_art1_master.updatedAt).toEqual(saved_art1_draft.updatedAt)
+      expect(stored_art1_master.version).toBe(saved_art1_draft.version)
     })
   })
 })

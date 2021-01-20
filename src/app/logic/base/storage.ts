@@ -172,6 +172,11 @@ namespace CreateArticleTypeDirInput {
   }
 }
 
+interface SaveArticleSrcMasterFileResult {
+  master: StorageNode
+  draft: StorageNode
+}
+
 type StorageType = 'user' | 'app' | 'article'
 
 interface SortStorageNode extends Pick<StorageNode, 'nodeType' | 'name' | 'dir' | 'path' | 'article'> {}
@@ -736,6 +741,7 @@ export {
   CreateArticleTypeDirInput,
   CreateStorageNodeInput,
   RequiredStorageNodeShareSettings,
+  SaveArticleSrcMasterFileResult,
   SignedUploadUrlInput,
   SortStorageNode,
   StorageArticleDirSettings,

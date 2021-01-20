@@ -10,6 +10,7 @@ export namespace quasar {
         QBreadcrumbs: require('quasar').QBreadcrumbs,
         QBreadcrumbsEl: require('quasar').QBreadcrumbsEl,
         QBtn: require('quasar').QBtn,
+        QBtnDropdown: require('quasar').QBtnDropdown,
         QBtnGroup: require('quasar').QBtnGroup,
         QBtnToggle: require('quasar').QBtnToggle,
         QCard: require('quasar').QCard,
