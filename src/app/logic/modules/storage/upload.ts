@@ -71,6 +71,10 @@ interface StorageUploader {
    * @param uploadDirPath
    */
   openDirSelectDialog(uploadDirPath: string): void
+  /**
+   * アップロードをキャンセルします。
+   */
+  cancel(): void
 }
 
 /**
@@ -226,6 +230,12 @@ namespace StorageUploader {
       openFileSelectDialog(uploadDirPath, true)
     }
 
+    const cancel: StorageUploader['cancel'] = () => {
+      fileUploaders.value.forEach(uploader => {
+        !uploader.ends && uploader.cancel()
+      })
+    }
+
     //----------------------------------------------------------------------
     //
     //  Internal methods
@@ -339,7 +349,7 @@ namespace StorageUploader {
 
       // 実際にアップロードを実行
       for (const uploadingFile of fileUploaders.value) {
-        if (uploadingFile.completed) continue
+        if (uploadingFile.running || uploadingFile.ends) continue
         try {
           // ファイルアップロード
           await uploadingFile.execute()
@@ -370,6 +380,7 @@ namespace StorageUploader {
       clear,
       openFilesSelectDialog,
       openDirSelectDialog,
+      cancel,
       getUploadDirPath,
       createUploadingFiles,
     }
@@ -497,7 +508,7 @@ namespace StorageFileUploader {
         customMetadata: { uid } as any,
       })
 
-      return new Promise<void>((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         uploadTask!.on(
           firebase.storage.TaskEvent.STATE_CHANGED,
           (snapshot: firebase.storage.UploadTaskSnapshot) => {
@@ -512,24 +523,33 @@ namespace StorageFileUploader {
               reject(err)
             }
           },
-          async () => {
-            try {
-              // ファイルアップロード後に必要な処理を実行
-              await storageLogic.handleUploadedFile({ id: nodeId, path: path.value })
-            } catch (err) {
-              reject(err)
-            }
-            // アップロード完了
-            completed.value = true
+          () => {
             resolve()
           }
         )
       })
+
+      // アップロード進捗が100%に達していない場合
+      if (progress.value < 1) {
+        // ここで終了
+        return
+      }
+      // アップロード進捗が100%に達してる場合
+      else {
+        // キャンセルされていたとしてもアップロードは完了しているので、キャンセルされていないことにする
+        canceled.value = false
+      }
+
+      // ファイルアップロード後に必要な処理を実行
+      await storageLogic.handleUploadedFile({ id: nodeId, path: path.value })
+
+      // アップロード完了
+      completed.value = true
     })
 
     const cancel = extendedMethod<StorageFileUploader['cancel']>(async () => {
-      uploadTask?.cancel()
       canceled.value = true
+      uploadTask?.cancel()
     })
 
     //----------------------------------------------------------------------

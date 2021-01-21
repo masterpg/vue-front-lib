@@ -1147,9 +1147,11 @@ namespace StoragePageLogic {
 
       // 上記で取得したパスのノードを取得
       const uploadedNodes = uploadedNodePaths
-        .map(uploadedNodePath => {
-          return sgetStorageNode({ path: uploadedNodePath })
-        })
+        .reduce<StorageNode[]>((result, uploadedNodePath) => {
+          const uploadedNode = getStorageNode({ path: uploadedNodePath })
+          uploadedNode && result.push(uploadedNode)
+          return result
+        }, [])
         .filter(nodeFilter)
 
       // 上記で取得したノードをツリービューに反映

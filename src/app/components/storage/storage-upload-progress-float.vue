@@ -51,21 +51,21 @@
 </style>
 
 <template>
-  <div ref="el" class="StorageUploadProgressFloat animate__animated" :class="{ animate__fadeInUp: opened, animate__fadeOutDown: !opened }">
+  <div ref="el" class="StorageUploadProgressFloat animate__animated" :class="{ animate__fadeInUp: opened, animate__fadeOutDown: !opened }" hidden>
     <q-bar class="bar">
       <div class="title">{{ t('storage.uploadTotalRatio', [uploadedNum, uploadNum]) }}</div>
       <q-space />
-      <q-btn :invisible="running" dense flat icon="close" @click="closeButtonOnClick()"></q-btn>
       <q-btn v-if="minimize" dense flat icon="maximize" size="xs" @click="maximizeButtonOnClick()"> </q-btn>
       <q-btn v-else dense flat icon="minimize" size="xs" @click="minimizeButtonOnClick()"> </q-btn>
+      <q-btn dense flat icon="close" @click="closeButtonOnClick()"></q-btn>
     </q-bar>
     <div class="content" :class="{ minimize: minimize }">
       <div v-for="(item, index) in fileUploaders" :key="index" class="layout horizontal center item">
         <div class="name flex-8">{{ item.name }}</div>
+        <q-btn class="cancel" dense flat round icon="clear" @click="uploadingFileOnCancel(item)" :invisible="item.ends"></q-btn>
         <div v-if="item.failed" class="error flex-4">{{ t('storage.uploadFileFailed') }}</div>
         <div v-else-if="item.canceled" class="error flex-4">{{ t('storage.uploadFileCanceled') }}</div>
         <q-linear-progress v-else :value="item.progress" :stripe="!item.completed" size="md" class="flex-4" />
-        <q-btn :disable="item.ends" class="cancel" dense flat round icon="clear" @click="uploadingFileOnCancel(item)"></q-btn>
       </div>
     </div>
   </div>
@@ -74,7 +74,7 @@
 <script lang="ts">
 import { StorageFileUploader, StorageUploader } from '@/app/logic/modules/storage'
 import { StorageType, injectLogic } from '@/app/logic'
-import { computed, defineComponent, reactive, ref, watch } from '@vue/composition-api'
+import { computed, defineComponent, onUnmounted, reactive, ref, watch } from '@vue/composition-api'
 import { useI18n } from '@/app/i18n'
 
 interface StorageUploadProgressFloat extends StorageUploadProgressFloat.Props {
@@ -110,6 +110,16 @@ namespace StorageUploadProgressFloat {
     },
 
     setup(props: Readonly<Props>, ctx) {
+      //----------------------------------------------------------------------
+      //
+      //  Lifecycle hooks
+      //
+      //----------------------------------------------------------------------
+
+      onUnmounted(() => {
+        uploader && uploader.cancel()
+      })
+
       //----------------------------------------------------------------------
       //
       //  Variables
@@ -191,6 +201,7 @@ namespace StorageUploadProgressFloat {
       watch(
         () => uploader.running.value,
         running => {
+          el.value?.removeAttribute('hidden')
           // アップロードマネージャの状態がアップロード中になったら自コンポーネントを開く
           if (running) state.opened = true
         }
@@ -216,12 +227,16 @@ namespace StorageUploadProgressFloat {
       }
 
       function closeButtonOnClick() {
-        state.opened = false
-        // 閉じるアニメショーンと同時にアップロードマネージャをクリアすると、アニメショーンが
-        // ガタつくので、アニメショーンが終わってからアップロードマネージャをクリアしている
-        setTimeout(() => {
-          uploader.clear()
-        }, 500)
+        if (uploader.ends.value) {
+          state.opened = false
+          // 閉じるアニメショーンと同時にアップロードマネージャをクリアすると、アニメショーンが
+          // ガタつくので、アニメショーンが終わってからアップロードマネージャをクリアしている
+          setTimeout(() => {
+            uploader.clear()
+          }, 500)
+        } else {
+          uploader.cancel()
+        }
       }
 
       function uploadingFileOnCancel(uploadFile: StorageFileUploader) {

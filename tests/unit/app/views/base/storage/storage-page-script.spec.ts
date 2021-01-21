@@ -3396,13 +3396,13 @@ describe('StoragePageLogic', () => {
       }
 
       // モック設定
-      td.when(storageLogic.sgetNode({ path: d1.path })).thenReturn(toStorageNode(d1))
-      td.when(storageLogic.sgetNode({ path: d11.path })).thenReturn(toStorageNode(d11))
-      td.when(storageLogic.sgetNode({ path: d111.path })).thenReturn(toStorageNode(d111))
-      td.when(storageLogic.sgetNode({ path: fileA.path })).thenReturn(toStorageNode(fileA))
-      td.when(storageLogic.sgetNode({ path: d12.path })).thenReturn(toStorageNode(d12))
-      td.when(storageLogic.sgetNode({ path: fileC.path })).thenReturn(toStorageNode(fileC))
-      td.when(storageLogic.sgetNode({ path: fileD.path })).thenReturn(toStorageNode(fileD))
+      td.when(storageLogic.getNode({ path: d1.path })).thenReturn(toStorageNode(d1))
+      td.when(storageLogic.getNode({ path: d11.path })).thenReturn(toStorageNode(d11))
+      td.when(storageLogic.getNode({ path: d111.path })).thenReturn(toStorageNode(d111))
+      td.when(storageLogic.getNode({ path: fileA.path })).thenReturn(toStorageNode(fileA))
+      td.when(storageLogic.getNode({ path: d12.path })).thenReturn(toStorageNode(d12))
+      td.when(storageLogic.getNode({ path: fileC.path })).thenReturn(toStorageNode(fileC))
+      td.when(storageLogic.getNode({ path: fileD.path })).thenReturn(toStorageNode(fileD))
 
       // アップロードが行われた後のツリーの更新処理を実行
       await pageLogic.onUploaded(e)
@@ -3457,10 +3457,10 @@ describe('StoragePageLogic', () => {
       }
 
       // モック設定
-      td.when(storageLogic.sgetNode({ path: d1.path })).thenReturn(toStorageNode(d1))
-      td.when(storageLogic.sgetNode({ path: d11.path })).thenReturn(toStorageNode(d11))
-      td.when(storageLogic.sgetNode({ path: fileA.path })).thenReturn(toStorageNode(fileA))
-      td.when(storageLogic.sgetNode({ path: fileB.path })).thenReturn(toStorageNode(fileB))
+      td.when(storageLogic.getNode({ path: d1.path })).thenReturn(toStorageNode(d1))
+      td.when(storageLogic.getNode({ path: d11.path })).thenReturn(toStorageNode(d11))
+      td.when(storageLogic.getNode({ path: fileA.path })).thenReturn(toStorageNode(fileA))
+      td.when(storageLogic.getNode({ path: fileB.path })).thenReturn(toStorageNode(fileB))
 
       // アップロードが行われた後のツリーの更新処理を実行
       await pageLogic.onUploaded(e)
