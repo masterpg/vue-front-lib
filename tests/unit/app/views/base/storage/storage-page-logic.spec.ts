@@ -1458,129 +1458,282 @@ describe('StoragePageLogic', () => {
   })
 
   describe('reloadStorageDir', () => {
-    it('対象ノードにルートノードを指定', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+    describe('deep: false', () => {
+      it('対象ノードにルートノードを指定', async () => {
+        const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
-      // root ← 対象ノードに指定
-      // ├d1
-      // │├d11
-      // ││└f111.txt
-      // │└d12
-      // └d2
-      const d1 = newTreeDirNodeInput(`d1`, { lazyLoadStatus: 'none' })
-      const d11 = newTreeDirNodeInput(`d1/d11`, { lazyLoadStatus: 'none' })
-      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
-      const f112 = newStorageFileNode(`d1/d11/f112.txt`)
-      const d12 = newTreeDirNodeInput(`d1/d12`, { lazyLoadStatus: 'none' })
-      const d2 = newTreeDirNodeInput(`d2`, { lazyLoadStatus: 'none' })
-      pageLogic.setAllTreeNodes([d1, d11, f111, d12, d2])
+        // root ← 対象ノードに指定
+        // ├d1
+        // │└d11
+        // │  └f111.txt
+        // ├d2
+        // └f1.txt
+        const d1 = newTreeDirNodeInput(`d1`, { lazyLoadStatus: 'none' })
+        const d11 = newTreeDirNodeInput(`d1/d11`, { lazyLoadStatus: 'loaded' })
+        const f111 = newStorageFileNode(`d1/d11/f111.txt`)
+        const d2 = newTreeDirNodeInput(`d2`, { lazyLoadStatus: 'none' })
+        const f1 = newStorageFileNode(`f1.txt`)
+        const f2 = newStorageFileNode(`f2.txt`)
+        pageLogic.setAllTreeNodes([d1, d11, f111, d2, f1])
 
-      // 以下の状態のノードリストを再現する
-      // ・'d1/d11/f111.txt'が'f1.txt'へ移動+リネームされた
-      // ・'d1/d11/f112.txt'が追加された
-      // ・'d1/d12'が削除された
-      const renamed_f1 = cloneTreeNodeInput(f111, { dir: ``, path: `f1.txt` })
-      // StorageLogic.getDirDescendants()をモック化
-      td.when(storageLogic.getDirDescendants(``)).thenReturn(toStorageNode([d1, d11, f112, d2, renamed_f1]))
+        // 以下の状態のノードリストを再現する
+        // ・'d2'が削除された
+        // ・'f2.txt'が追加された
+        // StorageLogic.getDirChildren()をモック化
+        td.when(storageLogic.getDirChildren(``)).thenReturn(toStorageNode([d1, f1, f2]))
 
-      // ルートノードを指定して実行
-      await pageLogic.reloadStorageDir(``)
-      const actual = pageLogic.getAllTreeNodes()
-      const [_root, _d1, _d11, _f112, _d2, _f1] = actual
+        // ルートノードを指定して実行
+        await pageLogic.reloadStorageDir(``)
+        const actual = pageLogic.getAllTreeNodes()
+        const [_root, _d1, _d11, _f111, _f1, _f2] = actual
 
-      // root
-      // ├d1
-      // │└d11
-      // │  └f112.txt
-      // ├d2
-      // └f1.txt
-      expect(actual.length).toBe(6)
-      expect(_root.path).toBe(``)
-      expect(_d1.path).toBe(`d1`)
-      expect(_d11.path).toBe(`d1/d11`)
-      expect(_f112.path).toBe(`d1/d11/f112.txt`)
-      expect(_d2.path).toBe(`d2`)
-      expect(_f1.path).toBe(`f1.txt`)
-      // 遅延ロード状態の検証
-      expect(_root.lazyLoadStatus).toBe('loaded')
-      expect(_d1.lazyLoadStatus).toBe('loaded')
-      expect(_d11.lazyLoadStatus).toBe('loaded')
-      expect(_f112.lazyLoadStatus).toBe('none')
-      expect(_d2.lazyLoadStatus).toBe('loaded')
-      expect(_f1.lazyLoadStatus).toBe('none')
-      // fetchHierarchicalDescendants()が正常に呼び出されたか検証
-      const exp = td.explain(storageLogic.fetchHierarchicalDescendants)
-      expect(exp.calls[0].args[0]).toBe(``)
+        // root
+        // ├d1
+        // │└d11
+        // │  └f111.txt
+        // ├f1.txt
+        // └f2.txt
+        expect(actual.length).toBe(6)
+        expect(_root.path).toBe(``)
+        expect(_d1.path).toBe(`d1`)
+        expect(_d11.path).toBe(`d1/d11`)
+        expect(_f111.path).toBe(`d1/d11/f111.txt`)
+        expect(_f1.path).toBe(`f1.txt`)
+        expect(_f2.path).toBe(`f2.txt`)
+        // 遅延ロード状態の検証
+        expect(_root.lazyLoadStatus).toBe('loaded')
+        expect(_d1.lazyLoadStatus).toBe('none')
+        expect(_d11.lazyLoadStatus).toBe('loaded')
+        expect(_f111.lazyLoadStatus).toBe('none')
+        expect(_f1.lazyLoadStatus).toBe('none')
+        expect(_f2.lazyLoadStatus).toBe('none')
+        // fetchHierarchicalChildren()が正常に呼び出されたか検証
+        const exp = td.explain(storageLogic.fetchHierarchicalChildren)
+        expect(exp.calls[0].args[0]).toBe(``)
 
-      verifyParentChildRelationForTree(treeView)
+        verifyParentChildRelationForTree(treeView)
+      })
+
+      it('対象ノードにルートノード配下のディレクトリを指定', async () => {
+        const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+        // root
+        // ├d1
+        // │├d11 ← 対象ノードに指定
+        // ││├d111
+        // │││├f1111.txt
+        // │││└f1112.txt
+        // ││└f111.txt
+        // │└d12
+        // └d2
+        const d1 = newTreeDirNodeInput(`d1`, { lazyLoadStatus: 'none' })
+        const d11 = newTreeDirNodeInput(`d1/d11`, { lazyLoadStatus: 'none' })
+        const d111 = newTreeDirNodeInput(`d1/d11/d111`, { lazyLoadStatus: 'none' })
+        const f1111 = newTreeFileNodeInput(`d1/d11/d111/f1111.txt`)
+        const f1112 = newTreeFileNodeInput(`d1/d11/d111/f1112.txt`)
+        const d112 = newTreeDirNodeInput(`d1/d11/d112`, { lazyLoadStatus: 'none' })
+        const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+        const f112 = newTreeFileNodeInput(`d1/d11/f112.txt`)
+        const d12 = newTreeDirNodeInput(`d1/d12`, { lazyLoadStatus: 'none' })
+        const d2 = newTreeDirNodeInput(`d2`, { lazyLoadStatus: 'none' })
+        pageLogic.setAllTreeNodes([d1, d11, d111, f1111, f1112, f111, d12, d2], {
+          lazyLoadStatus: 'none',
+        })
+
+        // 以下の状態のノードリストを再現する
+        // ・'d1/d11/d111'が削除された
+        // ・'d1/d11/d112'が追加された
+        // ・'d1/d11/d111/f1112.txt'が'd1/d11/f113.txt'へ移動+リネームされた
+        // ・'d1/d11/f111.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
+        // ・'d1/d11/f112.txt'が追加された
+        const renamed_f113 = cloneTreeNodeInput(f1112, { name: 'f113.txt', dir: `d1/d11`, path: `d1/d11/f113.txt` })
+        const updated_f111 = cloneTreeNodeInput(f111, { id: StorageNode.generateId() })
+        // StorageLogic.getNode()をモック化
+        td.when(storageLogic.getNode({ path: d1.path })).thenReturn(toStorageNode(d1))
+        // StorageLogic.getDirChildren()をモック化
+        td.when(storageLogic.getDirChildren(d11.path)).thenReturn(toStorageNode([d11, d112, updated_f111, f112, renamed_f113]))
+
+        // 'd1/d11'を指定して実行
+        await pageLogic.reloadStorageDir(d11.path)
+        const actual = pageLogic.getAllTreeNodes()
+        const [_root, _d1, _d11, _d112, _f111, _f112, _f113, _d12, _d2] = actual
+
+        // root
+        // ├d1
+        // │├d11
+        // ││├d112
+        // ││├f111.txt
+        // ││├f112.txt
+        // ││└f113.txt
+        // │└d12
+        // └d2
+        expect(actual.length).toBe(9)
+        expect(_root.path).toBe(``)
+        expect(_d1.path).toBe(`d1`)
+        expect(_d11.path).toBe(`d1/d11`)
+        expect(_d112.path).toBe(`d1/d11/d112`)
+        expect(_f111.path).toBe(`d1/d11/f111.txt`)
+        expect(_f112.path).toBe(`d1/d11/f112.txt`)
+        expect(_f113.path).toBe(`d1/d11/f113.txt`)
+        expect(_d12.path).toBe(`d1/d12`)
+        expect(_d2.path).toBe(`d2`)
+        // 遅延ロード状態の検証
+        // ・対象ノードに指定されたディレクトリと配下ディレクトリの遅延ロード状態が完了であることを確認
+        // ・それ以外は遅延ロード状態に変化がないことを確認
+        expect(_root.lazyLoadStatus).toBe('none')
+        expect(_d1.lazyLoadStatus).toBe('none')
+        expect(_d11.lazyLoadStatus).toBe('loaded')
+        expect(_d112.lazyLoadStatus).toBe('none')
+        expect(_f111.lazyLoadStatus).toBe('none')
+        expect(_f112.lazyLoadStatus).toBe('none')
+        expect(_f113.lazyLoadStatus).toBe('none')
+        expect(_d12.lazyLoadStatus).toBe('none')
+        expect(_d2.lazyLoadStatus).toBe('none')
+        // StorageLogic.fetchHierarchicalChildren()が正常に呼び出されたか検証
+        const exp = td.explain(storageLogic.fetchHierarchicalChildren)
+        expect(exp.calls[0].args[0]).toBe(d11.path)
+
+        verifyParentChildRelationForTree(treeView)
+      })
     })
 
-    it('対象ノードにルートノード配下のディレクトリを指定', async () => {
-      const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+    describe('deep: false', () => {
+      it('対象ノードにルートノードを指定', async () => {
+        const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
-      // root
-      // ├d1
-      // │├d11 ← 対象ノードに指定
-      // ││├d111
-      // │││└f1111.txt
-      // ││└f111.txt
-      // │└d12
-      // └d2
-      const d1 = newTreeDirNodeInput(`d1`, { lazyLoadStatus: 'none' })
-      const d11 = newTreeDirNodeInput(`d1/d11`, { lazyLoadStatus: 'none' })
-      const d111 = newTreeDirNodeInput(`d1/d11/d111`, { lazyLoadStatus: 'none' })
-      const f1111 = newTreeFileNodeInput(`d1/d11/d111/f1111.txt`)
-      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
-      const f112 = newTreeFileNodeInput(`d1/d11/f112.txt`)
-      const d12 = newTreeDirNodeInput(`d1/d12`, { lazyLoadStatus: 'none' })
-      const d2 = newTreeDirNodeInput(`d2`, { lazyLoadStatus: 'none' })
-      pageLogic.setAllTreeNodes([d1, d11, d111, f1111, f111, d12, d2])
+        // root ← 対象ノードに指定
+        // ├d1
+        // │├d11
+        // ││└f111.txt
+        // │└d12
+        // └d2
+        const d1 = newTreeDirNodeInput(`d1`, { lazyLoadStatus: 'none' })
+        const d11 = newTreeDirNodeInput(`d1/d11`, { lazyLoadStatus: 'none' })
+        const f111 = newStorageFileNode(`d1/d11/f111.txt`)
+        const f112 = newStorageFileNode(`d1/d11/f112.txt`)
+        const d12 = newTreeDirNodeInput(`d1/d12`, { lazyLoadStatus: 'none' })
+        const d2 = newTreeDirNodeInput(`d2`, { lazyLoadStatus: 'none' })
+        pageLogic.setAllTreeNodes([d1, d11, f111, d12, d2])
 
-      // 以下の状態のノードリストを再現する
-      // ・'d1/d11/d111'が削除された
-      // ・'d1/d11/f111.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
-      // ・'d1/d11/f112.txt'が追加された
-      const updated_f111 = cloneTreeNodeInput(f111, { id: StorageNode.generateId() })
-      // StorageLogic.getNode()をモック化
-      td.when(storageLogic.getNode({ path: d1.path })).thenReturn(toStorageNode(d1))
-      // StorageLogic.getDirDescendants()をモック化
-      td.when(storageLogic.getDirDescendants(d11.path)).thenReturn(toStorageNode([d11, updated_f111, f112]))
+        // 以下の状態のノードリストを再現する
+        // ・'d1/d11/f112.txt'が追加された
+        // ・'d1/d12'が削除された
+        // StorageLogic.getDirDescendants()をモック化
+        td.when(storageLogic.getDirDescendants(``)).thenReturn(toStorageNode([d1, d11, f111, f112, d2]))
 
-      // 'd1/d11'を指定して実行
-      await pageLogic.reloadStorageDir(d11.path)
-      const actual = pageLogic.getAllTreeNodes()
-      const [_root, _d1, _d11, _f111, _f112, _d12, _d2] = actual
+        // ルートノードを指定して実行
+        await pageLogic.reloadStorageDir(``, { deep: true })
+        const actual = pageLogic.getAllTreeNodes()
+        const [_root, _d1, _d11, _f111, _f112, _d2] = actual
 
-      // root
-      // ├d1
-      // │├d11
-      // ││├f111.txt
-      // ││└f112.txt
-      // │└d12
-      // └d2
-      expect(actual.length).toBe(7)
-      expect(_root.path).toBe(``)
-      expect(_d1.path).toBe(`d1`)
-      expect(_d11.path).toBe(`d1/d11`)
-      expect(_f111.path).toBe(`d1/d11/f111.txt`)
-      expect(_f112.path).toBe(`d1/d11/f112.txt`)
-      expect(_d12.path).toBe(`d1/d12`)
-      expect(_d2.path).toBe(`d2`)
-      // 遅延ロード状態の検証
-      // ・対象ノードに指定されたディレクトリと配下ディレクトリの遅延ロード状態が完了であることを確認
-      // ・それ以外は遅延ロード状態に変化がないことを確認
-      expect(_root.lazyLoadStatus).toBe('none')
-      expect(_d1.lazyLoadStatus).toBe('none')
-      expect(_d11.lazyLoadStatus).toBe('loaded')
-      expect(_f111.lazyLoadStatus).toBe('none')
-      expect(_f112.lazyLoadStatus).toBe('none')
-      expect(_d12.lazyLoadStatus).toBe('none')
-      expect(_d2.lazyLoadStatus).toBe('none')
-      // StorageLogic.fetchHierarchicalDescendants()が正常に呼び出されたか検証
-      const exp = td.explain(storageLogic.fetchHierarchicalDescendants)
-      expect(exp.calls[0].args[0]).toBe(d11.path)
+        // root
+        // ├d1
+        // │└d11
+        // │  ├f111.txt
+        // │  └f112.txt
+        // └d2
+        expect(actual.length).toBe(6)
+        expect(_root.path).toBe(``)
+        expect(_d1.path).toBe(`d1`)
+        expect(_d11.path).toBe(`d1/d11`)
+        expect(_f111.path).toBe(`d1/d11/f111.txt`)
+        expect(_f112.path).toBe(`d1/d11/f112.txt`)
+        expect(_d2.path).toBe(`d2`)
+        // 遅延ロード状態の検証
+        expect(_root.lazyLoadStatus).toBe('loaded')
+        expect(_d1.lazyLoadStatus).toBe('loaded')
+        expect(_d11.lazyLoadStatus).toBe('loaded')
+        expect(_f111.lazyLoadStatus).toBe('none')
+        expect(_f112.lazyLoadStatus).toBe('none')
+        expect(_d2.lazyLoadStatus).toBe('loaded')
+        // fetchHierarchicalDescendants()が正常に呼び出されたか検証
+        const exp = td.explain(storageLogic.fetchHierarchicalDescendants)
+        expect(exp.calls[0].args[0]).toBe(``)
 
-      verifyParentChildRelationForTree(treeView)
+        verifyParentChildRelationForTree(treeView)
+      })
+
+      it('対象ノードにルートノード配下のディレクトリを指定', async () => {
+        const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
+
+        // root
+        // ├d1
+        // │├d11 ← 対象ノードに指定
+        // ││├d111
+        // │││├f1111.txt
+        // │││└f1112.txt
+        // ││└f111.txt
+        // │└d12
+        // └d2
+        const d1 = newTreeDirNodeInput(`d1`, { lazyLoadStatus: 'none' })
+        const d11 = newTreeDirNodeInput(`d1/d11`, { lazyLoadStatus: 'none' })
+        const d111 = newTreeDirNodeInput(`d1/d11/d111`, { lazyLoadStatus: 'none' })
+        const f1111 = newTreeFileNodeInput(`d1/d11/d111/f1111.txt`)
+        const f1112 = newTreeFileNodeInput(`d1/d11/d111/f1112.txt`)
+        const d112 = newTreeDirNodeInput(`d1/d11/d112`, { lazyLoadStatus: 'none' })
+        const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+        const f112 = newTreeFileNodeInput(`d1/d11/f112.txt`)
+        const d12 = newTreeDirNodeInput(`d1/d12`, { lazyLoadStatus: 'none' })
+        const d2 = newTreeDirNodeInput(`d2`, { lazyLoadStatus: 'none' })
+        pageLogic.setAllTreeNodes([d1, d11, d111, f1111, f1112, f111, d12, d2], {
+          lazyLoadStatus: 'none',
+        })
+
+        // 以下の状態のノードリストを再現する
+        // ・'d1/d11/d111'が削除された
+        // ・'d1/d11/d112'が追加された
+        // ・'d1/d11/d111/f1112.txt'が'd1/d11/f113.txt'へ移動+リネームされた
+        // ・'d1/d11/f111.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
+        // ・'d1/d11/f112.txt'が追加された
+        const renamed_f113 = cloneTreeNodeInput(f1112, { name: 'f113.txt', dir: `d1/d11`, path: `d1/d11/f113.txt` })
+        const updated_f111 = cloneTreeNodeInput(f111, { id: StorageNode.generateId() })
+        // StorageLogic.getNode()をモック化
+        td.when(storageLogic.getNode({ path: d1.path })).thenReturn(toStorageNode(d1))
+        // StorageLogic.getDirDescendants()をモック化
+        td.when(storageLogic.getDirDescendants(d11.path)).thenReturn(toStorageNode([d11, d112, updated_f111, f112, renamed_f113]))
+
+        // 'd1/d11'を指定して実行
+        await pageLogic.reloadStorageDir(d11.path, { deep: true })
+        const actual = pageLogic.getAllTreeNodes()
+        const [_root, _d1, _d11, _d112, _f111, _f112, _f113, _d12, _d2] = actual
+
+        // root
+        // ├d1
+        // │├d11
+        // ││├d112
+        // ││├f111.txt
+        // ││├f112.txt
+        // ││└f113.txt
+        // │└d12
+        // └d2
+        expect(actual.length).toBe(9)
+        expect(_root.path).toBe(``)
+        expect(_d1.path).toBe(`d1`)
+        expect(_d11.path).toBe(`d1/d11`)
+        expect(_d112.path).toBe(`d1/d11/d112`)
+        expect(_f111.path).toBe(`d1/d11/f111.txt`)
+        expect(_f112.path).toBe(`d1/d11/f112.txt`)
+        expect(_f113.path).toBe(`d1/d11/f113.txt`)
+        expect(_d12.path).toBe(`d1/d12`)
+        expect(_d2.path).toBe(`d2`)
+        // 遅延ロード状態の検証
+        // ・対象ノードに指定されたディレクトリと配下ディレクトリの遅延ロード状態が完了であることを確認
+        // ・それ以外は遅延ロード状態に変化がないことを確認
+        expect(_root.lazyLoadStatus).toBe('none')
+        expect(_d1.lazyLoadStatus).toBe('none')
+        expect(_d11.lazyLoadStatus).toBe('loaded')
+        expect(_d112.lazyLoadStatus).toBe('loaded')
+        expect(_f111.lazyLoadStatus).toBe('none')
+        expect(_f112.lazyLoadStatus).toBe('none')
+        expect(_f113.lazyLoadStatus).toBe('none')
+        expect(_d12.lazyLoadStatus).toBe('none')
+        expect(_d2.lazyLoadStatus).toBe('none')
+        // StorageLogic.fetchHierarchicalDescendants()が正常に呼び出されたか検証
+        const exp = td.explain(storageLogic.fetchHierarchicalDescendants)
+        expect(exp.calls[0].args[0]).toBe(d11.path)
+
+        verifyParentChildRelationForTree(treeView)
+      })
     })
 
     it('対象ノードが削除されていた場合', async () => {
@@ -1611,7 +1764,7 @@ describe('StoragePageLogic', () => {
       td.when(storageLogic.getDirDescendants(d111.path)).thenReturn([])
 
       // 'd1/d11/d111'を指定して実行
-      await pageLogic.reloadStorageDir(d111.path)
+      await pageLogic.reloadStorageDir(d111.path, { deep: true })
       const actual = pageLogic.getAllTreeNodes()
       const [_root, _d1, _d11, _d12, _d2] = actual
 
@@ -1667,7 +1820,7 @@ describe('StoragePageLogic', () => {
       td.when(storageLogic.getDirDescendants(d111.path)).thenReturn([])
 
       // 'd1/d11/d111'を指定して実行
-      await pageLogic.reloadStorageDir(d111.path)
+      await pageLogic.reloadStorageDir(d111.path, { deep: true })
       const actual = pageLogic.getAllTreeNodes()
       const [_root, _d1, _d12, _d2] = actual
 
@@ -1707,7 +1860,7 @@ describe('StoragePageLogic', () => {
       td.when(storageLogic.getDirDescendants(``)).thenReturn([d1, f1])
 
       // ルートノードを指定して実行
-      await pageLogic.reloadStorageDir(``)
+      await pageLogic.reloadStorageDir(``, { deep: true })
       const actual = pageLogic.getAllTreeNodes()
       const [_root, _d1] = actual
 
@@ -3417,6 +3570,7 @@ describe('StoragePageLogic', () => {
       //   │└fileC.txt
       //   └fileD.txt
       const actual = pageLogic.getAllTreeNodes()
+      console.log(actual.map(node => node.path))
       expect(actual.length).toBe(9)
       const [_root, _d1, _d11, _d111, _fileA, _fileB, _d12, _fileC, _fileD] = actual
       expect(_root.path).toBe(``)

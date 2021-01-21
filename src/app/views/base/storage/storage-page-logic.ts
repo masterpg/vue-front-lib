@@ -165,8 +165,9 @@ interface StoragePageLogic {
   /**
    * 指定されたディレクトリの再読み込みを行います。
    * @param dirPath
+   * @param options
    */
-  reloadStorageDir(dirPath: string): Promise<void>
+  reloadStorageDir(dirPath: string, options?: { deep: boolean }): Promise<void>
   /**
    * ディレクトリの作成を行います。
    * @param dirPath 作成するディレクトリのパス
@@ -573,15 +574,17 @@ namespace StoragePageLogic {
       dirTreeNode.lazyLoadStatus = 'loaded'
     }
 
-    const reloadStorageDir = extendedMethod<StoragePageLogic['reloadStorageDir']>(async dirPath => {
+    const reloadStorageDir = extendedMethod<StoragePageLogic['reloadStorageDir']>(async (dirPath, options) => {
       dirPath = removeBothEndsSlash(dirPath)
+      const deep = options?.deep ?? false
 
       // 引数ディレクトリを遅延ロード中に設定
       const dirTreeNode = getTreeNode(dirPath)!
       dirTreeNode.lazyLoadStatus = 'loading'
 
-      // 引数ディレクトリのパスを構成する各ディレクトリと配下ノードをサーバーから取得
-      await storageLogic.fetchHierarchicalDescendants(dirPath)
+      // 引数ディレクトリのパスを構成する各ディレクトリと、
+      // ｢配下ノード or 直下ノード｣をサーバーから取得
+      deep ? await storageLogic.fetchHierarchicalDescendants(dirPath) : await storageLogic.fetchHierarchicalChildren(dirPath)
 
       // ロジックストアのノードをツリービューに反映
       // ※引数ディレクトリの祖先ディレクトリが対象
@@ -598,22 +601,24 @@ namespace StoragePageLogic {
       })
 
       // ロジックストアのノードをツリービューに反映
-      // ※引数ディレクトリと配下ノードが対象
-      mergeTreeDirDescendants(dirPath)
+      // ※引数ディレクトリと｢配下ノード or 直下ノード｣が対象
+      deep ? mergeTreeDirDescendants(dirPath) : mergeTreeDirChildren(dirPath)
 
-      // 引数ディレクトリ配下にあるディレクトリの遅延ロード状態を済みに設定
-      let treeDescendants: StorageTreeNode[] = []
-      if (dirPath === getRootTreeNode().path) {
-        treeDescendants = getAllTreeNodes()
-      } else {
-        const dirTreeNode = getTreeView().getNode(dirPath)
-        if (dirTreeNode) {
-          treeDescendants = dirTreeNode.getDescendants()
+      if (deep) {
+        // 引数ディレクトリ配下にあるディレクトリの遅延ロード状態を済みに設定
+        let treeDescendants: StorageTreeNode[] = []
+        if (dirPath === getRootTreeNode().path) {
+          treeDescendants = getAllTreeNodes()
+        } else {
+          const dirTreeNode = getTreeView().getNode(dirPath)
+          if (dirTreeNode) {
+            treeDescendants = dirTreeNode.getDescendants()
+          }
         }
-      }
-      for (const treeNode of treeDescendants) {
-        if (treeNode.nodeType === StorageNodeType.Dir) {
-          treeNode.lazyLoadStatus = 'loaded'
+        for (const treeNode of treeDescendants) {
+          if (treeNode.nodeType === StorageNodeType.Dir) {
+            treeNode.lazyLoadStatus = 'loaded'
+          }
         }
       }
 
