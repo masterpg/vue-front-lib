@@ -322,6 +322,11 @@ interface StoragePageLogic {
    * @param key
    */
   isArticleDirUnder(key: StorageNodeGetKeyInput): boolean
+  /**
+   * 指定されたノードが｢記事ソース(マスターまたは下書き)｣か否かを取得します。
+   * @param key
+   */
+  isArticleSrc(key: StorageNodeGetKeyInput): boolean
 }
 
 interface StoragePageStore {
@@ -1348,6 +1353,12 @@ namespace StoragePageLogic {
       return existsArticle(node.path)
     }
 
+    const isArticleSrc: StoragePageLogic['isArticleSrc'] = key => {
+      const node = storageLogic.getNode(key)
+      if (!node) return false
+      return Boolean(node.article?.file)
+    }
+
     //----------------------------------------------------------------------
     //
     //  Internal methods
@@ -1476,6 +1487,7 @@ namespace StoragePageLogic {
       isCategoryDir,
       isArticleDir,
       isArticleDirUnder,
+      isArticleSrc,
     }
   }
 

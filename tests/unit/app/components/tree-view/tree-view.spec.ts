@@ -833,26 +833,6 @@ describe('TreeView', () => {
       verifyTreeView(treeView)
     })
 
-    it('aaa', async () => {
-      const wrapper = mount<TreeViewImpl>(TreeView.clazz)
-      const treeView = wrapper.vm
-      treeView.buildTree([
-        {
-          label: 'Node1',
-          value: 'node1',
-          opened: true,
-          selected: false,
-          children: [],
-        },
-      ])
-
-      const node1 = treeView.getNode('node1')!
-      node1.selected = true
-
-      const actual = treeView.selectedNode!
-      expect(actual.value).toBe('node1')
-    })
-
     it('現在選択されているノードと別のノードを設定', async () => {
       const wrapper = mount<TreeViewImpl>(TreeView.clazz)
       const treeView = wrapper.vm

@@ -74,8 +74,10 @@ namespace StorageNodePopupMenu {
 
       const pageLogic = StoragePageLogic.getInstance(props.storageType)
 
-      const menuItems = computed(() => {
+      const menuItems = computed<StorageNodeActionEvent[]>(() => {
+        //
         // ストレージ系メニュー
+        //
         if (isStorage.value) {
           // 複数選択用メニュー
           if (isMulti.value) {
@@ -117,7 +119,9 @@ namespace StorageNodePopupMenu {
             ]
           }
         }
+        //
         // 記事系メニュー
+        //
         else {
           // 複数選択用メニュー
           if (isMulti.value) {
@@ -163,6 +167,7 @@ namespace StorageNodePopupMenu {
               new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Category }),
               new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Article }),
               new StorageNodeActionEvent('separator', undefined),
+              new StorageNodeActionEvent('move', { targetPaths: selectedNodePaths.value }),
               new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
               new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
               new StorageNodeActionEvent('delete', { targetPaths: selectedNodePaths.value }),
@@ -175,6 +180,7 @@ namespace StorageNodePopupMenu {
               new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Category }),
               new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Article }),
               new StorageNodeActionEvent('separator', undefined),
+              new StorageNodeActionEvent('move', { targetPaths: selectedNodePaths.value }),
               new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
               new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
               new StorageNodeActionEvent('delete', { targetPaths: selectedNodePaths.value }),
@@ -218,12 +224,16 @@ namespace StorageNodePopupMenu {
           }
           // ファイル用メニュー
           else if (isStorageFile.value) {
-            return [
-              new StorageNodeActionEvent('move', { targetPaths: selectedNodePaths.value }),
-              new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
-              new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
-              new StorageNodeActionEvent('delete', { targetPaths: selectedNodePaths.value }),
-            ]
+            if (isArticleSrc.value) {
+              return []
+            } else {
+              return [
+                new StorageNodeActionEvent('move', { targetPaths: selectedNodePaths.value }),
+                new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
+                new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
+                new StorageNodeActionEvent('delete', { targetPaths: selectedNodePaths.value }),
+              ]
+            }
           }
         }
 
@@ -280,8 +290,13 @@ namespace StorageNodePopupMenu {
         return !props.isRoot && !isMulti.value && pageLogic.isAssetsDir(props.node)
       })
 
+      const isArticleSrc = computed(() => {
+        return !props.isRoot && !isMulti.value && pageLogic.isArticleSrc(props.node)
+      })
+
       const enabled = computed(() => {
         if (props.disabled) return false
+        if (!menuItems.value.length) return false
         if (!pageLogic.isSignedIn.value) return false
 
         if (props.selectedNodes) {
