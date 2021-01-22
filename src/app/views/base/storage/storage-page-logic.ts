@@ -44,6 +44,10 @@ import { useI18n } from '@/app/i18n'
 
 interface StoragePageLogic {
   /**
+   * ページデータを保管するストアです。
+   */
+  store: StoragePageStore
+  /**
    * ユーザーがサインインしているか否かを表すフラグです。
    */
   isSignedIn: ComputedRef<boolean>
@@ -52,13 +56,9 @@ interface StoragePageLogic {
    */
   route: StorageRoute
   /**
-   * ツリービューの選択ノードのパスです。
-   */
-  selectedTreeNodePath: WritableComputedRef<string>
-  /**
    * ツリービューの選択ノードです。
    */
-  selectedTreeNode: WritableComputedRef<StorageTreeNode | null>
+  selectedTreeNode: WritableComputedRef<StorageTreeNode>
   /**
    * 指定されたノードの選択状態を設定します。
    * @param value ノードを特定するための値を指定
@@ -138,10 +138,6 @@ interface StoragePageLogic {
    * @param dirPath
    */
   mergeTreeDirChildren(dirPath: string): void
-  /**
-   * ストレージノードの初期読み込みが既に行われているか否かのフラグです。
-   */
-  isFetchedInitialStorage: ComputedRef<boolean>
   /**
    * ストレージノードを取得します。
    * ノードが存在しない場合は例外がスローされます。
@@ -235,7 +231,6 @@ interface StoragePageLogic {
    * @param filePath
    */
   newFileDownloader(type: StorageFileDownloaderType, filePath: string): StorageFileDownloader
-
   /**
    * 単一ファイルダアップロードの管理を行うアップローダーを生成します。
    * @param uploadParam
@@ -408,13 +403,13 @@ namespace StoragePageLogic {
       }
     })()
 
-    const pageStore = StoragePageStore.getInstance(storageType)
-
     //----------------------------------------------------------------------
     //
     //  Properties
     //
     //----------------------------------------------------------------------
+
+    const store: StoragePageLogic['store'] = StoragePageStore.getInstance(storageType)
 
     const isSignedIn = logic.auth.isSignedIn
 
@@ -429,29 +424,22 @@ namespace StoragePageLogic {
       }
     })()
 
-    const selectedTreeNodePath = computed({
-      get: () => pageStore.selectedTreeNodePath.value,
-      set: value => (pageStore.selectedTreeNodePath.value = value),
-    })
-
-    const selectedTreeNode = computed({
+    const selectedTreeNode: StoragePageLogic['selectedTreeNode'] = computed({
       get: () => {
-        return treeViewRef.value?.selectedNode ?? null
+        return treeViewRef.value?.selectedNode ?? getRootTreeNode()
       },
       set: node => {
-        const current = getTreeView().selectedNode
-        if (current) {
-          if (current.path !== node?.path) {
-            getTreeView().selectedNode = node
-          }
-        } else {
+        const current = getTreeView().selectedNode ?? getRootTreeNode()
+        if (current.path !== node?.path) {
           getTreeView().selectedNode = node
         }
+        store.selectedTreeNodePath.value = node.path
       },
     })
 
     const setSelectedTreeNode: StoragePageLogic['setSelectedTreeNode'] = (value, selected, silent) => {
       getTreeView().setSelectedNode(value, selected, silent)
+      store.selectedTreeNodePath.value = value
     }
 
     //----------------------------------------------------------------------
@@ -513,7 +501,7 @@ namespace StoragePageLogic {
       // ストアにある最新のストレージノードを格納
       let storageDirNodes: StorageNode[] = []
 
-      if (!pageStore.isFetchedInitialStorage.value) {
+      if (!store.isFetchedInitialStorage.value) {
         // ルートノードを読み込み
         await storageLogic.fetchRoot()
         // 引数ディレクトリを含め、階層構造を形成する各ディレクトリの子ノードをサーバーから取得
@@ -557,7 +545,7 @@ namespace StoragePageLogic {
       getRootTreeNode().lazyLoadStatus = 'loaded'
 
       // ストレージノードの初回読み込み済みを設定
-      pageStore.isFetchedInitialStorage.value = true
+      store.isFetchedInitialStorage.value = true
     }
 
     const fetchStorageChildren: StoragePageLogic['fetchStorageChildren'] = async dirPath => {
@@ -657,7 +645,7 @@ namespace StoragePageLogic {
       //   他端末で'd1/d11'を削除してからまた同じパスの'd1/d11'が作成された場合、
       //   元のidと再作成されたidが異なり、パスは同じでもidが異なる状況が発生する。
       //   この場合id検索しても対象ノードが見つからないため、path検索する必要がある。
-      let treeNode = getNodeById(node.id) || getTreeNode(node.path)
+      let treeNode = getTreeNodeById(node.id) || getTreeNode(node.path)
 
       // ツリービューに引数ノードが既に存在する場合
       if (treeNode) {
@@ -933,6 +921,9 @@ namespace StoragePageLogic {
       fromNodePaths = fromNodePaths.map(fromNodePath => removeBothEndsSlash(fromNodePath))
       toParentPath = removeBothEndsSlash(toParentPath)
 
+      // 選択ノードのIDを保存しておく
+      const selectedNodeId = selectedTreeNode.value.id
+
       // 引数チェック
       for (const fromNodePath of fromNodePaths) {
         // 移動ノードがルートノードでないことを確認
@@ -989,6 +980,10 @@ namespace StoragePageLogic {
       // 3. 移動ノードをツリービューに反映
       //
       setTreeNodes(movedNodes.filter(nodeFilter))
+
+      // 移動によって選択ノードのパスが変わることがあるため、
+      // 保存しておいた選択ノードIDをもとに選択ノードを再設定
+      selectedTreeNode.value = getTreeNodeById(selectedNodeId)!
     }
 
     const renameStorageNode: StoragePageLogic['renameStorageNode'] = async (nodePath, newName) => {
@@ -999,6 +994,9 @@ namespace StoragePageLogic {
       }
 
       const targetNode = storageLogic.sgetNode({ path: nodePath })
+
+      // 選択ノードのIDを保存しておく
+      const selectedNodeId = selectedTreeNode.value.id
 
       //
       // 1. APIによるリネーム処理を実行
@@ -1022,6 +1020,10 @@ namespace StoragePageLogic {
       // 2. リネームノードをツリービューに反映
       //
       setTreeNodes(renamedNodes.filter(nodeFilter))
+
+      // リネームによって選択ノードのパスが変わることがあるため、
+      // 保存しておいた選択ノードIDをもとに選択ノードを再設定
+      selectedTreeNode.value = getTreeNodeById(selectedNodeId)!
     }
 
     const setStorageNodeShareSettings: StoragePageLogic['setStorageNodeShareSettings'] = async (nodePaths, input) => {
@@ -1377,7 +1379,7 @@ namespace StoragePageLogic {
      * 指定されたIDと一致するツリーノードを取得します。
      * @param id
      */
-    function getNodeById(id: string): StorageTreeNode | undefined {
+    function getTreeNodeById(id: string): StorageTreeNode | undefined {
       const allTreeNodes = getTreeView().getAllNodes()
       for (const treeNode of allTreeNodes) {
         if (treeNode.id === id) return treeNode
@@ -1420,13 +1422,6 @@ namespace StoragePageLogic {
       }
     )
 
-    watch(
-      () => selectedTreeNode.value,
-      newValue => {
-        selectedTreeNodePath.value = newValue?.path ?? getRootTreeNode().path
-      }
-    )
-
     //----------------------------------------------------------------------
     //
     //  result
@@ -1434,9 +1429,9 @@ namespace StoragePageLogic {
     //----------------------------------------------------------------------
 
     return {
+      store,
       isSignedIn,
       route,
-      selectedTreeNodePath,
       selectedTreeNode,
       setSelectedTreeNode,
       getAllTreeNodes,
@@ -1452,7 +1447,6 @@ namespace StoragePageLogic {
       mergeAllTreeNodes,
       mergeTreeDirDescendants,
       mergeTreeDirChildren,
-      isFetchedInitialStorage: pageStore.isFetchedInitialStorage,
       getStorageNode,
       sgetStorageNode,
       getStorageChildren,
@@ -1545,15 +1539,15 @@ namespace StoragePageLogic {
 }
 
 namespace StoragePageStore {
-  const pageStoreDict: { [storageType: string]: StoragePageStore } = {}
+  const storeDict: { [storageType: string]: StoragePageStore } = {}
 
   export function getInstance(storageType: StorageType): StoragePageStore {
-    let pageStore = pageStoreDict[storageType]
-    if (!pageStore) {
-      pageStore = newRawInstance()
-      pageStoreDict[storageType] = pageStore
+    let store = storeDict[storageType]
+    if (!store) {
+      store = newRawInstance()
+      storeDict[storageType] = store
     }
-    return pageStore
+    return store
   }
 
   export function newRawInstance() {

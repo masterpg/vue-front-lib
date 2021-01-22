@@ -149,7 +149,7 @@ namespace ArticleStoragePage {
       base.changeDir.value = nodePath => {
         base.changeDir.super(nodePath)
 
-        const node = pageLogic.sgetTreeNode(nodePath)
+        const node = pageLogic.getTreeNode(nodePath) ?? pageLogic.getRootTreeNode()
         switch (node.nodeType) {
           case StorageNodeType.Dir: {
             // ディレクトリビューを表示
@@ -192,8 +192,7 @@ namespace ArticleStoragePage {
       //----------------------------------------------------------------------
 
       base.treeViewOnSelect.value = async e => {
-        const selectedNode = e.node
-        const oldSelectedNode = e.oldNode
+        const { node: selectedNode, oldNode: oldSelectedNode } = e
 
         // 選択ノードがファイルの場合
         if (selectedNode.nodeType === StorageNodeType.File) {

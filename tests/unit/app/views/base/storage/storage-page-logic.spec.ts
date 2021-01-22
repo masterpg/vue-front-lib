@@ -108,7 +108,7 @@ function newStoragePageLogic(
   const pageLogic = StoragePageLogic.newInstance({ storageType, nodeFilter, treeViewRef }) as RawStoragePageLogic
 
   // ストレージノードの初回｢未｣読み込みに設定
-  pageLogic.isFetchedInitialStorage.value = false
+  pageLogic.store.isFetchedInitialStorage.value = false
 
   // サインイン済みに設定
   td.replace(logic.auth.isSignedIn, 'value', true)
@@ -1200,7 +1200,7 @@ describe('StoragePageLogic', () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
       // ストレージの初期読み込みが行われていない状態に設定
-      pageLogic.isFetchedInitialStorage.value = false
+      pageLogic.store.isFetchedInitialStorage.value = false
 
       // root
       // ├[d1]
@@ -1264,7 +1264,7 @@ describe('StoragePageLogic', () => {
       const { pageLogic, storageLogic, treeView } = newStoragePageLogic()
 
       // ストレージの初期読み込みが行われている状態に設定
-      pageLogic.isFetchedInitialStorage.value = true
+      pageLogic.store.isFetchedInitialStorage.value = true
 
       // root
       // ├d1

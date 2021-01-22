@@ -118,14 +118,15 @@ namespace StoragePage {
      */
     async function fetchInitialNodes(): Promise<void> {
       dirView.value!.loading = true
+      const { selectedTreeNodePath, isFetchedInitialStorage } = pageLogic.store
 
       // 現在の選択ノードを取得
       // ※URLから取得したディレクトリまたは現在の選択ノード
-      const dirPath = pageLogic.route.getNodePath() || pageLogic.selectedTreeNodePath.value
+      const dirPath = pageLogic.route.getNodePath() || selectedTreeNodePath.value
 
       // 初期ストレージノードの読み込み
       await pageLogic.fetchInitialStorage(dirPath)
-      if (!pageLogic.isFetchedInitialStorage.value) {
+      if (!isFetchedInitialStorage.value) {
         dirView.value!.loading = false
         return
       }
@@ -281,7 +282,7 @@ namespace StoragePage {
       await pageLogic.createStorageDir(dirPath)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageLogic.selectedTreeNodePath.value)
+      changeDirOnPage(pageLogic.selectedTreeNode.value.path)
 
       Loading.hide()
     }
@@ -298,7 +299,7 @@ namespace StoragePage {
       await pageLogic.moveStorageNodes(nodePaths, toParentPath)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageLogic.selectedTreeNodePath.value)
+      changeDirOnPage(pageLogic.selectedTreeNode.value.path)
 
       Loading.hide()
     }
@@ -315,7 +316,7 @@ namespace StoragePage {
       await pageLogic.renameStorageNode(nodePath, newName)
 
       // 現在選択されているノードへURL遷移
-      changeDirOnPage(pageLogic.selectedTreeNodePath.value)
+      changeDirOnPage(pageLogic.selectedTreeNode.value.path)
 
       Loading.hide()
     }
@@ -332,7 +333,7 @@ namespace StoragePage {
       await pageLogic.setStorageNodeShareSettings(nodePaths, input)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageLogic.selectedTreeNodePath.value)
+      changeDirOnPage(pageLogic.selectedTreeNode.value.path)
 
       Loading.hide()
     }
@@ -347,10 +348,10 @@ namespace StoragePage {
       // 削除後の遷移先ノードを取得
       // ・選択ノードが削除された場合、親ノードへ遷移
       // ・それ以外は現在の選択ノードへ遷移
-      let toNodePath = pageLogic.selectedTreeNodePath.value
+      let toNodePath = pageLogic.selectedTreeNode.value.path
       // 選択ノードが削除されるのかを取得
       const selectedRemovingNodePath = nodePaths.find(nodePath => {
-        if (nodePath === pageLogic.selectedTreeNodePath.value) return nodePath
+        if (nodePath === pageLogic.selectedTreeNode.value.path) return nodePath
       })
       // 選択ノードが削除される場合、親ノードへ遷移するよう準備
       if (selectedRemovingNodePath) {
@@ -378,7 +379,7 @@ namespace StoragePage {
       await pageLogic.createArticleTypeDir(input)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageLogic.selectedTreeNodePath.value)
+      changeDirOnPage(pageLogic.selectedTreeNode.value.path)
 
       Loading.hide()
     }
@@ -422,7 +423,7 @@ namespace StoragePage {
       // アップロードが行われた後のツリーの更新処理
       await pageLogic.onUploaded(e)
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageLogic.selectedTreeNodePath.value)
+      changeDirOnPage(pageLogic.selectedTreeNode.value.path)
     }
 
     /**
@@ -436,7 +437,7 @@ namespace StoragePage {
           await pageLogic.reloadStorageDir(targetPath)
           // ページの選択ノードを設定
           // ※ディレクトリビューの更新
-          changeDir(pageLogic.selectedTreeNodePath.value)
+          changeDir(pageLogic.selectedTreeNode.value.path)
           break
         }
         case 'createDir': {
