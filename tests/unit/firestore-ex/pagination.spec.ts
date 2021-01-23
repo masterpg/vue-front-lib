@@ -39,21 +39,14 @@ describe('pagination', () => {
 
   describe('startAt', () => {
     it('with field value', async () => {
-      const fetched = await dao
-        .orderBy('title')
-        .startAt('b')
-        .fetch()
+      const fetched = await dao.orderBy('title').startAt('b').fetch()
       const actual = fetched[0]
 
       expect(actual).toMatchObject({ id: '2', title: 'b', order: 2 })
     })
 
     it('with multiple field values', async () => {
-      const fetched = await dao
-        .orderBy('title')
-        .orderBy('order')
-        .startAt('b', 3)
-        .fetch()
+      const fetched = await dao.orderBy('title').orderBy('order').startAt('b', 3).fetch()
       const actual = fetched[0]
 
       expect(actual).toMatchObject({ id: '3', title: 'b', order: 3 })
@@ -61,10 +54,7 @@ describe('pagination', () => {
 
     it('with DocumentSnapshot', async () => {
       const snap = await dao.docRef('3').get()
-      const fetched = await dao
-        .orderBy('title')
-        .startAt(snap)
-        .fetch()
+      const fetched = await dao.orderBy('title').startAt(snap).fetch()
       const actual = fetched[0]
 
       expect(actual).toMatchObject({ id: '3', title: 'b', order: 3 })
@@ -73,10 +63,7 @@ describe('pagination', () => {
 
   describe('startAfter', () => {
     it('with field value', async () => {
-      const fetched = await dao
-        .orderBy('title')
-        .startAfter('b')
-        .fetch()
+      const fetched = await dao.orderBy('title').startAfter('b').fetch()
       const actual = fetched[0]
 
       expect(actual).toMatchObject({ id: '4', title: 'c', order: 4 })
@@ -84,10 +71,7 @@ describe('pagination', () => {
 
     it('with DocumentSnapshot', async () => {
       const snap = await dao.docRef('3').get()
-      const fetched = await dao
-        .orderBy('title')
-        .startAfter(snap)
-        .fetch()
+      const fetched = await dao.orderBy('title').startAfter(snap).fetch()
       const actual = fetched[0]
 
       expect(actual).toMatchObject({ id: '4', title: 'c', order: 4 })
@@ -96,10 +80,7 @@ describe('pagination', () => {
 
   describe('endAt', () => {
     it('with field value', async () => {
-      const fetched = await dao
-        .orderBy('title')
-        .endAt('d')
-        .fetch()
+      const fetched = await dao.orderBy('title').endAt('d').fetch()
       const actual = fetched[fetched.length - 1]
 
       expect(actual).toMatchObject({ id: '6', title: 'd', order: 6 })
@@ -107,10 +88,7 @@ describe('pagination', () => {
 
     it('with DocumentSnapshot', async () => {
       const snap = await dao.docRef('6').get()
-      const fetched = await dao
-        .orderBy('title')
-        .endAt(snap)
-        .fetch()
+      const fetched = await dao.orderBy('title').endAt(snap).fetch()
       const actual = fetched[fetched.length - 1]
 
       expect(actual).toMatchObject({ id: '6', title: 'd', order: 6 })
@@ -119,10 +97,7 @@ describe('pagination', () => {
 
   describe('endBefore', () => {
     it('with field value', async () => {
-      const fetched = await dao
-        .orderBy('title')
-        .endBefore('e')
-        .fetch()
+      const fetched = await dao.orderBy('title').endBefore('e').fetch()
       const actual = fetched[fetched.length - 1]
 
       expect(actual).toMatchObject({ id: '6', title: 'd', order: 6 })
@@ -130,10 +105,7 @@ describe('pagination', () => {
 
     it('with DocumentSnapshot', async () => {
       const snap = await dao.docRef('7').get()
-      const fetched = await dao
-        .orderBy('title')
-        .endBefore(snap)
-        .fetch()
+      const fetched = await dao.orderBy('title').endBefore(snap).fetch()
       const actual = fetched[fetched.length - 1]
 
       expect(actual).toMatchObject({ id: '6', title: 'd', order: 6 })
@@ -142,11 +114,7 @@ describe('pagination', () => {
 
   describe('startAfter + endAt', () => {
     it('with field value', async () => {
-      const fetched = await dao
-        .orderBy('title')
-        .startAfter('b')
-        .endAt('d')
-        .fetch()
+      const fetched = await dao.orderBy('title').startAfter('b').endAt('d').fetch()
       const actualFirst = fetched[0]
       const actualLast = fetched[fetched.length - 1]
 

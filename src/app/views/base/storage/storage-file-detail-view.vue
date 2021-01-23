@@ -46,7 +46,7 @@
       <q-btn flat round color="primary" icon="close" @click="closeOnClick" />
     </div>
     <!-- コンテンツエリア -->
-    <div class="content-area flex-1" style="overflow-y: auto;">
+    <div class="content-area flex-1" style="overflow-y: auto">
       <!-- 画像 -->
       <div v-show="isImage" class="layout vertical center">
         <StorageImg :node-id="isImage ? id : ''" class="img" />

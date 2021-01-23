@@ -122,9 +122,13 @@ class AppI18nImpl extends VueI18n implements AppI18n {
     this.m_setLocaleData(localeData)
   }
 
-  d(value: number | Date, key_or_args?: VueI18n.Path | { [key: string]: string }, locale?: VueI18n.Locale): VueI18n.DateTimeFormatResult {
-    if (typeof key_or_args === 'string') {
-      const key = key_or_args
+  d(
+    value: number | Date,
+    key_args_options?: VueI18n.Path | { [key: string]: string } | VueI18n.DateTimeFormatOptions,
+    locale?: VueI18n.Locale
+  ): VueI18n.DateTimeFormatResult {
+    if (typeof key_args_options === 'string') {
+      const key = key_args_options
       // 引数にロケールが指定された場合
       if (locale) {
         // 指定されたロケールからロケールデータを作成
@@ -138,8 +142,8 @@ class AppI18nImpl extends VueI18n implements AppI18n {
         locale = this.m_localeData.locale
       }
       return super.d(value, key, locale)
-    } else if (typeof key_or_args === 'object') {
-      const args = key_or_args
+    } else if (typeof key_args_options === 'object') {
+      const args = key_args_options
       return super.d(value, args)
     } else {
       return super.d(value)

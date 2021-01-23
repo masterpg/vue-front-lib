@@ -16,5 +16,5 @@ declare global {
 }
 
 declare module 'testdouble' {
-  export function replace<T = any, K extends keyof T = keyof T, F = DeepPartial<T[K]>>(path: {}, property: K, f?: F): T[K]
+  export function replace<T = any, K extends keyof T = keyof T, F = DeepPartial<T[K]>>(path: T, property: K, f?: F): T[K]
 }

@@ -7,7 +7,7 @@ import { Dayjs } from 'dayjs'
 //
 //========================================================================
 
-type TimestampEntity<T = {}> = Entity &
+type TimestampEntity<T = unknown> = Entity &
   OmitEntityTimestamp<T> & {
     createdAt: Dayjs
     updatedAt: Dayjs
@@ -45,10 +45,7 @@ async function sgetIdToken(): Promise<string> {
  * @param entityName エンティティ名を指定します。
  */
 function generateEntityId(entityName: string): string {
-  return firebase
-    .firestore()
-    .collection(entityName)
-    .doc().id
+  return firebase.firestore().collection(entityName).doc().id
 }
 
 //========================================================================

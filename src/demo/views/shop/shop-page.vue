@@ -50,7 +50,7 @@
       <div class="layout horizontal center">
         <div class="title-text">{{ t('shop.products') }}</div>
       </div>
-      <hr style="width: 100%;" />
+      <hr style="width: 100%" />
       <div v-for="product in products" :key="product.id" class="layout horizontal center product-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ product.title }}</div>
@@ -69,7 +69,7 @@
         <div class="title-text">{{ t('shop.yourCurt') }}</div>
         <div class="flex-1"></div>
       </div>
-      <hr style="width: 100%;" />
+      <hr style="width: 100%" />
       <div v-for="cartItem in cartItems" :key="cartItem.id" class="layout horizontal center cart-item">
         <div class="layout vertical center-justified">
           <div class="title">{{ cartItem.title }}</div>
@@ -87,7 +87,7 @@
         <div class="title-text">{{ t('shop.total') }}</div>
         <div class="flex-1"></div>
       </div>
-      <hr style="width: 100%;" />
+      <hr style="width: 100%" />
       <div class="layout horizontal center">
         <div class="total-amount layout horizontal center">
           <div class="detail">¥{{ cartTotalPrice }}</div>

@@ -81,7 +81,7 @@ namespace ArticleWritingView {
       storageType: { type: String, required: true },
     },
 
-    setup(props: Props, ctx) {
+    setup(props: Readonly<Props>, ctx) {
       //----------------------------------------------------------------------
       //
       //  Variables

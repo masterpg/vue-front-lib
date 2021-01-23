@@ -31,11 +31,67 @@ enum StorageNodeType {
   Dir = 'Dir',
 }
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+namespace StorageNodeType {
+  export function getLabel(nodeType: StorageNodeType, choice = 1): string {
+    const { tc } = useI18n()
+    switch (nodeType) {
+      case StorageNodeType.Dir:
+        return String(tc('common.folder', choice))
+      case StorageNodeType.File:
+        return String(tc('common.file', choice))
+    }
+  }
+
+  export function getIcon(nodeType: StorageNodeType): string {
+    switch (nodeType) {
+      case StorageNodeType.Dir:
+        return 'folder'
+      case StorageNodeType.File:
+        return 'far fa-file'
+    }
+  }
+}
+
 enum StorageArticleDirType {
   ListBundle = 'ListBundle',
   TreeBundle = 'TreeBundle',
   Category = 'Category',
   Article = 'Article',
+}
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+namespace StorageArticleDirType {
+  export function getLabel(nodeType?: StorageArticleDirType, choice = 1): string {
+    const { tc } = useI18n()
+    switch (nodeType) {
+      case StorageArticleDirType.ListBundle:
+        return String(tc('article.nodeType.listBundle', choice))
+      case StorageArticleDirType.TreeBundle:
+        return String(tc('article.nodeType.treeBundle', choice))
+      case StorageArticleDirType.Category:
+        return String(tc('article.nodeType.category', choice))
+      case StorageArticleDirType.Article:
+        return String(tc('article.nodeType.article', choice))
+      default:
+        return ''
+    }
+  }
+
+  export function getIcon(nodeType?: StorageArticleDirType): string {
+    switch (nodeType) {
+      case StorageArticleDirType.ListBundle:
+        return 'fas fa-bars'
+      case StorageArticleDirType.TreeBundle:
+        return 'fas fa-stream'
+      case StorageArticleDirType.Category:
+        return 'fas fa-list-alt'
+      case StorageArticleDirType.Article:
+        return 'fas fa-file-alt'
+      default:
+        return ''
+    }
+  }
 }
 
 enum StorageArticleFileType {
@@ -642,60 +698,6 @@ namespace StorageNode {
     } else {
       const item = source as DeepReadonly<StorageNode>
       return populate(item, {}) as T
-    }
-  }
-}
-
-namespace StorageNodeType {
-  export function getLabel(nodeType: StorageNodeType, choice = 1): string {
-    const { tc } = useI18n()
-    switch (nodeType) {
-      case StorageNodeType.Dir:
-        return String(tc('common.folder', choice))
-      case StorageNodeType.File:
-        return String(tc('common.file', choice))
-    }
-  }
-
-  export function getIcon(nodeType: StorageNodeType): string {
-    switch (nodeType) {
-      case StorageNodeType.Dir:
-        return 'folder'
-      case StorageNodeType.File:
-        return 'far fa-file'
-    }
-  }
-}
-
-namespace StorageArticleDirType {
-  export function getLabel(nodeType?: StorageArticleDirType, choice = 1): string {
-    const { tc } = useI18n()
-    switch (nodeType) {
-      case StorageArticleDirType.ListBundle:
-        return String(tc('article.nodeType.listBundle', choice))
-      case StorageArticleDirType.TreeBundle:
-        return String(tc('article.nodeType.treeBundle', choice))
-      case StorageArticleDirType.Category:
-        return String(tc('article.nodeType.category', choice))
-      case StorageArticleDirType.Article:
-        return String(tc('article.nodeType.article', choice))
-      default:
-        return ''
-    }
-  }
-
-  export function getIcon(nodeType?: StorageArticleDirType): string {
-    switch (nodeType) {
-      case StorageArticleDirType.ListBundle:
-        return 'fas fa-bars'
-      case StorageArticleDirType.TreeBundle:
-        return 'fas fa-stream'
-      case StorageArticleDirType.Category:
-        return 'fas fa-list-alt'
-      case StorageArticleDirType.Article:
-        return 'fas fa-file-alt'
-      default:
-        return ''
     }
   }
 }

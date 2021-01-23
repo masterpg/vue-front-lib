@@ -29,7 +29,7 @@ type Storable<T> = {
     ? FieldValue
     : T[K] extends Array<infer R>
     ? Array<Storable<R>> | FieldValue
-    : T[K] extends object
+    : T[K] extends Record<string, unknown>
     ? Storable<T[K]>
     : T[K] | FieldValue
 }
@@ -45,7 +45,7 @@ type PartialStorable<T> = {
     ? FieldValue
     : T[K] extends Array<infer R>
     ? Array<PartialStorable<R>> | FieldValue
-    : T[K] extends object
+    : T[K] extends Record<string, unknown>
     ? PartialStorable<T[K]>
     : T[K] | FieldValue
 }
@@ -76,16 +76,13 @@ export type Entity = EntityId
 export type TimestampEntity = EntityId & AppTimestamp
 
 export import CollectionReference = firebase.firestore.CollectionReference
-export import DocumentData = firebase.firestore.DocumentData
 export import DocumentReference = firebase.firestore.DocumentReference
 export import DocumentSnapshot = firebase.firestore.DocumentSnapshot
-export import FieldPath = firebase.firestore.FieldPath
-export import FieldValue = firebase.firestore.FieldValue
 export import Firestore = firebase.firestore.Firestore
 export import OrderByDirection = firebase.firestore.OrderByDirection
 export import Query = firebase.firestore.Query
 export import QuerySnapshot = firebase.firestore.QuerySnapshot
-export import Timestamp = firebase.firestore.Timestamp
 export import Transaction = firebase.firestore.Transaction
 export import WhereFilterOp = firebase.firestore.WhereFilterOp
 export import WriteBatch = firebase.firestore.WriteBatch
+export { DocumentData, FieldPath, FieldValue, Timestamp }

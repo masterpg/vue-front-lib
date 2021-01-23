@@ -204,7 +204,7 @@ namespace StorageDownloader {
     //
     //----------------------------------------------------------------------
 
-    const download: StorageDownloader['download'] = function*(
+    const download: StorageDownloader['download'] = function* (
       type: StorageFileDownloaderType,
       nodePath: string
     ): Generator<UnwrapRef<StorageFileDownloader>, void> {

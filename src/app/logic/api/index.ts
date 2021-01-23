@@ -1,6 +1,4 @@
-import { GQLAPIClient } from '@/app/logic/api/gql/client'
 import { GQLAPIContainer } from '@/app/logic/api/gql'
-import { RESTAPIClient } from '@/app/logic/api/rest/client'
 import { RESTAPIContainer } from '@/app/logic/api/rest'
 
 //========================================================================

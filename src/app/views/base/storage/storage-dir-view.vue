@@ -60,7 +60,7 @@
 import { Ref, SetupContext, computed, defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
 import { StorageArticleSettings, StorageNode, StorageNodeType, StorageType } from '@/app/logic'
 import { extendedMethod, isFontAwesome } from '@/app/base'
-import { QTableColumn } from 'quasar'
+import { QTable } from 'quasar'
 import { StorageDirTable } from '@/app/views/base/storage/storage-dir-table.vue'
 import { StorageNodeActionEvent } from '@/app/views/base/storage/base'
 import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'
@@ -68,6 +68,7 @@ import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
 import { arrayToDict } from 'web-base-lib'
 import bytes from 'bytes'
 import { useI18n } from '@/app/i18n'
+type QTableColumn = NonNullable<QTable['columns']>[number]
 
 //========================================================================
 //

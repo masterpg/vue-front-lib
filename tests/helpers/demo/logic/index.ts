@@ -2,7 +2,7 @@ import { DemoLogicContainer } from '@/demo/logic'
 import { InternalLogic } from '@/app/logic/modules/internal'
 import { TestDemoAPIContainer } from './api'
 import { TestDemoStoreContainer } from './store'
-import { TestLogicContainer } from '../../app/logic'
+import { TestLogicContainer } from '../../app'
 
 //========================================================================
 //
@@ -24,6 +24,7 @@ interface TestDemoLogicDependency {
 //
 //========================================================================
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 namespace TestDemoLogicContainer {
   export function newInstance(): TestDemoLogicContainer & { readonly dependency: TestDemoLogicDependency } {
     const api = TestDemoAPIContainer.newInstance()

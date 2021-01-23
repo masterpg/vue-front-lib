@@ -46,7 +46,7 @@
       <q-btn flat round color="primary" icon="close" @click="closeOnClick" />
     </div>
     <!-- コンテンツエリア -->
-    <div class="content-area flex-1" style="overflow-y: auto;">
+    <div class="content-area flex-1" style="overflow-y: auto">
       <!-- ダウンロード -->
       <div class="layout horizontal center end-justified app-mt-10">
         <q-linear-progress ref="downloadLinear" :value="progress" :stripe="running" size="md" class="flex-1" />

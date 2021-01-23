@@ -274,6 +274,8 @@ interface TreeNodeImpl<DATA extends TreeNodeData = TreeNodeData> extends TreeNod
 //========================================================================
 
 namespace TreeNode {
+  export interface Props {}
+
   export const clazz = defineComponent({
     name: 'TreeNode',
 
@@ -281,17 +283,17 @@ namespace TreeNode {
       LoadingSpinner: LoadingSpinner.clazz,
     },
 
-    setup: (props: {}, ctx) => setup(props, ctx),
+    setup: (props: Readonly<Props>, ctx) => setup(props, ctx),
   })
 
-  export function setup(props: {}, ctx: SetupContext) {
+  export function setup(props: Readonly<Props>, ctx: SetupContext) {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
 
-    const self = getCurrentInstance() as TreeNodeImpl
+    const self = getCurrentInstance()!.proxy as TreeNodeImpl
     const el = ref<HTMLElement>()
     const nodeContainer = ref<HTMLElement>()
     const childContainer = ref<HTMLElement>()

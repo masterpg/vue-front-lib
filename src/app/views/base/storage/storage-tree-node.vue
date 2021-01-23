@@ -164,6 +164,8 @@ interface StorageTreeNodeImpl extends TreeNodeImpl<StorageTreeNodeData>, Storage
 //========================================================================
 
 namespace StorageTreeNode {
+  export interface Props {}
+
   export const clazz = defineComponent({
     name: 'StorageTreeNode',
 
@@ -172,10 +174,10 @@ namespace StorageTreeNode {
       StorageNodePopupMenu: StorageNodePopupMenu.clazz,
     },
 
-    setup: (props: {}, ctx) => setup(props, ctx),
+    setup: (props: Readonly<Props>, ctx) => setup(props, ctx),
   })
 
-  export function setup(props: {}, ctx: SetupContext) {
+  export function setup(props: Readonly<Props>, ctx: SetupContext) {
     //----------------------------------------------------------------------
     //
     //  Variables

@@ -59,11 +59,12 @@
 </template>
 
 <script lang="ts">
-import { LooseDictionary, QTable, QTableColumn } from 'quasar'
 import { computed, defineComponent, reactive, ref, watch } from '@vue/composition-api'
+import { QTable } from 'quasar'
+type QTableColumn = NonNullable<QTable['columns']>[number]
 
 interface StorageDirTable<T = any> extends StorageDirTable.Props<T> {
-  sort(col: string | LooseDictionary): void
+  sort: QTable['sort']
   setScrollTop(value: number): void
 }
 

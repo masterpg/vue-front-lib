@@ -55,10 +55,7 @@ describe('query', () => {
 
   describe('composition', () => {
     it('where + where', async () => {
-      const docs = await dao
-        .where('order', '>', 1)
-        .where('order', '<', 4)
-        .fetch()
+      const docs = await dao.where('order', '>', 1).where('order', '<', 4).fetch()
 
       const expectOrders = [2, 3]
       const actualOrders = docs.map(doc => doc.order)
@@ -68,10 +65,7 @@ describe('query', () => {
     it('where + limit', async () => {
       const queryTitle = 'aaa'
       const limit = 1
-      const docs = await dao
-        .where('title', '==', queryTitle)
-        .limit(limit)
-        .fetch()
+      const docs = await dao.where('title', '==', queryTitle).limit(limit).fetch()
 
       expect(docs).toHaveLength(limit)
 
@@ -81,10 +75,7 @@ describe('query', () => {
 
     it('order + limit', async () => {
       const limit = 2
-      const docs = await dao
-        .orderBy('order')
-        .limit(limit)
-        .fetch()
+      const docs = await dao.orderBy('order').limit(limit).fetch()
 
       expect(docs).toHaveLength(limit)
 

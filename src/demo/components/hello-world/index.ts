@@ -2,7 +2,7 @@ import { HelloWorld as _HelloWorld, setup } from '@/demo/components/hello-world/
 import HelloWorldTemplate from '@/demo/components/hello-world/template.vue'
 import { defineComponent } from '@vue/composition-api'
 
-type HelloWorld = _HelloWorld
+interface HelloWorld extends _HelloWorld {}
 
 namespace HelloWorld {
   export const clazz = defineComponent({

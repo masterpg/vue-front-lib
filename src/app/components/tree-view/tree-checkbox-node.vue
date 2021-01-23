@@ -106,7 +106,7 @@ import { TreeNodeData } from '@/app/components/tree-view/base'
 //
 //========================================================================
 
-interface TreeCheckboxNode extends TreeNode<TreeCheckboxNodeData> {
+interface TreeCheckboxNode extends TreeNode<TreeCheckboxNodeData>, TreeCheckboxNode.Props {
   checked: boolean | null
 }
 
@@ -121,6 +121,8 @@ interface TreeCheckboxNodeData extends TreeNodeData {
 //========================================================================
 
 namespace TreeCheckboxNode {
+  export interface Props {}
+
   export const clazz = defineComponent({
     name: 'TreeCheckboxNode',
 
@@ -128,7 +130,7 @@ namespace TreeCheckboxNode {
       LoadingSpinner: LoadingSpinner.clazz,
     },
 
-    setup(props: {}, context) {
+    setup(props: Readonly<Props>, context) {
       const base = TreeNode.setup(props, context)
       const nodeData = base.nodeData as ComputedRef<TreeCheckboxNodeData>
 

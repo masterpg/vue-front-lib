@@ -3,7 +3,7 @@
 </style>
 
 <template>
-  <div class="CustomCheckbox  layout horizontal center">
+  <div class="CustomCheckbox layout horizontal center">
     <span class="app-mr-4">CustomCheckbox:</span>
     <input type="checkbox" v-model="state.inputChecked" />
   </div>

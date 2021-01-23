@@ -62,9 +62,7 @@ index.put('/testData', (req, res, next) => {
   const data = req.body
 
   for (const key in data) {
-    db.get(key)
-      .remove()
-      .write()
+    db.get(key).remove().write()
     if (Array.isArray(data[key])) {
       db.get(key)
         .push(...data[key])
@@ -84,10 +82,7 @@ index.get('/products', (req, res, next) => {
   let products = []
   if (ids) {
     for (const id of ids) {
-      const product = db
-        .get('products')
-        .find({ id })
-        .value()
+      const product = db.get('products').find({ id }).value()
       product && products.push(product)
     }
   } else {
@@ -105,17 +100,11 @@ index.get('/cartItems', (req, res, next) => {
   let cartItems = []
   if (ids) {
     for (const id of ids) {
-      const cartItem = db
-        .get('cartItems')
-        .find({ id, uid })
-        .value()
+      const cartItem = db.get('cartItems').find({ id, uid }).value()
       cartItem && cartItems.push(cartItem)
     }
   } else {
-    cartItems = db
-      .get('cartItems')
-      .filter({ uid })
-      .value()
+    cartItems = db.get('cartItems').filter({ uid }).value()
   }
 
   res.header('Content-Type', 'application/json')
@@ -128,18 +117,12 @@ index.post('/cartItems', (req, res, next) => {
 
   const result = []
   for (const input of inputs) {
-    let cartItem = db
-      .get('cartItems')
-      .find({ uid, productId: input.productId })
-      .value()
+    let cartItem = db.get('cartItems').find({ uid, productId: input.productId }).value()
     if (cartItem) {
       throw new Error(`The CartItem trying to add already exists: ${JSON.stringify({ uid, productId: input.productId })}`)
     }
 
-    let product = db
-      .get('products')
-      .find({ id: input.productId })
-      .value()
+    let product = db.get('products').find({ id: input.productId }).value()
     if (!product) {
       throw new Error(`There are no Product: ${JSON.stringify({ id: input.productId })}`)
     }
@@ -185,18 +168,12 @@ index.put('/cartItems', (req, res, next) => {
 
   const result = []
   for (const input of inputs) {
-    let cartItem = db
-      .get('cartItems')
-      .find({ id: input.id, uid })
-      .value()
+    let cartItem = db.get('cartItems').find({ id: input.id, uid }).value()
     if (!cartItem) {
       throw new Error(`There are no CartItem: ${JSON.stringify({ id: input.id, uid })}`)
     }
 
-    const product = db
-      .get('products')
-      .find({ id: cartItem.productId })
-      .value()
+    const product = db.get('products').find({ id: cartItem.productId }).value()
     if (!product) {
       throw new Error(`There are no Product: ${JSON.stringify({ id: cartItem.productId })}`)
     }
@@ -236,25 +213,17 @@ index.delete('/cartItems', (req, res, next) => {
 
   const result = []
   for (const cartItemId of cartItemIds) {
-    const cartItem = db
-      .get('cartItems')
-      .find({ id: cartItemId, uid })
-      .value()
+    const cartItem = db.get('cartItems').find({ id: cartItemId, uid }).value()
     if (!cartItem) {
       throw new Error(`There are no CartItem: ${JSON.stringify({ id: cartItemId, uid })}`)
     }
 
-    const product = db
-      .get('products')
-      .find({ id: cartItem.productId })
-      .value()
+    const product = db.get('products').find({ id: cartItem.productId }).value()
     if (!cartItem) {
       throw new Error(`There are no Product: ${JSON.stringify({ id: cartItem.productId })}`)
     }
 
-    db.get('cartItems')
-      .remove({ id: cartItemId })
-      .write()
+    db.get('cartItems').remove({ id: cartItemId }).write()
 
     const stock = product.stock + cartItem.quantity
     db.get('products')
@@ -278,9 +247,7 @@ index.delete('/cartItems', (req, res, next) => {
 index.put('/cartItems/checkout', (req, res, next) => {
   const uid = getUserId(req)
 
-  db.get('cartItems')
-    .remove({ uid })
-    .write()
+  db.get('cartItems').remove({ uid }).write()
 
   res.header('Content-Type', 'application/json')
   res.send(true)

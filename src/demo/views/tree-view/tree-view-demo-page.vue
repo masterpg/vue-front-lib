@@ -62,6 +62,9 @@
 <script lang="ts">
 import { TreeCheckboxNode, TreeCheckboxNodeData, TreeView, TreeViewEvent } from '@/app/components/tree-view'
 import { defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
+import Vue from 'vue'
+
+interface TreeViewDemoPage extends Vue {}
 
 namespace TreeViewDemoPage {
   export const clazz = defineComponent({
@@ -231,8 +234,6 @@ namespace TreeViewDemoPage {
     },
   })
 }
-
-interface TreeViewDemoPage extends Vue {}
 
 export default TreeViewDemoPage.clazz
 export { TreeViewDemoPage }

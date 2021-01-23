@@ -8,7 +8,7 @@ import dayjs from 'dayjs'
 //
 //========================================================================
 
-type RawEntity<T = {}> = Entity &
+type RawEntity<T = unknown> = Entity &
   OmitEntityTimestamp<T> & {
     createdAt: string
     updatedAt: string

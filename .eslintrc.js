@@ -10,18 +10,17 @@ const eslintConfig = merge(
       node: true,
     },
     extends: [
-      "plugin:vue/essential",
-      "eslint:recommended",
-      "@vue/typescript/recommended",
-      "@vue/prettier",
-      "@vue/prettier/@typescript-eslint",
+      'plugin:vue/essential',
+      'eslint:recommended',
+      '@vue/typescript/recommended',
+      '@vue/prettier',
+      '@vue/prettier/@typescript-eslint',
     ],
     parserOptions: {
       ecmaVersion: 2020,
     },
     rules: {
       'prettier/prettier': ['error', prettierConfig],
-      '@typescript-eslint/ban-ts-ignore': 'off',
       'no-console': 'off',
       'vue/html-self-closing': 'off',
       'vue/max-attributes-per-line': 'off',
@@ -30,18 +29,18 @@ const eslintConfig = merge(
     overrides: [
       {
         files: [
-          "**/__tests__/*.{j,t}s?(x)",
-          "**/tests/unit/**/*.spec.{j,t}s?(x)",
+          '**/__tests__/*.{j,t}s?(x)',
+          '**/tests/unit/**/*.spec.{j,t}s?(x)',
         ],
         env: {
           jest: true,
-        }
-      }
+        },
+      },
     ],
     globals: {
       td: false,
     },
-  },
+  }
 )
 
 module.exports = eslintConfig

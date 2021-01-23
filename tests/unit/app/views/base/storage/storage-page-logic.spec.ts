@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
+
 import { ArticleStorageLogic, StorageLogic } from '@/app/logic/modules/storage'
 import {
   CreateArticleTypeDirInput,

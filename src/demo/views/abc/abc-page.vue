@@ -136,19 +136,9 @@ namespace AbcPage {
         customChecked: false,
       })
 
-      const reversedMessage = computed(() =>
-        state.message
-          .split('')
-          .reverse()
-          .join('')
-      )
+      const reversedMessage = computed(() => state.message.split('').reverse().join(''))
 
-      const doubleReversedYourName = computed(() =>
-        reversedMessage.value
-          .split('')
-          .reverse()
-          .join('')
-      )
+      const doubleReversedYourName = computed(() => reversedMessage.value.split('').reverse().join(''))
 
       const isSignIn = logic.auth.isSignedIn
 

@@ -23,7 +23,7 @@ import {
   StorageUtil,
   injectLogic,
 } from '@/app/logic'
-import { DeepPartial, arrayToDict, pickProps, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
+import { DeepPartial, PartialAre, arrayToDict, pickProps, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
 import { StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/storage/base'
 import { TreeView, TreeViewLazyLoadStatus, newTreeNode } from '@/app/components/tree-view'
 import router, { StorageRoute } from '@/app/router'
@@ -733,7 +733,10 @@ namespace StoragePageLogic {
           // 移動先に同名ノードが存在する場合
           if (existsTreeNode) {
             // 移動ノードを移動先の同名ノードへ上書き
-            const toTreeNodeData = nodeToTreeData(storageType, targetTreeNode)
+            const toTreeNodeData = nodeToTreeData(storageType, targetTreeNode) as PartialAre<
+              ReturnType<typeof nodeToTreeData>,
+              'opened' | 'lazyLoadStatus'
+            >
             delete toTreeNodeData.opened
             delete toTreeNodeData.lazyLoadStatus
             existsTreeNode.setNodeData(toTreeNodeData)

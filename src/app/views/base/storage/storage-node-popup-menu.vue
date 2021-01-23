@@ -4,7 +4,7 @@
 
 <template>
   <q-menu ref="menu" class="StorageNodePopupMenu" :touch-position="contextMenu" :context-menu="contextMenu" @before-show="menuOnBeforeShow">
-    <q-list dense style="min-width: 100px;">
+    <q-list dense style="min-width: 100px">
       <template v-for="(menuItem, index) in menuItems">
         <q-separator v-if="menuItem.type === 'separator'" :key="index" />
         <q-item v-else :key="index" v-close-popup clickable>

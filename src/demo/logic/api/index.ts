@@ -47,6 +47,8 @@ namespace DemoAPIContainer {
           return gql
         case 'rest':
           return rest
+        default:
+          throw new Error(`API type '${type.value}' is invalid.`)
       }
     })
 

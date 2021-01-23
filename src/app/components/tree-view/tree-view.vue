@@ -39,7 +39,6 @@ import { Ref, SetupContext, computed, defineComponent, getCurrentInstance, ref }
 import { TreeNode, TreeNodeImpl } from '@/app/components/tree-view/tree-node.vue'
 import { Constructor } from 'web-base-lib'
 import Vue from 'vue'
-import debounce from 'lodash/debounce'
 
 //========================================================================
 //
@@ -167,20 +166,22 @@ interface TreeViewImpl<NODE extends TreeNode = TreeNodeImpl, DATA extends TreeNo
  * `--tree-padding` | ツリービューのpaddingです | `10px`
  */
 namespace TreeView {
+  export interface Props {}
+
   export const clazz = defineComponent({
     name: 'TreeView',
 
-    setup: (props: {}, ctx) => setup(props, ctx),
+    setup: (props: Readonly<Props>, ctx) => setup(props, ctx),
   })
 
-  export function setup(props: {}, ctx: SetupContext) {
+  export function setup(props: Readonly<Props>, ctx: SetupContext) {
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
 
-    const self = getCurrentInstance() as TreeViewImpl
+    const self = getCurrentInstance()!.proxy as TreeViewImpl
     const el = ref<HTMLElement>()
     const childContainer = el
 

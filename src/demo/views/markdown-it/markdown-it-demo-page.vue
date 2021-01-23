@@ -51,9 +51,7 @@
     <!-- Markdown設定エリア -->
     <div class="layout horizontal">
       <q-checkbox v-model="defaults.html" label="html" :disable="defaults._strict">
-        <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 0]">
-          enable html tags in source text
-        </q-tooltip>
+        <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 0]">enable html tags in source text</q-tooltip>
       </q-checkbox>
       <q-checkbox v-model="defaults.xhtmlOut" label="xhtmlOut" :disable="defaults._strict">
         <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 0]">
@@ -61,24 +59,16 @@
         </q-tooltip>
       </q-checkbox>
       <q-checkbox v-model="defaults.breaks" label="breaks" :disable="defaults._strict">
-        <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 0]">
-          newlines in paragraphs are rendered as &lt;br&gt;
-        </q-tooltip>
+        <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 0]">newlines in paragraphs are rendered as &lt;br&gt;</q-tooltip>
       </q-checkbox>
       <q-checkbox v-model="defaults.linkify" label="linkify" :disable="defaults._strict">
-        <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 0]">
-          autoconvert link-like texts to links
-        </q-tooltip>
+        <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 0]">autoconvert link-like texts to links</q-tooltip>
       </q-checkbox>
       <q-checkbox v-model="defaults.typographer" label="typographer" :disable="defaults._strict">
-        <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 0]">
-          do typographic replacements, (c) → © and so on
-        </q-tooltip>
+        <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 0]">do typographic replacements, (c) → © and so on</q-tooltip>
       </q-checkbox>
       <q-checkbox v-model="defaults._highlight" label="highlight" :disable="defaults._strict">
-        <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 0]">
-          enable output highlight for fenced blocks
-        </q-tooltip>
+        <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 0]">enable output highlight for fenced blocks</q-tooltip>
       </q-checkbox>
       <q-checkbox v-model="defaults._strict" label="CommonMark strict">
         <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 0]">
@@ -87,7 +77,7 @@
       </q-checkbox>
     </div>
     <!-- Markdown入力/出力エリア -->
-    <div class="flex-1 input-output-container layout horizontal ">
+    <div class="flex-1 input-output-container layout horizontal">
       <!-- Markdown入力エリア -->
       <div class="flex-1 input-container layout vertical">
         <div class="view-tabs"></div>
@@ -273,12 +263,12 @@ namespace MarkdownItDemoPage {
         }
 
         // Beautify output of parser for html content
-        mdHtml.renderer.rules.table_open = function() {
+        mdHtml.renderer.rules.table_open = () => {
           return '<table class="table table-striped">\n'
         }
 
         // Replace emoji codes with images
-        mdHtml.renderer.rules.emoji = function(token, idx) {
+        mdHtml.renderer.rules.emoji = (token, idx) => {
           return twemoji.parse(token[idx].content)
         }
 
