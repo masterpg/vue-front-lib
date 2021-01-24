@@ -1,8 +1,23 @@
+/* eslint-disable sort-imports */
+
+// TODO
+//  If you want to run a unit test, switch to the following code.
+//  If you are using a local emulator, an error will occur if you use `FieldValue` from the `firebase` library.
+//  In detail, the error occurs when `FieldValue.increment()` is called on `set()` or `update()` of data.
+//----------------------------------------
+// for production
+// import firebase from 'firebase/app'
+// import 'firebase/firestore'
+//----------------------------------------
+// for test
+import * as firebase from '@firebase/testing'
+//----------------------------------------
+
 import { Dayjs } from 'dayjs'
-import FieldValue = firebase.firestore.FieldValue
-import Timestamp = firebase.firestore.Timestamp
 import DocumentData = firebase.firestore.DocumentData
 import FieldPath = firebase.firestore.FieldPath
+import FieldValue = firebase.firestore.FieldValue
+import Timestamp = firebase.firestore.Timestamp
 
 type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends null

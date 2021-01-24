@@ -4,6 +4,8 @@ import { GeneralToken } from '../../../../helpers/app'
 import dayjs from 'dayjs'
 import { provideDependency } from '../../../../helpers/demo'
 
+jest.setTimeout(25000)
+
 //========================================================================
 //
 //  Test data

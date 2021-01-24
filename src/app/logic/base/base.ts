@@ -1,5 +1,8 @@
+import 'firebase/auth'
+import 'firebase/firestore'
 import { Entity, OmitEntityTimestamp } from '@/firestore-ex'
 import { Dayjs } from 'dayjs'
+import firebase from 'firebase/app'
 
 //========================================================================
 //

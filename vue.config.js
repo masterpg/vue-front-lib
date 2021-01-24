@@ -98,7 +98,8 @@ module.exports = {
 
     // 必要なリソースファイルのコピー
     let copyFiles = [
-      { from: 'node_modules/firebase/firebase-*.js' },
+      // 必要であれば追記
+      // 例: { from: 'node_modules/firebase/firebase-*.js' },
     ]
     if (process.env.VUE_APP_IS_DEVELOPMENT === 'true') {
       copyFiles = [

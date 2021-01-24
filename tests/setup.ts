@@ -1,4 +1,3 @@
-import * as firebase from 'firebase'
 import { TextEncoder } from 'util'
 import Vue from 'vue'
 import VueCompositionApi from '@vue/composition-api'
@@ -13,11 +12,12 @@ import td from 'testdouble'
 //
 // Jestの設定
 //
-jest.setTimeout(25000)
+jest.setTimeout(5000)
 
 //
 // testdoubleの設定
 //
+require('testdouble-jest')(td, jest)
 // 各テストファイルでtestdoubleをインポートしなくても使用できるようになる
 window.td = td
 
@@ -25,17 +25,11 @@ window.td = td
 // Composition API の設定
 //
 Vue.use(VueCompositionApi)
-require('testdouble-jest')(td, jest)
 
 //
 // Quasarの設定
 //
 quasar.setup()
-
-//
-// Firebaseの設定
-//
-window.firebase = firebase
 
 //
 // その他の設定

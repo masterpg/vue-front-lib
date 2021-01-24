@@ -14,12 +14,12 @@ export class WebFirestoreTestUtil {
     this.uid = 'test-user'
 
     // Setup web Firestore and admin Firestore with using emulator
-    this.db = firebase
+    this.db = (firebase
       .initializeTestApp({
         projectId: this.projectId,
         auth: { uid: this.uid },
       })
-      .firestore() as Firestore
+      .firestore() as any) as Firestore
   }
 
   // Clear emulator Firestore data

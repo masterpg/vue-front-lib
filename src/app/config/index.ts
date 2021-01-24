@@ -1,6 +1,7 @@
 import { DeepPartial, removeEndSlash } from 'web-base-lib'
 import { StorageArticleConfig, StorageUserConfig } from 'web-base-lib'
 import URI from 'urijs'
+import firebase from 'firebase/app'
 import merge from 'lodash/merge'
 import { reactive } from '@vue/composition-api'
 const firebaseConfig = require('../../../firebase.config')

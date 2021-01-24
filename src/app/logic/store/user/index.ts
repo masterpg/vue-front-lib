@@ -1,6 +1,8 @@
+import 'firebase/auth'
 import { DeepPartial, DeepReadonly } from 'web-base-lib'
 import { UserClaims, UserInfo } from '@/app/logic/base'
 import dayjs from 'dayjs'
+import firebase from 'firebase/app'
 import { reactive } from '@vue/composition-api'
 
 //========================================================================

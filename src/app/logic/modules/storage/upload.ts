@@ -1,9 +1,11 @@
+import 'firebase/storage'
 import { ComputedRef, Ref, UnwrapRef, computed, reactive, ref, watch } from '@vue/composition-api'
 import { StorageNode, StorageUtil } from '@/app/logic/base'
 import { removeBothEndsSlash, splitHierarchicalPaths } from 'web-base-lib'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import _path from 'path'
 import { extendedMethod } from '@/app/base'
+import firebase from 'firebase/app'
 
 //========================================================================
 //

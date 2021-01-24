@@ -13,7 +13,8 @@ import {
 import { AppAdminToken, GeneralToken, GeneralUser, provideDependency } from '../../../../helpers/app'
 import { OmitEntityTimestamp } from '@/firestore-ex'
 import { sleep } from 'web-base-lib'
-import { useConfig } from '@/app/config'
+
+jest.setTimeout(25000)
 
 //========================================================================
 //

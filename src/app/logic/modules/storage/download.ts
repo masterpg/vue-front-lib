@@ -1,7 +1,10 @@
+import 'firebase/auth'
+import 'firebase/storage'
 import { ComputedRef, UnwrapRef, computed, reactive, ref } from '@vue/composition-api'
 import axios, { AxiosResponse, Canceler } from 'axios'
 import { StorageLogic } from '@/app/logic/modules/storage/base'
 import { StorageNodeType } from '@/app/logic/base'
+import firebase from 'firebase/app'
 import path from 'path'
 import { removeBothEndsSlash } from 'web-base-lib'
 

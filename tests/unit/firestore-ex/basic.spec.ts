@@ -1,4 +1,3 @@
-window.firebase = require('@firebase/testing')
 import {
   EncodedObject,
   Entity,
