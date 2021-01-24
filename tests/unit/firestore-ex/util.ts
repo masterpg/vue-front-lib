@@ -1,4 +1,4 @@
-import * as firebase from '@firebase/testing'
+import * as firebaseTesting from '@firebase/rules-unit-testing'
 import { Firestore } from '@/firestore-ex/types'
 const crypto = require('crypto')
 
@@ -14,23 +14,23 @@ export class WebFirestoreTestUtil {
     this.uid = 'test-user'
 
     // Setup web Firestore and admin Firestore with using emulator
-    this.db = (firebase
+    this.db = firebaseTesting
       .initializeTestApp({
         projectId: this.projectId,
         auth: { uid: this.uid },
       })
-      .firestore() as any) as Firestore
+      .firestore()
   }
 
   // Clear emulator Firestore data
   // Use in 'afterEach'
   async clearFirestoreData() {
-    await firebase.clearFirestoreData({ projectId: this.projectId })
+    await firebaseTesting.clearFirestoreData({ projectId: this.projectId })
   }
 
   // Delete firebase listener
   // Use in 'afterAll'
   async deleteApps() {
-    await Promise.all(firebase.apps().map(app => app.delete()))
+    await Promise.all(firebaseTesting.apps().map(app => app.delete()))
   }
 }
