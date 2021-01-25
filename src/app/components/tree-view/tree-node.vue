@@ -883,7 +883,6 @@ namespace TreeNode {
       const initializing = typeof options.initializing === 'boolean' ? options.initializing : false
       const silent = typeof options.silent === 'boolean' ? options.silent : false
       const changed = nodeData.value.selected !== selected
-      const oldNode = getTreeView()?.selectedNode
 
       // 選択不可の場合
       if (unselectable.value) {
@@ -899,6 +898,7 @@ namespace TreeNode {
         // 選択状態が変更された場合
         if (changed) {
           function onChanged(): void {
+            const oldNode = getTreeView()?.selectedNode
             // 自ノードが選択状態へ変更されるので、古い選択ノードの選択は解除
             !initializing && selected && oldNode?.setSelected(false, silent)
 
@@ -921,7 +921,8 @@ namespace TreeNode {
         }
         // 選択状態が変更されなかった場合
         else {
-          // 自ノードが選択状態へ変更される場合に限り、selectイベントを発火
+          const oldNode = getTreeView()?.selectedNode
+          // 自ノードが選択状態の場合に限り、selectイベントを発火
           !initializing && selected && util.dispatchSelect(self, oldNode, silent)
         }
       }
