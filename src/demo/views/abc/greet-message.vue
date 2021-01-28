@@ -27,7 +27,7 @@
 import { computed, defineComponent, reactive } from '@vue/composition-api'
 import { Dialogs } from '@/app/dialogs'
 import Vue from 'vue'
-import { injectLogic } from '@/app/logic'
+import { injectService } from '@/app/service'
 import { useI18n } from '@/demo/i18n'
 
 interface GreetMessage extends Vue, GreetMessage.Props {
@@ -54,12 +54,12 @@ namespace GreetMessage {
       //
       //----------------------------------------------------------------------
 
-      const logic = injectLogic()
+      const service = injectService()
       const { t, d } = useI18n()
 
       const state = reactive({
-        isSignIn: logic.auth.isSignedIn,
-        user: logic.auth.user,
+        isSignIn: service.auth.isSignedIn,
+        user: service.auth.user,
         times: 0,
       })
 
@@ -80,7 +80,7 @@ namespace GreetMessage {
       //----------------------------------------------------------------------
 
       const greet: GreetMessage['greet'] = () => {
-        logic.auth.validateSignedIn()
+        service.auth.validateSignedIn()
 
         const message = `Hi ${state.user.fullName}, ${props.message}.`
         state.times++
@@ -95,7 +95,7 @@ namespace GreetMessage {
 
       const signInOrOutButtonOnClick = async () => {
         if (state.isSignIn) {
-          await logic.auth.signOut()
+          await service.auth.signOut()
         } else {
           await Dialogs.signIn.open()
         }

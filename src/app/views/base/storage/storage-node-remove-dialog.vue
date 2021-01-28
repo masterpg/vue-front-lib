@@ -37,10 +37,10 @@
 
 <script lang="ts">
 import { SetupContext, computed, defineComponent, reactive, ref } from '@vue/composition-api'
-import { StorageNode, StorageNodeType, StorageType } from '@/app/logic'
+import { StorageNode, StorageNodeType, StorageType } from '@/app/service'
 import { Dialog } from '@/app/components/dialog'
 import { QDialog } from 'quasar'
-import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
+import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
 import { useI18n } from '@/app/i18n'
 
 interface StorageNodeRemoveDialog extends Dialog<string[], boolean>, StorageNodeRemoveDialog.Props {}
@@ -69,7 +69,7 @@ namespace StorageNodeRemoveDialog {
 
     const dialog = ref<QDialog>()
     const base = Dialog.setup<boolean>(dialog)
-    const pageLogic = StoragePageLogic.getInstance(props.storageType)
+    const pageService = StoragePageService.getInstance(props.storageType)
     const { t, tc } = useI18n()
 
     const state = reactive({
@@ -78,7 +78,7 @@ namespace StorageNodeRemoveDialog {
 
     const title = computed(() => {
       if (state.removingNodes.length === 1) {
-        const nodeTypeLabel = pageLogic.getNodeTypeLabel(state.removingNodes[0])
+        const nodeTypeLabel = pageService.getNodeTypeLabel(state.removingNodes[0])
         return String(t('common.deleteSth', { sth: nodeTypeLabel }))
       } else if (state.removingNodes.length >= 2) {
         const sth = String(tc('common.item', state.removingNodes.length))
@@ -92,7 +92,7 @@ namespace StorageNodeRemoveDialog {
 
       // ダイアログ引数で渡されたノードが1つの場合
       if (state.removingNodes.length === 1) {
-        const target = pageLogic.getDisplayNodeName(state.removingNodes[0])
+        const target = pageService.getDisplayNodeName(state.removingNodes[0])
         return String(t('storage.delete.deleteTargetQ', { target }))
       }
       // ダイアログ引数で渡されたノードが複数の場合
@@ -137,7 +137,7 @@ namespace StorageNodeRemoveDialog {
     const open: StorageNodeRemoveDialog['open'] = nodePaths => {
       state.removingNodes = []
       for (const nodePath of nodePaths) {
-        const node = pageLogic.sgetStorageNode({ path: nodePath })
+        const node = pageService.sgetStorageNode({ path: nodePath })
         state.removingNodes.push(node)
       }
 

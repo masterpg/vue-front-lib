@@ -71,10 +71,10 @@
 
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, ref } from '@vue/composition-api'
-import { StorageNode, StorageNodeShareSettings, StorageType } from '@/app/logic'
+import { StorageNode, StorageNodeShareSettings, StorageType } from '@/app/service'
 import { Dialog } from '@/app/components/dialog'
 import { QDialog } from 'quasar'
-import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
+import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
 import { isFontAwesome } from '@/app/base'
 import { useI18n } from '@/app/i18n'
 
@@ -104,14 +104,14 @@ namespace StorageNodeShareDialog {
 
     const dialog = ref<QDialog>()
     const base = Dialog.setup<StorageNodeShareSettings | undefined>(dialog)
-    const pageLogic = StoragePageLogic.getInstance(props.storageType)
+    const pageService = StoragePageService.getInstance(props.storageType)
     const { t, tc } = useI18n()
 
     const sharingNodes: Ref<StorageNode[]> = ref([])
 
     const title = computed(() => {
       if (sharingNodes.value.length === 1) {
-        const nodeTypeLabel = pageLogic.getNodeTypeLabel(sharingNodes.value[0])
+        const nodeTypeLabel = pageService.getNodeTypeLabel(sharingNodes.value[0])
         return String(t('common.shareSth', { sth: nodeTypeLabel }))
       } else if (sharingNodes.value.length >= 2) {
         const sth = String(tc('common.item', sharingNodes.value.length))
@@ -139,14 +139,14 @@ namespace StorageNodeShareDialog {
 
     const targetNodeName = computed(() => {
       if (sharingNodes.value.length === 1) {
-        return pageLogic.getDisplayNodeName(sharingNodes.value[0])
+        return pageService.getDisplayNodeName(sharingNodes.value[0])
       }
       return ''
     })
 
     const targetNodeIcon = computed(() => {
       if (sharingNodes.value.length === 1) {
-        return pageLogic.getNodeIcon(sharingNodes.value[0])
+        return pageService.getNodeIcon(sharingNodes.value[0])
       }
       return ''
     })
@@ -168,7 +168,7 @@ namespace StorageNodeShareDialog {
     const open: StorageNodeShareDialog['open'] = nodePaths => {
       sharingNodes.value = []
       for (const nodePath of nodePaths) {
-        const node = pageLogic.sgetStorageNode({ path: nodePath })
+        const node = pageService.sgetStorageNode({ path: nodePath })
         sharingNodes.value.push(node)
       }
 

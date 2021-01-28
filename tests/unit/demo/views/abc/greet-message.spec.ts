@@ -1,6 +1,6 @@
-import { LogicContainer, User } from '@/app/logic'
+import { ServiceContainer, User } from '@/app/service'
 import VGreetMessage, { GreetMessage } from '@/demo/views/abc/greet-message.vue'
-import { AuthLogic } from '@/app/logic/modules/auth'
+import { AuthService } from '@/app/service/modules/auth'
 import { computed } from '@vue/composition-api'
 import { provideDependencyToVue } from '../../../../helpers/demo'
 import { shallowMount } from '@vue/test-utils'
@@ -13,13 +13,13 @@ describe('GreetMessage', () => {
     const wrapper = shallowMount<GreetMessage>(VGreetMessage, {
       propsData: { message },
       setup() {
-        provideDependencyToVue(({ logic }) => {
-          td.replace<AuthLogic, 'isSignedIn'>(
-            logic.auth,
+        provideDependencyToVue(({ service }) => {
+          td.replace<AuthService, 'isSignedIn'>(
+            service.auth,
             'isSignedIn',
             computed(() => true)
           )
-          td.replace<User, 'fullName'>(logic.auth.user, 'fullName', userName)
+          td.replace<User, 'fullName'>(service.auth.user, 'fullName', userName)
         })
       },
     })
@@ -32,17 +32,17 @@ describe('GreetMessage', () => {
     const userName = 'Taro'
     const message = 'abcdefg'
 
-    const wrapper = shallowMount<GreetMessage & { logic: LogicContainer }>(VGreetMessage, {
+    const wrapper = shallowMount<GreetMessage & { service: ServiceContainer }>(VGreetMessage, {
       propsData: { message },
       setup() {
-        const { logic } = provideDependencyToVue(({ logic }) => {
-          td.replace<AuthLogic, 'validateSignedIn'>(logic.auth, 'validateSignedIn')
-          td.replace<User, 'fullName'>(logic.auth.user, 'fullName', userName)
+        const { service } = provideDependencyToVue(({ service }) => {
+          td.replace<AuthService, 'validateSignedIn'>(service.auth, 'validateSignedIn')
+          td.replace<User, 'fullName'>(service.auth.user, 'fullName', userName)
         })
-        return { logic }
+        return { service }
       },
     })
-    const { logic, ...greetMessage } = wrapper.vm
+    const { service, ...greetMessage } = wrapper.vm
 
     // テスト対象実行
     const actual = greetMessage.greet()
@@ -51,7 +51,7 @@ describe('GreetMessage', () => {
     expect(actual).toBe(`Hi ${userName}, ${message}.`)
 
     // validateSignedInの呼び出しを検証
-    const exp = td.explain(logic.auth.validateSignedIn)
+    const exp = td.explain(service.auth.validateSignedIn)
     expect(exp.calls.length).toBe(1) // 1回呼び出されるはず
     expect(exp.calls[0].args[0]).toBeUndefined() // 1回目の呼び出しが引数なしなはず
   })

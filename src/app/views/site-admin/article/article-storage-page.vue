@@ -97,8 +97,8 @@
 </template>
 
 <script lang="ts">
-import { StorageArticleFileType, StorageNodeType, StorageType } from '@/app/logic'
-import { StoragePage, StoragePageLogic, StorageTreeNodeFilter } from '@/app/views/base/storage'
+import { StorageArticleFileType, StorageNodeType, StorageType } from '@/app/service'
+import { StoragePage, StoragePageService, StorageTreeNodeFilter } from '@/app/views/base/storage'
 import { defineComponent, ref } from '@vue/composition-api'
 import { ArticleDirView } from '@/app/views/site-admin/article/article-dir-view.vue'
 import { ArticleWritingView } from '@/app/views/site-admin/article/article-writing-view.vue'
@@ -126,7 +126,7 @@ namespace ArticleStoragePage {
 
       const base = StoragePage.setup({ ctx, storageType, nodeFilter })
 
-      const pageLogic = StoragePageLogic.getInstance(storageType)
+      const pageService = StoragePageService.getInstance(storageType)
 
       const writingView = ref<ArticleWritingView>()
 
@@ -149,7 +149,7 @@ namespace ArticleStoragePage {
       base.changeDir.value = nodePath => {
         base.changeDir.super(nodePath)
 
-        const node = pageLogic.getTreeNode(nodePath) ?? pageLogic.getRootTreeNode()
+        const node = pageService.getTreeNode(nodePath) ?? pageService.getRootTreeNode()
         switch (node.nodeType) {
           case StorageNodeType.Dir: {
             // ディレクトリビューを表示
@@ -207,7 +207,7 @@ namespace ArticleStoragePage {
             // ツリーのファイルノードは選択状態にはしない
             // ※この時点ではファイルノードが選択されてしまっているので、
             //   前に選択されていたノードに選択を戻している
-            oldSelectedNode && pageLogic.setSelectedTreeNode(oldSelectedNode.path, true, true)
+            oldSelectedNode && pageService.setSelectedTreeNode(oldSelectedNode.path, true, true)
           }
         }
         // 選択ノードが上記以外の場合

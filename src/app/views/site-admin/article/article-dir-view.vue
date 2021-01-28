@@ -105,12 +105,12 @@
 </template>
 
 <script lang="ts">
-import { StorageArticleFileType, StorageUtil } from '@/app/logic'
+import { StorageArticleFileType, StorageUtil } from '@/app/service'
 import { StorageDirTableRow, StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
 import { computed, defineComponent, nextTick, ref } from '@vue/composition-api'
 import { StorageDirTable } from '@/app/views/base/storage/storage-dir-table.vue'
 import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'
-import { StoragePageLogic } from '@/app/views/base/storage'
+import { StoragePageService } from '@/app/views/base/storage'
 import { useI18n } from '@/app/i18n'
 
 interface ArticleDirView extends ArticleDirView.Props {}
@@ -137,7 +137,7 @@ namespace ArticleDirView {
 
       const base = StorageDirView.setup(props, ctx)
 
-      const pageLogic = StoragePageLogic.getInstance(props.storageType)
+      const pageService = StoragePageService.getInstance(props.storageType)
       const { t } = useI18n()
 
       base.columns.value = [
@@ -157,9 +157,9 @@ namespace ArticleDirView {
         // 記事ルートの場合、有効
         if (!base.targetDir.value) return true
         // バンドル、カテゴリの場合、有効
-        const isListBundle = pageLogic.isListBundle(base.targetDir.value)
-        const isTreeBundle = pageLogic.isTreeBundle(base.targetDir.value)
-        const isCategoryDir = pageLogic.isCategoryDir(base.targetDir.value)
+        const isListBundle = pageService.isListBundle(base.targetDir.value)
+        const isTreeBundle = pageService.isTreeBundle(base.targetDir.value)
+        const isCategoryDir = pageService.isCategoryDir(base.targetDir.value)
         return isListBundle || isTreeBundle || isCategoryDir
       })
 
@@ -301,7 +301,7 @@ namespace ArticleDirView {
 
       async function onSelection(e: { rows: StorageDirTableRow[]; keys: string[]; added: boolean; evt: any }) {
         // 対象ディレクトリが記事の場合
-        if (base.targetDir.value && pageLogic.isArticleDir(base.targetDir.value)) {
+        if (base.targetDir.value && pageService.isArticleDir(base.targetDir.value)) {
           // 選択に記事ソースファイルが含まれていた場合、選択から記事ファイルを除去
           const articleFileIndex = e.rows.findIndex(row => row.article?.file?.type === StorageArticleFileType.Master)
           if (articleFileIndex >= 0) {
@@ -355,7 +355,7 @@ namespace ArticleDirView {
           node.article?.dir && result.push(node.path)
           return result
         }, [] as string[])
-        await pageLogic.setArticleSortOrder(orderNodePaths)
+        await pageService.setArticleSortOrder(orderNodePaths)
 
         enableSaveSort.value = false
         base.buildDirChildNodes(base.targetDir.value?.path)

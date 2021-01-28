@@ -44,11 +44,11 @@
 </template>
 
 <script lang="ts">
-import { SaveArticleSrcMasterFileResult, StorageArticleFileType, StorageNode, StorageType } from '@/app/logic'
+import { SaveArticleSrcMasterFileResult, StorageArticleFileType, StorageNode, StorageType } from '@/app/service'
 import { computed, defineComponent, ref, watch } from '@vue/composition-api'
 import { Dialogs } from '@/app/dialogs/dialogs.vue'
 import { MarkdownEditor } from '@/app/components/markdown-editor'
-import { StoragePageLogic } from '@/app/views/base/storage'
+import { StoragePageService } from '@/app/views/base/storage'
 import { useI18n } from '@/app/i18n'
 
 interface ArticleWritingView extends ArticleWritingView.Props {
@@ -88,7 +88,7 @@ namespace ArticleWritingView {
       //
       //----------------------------------------------------------------------
 
-      const pageLogic = StoragePageLogic.getInstance(props.storageType)
+      const pageService = StoragePageService.getInstance(props.storageType)
       const { t } = useI18n()
 
       const spinning = ref(false)
@@ -162,26 +162,26 @@ namespace ArticleWritingView {
 
         // 記事ソースを取得
         await (async () => {
-          const node = pageLogic.getStorageChildren(articlePath).find(node => node.article?.file?.type === StorageArticleFileType.Master)
+          const node = pageService.getStorageChildren(articlePath).find(node => node.article?.file?.type === StorageArticleFileType.Master)
           if (!node) {
             throw new Error(`Article source master file node was not found: '${articlePath}'`)
           }
           master.value.node = node
 
-          const downloader = pageLogic.newFileDownloader('firebase', master.value.node.path)
+          const downloader = pageService.newFileDownloader('firebase', master.value.node.path)
           const srcContent = await downloader.execute('text')
           master.value.srcContent = srcContent ?? ''
         })()
 
         // 下書きのソースを取得
         await (async () => {
-          const node = pageLogic.getStorageChildren(articlePath).find(node => node.article?.file?.type === StorageArticleFileType.Draft)
+          const node = pageService.getStorageChildren(articlePath).find(node => node.article?.file?.type === StorageArticleFileType.Draft)
           if (!node) {
             throw new Error(`Article source draft file node was not found: '${articlePath}'`)
           }
           draft.value.node = node
 
-          const downloader = pageLogic.newFileDownloader('firebase', draft.value.node.path)
+          const downloader = pageService.newFileDownloader('firebase', draft.value.node.path)
           draft.value.srcContent = (await downloader.execute('text')) ?? ''
 
           const localDraftData = getLocalDraftData()
@@ -213,10 +213,10 @@ namespace ArticleWritingView {
 
         let savedNode!: StorageNode
         try {
-          savedNode = await pageLogic.saveArticleSrcDraftFile(draft.value.node.dir, srcContent.value)
+          savedNode = await pageService.saveArticleSrcDraftFile(draft.value.node.dir, srcContent.value)
         } catch (err) {
           console.error(err)
-          pageLogic.showNotification('error', String(t('article.saveDraftError')))
+          pageService.showNotification('error', String(t('article.saveDraftError')))
         }
         draft.value.node = savedNode
         draft.value.srcContent = srcContent.value
@@ -236,10 +236,10 @@ namespace ArticleWritingView {
 
         let discardedNode!: StorageNode
         try {
-          discardedNode = await pageLogic.saveArticleSrcDraftFile(draft.value.node.dir, '')
+          discardedNode = await pageService.saveArticleSrcDraftFile(draft.value.node.dir, '')
         } catch (err) {
           console.error(err)
-          pageLogic.showNotification('error', String(t('article.discardDraftError')))
+          pageService.showNotification('error', String(t('article.discardDraftError')))
         }
         draft.value.node = discardedNode
         draft.value.srcContent = ''
@@ -260,9 +260,9 @@ namespace ArticleWritingView {
 
         let saved!: SaveArticleSrcMasterFileResult
         try {
-          saved = await pageLogic.saveArticleSrcMasterFile(draft.value.node.dir, srcContent.value, editor.value!.getTextContent())
+          saved = await pageService.saveArticleSrcMasterFile(draft.value.node.dir, srcContent.value, editor.value!.getTextContent())
         } catch (err) {
-          pageLogic.showNotification('error', String(t('article.reflectMasterError')))
+          pageService.showNotification('error', String(t('article.reflectMasterError')))
         }
         master.value.node = saved.master
         master.value.srcContent = srcContent.value

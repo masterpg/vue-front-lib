@@ -81,7 +81,7 @@
 </template>
 
 <script lang="ts">
-import { AuthStatus, injectLogic } from '@/app/logic'
+import { AuthStatus, injectService } from '@/app/service'
 import { Loading, QInput } from 'quasar'
 import { Ref, computed, defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
 import { Dialogs } from '@/app/dialogs'
@@ -137,7 +137,7 @@ namespace EmailSignInView {
       //
       //----------------------------------------------------------------------
 
-      const logic = injectLogic()
+      const service = injectService()
       const { t } = useI18n()
 
       const emailInput = ref() as Ref<QInput>
@@ -198,7 +198,7 @@ namespace EmailSignInView {
         }
 
         // メールアドレス＋パスワードでサインイン
-        const signInResult = await logic.auth.signInWithEmailAndPassword(state.email!, state.password!)
+        const signInResult = await service.auth.signInWithEmailAndPassword(state.email!, state.password!)
         if (!signInResult.result) {
           if (signInResult.code) {
             state.errorMessage = signInResult.errorMessage
@@ -210,15 +210,15 @@ namespace EmailSignInView {
           return
         }
 
-        if (logic.auth.status.value === AuthStatus.None) {
+        if (service.auth.status.value === AuthStatus.None) {
           Loading.hide()
-          throw new Error(`This is a auth status not assumed: ${logic.auth.status}`)
+          throw new Error(`This is a auth status not assumed: ${service.auth.status}`)
         }
 
         // メールアドレス検証中の場合、再度検証用メールを送信
-        if (logic.auth.status.value === AuthStatus.WaitForEmailVerified) {
+        if (service.auth.status.value === AuthStatus.WaitForEmailVerified) {
           const continueURL = `${window.location.origin}/?${Dialogs.createQuery('signIn')}`
-          const authResult = await logic.auth.sendEmailVerification(continueURL)
+          const authResult = await service.auth.sendEmailVerification(continueURL)
           if (!authResult.result) {
             if (authResult.code) {
               state.errorMessage = authResult.errorMessage
@@ -232,7 +232,7 @@ namespace EmailSignInView {
         }
 
         close({
-          status: logic.auth.status.value,
+          status: service.auth.status.value,
           email: state.email!,
         })
 

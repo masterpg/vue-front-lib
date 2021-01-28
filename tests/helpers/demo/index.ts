@@ -1,8 +1,8 @@
-import { TestDemoAPIContainer, TestDemoLogicContainer } from './logic'
+import { TestDemoAPIContainer, TestDemoServiceContainer } from './service'
 import { Dialogs } from '@/app/dialogs'
-import { InternalLogic } from '@/app/logic/modules/internal'
-import { TestDemoStoreContainer } from './logic'
-import { provideLogic } from '@/app/logic'
+import { InternalService } from '@/app/service/modules/internal'
+import { TestDemoStoreContainer } from './service'
+import { provideService } from '@/app/service'
 import { shallowMount } from '@vue/test-utils'
 
 //========================================================================
@@ -14,8 +14,8 @@ import { shallowMount } from '@vue/test-utils'
 interface ProvidedDependency {
   api: TestDemoAPIContainer
   store: TestDemoStoreContainer
-  internal: InternalLogic
-  logic: TestDemoLogicContainer
+  internal: InternalService
+  service: TestDemoServiceContainer
 }
 
 type SetupFunc = (provided: ProvidedDependency) => void
@@ -45,8 +45,8 @@ function provideDependency(setup?: SetupFunc): ProvidedDependency {
     },
   })
 
-  const { api, store, internal, logic } = wrapper.vm
-  return { api, store, internal, logic }
+  const { api, store, internal, service } = wrapper.vm
+  return { api, store, internal, service }
 }
 
 /**
@@ -62,16 +62,16 @@ function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
   if (!provided) {
     const {
       dependency: { api, store, internal },
-      ...logic
-    } = TestDemoLogicContainer.newInstance()
-    provideLogic(logic)
+      ...service
+    } = TestDemoServiceContainer.newInstance()
+    provideService(service)
     Dialogs.provide(td.object())
 
     provided = {
       api,
       store,
       internal,
-      logic,
+      service,
     }
   }
 
@@ -96,4 +96,4 @@ function clearProvidedDependency(): void {
 //========================================================================
 
 export { provideDependency, provideDependencyToVue, clearProvidedDependency, ProvidedDependency }
-export * from './logic'
+export * from './service'

@@ -76,7 +76,7 @@ import { computed, defineComponent, onMounted, reactive, ref, watch, watchEffect
 import { CustomCheckbox } from '@/demo/views/abc/custom-checkbox.vue'
 import { CustomInput } from '@/demo/views/abc/custom-input.vue'
 import { GreetMessage } from '@/demo/views/abc/greet-message.vue'
-import { injectLogic } from '@/app/logic'
+import { injectService } from '@/app/service'
 import { useI18n } from '@/demo/i18n'
 
 interface Post {
@@ -121,7 +121,7 @@ namespace AbcPage {
       //
       //----------------------------------------------------------------------
 
-      const logic = injectLogic()
+      const service = injectService()
       const { t } = useI18n()
 
       const greetMessage = ref<GreetMessage>()
@@ -140,7 +140,7 @@ namespace AbcPage {
 
       const doubleReversedYourName = computed(() => reversedMessage.value.split('').reverse().join(''))
 
-      const isSignIn = logic.auth.isSignedIn
+      const isSignIn = service.auth.isSignedIn
 
       const greetTimes = computed(() => greetMessage.value?.times)
 

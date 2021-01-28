@@ -58,13 +58,13 @@
 
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
-import { StorageArticleSettings, StorageNode, StorageNodeType, StorageType } from '@/app/logic'
+import { StorageArticleSettings, StorageNode, StorageNodeType, StorageType } from '@/app/service'
 import { extendedMethod, isFontAwesome } from '@/app/base'
 import { QTable } from 'quasar'
 import { StorageDirTable } from '@/app/views/base/storage/storage-dir-table.vue'
 import { StorageNodeActionEvent } from '@/app/views/base/storage/base'
 import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'
-import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
+import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
 import { arrayToDict } from 'web-base-lib'
 import bytes from 'bytes'
 import { useI18n } from '@/app/i18n'
@@ -128,12 +128,12 @@ namespace StorageDirTableRow {
     table: StorageDirTable<StorageDirTableRow>
   }): StorageDirTableRow {
     const { storageType, table } = params
-    const pageLogic = StoragePageLogic.getInstance(storageType)
+    const pageService = StoragePageService.getInstance(storageType)
     const { d } = useI18n()
 
     const node = reactive({ ...params.node })
 
-    const icon = computed(() => pageLogic.getNodeIcon(node))
+    const icon = computed(() => pageService.getNodeIcon(node))
 
     const iconSize = computed(() => {
       return isFontAwesome(icon.value) ? '20px' : '24px'
@@ -142,7 +142,7 @@ namespace StorageDirTableRow {
     const type = computed(() => {
       switch (nodeType.value) {
         case StorageNodeType.Dir:
-          return pageLogic.getNodeTypeLabel(node)
+          return pageService.getNodeTypeLabel(node)
         case StorageNodeType.File:
           return node.contentType
         default:
@@ -151,7 +151,7 @@ namespace StorageDirTableRow {
     })
 
     const label = computed(() => {
-      const nodeLabel = pageLogic.getDisplayNodeName(node)
+      const nodeLabel = pageService.getDisplayNodeName(node)
       return nodeType.value === StorageNodeType.Dir ? `${nodeLabel}/` : nodeLabel
     })
 
@@ -168,7 +168,7 @@ namespace StorageDirTableRow {
     const share = computed(() => {
       let icon = ''
       if (node.share.isPublic === null) {
-        if (pageLogic.getInheritedShare(node.path).isPublic) {
+        if (pageService.getInheritedShare(node.path).isPublic) {
           icon = 'public'
         }
       } else {
@@ -265,7 +265,7 @@ namespace StorageDirView {
 
     const table = ref<StorageDirTable<StorageDirTableRow>>()
 
-    const pageLogic = StoragePageLogic.getInstance(props.storageType)
+    const pageService = StoragePageService.getInstance(props.storageType)
     const { t } = useI18n()
 
     const state = reactive({
@@ -287,7 +287,7 @@ namespace StorageDirView {
 
     const targetDir = computed(() => {
       if (typeof state.dirPath !== 'string') return null
-      return pageLogic.getStorageNode({ path: state.dirPath }) ?? null
+      return pageService.getStorageNode({ path: state.dirPath }) ?? null
     })
 
     const filteredSortedRows = computed<StorageDirTableRow[]>(() => table.value!.filteredSortedRows)
@@ -323,7 +323,7 @@ namespace StorageDirView {
       }
       // 選択ノードがルートノード配下のノードの場合
       else {
-        const selectedNode = pageLogic.sgetStorageNode({ path: selectedNodePath })
+        const selectedNode = pageService.sgetStorageNode({ path: selectedNodePath })
         dirPath = selectedNode.nodeType === StorageNodeType.Dir ? selectedNode.path : selectedNode.dir
       }
 
@@ -398,10 +398,10 @@ namespace StorageDirView {
     })
 
     function buildDirChildNodes(dirPath?: string): void {
-      // ロジックストアから最新の子ノードを取得
+      // ストアから最新の子ノードを取得
       const latestChildNodes: StorageNode[] = []
       const latestChildDict: { [path: string]: StorageNode } = {}
-      for (const child of pageLogic.getStorageChildren(dirPath)) {
+      for (const child of pageService.getStorageChildren(dirPath)) {
         latestChildNodes.push(child)
         latestChildDict[child.path] = child
       }

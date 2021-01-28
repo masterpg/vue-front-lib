@@ -58,11 +58,11 @@
 </template>
 
 <script lang="ts">
-import { StorageNode, StorageNodeType, StorageType } from '@/app/logic'
+import { StorageNode, StorageNodeType, StorageType } from '@/app/service'
 import { computed, defineComponent, onMounted, reactive } from '@vue/composition-api'
 import { StorageNodeActionEvent } from '@/app/views/base/storage/base'
 import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'
-import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
+import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
 import { splitHierarchicalPaths } from 'web-base-lib'
 
 interface PathBlock {
@@ -114,7 +114,7 @@ namespace StorageDirPathBreadcrumb {
       //
       //----------------------------------------------------------------------
 
-      const pageLogic = StoragePageLogic.getInstance(props.storageType)
+      const pageService = StoragePageService.getInstance(props.storageType)
 
       const state = reactive({
         pathBlocks: [] as PathBlock[],
@@ -134,7 +134,7 @@ namespace StorageDirPathBreadcrumb {
       const setSelectedNode: StorageDirPathBreadcrumb['setSelectedNode'] = selectedNodePath => {
         let selectedNode: StorageNode | null = null
         if (selectedNodePath) {
-          selectedNode = pageLogic.sgetStorageNode({ path: selectedNodePath })
+          selectedNode = pageService.sgetStorageNode({ path: selectedNodePath })
         }
         pathBlocks.value = createPathBlocks(selectedNode)
       }
@@ -165,17 +165,17 @@ namespace StorageDirPathBreadcrumb {
 
           for (let i = 0; i < hierarchicalDirPaths.length; i++) {
             const dirPath = hierarchicalDirPaths[i]
-            const dirNode = pageLogic.sgetStorageNode({ path: dirPath })
+            const dirNode = pageService.sgetStorageNode({ path: dirPath })
             result.push({
               ...dirNode,
-              label: pageLogic.getDisplayNodeName(dirNode),
+              label: pageService.getDisplayNodeName(dirNode),
               last: i === hierarchicalDirPaths.length - 1,
               isRoot: false,
             })
           }
         }
 
-        const treeRootNode = pageLogic.getRootTreeNode()
+        const treeRootNode = pageService.getRootTreeNode()
         result.unshift({
           label: treeRootNode.label,
           path: treeRootNode.value,

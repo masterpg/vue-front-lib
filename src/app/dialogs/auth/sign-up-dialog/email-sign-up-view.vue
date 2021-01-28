@@ -78,7 +78,7 @@
 </template>
 
 <script lang="ts">
-import { AuthStatus, injectLogic } from '@/app/logic'
+import { AuthStatus, injectService } from '@/app/service'
 import { Loading, QInput } from 'quasar'
 import { Ref, computed, defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
 import { Dialogs } from '@/app/dialogs'
@@ -124,7 +124,7 @@ namespace EmailSignUpView {
       //
       //----------------------------------------------------------------------
 
-      const logic = injectLogic()
+      const service = injectService()
       const { t } = useI18n()
 
       const emailInput = ref() as Ref<QInput>
@@ -184,7 +184,7 @@ namespace EmailSignUpView {
         }
 
         // メールアドレス＋パスワードでアカウントを作成
-        const signUpResult = await logic.auth.createUserWithEmailAndPassword(state.email!, state.password!, {
+        const signUpResult = await service.auth.createUserWithEmailAndPassword(state.email!, state.password!, {
           photoURL: null,
         })
         if (!signUpResult.result) {
@@ -198,14 +198,14 @@ namespace EmailSignUpView {
           return
         }
 
-        if (logic.auth.status.value !== AuthStatus.WaitForEmailVerified) {
+        if (service.auth.status.value !== AuthStatus.WaitForEmailVerified) {
           Loading.hide()
-          throw new Error(`This is a auth status not assumed: ${logic.auth.status.value}`)
+          throw new Error(`This is a auth status not assumed: ${service.auth.status.value}`)
         }
 
         // メールアドレスに検証用メールを送信
         const continueURL = `${window.location.origin}/?${Dialogs.createQuery('userEntry')}`
-        const authResult = await logic.auth.sendEmailVerification(continueURL)
+        const authResult = await service.auth.sendEmailVerification(continueURL)
         if (!authResult.result) {
           if (authResult.code) {
             state.errorMessage = authResult.errorMessage

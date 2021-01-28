@@ -66,13 +66,13 @@
 
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, ref } from '@vue/composition-api'
-import { StorageArticleDirType, StorageNode, StorageNodeType, StorageType, StorageUtil } from '@/app/logic'
+import { StorageArticleDirType, StorageNode, StorageNodeType, StorageType, StorageUtil } from '@/app/service'
 import { TreeView, TreeViewEvent, TreeViewLazyLoadEvent } from '@/app/components/tree-view'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { Dialog } from '@/app/components/dialog'
 import { Dialogs } from '@/app/dialogs'
 import { QDialog } from 'quasar'
-import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
+import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
 import { StorageTreeNodeData } from '@/app/views/base/storage/base'
 import _path from 'path'
@@ -109,7 +109,7 @@ namespace StorageNodeMoveDialog {
 
     const dialog = ref<QDialog>()
     const base = Dialog.setup<string | undefined>(dialog)
-    const pageLogic = StoragePageLogic.getInstance(props.storageType)
+    const pageService = StoragePageService.getInstance(props.storageType)
     const { t, tc } = useI18n()
 
     const treeView = ref<TreeView<StorageTreeNode, StorageTreeNodeData>>()
@@ -118,7 +118,7 @@ namespace StorageNodeMoveDialog {
 
     const title = computed(() => {
       if (movingNodes.value.length === 1) {
-        const nodeTypeLabel = pageLogic.getNodeTypeLabel(movingNodes.value[0])
+        const nodeTypeLabel = pageService.getNodeTypeLabel(movingNodes.value[0])
         return String(t('common.moveSth', { sth: nodeTypeLabel }))
       } else if (movingNodes.value.length >= 2) {
         const sth = String(tc('common.item', movingNodes.value.length))
@@ -136,14 +136,14 @@ namespace StorageNodeMoveDialog {
 
     const movingNodeName = computed(() => {
       if (movingNodes.value.length === 1) {
-        return pageLogic.getDisplayNodeName(movingNodes.value[0])
+        return pageService.getDisplayNodeName(movingNodes.value[0])
       }
       return ''
     })
 
     const movingNodeIcon = computed(() => {
       if (movingNodes.value.length === 1) {
-        return pageLogic.getNodeIcon(movingNodes.value[0])
+        return pageService.getNodeIcon(movingNodes.value[0])
       }
       return ''
     })
@@ -170,7 +170,7 @@ namespace StorageNodeMoveDialog {
     const open: StorageNodeMoveDialog['open'] = nodePaths => {
       movingNodes.value = []
       for (const nodePath of nodePaths) {
-        const node = pageLogic.sgetStorageNode({ path: nodePath })
+        const node = pageService.sgetStorageNode({ path: nodePath })
         movingNodes.value.push(node)
       }
 
@@ -239,7 +239,7 @@ namespace StorageNodeMoveDialog {
       //
       let unselectable = false
       // 移動ノードの親ディレクトリがルートノードの場合、ルートノードを選択できないよう設定
-      unselectable = movingNodesParentPath.value === pageLogic.getRootTreeNode().path
+      unselectable = movingNodesParentPath.value === pageService.getRootTreeNode().path
       // ストレージタイプが｢記事｣の場合、ルートノードは選択できないよう設定
       if (props.storageType === 'article') {
         unselectable = true
@@ -249,7 +249,7 @@ namespace StorageNodeMoveDialog {
       treeView.value!.buildTree(
         [
           {
-            ...pageLogic.createRootNodeData(),
+            ...pageService.createRootNodeData(),
             selected: false,
             opened: true,
             unselectable,
@@ -276,7 +276,7 @@ namespace StorageNodeMoveDialog {
       dirPath = removeBothEndsSlash(dirPath)
 
       // 引数ディレクトリ直下の子ノードをサーバーから取得
-      await pageLogic.fetchStorageChildren(dirPath)
+      await pageService.fetchStorageChildren(dirPath)
 
       // 引数ディレクトリ直下の子ディレクトリのデータを取得
       const childNodeDataList = createTreeDirNodeDataList(dirPath)
@@ -311,7 +311,7 @@ namespace StorageNodeMoveDialog {
       const result: StorageTreeNodeData[] = []
 
       // 引数ディレクトリ直下の子ディレクトリのデータを取得
-      const nodes = pageLogic.getStorageChildren(dirPath)
+      const nodes = pageService.getStorageChildren(dirPath)
 
       for (const node of nodes) {
         // ディレクトリノード以外はツリービューに追加しない
@@ -322,7 +322,7 @@ namespace StorageNodeMoveDialog {
         const unselectable = node.path === movingNodesParentPath.value
 
         result.push({
-          ...pageLogic.nodeToTreeData(props.storageType, node),
+          ...pageService.nodeToTreeData(props.storageType, node),
           lazy: true,
           unselectable,
           disableContextMenu: true,

@@ -93,7 +93,7 @@
 </template>
 
 <script lang="ts">
-import { AuthStatus, injectLogic, provideLogic } from '@/app/logic'
+import { AuthStatus, injectService, provideService } from '@/app/service'
 import { Notify, Platform } from 'quasar'
 import { defineComponent, reactive, ref, watch } from '@vue/composition-api'
 import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
@@ -115,10 +115,10 @@ export default defineComponent({
     //
     //----------------------------------------------------------------------
 
-    provideLogic()
+    provideService()
     provideServiceWorker()
 
-    const logic = injectLogic()
+    const service = injectService()
     const serviceWorker = injectServiceWorker()
     const { t } = useI18n()
 
@@ -151,8 +151,8 @@ export default defineComponent({
       isAppAdminExpanded: true,
     })
 
-    const isSignedIn = logic.auth.isSignedIn
-    const isSigningIn = logic.auth.isSigningIn
+    const isSignedIn = service.auth.isSignedIn
+    const isSigningIn = service.auth.isSigningIn
 
     //----------------------------------------------------------------------
     //
@@ -169,7 +169,7 @@ export default defineComponent({
     }
 
     function signOutMenuItemOnClick() {
-      logic.auth.signOut()
+      service.auth.signOut()
     }
 
     function emailChangeMenuItemOnClick() {
@@ -181,7 +181,7 @@ export default defineComponent({
     }
 
     watch(
-      () => logic.auth.status.value,
+      () => service.auth.status.value,
       (newValue, oldValue) => {
         if (newValue === AuthStatus.WaitForEntry) {
           Dialogs.userEntry.open()
@@ -225,7 +225,7 @@ export default defineComponent({
       t,
       state,
       dialogsRef,
-      user: logic.auth.user,
+      user: service.auth.user,
       isSignedIn,
       isSigningIn,
       signInMenuItemOnClick,

@@ -1,4 +1,4 @@
-import { CreateArticleTypeDirInput, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/logic'
+import { CreateArticleTypeDirInput, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/service'
 import { SetupContext, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
 import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'
 import { TreeView, TreeViewLazyLoadEvent, TreeViewSelectEvent } from '@/app/components/tree-view'
@@ -12,7 +12,7 @@ import { StorageNodeMoveDialog } from '@/app/views/base/storage/storage-node-mov
 import { StorageNodeRemoveDialog } from '@/app/views/base/storage/storage-node-remove-dialog.vue'
 import { StorageNodeRenameDialog } from '@/app/views/base/storage/storage-node-rename-dialog.vue'
 import { StorageNodeShareDialog } from '@/app/views/base/storage/storage-node-share-dialog.vue'
-import { StoragePageLogic } from '@/app/views/base/storage'
+import { StoragePageService } from '@/app/views/base/storage'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
 import { StorageUploadProgressFloat } from '@/app/components/storage/storage-upload-progress-float.vue'
 import { UploadEndedEvent } from '@/app/components/storage'
@@ -56,7 +56,7 @@ namespace StoragePage {
     })
 
     onUnmounted(() => {
-      StoragePageLogic.destroyInstance(storageType)
+      StoragePageService.destroyInstance(storageType)
     })
 
     //----------------------------------------------------------------------
@@ -79,7 +79,7 @@ namespace StoragePage {
     const nodeShareDialog = ref<StorageNodeShareDialog>()
     const uploadProgressFloat = ref<StorageUploadProgressFloat>()
 
-    const pageLogic = StoragePageLogic.newInstance({ storageType, treeViewRef, nodeFilter })
+    const pageService = StoragePageService.newInstance({ storageType, treeViewRef, nodeFilter })
 
     /**
      * ディレクトリ詳細ビューの表示フラグです。
@@ -118,14 +118,14 @@ namespace StoragePage {
      */
     async function fetchInitialNodes(): Promise<void> {
       dirView.value!.loading = true
-      const { selectedTreeNodePath, isFetchedInitialStorage } = pageLogic.store
+      const { selectedTreeNodePath, isFetchedInitialStorage } = pageService.store
 
       // 現在の選択ノードを取得
       // ※URLから取得したディレクトリまたは現在の選択ノード
-      const dirPath = pageLogic.route.getNodePath() || selectedTreeNodePath.value
+      const dirPath = pageService.route.getNodePath() || selectedTreeNodePath.value
 
       // 初期ストレージノードの読み込み
-      await pageLogic.fetchInitialStorage(dirPath)
+      await pageService.fetchInitialStorage(dirPath)
       if (!isFetchedInitialStorage.value) {
         dirView.value!.loading = false
         return
@@ -145,13 +145,13 @@ namespace StoragePage {
      * @param nodePath
      */
     const changeDir = extendedMethod((nodePath: string) => {
-      const selectedNodePath = pageLogic.getTreeNode(nodePath)?.path ?? pageLogic.getRootTreeNode().path
+      const selectedNodePath = pageService.getTreeNode(nodePath)?.path ?? pageService.getRootTreeNode().path
 
       // ノード詳細ビューを非表示にする
       visibleDirDetailView.value = false
       visibleFileDetailView.value = false
       // 選択ノードを設定
-      pageLogic.setSelectedTreeNode(selectedNodePath, true, true)
+      pageService.setSelectedTreeNode(selectedNodePath, true, true)
       // パンくずに選択ノードを設定
       pathDirBreadcrumb.value!.setSelectedNode(selectedNodePath)
       // ディレクトリビューに選択ノードを設定
@@ -165,7 +165,7 @@ namespace StoragePage {
     function changeDirOnPage(dirPath: string): void {
       dirPath = removeBothEndsSlash(dirPath)
 
-      const urlDirPath = removeBothEndsSlash(pageLogic.route.getNodePath())
+      const urlDirPath = removeBothEndsSlash(pageService.route.getNodePath())
       // 移動先が変わらない場合
       // ※URLから取得したディレクトリと移動先のディレクトリが同じ場合
       if (urlDirPath === dirPath) {
@@ -176,7 +176,7 @@ namespace StoragePage {
       else {
         // 選択ディレクトリのパスをURLに付与
         // ※ルーターによって本ページ内のbeforeRouteUpdate()が実行される
-        pageLogic.route.move(dirPath)
+        pageService.route.move(dirPath)
       }
     }
 
@@ -190,7 +190,7 @@ namespace StoragePage {
       needScrollToSelectedNode.value = true
       // ツリービューの選択ノードに指定されたディレクトリを設定
       // ※ツリービューのselectイベントが発火され、ディレクトリが切り替わる
-      pageLogic.setSelectedTreeNode(dirPath, true, false)
+      pageService.setSelectedTreeNode(dirPath, true, false)
     }
 
     /**
@@ -199,7 +199,7 @@ namespace StoragePage {
      * @param animate
      */
     function openParentNode(nodePath: string, animate: boolean): void {
-      const treeNode = pageLogic.getTreeNode(nodePath)
+      const treeNode = pageService.getTreeNode(nodePath)
       if (!treeNode?.parent) return
 
       treeNode.parent.open(animate)
@@ -212,7 +212,7 @@ namespace StoragePage {
      * @param animate
      */
     function scrollToSelectedNode(nodePath: string, animate: boolean): void {
-      const treeNode = pageLogic.getTreeNode(nodePath)
+      const treeNode = pageService.getTreeNode(nodePath)
       if (!treeNode) return
 
       // 本ページのグローバルな上位置を取得
@@ -253,7 +253,7 @@ namespace StoragePage {
     function showNodeDetail(nodePath: string): void {
       visibleDirDetailView.value = false
       visibleFileDetailView.value = false
-      const node = pageLogic.sgetStorageNode({ path: nodePath })
+      const node = pageService.sgetStorageNode({ path: nodePath })
 
       switch (node.nodeType) {
         case StorageNodeType.Dir: {
@@ -279,10 +279,10 @@ namespace StoragePage {
       Loading.show()
 
       // ディレクトリの作成を実行
-      await pageLogic.createStorageDir(dirPath)
+      await pageService.createStorageDir(dirPath)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageLogic.selectedTreeNode.value.path)
+      changeDirOnPage(pageService.selectedTreeNode.value.path)
 
       Loading.hide()
     }
@@ -296,10 +296,10 @@ namespace StoragePage {
       Loading.show()
 
       // ノードの移動を実行
-      await pageLogic.moveStorageNodes(nodePaths, toParentPath)
+      await pageService.moveStorageNodes(nodePaths, toParentPath)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageLogic.selectedTreeNode.value.path)
+      changeDirOnPage(pageService.selectedTreeNode.value.path)
 
       Loading.hide()
     }
@@ -313,10 +313,10 @@ namespace StoragePage {
       Loading.show()
 
       // ノードのリネームを実行
-      await pageLogic.renameStorageNode(nodePath, newName)
+      await pageService.renameStorageNode(nodePath, newName)
 
       // 現在選択されているノードへURL遷移
-      changeDirOnPage(pageLogic.selectedTreeNode.value.path)
+      changeDirOnPage(pageService.selectedTreeNode.value.path)
 
       Loading.hide()
     }
@@ -330,10 +330,10 @@ namespace StoragePage {
       Loading.show()
 
       // ノードの共有設定を実行
-      await pageLogic.setStorageNodeShareSettings(nodePaths, input)
+      await pageService.setStorageNodeShareSettings(nodePaths, input)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageLogic.selectedTreeNode.value.path)
+      changeDirOnPage(pageService.selectedTreeNode.value.path)
 
       Loading.hide()
     }
@@ -348,19 +348,19 @@ namespace StoragePage {
       // 削除後の遷移先ノードを取得
       // ・選択ノードが削除された場合、親ノードへ遷移
       // ・それ以外は現在の選択ノードへ遷移
-      let toNodePath = pageLogic.selectedTreeNode.value.path
+      let toNodePath = pageService.selectedTreeNode.value.path
       // 選択ノードが削除されるのかを取得
       const selectedRemovingNodePath = nodePaths.find(nodePath => {
-        if (nodePath === pageLogic.selectedTreeNode.value.path) return nodePath
+        if (nodePath === pageService.selectedTreeNode.value.path) return nodePath
       })
       // 選択ノードが削除される場合、親ノードへ遷移するよう準備
       if (selectedRemovingNodePath) {
-        const removingCertainNode = pageLogic.sgetStorageNode({ path: nodePaths[0] })
+        const removingCertainNode = pageService.sgetStorageNode({ path: nodePaths[0] })
         toNodePath = removingCertainNode.dir
       }
 
       // ノードの移動を実行
-      await pageLogic.removeStorageNodes(nodePaths)
+      await pageService.removeStorageNodes(nodePaths)
 
       // 上記で取得したノードへURL遷移
       changeDirOnPage(toNodePath)
@@ -376,10 +376,10 @@ namespace StoragePage {
       Loading.show()
 
       // 記事系ディレクトリの作成
-      await pageLogic.createArticleTypeDir(input)
+      await pageService.createArticleTypeDir(input)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageLogic.selectedTreeNode.value.path)
+      changeDirOnPage(pageService.selectedTreeNode.value.path)
 
       Loading.hide()
     }
@@ -391,7 +391,7 @@ namespace StoragePage {
     //----------------------------------------------------------------------
 
     watch(
-      () => pageLogic.isSignedIn.value,
+      () => pageService.isSignedIn.value,
       async isSignedIn => {
         if (isSignedIn) await fetchInitialNodes()
       }
@@ -401,7 +401,7 @@ namespace StoragePage {
       () => ctx.root.$route,
       (newValue, oldValue) => {
         // URLから選択ノードパスを取得(取得できなかった場合はルートノード)
-        const dirPath = pageLogic.route.getNodePath()
+        const dirPath = pageService.route.getNodePath()
         // ページの選択ノードを設定
         changeDir(dirPath)
       }
@@ -421,9 +421,9 @@ namespace StoragePage {
      */
     async function uploadProgressFloatOnUploadEnds(e: UploadEndedEvent) {
       // アップロードが行われた後のツリーの更新処理
-      await pageLogic.onUploaded(e)
+      await pageService.onUploaded(e)
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageLogic.selectedTreeNode.value.path)
+      changeDirOnPage(pageService.selectedTreeNode.value.path)
     }
 
     /**
@@ -434,10 +434,10 @@ namespace StoragePage {
       switch (e.type) {
         case 'reload': {
           const { targetPath } = (e as StorageNodeActionEvent<'reload'>).params
-          await pageLogic.reloadStorageDir(targetPath)
+          await pageService.reloadStorageDir(targetPath)
           // ページの選択ノードを設定
           // ※ディレクトリビューの更新
-          changeDir(pageLogic.selectedTreeNode.value.path)
+          changeDir(pageService.selectedTreeNode.value.path)
           break
         }
         case 'createDir': {
@@ -517,7 +517,7 @@ namespace StoragePage {
 
       // 選択または展開されようとしているディレクトリ直下のノードをサーバーから取得
       // ※done()が実行された後にselectイベントが発火し、ページが更新される
-      await pageLogic.fetchStorageChildren(e.node.path)
+      await pageService.fetchStorageChildren(e.node.path)
       e.done()
 
       dirView.value!.loading = false

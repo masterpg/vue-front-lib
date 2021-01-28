@@ -115,7 +115,7 @@
 
 <script lang="ts">
 import { ComputedRef, SetupContext, computed, defineComponent, reactive } from '@vue/composition-api'
-import { RequiredStorageNodeShareSettings, StorageArticleSettings, StorageNodeShareSettings, StorageNodeType } from '@/app/logic'
+import { RequiredStorageNodeShareSettings, StorageArticleSettings, StorageNodeShareSettings, StorageNodeType } from '@/app/service'
 import { StorageNodeActionEvent, StorageTreeNodeData, StorageTreeNodeEditData } from '@/app/views/base/storage/base'
 import { TreeNode, TreeNodeImpl } from '@/app/components/tree-view'
 import { Dayjs } from 'dayjs'

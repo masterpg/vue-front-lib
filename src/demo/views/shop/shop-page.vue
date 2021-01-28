@@ -100,7 +100,7 @@
 </template>
 
 <script lang="ts">
-import { CartItem, Product, injectLogic } from '@/demo/logic'
+import { CartItem, Product, injectService } from '@/demo/service'
 import { computed, defineComponent, onMounted, reactive } from '@vue/composition-api'
 import { Loading } from 'quasar'
 import { useI18n } from '@/demo/i18n'
@@ -116,11 +116,11 @@ namespace ShopPage {
       //
       //----------------------------------------------------------------------
 
-      const logic = injectLogic()
+      const service = injectService()
       const { t } = useI18n()
 
       const cartIsEmpty = computed(() => {
-        return logic.shop.cartItems.value.length === 0
+        return service.shop.cartItems.value.length === 0
       })
 
       //----------------------------------------------------------------------
@@ -131,7 +131,7 @@ namespace ShopPage {
 
       onMounted(async () => {
         Loading.show()
-        await logic.shop.fetchProducts()
+        await service.shop.fetchProducts()
         Loading.hide()
       })
 
@@ -143,19 +143,19 @@ namespace ShopPage {
 
       async function addButtonOnClick(product: Product) {
         Loading.show()
-        await logic.shop.addItemToCart(product.id)
+        await service.shop.addItemToCart(product.id)
         Loading.hide()
       }
 
       async function removeButtonOnClick(cartItem: CartItem) {
         Loading.show()
-        await logic.shop.removeItemFromCart(cartItem.productId)
+        await service.shop.removeItemFromCart(cartItem.productId)
         Loading.hide()
       }
 
       async function checkoutButtonOnClick() {
         Loading.show()
-        await logic.shop.checkout()
+        await service.shop.checkout()
         Loading.hide()
       }
 
@@ -167,10 +167,10 @@ namespace ShopPage {
 
       return {
         t,
-        isSignedIn: logic.auth.isSignedIn,
-        products: logic.shop.products,
-        cartItems: logic.shop.cartItems,
-        cartTotalPrice: logic.shop.cartTotalPrice,
+        isSignedIn: service.auth.isSignedIn,
+        products: service.shop.products,
+        cartItems: service.shop.cartItems,
+        cartTotalPrice: service.shop.cartTotalPrice,
         cartIsEmpty,
         addButtonOnClick,
         removeButtonOnClick,

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { StoragePage, StoragePageTemplate } from '@/app/views/base/storage'
-import { StorageType } from '@/app/logic'
+import { StorageType } from '@/app/service'
 import { defineComponent } from '@vue/composition-api'
 
 namespace UserStoragePage {

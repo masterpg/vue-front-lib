@@ -52,9 +52,9 @@
 <script lang="ts">
 import { QDialog, QInput } from 'quasar'
 import { Ref, SetupContext, computed, defineComponent, ref } from '@vue/composition-api'
-import { StorageNode, StorageType } from '@/app/logic'
+import { StorageNode, StorageType } from '@/app/service'
 import { Dialog } from '@/app/components/dialog'
-import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
+import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
 import _path from 'path'
 import { isFontAwesome } from '@/app/base'
 import { useI18n } from '@/app/i18n'
@@ -85,7 +85,7 @@ namespace StorageNodeRenameDialog {
 
     const dialog = ref<QDialog>()
     const base = Dialog.setup<string | undefined>(dialog)
-    const pageLogic = StoragePageLogic.getInstance(props.storageType)
+    const pageService = StoragePageService.getInstance(props.storageType)
     const { t } = useI18n()
 
     const newNameInput = ref<QInput>()
@@ -94,13 +94,13 @@ namespace StorageNodeRenameDialog {
 
     const title = computed(() => {
       if (!targetNode.value) return ''
-      const nodeTypeLabel = pageLogic.getNodeTypeLabel(targetNode.value)
+      const nodeTypeLabel = pageService.getNodeTypeLabel(targetNode.value)
       return String(t('common.renameSth', { sth: nodeTypeLabel }))
     })
 
     const nodeIcon = computed(() => {
       if (!targetNode.value) return ''
-      return pageLogic.getNodeIcon(targetNode.value)
+      return pageService.getNodeIcon(targetNode.value)
     })
 
     const nodeIconSize = computed(() => {
@@ -111,7 +111,7 @@ namespace StorageNodeRenameDialog {
 
     const parentPath = computed(() => {
       if (!targetNode.value) return ''
-      return _path.join(pageLogic.getRootTreeNode().label, pageLogic.getDisplayNodePath({ path: targetNode.value.dir }), '/')
+      return _path.join(pageService.getRootTreeNode().label, pageService.getDisplayNodePath({ path: targetNode.value.dir }), '/')
     })
 
     const isError = computed(() => !validate())
@@ -130,8 +130,8 @@ namespace StorageNodeRenameDialog {
     //----------------------------------------------------------------------
 
     const open: StorageNodeRenameDialog['open'] = targetNodePath => {
-      targetNode.value = pageLogic.sgetStorageNode({ path: targetNodePath })
-      newName.value = pageLogic.getDisplayNodeName(targetNode.value)
+      targetNode.value = pageService.sgetStorageNode({ path: targetNodePath })
+      newName.value = pageService.getDisplayNodeName(targetNode.value)
 
       return base.open()
     }
@@ -172,7 +172,7 @@ namespace StorageNodeRenameDialog {
 
       // 必須入力チェック
       if (newName.value === '') {
-        const target = String(t('common.sthName', { sth: pageLogic.getNodeTypeLabel(targetNode.value) }))
+        const target = String(t('common.sthName', { sth: pageService.getNodeTypeLabel(targetNode.value) }))
         errorMessage.value = String(t('error.required', { target }))
         return false
       }
@@ -199,15 +199,17 @@ namespace StorageNodeRenameDialog {
       }
 
       // リネームしようとする名前のノードが存在しないことをチェック
-      const parentNode = pageLogic.getStorageNode({ path: targetNode.value.dir })!
-      const siblingNodes = pageLogic.getStorageChildren(targetNode.value.dir)
+      const parentNode = pageService.getStorageNode({ path: targetNode.value.dir })!
+      const siblingNodes = pageService.getStorageChildren(targetNode.value.dir)
       for (const siblingNode of siblingNodes) {
         if (siblingNode === targetNode.value) continue
 
         const existsSameName = siblingNode.name === newName.value
         const existsSameArticleName = siblingNode.article?.dir?.name && siblingNode.article?.dir?.name === newName.value
         if (existsSameName || existsSameArticleName) {
-          errorMessage.value = String(t('storage.nodeAlreadyExists', { nodeName: newName.value, nodeType: pageLogic.getNodeTypeLabel(siblingNode) }))
+          errorMessage.value = String(
+            t('storage.nodeAlreadyExists', { nodeName: newName.value, nodeType: pageService.getNodeTypeLabel(siblingNode) })
+          )
           return false
         }
       }

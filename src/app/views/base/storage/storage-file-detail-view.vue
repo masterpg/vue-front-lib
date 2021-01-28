@@ -106,11 +106,11 @@
 
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, ref } from '@vue/composition-api'
-import { StorageNode, StorageType } from '@/app/logic'
+import { StorageNode, StorageType } from '@/app/service'
 import { Dialog } from '@/app/components/dialog'
 import { QLinearProgress } from 'quasar'
 import { StorageImg } from '@/app/components/storage/storage-img.vue'
-import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
+import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
 import _bytes from 'bytes'
 import anime from 'animejs'
 import { isFontAwesome } from '@/app/base'
@@ -151,12 +151,12 @@ namespace StorageFileDetailView {
     //
     //----------------------------------------------------------------------
 
-    const pageLogic = StoragePageLogic.getInstance(props.storageType)
+    const pageService = StoragePageService.getInstance(props.storageType)
     const { t, d } = useI18n()
 
     const downloadLinear = ref<QLinearProgress>()
 
-    const downloader = pageLogic.newDownloader()
+    const downloader = pageService.newDownloader()
 
     const fileNode: Ref<StorageNode | null> = ref(null)
 
@@ -164,7 +164,7 @@ namespace StorageFileDetailView {
 
     const icon = computed(() => {
       if (!fileNode.value) return ''
-      return pageLogic.getNodeIcon(fileNode.value)
+      return pageService.getNodeIcon(fileNode.value)
     })
 
     const iconSize = computed(() => {
@@ -199,7 +199,7 @@ namespace StorageFileDetailView {
     const displayPath = computed(() => {
       if (!fileNode.value) return ''
       if (props.storageType !== 'article') return ''
-      return pageLogic.getDisplayNodePath(fileNode.value)
+      return pageService.getDisplayNodePath(fileNode.value)
     })
 
     const fileName = computed(() => {
@@ -223,7 +223,7 @@ namespace StorageFileDetailView {
       let result = ''
 
       if (fileNode.value.share.isPublic === null) {
-        const inheritedShare = pageLogic.getInheritedShare(fileNode.value.path)
+        const inheritedShare = pageService.getInheritedShare(fileNode.value.path)
         if (inheritedShare.isPublic) {
           result = `${t('storage.share.public')}`
         } else {
@@ -282,7 +282,7 @@ namespace StorageFileDetailView {
         clear()
       }
 
-      fileNode.value = pageLogic.sgetStorageNode({ path: filePath })
+      fileNode.value = pageService.sgetStorageNode({ path: filePath })
 
       if (isText.value) {
         loadTextFile()
@@ -296,7 +296,7 @@ namespace StorageFileDetailView {
     //----------------------------------------------------------------------
 
     async function loadTextFile(): Promise<void> {
-      const downloader = pageLogic.newFileDownloader('http', fileNode.value!.path)
+      const downloader = pageService.newFileDownloader('http', fileNode.value!.path)
       const text = await downloader.execute('text')
       textData.value = text ?? ''
     }
@@ -336,7 +336,7 @@ namespace StorageFileDetailView {
           if (downloader.canceled) continue
           if (downloader.failed) {
             const message = String(t('storage.download.downloadFailure', { nodeName: downloader.name }))
-            pageLogic.showNotification('warning', message)
+            pageService.showNotification('warning', message)
             continue
           }
           // ダウンロードされたファイルをブラウザ経由でダウンロード

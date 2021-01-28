@@ -92,7 +92,7 @@
 </template>
 
 <script lang="ts">
-import { AuthStatus, injectLogic } from '@/app/logic'
+import { AuthStatus, injectService } from '@/app/service'
 import { EmailSignInView, EmailSignInViewResult } from '@/app/dialogs/auth/parts/email-sign-in-view.vue'
 import { Loading, QDialog, QInput } from 'quasar'
 import { SetupContext, computed, defineComponent, nextTick, reactive, ref } from '@vue/composition-api'
@@ -127,7 +127,7 @@ namespace EmailChangeDialog {
 
     const dialog = ref<QDialog>()
     const base = Dialog.setup<void>(dialog)
-    const logic = injectLogic()
+    const service = injectService()
     const { t } = useI18n()
 
     const emailInput = ref<QInput>()
@@ -151,11 +151,11 @@ namespace EmailChangeDialog {
     //----------------------------------------------------------------------
 
     const open: EmailChangeDialog['open'] = async () => {
-      if (!logic.auth.isSignedIn) {
+      if (!service.auth.isSignedIn) {
         Dialogs.clearQuery()
         return
       }
-      state.currentEmail = logic.auth.user.email
+      state.currentEmail = service.auth.user.email
       state.viewType = 'emailSignIn'
       return base.open()
     }
@@ -197,9 +197,9 @@ namespace EmailChangeDialog {
 
       // メールアドレスを変更
       // (変更前のメールアドレスに変更通知のメールが送られる)
-      await logic.auth.updateEmail(state.email)
+      await service.auth.updateEmail(state.email)
       // 変更されたメールアドレスに確認メールを送信
-      await logic.auth.sendEmailVerification(window.location.origin)
+      await service.auth.sendEmailVerification(window.location.origin)
       // URLからダイアログクエリを削除
       Dialogs.clearQuery()
       // 画面をメールアドレス検証中へ変更

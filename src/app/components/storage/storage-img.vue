@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Img, ImgTemplate } from '@/app/components/img'
-import { StorageUtil, getIdToken } from '@/app/logic'
+import { StorageUtil, getIdToken } from '@/app/service'
 import axios, { AxiosResponse, Canceler } from 'axios'
 import { defineComponent, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
 

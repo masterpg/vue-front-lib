@@ -42,10 +42,10 @@
 <script lang="ts">
 import { QDialog, QInput } from 'quasar'
 import { Ref, SetupContext, computed, defineComponent, reactive, ref } from '@vue/composition-api'
-import { StorageArticleSettings, StorageNode, StorageNodeType, StorageType } from '@/app/logic'
+import { StorageArticleSettings, StorageNode, StorageNodeType, StorageType } from '@/app/service'
 import { DeepPartial } from 'web-base-lib'
 import { Dialog } from '@/app/components/dialog'
-import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
+import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
 import _path from 'path'
 import { isFontAwesome } from '@/app/base'
 import { useI18n } from '@/app/i18n'
@@ -86,7 +86,7 @@ namespace StorageDirCreateDialog {
 
     const dialog = ref<QDialog>()
     const base = Dialog.setup<DialogResult | undefined>(dialog)
-    const pageLogic = StoragePageLogic.getInstance(props.storageType)
+    const pageService = StoragePageService.getInstance(props.storageType)
     const { t, tc } = useI18n()
 
     const dirNameInput = ref<QInput>()
@@ -98,7 +98,7 @@ namespace StorageDirCreateDialog {
     const parentNode: Ref<StorageNode | null> = ref(null)
 
     const icon = computed(() => {
-      return pageLogic.getNodeTypeIcon({ nodeType: StorageNodeType.Dir, article: state.article })
+      return pageService.getNodeTypeIcon({ nodeType: StorageNodeType.Dir, article: state.article })
     })
 
     const iconSize = computed(() => {
@@ -106,7 +106,7 @@ namespace StorageDirCreateDialog {
     })
 
     const title = computed(() => {
-      const nodeTypeLabel = pageLogic.getNodeTypeLabel({ nodeType: StorageNodeType.Dir, article: state.article })
+      const nodeTypeLabel = pageService.getNodeTypeLabel({ nodeType: StorageNodeType.Dir, article: state.article })
       return String(t('common.createSth', { sth: nodeTypeLabel }))
     })
 
@@ -114,9 +114,9 @@ namespace StorageDirCreateDialog {
 
     const parentPath = computed(() => {
       if (!parentNode.value) {
-        return _path.join(pageLogic.getRootTreeNode().label, '/')
+        return _path.join(pageService.getRootTreeNode().label, '/')
       } else {
-        return _path.join(pageLogic.getRootTreeNode().label, pageLogic.getDisplayNodePath(parentNode.value), '/')
+        return _path.join(pageService.getRootTreeNode().label, pageService.getDisplayNodePath(parentNode.value), '/')
       }
     })
 
@@ -131,10 +131,10 @@ namespace StorageDirCreateDialog {
     //----------------------------------------------------------------------
 
     const open: StorageDirCreateDialog['open'] = params => {
-      if (params.parentPath === pageLogic.getRootTreeNode().path) {
+      if (params.parentPath === pageService.getRootTreeNode().path) {
         parentNode.value = null
       } else {
-        parentNode.value = pageLogic.sgetStorageNode({ path: params.parentPath })
+        parentNode.value = pageService.sgetStorageNode({ path: params.parentPath })
       }
 
       state.article = params.article
@@ -189,7 +189,7 @@ namespace StorageDirCreateDialog {
       }
 
       // 作成しようとする名前のディレクトリが存在しないことをチェック
-      const siblingNodes = pageLogic.getStorageChildren(parentNode.value ? parentNode.value.path : '')
+      const siblingNodes = pageService.getStorageChildren(parentNode.value ? parentNode.value.path : '')
       for (const siblingNode of siblingNodes) {
         if (siblingNode.name === dirName.value) {
           const nodeTypeName = tc('common.folder', 1)

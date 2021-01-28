@@ -96,10 +96,10 @@
 
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, ref } from '@vue/composition-api'
-import { StorageNode, StorageType } from '@/app/logic'
+import { StorageNode, StorageType } from '@/app/service'
 import { Dialog } from '@/app/components/dialog'
 import { QLinearProgress } from 'quasar'
-import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
+import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
 import _bytes from 'bytes'
 import anime from 'animejs'
 import { isFontAwesome } from '@/app/base'
@@ -136,18 +136,18 @@ namespace StorageDirDetailView {
     //
     //----------------------------------------------------------------------
 
-    const pageLogic = StoragePageLogic.getInstance(props.storageType)
+    const pageService = StoragePageService.getInstance(props.storageType)
     const { t, d } = useI18n()
 
     const downloadLinear = ref<QLinearProgress>()
 
-    const downloader = pageLogic.newDownloader()
+    const downloader = pageService.newDownloader()
 
     const dirNode: Ref<StorageNode | null> = ref(null)
 
     const icon = computed(() => {
       if (!dirNode.value) return ''
-      return pageLogic.getNodeIcon(dirNode.value)
+      return pageService.getNodeIcon(dirNode.value)
     })
 
     const iconSize = computed(() => {
@@ -156,7 +156,7 @@ namespace StorageDirDetailView {
 
     const label = computed(() => {
       if (!dirNode.value) return ''
-      return pageLogic.getDisplayNodeName(dirNode.value)
+      return pageService.getDisplayNodeName(dirNode.value)
     })
 
     const id = computed(() => {
@@ -172,12 +172,12 @@ namespace StorageDirDetailView {
     const displayPath = computed(() => {
       if (!dirNode.value) return ''
       if (props.storageType !== 'article') return ''
-      return pageLogic.getDisplayNodePath(dirNode.value)
+      return pageService.getDisplayNodePath(dirNode.value)
     })
 
     const type = computed(() => {
       if (!dirNode.value) return ''
-      return pageLogic.getNodeTypeLabel(dirNode.value)
+      return pageService.getNodeTypeLabel(dirNode.value)
     })
 
     const size = computed(() => {
@@ -191,7 +191,7 @@ namespace StorageDirDetailView {
       let result = ''
 
       if (dirNode.value.share.isPublic === null) {
-        const inheritedShare = pageLogic.getInheritedShare(dirNode.value.path)
+        const inheritedShare = pageService.getInheritedShare(dirNode.value.path)
         if (inheritedShare.isPublic) {
           result = `${t('storage.share.public')}`
         } else {
@@ -249,7 +249,7 @@ namespace StorageDirDetailView {
         clear()
       }
 
-      dirNode.value = pageLogic.sgetStorageNode({ path: dirPath })
+      dirNode.value = pageService.sgetStorageNode({ path: dirPath })
     }
 
     //----------------------------------------------------------------------
@@ -285,7 +285,7 @@ namespace StorageDirDetailView {
 
     async function download() {
       // 自ディレクトリ直下のノードをサーバーから取得しておく
-      await pageLogic.fetchStorageChildren(dirNode.value!.path)
+      await pageService.fetchStorageChildren(dirNode.value!.path)
 
       // ダウンロード進捗バーを表示
       showDownloadProgress(true, async () => {
@@ -296,7 +296,7 @@ namespace StorageDirDetailView {
           if (downloader.canceled) continue
           if (downloader.failed) {
             const message = String(t('storage.download.downloadFailure', { nodeName: downloader.name }))
-            pageLogic.showNotification('warning', message)
+            pageService.showNotification('warning', message)
             continue
           }
           // ダウンロードされたファイルをブラウザ経由でダウンロード

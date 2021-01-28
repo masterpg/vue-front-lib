@@ -1,5 +1,5 @@
 import { DeepPartial, RequiredAre } from 'web-base-lib'
-import { StorageArticleDirType, StorageArticleSettings, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/logic'
+import { StorageArticleDirType, StorageArticleSettings, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/service'
 import { TreeNodeData, TreeViewLazyLoadStatus } from '@/app/components/tree-view'
 import { Dayjs } from 'dayjs'
 import { useI18n } from '@/app/i18n'

@@ -68,7 +68,7 @@
 import { Loading, QInput } from 'quasar'
 import { Ref, computed, defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
 import { Dialogs } from '@/app/dialogs'
-import { injectLogic } from '@/app/logic'
+import { injectService } from '@/app/service'
 import isEmail from 'validator/lib/isEmail'
 import { useI18n } from '@/app/i18n'
 
@@ -97,7 +97,7 @@ namespace PasswordResetView {
       //
       //----------------------------------------------------------------------
 
-      const logic = injectLogic()
+      const service = injectService()
       const { t } = useI18n()
 
       const emailInput = ref() as Ref<QInput>
@@ -131,7 +131,7 @@ namespace PasswordResetView {
 
         // アカウントのメールアドレスにパスワードリセットのメールを送信
         const continueURL = `${window.location.origin}/?${Dialogs.createQuery('signIn')}`
-        const sendInResult = await logic.auth.sendPasswordResetEmail(state.email!, continueURL)
+        const sendInResult = await service.auth.sendPasswordResetEmail(state.email!, continueURL)
         if (!sendInResult.result) {
           if (sendInResult.code) {
             state.errorMessage = sendInResult.errorMessage

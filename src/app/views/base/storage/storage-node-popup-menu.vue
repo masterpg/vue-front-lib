@@ -16,11 +16,11 @@
 </template>
 
 <script lang="ts">
-import { StorageArticleDirType, StorageNodeType, StorageType } from '@/app/logic'
+import { StorageArticleDirType, StorageNodeType, StorageType } from '@/app/service'
 import { computed, defineComponent, ref } from '@vue/composition-api'
 import { QMenu } from 'quasar'
 import { StorageNodeActionEvent } from '@/app/views/base/storage/base'
-import { StoragePageLogic } from '@/app/views/base/storage/storage-page-logic'
+import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
 
 //========================================================================
 //
@@ -72,7 +72,7 @@ namespace StorageNodePopupMenu {
 
       const menu = ref<QMenu>()
 
-      const pageLogic = StoragePageLogic.getInstance(props.storageType)
+      const pageService = StoragePageService.getInstance(props.storageType)
 
       const menuItems = computed<StorageNodeActionEvent[]>(() => {
         //
@@ -271,33 +271,33 @@ namespace StorageNodePopupMenu {
       })
 
       const isListBundle = computed(() => {
-        return !props.isRoot && !isMulti.value && pageLogic.isListBundle(props.node)
+        return !props.isRoot && !isMulti.value && pageService.isListBundle(props.node)
       })
 
       const isTreeBundle = computed(() => {
-        return !props.isRoot && !isMulti.value && pageLogic.isTreeBundle(props.node)
+        return !props.isRoot && !isMulti.value && pageService.isTreeBundle(props.node)
       })
 
       const isCategoryDir = computed(() => {
-        return !props.isRoot && !isMulti.value && pageLogic.isCategoryDir(props.node)
+        return !props.isRoot && !isMulti.value && pageService.isCategoryDir(props.node)
       })
 
       const isArticleDir = computed(() => {
-        return !props.isRoot && !isMulti.value && pageLogic.isArticleDir(props.node)
+        return !props.isRoot && !isMulti.value && pageService.isArticleDir(props.node)
       })
 
       const isAssetsDir = computed(() => {
-        return !props.isRoot && !isMulti.value && pageLogic.isAssetsDir(props.node)
+        return !props.isRoot && !isMulti.value && pageService.isAssetsDir(props.node)
       })
 
       const isArticleSrc = computed(() => {
-        return !props.isRoot && !isMulti.value && pageLogic.isArticleSrc(props.node)
+        return !props.isRoot && !isMulti.value && pageService.isArticleSrc(props.node)
       })
 
       const enabled = computed(() => {
         if (props.disabled) return false
         if (!menuItems.value.length) return false
-        if (!pageLogic.isSignedIn.value) return false
+        if (!pageService.isSignedIn.value) return false
 
         if (props.selectedNodes) {
           return props.selectedNodes.length > 0 && props.selectedNodes.includes(props.node)
@@ -314,7 +314,7 @@ namespace StorageNodePopupMenu {
 
       function containsBundle(nodes: Node[]): boolean {
         for (const node of nodes) {
-          if (pageLogic.isListBundle(node) || pageLogic.isTreeBundle(node)) {
+          if (pageService.isListBundle(node) || pageService.isTreeBundle(node)) {
             return true
           }
         }
@@ -323,7 +323,7 @@ namespace StorageNodePopupMenu {
 
       function containsAssetsDir(nodes: Node[]): boolean {
         for (const node of nodes) {
-          if (pageLogic.isAssetsDir(node)) {
+          if (pageService.isAssetsDir(node)) {
             return true
           }
         }
