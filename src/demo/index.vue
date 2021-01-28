@@ -27,7 +27,7 @@
         <div class="app-mr-16">Quasar v{{ $q.version }}</div>
 
         <LoadingSpinner v-if="state.isSigningIn" color="indigo-3" />
-        <div v-show="state.isSignedIn" class="app-mr-16">{{ state.user.publicProfile.displayName }}</div>
+        <div v-show="state.isSignedIn" class="app-mr-16">{{ state.user.fullName }}</div>
 
         <q-btn flat round dense color="white" icon="more_vert">
           <q-menu>

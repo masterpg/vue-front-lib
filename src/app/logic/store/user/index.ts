@@ -1,6 +1,6 @@
 import 'firebase/auth'
 import { DeepPartial, DeepReadonly } from 'web-base-lib'
-import { UserClaims, UserInfo } from '@/app/logic/base'
+import { User, UserClaims } from '@/app/logic/base'
 import dayjs from 'dayjs'
 import firebase from 'firebase/app'
 import { reactive } from '@vue/composition-api'
@@ -12,8 +12,8 @@ import { reactive } from '@vue/composition-api'
 //========================================================================
 
 interface UserStore {
-  value: DeepReadonly<UserInfo>
-  set(user: DeepPartial<UserInfo>): DeepReadonly<UserInfo>
+  value: DeepReadonly<User>
+  set(user: DeepPartial<User>): DeepReadonly<User>
   clear(): void
   reflectCustomToken(): Promise<void>
 }
@@ -37,7 +37,7 @@ namespace UserStore {
     //----------------------------------------------------------------------
 
     const state = reactive({
-      value: createEmptyState(),
+      value: createEmptyUser(),
     })
 
     //----------------------------------------------------------------------
@@ -47,11 +47,11 @@ namespace UserStore {
     //----------------------------------------------------------------------
 
     const set: UserStore['set'] = user => {
-      return UserInfo.populate(user, state.value)
+      return User.populate(user, state.value)
     }
 
     const clear: UserStore['clear'] = () => {
-      set(createEmptyState())
+      set(createEmptyUser())
     }
 
     const reflectCustomToken: UserStore['reflectCustomToken'] = async () => {
@@ -74,21 +74,18 @@ namespace UserStore {
     }
   }
 
-  function createEmptyState(): UserInfo {
+  export function createEmptyUser(): User {
     return {
       id: '',
       email: '',
       emailVerified: false,
+      userName: '',
+      fullName: '',
       isAppAdmin: false,
+      photoURL: '',
+      version: 0,
       createdAt: dayjs(0),
       updatedAt: dayjs(0),
-      publicProfile: {
-        id: '',
-        displayName: '',
-        photoURL: '',
-        createdAt: dayjs(0),
-        updatedAt: dayjs(0),
-      },
     }
   }
 }

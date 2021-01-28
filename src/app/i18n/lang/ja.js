@@ -84,7 +84,9 @@ export default {
     changeEmail: 'メールアドレス変更',
     entry: {
       userInfo: 'ユーザー情報',
-      fullName: '名前',
+      userName: 'ユーザー名',
+      fullName: 'フルネーム',
+      userNameAlreadyExists: 'このユーザー名は既に存在します。',
     },
     providerList: {
       withGoogle: 'Googleで{type}',

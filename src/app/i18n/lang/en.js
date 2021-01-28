@@ -84,8 +84,10 @@ export default {
     deleteUserSignInMsg: `You need to sign in because you haven't been signed in for a period of time.`,
     changeEmail: 'Change email',
     entry: {
-      userInfo: 'User information',
-      fullName: 'Full name',
+      userInfo: 'User Information',
+      userName: 'User Name',
+      fullName: 'Full Name',
+      userNameAlreadyExists: 'This user name already exists.',
     },
     providerList: {
       withGoogle: '{type} with Google',

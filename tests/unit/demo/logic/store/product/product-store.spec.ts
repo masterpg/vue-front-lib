@@ -10,10 +10,42 @@ import dayjs from 'dayjs'
 
 function Products(): Product[] {
   return [
-    { id: 'product1', title: 'iPad 4 Mini', price: 39700, stock: 1, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
-    { id: 'product2', title: 'Fire HD 8 Tablet', price: 8980, stock: 5, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
-    { id: 'product3', title: 'MediaPad 10', price: 26400, stock: 10, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
-    { id: 'product4', title: 'Surface Go', price: 54290, stock: 0, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
+    {
+      id: 'product1',
+      title: 'iPad 4 Mini',
+      price: 39700,
+      stock: 1,
+      version: 1,
+      createdAt: dayjs('2020-01-01'),
+      updatedAt: dayjs('2020-01-02'),
+    },
+    {
+      id: 'product2',
+      title: 'Fire HD 8 Tablet',
+      price: 8980,
+      stock: 5,
+      version: 1,
+      createdAt: dayjs('2020-01-01'),
+      updatedAt: dayjs('2020-01-02'),
+    },
+    {
+      id: 'product3',
+      title: 'MediaPad 10',
+      price: 26400,
+      stock: 10,
+      version: 1,
+      createdAt: dayjs('2020-01-01'),
+      updatedAt: dayjs('2020-01-02'),
+    },
+    {
+      id: 'product4',
+      title: 'Surface Go',
+      price: 54290,
+      stock: 0,
+      version: 1,
+      createdAt: dayjs('2020-01-01'),
+      updatedAt: dayjs('2020-01-02'),
+    },
   ]
 }
 

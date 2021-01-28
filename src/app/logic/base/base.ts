@@ -1,6 +1,5 @@
 import 'firebase/auth'
 import 'firebase/firestore'
-import { Entity, OmitEntityTimestamp } from '@/firestore-ex'
 import { Dayjs } from 'dayjs'
 import firebase from 'firebase/app'
 
@@ -10,14 +9,34 @@ import firebase from 'firebase/app'
 //
 //========================================================================
 
-type TimestampEntity<T = unknown> = Entity &
-  OmitEntityTimestamp<T> & {
-    createdAt: Dayjs
-    updatedAt: Dayjs
-  }
+interface Entity {
+  id: string
+  version: number
+}
+
+interface EntityTimestamp {
+  createdAt: Dayjs
+  updatedAt: Dayjs
+}
+
+type OmitTimestamp<T = unknown> = Omit<T, 'createdAt' | 'updatedAt'>
+
+type TimestampEntity<T = unknown> = Entity & OmitTimestamp<T> & EntityTimestamp
+
+//--------------------------------------------------
+//  Auth
+//--------------------------------------------------
+
+enum AuthStatus {
+  None = 'None',
+  WaitForEmailVerified = 'WaitForEmailVerified',
+  WaitForEntry = 'WaitForEntry',
+  Available = 'Available',
+}
 
 interface UserClaims {
   isAppAdmin?: boolean
+  authStatus?: AuthStatus
 }
 
 interface IdToken extends firebase.auth.IdTokenResult, UserClaims {}
@@ -57,4 +76,4 @@ function generateEntityId(entityName: string): string {
 //
 //========================================================================
 
-export { IdToken, TimestampEntity, UserClaims, generateEntityId, getIdToken, sgetIdToken }
+export { AuthStatus, Entity, EntityTimestamp, IdToken, OmitTimestamp, TimestampEntity, UserClaims, generateEntityId, getIdToken, sgetIdToken }

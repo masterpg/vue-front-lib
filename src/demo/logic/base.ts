@@ -38,6 +38,7 @@ namespace Product {
     if (typeof from.title === 'string') to.title = from.title
     if (typeof from.price === 'number') to.price = from.price
     if (typeof from.stock === 'number') to.stock = from.stock
+    if (typeof from.version === 'number') to.version = from.version
     if (dayjs.isDayjs(from.createdAt)) to.createdAt = dayjs(from.createdAt)
     if (dayjs.isDayjs(from.updatedAt)) to.updatedAt = dayjs(from.updatedAt)
     return to as Product
@@ -67,6 +68,7 @@ namespace CartItem {
     if (typeof from.title === 'string') to.title = from.title
     if (typeof from.price === 'number') to.price = from.price
     if (typeof from.quantity === 'number') to.quantity = from.quantity
+    if (typeof from.version === 'number') to.version = from.version
     if (dayjs.isDayjs(from.createdAt)) to.createdAt = dayjs(from.createdAt)
     if (dayjs.isDayjs(from.updatedAt)) to.updatedAt = dayjs(from.updatedAt)
     return to as CartItem

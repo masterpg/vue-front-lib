@@ -1,4 +1,5 @@
-import { UserInfo } from '@/app/logic'
+import { User } from '@/app/logic'
+import { UserStore } from '@/app/logic/store/user'
 import dayjs from 'dayjs'
 import { provideDependency } from '../../../../../helpers/app'
 
@@ -8,39 +9,18 @@ import { provideDependency } from '../../../../../helpers/app'
 //
 //========================================================================
 
-function EmptyUser(): UserInfo {
+function User1(): User {
   return {
-    id: '',
-    email: '',
-    emailVerified: false,
-    isAppAdmin: false,
-    createdAt: dayjs(0),
-    updatedAt: dayjs(0),
-    publicProfile: {
-      id: '',
-      displayName: '',
-      photoURL: '',
-      createdAt: dayjs(0),
-      updatedAt: dayjs(0),
-    },
-  }
-}
-
-function User1(): UserInfo {
-  return {
-    id: UserInfo.generateId(),
+    id: User.generateId(),
     email: 'taro.yamada@example.com',
     emailVerified: true,
+    userName: 'taro.yamada',
+    fullName: '山田 太郎',
     isAppAdmin: true,
+    photoURL: 'http://example.com/taro.yamada.png',
+    version: 1,
     createdAt: dayjs(),
     updatedAt: dayjs(),
-    publicProfile: {
-      id: UserInfo.generateId(),
-      displayName: '山田 太郎',
-      photoURL: 'http://example.com/taro.yamada.png',
-      createdAt: dayjs(),
-      updatedAt: dayjs(),
-    },
   }
 }
 
@@ -75,6 +55,6 @@ describe('UserStore', () => {
 
     // ストアの値を検証
     const updated = store.user.value
-    expect(updated).toEqual(EmptyUser())
+    expect(updated).toEqual(UserStore.createEmptyUser())
   })
 })

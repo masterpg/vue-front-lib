@@ -1,4 +1,4 @@
-import { LogicContainer, PublicProfile } from '@/app/logic'
+import { LogicContainer, User } from '@/app/logic'
 import VGreetMessage, { GreetMessage } from '@/demo/views/abc/greet-message.vue'
 import { AuthLogic } from '@/app/logic/modules/auth'
 import { computed } from '@vue/composition-api'
@@ -19,7 +19,7 @@ describe('GreetMessage', () => {
             'isSignedIn',
             computed(() => true)
           )
-          td.replace<PublicProfile, 'displayName'>(logic.auth.user.publicProfile, 'displayName', userName)
+          td.replace<User, 'fullName'>(logic.auth.user, 'fullName', userName)
         })
       },
     })
@@ -37,7 +37,7 @@ describe('GreetMessage', () => {
       setup() {
         const { logic } = provideDependencyToVue(({ logic }) => {
           td.replace<AuthLogic, 'validateSignedIn'>(logic.auth, 'validateSignedIn')
-          td.replace<PublicProfile, 'displayName'>(logic.auth.user.publicProfile, 'displayName', userName)
+          td.replace<User, 'fullName'>(logic.auth.user, 'fullName', userName)
         })
         return { logic }
       },

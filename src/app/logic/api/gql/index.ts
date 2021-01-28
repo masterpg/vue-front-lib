@@ -1,21 +1,19 @@
 import {
   APIStorageNode,
-  AuthStatus,
+  AuthDataResult,
   CreateArticleTypeDirInput,
   CreateStorageNodeInput,
-  PublicProfile,
-  SaveArticleSrcMasterFileResult,
+  SetOwnUserInfoResult,
   SignedUploadUrlInput,
   StorageArticleDirType,
-  StorageNode,
   StorageNodeGetKeyInput,
   StorageNodeGetKeysInput,
   StorageNodeKeyInput,
   StorageNodeShareSettingsInput,
   StoragePaginationInput,
   StoragePaginationResult,
-  UserInfo,
-  UserInfoInput,
+  User,
+  UserInput,
 } from '@/app/logic/base'
 import { RawEntity, ToEntity, toEntity } from '@/app/logic/api/base'
 import { GQLAPIClient } from '@/app/logic/api/gql/client'
@@ -29,16 +27,12 @@ import gql from 'graphql-tag'
 
 interface GQLAPIContainer {
   //--------------------------------------------------
-  //  Env
-  //--------------------------------------------------
-
-  //--------------------------------------------------
   //  User
   //--------------------------------------------------
 
   getAuthData(): Promise<AuthDataResult>
 
-  setOwnUserInfo(input: UserInfoInput): Promise<UserInfo>
+  setOwnUserInfo(input: UserInput): Promise<SetOwnUserInfoResult>
 
   deleteOwnUser(): Promise<boolean>
 
@@ -127,34 +121,6 @@ interface GQLAPIContainer {
 }
 
 //--------------------------------------------------
-//  Env
-//--------------------------------------------------
-
-//--------------------------------------------------
-//  User
-//--------------------------------------------------
-
-interface AuthDataResult {
-  status: AuthStatus
-  token: string
-  user?: UserInfo
-}
-
-//--------------------------------------------------
-//  User
-//--------------------------------------------------
-
-interface RawAuthDataResult extends Omit<AuthDataResult, 'user'> {
-  user: RawUser
-}
-
-interface RawUser extends RawEntity<Omit<UserInfo, 'publicProfile'>> {
-  publicProfile: RawPublicProfile
-}
-
-interface RawPublicProfile extends RawEntity<PublicProfile> {}
-
-//--------------------------------------------------
 //  Storage
 //--------------------------------------------------
 
@@ -198,27 +164,23 @@ namespace GQLAPIContainer {
     //--------------------------------------------------
 
     const getAuthData: GQLAPIContainer['getAuthData'] = async () => {
-      const response = await clientLv1.query<{ authData: RawAuthDataResult }>({
+      const response = await clientLv1.query<{ authData: Omit<AuthDataResult, 'user'> & { user: RawEntity<User> } }>({
         query: gql`
-          query AuthData {
+          query GetAuthData {
             authData {
               status
               token
               user {
                 id
-                fullName
                 email
                 emailVerified
+                userName
+                fullName
                 isAppAdmin
+                photoURL
+                version
                 createdAt
                 updatedAt
-                publicProfile {
-                  id
-                  displayName
-                  photoURL
-                  createdAt
-                  updatedAt
-                }
               }
             }
           }
@@ -226,50 +188,46 @@ namespace GQLAPIContainer {
         isAuth: true,
       })
 
-      const { user, ...others } = response.data.authData
+      const { status, token, user } = response.data.authData
       if (!user) {
-        return { ...others, user: undefined }
+        return { status, token, user: undefined }
       }
 
-      return {
-        ...others,
-        user: {
-          ...toEntity(user),
-          publicProfile: toEntity(user.publicProfile),
-        },
-      }
+      return { status, token, user: toEntity(user) }
     }
 
     const setOwnUserInfo: GQLAPIContainer['setOwnUserInfo'] = async input => {
-      const response = await clientLv1.mutate<{ setOwnUserInfo: RawUser }, { input: UserInfoInput }>({
+      const response = await clientLv1.mutate<
+        { setOwnUserInfo: Omit<SetOwnUserInfoResult, 'user'> & { user: RawEntity<User> } },
+        { input: UserInput }
+      >({
         mutation: gql`
-          mutation SetOwnUserInfo($input: UserInfoInput!) {
+          mutation SetOwnUserInfo($input: UserInput!) {
             setOwnUserInfo(input: $input) {
-              id
-              fullName
-              email
-              emailVerified
-              isAppAdmin
-              createdAt
-              updatedAt
-              publicProfile {
+              status
+              user {
                 id
-                displayName
+                email
+                emailVerified
+                userName
+                fullName
+                isAppAdmin
                 photoURL
+                version
                 createdAt
                 updatedAt
               }
             }
           }
         `,
-        variables: { input: UserInfoInput.rigidify(input) },
+        variables: { input: UserInput.squeeze(input) },
         isAuth: true,
       })
 
-      const user = response.data!.setOwnUserInfo
+      const result = response.data!.setOwnUserInfo
       return {
-        ...toEntity(user),
-        publicProfile: toEntity(user.publicProfile),
+        status: result.status,
+        user: toEntity(result.user),
       }
     }
 
@@ -348,7 +306,7 @@ namespace GQLAPIContainer {
           ${StorageNodeFields}
         `,
         variables: {
-          input: StorageNodeGetKeyInput.rigidify(input),
+          input: StorageNodeGetKeyInput.squeeze(input),
         },
         isAuth: true,
       })
@@ -366,7 +324,7 @@ namespace GQLAPIContainer {
           ${StorageNodeFields}
         `,
         variables: {
-          input: StorageNodeGetKeysInput.rigidify(input),
+          input: StorageNodeGetKeysInput.squeeze(input),
         },
         isAuth: true,
       })
@@ -392,7 +350,7 @@ namespace GQLAPIContainer {
         `,
         variables: {
           dirPath,
-          input: StoragePaginationInput.rigidify(input),
+          input: StoragePaginationInput.squeeze(input),
         },
         isAuth: true,
       })
@@ -422,7 +380,7 @@ namespace GQLAPIContainer {
         `,
         variables: {
           dirPath,
-          input: StoragePaginationInput.rigidify(input),
+          input: StoragePaginationInput.squeeze(input),
         },
         isAuth: true,
       })
@@ -452,7 +410,7 @@ namespace GQLAPIContainer {
         `,
         variables: {
           dirPath,
-          input: StoragePaginationInput.rigidify(input),
+          input: StoragePaginationInput.squeeze(input),
         },
         isAuth: true,
       })
@@ -479,7 +437,7 @@ namespace GQLAPIContainer {
         `,
         variables: {
           dirPath,
-          input: StoragePaginationInput.rigidify(input),
+          input: StoragePaginationInput.squeeze(input),
         },
         isAuth: true,
       })
@@ -534,7 +492,7 @@ namespace GQLAPIContainer {
         `,
         variables: {
           dirPath,
-          input: CreateStorageNodeInput.rigidify(input),
+          input: CreateStorageNodeInput.squeeze(input),
         },
         isAuth: true,
       })
@@ -656,7 +614,7 @@ namespace GQLAPIContainer {
         `,
         variables: {
           dirPath,
-          input: StorageNodeShareSettingsInput.rigidify(input),
+          input: StorageNodeShareSettingsInput.squeeze(input),
         },
         isAuth: true,
       })
@@ -674,7 +632,7 @@ namespace GQLAPIContainer {
           ${StorageNodeFields}
         `,
         variables: {
-          input: StorageNodeKeyInput.rigidify(input),
+          input: StorageNodeKeyInput.squeeze(input),
         },
         isAuth: true,
       })
@@ -696,7 +654,7 @@ namespace GQLAPIContainer {
         `,
         variables: {
           filePath,
-          input: StorageNodeShareSettingsInput.rigidify(input),
+          input: StorageNodeShareSettingsInput.squeeze(input),
         },
         isAuth: true,
       })
@@ -711,7 +669,7 @@ namespace GQLAPIContainer {
           }
         `,
         variables: {
-          inputs: inputs.map(input => SignedUploadUrlInput.rigidify(input)),
+          inputs: inputs.map(input => SignedUploadUrlInput.squeeze(input)),
         },
         isAuth: true,
       })
@@ -732,7 +690,7 @@ namespace GQLAPIContainer {
           }
           ${StorageNodeFields}
         `,
-        variables: { input: CreateArticleTypeDirInput.rigidify(input) },
+        variables: { input: CreateArticleTypeDirInput.squeeze(input) },
         isAuth: true,
       })
       return toStorageNode(response.data!.createArticleTypeDir)
@@ -845,7 +803,7 @@ namespace GQLAPIContainer {
         variables: {
           dirPath,
           types,
-          input: StoragePaginationInput.rigidify(input),
+          input: StoragePaginationInput.squeeze(input),
         },
         isAuth: true,
       })
@@ -939,4 +897,4 @@ namespace GQLAPIContainer {
 //
 //========================================================================
 
-export { GQLAPIContainer, RawUser, RawStorageNode }
+export { GQLAPIContainer, RawStorageNode }

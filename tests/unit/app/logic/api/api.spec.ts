@@ -1,17 +1,17 @@
 import {
   APIStorageNode,
   AuthStatus,
-  PublicProfile,
+  OmitTimestamp,
+  SetOwnUserInfoResultStatus,
   StorageArticleDirType,
   StorageArticleFileType,
   StorageNode,
   StorageNodeShareSettings,
   StorageUtil,
-  UserInfo,
-  UserInfoInput,
+  User,
+  UserInput,
 } from '@/app/logic'
 import { AppAdminToken, GeneralToken, GeneralUser, provideDependency } from '../../../../helpers/app'
-import { OmitEntityTimestamp } from '@/firestore-ex'
 import { sleep } from 'web-base-lib'
 
 jest.setTimeout(25000)
@@ -21,10 +21,6 @@ jest.setTimeout(25000)
 //  Test data
 //
 //========================================================================
-
-interface TestAuthData extends OmitEntityTimestamp<Omit<UserInfo, 'publicProfile'>> {
-  publicProfile: OmitEntityTimestamp<PublicProfile>
-}
 
 const TEST_DIR = 'test'
 
@@ -53,8 +49,9 @@ describe('Env API', () => {
 describe('User API', () => {
   describe('getAuthData', () => {
     it('疎通確認', async () => {
-      // テストユーザーを登録
       const { api } = provideDependency()
+
+      // テストユーザーを登録
       await api.setTestUsers(GeneralUser())
 
       api.setTestAuthToken(GeneralToken())
@@ -66,20 +63,16 @@ describe('User API', () => {
       expect(actual.token).toBeDefined()
       expect(actual.user).toMatchObject({
         id: GeneralUser().uid,
-        fullName: GeneralUser().fullName,
         email: GeneralUser().email,
         emailVerified: GeneralUser().emailVerified,
-        isAppAdmin: GeneralUser().customClaims!.isAppAdmin,
-        publicProfile: {
-          id: GeneralUser().uid,
-          displayName: GeneralUser().displayName,
-          photoURL: GeneralUser().photoURL,
-        },
-      } as TestAuthData)
-      expect(actual.user!.createdAt.isValid()).toBeTruthy()
-      expect(actual.user!.updatedAt.isValid()).toBeTruthy()
-      expect(actual.user!.publicProfile.createdAt.isValid()).toBeTruthy()
-      expect(actual.user!.publicProfile.updatedAt.isValid()).toBeTruthy()
+        userName: GeneralUser().userName,
+        fullName: GeneralUser().fullName,
+        isAppAdmin: GeneralUser().isAppAdmin,
+        photoURL: GeneralUser().photoURL,
+      } as OmitTimestamp<User>)
+      expect(actual.user?.version).toBeGreaterThanOrEqual(1)
+      expect(actual.user?.createdAt.isValid()).toBeTruthy()
+      expect(actual.user?.updatedAt.isValid()).toBeTruthy()
     })
 
     it('サインインしていない場合', async () => {
@@ -99,32 +92,34 @@ describe('User API', () => {
 
   describe('setOwnUserInfo', () => {
     it('疎通確認', async () => {
-      // テストユーザーを登録
       const { api } = provideDependency()
-      const [user] = (await api.setTestUsers(GeneralUser()))!
+
+      // テストユーザーを登録
+      const [user] = await api.setTestUsers(GeneralUser())
 
       api.setTestAuthToken(GeneralToken())
 
       // ユーザー情報設定
-      const userInfoInput: UserInfoInput = { displayName: 'john', fullName: 'John Doe' }
-      const actual = (await api.setOwnUserInfo(userInfoInput))!
+      const userInput: UserInput = {
+        userName: 'john',
+        fullName: 'John Doe',
+        photoURL: 'https://example.com/john/user.png',
+      }
+      const actual = (await api.setOwnUserInfo(userInput))!
 
-      expect(actual).toMatchObject({
+      expect(actual.status).toBe(SetOwnUserInfoResultStatus.Success)
+      expect(actual.user).toMatchObject({
         id: GeneralUser().uid,
-        fullName: userInfoInput.fullName,
         email: GeneralUser().email,
         emailVerified: GeneralUser().emailVerified,
-        isAppAdmin: GeneralUser().customClaims!.isAppAdmin,
-        publicProfile: {
-          id: GeneralUser().uid,
-          displayName: userInfoInput.displayName,
-          photoURL: GeneralUser().photoURL,
-        },
-      } as TestAuthData)
-      expect(actual.createdAt).toEqual(user.createdAt)
-      expect(actual.updatedAt.isAfter(user.updatedAt)).toBeTruthy()
-      expect(actual.publicProfile.createdAt).toEqual(user.publicProfile.createdAt)
-      expect(actual.publicProfile.updatedAt.isAfter(user.publicProfile.updatedAt)).toBeTruthy()
+        userName: userInput.userName,
+        fullName: userInput.fullName,
+        isAppAdmin: GeneralUser().isAppAdmin,
+        photoURL: userInput.photoURL,
+      } as OmitTimestamp<User>)
+      expect(actual.user?.version).toBeGreaterThanOrEqual(1)
+      expect(actual.user?.createdAt).toEqual(user.createdAt)
+      expect(actual.user?.updatedAt.isAfter(user.updatedAt)).toBeTruthy()
     })
 
     it('サインインしていない場合', async () => {
@@ -134,7 +129,7 @@ describe('User API', () => {
       let actual!: Error
       try {
         await api.setOwnUserInfo({
-          displayName: GeneralUser().displayName,
+          userName: GeneralUser().userName,
           fullName: GeneralUser().fullName,
         })
       } catch (err) {

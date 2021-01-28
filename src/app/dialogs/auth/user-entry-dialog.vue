@@ -27,31 +27,29 @@
 
       <!-- コンテンツエリア -->
       <q-card-section>
-        <!-- 名前インプット -->
+        <!-- ユーザー名インプット -->
+        <q-input
+          ref="userNameInput"
+          v-model="userName"
+          type="text"
+          :label="t('auth.entry.userName')"
+          :error="Boolean(userNameErrorMessage)"
+          :error-message="userNameErrorMessage"
+        />
+        <!-- フルネームインプット -->
         <q-input
           ref="fullNameInput"
-          v-model="state.fullName"
+          v-model="fullName"
           type="text"
           :label="t('auth.entry.fullName')"
-          :error="isFullNameError"
-          :error-message="state.fullNameErrorMessage"
-          @input="clearErrorMessage()"
-        />
-        <!-- 表示名インプット -->
-        <q-input
-          ref="displayNameInput"
-          v-model="state.displayName"
-          type="text"
-          :label="t('common.displayName')"
-          :error="isDisplayNameError"
-          :error-message="state.displayNameErrorMessage"
-          @input="clearErrorMessage()"
+          :error="Boolean(fullNameErrorMessage)"
+          :error-message="fullNameErrorMessage"
         />
       </q-card-section>
 
       <!-- エラーメッセージ -->
-      <q-card-section v-show="isError">
-        <span class="error-message">{{ state.errorMessage }}</span>
+      <q-card-section v-show="Boolean(errorMessage)">
+        <span class="error-message">{{ errorMessage }}</span>
       </q-card-section>
 
       <!-- ボタンエリア -->
@@ -67,9 +65,9 @@
 
 <script lang="ts">
 import { Loading, QDialog, QInput } from 'quasar'
-import { Ref, SetupContext, computed, defineComponent, reactive, ref } from '@vue/composition-api'
+import { Ref, SetupContext, defineComponent, ref, watch } from '@vue/composition-api'
+import { SetOwnUserInfoResultStatus, injectLogic } from '@/app/logic'
 import { Dialog } from '@/app/components/dialog'
-import { injectLogic } from '@/app/logic'
 import { useI18n } from '@/app/i18n'
 
 interface UserEntryDialog extends Dialog<void, void> {}
@@ -95,20 +93,15 @@ namespace UserEntryDialog {
     const logic = injectLogic()
     const { t } = useI18n()
 
+    const userNameInput = ref() as Ref<QInput>
     const fullNameInput = ref() as Ref<QInput>
-    const displayNameInput = ref() as Ref<QInput>
 
-    const state = reactive({
-      errorMessage: '',
-      fullName: null as string | null,
-      fullNameErrorMessage: '',
-      displayName: null as string | null,
-      displayNameErrorMessage: '',
-    })
+    const userName = ref<string | null>('')
+    const fullName = ref<string | null>('')
 
-    const isError = computed(() => Boolean(state.errorMessage))
-    const isFullNameError = computed(() => validateFullName(state.fullName))
-    const isDisplayNameError = computed(() => validateDisplayName(state.displayName))
+    const errorMessage = ref('')
+    const userNameErrorMessage = ref('')
+    const fullNameErrorMessage = ref('')
 
     //----------------------------------------------------------------------
     //
@@ -117,7 +110,11 @@ namespace UserEntryDialog {
     //----------------------------------------------------------------------
 
     const open: UserEntryDialog['open'] = async () => {
-      return base.open()
+      return base.open({
+        opened: () => {
+          userNameInput.value.focus()
+        },
+      })
     }
 
     const close: UserEntryDialog['close'] = () => {
@@ -135,15 +132,11 @@ namespace UserEntryDialog {
      *  ビューをクリアします。
      */
     function clear(): void {
-      state.displayName = null
-      state.errorMessage = ''
-    }
-
-    /**
-     * エラーメッセージエリアのメッセージをクリアします。
-     */
-    function clearErrorMessage(): void {
-      state.errorMessage = ''
+      userName.value = null
+      fullName.value = null
+      errorMessage.value = ''
+      userNameErrorMessage.value = ''
+      fullNameErrorMessage.value = ''
     }
 
     /**
@@ -154,12 +147,19 @@ namespace UserEntryDialog {
 
       if (!validate()) {
         Loading.hide()
+        return
       }
 
-      await logic.auth.setUser({
-        fullName: state.fullName!,
-        displayName: state.displayName!,
+      const ret = await logic.auth.setUserInfo({
+        userName: userName.value!,
+        fullName: fullName.value!,
       })
+
+      if (ret.status === SetOwnUserInfoResultStatus.AlreadyExists) {
+        userNameErrorMessage.value = String(t('auth.entry.userNameAlreadyExists'))
+        Loading.hide()
+        return
+      }
 
       close()
 
@@ -174,13 +174,13 @@ namespace UserEntryDialog {
      * 入力値の検証を行います。
      */
     function validate(): boolean {
-      state.fullName = state.fullName ?? ''
-      if (validateFullName(state.fullName)) {
+      userName.value = userName.value ?? ''
+      if (!validateUserName(userName.value)) {
         return false
       }
 
-      state.displayName = state.displayName ?? ''
-      if (validateDisplayName(state.displayName)) {
+      fullName.value = fullName.value ?? ''
+      if (!validateFullName(fullName.value)) {
         return false
       }
 
@@ -188,40 +188,101 @@ namespace UserEntryDialog {
     }
 
     /**
-     * 名前の検証を行います。
+     * ユーザー名の検証を行います。
      * @param value
      */
-    function validateFullName(value: string | null): boolean {
-      if (value === null) {
-        return false
+    function validateUserName(value: string | null): boolean {
+      function setInvalidError(): void {
+        const target = String(t('auth.entry.userName'))
+        userNameErrorMessage.value = String(t('error.invalid', { target }))
       }
 
-      if (value === '') {
-        const target = String(t('auth.entry.fullName'))
-        state.fullNameErrorMessage = String(t('error.required', { target }))
+      if (value === null) {
         return true
       }
 
-      return false
+      userNameErrorMessage.value = ''
+
+      if (value === '') {
+        const target = String(t('auth.entry.userName'))
+        userNameErrorMessage.value = String(t('error.required', { target }))
+        return false
+      }
+
+      // 60文字以下であることを検証
+      if (value.length > 60) {
+        setInvalidError()
+        return false
+      }
+
+      // 英(大小)数と｢-_｣以外の文字が使用されていないことを検証
+      if (/[^a-zA-Z0-9.\-_]/.test(value)) {
+        setInvalidError()
+        return false
+      }
+
+      return true
     }
 
     /**
-     * 表示名の検証を行います。
+     * フルネームの検証を行います。
      * @param value
      */
-    function validateDisplayName(value: string | null): boolean {
-      if (value === null) {
-        return false
+    function validateFullName(value: string | null): boolean {
+      function setInvalidError(): void {
+        const target = String(t('auth.entry.fullName'))
+        fullNameErrorMessage.value = String(t('error.invalid', { target }))
       }
 
-      if (value === '') {
-        const target = String(t('common.displayName'))
-        state.displayNameErrorMessage = String(t('error.required', { target }))
+      if (value === null) {
         return true
       }
 
-      return false
+      fullNameErrorMessage.value = ''
+
+      if (value === '') {
+        const target = String(t('auth.entry.fullName'))
+        fullNameErrorMessage.value = String(t('error.required', { target }))
+        return false
+      }
+
+      // 60文字以下であることを検証
+      if (value.length > 60) {
+        setInvalidError()
+        return false
+      }
+
+      // 禁則文字が使用されていないことを検証
+      /* eslint-disable no-irregular-whitespace */
+      // ※ 改行、タブ、｢<>^*~　｣
+      if (/\n|\r|\r\n|\t|[<>^*~　]/.test(value)) {
+        setInvalidError()
+        return false
+      }
+      /* eslint-disable no-irregular-whitespace */
+
+      return true
     }
+
+    //----------------------------------------------------------------------
+    //
+    //  Event listeners
+    //
+    //----------------------------------------------------------------------
+
+    watch(
+      () => userName.value,
+      (newValue, oldValue) => {
+        validateUserName(userName.value)
+      }
+    )
+
+    watch(
+      () => fullName.value,
+      (newValue, oldValue) => {
+        validateFullName(fullName.value)
+      }
+    )
 
     //----------------------------------------------------------------------
     //
@@ -233,14 +294,14 @@ namespace UserEntryDialog {
       ...base,
       t,
       fullNameInput,
-      displayNameInput,
-      state,
+      userNameInput,
+      userName,
+      fullName,
+      errorMessage,
+      userNameErrorMessage,
+      fullNameErrorMessage,
       open,
       close,
-      isError,
-      isFullNameError,
-      isDisplayNameError,
-      clearErrorMessage,
       entry,
     }
   }

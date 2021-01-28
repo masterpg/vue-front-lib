@@ -5,6 +5,7 @@ export function GeneralToken(): TestAuthToken {
   return {
     uid: 'test.general',
     authStatus: AuthStatus.Available,
+    isAppAdmin: false,
   }
 }
 
@@ -14,19 +15,18 @@ export function GeneralFirebaseUser(): Required<TestFirebaseUserInput> {
     email: 'test.general@example.com',
     emailVerified: true,
     password: 'passpass',
-    displayName: '一般ユーザー',
     disabled: false,
-    photoURL: 'https://example.com/test.general/user.png',
-    customClaims: {
-      isAppAdmin: false,
-    },
+    authStatus: GeneralToken().authStatus,
+    isAppAdmin: GeneralToken().isAppAdmin,
   }
 }
 
 export function GeneralUser(): TestUserInput {
   return {
     ...GeneralFirebaseUser(),
+    userName: 'test.general',
     fullName: '一般 太郎',
+    photoURL: 'https://example.com/test.general/user.png',
   }
 }
 
@@ -44,18 +44,17 @@ export function AppAdminFirebaseUser(): Required<TestFirebaseUserInput> {
     email: 'test.app.admin@example.com',
     emailVerified: true,
     password: 'passpass',
-    displayName: 'アプリケーション管理ユーザー',
     disabled: false,
-    photoURL: 'https://example.com/test.app.admin/user.png',
-    customClaims: {
-      isAppAdmin: AppAdminToken().isAppAdmin,
-    },
+    authStatus: AppAdminToken().authStatus,
+    isAppAdmin: AppAdminToken().isAppAdmin,
   }
 }
 
 export function AppAdminUser(): TestUserInput {
   return {
     ...AppAdminFirebaseUser(),
+    userName: 'test.app.admin',
     fullName: '管理 太郎',
+    photoURL: 'https://example.com/test.app.admin/user.png',
   }
 }

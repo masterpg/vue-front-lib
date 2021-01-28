@@ -38,7 +38,7 @@ interface CartItemUpdateInput {
 }
 
 interface CartItemEditResponse extends CartItem {
-  product: Pick<Product, 'id' | 'stock' | 'createdAt' | 'updatedAt'>
+  product: Pick<Product, 'id' | 'stock' | 'version' | 'createdAt' | 'updatedAt'>
 }
 
 interface RawProduct extends RawEntity<Product> {}

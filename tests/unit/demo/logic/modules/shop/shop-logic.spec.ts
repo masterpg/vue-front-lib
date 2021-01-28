@@ -12,10 +12,42 @@ import dayjs from 'dayjs'
 
 function Products(): Product[] {
   return [
-    { id: 'product1', title: 'iPad 4 Mini', price: 39700, stock: 1, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
-    { id: 'product2', title: 'Fire HD 8 Tablet', price: 8980, stock: 5, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
-    { id: 'product3', title: 'MediaPad 10', price: 26400, stock: 10, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
-    { id: 'product4', title: 'Surface Go', price: 54290, stock: 0, createdAt: dayjs('2020-01-01'), updatedAt: dayjs('2020-01-02') },
+    {
+      id: 'product1',
+      title: 'iPad 4 Mini',
+      price: 39700,
+      stock: 1,
+      version: 1,
+      createdAt: dayjs('2020-01-01'),
+      updatedAt: dayjs('2020-01-02'),
+    },
+    {
+      id: 'product2',
+      title: 'Fire HD 8 Tablet',
+      price: 8980,
+      stock: 5,
+      version: 1,
+      createdAt: dayjs('2020-01-01'),
+      updatedAt: dayjs('2020-01-02'),
+    },
+    {
+      id: 'product3',
+      title: 'MediaPad 10',
+      price: 26400,
+      stock: 10,
+      version: 1,
+      createdAt: dayjs('2020-01-01'),
+      updatedAt: dayjs('2020-01-02'),
+    },
+    {
+      id: 'product4',
+      title: 'Surface Go',
+      price: 54290,
+      stock: 0,
+      version: 1,
+      createdAt: dayjs('2020-01-01'),
+      updatedAt: dayjs('2020-01-02'),
+    },
   ]
 }
 
@@ -28,6 +60,7 @@ function CartItems(): CartItem[] {
       title: 'iPad 4 Mini',
       price: 39700,
       quantity: 2,
+      version: 1,
       createdAt: dayjs('2020-01-01'),
       updatedAt: dayjs('2020-01-02'),
     },
@@ -38,6 +71,7 @@ function CartItems(): CartItem[] {
       title: 'Fire HD 8 Tablet',
       price: 8980,
       quantity: 1,
+      version: 1,
       createdAt: dayjs('2020-01-01'),
       updatedAt: dayjs('2020-01-02'),
     },
@@ -114,7 +148,7 @@ describe('ShopLogic', () => {
   describe('addItemToCart', () => {
     it('ベーシックケース - 追加', async () => {
       // 現在の商品の在庫数を設定
-      const products = Product.clone(Products())
+      const products = Products()
       const product3 = products[2]
       product3.stock = 10
       // API実行後のレスポンスオブジェクト
@@ -125,11 +159,13 @@ describe('ShopLogic', () => {
         title: product3.title,
         price: product3.price,
         quantity: 1,
+        version: 1,
         createdAt: dayjs(),
         updatedAt: dayjs(),
         product: {
           id: product3.id,
           stock: product3.stock - 1,
+          version: product3.version + 1,
           createdAt: dayjs(),
           updatedAt: dayjs(),
         },
@@ -173,7 +209,7 @@ describe('ShopLogic', () => {
 
     it('ベーシックケース - 更新', async () => {
       // 現在の商品の在庫数を設定
-      const products = Product.clone(Products())
+      const products = Products()
       const product1 = products[0]
       product1.stock = 10
       // API実行後のレスポンスオブジェクト
@@ -186,6 +222,7 @@ describe('ShopLogic', () => {
         product: {
           id: cartItem1.productId,
           stock: product1.stock - 1,
+          version: product1.version + 1,
           createdAt: product1.createdAt,
           updatedAt: dayjs(),
         },
@@ -227,7 +264,7 @@ describe('ShopLogic', () => {
     })
 
     it('在庫が足りなかった場合', async () => {
-      const products = Product.clone(Products())
+      const products = Products()
       const product1 = products[0]
       // 現在の商品の在庫数を設定
       product1.stock = 0
@@ -286,11 +323,11 @@ describe('ShopLogic', () => {
   describe('removeItemFromCart', () => {
     it('ベーシックケース - 更新', async () => {
       // 現在の商品の在庫数を設定
-      const products = Product.clone(Products())
+      const products = Products()
       const product1 = products[0]
       product1.stock = 10
       // 現在のカートの数量を設定
-      const cartItems = CartItem.clone(CartItems())
+      const cartItems = CartItems()
       const cartItem1 = cartItems[0]
       cartItem1.quantity = 2
       // API実行後のレスポンスオブジェクト
@@ -301,6 +338,7 @@ describe('ShopLogic', () => {
         product: {
           id: cartItem1.productId,
           stock: product1.stock + 1,
+          version: product1.version + 1,
           createdAt: product1.updatedAt,
           updatedAt: dayjs(),
         },
@@ -343,11 +381,11 @@ describe('ShopLogic', () => {
 
     it('ベーシックケース - 削除', async () => {
       // 現在の商品の在庫数を設定
-      const products = Product.clone(Products())
+      const products = Products()
       const product1 = products[0]
       product1.stock = 10
       // 現在のカートの数量を設定
-      const cartItems = CartItem.clone(CartItems())
+      const cartItems = CartItems()
       const cartItem1 = cartItems[0]
       cartItem1.quantity = 1
       // API実行後のレスポンスオブジェクト
@@ -358,6 +396,7 @@ describe('ShopLogic', () => {
         product: {
           id: cartItem1.productId,
           stock: product1.stock + 1,
+          version: product1.version + 1,
           createdAt: product1.updatedAt,
           updatedAt: dayjs(),
         },
@@ -394,7 +433,7 @@ describe('ShopLogic', () => {
     it('APIでエラーが発生した場合', async () => {
       const product1 = Products()[0]
       // 現在のカートの数量を設定
-      const cartItems = CartItem.clone(CartItems())
+      const cartItems = CartItems()
       const cartItem1 = cartItems[0]
       cartItem1.quantity = 1
 

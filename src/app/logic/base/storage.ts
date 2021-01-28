@@ -126,7 +126,7 @@ interface StoragePaginationInput {
 }
 
 namespace StoragePaginationInput {
-  export function rigidify<T extends StoragePaginationInput | undefined>(input?: StoragePaginationInput): T {
+  export function squeeze<T extends StoragePaginationInput | undefined>(input?: StoragePaginationInput): T {
     if (!input) return undefined as T
     return pickProps(input, ['maxChunk', 'pageToken']) as T
   }
@@ -151,7 +151,7 @@ interface StorageNodeShareSettingsInput {
 }
 
 namespace StorageNodeShareSettingsInput {
-  export function rigidify<T extends StorageNodeShareSettingsInput | undefined>(input?: StorageNodeShareSettingsInput): T {
+  export function squeeze<T extends StorageNodeShareSettingsInput | undefined>(input?: StorageNodeShareSettingsInput): T {
     if (!input) return undefined as T
     return pickProps(input, ['isPublic', 'readUIds', 'writeUIds']) as T
   }
@@ -163,7 +163,7 @@ interface StorageNodeKeyInput {
 }
 
 namespace StorageNodeKeyInput {
-  export function rigidify<T extends StorageNodeKeyInput | undefined>(input?: StorageNodeKeyInput): T {
+  export function squeeze<T extends StorageNodeKeyInput | undefined>(input?: StorageNodeKeyInput): T {
     if (!input) return undefined as T
     return pickProps(input, ['id', 'path']) as T
   }
@@ -175,7 +175,7 @@ interface StorageNodeGetKeyInput {
 }
 
 namespace StorageNodeGetKeyInput {
-  export function rigidify<T extends StorageNodeGetKeyInput | undefined>(input?: StorageNodeGetKeyInput): T {
+  export function squeeze<T extends StorageNodeGetKeyInput | undefined>(input?: StorageNodeGetKeyInput): T {
     if (!input) return undefined as T
     return pickProps(input, ['id', 'path']) as T
   }
@@ -187,7 +187,7 @@ interface StorageNodeGetKeysInput {
 }
 
 namespace StorageNodeGetKeysInput {
-  export function rigidify<T extends StorageNodeGetKeysInput | undefined>(input?: StorageNodeGetKeysInput): T {
+  export function squeeze<T extends StorageNodeGetKeysInput | undefined>(input?: StorageNodeGetKeysInput): T {
     if (!input) return undefined as T
     return pickProps(input, ['ids', 'paths']) as T
   }
@@ -200,7 +200,7 @@ interface SignedUploadUrlInput {
 }
 
 namespace SignedUploadUrlInput {
-  export function rigidify<T extends SignedUploadUrlInput | undefined>(input?: SignedUploadUrlInput): T {
+  export function squeeze<T extends SignedUploadUrlInput | undefined>(input?: SignedUploadUrlInput): T {
     if (!input) return undefined as T
     return pickProps(input, ['id', 'path', 'contentType']) as T
   }
@@ -209,9 +209,9 @@ namespace SignedUploadUrlInput {
 interface CreateStorageNodeInput extends StorageNodeShareSettingsInput {}
 
 namespace CreateStorageNodeInput {
-  export function rigidify<T extends CreateStorageNodeInput | undefined>(input?: CreateStorageNodeInput): T {
+  export function squeeze<T extends CreateStorageNodeInput | undefined>(input?: CreateStorageNodeInput): T {
     if (!input) return undefined as T
-    return StorageNodeShareSettingsInput.rigidify(input) as T
+    return StorageNodeShareSettingsInput.squeeze(input) as T
   }
 }
 
@@ -222,7 +222,7 @@ interface CreateArticleTypeDirInput {
 }
 
 namespace CreateArticleTypeDirInput {
-  export function rigidify<T extends CreateArticleTypeDirInput | undefined>(input?: CreateArticleTypeDirInput): T {
+  export function squeeze<T extends CreateArticleTypeDirInput | undefined>(input?: CreateArticleTypeDirInput): T {
     if (!input) return undefined as T
     return pickProps(input, ['dir', 'name', 'type']) as T
   }

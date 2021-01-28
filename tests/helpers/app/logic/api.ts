@@ -1,13 +1,12 @@
-import { AuthStatus, UserClaims, UserInfo, UserInfoInput } from '@/app/logic'
+import { AuthStatus, User, UserClaims, UserInput } from '@/app/logic'
+import { RawEntity, toEntities } from '@/app/logic/api/base'
+import { pickProps, removeStartDirChars } from 'web-base-lib'
 import { APIContainer } from '@/app/logic/api'
 import { AppAdminToken } from '../data'
 import { GQLAPIClient } from '@/app/logic/api/gql/client'
-import { RawUser } from '@/app/logic/api/gql'
 import axios from 'axios'
 import gql from 'graphql-tag'
 import path from 'path'
-import { removeStartDirChars } from 'web-base-lib'
-import { toEntity } from '@/app/logic/api/base'
 import { useConfig } from '@/app/config'
 
 //========================================================================
@@ -30,14 +29,14 @@ interface TestAPIContainer extends APIContainer {
   removeTestUserFiles(user: TestAuthToken, filePaths: string[]): Promise<void>
   setTestFirebaseUsers(...users: TestFirebaseUserInput[]): Promise<void>
   deleteTestFirebaseUsers(...uids: string[]): Promise<void>
-  setTestUsers(...users: TestUserInput[]): Promise<UserInfo[]>
+  setTestUsers(...users: TestUserInput[]): Promise<User[]>
   deleteTestUsers(...uids: string[]): Promise<void>
 }
 
 interface TestAuthToken {
   uid: string
+  isAppAdmin: boolean
   authStatus: AuthStatus
-  isAppAdmin?: boolean
 }
 
 interface PutTestStoreDataInput {
@@ -57,18 +56,40 @@ interface TestUploadFileItem {
   data: string | Blob | Uint8Array | ArrayBuffer | File
 }
 
-interface TestFirebaseUserInput {
+interface TestFirebaseUserInput extends UserClaims {
   uid: string
   email?: string
   emailVerified?: boolean
   password?: string
-  displayName?: string
   disabled?: boolean
-  photoURL?: string
-  customClaims?: UserClaims
 }
 
-type TestUserInput = TestFirebaseUserInput & UserInfoInput
+namespace TestFirebaseUserInput {
+  export function squeeze<T extends TestFirebaseUserInput | undefined>(input?: TestFirebaseUserInput): T {
+    if (!input) return undefined as T
+    return pickProps(input, ['uid', 'email', 'emailVerified', 'password', 'disabled', 'isAppAdmin', 'authStatus']) as T
+  }
+}
+
+interface TestUserInput extends TestFirebaseUserInput, UserInput {}
+
+namespace TestUserInput {
+  export function squeeze<T extends TestUserInput | undefined>(input?: TestUserInput): T {
+    if (!input) return undefined as T
+    return pickProps(input, [
+      'uid',
+      'email',
+      'emailVerified',
+      'password',
+      'disabled',
+      'isAppAdmin',
+      'authStatus',
+      'userName',
+      'fullName',
+      'photoURL',
+    ]) as T
+  }
+}
 
 type APIContainerImpl = ReturnType<typeof APIContainer['newRawInstance']>
 
@@ -212,14 +233,14 @@ namespace TestAPIContainer {
       )
     }
 
-    const setTestFirebaseUsers: TestAPIContainer['setTestFirebaseUsers'] = async users => {
+    const setTestFirebaseUsers: TestAPIContainer['setTestFirebaseUsers'] = async (...users: TestFirebaseUserInput[]) => {
       await clientDev.mutate<{ setTestFirebaseUsers: boolean }>({
         mutation: gql`
           mutation SetTestFirebaseUsers($users: [TestFirebaseUserInput!]!) {
             setTestFirebaseUsers(users: $users)
           }
         `,
-        variables: { users },
+        variables: { users: users.map(user => TestFirebaseUserInput.squeeze(user)) },
       })
     }
 
@@ -234,38 +255,29 @@ namespace TestAPIContainer {
       })
     }
 
-    const setTestUsers: TestAPIContainer['setTestUsers'] = async users => {
-      const response = await clientDev.mutate<{ setTestUsers: RawUser[] }>({
+    const setTestUsers: TestAPIContainer['setTestUsers'] = async (...users: TestUserInput[]) => {
+      const response = await clientDev.mutate<{ setTestUsers: RawEntity<User>[] }>({
         mutation: gql`
           mutation SetTestUsers($users: [TestUserInput!]!) {
             setTestUsers(users: $users) {
               id
-              fullName
               email
               emailVerified
+              userName
+              fullName
               isAppAdmin
+              photoURL
+              version
               createdAt
               updatedAt
-              publicProfile {
-                id
-                displayName
-                photoURL
-                createdAt
-                updatedAt
-              }
             }
           }
         `,
-        variables: { users },
+        variables: { users: users.map(user => TestUserInput.squeeze(user)) },
       })
 
       const testUsers = response.data!.setTestUsers
-      return testUsers.map(user => {
-        return {
-          ...toEntity(user),
-          publicProfile: toEntity(user.publicProfile),
-        }
-      })
+      return toEntities(testUsers)
     }
 
     const deleteTestUsers: TestAPIContainer['deleteTestUsers'] = async uids => {

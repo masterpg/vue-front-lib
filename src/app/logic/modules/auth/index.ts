@@ -1,5 +1,5 @@
 import 'firebase/auth'
-import { AuthStatus, UserInfo, UserInfoInput } from '@/app/logic/base'
+import { AuthStatus, SetOwnUserInfoResult, SetOwnUserInfoResultStatus, User, UserInput } from '@/app/logic/base'
 import { ComputedRef, computed, reactive } from '@vue/composition-api'
 import { DeepReadonly } from 'web-base-lib'
 import { Dialog } from 'quasar'
@@ -16,7 +16,7 @@ import { useI18n } from '@/app/i18n'
 //========================================================================
 
 interface AuthLogic {
-  readonly user: DeepReadonly<UserInfo>
+  readonly user: DeepReadonly<User>
 
   readonly status: ComputedRef<AuthStatus>
 
@@ -52,7 +52,7 @@ interface AuthLogic {
 
   fetchSignInMethodsForEmail(email: string): Promise<AuthProviderType[]>
 
-  setUser(input: UserInfoInput): Promise<void>
+  setUserInfo(input: UserInput): Promise<SetOwnUserInfoResult>
 
   validateSignedIn(): void
 }
@@ -273,13 +273,19 @@ namespace AuthLogic {
       return (await firebase.auth().fetchSignInMethodsForEmail(email)) as AuthProviderType[]
     }
 
-    const setUser: AuthLogic['setUser'] = async input => {
-      const user = await api.setOwnUserInfo(input)
+    const setUserInfo: AuthLogic['setUserInfo'] = async input => {
+      const apiResult = await api.setOwnUserInfo(input)
+      if (apiResult.status === SetOwnUserInfoResultStatus.AlreadyExists) {
+        return apiResult
+      }
+
       if (status.value === AuthStatus.WaitForEntry) {
         await refreshUser()
       } else {
-        store.user.set(user)
+        store.user.set(apiResult.user!)
       }
+
+      return apiResult
     }
 
     const validateSignedIn = internal.auth.validateSignedIn
@@ -367,7 +373,7 @@ namespace AuthLogic {
       deleteUser,
       updateEmail,
       fetchSignInMethodsForEmail,
-      setUser,
+      setUserInfo,
       validateSignedIn,
     }
   }

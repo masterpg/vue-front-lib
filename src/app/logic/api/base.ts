@@ -1,5 +1,4 @@
-import { Entity, OmitEntityTimestamp } from '@/firestore-ex'
-import { TimestampEntity } from '@/app/logic/base'
+import { Entity, OmitTimestamp, TimestampEntity } from '@/app/logic/base'
 import dayjs from 'dayjs'
 
 //========================================================================
@@ -9,7 +8,7 @@ import dayjs from 'dayjs'
 //========================================================================
 
 type RawEntity<T = unknown> = Entity &
-  OmitEntityTimestamp<T> & {
+  OmitTimestamp<T> & {
     createdAt: string
     updatedAt: string
   }

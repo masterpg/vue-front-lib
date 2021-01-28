@@ -57,6 +57,7 @@ namespace DemoGQLAPIContainer {
               title
               price
               stock
+              version
               createdAt
               updatedAt
             }
@@ -84,6 +85,7 @@ namespace DemoGQLAPIContainer {
               title
               price
               quantity
+              version
               createdAt
               updatedAt
             }
@@ -109,9 +111,11 @@ namespace DemoGQLAPIContainer {
               product {
                 id
                 stock
+                version
                 createdAt
                 updatedAt
               }
+              version
               createdAt
               updatedAt
             }
@@ -151,9 +155,11 @@ namespace DemoGQLAPIContainer {
               product {
                 id
                 stock
+                version
                 createdAt
                 updatedAt
               }
+              version
               createdAt
               updatedAt
             }
@@ -191,9 +197,11 @@ namespace DemoGQLAPIContainer {
               product {
                 id
                 stock
+                version
                 createdAt
                 updatedAt
               }
+              version
               createdAt
               updatedAt
             }
