@@ -101,16 +101,6 @@ interface AppStorageService extends StorageService {
    */
   existsAncestorDirsOnStore(targetPath?: string): boolean
   /**
-   * ノードパスをフルパスに変換します。
-   * @param nodePath
-   */
-  toFullPath(nodePath?: string): string
-  /**
-   * ノードパスをフルパスに変換します。
-   * @param nodePaths
-   */
-  toFullPaths(nodePaths: string[]): string[]
-  /**
    * ノードパスをベースパスを基準に変換します。
    * @param nodePath
    */

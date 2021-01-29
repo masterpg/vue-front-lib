@@ -33,6 +33,7 @@ import { UploadEndedEvent } from '@/app/components/storage'
 import _path from 'path'
 import dayjs from 'dayjs'
 import { extendedMethod } from '@/app/base'
+import merge from 'lodash/merge'
 import { useConfig } from '@/app/config'
 import { useI18n } from '@/app/i18n'
 
@@ -143,6 +144,10 @@ interface StoragePageService {
    * ノードが存在しない場合は例外がスローされます。
    */
   sgetStorageNode: StorageService['sgetNode']
+  /**
+   * 指定ディレクトリ配下のストレージノードを取得します。
+   */
+  getStorageDescendants: StorageService['getDescendants']
   /**
    * 指定ディレクトリ直下のストレージノードを取得します。
    */
@@ -288,6 +293,11 @@ interface StoragePageService {
    */
   getNodeTypeLabel(node: { nodeType: StorageNodeType; article?: DeepPartial<StorageArticleSettings> }): string
   /**
+   * 指定されたノードが記事ルートの配下ノードか否かを取得します。
+   * @param key
+   */
+  isArticleRootUnder(key: StorageNodeGetKeyInput): boolean
+  /**
    * 指定されたノードが｢アセットディレクトリ｣か否かを取得します。
    * @param key
    */
@@ -318,10 +328,33 @@ interface StoragePageService {
    */
   isArticleDirUnder(key: StorageNodeGetKeyInput): boolean
   /**
-   * 指定されたノードが｢記事ソース(マスターまたは下書き)｣か否かを取得します。
+   * 指定されたノードが｢記事マスターソース｣か否かを取得します。
    * @param key
    */
-  isArticleSrc(key: StorageNodeGetKeyInput): boolean
+  isArticleMasterSrc(key: StorageNodeGetKeyInput): boolean
+  /**
+   * 指定されたノードが｢記事下書きソース｣か否かを取得します。
+   * @param key
+   */
+  isArticleDraftSrc(key: StorageNodeGetKeyInput): boolean
+  /**
+   * 記事の下書きソースをローカルストレージから取得します。
+   * @param draftNodeId 下書きファイルノードのID
+   */
+  getLocalArticleDraftData(draftNodeIdd: string): { version: number; srcContent: string }
+  /**
+   * 記事の下書きソースをローカルストレージへ保存します。
+   * @param draftNodeIdd 下書きファイルノードのID
+   * @param data
+   *   - version: 下書きファイルノードのバージョン<br>
+   *   - srcContent: 記事の下書きソース
+   */
+  setLocalArticleDraftData(draftNodeIdd: string, data: { version?: number; srcContent?: string }): void
+  /**
+   * 記事の下書きソースをローカルストレージから削除します。
+   * @param draftNodeId 下書きファイルノードのID
+   */
+  discardLocalArticleDraftData(draftNodeIdd: string): void
 }
 
 interface StoragePageStore {
@@ -480,6 +513,10 @@ namespace StoragePageService {
       return storageService.sgetNode(key)
     }
 
+    const getStorageDescendants: StoragePageService['getStorageDescendants'] = dirPath => {
+      return storageService.getDescendants(dirPath)
+    }
+
     const getStorageChildren: StoragePageService['getStorageChildren'] = dirPath => {
       return storageService.getChildren(dirPath)
     }
@@ -499,7 +536,7 @@ namespace StoragePageService {
       // 引数ディレクトリとその上位ディレクトリのパス
       const dirPaths = splitHierarchicalPaths(dirPath)
       // ストアにある最新のストレージノードを格納
-      let storageDirNodes: StorageNode[] = []
+      const storageDirNodes: StorageNode[] = []
 
       if (!store.isFetchedInitialStorage.value) {
         // ルートノードを読み込み
@@ -515,8 +552,6 @@ namespace StoragePageService {
         }
       }
 
-      // ストアから取得された最新のストレージノードを必要なものだけにフィルタ
-      storageDirNodes = storageDirNodes.filter(nodeFilter)
       const storageDirNodeDict = arrayToDict(storageDirNodes, 'path')
 
       // 引数ディレクトリのパスを構成するディレクトリは展開した状態にする
@@ -549,7 +584,7 @@ namespace StoragePageService {
     }
 
     const fetchStorageChildren: StoragePageService['fetchStorageChildren'] = async dirPath => {
-      const storeChildDirNodes = (await storageService.fetchChildren(dirPath)).filter(nodeFilter)
+      const storeChildDirNodes = await storageService.fetchChildren(dirPath)
 
       // ストアのノードをツリービューに反映
       setTreeNodes(storeChildDirNodes)
@@ -638,6 +673,17 @@ namespace StoragePageService {
     }
 
     const setTreeNode: StoragePageService['setTreeNode'] = node => {
+      // 対象ノードが記事下書きノードの場合
+      if (node.article?.file?.type === StorageArticleFileType.Draft) {
+        // ローカルストレージに下書きが存在した場合、その下書き情報のバージョンを更新
+        const draftInfo = getLocalArticleDraftData(node.id)
+        if (draftInfo.version) {
+          setLocalArticleDraftData(node.id, { version: node.version })
+        }
+      }
+
+      if (!nodeFilter(node)) return
+
       // id検索が必要な理由:
       //   他端末でノード移動するとidは変わらないがpathは変化する。
       //   この状況でpath検索を行うと、対象のノードを見つけられないためid検索する必要がある。
@@ -753,10 +799,9 @@ namespace StoragePageService {
     }
 
     const mergeAllTreeNodes: StoragePageService['mergeAllTreeNodes'] = nodes => {
-      let filteredNodes = nodes.filter(nodeFilter)
-      filteredNodes = StorageUtil.sortNodes([...filteredNodes])
+      nodes = StorageUtil.sortNodes([...nodes])
 
-      const nodeDict = arrayToDict(filteredNodes, 'path')
+      const nodeDict = arrayToDict(nodes, 'path')
 
       // 新ノードリストにないのにツリーには存在するノードを削除
       // ※他の端末で削除、移動、リネームされたノードが削除される
@@ -776,7 +821,7 @@ namespace StoragePageService {
 
     const mergeTreeDirDescendants: StoragePageService['mergeTreeDirDescendants'] = dirPath => {
       // ストアから引数ディレクトリと配下のノードを取得
-      const storeDirDescendants = storageService.getDirDescendants(dirPath).filter(nodeFilter)
+      const storeDirDescendants = storageService.getDirDescendants(dirPath)
       const storeDirDescendantIdDict = arrayToDict(storeDirDescendants, 'id')
       const storeDirDescendantPathDict = arrayToDict(storeDirDescendants, 'path')
 
@@ -804,7 +849,7 @@ namespace StoragePageService {
 
     const mergeTreeDirChildren: StoragePageService['mergeTreeDirChildren'] = dirPath => {
       // ストアから引数ディレクトリと直下のノードを取得
-      const storeDirChildren = storageService.getDirChildren(dirPath).filter(nodeFilter)
+      const storeDirChildren = storageService.getDirChildren(dirPath)
       const storeDirChildrenIdDict = arrayToDict(storeDirChildren, 'id')
       const storeDirChildrenPathDict = arrayToDict(storeDirChildren, 'path')
 
@@ -870,7 +915,7 @@ namespace StoragePageService {
       // 記事ディレクトリ作成時は記事ファイルも作成されるので読み込みを行う
       let dirChildren: StorageNode[] = []
       if (dirNode.article?.dir?.type === StorageArticleDirType.Article) {
-        dirChildren = articleService.getChildren(dirNode.path).filter(nodeFilter)
+        dirChildren = articleService.getChildren(dirNode.path)
       }
 
       // ツリービューに作成したディレクトリノードを追加
@@ -982,7 +1027,7 @@ namespace StoragePageService {
       //
       // 3. 移動ノードをツリービューに反映
       //
-      setTreeNodes(movedNodes.filter(nodeFilter))
+      setTreeNodes(movedNodes)
 
       // 移動によって選択ノードのパスが変わることがあるため、
       // 保存しておいた選択ノードIDをもとに選択ノードを再設定
@@ -1022,7 +1067,7 @@ namespace StoragePageService {
       //
       // 2. リネームノードをツリービューに反映
       //
-      setTreeNodes(renamedNodes.filter(nodeFilter))
+      setTreeNodes(renamedNodes)
 
       // リネームによって選択ノードのパスが変わることがあるため、
       // 保存しておいた選択ノードIDをもとに選択ノードを再設定
@@ -1059,8 +1104,7 @@ namespace StoragePageService {
       }
 
       // ツリービューに処理内容を反映
-      const processedDirNodes = processedNodes.filter(nodeFilter)
-      setTreeNodes(processedDirNodes)
+      setTreeNodes(processedNodes)
     }
 
     const setArticleSortOrder: StoragePageService['setArticleSortOrder'] = async orderNodePaths => {
@@ -1089,8 +1133,7 @@ namespace StoragePageService {
       }
 
       // ツリービューに処理内容を反映
-      const processedDirNodes = processedNodes.filter(nodeFilter)
-      setTreeNodes(processedDirNodes)
+      setTreeNodes(processedNodes)
     }
 
     const saveArticleSrcMasterFile: StoragePageService['saveArticleSrcMasterFile'] = async (articleDirPath, srcContent, textContent) => {
@@ -1110,8 +1153,7 @@ namespace StoragePageService {
       }
 
       // ツリービューに処理内容を反映
-      const processedNodes = [processed.master, processed.draft].filter(nodeFilter)
-      setTreeNodes(processedNodes)
+      setTreeNodes([processed.master, processed.draft])
 
       return processed
     }
@@ -1133,8 +1175,7 @@ namespace StoragePageService {
       }
 
       // ツリービューに処理内容を反映
-      const processedNodes = [processedDraftNode].filter(nodeFilter)
-      setTreeNodes(processedNodes)
+      setTreeNode(processedDraftNode)
 
       return processedDraftNode
     }
@@ -1161,20 +1202,15 @@ namespace StoragePageService {
       const uploadedNodePaths = splitHierarchicalPaths(...e.uploadedFiles.map(item => item.path))
 
       // 上記で取得したパスのノードを取得
-      const uploadedNodes = uploadedNodePaths
-        .reduce<StorageNode[]>((result, uploadedNodePath) => {
-          const uploadedNode = getStorageNode({ path: uploadedNodePath })
-          uploadedNode && result.push(uploadedNode)
-          return result
-        }, [])
-        .filter(nodeFilter)
+      const uploadedNodes = uploadedNodePaths.reduce<StorageNode[]>((result, uploadedNodePath) => {
+        const uploadedNode = getStorageNode({ path: uploadedNodePath })
+        uploadedNode && result.push(uploadedNode)
+        return result
+      }, [])
 
       // 上記で取得したノードをツリービューに反映
-      for (const uploadedNode of uploadedNodes) {
-        // アップロード前に必要なディレクトリは作成されるため、
-        // 対象ノードの親ツリーノードは必ず存在する想定
-        setTreeNode(uploadedNode)
-      }
+      // ※アップロード前に必要なディレクトリは作成されるため、対象ノードの親ツリーノードは必ず存在する想定
+      setTreeNodes(uploadedNodes)
     }
 
     const newDownloader: StoragePageService['newDownloader'] = () => {
@@ -1303,6 +1339,12 @@ namespace StoragePageService {
       }
     }
 
+    const isArticleRootUnder: StoragePageService['isArticleRootUnder'] = key => {
+      const node = storageService.getNode(key)
+      if (!node) return false
+      return StorageUtil.isArticleRootUnder(storageService.toFullPath(node.path))
+    }
+
     const isAssetsDir: StoragePageService['isAssetsDir'] = key => {
       if (storageType !== 'article') return false
       const node = storageService.getNode(key)
@@ -1358,10 +1400,44 @@ namespace StoragePageService {
       return existsArticle(node.path)
     }
 
-    const isArticleSrc: StoragePageService['isArticleSrc'] = key => {
+    const isArticleMasterSrc: StoragePageService['isArticleMasterSrc'] = key => {
       const node = storageService.getNode(key)
       if (!node) return false
-      return Boolean(node.article?.file)
+      return node.article?.file?.type === StorageArticleFileType.Master
+    }
+
+    const isArticleDraftSrc: StoragePageService['isArticleDraftSrc'] = key => {
+      const node = storageService.getNode(key)
+      if (!node) return false
+      return node.article?.file?.type === StorageArticleFileType.Draft
+    }
+
+    const getLocalArticleDraftData: StoragePageService['getLocalArticleDraftData'] = draftNodeIdd => {
+      // ローカルストレージに保存されている下書きソースを取得
+      const dataString = localStorage.getItem(`article.draft.${draftNodeIdd}`)
+      // 保存されてなかった場合は空状態として返す
+      if (!dataString) return { version: 0, srcContent: '' }
+
+      // 取得した取得ソースをJSON形式にパースして返す
+      const { version, srcContent } = JSON.parse(dataString) as { version: number; srcContent: string }
+      return { version: version ?? 0, srcContent: srcContent ?? '' }
+    }
+
+    const setLocalArticleDraftData: StoragePageService['setLocalArticleDraftData'] = (draftNodeIdd, data) => {
+      // 引数データが新規保存だった場合(まだローカルストレージに保存されていない場合)、
+      // バージョン指定されていなかったらエラー
+      const existingData = getLocalArticleDraftData(draftNodeIdd)
+      if (!existingData.version && !data.version) {
+        throw new Error('When you save a new draft to local storage, must specify the version.')
+      }
+
+      // 引数データをJSON文字列に変換してローカルストレージに保存
+      const dataString = JSON.stringify(merge(existingData, data))
+      localStorage.setItem(`article.draft.${draftNodeIdd}`, dataString)
+    }
+
+    const discardLocalArticleDraftData: StoragePageService['discardLocalArticleDraftData'] = draftNodeIdd => {
+      localStorage.removeItem(`article.draft.${draftNodeIdd}`)
     }
 
     //----------------------------------------------------------------------
@@ -1452,6 +1528,7 @@ namespace StoragePageService {
       mergeTreeDirChildren,
       getStorageNode,
       sgetStorageNode,
+      getStorageDescendants,
       getStorageChildren,
       fetchInitialStorage,
       fetchStorageChildren,
@@ -1478,13 +1555,18 @@ namespace StoragePageService {
       getNodeIcon,
       getNodeTypeIcon,
       getNodeTypeLabel,
+      isArticleRootUnder,
       isAssetsDir,
       isListBundle,
       isTreeBundle,
       isCategoryDir,
       isArticleDir,
       isArticleDirUnder,
-      isArticleSrc,
+      isArticleMasterSrc,
+      isArticleDraftSrc,
+      getLocalArticleDraftData,
+      setLocalArticleDraftData,
+      discardLocalArticleDraftData,
     }
   }
 

@@ -224,7 +224,7 @@ namespace StorageNodePopupMenu {
           }
           // ファイル用メニュー
           else if (isStorageFile.value) {
-            if (isArticleSrc.value) {
+            if (isArticleMasterSrc.value) {
               return []
             } else {
               return [
@@ -290,8 +290,8 @@ namespace StorageNodePopupMenu {
         return !props.isRoot && !isMulti.value && pageService.isAssetsDir(props.node)
       })
 
-      const isArticleSrc = computed(() => {
-        return !props.isRoot && !isMulti.value && pageService.isArticleSrc(props.node)
+      const isArticleMasterSrc = computed(() => {
+        return !props.isRoot && !isMulti.value && pageService.isArticleMasterSrc(props.node)
       })
 
       const enabled = computed(() => {

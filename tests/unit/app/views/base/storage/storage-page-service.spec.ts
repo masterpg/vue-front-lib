@@ -11,7 +11,7 @@ import {
   StorageType,
   StorageUtil,
 } from '@/app/service'
-import { NewTestStorageNodeData, TestServiceContainer, newStorageDirNode, newStorageFileNode } from '../../../../../helpers/app'
+import { GeneralUser, NewTestStorageNodeData, TestServiceContainer, newStorageDirNode, newStorageFileNode } from '../../../../../helpers/app'
 import { Ref, ref } from '@vue/composition-api'
 import { StoragePageService, StorageTreeNodeFilter } from '@/app/views/base/storage'
 import { StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/storage/base'
@@ -64,34 +64,50 @@ function newStoragePageService(
   const { storageType, storageService, nodeFilter } = (() => {
     let result: { storageType: StorageType; storageService: StorageService; nodeFilter: (node: StorageNode) => boolean }
     switch (params.storageType) {
-      case 'app':
+      case 'app': {
+        const basePath = ''
+        service.appStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
+        service.appStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
         result = {
           storageType: 'app',
           storageService: service.appStorage,
           nodeFilter: StorageTreeNodeFilter.DirFilter,
         }
         break
-      case 'user':
+      }
+      case 'user': {
+        const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+        service.userStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
+        service.userStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
         result = {
           storageType: 'user',
           storageService: service.userStorage,
           nodeFilter: StorageTreeNodeFilter.DirFilter,
         }
         break
-      case 'article':
+      }
+      case 'article': {
+        const basePath = StorageUtil.toArticleRootPath(GeneralUser().uid)
+        service.articleStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
+        service.articleStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
         result = {
           storageType: 'article',
           storageService: service.articleStorage,
           nodeFilter: StorageTreeNodeFilter.ArticleFilter,
         }
         break
-      default:
+      }
+      default: {
+        const basePath = ''
+        service.appStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
+        service.appStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
         result = {
           storageType: 'app',
           storageService: service.appStorage,
           nodeFilter: StorageTreeNodeFilter.AllFilter,
         }
         break
+      }
     }
     params.nodeFilter && (result.nodeFilter = params.nodeFilter)
     return result
@@ -3856,10 +3872,63 @@ describe('StoragePageService', () => {
     })
   })
 
+  describe('isArticleRootUnder', () => {
+    it('記事ルート配下ノードを指定', () => {
+      const { pageService, storageService } = newStoragePageService({ storageType: 'article' })
+
+      // articles
+      // ├ブログ
+      // │└記事1 ← 対象ノードに指定
+      // └アセット
+      const { art1 } = newListBundleFamilyNodes()
+
+      // モック設定
+      td.when(storageService.getNode(td.matchers.contains({ path: `${art1.path}` }))).thenReturn(art1)
+
+      const actual = pageService.isArticleRootUnder({ path: `${art1.path}` })
+
+      expect(actual).toBeTruthy()
+    })
+
+    it('アセットディレクトリを指定', () => {
+      const { pageService, storageService } = newStoragePageService({ storageType: 'article' })
+
+      // articles
+      // ├ブログ
+      // │└記事1
+      // └アセット ← 対象ノードに指定
+      const { assets } = newListBundleFamilyNodes()
+
+      // モック設定
+      td.when(storageService.getNode(td.matchers.contains({ path: `${assets.path}` }))).thenReturn(assets)
+
+      const actual = pageService.isArticleRootUnder({ path: `${assets.path}` })
+
+      expect(actual).toBeTruthy()
+    })
+
+    it('記事ルートを指定した場合', () => {
+      const { pageService, storageService } = newStoragePageService({ storageType: 'article' })
+
+      // articles ← 対象ノードに指定
+      // ├ブログ
+      // │└記事1
+      // └アセット
+      const { blog } = newListBundleFamilyNodes()
+
+      // モック設定
+      const articleRootPath = pageService.getRootTreeNode().path
+      td.when(storageService.getNode({ path: `${articleRootPath}` })).thenReturn(undefined)
+
+      const actual = pageService.isArticleRootUnder({ path: `${articleRootPath}` })
+
+      expect(actual).toBeFalsy()
+    })
+  })
+
   describe('isAssetsDir', () => {
     it('アセットディレクトリを指定', () => {
       const { pageService, storageService } = newStoragePageService({ storageType: 'article' })
-      const config = useConfig()
 
       // articles
       // ├ブログ
@@ -3877,7 +3946,6 @@ describe('StoragePageService', () => {
 
     it('リストバンドル以外を指定した場合', () => {
       const { pageService, storageService } = newStoragePageService({ storageType: 'article' })
-      const config = useConfig()
 
       // articles
       // ├ブログ

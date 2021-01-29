@@ -257,6 +257,16 @@ interface StorageService {
    * @param input
    */
   getSignedUploadUrl(input: SignedUploadUrlInput): Promise<string>
+  /**
+   * ノードパスをフルパスに変換します。
+   * @param nodePath
+   */
+  toFullPath(nodePath?: string): string
+  /**
+   * ノードパスをフルパスに変換します。
+   * @param nodePaths
+   */
+  toFullPaths(nodePaths: string[]): string[]
 
   newUploader(owner: Ref<Element | undefined>): StorageUploader
 

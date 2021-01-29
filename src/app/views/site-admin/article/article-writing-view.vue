@@ -19,17 +19,17 @@
     <div class="control-area layout horizontal end-justified">
       <q-btn-dropdown color="primary" :label="t('common.save')" :disable="!enableSaveDropdown">
         <q-list>
-          <q-item clickable v-close-popup @click="saveDraft" :disable="!needSaveDraft">
+          <q-item clickable v-close-popup @click="saveDraft" :disable="!enableSaveDraft">
             <q-item-section>
               <q-item-label>{{ t('article.saveDraft') }}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item clickable v-close-popup @click="discardDraft" :disable="!needDiscardDraft">
+          <q-item clickable v-close-popup @click="discardDraft" :disable="!enableDiscardDraft">
             <q-item-section>
               <q-item-label>{{ t('article.discardDraft') }}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item clickable v-close-popup @click="saveMaster" :disable="!needSaveMaster">
+          <q-item clickable v-close-popup @click="saveMaster" :disable="!enableSaveMaster">
             <q-item-section>
               <q-item-label>{{ t('article.reflectMaster') }}</q-item-label>
             </q-item-section>
@@ -110,24 +110,24 @@ namespace ArticleWritingView {
       /**
        * 下書きが行われており、下書き保存が必要かを示すフラグ
        */
-      const needSaveDraft = computed<boolean>(() => {
+      const enableSaveDraft = computed<boolean>(() => {
         // 画面の記事ソース編集内容とマスターの内容に差分があり、かつ下書きが編集されている場合
-        return needSaveMaster.value && draft.value.srcContent !== srcContent.value
+        return enableSaveMaster.value && draft.value.srcContent !== srcContent.value
       })
 
       /**
        * 下書きが行われており、下書き破棄が必要かを示すフラグです。
        */
-      const needDiscardDraft = computed<boolean>(() => {
+      const enableDiscardDraft = computed<boolean>(() => {
         // 下書きが保存されている、または画面の記事ソース編集内容とマスターの内容に差分がある場合
-        return Boolean(draft.value.srcContent) || needSaveMaster.value
+        return Boolean(draft.value.srcContent) || enableSaveMaster.value
       })
 
       /**
-       * マスターの内容と画面の記事ソース編集内容に差分があった場合、
-       * 編集内容をマスターへ反映する必要があることを示すフラグです。
+       * 下書きをマスターへ反映する必要があるかを示すフラグです。
        */
-      const needSaveMaster = computed<boolean>(() => {
+      const enableSaveMaster = computed<boolean>(() => {
+        // マスターの内容と画面の記事ソース編集内容に差分がある場合
         return master.value.srcContent !== srcContent.value
       })
 
@@ -135,7 +135,7 @@ namespace ArticleWritingView {
        * 保存ドロップダウンボタンが有効かを示すフラグです。
        */
       const enableSaveDropdown = computed<boolean>(() => {
-        return needSaveMaster.value || needSaveDraft.value || needDiscardDraft.value
+        return enableSaveMaster.value || enableSaveDraft.value || enableDiscardDraft.value
       })
 
       //----------------------------------------------------------------------
@@ -274,18 +274,18 @@ namespace ArticleWritingView {
       }
 
       function getLocalDraftData(): { version: number; srcContent: string } {
-        const version = parseInt(localStorage.getItem(`article.draft.${draft.value.node.id}.version`) ?? '')
-        const srcContent = localStorage.getItem(`article.draft.${draft.value.node.id}.srcContent`) ?? ''
-        return { version, srcContent }
+        return pageService.getLocalArticleDraftData(draft.value.node.id)
       }
 
       function setLocalDraftData(): void {
-        if (!master.value.node || !draft.value.node || !srcContent.value) return
+        if (!master.value.node || !draft.value.node) return
 
-        if (needSaveMaster.value || needSaveDraft.value || needDiscardDraft.value) {
+        if (enableSaveMaster.value || enableSaveDraft.value || enableDiscardDraft.value) {
           // ローカルストレージに編集中の内容を保存
-          localStorage.setItem(`article.draft.${draft.value.node.id}.version`, String(draft.value.node.version))
-          localStorage.setItem(`article.draft.${draft.value.node.id}.srcContent`, srcContent.value)
+          pageService.setLocalArticleDraftData(draft.value.node.id, {
+            version: draft.value.node.version,
+            srcContent: srcContent.value,
+          })
         } else {
           // ローカルストレージを破棄
           discardLocalDraftData()
@@ -293,8 +293,7 @@ namespace ArticleWritingView {
       }
 
       function discardLocalDraftData(): void {
-        localStorage.removeItem(`article.draft.${draft.value.node.id}.version`)
-        localStorage.removeItem(`article.draft.${draft.value.node.id}.srcContent`)
+        pageService.discardLocalArticleDraftData(draft.value.node.id)
       }
 
       //----------------------------------------------------------------------
@@ -321,9 +320,9 @@ namespace ArticleWritingView {
         t,
         editor,
         srcContent,
-        needSaveMaster,
-        needSaveDraft,
-        needDiscardDraft,
+        enableSaveMaster,
+        enableSaveDraft,
+        enableDiscardDraft,
         enableSaveDropdown,
         spinning,
         load,
