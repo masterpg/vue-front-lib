@@ -921,9 +921,8 @@ namespace TreeNode {
         }
         // 選択状態が変更されなかった場合
         else {
-          const oldNode = getTreeView()?.selectedNode
           // 自ノードが選択状態の場合に限り、selectイベントを発火
-          !initializing && selected && util.dispatchSelect(self, oldNode, silent)
+          !initializing && selected && util.dispatchSelect(self, self, silent)
         }
       }
     }

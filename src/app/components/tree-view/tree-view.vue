@@ -215,6 +215,7 @@ namespace TreeView {
     const children: Ref<TreeNodeImpl[]> = ref([])
 
     const _selectedNode: Ref<TreeNodeImpl | null> = ref(null)
+
     const selectedNode = computed({
       get: () => _selectedNode.value,
       set: node => {
@@ -222,13 +223,11 @@ namespace TreeView {
         if (node) {
           // 指定されたノードを選択状態に設定
           node.selected = true
-          _selectedNode.value = node
         }
         // 選択ノードが指定されなかった場合
         else {
           // 現在の選択ノードを非選択にする
           _selectedNode.value && (_selectedNode.value.selected = false)
-          _selectedNode.value = null
         }
       },
     })
@@ -241,13 +240,11 @@ namespace TreeView {
       if (selected) {
         // 指定されたノードを選択状態に設定
         node.setSelected(true, silent)
-        _selectedNode.value = node
       }
       // 非選択状態にする場合
       else {
         // 指定されたノードを非選択にする
         _selectedNode.value && _selectedNode.value.setSelected(false, silent)
-        _selectedNode.value = null
       }
     }
 
@@ -347,7 +344,7 @@ namespace TreeView {
       if (!node) return
 
       // 親がツリービューの場合
-      // (node.parentが空の場合、親はツリービュー)
+      // ※node.parentが空の場合、親はツリービュー
       if (!node.parent) {
         removeChildFromContainer(node)
         util.dispatchNodeRemove(self, node)
@@ -614,8 +611,11 @@ namespace TreeView {
         addExtraNodeEventListener(eventName)
       }
 
+      // 追加されたノードが選択状態の場合
       if (node.selected) {
-        selectedNode.value = node
+        // 選択処理が行われるよう次のメソッドを実行
+        // ※選択系イベントが発生しないようにサイレントをオンで実行
+        node.setSelected(true, true)
       }
     }
 
@@ -628,12 +628,11 @@ namespace TreeView {
 
       const node = e.detail.node as TreeNodeImpl
 
-      const nodeDescendants = [node, ...node.getDescendants()]
-      for (const iNode of nodeDescendants) {
-        if (selectedNode.value === iNode) {
-          selectedNode.value = null
-          break
-        }
+      // 削除ノード配下に選択ノードがあるかを走査
+      for (const iNode of [node, ...node.getDescendants()]) {
+        // 選択ノードがあった場合、選択解除処理が行われるよう次のメソッドを実行
+        // ※選択系イベントを発生させるようサイレントをオフで実行
+        iNode.selected && iNode.setSelected(false, false)
       }
     }
 
@@ -685,6 +684,9 @@ namespace TreeView {
       const node = e.detail.node as TreeNodeImpl
       const oldNode = e.detail.oldNode as TreeNodeImpl | undefined
       const silent = e.detail.silent
+
+      // イベントのノードを選択ノードに設定
+      _selectedNode.value = node
 
       !silent && ctx.emit('select', { node, oldNode } as TreeViewEvent)
     }
