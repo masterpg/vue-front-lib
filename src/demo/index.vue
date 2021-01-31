@@ -20,31 +20,31 @@
   <q-layout id="app" class="DemoPage" view="lHh Lpr lFf">
     <q-header elevated class="glossy header">
       <q-toolbar>
-        <q-btn flat dense round aria-label="Menu" icon="menu" @click="state.leftDrawerOpen = !state.leftDrawerOpen" />
+        <q-btn flat dense round aria-label="Menu" icon="menu" @click="leftDrawerOpen = !leftDrawerOpen" />
 
         <q-toolbar-title> Vue2 Composition API </q-toolbar-title>
 
         <div class="app-mr-16">Quasar v{{ $q.version }}</div>
 
-        <LoadingSpinner v-if="state.isSigningIn" color="indigo-3" />
-        <div v-show="state.isSignedIn" class="app-mr-16">{{ state.user.fullName }}</div>
+        <LoadingSpinner v-if="isSigningIn" color="indigo-3" />
+        <div v-show="isSignedIn" class="app-mr-16">{{ user.fullName }}</div>
 
         <q-btn flat round dense color="white" icon="more_vert">
           <q-menu>
             <q-list class="menu-list">
-              <q-item v-show="!state.isSignedIn" v-close-popup clickable>
+              <q-item v-show="!isSignedIn" v-close-popup clickable>
                 <q-item-section @click="signInMenuItemOnClick">{{ t('common.signIn') }}</q-item-section>
               </q-item>
-              <q-item v-show="!state.isSignedIn" v-close-popup clickable>
+              <q-item v-show="!isSignedIn" v-close-popup clickable>
                 <q-item-section @click="signUpMenuItemOnClick">{{ t('common.signUp') }}</q-item-section>
               </q-item>
-              <q-item v-show="state.isSignedIn" v-close-popup clickable>
+              <q-item v-show="isSignedIn" v-close-popup clickable>
                 <q-item-section @click="signOutMenuItemOnClick">{{ t('common.signOut') }}</q-item-section>
               </q-item>
-              <q-item v-show="state.isSignedIn" v-close-popup clickable>
+              <q-item v-show="isSignedIn" v-close-popup clickable>
                 <q-item-section @click="emailChangeMenuItemOnClick">{{ t('auth.changeEmail') }}</q-item-section>
               </q-item>
-              <q-item v-show="state.isSignedIn" v-close-popup clickable>
+              <q-item v-show="isSignedIn" v-close-popup clickable>
                 <q-item-section @click="userDeleteMenuItemOnClick">{{ t('auth.deleteUser') }}</q-item-section>
               </q-item>
             </q-list>
@@ -53,10 +53,10 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="state.leftDrawerOpen" :width="300" :breakpoint="500" show-if-above bordered content-class="bg-grey-2">
+    <q-drawer v-model="leftDrawerOpen" :width="300" :breakpoint="500" show-if-above bordered content-class="bg-grey-2">
       <q-scroll-area class="drawer-scroll-area">
         <q-list padding>
-          <template v-for="(item, index) in state.pages">
+          <template v-for="(item, index) in pages">
             <q-item :key="index" v-ripple :to="item.path" clickable>
               <q-item-section>{{ item.title }}</q-item-section>
             </q-item>
@@ -75,14 +75,14 @@
 
 <script lang="ts">
 import { Notify, Platform } from 'quasar'
-import { defineComponent, reactive, ref, watch } from '@vue/composition-api'
+import { computed, defineComponent, ref, watch } from '@vue/composition-api'
 import { injectService, provideService } from '@/demo/service'
 import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
 import { AuthStatus } from '@/app/service'
 import { Dialogs } from '@/app/dialogs'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
-import router from '@/demo/router'
 import { useI18n } from '@/demo/i18n'
+import { useViewRoutes } from '@/demo/router'
 
 export default defineComponent({
   components: {
@@ -102,50 +102,48 @@ export default defineComponent({
 
     const service = injectService()
     const serviceWorker = injectServiceWorker()
+    const viewRoutes = useViewRoutes()
     const { t } = useI18n()
 
     const dialogsRef = ref<Dialogs>()
     Dialogs.provide(dialogsRef)
 
-    const state = reactive({
-      leftDrawerOpen: Platform.is.desktop,
+    const leftDrawerOpen = Platform.is.desktop ? ref(true) : ref(false)
+    const isSignedIn = service.auth.isSignedIn
+    const isSigningIn = service.auth.isSigningIn
+    const user = computed(() => service.auth.user)
 
-      pages: [
+    const pages = computed<{ title: string; path: string }[]>(() => {
+      return [
         {
           title: 'Home',
-          path: router.views.home.getPath(),
+          path: viewRoutes.home.path.value,
         },
         {
           title: 'ABC',
-          path: router.views.abc.getPath(),
+          path: viewRoutes.abc.path.value,
         },
         {
           title: 'Shop',
-          path: router.views.shop.getPath(),
+          path: viewRoutes.shop.path.value,
         },
         {
           title: 'TreeView',
-          path: router.views.tree.getPath(),
+          path: viewRoutes.tree.path.value,
         },
         {
           title: 'Img',
-          path: router.views.img.getPath(),
+          path: viewRoutes.img.path.value,
         },
         {
           title: 'Markdown',
-          path: router.views.markdown.getPath(),
+          path: viewRoutes.markdown.path.value,
         },
         {
           title: 'markdown-it',
-          path: router.views.markdownIt.getPath(),
+          path: viewRoutes.markdownIt.path.value,
         },
-      ] as { title: string; path: string }[],
-
-      isSignedIn: service.auth.isSignedIn,
-
-      isSigningIn: service.auth.isSigningIn,
-
-      user: service.auth.user,
+      ]
     })
 
     //----------------------------------------------------------------------
@@ -217,8 +215,12 @@ export default defineComponent({
 
     return {
       t,
-      state,
       dialogsRef,
+      leftDrawerOpen,
+      isSignedIn,
+      isSigningIn,
+      user,
+      pages,
       signInMenuItemOnClick,
       signUpMenuItemOnClick,
       signOutMenuItemOnClick,

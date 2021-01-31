@@ -5,9 +5,9 @@ import AppPage from '@/app/index.vue'
 import Vue from 'vue'
 import VueCompositionApi from '@vue/composition-api'
 import { quasar } from '@/app/quasar'
-import router from '@/app/router'
 import { setupConfig } from '@/app/config'
 import { setupI18n } from '@/app/i18n'
+import { setupRouter } from '@/app/router'
 
 // Vueの設定
 Vue.config.productionTip = false
@@ -19,6 +19,7 @@ quasar.setupExtras()
 
 async function init() {
   setupConfig()
+  const router = setupRouter()
   const i18n = setupI18n()
   await i18n.load()
 

@@ -20,7 +20,7 @@
   <q-layout id="app" class="AppPage" view="lHh Lpr lFf">
     <q-header elevated class="glossy header">
       <q-toolbar>
-        <q-btn flat dense round aria-label="Menu" icon="menu" @click="state.leftDrawerOpen = !state.leftDrawerOpen" />
+        <q-btn flat dense round aria-label="Menu" icon="menu" @click="leftDrawerOpen = !leftDrawerOpen" />
 
         <q-toolbar-title> Vue2 Composition API </q-toolbar-title>
 
@@ -53,14 +53,14 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="state.leftDrawerOpen" :width="300" :breakpoint="500" show-if-above bordered content-class="bg-grey-2">
+    <q-drawer v-model="leftDrawerOpen" :width="300" :breakpoint="500" show-if-above bordered content-class="bg-grey-2">
       <q-scroll-area class="drawer-scroll-area">
         <!-- Site Admin -->
-        <q-expansion-item v-model="state.isSiteAdminExpanded" icon="fas fa-user-cog" :label="t('index.mainMenu.siteAdmin')" expand-separator>
+        <q-expansion-item v-model="isSiteAdminExpanded" icon="fas fa-user-cog" :label="t('index.mainMenu.siteAdmin')" expand-separator>
           <q-list padding>
-            <template v-for="(item, index) in state.siteAdminItems">
+            <template v-for="(item, index) in siteAdminItems">
               <q-item :key="index" v-ripple :to="item.path" class="app-ml-20" clickable>
-                <q-item-section>{{ item.title }}</q-item-section>
+                <q-item-section>{{ item.title }}, {{ item.path }}</q-item-section>
               </q-item>
             </template>
           </q-list>
@@ -68,15 +68,15 @@
         <!-- App Admin -->
         <q-expansion-item
           v-show="user.isAppAdmin"
-          v-model="state.isAppAdminExpanded"
+          v-model="isAppAdminExpanded"
           icon="fas fa-cog"
           :label="t('index.mainMenu.appAdmin')"
           expand-separator
         >
           <q-list padding>
-            <template v-for="(item, index) in state.appAdminItems">
+            <template v-for="(item, index) in appAdminItems">
               <q-item :key="index" v-ripple :to="item.path" class="app-ml-20" clickable>
-                <q-item-section>{{ item.title }}</q-item-section>
+                <q-item-section>{{ item.title }}, {{ item.path }}</q-item-section>
               </q-item>
             </template>
           </q-list>
@@ -94,13 +94,13 @@
 
 <script lang="ts">
 import { AuthStatus, injectService, provideService } from '@/app/service'
+import { ComputedRef, computed, defineComponent, reactive, ref, watch } from '@vue/composition-api'
 import { Notify, Platform } from 'quasar'
-import { defineComponent, reactive, ref, watch } from '@vue/composition-api'
 import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
 import { Dialogs } from '@/app/dialogs'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
-import router from '@/app/router'
 import { useI18n } from '@/app/i18n'
+import { useViewRoutes } from '@/app/router'
 
 export default defineComponent({
   components: {
@@ -120,39 +120,40 @@ export default defineComponent({
 
     const service = injectService()
     const serviceWorker = injectServiceWorker()
+    const viewRoutes = useViewRoutes()
     const { t } = useI18n()
 
     const dialogsRef = ref<Dialogs>()
     Dialogs.provide(dialogsRef)
 
-    const state = reactive({
-      leftDrawerOpen: Platform.is.desktop,
+    const leftDrawerOpen = Platform.is.desktop ? ref(true) : ref(false)
+    const isSiteAdminExpanded = ref(true)
+    const isAppAdminExpanded = ref(true)
+    const isSignedIn = service.auth.isSignedIn
+    const isSigningIn = service.auth.isSigningIn
+    const user = computed(() => service.auth.user)
 
-      siteAdminItems: [
+    const siteAdminItems = computed<{ title: string; path: string }[]>(() => {
+      return [
         {
           title: String(t('index.mainMenu.articleAdmin')),
-          path: router.views.siteAdmin.article.getPath(),
+          path: viewRoutes.siteAdmin.article.path.value,
         },
         {
           title: String(t('index.mainMenu.userStorageAdmin')),
-          path: router.views.siteAdmin.storage.getPath(),
+          path: viewRoutes.siteAdmin.storage.path.value,
         },
-      ] as { title: string; path: string }[],
-
-      isSiteAdminExpanded: true,
-
-      appAdminItems: [
-        {
-          title: String(t('index.mainMenu.appStorageAdmin')),
-          path: router.views.appAdmin.storage.getPath(),
-        },
-      ] as { title: string; path: string }[],
-
-      isAppAdminExpanded: true,
+      ]
     })
 
-    const isSignedIn = service.auth.isSignedIn
-    const isSigningIn = service.auth.isSigningIn
+    const appAdminItems = computed<{ title: string; path: string }[]>(() => {
+      return [
+        {
+          title: String(t('index.mainMenu.appStorageAdmin')),
+          path: viewRoutes.appAdmin.storage.path.value,
+        },
+      ]
+    })
 
     //----------------------------------------------------------------------
     //
@@ -223,11 +224,15 @@ export default defineComponent({
 
     return {
       t,
-      state,
       dialogsRef,
-      user: service.auth.user,
+      leftDrawerOpen,
+      isSiteAdminExpanded,
+      isAppAdminExpanded,
       isSignedIn,
       isSigningIn,
+      user,
+      siteAdminItems,
+      appAdminItems,
       signInMenuItemOnClick,
       signUpMenuItemOnClick,
       signOutMenuItemOnClick,
