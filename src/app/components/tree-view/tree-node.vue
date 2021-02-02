@@ -178,6 +178,10 @@ interface TreeNode<DATA extends TreeNodeData = TreeNodeData> extends Vue {
    */
   readonly minWidth: number
   /**
+   * 本ノードが所属するツリービューです。
+   */
+  readonly treeView: TreeView | null
+  /**
    * 子ノードの並びを決めるソート関数を取得します。
    */
   getSortFunc<N extends TreeNode = this>(): ChildrenSortFunc<N> | null
@@ -185,10 +189,6 @@ interface TreeNode<DATA extends TreeNodeData = TreeNodeData> extends Vue {
    * 子ノードの並びを決めるソート関数を設定します。
    */
   setSortFunc(value: ChildrenSortFunc<this> | null): void
-  /**
-   * 本ノードが所属するツリービューを取得します。
-   */
-  getTreeView(): TreeView | null
   /**
    * ルートノードを取得します。
    */
@@ -249,8 +249,7 @@ interface TreeNode<DATA extends TreeNodeData = TreeNodeData> extends Vue {
 interface TreeNodeImpl<DATA extends TreeNodeData = TreeNodeData> extends TreeNode<DATA> {
   parent: this | null
   isEldest: boolean
-  getTreeView(): TreeViewImpl | null
-  setTreeView(value: TreeViewImpl | null): void
+  treeView: TreeViewImpl | null
   readonly el: HTMLElement
   readonly childContainer: HTMLElement
   readonly nodeData: Required<DATA>
@@ -310,12 +309,6 @@ namespace TreeNode {
     const nodeData = computed({
       get: () => _nodeData.value,
       set: value => (_nodeData.value = value),
-    })
-
-    const _treeView: Ref<TreeViewImpl | null> = ref(null)
-    const treeView = computed({
-      get: () => _treeView.value,
-      set: value => (_treeView.value = value),
     })
 
     /**
@@ -449,6 +442,17 @@ namespace TreeNode {
       set: value => (state.isEldest = value),
     })
 
+    const _treeView: Ref<TreeViewImpl | null> = ref(null)
+    const treeView = computed({
+      get: () => _treeView.value,
+      set: value => {
+        _treeView.value = value
+        for (const child of children.value) {
+          child.treeView = _treeView.value
+        }
+      },
+    })
+
     const minWidth = computed(() => {
       setMinWidth()
       return state.minWidth
@@ -488,8 +492,7 @@ namespace TreeNode {
         return nodeData.value.sortFunc
       }
 
-      const treeView = getTreeView()
-      const sortFunc = treeView?.getSortFunc() ?? null
+      const sortFunc = treeView.value?.getSortFunc() ?? null
       return sortFunc as ChildrenSortFunc<any> | null
     }
 
@@ -497,15 +500,6 @@ namespace TreeNode {
       nodeData.value.sortFunc = value ?? null
       if (children.value.length) {
         sortChildren()
-      }
-    }
-
-    const getTreeView: TreeNodeImpl['getTreeView'] = () => {
-      const rootNode = getRootNode()
-      if (self === rootNode) {
-        return treeView.value
-      } else {
-        return rootNode.getTreeView()
       }
     }
 
@@ -518,16 +512,6 @@ namespace TreeNode {
 
     const getDescendants: TreeNodeImpl['getDescendants'] = () => {
       return util.getDescendants(self)
-    }
-
-    const setTreeView: TreeNodeImpl['setTreeView'] = value => {
-      // 自身がルートノードではない場合にツリービューが設定されようとした場合
-      // ※ツリービューの設定はルートノードのみに行われます。
-      if (parent.value) {
-        throw new Error(`A 'treeView' is about to be set when it is not the root node.`)
-      }
-
-      treeView.value = value
     }
 
     const setNodeData: TreeNodeImpl['setNodeData'] = editData => {
@@ -688,6 +672,7 @@ namespace TreeNode {
       if (index >= 0) {
         isDispatchEvent && util.dispatchBeforeNodeRemove(self, childNode)
         childNode.parent = null
+        childNode.treeView = null
         children.value.splice(index, 1)
         nodeData.value.children.splice(index, 1)
         removeChildFromContainer(childNode)
@@ -724,8 +709,7 @@ namespace TreeNode {
         }
         node.parent.children.sort(sortFunc)
       } else {
-        const treeView = getTreeView()
-        treeView?.resetNodePositionInParent(node)
+        treeView.value?.resetNodePositionInParent(node)
       }
     }
 
@@ -898,7 +882,7 @@ namespace TreeNode {
         // 選択状態が変更された場合
         if (changed) {
           function onChanged(): void {
-            const oldNode = getTreeView()?.selectedNode
+            const oldNode = treeView.value?.selectedNode
             // 自ノードが選択状態へ変更されるので、古い選択ノードの選択は解除
             !initializing && selected && oldNode?.setSelected(false, silent)
 
@@ -928,19 +912,18 @@ namespace TreeNode {
     }
 
     function addChildByData(childNodeData: TreeNodeData, options?: { insertIndex?: number | null }): TreeNodeImpl {
-      const treeView = getTreeView()
-      if (!treeView) {
+      if (!treeView.value) {
         throw new Error(`'treeView' not found.`)
       }
 
-      if (treeView.getNode(childNodeData.value)) {
+      if (treeView.value.getNode(childNodeData.value)) {
         throw new Error(`The node '${childNodeData.value}' already exists.`)
       }
 
       ascendSetBlockForDisplay()
 
       // 子ノードの作成
-      const childNode = util.newTreeNode(childNodeData, treeView.getNodeClass())
+      const childNode = util.newTreeNode(childNodeData, treeView.value.getNodeClass())
 
       // ノード挿入位置を決定
       const insertIndex = getInsertIndex(childNode, options)
@@ -1013,8 +996,7 @@ namespace TreeNode {
         childNode.parent.removeChildImpl(childNode, false)
       } else {
         // 親ノードがない場合ツリービューが親となるので、ツリービューから追加ノードを削除
-        const treeView = getTreeView()
-        treeView?.removeNode(childNode.value)
+        treeView.value?.removeNode(childNode.value)
       }
 
       // ノード挿入位置を決定
@@ -1084,6 +1066,9 @@ namespace TreeNode {
         const afterNode = childContainer.value!.children[insertIndex]
         childContainer.value!.insertBefore(node.el, afterNode)
       }
+
+      // ノードにツリービューを設定
+      node.treeView = treeView.value
     }
 
     function toggleImpl(newOpened: boolean, animate: boolean): void {
@@ -1176,10 +1161,10 @@ namespace TreeNode {
       lazy,
       lazyLoadStatus,
       isEldest,
+      treeView,
       minWidth,
       getSortFunc,
       setSortFunc,
-      getTreeView,
       getRootNode,
       getDescendants,
       setNodeData,
@@ -1194,7 +1179,6 @@ namespace TreeNode {
       //  internal
       //--------------------------------------------------
 
-      setTreeView,
       el,
       childContainer,
       nodeData,

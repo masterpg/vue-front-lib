@@ -67,7 +67,7 @@ function verifyTreeView(treeView: TreeViewImpl) {
   for (let i = 0; i < treeView.children.length; i++) {
     const node = treeView.children[i]
     // ノードからツリービューが取得できることを検証
-    expect(node.getTreeView()).toBe(treeView)
+    expect(node.treeView).toBe(treeView)
     // ノードの親が空であることを検証
     expect(node.parent).toBeNull()
     // ツリービューのコンテナにノードが存在することを検証
@@ -98,6 +98,8 @@ function verifyParentChildRelation(treeView: TreeViewImpl, node: TreeNodeImpl) {
     const child = node.children[i]
     // ツリービューから子ノードを取得できることを検証
     expect(treeView.getNode(child.value)!.value).toBe(child.value)
+    // ノードからツリービューが取得できることを検証
+    expect(node.treeView).toBe(treeView)
     // ノードの親子関係を検証
     expect(child.parent).toBe(node)
     expect(child.parent!.nodeData.children.find((childData: TreeNodeData) => childData.value === child.value)).toEqual(child.nodeData)
@@ -590,6 +592,32 @@ describe('TreeView', () => {
       expect(node1_1.parent).toBeNull()
       expect(node1.children.includes(node1_1)).not.toBeTruthy()
       verifyTreeView(treeView)
+    })
+
+    it('別のツリービューへノードを移動', () => {
+      const wrapper1 = mount<TreeViewImpl>(TreeView.clazz)
+      const treeView1 = wrapper1.vm
+      treeView1.buildTree(cloneDeep(baseNodeDataList))
+
+      const wrapper2 = mount<TreeViewImpl>(TreeView.clazz)
+      const treeView2 = wrapper2.vm
+
+      treeView2.addNode(treeView1.getNode('node1')!)
+
+      {
+        const node1 = treeView1.getNode('node1')
+        expect(node1).toBeUndefined()
+        const node1_1 = treeView1.getNode('node1_1')
+        expect(node1_1).toBeUndefined()
+      }
+      {
+        const node1 = treeView2.getNode('node1')
+        expect(node1?.value).toBe('node1')
+        const node1_1 = treeView2.getNode('node1_1')
+        expect(node1_1?.value).toBe('node1_1')
+      }
+      verifyTreeView(treeView1)
+      verifyTreeView(treeView2)
     })
 
     it('存在しない親ノードを指定', () => {
@@ -1365,6 +1393,34 @@ describe('TreeNode', () => {
       expect(node2.children[0]).toBe(node1)
       expect(node1.parent).toBe(node2)
       verifyTreeView(treeView)
+    })
+
+    it('別のツリービューへノードを移動', () => {
+      const wrapper1 = mount<TreeViewImpl>(TreeView.clazz)
+      const treeView1 = wrapper1.vm
+      treeView1.buildTree(cloneDeep(baseNodeDataList))
+
+      const wrapper2 = mount<TreeViewImpl>(TreeView.clazz)
+      const treeView2 = wrapper2.vm
+      treeView2.buildTree(cloneDeep(baseNodeDataList))
+      treeView2.removeNode('node1_1')
+
+      treeView2.addNode(treeView1.getNode('node1_1')!)
+
+      {
+        const node1_1 = treeView1.getNode('node1_1')
+        expect(node1_1).toBeUndefined()
+        const node1_1_1 = treeView1.getNode('node1_1_1')
+        expect(node1_1_1).toBeUndefined()
+      }
+      {
+        const node1_1 = treeView2.getNode('node1_1')
+        expect(node1_1?.value).toBe('node1_1')
+        const node1_1_1 = treeView2.getNode('node1_1_1')
+        expect(node1_1_1?.value).toBe('node1_1_1')
+      }
+      verifyTreeView(treeView1)
+      verifyTreeView(treeView2)
     })
 
     it('既に存在するノードを指定して追加', () => {

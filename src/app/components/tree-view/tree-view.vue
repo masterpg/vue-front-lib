@@ -398,7 +398,7 @@ namespace TreeView {
     function addNodeByNode(node: TreeNodeImpl, options?: { insertIndex?: number | null }): TreeNodeImpl {
       // 追加ノードの親が自身のツリービューの場合
       // ※自身のツリービューの子として追加ノードが既に存在する場合
-      if (!node.parent && node.getTreeView() === self) {
+      if (!node.parent && node.treeView === self) {
         const newInsertIndex = getInsertIndex(node, options)
         const currentIndex = children.value.indexOf(node)
         // 現在の位置と新しい挿入位置が同じ場合
@@ -419,7 +419,7 @@ namespace TreeView {
         node.parent.removeChild(node)
       } else {
         // 親ノードがない場合ツリービューが親となるので、ツリービューから自ノードを削除
-        node.getTreeView()?.removeNode(node.value)
+        node.treeView?.removeNode(node.value)
       }
 
       // ノード挿入位置を決定
@@ -527,8 +527,8 @@ namespace TreeView {
 
       children.value.splice(insertIndex, 0, node)
 
-      // ルートノードにツリービューを設定
-      node.setTreeView(self)
+      // ノードにツリービューを設定
+      node.treeView = self
 
       // 最年長ノードフラグを再設定
       restIsEldest()
@@ -550,7 +550,7 @@ namespace TreeView {
       }
 
       // ルートノードのツリービューをクリア
-      node.setTreeView(null)
+      node.treeView = null
 
       // 最年長ノードフラグを再設定
       restIsEldest()
