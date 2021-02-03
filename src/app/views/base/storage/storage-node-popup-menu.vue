@@ -43,12 +43,12 @@ interface Node {
 
 namespace StorageNodePopupMenu {
   export interface Props {
-    storageType: StorageType
-    node: Node
-    selectedNodes: Node[] | null
-    isRoot: boolean
-    disabled: boolean
-    contextMenu: boolean
+    readonly storageType: StorageType
+    readonly node: Node
+    readonly selectedNodes: Node[] | null
+    readonly isRoot: boolean
+    readonly disabled: boolean
+    readonly contextMenu: boolean
   }
 
   export const clazz = defineComponent({
@@ -63,7 +63,7 @@ namespace StorageNodePopupMenu {
       contextMenu: { type: Boolean, default: false },
     },
 
-    setup(props: Readonly<Props>, ctx) {
+    setup(props: Props, ctx) {
       //----------------------------------------------------------------------
       //
       //  Variables
@@ -370,6 +370,5 @@ namespace StorageNodePopupMenu {
 //========================================================================
 
 export default StorageNodePopupMenu.clazz
-// eslint-disable-next-line no-undef
 export { StorageNodePopupMenu }
 </script>

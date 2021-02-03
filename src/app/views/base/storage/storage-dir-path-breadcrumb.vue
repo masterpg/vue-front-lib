@@ -1,65 +1,72 @@
-<style lang="sass">
-@import 'src/app/styles/app.variables'
-
-.StorageDirPathBreadcrumb__q-btn
-  &.q-btn .q-icon
-    font-size: 1.3em
-    color: $grey-6
-    &.on-right
-      margin-left: 0
-</style>
-
 <style lang="sass" scoped>
 @import 'src/app/styles/app.variables'
 
 .StorageDirPathBreadcrumb
-  @extend %layout-horizontal
-  @extend %layout-wrap
   margin: 16px
   .path-block
     display: inline-block
-    @extend %text-h6
+    @extend %text-subtitle1
     .path-block
       @extend %app-link
 
+.toggle-drawer
+  color: $app-link-color
+
 .path-block-btn
-  @extend %text-h6
+  @extend %text-subtitle1
+  font-weight: map-get($text-weights, "bold")
   color: $app-link-color
   &.last
     color: $text-primary-color
+    pointer-events: none
+  &.last.enabled
+    color: $app-link-color
+    pointer-events: auto
+
+.path-block-dropdown
+  color: $app-link-color
+  width: 26px
+
+.h-spacer
+  width: 10px
 </style>
 
 <template>
-  <div class="StorageDirPathBreadcrumb">
+  <div class="StorageDirPathBreadcrumb layout horizontal center wrap">
+    <q-btn class="toggle-drawer" flat padding="xs" icon="menu" @click="toggleDrawerButtonOnClick" />
+    <div class="h-spacer" />
     <div v-for="pathBlock of pathBlocks" :key="pathBlock.path" class="path-block">
       <q-btn
         v-if="!pathBlock.last"
+        class="path-block-btn"
         flat
         :label="pathBlock.label"
-        class="StorageDirPathBreadcrumb__q-btn path-block-btn"
         padding="xs"
         no-caps
         @click="pathBlockOnClick(pathBlock.path)"
       />
-      <q-btn
-        v-else
-        flat
-        :label="pathBlock.label"
-        class="StorageDirPathBreadcrumb__q-btn path-block-btn last"
-        padding="xs"
-        no-caps
-        icon-right="arrow_drop_down"
-      >
-        <StorageNodePopupMenu :storage-type="storageType" :node="pathBlock" :is-root="pathBlock.isRoot" @select="popupMenuOnNodeAction" />
-      </q-btn>
+      <div v-else class="layout horizontal center wrap">
+        <q-btn
+          class="path-block-btn last"
+          :class="{ enabled: pathBlock.lastEnabled }"
+          flat
+          :label="pathBlock.label"
+          padding="xs"
+          no-caps
+          @click="pathBlockOnClick(pathBlock.path)"
+        />
+        <q-btn flat class="StorageDirPathBreadcrumb__q-btn path-block-dropdown" padding="xs" icon="arrow_drop_down">
+          <StorageNodePopupMenu :storage-type="storageType" :node="pathBlock" :is-root="pathBlock.isRoot" @select="popupMenuOnNodeAction" />
+        </q-btn>
+      </div>
       <span v-show="!pathBlock.last" class="app-mx-2">/</span>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { StorageNode, StorageNodeType, StorageType } from '@/app/service'
-import { computed, defineComponent, onMounted, reactive } from '@vue/composition-api'
+import { StorageArticleDirType, StorageNode, StorageNodeType, StorageType } from '@/app/service'
+import { defineComponent, onMounted, ref } from '@vue/composition-api'
 import { StorageNodeActionEvent } from '@/app/views/base/storage/base'
 import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'
 import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
@@ -70,6 +77,7 @@ interface PathBlock {
   path: string
   nodeType: StorageNodeType
   last: boolean
+  lastEnabled: boolean
   isRoot: boolean
 }
 
@@ -105,7 +113,7 @@ namespace StorageDirPathBreadcrumb {
       //----------------------------------------------------------------------
 
       onMounted(() => {
-        state.pathBlocks = createPathBlocks(null)
+        pathBlocks.value = createPathBlocks(null)
       })
 
       //----------------------------------------------------------------------
@@ -116,14 +124,7 @@ namespace StorageDirPathBreadcrumb {
 
       const pageService = StoragePageService.getInstance(props.storageType)
 
-      const state = reactive({
-        pathBlocks: [] as PathBlock[],
-      })
-
-      const pathBlocks = computed({
-        get: () => state.pathBlocks,
-        set: value => (state.pathBlocks = value),
-      })
+      const pathBlocks = ref<PathBlock[]>([])
 
       //----------------------------------------------------------------------
       //
@@ -162,6 +163,7 @@ namespace StorageDirPathBreadcrumb {
           }
 
           const hierarchicalDirPaths = splitHierarchicalPaths(dirPath)
+          const parentNode = pageService.getStorageNode({ path: selectedNode.dir })
 
           for (let i = 0; i < hierarchicalDirPaths.length; i++) {
             const dirPath = hierarchicalDirPaths[i]
@@ -171,6 +173,11 @@ namespace StorageDirPathBreadcrumb {
               label: pageService.getDisplayNodeName(dirNode),
               last: i === hierarchicalDirPaths.length - 1,
               isRoot: false,
+              // 通常、パンくずの最後尾ディレクトリはクリック不可だが、記事ノードの場合は
+              // パンくず経由で記事編集画面からディレクトリ一覧画面に戻りたい。
+              // 次の記述により、パンくずの最後尾ディレクトリであっても記事ディレクトリの
+              // 場合はクリック可能になる。
+              lastEnabled: parentNode?.article?.dir?.type === StorageArticleDirType.Article,
             })
           }
         }
@@ -181,6 +188,7 @@ namespace StorageDirPathBreadcrumb {
           path: treeRootNode.value,
           nodeType: treeRootNode.nodeType,
           last: result.length <= 0,
+          lastEnabled: false,
           isRoot: true,
         })
 
@@ -192,6 +200,13 @@ namespace StorageDirPathBreadcrumb {
       //  Event listeners
       //
       //----------------------------------------------------------------------
+
+      /**
+       * パンくずのトグルドロワーボタンがクリックされた際のリスナです。
+       */
+      function toggleDrawerButtonOnClick() {
+        ctx.emit('toggle-drawer')
+      }
 
       /**
        * パスのパンくずブロックがクリックされた際のリスナです。
@@ -218,6 +233,7 @@ namespace StorageDirPathBreadcrumb {
       return {
         pathBlocks,
         setSelectedNode,
+        toggleDrawerButtonOnClick,
         pathBlockOnClick,
         popupMenuOnNodeAction,
       }

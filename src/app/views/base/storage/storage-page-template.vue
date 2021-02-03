@@ -31,7 +31,7 @@
 
 <template>
   <div ref="el" class="StoragePage">
-    <q-splitter v-model="splitterModel" unit="px" class="splitter">
+    <q-splitter v-model="splitterModel" unit="px" class="splitter" :limits="[0, Infinity]">
       <template v-slot:before>
         <div ref="treeViewContainer" class="tree-view-container">
           <TreeView
@@ -50,6 +50,7 @@
             :storage-type="storageType"
             @select="pathDirBreadcrumbOnSelect($event)"
             @node-action="popupMenuOnNodeAction($event)"
+            @toggle-drawer="pathDirBreadcrumbOnToggleDrawer"
           />
           <div class="view-container layout horizontal flex-1">
             <StorageDirView

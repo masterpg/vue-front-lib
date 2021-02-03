@@ -1,8 +1,8 @@
 import { CreateArticleTypeDirInput, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/service'
-import { SetupContext, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
+import { Loading, Screen } from 'quasar'
+import { SetupContext, computed, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
 import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'
 import { TreeView, TreeViewLazyLoadEvent, TreeViewSelectEvent } from '@/app/components/tree-view'
-import { Loading } from 'quasar'
 import { StorageDirCreateDialog } from '@/app/views/base/storage/storage-dir-create-dialog.vue'
 import { StorageDirDetailView } from '@/app/views/base/storage/storage-dir-detail-view.vue'
 import { StorageDirPathBreadcrumb } from '@/app/views/base/storage/storage-dir-path-breadcrumb.vue'
@@ -91,10 +91,19 @@ namespace StoragePage {
      */
     const visibleFileDetailView = ref(false)
 
+    const _splitterModel = ref(Screen.lt.md ? 0 : 300)
+
+    const splitterModelBk = ref(300)
+
     /**
      * 左右のペインを隔てるスプリッターの左ペインの幅(px)です。
      */
-    const splitterModel = ref(300)
+    const splitterModel = computed({
+      get: () => _splitterModel.value,
+      set: value => {
+        _splitterModel.value = value
+      },
+    })
 
     /**
      * 選択ノードまでスクロールする必要があることを示すフラグです。
@@ -416,6 +425,26 @@ namespace StoragePage {
     }
 
     /**
+     * パンくずのトグルドロワーボタンがクリックされた際のリスナです。
+     */
+    function pathDirBreadcrumbOnToggleDrawer() {
+      let newValue = 0
+      if (splitterModel.value > 0) {
+        splitterModelBk.value = splitterModel.value
+        newValue = 0
+      } else {
+        newValue = splitterModelBk.value
+      }
+
+      anime({
+        targets: splitterModel,
+        value: newValue,
+        duration: 500,
+        easing: 'easeOutQuart',
+      })
+    }
+
+    /**
      * アップロード進捗フロートでアップロードが終了した際のハンドラです。
      * @param e
      */
@@ -604,6 +633,7 @@ namespace StoragePage {
       scrollToSelectedNode,
       showNodeDetail,
       pathDirBreadcrumbOnSelect,
+      pathDirBreadcrumbOnToggleDrawer,
       uploadProgressFloatOnUploadEnds,
       popupMenuOnNodeAction,
       treeViewOnSelect,

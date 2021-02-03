@@ -53,7 +53,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" :width="300" :breakpoint="500" show-if-above bordered content-class="bg-grey-2">
+    <q-drawer v-model="leftDrawerOpen" :width="300" :breakpoint="1440" bordered content-class="bg-grey-2">
       <q-scroll-area class="drawer-scroll-area">
         <!-- Site Admin -->
         <q-expansion-item v-model="isSiteAdminExpanded" icon="fas fa-user-cog" :label="t('index.mainMenu.siteAdmin')" expand-separator>
@@ -94,11 +94,12 @@
 
 <script lang="ts">
 import { AuthStatus, injectService, provideService } from '@/app/service'
-import { ComputedRef, computed, defineComponent, reactive, ref, watch } from '@vue/composition-api'
-import { Notify, Platform } from 'quasar'
+import { computed, defineComponent, ref, watch } from '@vue/composition-api'
 import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
 import { Dialogs } from '@/app/dialogs'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
+import { Notify } from 'quasar'
+import { Screen } from 'quasar'
 import { useI18n } from '@/app/i18n'
 import { useViewRoutes } from '@/app/router'
 
@@ -126,7 +127,7 @@ export default defineComponent({
     const dialogsRef = ref<Dialogs>()
     Dialogs.provide(dialogsRef)
 
-    const leftDrawerOpen = Platform.is.desktop ? ref(true) : ref(false)
+    const leftDrawerOpen = ref(Screen.gt.md ? true : false)
     const isSiteAdminExpanded = ref(true)
     const isAppAdminExpanded = ref(true)
     const isSignedIn = service.auth.isSignedIn
