@@ -1,7 +1,7 @@
 <style lang="sass" scoped>
 @import 'src/app/styles/app.variables'
 
-.TreeView
+.child-container
   color: var(--tree-view-color, $app-link-color)
   font-size: var(--tree-view-font-size, 14px)
   font-weight: var(--tree-font-weight, $app-link-font-weight)
@@ -12,7 +12,6 @@
   <div
     ref="el"
     class="TreeView"
-    :style="{ minWidth: minWidth + 'px' }"
     @node-property-change="allNodesOnNodePropertyChange"
     @node-add="onNodeAdd"
     @before-node-remove="onBeforeNodeRemove"
@@ -21,7 +20,10 @@
     @select="allNodesOnSelect"
     @open-change="allNodesOnOpenChange"
     @lazy-load="allNodesOnLazyLoad"
-  ></div>
+  >
+    <div ref="childContainer" class="child-container" :style="{ minWidth: wordWrap ? 'unset' : minWidth + 'px' }"></div>
+    <q-resize-observer @resize="onResize" />
+  </div>
 </template>
 
 <script lang="ts">
@@ -46,7 +48,7 @@ import Vue from 'vue'
 //
 //========================================================================
 
-interface TreeView<NODE extends TreeNode = TreeNode, DATA extends TreeNodeData = TreeNodeData> extends Vue {
+interface TreeView<NODE extends TreeNode = TreeNode, DATA extends TreeNodeData = TreeNodeData> extends Vue, TreeView.Props {
   /**
    * ツリービューのトップレベルのノードです。
    */
@@ -55,6 +57,7 @@ interface TreeView<NODE extends TreeNode = TreeNode, DATA extends TreeNodeData =
    * 選択ノードです。
    */
   selectedNode: NODE | null
+
   /**
    * ツリービューを構成するノードのコンポーネントクラスを取得します。
    */
@@ -159,22 +162,30 @@ interface TreeViewImpl<NODE extends TreeNode = TreeNodeImpl, DATA extends TreeNo
  * `--tree-indent` | ノードの左インデントです | `16px`
  * `--tree-view-font-size` | ノードのフォントサイズです | `14px`
  * `--tree-font-weight` | ノードのフォントの太さです | $link-font-weight
- * `--tree-line-height` | ノードの行の高さです | `26px`
  * `--tree-view-color` | ノードの文字色です | $link-color
  * `--tree-selected-color` | ノード選択時の文字色です | `pink-5`
  * `--tree-unselectable-color` | 非選択ノードの文字色です | `grey-9`
  * `--tree-padding` | ツリービューのpaddingです | `10px`
  */
 namespace TreeView {
-  export interface Props {}
+  export interface Props {
+    /**
+     * ノードのラベルを折り返すか示すフラグです。
+     */
+    wordWrap?: boolean
+  }
 
   export const clazz = defineComponent({
     name: 'TreeView',
 
-    setup: (props: Readonly<Props>, ctx) => setup(props, ctx),
+    props: {
+      wordWrap: { type: Boolean },
+    },
+
+    setup: (props: Props, ctx) => setup(props, ctx),
   })
 
-  export function setup(props: Readonly<Props>, ctx: SetupContext) {
+  export function setup(props: Props, ctx: SetupContext) {
     //----------------------------------------------------------------------
     //
     //  Variables
@@ -183,7 +194,7 @@ namespace TreeView {
 
     const self = getCurrentInstance()!.proxy as TreeViewImpl
     const el = ref<HTMLElement>()
-    const childContainer = el
+    const childContainer = ref<HTMLElement>()
 
     /**
      * ツリービューが管理する全ノードのマップです。
@@ -205,6 +216,8 @@ namespace TreeView {
     })
 
     let sortFunc: ChildrenSortFunc<any> | null = null
+
+    const currentSize = ref<{ width: string; height: string }>({ width: '0px', height: '0px' })
 
     //----------------------------------------------------------------------
     //
@@ -731,6 +744,25 @@ namespace TreeView {
       ctx.emit(e.type, args)
     }
 
+    /**
+     * ツリービューのコンテナがリサイズされた際のリスナです。
+     * @param size
+     */
+    function onResize(size: { width: string; height: string }) {
+      if (currentSize.value.width !== size.width) {
+        const bottomNodes: TreeNodeImpl[] = []
+        // 最下層のノード群を取得
+        for (const node of Object.values(allNodeDict)) {
+          !node.children.length && bottomNodes.push(node)
+        }
+        // 最下層のノードから上位に向かって高さ調整が行われていく
+        for (const bottomNode of bottomNodes) {
+          bottomNode.refreshChildContainerHeight()
+        }
+      }
+      currentSize.value = size
+    }
+
     //----------------------------------------------------------------------
     //
     //  Result
@@ -778,11 +810,11 @@ namespace TreeView {
       allNodesOnSelect,
       allNodesOnOpenChange,
       allNodesOnLazyLoad,
+      onResize,
     }
   }
 }
 
 export default TreeView.clazz
-// eslint-disable-next-line no-undef
 export { TreeView, TreeViewImpl }
 </script>

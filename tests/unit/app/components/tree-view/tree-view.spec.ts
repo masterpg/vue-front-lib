@@ -684,7 +684,7 @@ describe('TreeView', () => {
       expect(treeView.getNode(node1_1.value)).toBeUndefined()
       expect(node1.children.length).toBe(node1ChildrenLength - 1)
       expect(node1.children.includes(node1_1)).not.toBeTruthy()
-      expect(Array.from(node1.childContainer.children).includes(node1_1.$el)).not.toBeTruthy()
+      expect(Array.from(node1.childContainer.children).includes(node1_1.el)).not.toBeTruthy()
 
       for (const descendant of node1_1Descendants) {
         expect(treeView.getNode((descendant as any).value)).toBeUndefined()
@@ -795,7 +795,7 @@ describe('TreeView', () => {
       // ノードが削除されているか検証
       expect(treeView.getAllNodes().length).toBe(0)
       expect(treeView.children.length).toBe(0)
-      expect(Array.from(treeView.childContainer.children).length).toBe(0)
+      expect(treeView.childContainer.children.length).toBe(0)
 
       for (const node of allNodes) {
         expect(treeView.getNode(node.value)).toBeUndefined()

@@ -6,7 +6,9 @@ import { clearProvidedDependency as clearProvidedDependency_demo } from './helpe
 // demoにはappの言語リソースが全て含まれるのでdemoのi18nをインポートしている
 import { quasar } from '@/app/quasar'
 import { setupConfig } from '@/app/config'
+import { setupRouter as setupDemoRouter } from '@/app/router'
 import { setupI18n } from '@/demo/i18n'
+import { setupRouter } from '@/app/router'
 import td from 'testdouble'
 
 //
@@ -40,6 +42,8 @@ window.TextEncoder = TextEncoder
 
 beforeEach(async () => {
   setupConfig()
+  setupRouter()
+  setupDemoRouter()
   const i18n = setupI18n()
   await i18n.load()
 })

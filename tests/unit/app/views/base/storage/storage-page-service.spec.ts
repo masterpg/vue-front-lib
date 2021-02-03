@@ -119,7 +119,7 @@ function newStoragePageService(
 
   // ツリービューのインスタンス化
   const wrapper = mount(TreeView.clazz)
-  const treeView = wrapper.vm as TestStorageTreeView
+  const treeView = (wrapper.vm as any) as TestStorageTreeView
   const treeViewRef = ref(treeView) as Ref<TestStorageTreeView>
 
   // ストレージページサービスをインスタンス化

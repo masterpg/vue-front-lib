@@ -2,9 +2,19 @@
 @import 'src/app/styles/app.variables'
 
 .node-container
-  padding-top: var(--tree-distance, 6px)
+  padding-top: var(--tree-distance, 10px)
   &.eldest
     padding-top: 0
+
+.toggle-icon-container
+  @extend %layout-horizontal
+  @extend %layout-center-center
+  font-size: 1.5em
+  margin-right: 6px
+  .toggle-icon
+    cursor: pointer
+    &.anime
+      transition: transform .5s
 
 .icon-container
   @extend %layout-horizontal
@@ -13,13 +23,8 @@
   max-width: 1.5em
   height: 1.5em
   margin-right: 6px
-  .toggle-icon
-    cursor: pointer
-    &.anime
-      transition: transform .5s
 
 .item-container
-  height: var(--tree-line-height, 26px)
   cursor: pointer
   white-space: nowrap
   &:hover
@@ -36,16 +41,15 @@
       .item
         text-decoration: none
 
+  &.word-wrap
+    height: unset
+    white-space: unset
+    overflow-wrap: anywhere
+
 .child-container
   padding-left: var(--tree-indent, 16px)
   height: 0
   overflow: hidden
-
-.fade-enter-active, .fade-leave-active
-  transition: opacity .5s
-
-.fade-enter, .fade-leave
-  opacity: 0
 </style>
 
 <template>
@@ -53,16 +57,15 @@
     <!-- 自ノード -->
     <div ref="nodeContainer" class="node-container layout horizontal center" :class="{ eldest: isEldest }">
       <!-- 遅延ロードアイコン -->
-      <div v-show="lazyLoadStatus === 'loading'" ref="lazyLoadIcon" class="icon-container">
-        <LoadingSpinner size="20px" />
+      <div v-show="lazyLoadStatus === 'loading'" ref="lazyLoadIcon" class="toggle-icon-container">
+        <q-spinner color="grey-6" />
       </div>
       <!-- トグルアイコン -->
-      <div v-show="lazyLoadStatus !== 'loading'" class="icon-container">
+      <div v-show="lazyLoadStatus !== 'loading'" class="toggle-icon-container">
         <!-- トグルアイコン有り -->
         <template v-if="hasChildren">
           <q-icon
             name="arrow_right"
-            size="26px"
             color="grey-6"
             class="toggle-icon"
             :class="[opened ? 'rotate-90' : '', hasToggleAnime ? 'anime' : '']"
@@ -71,26 +74,27 @@
         </template>
         <!-- トグルアイコン無し -->
         <template v-else>
-          <q-icon name="" size="26px" />
+          <!-- アイコン用スペース -->
+          <q-icon v-if="Boolean(icon)" name="" />
+          <!-- ドットアイコン -->
+          <q-icon v-else color="grey-6">
+            <svg class="dot" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="24" height="24">
+              <circle cx="12" cy="12" r="3" fill="#9b9b9b" stroke-width="0" />
+            </svg>
+          </q-icon>
         </template>
       </div>
 
       <!-- アイテムコンテナ -->
       <div
         class="layout horizontal center item-container"
-        :class="{ selected, unselectable }"
+        :class="{ selected, unselectable, 'word-wrap': wordWrap }"
         @click="itemContainerOnClick"
         @click.right="itemOnRightClick"
       >
-        <!-- 指定アイコン -->
-        <div v-if="!!icon" class="icon-container">
-          <q-icon :name="icon" :color="iconColor" :size="iconSize" />
-        </div>
-        <!-- ドットアイコン -->
-        <div v-else class="icon-container">
-          <svg class="dot" width="6px" height="6px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <circle cx="3" cy="3" r="3" fill="#9b9b9b" stroke-width="0" />
-          </svg>
+        <!-- アイコン -->
+        <div v-if="Boolean(icon)" class="icon-container">
+          <q-icon :name="icon" :color="iconColor" :style="{ fontSize: iconSize }" />
         </div>
         <!-- アイテム -->
         <div class="item">

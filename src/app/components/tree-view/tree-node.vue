@@ -2,9 +2,19 @@
 @import 'src/app/styles/app.variables'
 
 .node-container
-  padding-top: var(--tree-distance, 6px)
+  padding-top: var(--tree-distance, 10px)
   &.eldest
     padding-top: 0
+
+.toggle-icon-container
+  @extend %layout-horizontal
+  @extend %layout-center-center
+  font-size: 1.5em
+  margin-right: 6px
+  .toggle-icon
+    cursor: pointer
+    &.anime
+      transition: transform .5s
 
 .icon-container
   @extend %layout-horizontal
@@ -13,13 +23,8 @@
   max-width: 1.5em
   height: 1.5em
   margin-right: 6px
-  .toggle-icon
-    cursor: pointer
-    &.anime
-      transition: transform .5s
 
 .item-container
-  height: var(--tree-line-height, 26px)
   cursor: pointer
   white-space: nowrap
   &:hover
@@ -36,6 +41,11 @@
       .item
         text-decoration: none
 
+  &.word-wrap
+    height: unset
+    white-space: unset
+    overflow-wrap: anywhere
+
 .child-container
   padding-left: var(--tree-indent, 16px)
   height: 0
@@ -47,16 +57,15 @@
     <!-- 自ノード -->
     <div ref="nodeContainer" class="node-container layout horizontal center" :class="{ eldest: isEldest }">
       <!-- 遅延ロードアイコン -->
-      <div v-show="lazyLoadStatus === 'loading'" ref="lazyLoadIcon" class="icon-container">
-        <LoadingSpinner size="20px" />
+      <div v-show="lazyLoadStatus === 'loading'" ref="lazyLoadIcon" class="toggle-icon-container">
+        <q-spinner color="grey-6" />
       </div>
       <!-- トグルアイコン -->
-      <div v-show="lazyLoadStatus !== 'loading'" class="icon-container">
+      <div v-show="lazyLoadStatus !== 'loading'" class="toggle-icon-container">
         <!-- トグルアイコン有り -->
         <template v-if="hasChildren">
           <q-icon
             name="arrow_right"
-            size="26px"
             color="grey-6"
             class="toggle-icon"
             :class="[opened ? 'rotate-90' : '', hasToggleAnime ? 'anime' : '']"
@@ -65,21 +74,22 @@
         </template>
         <!-- トグルアイコン無し -->
         <template v-else>
-          <q-icon name="" size="26px" />
+          <!-- アイコン用スペース -->
+          <q-icon v-if="Boolean(icon)" name="" />
+          <!-- ドットアイコン -->
+          <q-icon v-else color="grey-6">
+            <svg class="dot" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="24" height="24">
+              <circle cx="12" cy="12" r="3" fill="#9b9b9b" stroke-width="0" />
+            </svg>
+          </q-icon>
         </template>
       </div>
 
       <!-- アイテムコンテナ -->
-      <div class="layout horizontal center item-container" :class="{ selected, unselectable }" @click="itemContainerOnClick">
-        <!-- 指定アイコン -->
-        <div v-if="!!icon" class="icon-container">
-          <q-icon :name="icon" :color="iconColor" :size="iconSize" />
-        </div>
-        <!-- ドットアイコン -->
-        <div v-else class="icon-container">
-          <svg class="dot" width="6px" height="6px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <circle cx="3" cy="3" r="3" fill="#9b9b9b" stroke-width="0" />
-          </svg>
+      <div class="layout horizontal center item-container" :class="{ selected, unselectable, 'word-wrap': wordWrap }" @click="itemContainerOnClick">
+        <!-- アイコン -->
+        <div v-if="Boolean(icon)" class="icon-container">
+          <q-icon :name="icon" :color="iconColor" :style="{ fontSize: iconSize }" />
         </div>
         <!-- アイテム -->
         <div class="item">
@@ -99,7 +109,6 @@ import { ChildrenSortFunc, TreeNodeData, TreeNodeEditData, TreeViewLazyLoadStatu
 import { Ref, SetupContext, computed, defineComponent, getCurrentInstance, nextTick, reactive, ref, set } from '@vue/composition-api'
 import { TreeView, TreeViewImpl } from '@/app/components/tree-view/tree-view.vue'
 import { extendedMethod, isFontAwesome } from '@/app/base'
-import { LoadingSpinner } from '@/app/components/loading-spinner'
 import Vue from 'vue'
 import anime from 'animejs'
 import debounce from 'lodash/debounce'
@@ -278,14 +287,10 @@ namespace TreeNode {
   export const clazz = defineComponent({
     name: 'TreeNode',
 
-    components: {
-      LoadingSpinner: LoadingSpinner.clazz,
-    },
-
-    setup: (props: Readonly<Props>, ctx) => setup(props, ctx),
+    setup: (props: Props, ctx) => setup(props, ctx),
   })
 
-  export function setup(props: Readonly<Props>, ctx: SetupContext) {
+  export function setup(props: Props, ctx: SetupContext) {
     //----------------------------------------------------------------------
     //
     //  Variables
@@ -333,6 +338,8 @@ namespace TreeNode {
 
     const hasToggleAnime = computed(() => Boolean(state.toggleAnime))
 
+    const wordWrap = computed<boolean>(() => Boolean(treeView.value?.wordWrap))
+
     //----------------------------------------------------------------------
     //
     //  Properties
@@ -349,6 +356,7 @@ namespace TreeNode {
 
         nextTick(() => {
           setMinWidth()
+          refreshChildContainerHeight()
         })
       },
     })
@@ -588,6 +596,12 @@ namespace TreeNode {
         }
       }
 
+      // この段階ではノードのサイズが確定されていなことがあるので、
+      // 少し時間をおいてからサイズの再設定を行うようにしている
+      nextTick(() => {
+        refreshChildContainerHeight()
+      })
+
       return childNode
     }
 
@@ -629,7 +643,7 @@ namespace TreeNode {
       // 任意項目は値が設定されていないとリアクティブにならないのでここで初期化
       set(data, 'icon', data.icon || '')
       set(data, 'iconColor', data.iconColor || '')
-      set(data, 'iconSize', data.iconSize || isFontAwesome(data.icon) ? '20px' : '24px')
+      set(data, 'iconSize', data.iconSize || isFontAwesome(data.icon) ? '1.4em' : '1.5em')
       set(data, 'opened', Boolean(data.opened))
       set(data, 'unselectable', Boolean(data.unselectable))
       set(data, 'selected', Boolean(data.selected))
@@ -823,7 +837,7 @@ namespace TreeNode {
     /**
      * 自ノードから上位ノードに向かって再帰的に「display: block」を設定します。
      *
-     * ※このメソッドの存在理由:
+     * ※このメソッドの役割:
      * 自ノードに子ノードを追加する際、いずれかの祖先が「display: none」だと
      * 追加する子ノードのサイズが決定されないため、ノードの高さなどサイズ調整
      * をすることができません。この対応として一時的に上位ノードに「display: block」
@@ -841,7 +855,7 @@ namespace TreeNode {
      *
      * ※このメソッドの役割:
      * `ascendSetBlockForDisplay()`によって一時的に「display: block」にされていた値を
-     * 適切な値に設定し直す役割をします。
+     * 適切な値に設定し直す役割があります。
      */
     const ascendSetAnyForDisplay: TreeNodeImpl['ascendSetAnyForDisplay'] = () => {
       childContainer.value!.style.display = opened.value ? 'block' : 'none'
@@ -1213,11 +1227,11 @@ namespace TreeNode {
       nodeContainer,
       lazyLoadIcon,
       hasToggleAnime,
+      wordWrap,
     }
   }
 }
 
 export default TreeNode.clazz
-// eslint-disable-next-line no-undef
 export { TreeNode, TreeNodeImpl }
 </script>
