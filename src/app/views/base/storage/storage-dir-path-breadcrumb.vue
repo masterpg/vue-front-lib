@@ -3,63 +3,51 @@
 
 .StorageDirPathBreadcrumb
   margin: 16px
-  .path-block
-    display: inline-block
-    @extend %text-subtitle1
-    .path-block
-      @extend %app-link
 
 .toggle-drawer
   color: $app-link-color
 
-.path-block-btn
+.path-block-container
+  display: inline-block
+  overflow-wrap: anywhere
+
+.path-block
+  @extend %app-link
   @extend %text-subtitle1
-  font-weight: map-get($text-weights, "bold")
-  color: $app-link-color
   &.last
     color: $text-primary-color
     pointer-events: none
+    font-weight: map-get($text-weights, "bold")
   &.last.enabled
     color: $app-link-color
     pointer-events: auto
 
-.path-block-dropdown
+.path-block-menu
   color: $app-link-color
-  width: 26px
-
-.h-spacer
-  width: 10px
 </style>
 
 <template>
-  <div class="StorageDirPathBreadcrumb layout horizontal center wrap">
-    <q-btn class="toggle-drawer" flat padding="xs" icon="menu" @click="toggleDrawerButtonOnClick" />
-    <div class="h-spacer" />
-    <div v-for="pathBlock of pathBlocks" :key="pathBlock.path" class="path-block">
-      <q-btn
-        v-if="!pathBlock.last"
-        class="path-block-btn"
-        flat
-        :label="pathBlock.label"
-        padding="xs"
-        no-caps
-        @click="pathBlockOnClick(pathBlock.path)"
-      />
-      <div v-else class="layout horizontal center wrap">
-        <q-btn
-          class="path-block-btn last"
-          :class="{ enabled: pathBlock.lastEnabled }"
-          flat
-          :label="pathBlock.label"
-          padding="xs"
-          no-caps
-          @click="pathBlockOnClick(pathBlock.path)"
-        />
-        <q-btn flat class="StorageDirPathBreadcrumb__q-btn path-block-dropdown" padding="xs" icon="arrow_drop_down">
-          <StorageNodePopupMenu :storage-type="storageType" :node="pathBlock" :is-root="pathBlock.isRoot" @select="popupMenuOnNodeAction" />
-        </q-btn>
-      </div>
-      <span v-show="!pathBlock.last" class="app-mx-2">/</span>
+  <div class="StorageDirPathBreadcrumb layout horizontal start">
+    <q-btn class="toggle-drawer app-mt-2 app-mr-10" flat size="md" padding="none" icon="menu" @click="toggleDrawerButtonOnClick" />
+    <div class="path-block-container">
+      <template v-for="pathBlock of pathBlocks">
+        <span v-if="!pathBlock.last" :key="`${pathBlock.path}-block`" class="path-block" @click="pathBlockOnClick(pathBlock.path)">{{
+          pathBlock.label
+        }}</span>
+        <template v-else>
+          <span
+            class="path-block last"
+            :key="`${pathBlock.path}-block`"
+            :class="{ enabled: pathBlock.lastEnabled }"
+            @click="pathBlockOnClick(pathBlock.path)"
+            >{{ pathBlock.label }}
+          </span>
+          <q-btn :key="`${pathBlock.path}}-menu`" class="path-block-menu" flat size="md" padding="none" icon="arrow_drop_down">
+            <StorageNodePopupMenu :storage-type="storageType" :node="pathBlock" :is-root="pathBlock.isRoot" @select="popupMenuOnNodeAction" />
+          </q-btn>
+        </template>
+        <span :key="`${pathBlock.path}-slash`" v-show="!pathBlock.last" class="app-mx-6">/</span>
+      </template>
     </div>
   </div>
 </template>
