@@ -52,6 +52,7 @@
     "unfetch": "^4.2.0",
     "urijs": "^1.19.5",
     "validator": "^13.5.2",
+    "viewport-units-buggyfill": "^0.6.2",
     "vue": "^2.6.12",
     "vue-i18n": "^8.22.4",
     "vue-router": "^3.4.9",

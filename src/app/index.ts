@@ -9,6 +9,11 @@ import { setupConfig } from '@/app/config'
 import { setupI18n } from '@/app/i18n'
 import { setupRouter } from '@/app/router'
 
+// モバイル端末でビューポートのサイズが正しく取得されない問題の対応
+// ※フルスクリーンアプリの場合、ビューポートのサイズを誤認してしまい、
+//   フルスクリーンを想定したページが画面からはみ出たりする。
+require('viewport-units-buggyfill').init({ force: true })
+
 // Vueの設定
 Vue.config.productionTip = false
 Vue.use(VueCompositionApi)
