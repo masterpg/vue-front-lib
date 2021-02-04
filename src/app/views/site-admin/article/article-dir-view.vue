@@ -10,11 +10,17 @@
 .th
   cursor: default
   &.label
-    color: $app-link-color
-    span
+    white-space: normal
+    > i
+      margin-right: 10px
+    > div
+      min-width: 250px
+  &.label.link
+    > i
+      color: $app-link-color
+    > div
       @extend %app-link
       font-weight: map-get($text-weights, "medium")
-      vertical-align: middle
 </style>
 
 <template>
@@ -69,18 +75,14 @@
             <q-checkbox v-show="!isArticleSrcMaster(slotProps.tr.row)" v-model="slotProps.tr.selected" />
           </q-td>
           <q-td key="label" :props="slotProps.tr">
-            <span
-              v-if="slotProps.tr.row.isDir || isArticleSrcMaster(slotProps.tr.row)"
-              class="th label"
+            <div
+              class="th label layout horizontal center"
+              :class="{ link: slotProps.tr.row.isDir || isArticleSrcMaster(slotProps.tr.row) }"
               @click="nameCellOnClick(slotProps.tr.row, $event)"
             >
-              <q-icon :name="slotProps.tr.row.icon" :size="slotProps.tr.row.iconSize" class="app-mr-6" />
-              <span>{{ slotProps.tr.row.label }}</span>
-            </span>
-            <span v-else-if="slotProps.tr.row.isFile" class="th">
-              <q-icon :name="slotProps.tr.row.icon" :size="slotProps.tr.row.iconSize" class="app-mr-6" />
-              <span>{{ slotProps.tr.row.label }}</span>
-            </span>
+              <q-icon :name="slotProps.tr.row.icon" :size="slotProps.tr.row.iconSize" />
+              <div>{{ slotProps.tr.row.label }}</div>
+            </div>
           </q-td>
           <q-td key="type" :props="slotProps.tr" class="th">{{ slotProps.tr.row.type }}</q-td>
           <q-td key="size" :props="slotProps.tr" class="th">{{ slotProps.tr.row.size }}</q-td>
@@ -107,7 +109,7 @@
 <script lang="ts">
 import { StorageArticleFileType, StorageUtil } from '@/app/service'
 import { StorageDirTableRow, StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
-import { computed, defineComponent, nextTick, ref } from '@vue/composition-api'
+import { computed, defineComponent, ref } from '@vue/composition-api'
 import { StorageDirTable } from '@/app/views/base/storage/storage-dir-table.vue'
 import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'
 import { StoragePageService } from '@/app/views/base/storage'
