@@ -17,8 +17,8 @@
 </style>
 
 <template>
-  <q-layout id="app" class="AppPage" view="lHh Lpr lFf">
-    <q-header elevated class="glossy header">
+  <q-layout id="app" class="AppPage" view="lHh Lpr lff">
+    <q-header reveal elevated class="glossy header">
       <q-toolbar>
         <q-btn flat dense round aria-label="Menu" icon="menu" @click="leftDrawerOpen = !leftDrawerOpen" />
 

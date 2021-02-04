@@ -45,7 +45,7 @@
       </template>
       <template v-slot:after>
         <div class="content-container layout vertical">
-          <StorageDirPathBreadcrumb
+          <storage-dir-path-breadcrumb
             ref="pathDirBreadcrumb"
             :storage-type="storageType"
             @select="pathDirBreadcrumbOnSelect($event)"
@@ -53,7 +53,7 @@
             @toggle-drawer="pathDirBreadcrumbOnToggleDrawer"
           />
           <div class="view-container layout horizontal flex-1">
-            <ArticleDirView
+            <article-dir-view
               ref="dirView"
               class="dir-view flex-1"
               v-show="visibleDirView"
@@ -62,15 +62,15 @@
               @deep-select="dirViewOnDeepSelect($event)"
               @node-action="popupMenuOnNodeAction($event)"
             />
-            <ArticleWritingView ref="writingView" v-show="visibleWritingView" class="flex-1" :storage-type="storageType" />
-            <StorageDirDetailView
+            <article-writing-view ref="writingView" v-show="visibleWritingView" class="flex-1" :storage-type="storageType" />
+            <storage-dir-detail-view
               v-show="visibleDirDetailView"
               ref="dirDetailView"
               class="node-detail-view"
               :storage-type="storageType"
               @close="nodeDetailViewOnClose"
             />
-            <StorageFileDetailView
+            <storage-file-detail-view
               v-show="visibleFileDetailView"
               ref="fileDetailView"
               class="node-detail-view"
@@ -82,13 +82,13 @@
       </template>
     </q-splitter>
 
-    <StorageDirCreateDialog ref="dirCreateDialog" :storage-type="storageType" />
-    <StorageNodeMoveDialog ref="nodeMoveDialog" :storage-type="storageType" />
-    <StorageNodeRenameDialog ref="nodeRenameDialog" :storage-type="storageType" />
-    <StorageNodeRemoveDialog ref="nodeRemoveDialog" :storage-type="storageType" />
-    <StorageNodeShareDialog ref="nodeShareDialog" :storage-type="storageType" />
+    <storage-dir-create-dialog ref="dirCreateDialog" :storage-type="storageType" />
+    <storage-node-move-dialog ref="nodeMoveDialog" :storage-type="storageType" />
+    <storage-node-rename-dialog ref="nodeRenameDialog" :storage-type="storageType" />
+    <storage-node-remove-dialog ref="nodeRemoveDialog" :storage-type="storageType" />
+    <storage-node-share-dialog ref="nodeShareDialog" :storage-type="storageType" />
 
-    <StorageUploadProgressFloat
+    <storage-upload-progress-float
       ref="uploadProgressFloat"
       class="fixed-bottom-right"
       :storage-type="storageType"

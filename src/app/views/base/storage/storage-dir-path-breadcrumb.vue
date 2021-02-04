@@ -28,7 +28,15 @@
 
 <template>
   <div class="StorageDirPathBreadcrumb layout horizontal start">
-    <q-btn class="toggle-drawer app-mt-2 app-mr-10" flat size="md" padding="none" icon="menu" @click="toggleDrawerButtonOnClick" />
+    <q-btn
+      v-show="screenSize.gt.sp"
+      class="toggle-drawer app-mt-2 app-mr-10"
+      flat
+      size="md"
+      padding="none"
+      icon="menu"
+      @click="toggleDrawerButtonOnClick"
+    />
     <div class="path-block-container">
       <template v-for="pathBlock of pathBlocks">
         <span v-if="!pathBlock.last" :key="`${pathBlock.path}-block`" class="path-block" @click="pathBlockOnClick(pathBlock.path)">{{
@@ -59,6 +67,7 @@ import { StorageNodeActionEvent } from '@/app/views/base/storage/base'
 import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'
 import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
 import { splitHierarchicalPaths } from 'web-base-lib'
+import { useScreenSize } from '@/app/base'
 
 interface PathBlock {
   label: string
@@ -111,6 +120,8 @@ namespace StorageDirPathBreadcrumb {
       //----------------------------------------------------------------------
 
       const pageService = StoragePageService.getInstance(props.storageType)
+
+      const screenSize = useScreenSize()
 
       const pathBlocks = ref<PathBlock[]>([])
 
@@ -219,6 +230,7 @@ namespace StorageDirPathBreadcrumb {
       //----------------------------------------------------------------------
 
       return {
+        screenSize,
         pathBlocks,
         setSelectedNode,
         toggleDrawerButtonOnClick,

@@ -1,3 +1,21 @@
+import { computed, reactive } from '@vue/composition-api'
+import { Screen } from 'quasar'
+
+//========================================================================
+//
+//  Interfaces
+//
+//========================================================================
+
+interface ScreenSize {
+  readonly name: 'sp' | 'tb' | 'pc'
+  readonly sp: boolean
+  readonly tb: boolean
+  readonly pc: boolean
+  readonly lt: { tb: boolean; pc: boolean }
+  readonly gt: { sp: boolean; tb: boolean }
+}
+
 //========================================================================
 //
 //  Implementation
@@ -32,10 +50,43 @@ function isFontAwesome(icon: string | undefined | null): boolean {
   return Boolean(icon.match(/fa[sbr] fa-/))
 }
 
+namespace ScreenSize {
+  let instance: ScreenSize
+
+  export function getInstance(): ScreenSize {
+    instance = instance ?? newInstance()
+    return instance
+  }
+
+  export function newInstance(): ScreenSize {
+    const name = computed<ScreenSize['name']>(() => (sp.value ? 'sp' : tb.value ? 'tb' : 'pc'))
+    const sp = computed<ScreenSize['sp']>(() => Screen.lt.md)
+    const tb = computed<ScreenSize['tb']>(() => Screen.name === 'md')
+    const pc = computed<ScreenSize['pc']>(() => Screen.gt.md)
+    const lt = computed<ScreenSize['lt']>(() => {
+      return {
+        tb: Screen.lt.md,
+        pc: Screen.lt.xl,
+      }
+    })
+    const gt = computed<ScreenSize['gt']>(() => {
+      return {
+        sp: Screen.gt.sm,
+        tb: Screen.gt.md,
+      }
+    })
+    return reactive({ name, sp, tb, pc, lt, gt })
+  }
+}
+
+function useScreenSize(): ScreenSize {
+  return ScreenSize.getInstance()
+}
+
 //========================================================================
 //
 //  Exports
 //
 //========================================================================
 
-export { extendedMethod, isFontAwesome }
+export { extendedMethod, isFontAwesome, useScreenSize }

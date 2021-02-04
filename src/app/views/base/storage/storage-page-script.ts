@@ -3,6 +3,7 @@ import { Loading, Screen } from 'quasar'
 import { SetupContext, computed, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
 import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'
 import { TreeView, TreeViewLazyLoadEvent, TreeViewSelectEvent } from '@/app/components/tree-view'
+import { extendedMethod, useScreenSize } from '@/app/base'
 import { StorageDirCreateDialog } from '@/app/views/base/storage/storage-dir-create-dialog.vue'
 import { StorageDirDetailView } from '@/app/views/base/storage/storage-dir-detail-view.vue'
 import { StorageDirPathBreadcrumb } from '@/app/views/base/storage/storage-dir-path-breadcrumb.vue'
@@ -18,7 +19,6 @@ import { StorageUploadProgressFloat } from '@/app/components/storage/storage-upl
 import { UploadEndedEvent } from '@/app/components/storage'
 import _path from 'path'
 import anime from 'animejs'
-import { extendedMethod } from '@/app/base'
 import { removeBothEndsSlash } from 'web-base-lib'
 
 //========================================================================
@@ -80,6 +80,7 @@ namespace StoragePage {
     const uploadProgressFloat = ref<StorageUploadProgressFloat>()
 
     const pageService = StoragePageService.newInstance({ storageType, treeViewRef, nodeFilter })
+    const screenSize = useScreenSize()
 
     /**
      * ディレクトリ詳細ビューの表示フラグです。
@@ -99,7 +100,9 @@ namespace StoragePage {
      * 左右のペインを隔てるスプリッターの左ペインの幅(px)です。
      */
     const splitterModel = computed({
-      get: () => _splitterModel.value,
+      get: () => {
+        return screenSize.gt.sp ? _splitterModel.value : 0
+      },
       set: value => {
         _splitterModel.value = value
       },
