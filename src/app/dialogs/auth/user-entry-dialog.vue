@@ -91,7 +91,7 @@ namespace UserEntryDialog {
     const dialog = ref<QDialog>()
     const base = Dialog.setup<void>(dialog)
     const service = injectService()
-    const { t } = useI18n()
+    const i18n = useI18n()
 
     const userNameInput = ref() as Ref<QInput>
     const fullNameInput = ref() as Ref<QInput>
@@ -156,7 +156,7 @@ namespace UserEntryDialog {
       })
 
       if (ret.status === SetOwnUserInfoResultStatus.AlreadyExists) {
-        userNameErrorMessage.value = String(t('auth.entry.userNameAlreadyExists'))
+        userNameErrorMessage.value = String(i18n.t('auth.entry.userNameAlreadyExists'))
         Loading.hide()
         return
       }
@@ -193,8 +193,8 @@ namespace UserEntryDialog {
      */
     function validateUserName(value: string | null): boolean {
       function setInvalidError(): void {
-        const target = String(t('auth.entry.userName'))
-        userNameErrorMessage.value = String(t('error.invalid', { target }))
+        const target = String(i18n.t('auth.entry.userName'))
+        userNameErrorMessage.value = String(i18n.t('error.invalid', { target }))
       }
 
       if (value === null) {
@@ -204,8 +204,8 @@ namespace UserEntryDialog {
       userNameErrorMessage.value = ''
 
       if (value === '') {
-        const target = String(t('auth.entry.userName'))
-        userNameErrorMessage.value = String(t('error.required', { target }))
+        const target = String(i18n.t('auth.entry.userName'))
+        userNameErrorMessage.value = String(i18n.t('error.required', { target }))
         return false
       }
 
@@ -230,8 +230,8 @@ namespace UserEntryDialog {
      */
     function validateFullName(value: string | null): boolean {
       function setInvalidError(): void {
-        const target = String(t('auth.entry.fullName'))
-        fullNameErrorMessage.value = String(t('error.invalid', { target }))
+        const target = String(i18n.t('auth.entry.fullName'))
+        fullNameErrorMessage.value = String(i18n.t('error.invalid', { target }))
       }
 
       if (value === null) {
@@ -241,8 +241,8 @@ namespace UserEntryDialog {
       fullNameErrorMessage.value = ''
 
       if (value === '') {
-        const target = String(t('auth.entry.fullName'))
-        fullNameErrorMessage.value = String(t('error.required', { target }))
+        const target = String(i18n.t('auth.entry.fullName'))
+        fullNameErrorMessage.value = String(i18n.t('error.required', { target }))
         return false
       }
 
@@ -292,7 +292,7 @@ namespace UserEntryDialog {
 
     return {
       ...base,
-      t,
+      ...i18n,
       fullNameInput,
       userNameInput,
       userName,

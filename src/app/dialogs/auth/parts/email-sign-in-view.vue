@@ -138,7 +138,7 @@ namespace EmailSignInView {
       //----------------------------------------------------------------------
 
       const service = injectService()
-      const { t } = useI18n()
+      const i18n = useI18n()
 
       const emailInput = ref() as Ref<QInput>
       const passwordInput = ref() as Ref<QInput>
@@ -204,7 +204,7 @@ namespace EmailSignInView {
             state.errorMessage = signInResult.errorMessage
           } else {
             console.error(signInResult.errorMessage)
-            state.errorMessage = String(t('auth.signInFailed'))
+            state.errorMessage = String(i18n.t('auth.signInFailed'))
           }
           Loading.hide()
           return
@@ -224,7 +224,7 @@ namespace EmailSignInView {
               state.errorMessage = authResult.errorMessage
             } else {
               console.error(authResult.errorMessage)
-              state.errorMessage = String(t('auth.signUpFailed'))
+              state.errorMessage = String(i18n.t('auth.signUpFailed'))
             }
             Loading.hide()
             return
@@ -280,14 +280,14 @@ namespace EmailSignInView {
         }
 
         if (value === '') {
-          const target = String(t('common.email'))
-          state.emailErrorMessage = String(t('error.required', { target }))
+          const target = String(i18n.t('common.email'))
+          state.emailErrorMessage = String(i18n.t('error.required', { target }))
           return true
         }
 
         if (!isEmail(value)) {
-          const target = String(t('common.email'))
-          state.emailErrorMessage = String(t('error.invalid', { target }))
+          const target = String(i18n.t('common.email'))
+          state.emailErrorMessage = String(i18n.t('error.invalid', { target }))
           return true
         }
 
@@ -304,8 +304,8 @@ namespace EmailSignInView {
         }
 
         if (value === '') {
-          const target = String(t('common.password'))
-          state.passwordErrorMessage = String(t('error.required', { target }))
+          const target = String(i18n.t('common.password'))
+          state.passwordErrorMessage = String(i18n.t('error.required', { target }))
           return true
         }
 
@@ -319,7 +319,7 @@ namespace EmailSignInView {
       //----------------------------------------------------------------------
 
       return {
-        t,
+        ...i18n,
         emailInput,
         passwordInput,
         state,

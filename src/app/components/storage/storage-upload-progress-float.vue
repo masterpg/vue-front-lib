@@ -129,7 +129,7 @@ namespace StorageUploadProgressFloat {
       const el = ref<HTMLElement>()
 
       const service = injectService()
-      const { t } = useI18n()
+      const i18n = useI18n()
 
       const state = reactive({
         opened: false,
@@ -250,8 +250,8 @@ namespace StorageUploadProgressFloat {
       //----------------------------------------------------------------------
 
       return {
+        ...i18n,
         el,
-        t,
         uploadedNum,
         uploadNum,
         running,

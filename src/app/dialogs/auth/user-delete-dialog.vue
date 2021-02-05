@@ -120,10 +120,10 @@ namespace UserDeleteDialog {
     const dialog = ref<QDialog>()
     const base = Dialog.setup<void>(dialog)
     const service = injectService()
-    const { t } = useI18n()
+    const i18n = useI18n()
 
     const state = reactive({
-      title: String(t('auth.deleteUser')),
+      title: String(i18n.t('auth.deleteUser')),
       viewType: 'userDelete' as 'userDelete' | 'userDelete.signIn' | 'providerList' | 'emailSignIn',
       currentEmail: null as string | null,
       visibleProviders: [] as AuthProviderType[],
@@ -231,7 +231,7 @@ namespace UserDeleteDialog {
 
     return {
       ...base,
-      t,
+      ...i18n,
       state,
       isError,
       open,

@@ -71,10 +71,10 @@ namespace SignInDialog {
     const dialog = ref<QDialog>()
     const base = Dialog.setup<void>(dialog)
     const service = injectService()
-    const { t } = useI18n()
+    const i18n = useI18n()
 
     const state = reactive({
-      title: String(t('common.signIn')),
+      title: String(i18n.t('common.signIn')),
       viewType: 'providerList' as 'providerList' | 'emailSignIn' | 'passwordReset' | 'emailVerifying',
       email: '',
     })
@@ -160,7 +160,7 @@ namespace SignInDialog {
 
     return {
       ...base,
-      t,
+      ...i18n,
       state,
       open,
       close,

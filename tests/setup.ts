@@ -3,13 +3,14 @@ import Vue from 'vue'
 import VueCompositionApi from '@vue/composition-api'
 import { clearProvidedDependency as clearProvidedDependency_app } from './helpers/app'
 import { clearProvidedDependency as clearProvidedDependency_demo } from './helpers/demo'
-// demoにはappの言語リソースが全て含まれるのでdemoのi18nをインポートしている
+import firebase from 'firebase'
 import { quasar } from '@/app/quasar'
-import { setupConfig } from '@/app/config'
-import { setupRouter as setupDemoRouter } from '@/app/router'
-import { setupI18n } from '@/demo/i18n'
-import { setupRouter } from '@/app/router'
 import td from 'testdouble'
+import { useConfig } from '@/app/config'
+// demoにはappの言語リソースが全て含まれるのでdemoのi18nをインポートしている
+import { useI18n } from '@/demo/i18n'
+
+let initializedFirebase = false
 
 //
 // Jestの設定
@@ -41,10 +42,12 @@ quasar.setup()
 window.TextEncoder = TextEncoder
 
 beforeEach(async () => {
-  setupConfig()
-  setupRouter()
-  setupDemoRouter()
-  const i18n = setupI18n()
+  const config = useConfig()
+  if (!initializedFirebase) {
+    firebase.initializeApp(config.firebase)
+    initializedFirebase = true
+  }
+  const { i18n } = useI18n()
   await i18n.load()
 })
 

@@ -3734,7 +3734,7 @@ describe('StoragePageService', () => {
 
     it('アセットディレクトリの場合 - ストレージタイプが｢記事｣の場合', () => {
       const { pageService, storageService } = newStoragePageService({ storageType: 'article' })
-      const { tc } = useI18n()
+      const i18n = useI18n()
 
       // articles
       // ├ブログ
@@ -3747,7 +3747,7 @@ describe('StoragePageService', () => {
 
       const actual = pageService.getDisplayNodeName(assets)
 
-      expect(actual).toBe(String(tc('storage.asset', 2)))
+      expect(actual).toBe(String(i18n.tc('storage.asset', 2)))
     })
   })
 

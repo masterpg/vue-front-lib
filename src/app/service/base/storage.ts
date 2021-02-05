@@ -34,12 +34,12 @@ enum StorageNodeType {
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 namespace StorageNodeType {
   export function getLabel(nodeType: StorageNodeType, choice = 1): string {
-    const { tc } = useI18n()
+    const i18n = useI18n()
     switch (nodeType) {
       case StorageNodeType.Dir:
-        return String(tc('common.folder', choice))
+        return String(i18n.tc('common.folder', choice))
       case StorageNodeType.File:
-        return String(tc('common.file', choice))
+        return String(i18n.tc('common.file', choice))
     }
   }
 
@@ -63,16 +63,16 @@ enum StorageArticleDirType {
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 namespace StorageArticleDirType {
   export function getLabel(nodeType?: StorageArticleDirType, choice = 1): string {
-    const { tc } = useI18n()
+    const i18n = useI18n()
     switch (nodeType) {
       case StorageArticleDirType.ListBundle:
-        return String(tc('article.nodeType.listBundle', choice))
+        return String(i18n.tc('article.nodeType.listBundle', choice))
       case StorageArticleDirType.TreeBundle:
-        return String(tc('article.nodeType.treeBundle', choice))
+        return String(i18n.tc('article.nodeType.treeBundle', choice))
       case StorageArticleDirType.Category:
-        return String(tc('article.nodeType.category', choice))
+        return String(i18n.tc('article.nodeType.category', choice))
       case StorageArticleDirType.Article:
-        return String(tc('article.nodeType.article', choice))
+        return String(i18n.tc('article.nodeType.article', choice))
       default:
         return ''
     }

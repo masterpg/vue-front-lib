@@ -70,7 +70,7 @@ namespace StorageNodeRemoveDialog {
     const dialog = ref<QDialog>()
     const base = Dialog.setup<boolean>(dialog)
     const pageService = StoragePageService.getInstance(props.storageType)
-    const { t, tc } = useI18n()
+    const i18n = useI18n()
 
     const state = reactive({
       removingNodes: [] as StorageNode[],
@@ -79,10 +79,10 @@ namespace StorageNodeRemoveDialog {
     const title = computed(() => {
       if (state.removingNodes.length === 1) {
         const nodeTypeLabel = pageService.getNodeTypeLabel(state.removingNodes[0])
-        return String(t('common.deleteSth', { sth: nodeTypeLabel }))
+        return String(i18n.t('common.deleteSth', { sth: nodeTypeLabel }))
       } else if (state.removingNodes.length >= 2) {
-        const sth = String(tc('common.item', state.removingNodes.length))
-        return String(t('common.deleteSth', { sth }))
+        const sth = String(i18n.tc('common.item', state.removingNodes.length))
+        return String(i18n.t('common.deleteSth', { sth }))
       }
       return ''
     })
@@ -93,7 +93,7 @@ namespace StorageNodeRemoveDialog {
       // ダイアログ引数で渡されたノードが1つの場合
       if (state.removingNodes.length === 1) {
         const target = pageService.getDisplayNodeName(state.removingNodes[0])
-        return String(t('storage.delete.deleteTargetQ', { target }))
+        return String(i18n.t('storage.delete.deleteTargetQ', { target }))
       }
       // ダイアログ引数で渡されたノードが複数の場合
       else {
@@ -109,19 +109,19 @@ namespace StorageNodeRemoveDialog {
 
         // ファイルとフォルダが指定された場合
         if (fileNum > 0 && folderNum > 0) {
-          const fileType = String(tc('common.file', fileNum))
-          const folderType = String(tc('common.folder', folderNum))
-          return String(t('storage.delete.deleteFileAndFolderQ', { fileNum, fileType, folderNum, folderType }))
+          const fileType = String(i18n.tc('common.file', fileNum))
+          const folderType = String(i18n.tc('common.folder', folderNum))
+          return String(i18n.t('storage.delete.deleteFileAndFolderQ', { fileNum, fileType, folderNum, folderType }))
         }
         // ファイルが複数指定された場合
         else if (fileNum > 0) {
-          const nodeType = String(tc('common.file', fileNum))
-          return String(t('storage.delete.deleteNodeQ', { nodeNum: fileNum, nodeType }))
+          const nodeType = String(i18n.tc('common.file', fileNum))
+          return String(i18n.t('storage.delete.deleteNodeQ', { nodeNum: fileNum, nodeType }))
         }
         // フォルダが複数指定された場合
         else if (folderNum > 0) {
-          const nodeType = String(tc('common.folder', folderNum))
-          return String(t('storage.delete.deleteNodeQ', { nodeNum: folderNum, nodeType }))
+          const nodeType = String(i18n.tc('common.folder', folderNum))
+          return String(i18n.t('storage.delete.deleteNodeQ', { nodeNum: folderNum, nodeType }))
         }
       }
 
@@ -156,7 +156,7 @@ namespace StorageNodeRemoveDialog {
 
     return {
       ...base,
-      t,
+      ...i18n,
       title,
       message,
       open,

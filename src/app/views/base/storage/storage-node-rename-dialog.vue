@@ -40,9 +40,9 @@
         <!-- ボタンエリア -->
         <q-card-actions class="layout horizontal center end-justified">
           <!-- CANCELボタン -->
-          <q-btn flat rounded color="primary" :label="$t('common.cancel')" @click="close()" />
+          <q-btn flat rounded color="primary" :label="t('common.cancel')" @click="close()" />
           <!-- CREATEボタン -->
-          <q-btn flat rounded color="primary" :label="$t('common.ok')" @click="rename()" />
+          <q-btn flat rounded color="primary" :label="t('common.ok')" @click="rename()" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -86,7 +86,7 @@ namespace StorageNodeRenameDialog {
     const dialog = ref<QDialog>()
     const base = Dialog.setup<string | undefined>(dialog)
     const pageService = StoragePageService.getInstance(props.storageType)
-    const { t } = useI18n()
+    const i18n = useI18n()
 
     const newNameInput = ref<QInput>()
 
@@ -95,7 +95,7 @@ namespace StorageNodeRenameDialog {
     const title = computed(() => {
       if (!targetNode.value) return ''
       const nodeTypeLabel = pageService.getNodeTypeLabel(targetNode.value)
-      return String(t('common.renameSth', { sth: nodeTypeLabel }))
+      return String(i18n.t('common.renameSth', { sth: nodeTypeLabel }))
     })
 
     const nodeIcon = computed(() => {
@@ -172,8 +172,8 @@ namespace StorageNodeRenameDialog {
 
       // 必須入力チェック
       if (newName.value === '') {
-        const target = String(t('common.sthName', { sth: pageService.getNodeTypeLabel(targetNode.value) }))
-        errorMessage.value = String(t('error.required', { target }))
+        const target = String(i18n.t('common.sthName', { sth: pageService.getNodeTypeLabel(targetNode.value) }))
+        errorMessage.value = String(i18n.t('error.required', { target }))
         return false
       }
 
@@ -181,7 +181,7 @@ namespace StorageNodeRenameDialog {
       if (newName.value) {
         const matched = newName.value.match(/\r?\n|\t|\//g)
         if (matched) {
-          errorMessage.value = String(t('error.unusable', { target: matched[0] }))
+          errorMessage.value = String(i18n.t('error.unusable', { target: matched[0] }))
           return false
         }
       }
@@ -194,7 +194,7 @@ namespace StorageNodeRenameDialog {
         nameChange = newName.value !== targetNode.value?.article.dir.name
       }
       if (!nameChange) {
-        errorMessage.value = String(t('storage.rename.renamingNodeNameIsNotChanged'))
+        errorMessage.value = String(i18n.t('storage.rename.renamingNodeNameIsNotChanged'))
         return false
       }
 
@@ -208,7 +208,7 @@ namespace StorageNodeRenameDialog {
         const existsSameArticleName = siblingNode.article?.dir?.name && siblingNode.article?.dir?.name === newName.value
         if (existsSameName || existsSameArticleName) {
           errorMessage.value = String(
-            t('storage.nodeAlreadyExists', { nodeName: newName.value, nodeType: pageService.getNodeTypeLabel(siblingNode) })
+            i18n.t('storage.nodeAlreadyExists', { nodeName: newName.value, nodeType: pageService.getNodeTypeLabel(siblingNode) })
           )
           return false
         }
@@ -241,7 +241,7 @@ namespace StorageNodeRenameDialog {
 
     return {
       ...base,
-      t,
+      ...i18n,
       newNameInput,
       title,
       nodeIcon,

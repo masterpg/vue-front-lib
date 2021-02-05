@@ -1,4 +1,4 @@
-import { AppI18n, AppI18nImpl, useI18n } from '@/app/i18n'
+import { AppI18n, AppI18nFuncs, AppI18nImpl, useI18n as _useI18n } from '@/app/i18n'
 import VueI18n from 'vue-i18n'
 
 //========================================================================
@@ -13,10 +13,21 @@ class DemoI18nImpl extends AppI18nImpl {
   }
 }
 
-function setupI18n(): AppI18n {
-  const i18n = new DemoI18nImpl()
-  useI18n(i18n)
-  return i18n
+namespace DemoI18n {
+  let instance: AppI18n
+
+  export function getInstance(): AppI18n {
+    instance = instance ?? newInstance()
+    return instance
+  }
+
+  function newInstance(): AppI18n {
+    return new DemoI18nImpl()
+  }
+}
+
+function useI18n(): AppI18nFuncs {
+  return _useI18n(DemoI18n.getInstance())
 }
 
 //========================================================================
@@ -25,4 +36,4 @@ function setupI18n(): AppI18n {
 //
 //========================================================================
 
-export { AppI18n, setupI18n, useI18n }
+export { useI18n }

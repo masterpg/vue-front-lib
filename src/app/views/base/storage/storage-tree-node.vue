@@ -190,7 +190,7 @@ namespace StorageTreeNode {
 
     const base = TreeNode.setup(props, ctx)
     const nodeData = base.nodeData as ComputedRef<StorageTreeNodeData>
-    const { tc } = useI18n()
+    const i18n = useI18n()
 
     base.extraEventNames.value.push('node-action')
 
@@ -230,9 +230,9 @@ namespace StorageTreeNode {
 
     const nodeTypeName = computed(() => {
       if (nodeData.value.nodeType === StorageNodeType.Dir) {
-        return String(tc('common.folder', 1))
+        return String(i18n.tc('common.folder', 1))
       } else {
-        return String(tc('common.file', 1))
+        return String(i18n.tc('common.file', 1))
       }
     })
 

@@ -105,26 +105,26 @@ namespace StorageNodeShareDialog {
     const dialog = ref<QDialog>()
     const base = Dialog.setup<StorageNodeShareSettings | undefined>(dialog)
     const pageService = StoragePageService.getInstance(props.storageType)
-    const { t, tc } = useI18n()
+    const i18n = useI18n()
 
     const sharingNodes: Ref<StorageNode[]> = ref([])
 
     const title = computed(() => {
       if (sharingNodes.value.length === 1) {
         const nodeTypeLabel = pageService.getNodeTypeLabel(sharingNodes.value[0])
-        return String(t('common.shareSth', { sth: nodeTypeLabel }))
+        return String(i18n.t('common.shareSth', { sth: nodeTypeLabel }))
       } else if (sharingNodes.value.length >= 2) {
-        const sth = String(tc('common.item', sharingNodes.value.length))
-        return String(t('common.shareSth', { sth }))
+        const sth = String(i18n.tc('common.item', sharingNodes.value.length))
+        return String(i18n.t('common.shareSth', { sth }))
       }
       return ''
     })
 
     const selectPublicPrompt = computed(() => {
       if (sharingNodes.value.length === 1) {
-        return String(t('storage.share.selectPublicPrompt'))
+        return String(i18n.t('storage.share.selectPublicPrompt'))
       } else if (sharingNodes.value.length >= 2) {
-        return String(t('storage.share.selectPublicPrompt'))
+        return String(i18n.t('storage.share.selectPublicPrompt'))
       }
       return ''
     })
@@ -132,7 +132,7 @@ namespace StorageNodeShareDialog {
     const targetNodeLabel = computed(() => {
       if (sharingNodes.value.length === 1) {
         const nodeType = sharingNodes.value[0].nodeType
-        return String(t('storage.share.sharingTarget'))
+        return String(i18n.t('storage.share.sharingTarget'))
       }
       return ''
     })
@@ -234,7 +234,7 @@ namespace StorageNodeShareDialog {
 
     return {
       ...base,
-      t,
+      ...i18n,
       sharingNodes,
       title,
       selectPublicPrompt,

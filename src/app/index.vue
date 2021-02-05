@@ -122,7 +122,7 @@ export default defineComponent({
     const service = injectService()
     const serviceWorker = injectServiceWorker()
     const viewRoutes = useViewRoutes()
-    const { t } = useI18n()
+    const i18n = useI18n()
 
     const dialogsRef = ref<Dialogs>()
     Dialogs.provide(dialogsRef)
@@ -137,11 +137,11 @@ export default defineComponent({
     const siteAdminItems = computed<{ title: string; path: string }[]>(() => {
       return [
         {
-          title: String(t('index.mainMenu.articleAdmin')),
+          title: String(i18n.t('index.mainMenu.articleAdmin')),
           path: viewRoutes.siteAdmin.article.path.value,
         },
         {
-          title: String(t('index.mainMenu.userStorageAdmin')),
+          title: String(i18n.t('index.mainMenu.userStorageAdmin')),
           path: viewRoutes.siteAdmin.storage.path.value,
         },
       ]
@@ -150,7 +150,7 @@ export default defineComponent({
     const appAdminItems = computed<{ title: string; path: string }[]>(() => {
       return [
         {
-          title: String(t('index.mainMenu.appStorageAdmin')),
+          title: String(i18n.t('index.mainMenu.appStorageAdmin')),
           path: viewRoutes.appAdmin.storage.path.value,
         },
       ]
@@ -196,10 +196,10 @@ export default defineComponent({
         Notify.create({
           icon: 'info',
           position: 'bottom-left',
-          message: String(t('index.updated')),
+          message: String(i18n.t('index.updated')),
           actions: [
             {
-              label: t('common.reload'),
+              label: i18n.t('common.reload'),
               color: 'white',
               handler: () => {
                 window.location.reload()
@@ -224,7 +224,7 @@ export default defineComponent({
     //----------------------------------------------------------------------
 
     return {
-      t,
+      ...i18n,
       dialogsRef,
       leftDrawerOpen,
       isSiteAdminExpanded,

@@ -142,14 +142,14 @@ namespace ArticleDirView {
       const base = StorageDirView.setup(props, ctx)
 
       const pageService = StoragePageService.getInstance(props.storageType)
-      const { t } = useI18n()
+      const i18n = useI18n()
 
       base.columns.value = [
-        { name: 'label', align: 'left', label: String(t('storage.nodeDetail.name')), field: 'label' },
-        { name: 'type', align: 'left', label: String(t('storage.nodeDetail.type')), field: 'type' },
-        { name: 'size', align: 'right', label: String(t('storage.nodeDetail.size')), field: 'size' },
-        { name: 'share', align: 'center', label: String(t('storage.nodeDetail.share')), field: 'share' },
-        { name: 'updatedAt', align: 'left', label: String(t('storage.nodeDetail.updatedAt')), field: 'updatedAt' },
+        { name: 'label', align: 'left', label: String(i18n.t('storage.nodeDetail.name')), field: 'label' },
+        { name: 'type', align: 'left', label: String(i18n.t('storage.nodeDetail.type')), field: 'type' },
+        { name: 'size', align: 'right', label: String(i18n.t('storage.nodeDetail.size')), field: 'size' },
+        { name: 'share', align: 'center', label: String(i18n.t('storage.nodeDetail.share')), field: 'share' },
+        { name: 'updatedAt', align: 'left', label: String(i18n.t('storage.nodeDetail.updatedAt')), field: 'updatedAt' },
       ]
 
       /**

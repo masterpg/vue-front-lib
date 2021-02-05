@@ -4,10 +4,11 @@ import '@/app/styles/app.sass'
 import DemoPage from '@/demo/index.vue'
 import Vue from 'vue'
 import VueCompositionApi from '@vue/composition-api'
+import firebase from 'firebase/app'
 import { quasar } from '@/app/quasar'
-import { setupConfig } from '@/app/config'
-import { setupI18n } from '@/demo/i18n'
-import { setupRouter } from '@/demo/router'
+import { useConfig } from '@/app/config'
+import { useI18n } from '@/demo/i18n'
+import { useRouter } from '@/demo/router'
 
 // Vueの設定
 Vue.config.productionTip = false
@@ -18,9 +19,10 @@ quasar.setup()
 quasar.setupExtras()
 
 async function init() {
-  setupConfig()
-  const router = setupRouter()
-  const i18n = setupI18n()
+  const config = useConfig()
+  firebase.initializeApp(config.firebase)
+  const router = useRouter()
+  const { i18n } = useI18n()
   await i18n.load()
 
   new Vue({

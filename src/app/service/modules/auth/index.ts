@@ -85,7 +85,7 @@ namespace AuthService {
     const api = injectAPI()
     const store = injectStore()
     const internal = injectInternalService()
-    const { t } = useI18n()
+    const i18n = useI18n()
 
     const state = reactive({
       isSigningIn: false,
@@ -146,11 +146,11 @@ namespace AuthService {
         console.error(err)
         let errorMessage: string | undefined
         if (err.code === 'auth/wrong-password') {
-          errorMessage = String(t('auth.authFailedCode.wrongPassword'))
+          errorMessage = String(i18n.t('auth.authFailedCode.wrongPassword'))
         } else if (err.code === 'auth/user-not-found') {
-          errorMessage = String(t('auth.authFailedCode.userNotFound'))
+          errorMessage = String(i18n.t('auth.authFailedCode.userNotFound'))
         } else if (err.code === 'auth/too-many-requests') {
-          errorMessage = String(t('auth.authFailedCode.tooManyRequests'))
+          errorMessage = String(i18n.t('auth.authFailedCode.tooManyRequests'))
         }
         return { result: false, code: err.code || '', errorMessage: errorMessage || err.message || '' }
       }
@@ -179,7 +179,7 @@ namespace AuthService {
         console.error(err)
         let errorMessage: string | undefined
         if (err.code === 'auth/email-already-in-use') {
-          errorMessage = String(t('auth.authFailedCode.emailAlreadyInUse'))
+          errorMessage = String(i18n.t('auth.authFailedCode.emailAlreadyInUse'))
         }
         return { result: false, code: err.code || '', errorMessage: errorMessage || err.message || '' }
       }
@@ -205,7 +205,7 @@ namespace AuthService {
         console.error(err)
         let errorMessage: string | undefined
         if (err.code === 'auth/too-many-requests') {
-          errorMessage = String(t('auth.authFailedCode.tooManyRequests'))
+          errorMessage = String(i18n.t('auth.authFailedCode.tooManyRequests'))
         }
         return { result: false, code: err.code || '', errorMessage: errorMessage || err.message || '' }
       }
@@ -310,8 +310,8 @@ namespace AuthService {
             await firebase.auth().signInWithCustomToken(authData.token)
           } catch (err) {
             Dialog.create({
-              title: String(t('common.systemError')),
-              message: String(t('error.unexpected')),
+              title: String(i18n.t('common.systemError')),
+              message: String(i18n.t('error.unexpected')),
             })
             console.error(err)
           }

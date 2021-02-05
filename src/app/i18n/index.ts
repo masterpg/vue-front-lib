@@ -264,9 +264,23 @@ class AppI18nImpl extends VueI18n implements AppI18n {
   }
 }
 
+namespace AppI18n {
+  let instance: AppI18n
+
+  export function getInstance(): AppI18n {
+    instance = instance ?? newInstance()
+    return instance
+  }
+
+  function newInstance(): AppI18n {
+    return new AppI18nImpl()
+  }
+}
+
+let i18n: AppI18n
+
 function useI18n(value?: AppI18n): AppI18nFuncs {
-  ;(useI18n as any).i18n = value ?? (useI18n as any).i18n
-  const i18n = (useI18n as any).i18n
+  i18n = value ?? i18n ?? AppI18n.getInstance()
 
   if (!i18n) {
     throw new Error(`An instance of VueI18n has not been created.`)
@@ -295,16 +309,10 @@ function useI18n(value?: AppI18n): AppI18nFuncs {
   return { i18n, t, tc, te, d, n }
 }
 
-function setupI18n(): AppI18n {
-  const i18n = new AppI18nImpl()
-  useI18n(i18n)
-  return i18n
-}
-
 //========================================================================
 //
 //  Export
 //
 //========================================================================
 
-export { AppI18n, AppI18nImpl, setupI18n, useI18n }
+export { AppI18n, AppI18nImpl, AppI18nFuncs, useI18n }

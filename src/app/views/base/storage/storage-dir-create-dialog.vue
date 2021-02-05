@@ -87,7 +87,7 @@ namespace StorageDirCreateDialog {
     const dialog = ref<QDialog>()
     const base = Dialog.setup<DialogResult | undefined>(dialog)
     const pageService = StoragePageService.getInstance(props.storageType)
-    const { t, tc } = useI18n()
+    const i18n = useI18n()
 
     const dirNameInput = ref<QInput>()
 
@@ -107,7 +107,7 @@ namespace StorageDirCreateDialog {
 
     const title = computed(() => {
       const nodeTypeLabel = pageService.getNodeTypeLabel({ nodeType: StorageNodeType.Dir, article: state.article })
-      return String(t('common.createSth', { sth: nodeTypeLabel }))
+      return String(i18n.t('common.createSth', { sth: nodeTypeLabel }))
     })
 
     const dirName = ref<string | null>(null)
@@ -174,8 +174,8 @@ namespace StorageDirCreateDialog {
     function validate(): boolean {
       // ディレクトリ名必須入力チェック
       if (dirName.value === '') {
-        const target = String(t('common.sthName', { sth: StorageNodeType.getLabel(StorageNodeType.Dir) }))
-        errorMessage.value = String(t('error.required', { target }))
+        const target = String(i18n.t('common.sthName', { sth: StorageNodeType.getLabel(StorageNodeType.Dir) }))
+        errorMessage.value = String(i18n.t('error.required', { target }))
         return false
       }
 
@@ -183,7 +183,7 @@ namespace StorageDirCreateDialog {
       if (dirName.value) {
         const matched = dirName.value.match(/\r?\n|\t|\//g)
         if (matched) {
-          errorMessage.value = String(t('error.unusable', { target: matched[0] }))
+          errorMessage.value = String(i18n.t('error.unusable', { target: matched[0] }))
           return false
         }
       }
@@ -192,8 +192,8 @@ namespace StorageDirCreateDialog {
       const siblingNodes = pageService.getStorageChildren(parentNode.value ? parentNode.value.path : '')
       for (const siblingNode of siblingNodes) {
         if (siblingNode.name === dirName.value) {
-          const nodeTypeName = tc('common.folder', 1)
-          errorMessage.value = String(t('storage.nodeAlreadyExists', { nodeName: dirName.value, nodeType: nodeTypeName }))
+          const nodeTypeName = i18n.tc('common.folder', 1)
+          errorMessage.value = String(i18n.t('storage.nodeAlreadyExists', { nodeName: dirName.value, nodeType: nodeTypeName }))
           return false
         }
       }
@@ -220,7 +220,7 @@ namespace StorageDirCreateDialog {
 
     return {
       ...base,
-      t,
+      ...i18n,
       dirNameInput,
       icon,
       iconSize,

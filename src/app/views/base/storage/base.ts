@@ -65,49 +65,49 @@ interface StorageNodeActionEventType {
 
 class StorageNodeActionEvent<T extends keyof StorageNodeActionEventType = any> {
   constructor(type: T, params: StorageNodeActionEventType[T]) {
-    const { t, tc } = useI18n()
+    const i18n = useI18n()
     this.type = type
     this.params = params
 
     switch (this.type) {
       case 'createDir':
-        this.label = String(t('common.createSth', { sth: tc('common.folder', 1) }))
+        this.label = String(i18n.t('common.createSth', { sth: i18n.tc('common.folder', 1) }))
         break
       case 'uploadFiles':
-        this.label = String(t('common.uploadSth', { sth: tc('common.file', 2) }))
+        this.label = String(i18n.t('common.uploadSth', { sth: i18n.tc('common.file', 2) }))
         break
       case 'uploadDir':
-        this.label = String(t('common.uploadSth', { sth: tc('common.folder', 2) }))
+        this.label = String(i18n.t('common.uploadSth', { sth: i18n.tc('common.folder', 2) }))
         break
       case 'move':
-        this.label = String(t('common.move'))
+        this.label = String(i18n.t('common.move'))
         break
       case 'rename':
-        this.label = String(t('common.rename'))
+        this.label = String(i18n.t('common.rename'))
         break
       case 'share':
-        this.label = String(t('common.share'))
+        this.label = String(i18n.t('common.share'))
         break
       case 'delete':
-        this.label = String(t('common.delete'))
+        this.label = String(i18n.t('common.delete'))
         break
       case 'reload':
-        this.label = String(t('common.reload'))
+        this.label = String(i18n.t('common.reload'))
         break
       case 'createArticleTypeDir': {
         const _params = params as StorageNodeActionEventType['createArticleTypeDir']
         switch (_params.type) {
           case StorageArticleDirType.ListBundle:
-            this.label = String(t('common.createSth', { sth: t('article.nodeType.listBundle') }))
+            this.label = String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.listBundle') }))
             break
           case StorageArticleDirType.TreeBundle:
-            this.label = String(t('common.createSth', { sth: t('article.nodeType.treeBundle') }))
+            this.label = String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.treeBundle') }))
             break
           case StorageArticleDirType.Category:
-            this.label = String(t('common.createSth', { sth: t('article.nodeType.category') }))
+            this.label = String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.category') }))
             break
           case StorageArticleDirType.Article:
-            this.label = String(t('common.createSth', { sth: t('article.nodeType.article') }))
+            this.label = String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.article') }))
             break
         }
         break

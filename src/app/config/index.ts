@@ -1,7 +1,6 @@
 import { DeepPartial, removeEndSlash } from 'web-base-lib'
 import { StorageArticleConfig, StorageUserConfig } from 'web-base-lib'
 import URI from 'urijs'
-import firebase from 'firebase/app'
 import merge from 'lodash/merge'
 import { reactive } from '@vue/composition-api'
 const firebaseConfig = require('../../../firebase.config')
@@ -65,10 +64,6 @@ interface CreateConfigParams {
 //
 //========================================================================
 
-let config: Config
-
-let initializedFirebase = false
-
 function getAPIConfig(apiConfig: Omit<APIConfig, 'baseURL'>): APIConfig {
   const baseURL = new URI()
   if (apiConfig.protocol) baseURL.protocol(apiConfig.protocol)
@@ -86,41 +81,48 @@ function getAPIConfig(apiConfig: Omit<APIConfig, 'baseURL'>): APIConfig {
   }
 }
 
-function createConfig(params: CreateConfigParams = {}): Config {
-  //----------------------------------------------------------------------
-  //
-  //  Variables
-  //
-  //----------------------------------------------------------------------
+namespace Config {
+  let instance: Config
 
-  const state = reactive({
-    env: {
-      mode:
-        process.env.NODE_ENV === 'production'
-          ? 'prod'
-          : process.env.NODE_ENV === 'development'
-          ? 'dev'
-          : process.env.NODE_ENV === 'test'
-          ? 'test'
-          : 'dev',
-    } as EnvConfig,
+  export function getInstance(params: CreateConfigParams = {}): Config {
+    instance = instance ?? newInstance()
 
-    firebase: merge(firebaseConfig, params.firebase),
+    merge(instance.firebase, params.firebase)
+    merge(instance.api, params.api)
+    merge(instance.storage, params.storage)
 
-    api: getAPIConfig(
-      merge(
-        {
-          protocol: String(process.env.VUE_APP_API_PROTOCOL),
-          host: String(process.env.VUE_APP_API_HOST),
-          port: Number(process.env.VUE_APP_API_PORT),
-          basePath: String(process.env.VUE_APP_API_BASE_PATH),
-        },
-        params.api
-      )
-    ),
+    return instance
+  }
 
-    storage: merge(
-      {
+  function newInstance(): Config {
+    //----------------------------------------------------------------------
+    //
+    //  Properties
+    //
+    //----------------------------------------------------------------------
+
+    const state = reactive({
+      env: {
+        mode:
+          process.env.NODE_ENV === 'production'
+            ? 'prod'
+            : process.env.NODE_ENV === 'development'
+            ? 'dev'
+            : process.env.NODE_ENV === 'test'
+            ? 'test'
+            : 'dev',
+      } as EnvConfig,
+
+      firebase: firebaseConfig,
+
+      api: getAPIConfig({
+        protocol: String(process.env.VUE_APP_API_PROTOCOL),
+        host: String(process.env.VUE_APP_API_HOST),
+        port: Number(process.env.VUE_APP_API_PORT),
+        basePath: String(process.env.VUE_APP_API_BASE_PATH),
+      }),
+
+      storage: {
         user: {
           rootName: StorageUserConfig.RootName,
         },
@@ -131,39 +133,25 @@ function createConfig(params: CreateConfigParams = {}): Config {
           srcDraftFileName: StorageArticleConfig.SrcDraftFileName,
         },
       },
-      params.storage
-    ),
-  })
+    })
 
-  if (!initializedFirebase) {
-    firebase.initializeApp(state.firebase)
-    initializedFirebase = true
+    //----------------------------------------------------------------------
+    //
+    //  Result
+    //
+    //----------------------------------------------------------------------
+
+    return {
+      env: state.env,
+      firebase: state.firebase,
+      api: state.api,
+      storage: state.storage,
+    }
   }
-
-  //----------------------------------------------------------------------
-  //
-  //  Result
-  //
-  //----------------------------------------------------------------------
-
-  return {
-    env: state.env,
-    firebase: state.firebase,
-    api: state.api,
-    storage: state.storage,
-  }
-}
-
-function setupConfig(): Config {
-  config = createConfig()
-  return config
 }
 
 function useConfig(): Config {
-  if (!config) {
-    throw new Error('Config is not set up.')
-  }
-  return config
+  return Config.getInstance()
 }
 
 //========================================================================
@@ -172,4 +160,4 @@ function useConfig(): Config {
 //
 //========================================================================
 
-export { APIConfig, Config, FirebaseConfig, StorageConfig, setupConfig, useConfig }
+export { APIConfig, Config, FirebaseConfig, StorageConfig, useConfig }

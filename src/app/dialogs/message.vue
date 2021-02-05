@@ -80,8 +80,7 @@ namespace MessageDialog {
 
     const dialog = ref<QDialog>()
     const base = Dialog.setup<boolean>(dialog)
-
-    const { t } = useI18n()
+    const i18n = useI18n()
 
     const params = reactive<Required<Omit<Props, 'value'>>>({
       type: props.type!,
@@ -136,7 +135,7 @@ namespace MessageDialog {
 
     return {
       ...base,
-      t,
+      ...i18n,
       params,
       open,
       close,

@@ -52,7 +52,7 @@ function createServiceWorker(): ServiceWorkerManager {
     stateChangeListeners: [] as StateChangeLister[],
   })
 
-  const { t } = useI18n()
+  const i18n = useI18n()
 
   //----------------------------------------------------------------------
   //
@@ -63,25 +63,25 @@ function createServiceWorker(): ServiceWorkerManager {
   const register = require('@/app/service-worker/register').register
   register(path.join(process.env.BASE_URL ?? '', 'service-worker.js'), {
     ready: () => {
-      dispatchToListeners('ready', String(t('serviceWorker.ready')))
+      dispatchToListeners('ready', String(i18n.t('serviceWorker.ready')))
     },
     installing: () => {
-      dispatchToListeners('installing', String(t('serviceWorker.installing')))
+      dispatchToListeners('installing', String(i18n.t('serviceWorker.installing')))
     },
     updating: () => {
-      dispatchToListeners('updating', String(t('serviceWorker.updating')))
+      dispatchToListeners('updating', String(i18n.t('serviceWorker.updating')))
     },
     installed: () => {
-      dispatchToListeners('installed', String(t('serviceWorker.installed')))
+      dispatchToListeners('installed', String(i18n.t('serviceWorker.installed')))
     },
     updated: () => {
-      dispatchToListeners('updated', String(t('serviceWorker.updated')))
+      dispatchToListeners('updated', String(i18n.t('serviceWorker.updated')))
     },
     offline: () => {
-      dispatchToListeners('offline', String(t('serviceWorker.offline')))
+      dispatchToListeners('offline', String(i18n.t('serviceWorker.offline')))
     },
     error: (err: Error) => {
-      dispatchToListeners('error', String(t('serviceWorker.error')))
+      dispatchToListeners('error', String(i18n.t('serviceWorker.error')))
     },
   })
 

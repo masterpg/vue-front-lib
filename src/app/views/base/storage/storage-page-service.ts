@@ -429,7 +429,7 @@ namespace StoragePageService {
     const config = useConfig()
     const service = injectService()
     const viewRoutes = useViewRoutes()
-    const { t, tc } = useI18n()
+    const i18n = useI18n()
 
     const storageService: StorageService = (() => {
       switch (storageType) {
@@ -890,7 +890,7 @@ namespace StoragePageService {
         dirNode = await storageService.createDir(dirPath)
       } catch (err) {
         console.error(err)
-        showNotification('error', String(t('storage.create.creatingDirError', { nodeName: _path.basename(dirPath) })))
+        showNotification('error', String(i18n.t('storage.create.creatingDirError', { nodeName: _path.basename(dirPath) })))
         return
       }
 
@@ -914,7 +914,7 @@ namespace StoragePageService {
         dirNode = await articleService.createArticleTypeDir(input)
       } catch (err) {
         console.error(err)
-        showNotification('error', String(t('storage.create.creatingDirError', { nodeName: input.name })))
+        showNotification('error', String(i18n.t('storage.create.creatingDirError', { nodeName: input.name })))
         return
       }
 
@@ -963,7 +963,7 @@ namespace StoragePageService {
           }
         } catch (err) {
           console.error(err)
-          showNotification('error', String(t('storage.delete.deletingError', { nodeName: node.name })))
+          showNotification('error', String(i18n.t('storage.delete.deletingError', { nodeName: node.name })))
         }
       }
 
@@ -1020,7 +1020,7 @@ namespace StoragePageService {
           }
         } catch (err) {
           console.error(err)
-          showNotification('error', String(t('storage.move.movingError', { nodeName: fromNode.name })))
+          showNotification('error', String(i18n.t('storage.move.movingError', { nodeName: fromNode.name })))
         }
       }
 
@@ -1066,7 +1066,7 @@ namespace StoragePageService {
         }
       } catch (err) {
         console.error(err)
-        showNotification('error', String(t('storage.rename.renamingError', { nodeName: targetNode.name })))
+        showNotification('error', String(i18n.t('storage.rename.renamingError', { nodeName: targetNode.name })))
         return
       }
 
@@ -1105,7 +1105,7 @@ namespace StoragePageService {
           }
         } catch (err) {
           console.error(err)
-          showNotification('error', String(t('storage.share.sharingError', { nodeName: node.name })))
+          showNotification('error', String(i18n.t('storage.share.sharingError', { nodeName: node.name })))
         }
       }
 
@@ -1135,7 +1135,7 @@ namespace StoragePageService {
         processedNodes = await articleService.setArticleSortOrder(orderNodePaths)
       } catch (err) {
         console.error(err)
-        showNotification('error', String(t('storage.sort.sortingError')))
+        showNotification('error', String(i18n.t('storage.sort.sortingError')))
       }
 
       // ツリービューに処理内容を反映
@@ -1155,7 +1155,7 @@ namespace StoragePageService {
         processed = await articleService.saveArticleSrcMasterFile(articleDirPath, srcContent, textContent)
       } catch (err) {
         console.error(err)
-        showNotification('error', String(t('article.saveMasterError')))
+        showNotification('error', String(i18n.t('article.saveMasterError')))
       }
 
       // ツリービューに処理内容を反映
@@ -1177,7 +1177,7 @@ namespace StoragePageService {
         processedDraftNode = await articleService.saveArticleSrcDraftFile(articleDirPath, srcContent)
       } catch (err) {
         console.error(err)
-        showNotification('error', String(t('article.saveDraftError')))
+        showNotification('error', String(i18n.t('article.saveDraftError')))
       }
 
       // ツリービューに処理内容を反映
@@ -1296,7 +1296,7 @@ namespace StoragePageService {
 
     const getDisplayNodeName: StoragePageService['getDisplayNodeName'] = node => {
       if (isAssetsDir(node)) {
-        return String(tc('storage.asset', 2))
+        return String(i18n.tc('storage.asset', 2))
       }
       return node.article?.dir?.name || node.name
     }
@@ -1586,21 +1586,21 @@ namespace StoragePageService {
    * @param storageType
    */
   function _createRootNodeData(storageType: StorageType): StorageTreeNodeData {
-    const { t } = useI18n()
+    const i18n = useI18n()
 
     let label: string
     let icon: string
     switch (storageType) {
       case 'app':
-        label = String(t('storage.appRootName'))
+        label = String(i18n.t('storage.appRootName'))
         icon = 'storage'
         break
       case 'user':
-        label = String(t('storage.userRootName'))
+        label = String(i18n.t('storage.userRootName'))
         icon = 'storage'
         break
       case 'article':
-        label = String(t('storage.articleRootName'))
+        label = String(i18n.t('storage.articleRootName'))
         icon = 'storage'
         break
     }

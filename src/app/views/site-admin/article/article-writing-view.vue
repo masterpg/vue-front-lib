@@ -89,7 +89,7 @@ namespace ArticleWritingView {
       //----------------------------------------------------------------------
 
       const pageService = StoragePageService.getInstance(props.storageType)
-      const { t } = useI18n()
+      const i18n = useI18n()
 
       const spinning = ref(false)
 
@@ -216,7 +216,7 @@ namespace ArticleWritingView {
           savedNode = await pageService.saveArticleSrcDraftFile(draft.value.node.dir, srcContent.value)
         } catch (err) {
           console.error(err)
-          pageService.showNotification('error', String(t('article.saveDraftError')))
+          pageService.showNotification('error', String(i18n.t('article.saveDraftError')))
         }
         draft.value.node = savedNode
         draft.value.srcContent = srcContent.value
@@ -228,7 +228,7 @@ namespace ArticleWritingView {
       async function discardDraft(): Promise<void> {
         const confirmed = await Dialogs.message.open({
           type: 'confirm',
-          message: String(t('article.discardDraftQ')),
+          message: String(i18n.t('article.discardDraftQ')),
         })
         if (!confirmed) return
 
@@ -239,7 +239,7 @@ namespace ArticleWritingView {
           discardedNode = await pageService.saveArticleSrcDraftFile(draft.value.node.dir, '')
         } catch (err) {
           console.error(err)
-          pageService.showNotification('error', String(t('article.discardDraftError')))
+          pageService.showNotification('error', String(i18n.t('article.discardDraftError')))
         }
         draft.value.node = discardedNode
         draft.value.srcContent = ''
@@ -252,7 +252,7 @@ namespace ArticleWritingView {
       async function saveMaster(): Promise<void> {
         const confirmed = await Dialogs.message.open({
           type: 'confirm',
-          message: String(t('article.reflectMasterQ')),
+          message: String(i18n.t('article.reflectMasterQ')),
         })
         if (!confirmed) return
 
@@ -262,7 +262,7 @@ namespace ArticleWritingView {
         try {
           saved = await pageService.saveArticleSrcMasterFile(draft.value.node.dir, srcContent.value, editor.value!.getTextContent())
         } catch (err) {
-          pageService.showNotification('error', String(t('article.reflectMasterError')))
+          pageService.showNotification('error', String(i18n.t('article.reflectMasterError')))
         }
         master.value.node = saved.master
         master.value.srcContent = srcContent.value
@@ -317,7 +317,7 @@ namespace ArticleWritingView {
       //----------------------------------------------------------------------
 
       return {
-        t,
+        ...i18n,
         editor,
         srcContent,
         enableSaveMaster,

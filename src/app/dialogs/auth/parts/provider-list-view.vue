@@ -117,10 +117,10 @@ namespace ProviderListView {
       //
       //----------------------------------------------------------------------
 
-      const { t } = useI18n()
+      const i18n = useI18n()
 
       const typeName = computed(() => {
-        return props.type === 'signIn' ? String(t('common.signIn')) : String(t('common.signUp'))
+        return props.type === 'signIn' ? String(i18n.t('common.signIn')) : String(i18n.t('common.signUp'))
       })
 
       const visibleGoogle = computed(() => {
@@ -172,7 +172,7 @@ namespace ProviderListView {
       //----------------------------------------------------------------------
 
       return {
-        t,
+        ...i18n,
         typeName,
         visibleGoogle,
         visibleFacebook,

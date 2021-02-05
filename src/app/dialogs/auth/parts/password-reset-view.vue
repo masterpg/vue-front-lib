@@ -98,7 +98,7 @@ namespace PasswordResetView {
       //----------------------------------------------------------------------
 
       const service = injectService()
-      const { t } = useI18n()
+      const i18n = useI18n()
 
       const emailInput = ref() as Ref<QInput>
 
@@ -195,14 +195,14 @@ namespace PasswordResetView {
         }
 
         if (value === '') {
-          const target = String(t('common.email'))
-          state.emailErrorMessage = String(t('error.required', { target }))
+          const target = String(i18n.t('common.email'))
+          state.emailErrorMessage = String(i18n.t('error.required', { target }))
           return true
         }
 
         if (!isEmail(value)) {
-          const target = String(t('common.email'))
-          state.emailErrorMessage = String(t('error.invalid', { target }))
+          const target = String(i18n.t('common.email'))
+          state.emailErrorMessage = String(i18n.t('error.invalid', { target }))
           return true
         }
 
@@ -216,7 +216,7 @@ namespace PasswordResetView {
       //----------------------------------------------------------------------
 
       return {
-        t,
+        ...i18n,
         emailInput,
         state,
         isEmailError,

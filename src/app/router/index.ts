@@ -36,14 +36,6 @@ interface AppAdmin {
 //========================================================================
 
 //------------------------------------------------------------------------
-//  Variables
-//------------------------------------------------------------------------
-
-let router: VueRouter
-
-let viewRoutes: ViewRoutes
-
-//------------------------------------------------------------------------
 //  Helpers
 //------------------------------------------------------------------------
 
@@ -147,6 +139,7 @@ namespace StorageRoute {
     })
 
     const move: StorageRoute['move'] = nodePath => {
+      const router = Router.getInstance()
       const currentRoutePath = removeEndSlash(router.currentRoute.path)
       const nextPath = removeEndSlash(_path.join(path.value, nodePath))
       if (currentRoutePath === nextPath) {
@@ -158,6 +151,7 @@ namespace StorageRoute {
     }
 
     const getNodePath: StorageRoute['getNodePath'] = () => {
+      const router = Router.getInstance()
       const reg = new RegExp(`^${path.value}/`, 'g')
       if (!reg.test(router.currentRoute.path)) return ''
 
@@ -172,7 +166,7 @@ namespace StorageRoute {
       }
     }
 
-    const update: RawRoute['update'] = () => {
+    const update: RawRoute['update'] = router => {
       routeParams.value = router.currentRoute.params
     }
 
@@ -190,74 +184,84 @@ namespace StorageRoute {
 //  Setup router
 //------------------------------------------------------------------------
 
-function setupRouter(): VueRouter {
-  const home = ViewRoute.newInstance({
-    path: '/',
-    component: HomePage,
-  })
+namespace Router {
+  let router: VueRouter
 
-  const siteAdmin = {
-    article: StorageRoute.newInstance({
-      path: '/:userName/siteAdmin/article',
-      component: () => import(/* webpackChunkName: "views/site-admin/article" */ '@/app/views/site-admin/article'),
-    }),
+  let viewRoutes: ViewRoutes
 
-    storage: StorageRoute.newInstance({
-      path: '/:userName/siteAdmin/storage',
-      component: () => import(/* webpackChunkName: "views/site-admin/storage" */ '@/app/views/site-admin/storage'),
-    }),
+  export function getInstance(): VueRouter {
+    router = router ?? newInstance()
+    return router
   }
 
-  const appAdmin = {
-    storage: StorageRoute.newInstance({
-      path: '/:userName/appAdmin/storage',
-      component: () => import(/* webpackChunkName: "views/app-admin/storage" */ '@/app/views/app-admin/storage'),
-    }),
+  export function getViewRoutes(): ViewRoutes {
+    !viewRoutes && newInstance()
+    return viewRoutes
   }
 
-  const fallback = ViewRoute.newInstance({
-    path: '*',
-    redirect: '/',
-  })
+  function newInstance(): VueRouter {
+    const home = ViewRoute.newInstance({
+      path: '/',
+      component: HomePage,
+    })
 
-  const viewRouteList = [home, siteAdmin.article, siteAdmin.storage, appAdmin.storage, fallback]
+    const siteAdmin = {
+      article: StorageRoute.newInstance({
+        path: '/:userName/siteAdmin/article',
+        component: () => import(/* webpackChunkName: "views/site-admin/article" */ '@/app/views/site-admin/article'),
+      }),
 
-  router = new (class extends VueRouter {
-    constructor() {
-      super({
-        mode: 'history',
-        base: process.env.BASE_URL,
-        routes: viewRouteList.map(item => item.toRouteConfig()),
-      })
+      storage: StorageRoute.newInstance({
+        path: '/:userName/siteAdmin/storage',
+        component: () => import(/* webpackChunkName: "views/site-admin/storage" */ '@/app/views/site-admin/storage'),
+      }),
     }
-  })()
 
-  router.beforeEach((to, from, next) => {
-    viewRouteList.forEach(vieRoute => vieRoute.update(router))
-    next()
-  })
+    const appAdmin = {
+      storage: StorageRoute.newInstance({
+        path: '/:userName/appAdmin/storage',
+        component: () => import(/* webpackChunkName: "views/app-admin/storage" */ '@/app/views/app-admin/storage'),
+      }),
+    }
 
-  router.afterEach(() => {
-    viewRouteList.forEach(vieRoute => vieRoute.update(router))
-  })
+    const fallback = ViewRoute.newInstance({
+      path: '*',
+      redirect: '/',
+    })
 
-  viewRoutes = { home, siteAdmin, appAdmin }
+    const viewRouteList = [home, siteAdmin.article, siteAdmin.storage, appAdmin.storage, fallback]
 
-  return router
+    router = new (class extends VueRouter {
+      constructor() {
+        super({
+          mode: 'history',
+          base: process.env.BASE_URL,
+          routes: viewRouteList.map(item => item.toRouteConfig()),
+        })
+      }
+    })()
+
+    router.beforeEach((to, from, next) => {
+      viewRouteList.forEach(vieRoute => vieRoute.update(router))
+      next()
+    })
+
+    router.afterEach(() => {
+      viewRouteList.forEach(vieRoute => vieRoute.update(router))
+    })
+
+    viewRoutes = { home, siteAdmin, appAdmin }
+
+    return router
+  }
 }
 
 function useRouter(): VueRouter {
-  if (!router) {
-    throw new Error('VueRouter is not set up.')
-  }
-  return router
+  return Router.getInstance()
 }
 
 function useViewRoutes(): ViewRoutes {
-  if (!viewRoutes) {
-    throw new Error('ViewRoutes is not set up.')
-  }
-  return viewRoutes
+  return Router.getViewRoutes()
 }
 
 //========================================================================
@@ -266,4 +270,4 @@ function useViewRoutes(): ViewRoutes {
 //
 //========================================================================
 
-export { ViewRoute, RawRoute, StorageRoute, replaceRouteParams, setupRouter, useRouter, useViewRoutes }
+export { ViewRoute, RawRoute, StorageRoute, replaceRouteParams, useRouter, useViewRoutes }

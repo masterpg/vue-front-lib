@@ -110,7 +110,7 @@ namespace StorageNodeMoveDialog {
     const dialog = ref<QDialog>()
     const base = Dialog.setup<string | undefined>(dialog)
     const pageService = StoragePageService.getInstance(props.storageType)
-    const { t, tc } = useI18n()
+    const i18n = useI18n()
 
     const treeView = ref<TreeView<StorageTreeNode, StorageTreeNodeData>>()
 
@@ -119,17 +119,17 @@ namespace StorageNodeMoveDialog {
     const title = computed(() => {
       if (movingNodes.value.length === 1) {
         const nodeTypeLabel = pageService.getNodeTypeLabel(movingNodes.value[0])
-        return String(t('common.moveSth', { sth: nodeTypeLabel }))
+        return String(i18n.t('common.moveSth', { sth: nodeTypeLabel }))
       } else if (movingNodes.value.length >= 2) {
-        const sth = String(tc('common.item', movingNodes.value.length))
-        return String(t('common.moveSth', { sth }))
+        const sth = String(i18n.tc('common.item', movingNodes.value.length))
+        return String(i18n.t('common.moveSth', { sth }))
       }
       return ''
     })
 
     const movingNodeLabel = computed(() => {
       if (movingNodes.value.length === 1) {
-        return String(t('storage.move.movingTarget'))
+        return String(i18n.t('storage.move.movingTarget'))
       }
       return ''
     })
@@ -204,7 +204,7 @@ namespace StorageNodeMoveDialog {
 
     async function move(): Promise<void> {
       if (toDirNode.value === null) {
-        errorMessage.value = String(t('storage.move.destNotSelected'))
+        errorMessage.value = String(i18n.t('storage.move.destNotSelected'))
         return
       }
 
@@ -219,7 +219,7 @@ namespace StorageNodeMoveDialog {
         if (alreadyExists) {
           const confirmed = await Dialogs.message.open({
             type: 'confirm',
-            message: String(t('storage.move.alreadyExistsQ', { nodeName: movingNode.name })),
+            message: String(i18n.t('storage.move.alreadyExistsQ', { nodeName: movingNode.name })),
           })
           if (!confirmed) return
         }
@@ -445,7 +445,7 @@ namespace StorageNodeMoveDialog {
 
     return {
       ...base,
-      t,
+      ...i18n,
       treeView,
       title,
       movingNodes,

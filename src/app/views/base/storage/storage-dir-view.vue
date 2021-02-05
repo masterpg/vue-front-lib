@@ -137,7 +137,7 @@ namespace StorageDirTableRow {
   }): StorageDirTableRow {
     const { storageType, table } = params
     const pageService = StoragePageService.getInstance(storageType)
-    const { d } = useI18n()
+    const i18n = useI18n()
 
     const node = reactive({ ...params.node })
 
@@ -191,7 +191,7 @@ namespace StorageDirTableRow {
 
     const article = computed(() => node.article)
 
-    const updatedAt = computed(() => String(d(node.updatedAt.toDate(), 'dateTime')))
+    const updatedAt = computed(() => String(i18n.d(node.updatedAt.toDate(), 'dateTime')))
 
     const updatedAtNum = computed(() => node.updatedAt.unix())
 
@@ -274,7 +274,7 @@ namespace StorageDirView {
     const table = ref<StorageDirTable<StorageDirTableRow>>()
 
     const pageService = StoragePageService.getInstance(props.storageType)
-    const { t } = useI18n()
+    const i18n = useI18n()
 
     const state = reactive({
       loading: false,
@@ -282,11 +282,11 @@ namespace StorageDirView {
     })
 
     const columns: Ref<QTableColumn[]> = ref([
-      { name: 'label', align: 'left', label: String(t('storage.nodeDetail.name')), field: 'label', sortable: true },
-      { name: 'type', align: 'left', label: String(t('storage.nodeDetail.type')), field: 'type', sortable: true },
-      { name: 'size', align: 'right', label: String(t('storage.nodeDetail.size')), field: 'size', sortable: true },
-      { name: 'share', align: 'center', label: String(t('storage.nodeDetail.share')), field: 'share', sortable: true },
-      { name: 'updatedAt', align: 'left', label: String(t('storage.nodeDetail.updatedAt')), field: 'updatedAt', sortable: true },
+      { name: 'label', align: 'left', label: String(i18n.t('storage.nodeDetail.name')), field: 'label', sortable: true },
+      { name: 'type', align: 'left', label: String(i18n.t('storage.nodeDetail.type')), field: 'type', sortable: true },
+      { name: 'size', align: 'right', label: String(i18n.t('storage.nodeDetail.size')), field: 'size', sortable: true },
+      { name: 'share', align: 'center', label: String(i18n.t('storage.nodeDetail.share')), field: 'share', sortable: true },
+      { name: 'updatedAt', align: 'left', label: String(i18n.t('storage.nodeDetail.updatedAt')), field: 'updatedAt', sortable: true },
     ])
 
     const rows: Ref<StorageDirTableRow[]> = ref([])
