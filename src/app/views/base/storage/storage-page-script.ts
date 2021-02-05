@@ -1,6 +1,6 @@
 import { CreateArticleTypeDirInput, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/service'
-import { Loading, Screen } from 'quasar'
-import { SetupContext, computed, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
+import { Loading, QSplitter, Screen } from 'quasar'
+import { SetupContext, computed, onMounted, onUnmounted, reactive, ref, watch } from '@vue/composition-api'
 import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'
 import { TreeView, TreeViewLazyLoadEvent, TreeViewSelectEvent } from '@/app/components/tree-view'
 import { extendedMethod, useScreenSize } from '@/app/base'
@@ -65,7 +65,7 @@ namespace StoragePage {
     //
     //----------------------------------------------------------------------
 
-    const el = ref<HTMLElement>()
+    const pageContainer = ref<QSplitter>()
     const treeViewContainer = ref<HTMLElement>()
     const treeViewRef = ref<TreeView<StorageTreeNode, StorageTreeNodeData>>()
     const pathDirBreadcrumb = ref<StorageDirPathBreadcrumb>()
@@ -82,29 +82,46 @@ namespace StoragePage {
     const pageService = StoragePageService.newInstance({ storageType, treeViewRef, nodeFilter })
     const screenSize = useScreenSize()
 
+    const state = reactive({
+      visibleDirDetailView: false,
+      visibleFileDetailView: false,
+      splitterModel: Screen.lt.md ? 0 : 300,
+      splitterModelBk: 300,
+    })
+
+    const visibleDetailDrawer = ref(false)
+
     /**
      * ディレクトリ詳細ビューの表示フラグです。
      */
-    const visibleDirDetailView = ref(false)
+    const visibleDirDetailView = computed({
+      get: () => state.visibleDirDetailView,
+      set: value => {
+        state.visibleDirDetailView = value
+        visibleDetailDrawer.value = value
+      },
+    })
 
     /**
      * ファイル詳細ビューの表示フラグです。
      */
-    const visibleFileDetailView = ref(false)
-
-    const _splitterModel = ref(Screen.lt.md ? 0 : 300)
-
-    const splitterModelBk = ref(300)
+    const visibleFileDetailView = computed({
+      get: () => state.visibleFileDetailView,
+      set: value => {
+        state.visibleFileDetailView = value
+        visibleDetailDrawer.value = value
+      },
+    })
 
     /**
      * 左右のペインを隔てるスプリッターの左ペインの幅(px)です。
      */
     const splitterModel = computed({
       get: () => {
-        return screenSize.gt.sp ? _splitterModel.value : 0
+        return screenSize.gt.sp ? state.splitterModel : 0
       },
       set: value => {
-        _splitterModel.value = value
+        state.splitterModel = value
       },
     })
 
@@ -228,7 +245,7 @@ namespace StoragePage {
       if (!treeNode) return
 
       // 本ページのグローバルな上位置を取得
-      const globalTop = el.value!.getBoundingClientRect().top
+      const globalTop = pageContainer.value!.$el.getBoundingClientRect().top
       // ツリービューの現スクロール位置を取得
       const scrollTop = treeViewContainer.value!.scrollTop
       // 指定ノードの上位置を取得
@@ -433,10 +450,10 @@ namespace StoragePage {
     function pathDirBreadcrumbOnToggleDrawer() {
       let newValue = 0
       if (splitterModel.value > 0) {
-        splitterModelBk.value = splitterModel.value
+        state.splitterModelBk = splitterModel.value
         newValue = 0
       } else {
-        newValue = splitterModelBk.value
+        newValue = state.splitterModelBk
       }
 
       anime({
@@ -613,7 +630,7 @@ namespace StoragePage {
 
     return {
       storageType,
-      el,
+      pageContainer,
       treeViewContainer,
       treeViewRef,
       pathDirBreadcrumb,
@@ -626,6 +643,7 @@ namespace StoragePage {
       dirView,
       dirDetailView,
       fileDetailView,
+      visibleDetailDrawer,
       visibleDirDetailView,
       visibleFileDetailView,
       splitterModel,

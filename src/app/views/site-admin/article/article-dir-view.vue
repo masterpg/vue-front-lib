@@ -15,12 +15,16 @@
       margin-right: 10px
     > div
       min-width: 250px
+      > span
+        pointer-events: none
   &.label.link
     > i
       color: $app-link-color
     > div
-      @extend %app-link
-      font-weight: map-get($text-weights, "medium")
+      > span
+        pointer-events: unset
+        @extend %app-link
+        font-weight: map-get($text-weights, "medium")
 </style>
 
 <template>
@@ -59,7 +63,7 @@
         />
       </q-btn-group>
     </div>
-    <StorageDirTable
+    <storage-dir-table
       ref="table"
       :data="rowFilter(rows)"
       :columns="columns"
@@ -75,13 +79,11 @@
             <q-checkbox v-show="!isArticleSrcMaster(slotProps.tr.row)" v-model="slotProps.tr.selected" />
           </q-td>
           <q-td key="label" :props="slotProps.tr">
-            <div
-              class="th label layout horizontal center"
-              :class="{ link: slotProps.tr.row.isDir || isArticleSrcMaster(slotProps.tr.row) }"
-              @click="nameCellOnClick(slotProps.tr.row, $event)"
-            >
+            <div class="th label layout horizontal center" :class="{ link: slotProps.tr.row.isDir || isArticleSrcMaster(slotProps.tr.row) }">
               <q-icon :name="slotProps.tr.row.icon" :size="slotProps.tr.row.iconSize" />
-              <div>{{ slotProps.tr.row.label }}</div>
+              <div>
+                <span @click="nameCellOnClick(slotProps.tr.row, $event)">{{ slotProps.tr.row.label }}</span>
+              </div>
             </div>
           </q-td>
           <q-td key="type" :props="slotProps.tr" class="th">{{ slotProps.tr.row.type }}</q-td>
@@ -90,7 +92,7 @@
             <q-icon :name="slotProps.tr.row.share.icon" :size="slotProps.tr.row.share.iconSize" />
           </q-td>
           <q-td key="updatedAt" :props="slotProps.tr" class="th">{{ slotProps.tr.row.updatedAt }}</q-td>
-          <StorageNodePopupMenu
+          <storage-node-popup-menu
             :storage-type="storageType"
             :node="slotProps.tr.row"
             :selected-nodes="table.selected"
@@ -99,7 +101,7 @@
           />
         </q-tr>
       </template>
-    </StorageDirTable>
+    </storage-dir-table>
     <q-inner-loading :showing="spinning">
       <q-spinner size="50px" color="primary" />
     </q-inner-loading>

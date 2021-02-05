@@ -3,16 +3,21 @@
 
 .StorageDirDetailView
   width: 100%
-  padding: 0 16px 16px 32px
 
 .content-area
   overflow-y: auto
   > *
     margin-top: 20px
 
+.node-icon
+  margin-top: 10px
+  margin-right: 10px
+
 .node-label
-  @extend %text-h6
-  word-break: break-all
+  @extend %text-subtitle1
+  font-weight: map-get($text-weights, "bold")
+  overflow-wrap: anywhere
+  margin-top: 7px
 
 .img
   --img-max-height: 300px
@@ -40,8 +45,8 @@
 <template>
   <div class="StorageDirDetailView layout vertical">
     <!-- ノード名 -->
-    <div class="layout horizontal center">
-      <q-icon :name="icon" :size="iconSize" class="app-mr-12" />
+    <div class="layout horizontal start">
+      <q-icon :name="icon" :size="iconSize" class="node-icon" />
       <div class="node-label flex-1">{{ label }}</div>
       <q-btn flat round color="primary" icon="close" @click="closeOnClick" />
     </div>
@@ -51,42 +56,42 @@
       <div class="layout horizontal center end-justified app-mt-10">
         <q-linear-progress ref="downloadLinear" :value="progress" :stripe="running" size="md" class="flex-1" />
         <!-- ダウンロードボタン -->
-        <div v-if="!running" class="btn app-ml-10" @click="download()">{{ $t('common.download') }}</div>
+        <div v-if="!running" class="btn app-ml-10" @click="download()">{{ t('common.download') }}</div>
         <!-- キャンセルボタン -->
-        <div v-else class="btn app-ml-10" @click="cancel()">{{ $t('common.cancel') }}</div>
+        <div v-else class="btn app-ml-10" @click="cancel()">{{ t('common.cancel') }}</div>
       </div>
       <!-- ノード詳細 -->
       <div class="layout vertical">
         <div class="item">
-          <div class="title">{{ this.$t('storage.nodeDetail.id') }}</div>
+          <div class="title">{{ t('storage.nodeDetail.id') }}</div>
           <div class="value">{{ id }}</div>
         </div>
         <div class="item">
-          <div class="title">{{ this.$t('storage.nodeDetail.path') }}</div>
+          <div class="title">{{ t('storage.nodeDetail.path') }}</div>
           <div class="value">{{ path }}</div>
         </div>
         <div class="item" v-show="Boolean(displayPath)">
-          <div class="title">{{ this.$t('storage.nodeDetail.displayPath') }}</div>
+          <div class="title">{{ t('storage.nodeDetail.displayPath') }}</div>
           <div class="value">{{ displayPath }}</div>
         </div>
         <div class="item">
-          <div class="title">{{ this.$t('storage.nodeDetail.type') }}</div>
+          <div class="title">{{ t('storage.nodeDetail.type') }}</div>
           <div class="value">{{ type }}</div>
         </div>
         <div class="item">
-          <div class="title">{{ this.$t('storage.nodeDetail.size') }}</div>
+          <div class="title">{{ t('storage.nodeDetail.size') }}</div>
           <div class="value">{{ size }} ({{ bytes }} bytes)</div>
         </div>
         <div class="item">
-          <div class="title">{{ this.$t('storage.nodeDetail.share') }}</div>
+          <div class="title">{{ t('storage.nodeDetail.share') }}</div>
           <div class="value">{{ share }}</div>
         </div>
         <div class="item">
-          <div class="title">{{ this.$t('storage.nodeDetail.createdAt') }}</div>
+          <div class="title">{{ t('storage.nodeDetail.createdAt') }}</div>
           <div class="value">{{ createdAt }}</div>
         </div>
         <div class="item">
-          <div class="title">{{ this.$t('storage.nodeDetail.updatedAt') }}</div>
+          <div class="title">{{ t('storage.nodeDetail.updatedAt') }}</div>
           <div class="value">{{ updatedAt }}</div>
         </div>
       </div>
@@ -96,7 +101,7 @@
 
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, ref } from '@vue/composition-api'
-import { StorageNode, StorageType } from '@/app/service'
+import { StorageNode, StorageType, injectService } from '@/app/service'
 import { Dialog } from '@/app/components/dialog'
 import { QLinearProgress } from 'quasar'
 import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
@@ -104,6 +109,7 @@ import _bytes from 'bytes'
 import anime from 'animejs'
 import { isFontAwesome } from '@/app/base'
 import { removeBothEndsSlash } from 'web-base-lib'
+import { useConfig } from '@/app/config'
 import { useI18n } from '@/app/i18n'
 
 interface StorageDirDetailView extends Dialog<string[], boolean>, StorageDirDetailView.Props {
@@ -137,7 +143,9 @@ namespace StorageDirDetailView {
     //----------------------------------------------------------------------
 
     const pageService = StoragePageService.getInstance(props.storageType)
-    const { t, d } = useI18n()
+    const config = useConfig()
+    const service = injectService()
+    const i18n = useI18n()
 
     const downloadLinear = ref<QLinearProgress>()
 
@@ -166,7 +174,11 @@ namespace StorageDirDetailView {
 
     const path = computed(() => {
       if (!dirNode.value) return ''
-      return dirNode.value.path
+      if (config.env.mode === 'dev' || service.auth.user.isAppAdmin) {
+        return pageService.toFullPath(dirNode.value.path)
+      } else {
+        return dirNode.value.path
+      }
     })
 
     const displayPath = computed(() => {
@@ -193,16 +205,16 @@ namespace StorageDirDetailView {
       if (dirNode.value.share.isPublic === null) {
         const inheritedShare = pageService.getInheritedShare(dirNode.value.path)
         if (inheritedShare.isPublic) {
-          result = `${t('storage.share.public')}`
+          result = `${i18n.t('storage.share.public')}`
         } else {
-          result = `${t('storage.share.private')}`
+          result = `${i18n.t('storage.share.private')}`
         }
-        result += ` (${t('storage.share.notSet')})`
+        result += ` (${i18n.t('storage.share.notSet')})`
       } else {
         if (dirNode.value.share.isPublic) {
-          result = `${t('storage.share.public')}`
+          result = `${i18n.t('storage.share.public')}`
         } else {
-          result = `${t('storage.share.private')}`
+          result = `${i18n.t('storage.share.private')}`
         }
       }
 
@@ -216,12 +228,12 @@ namespace StorageDirDetailView {
 
     const createdAt = computed(() => {
       if (!dirNode.value) return ''
-      return `${d(dirNode.value.createdAt.toDate(), 'dateSec')}`
+      return `${i18n.d(dirNode.value.createdAt.toDate(), 'dateSec')}`
     })
 
     const updatedAt = computed(() => {
       if (!dirNode.value) return ''
-      return `${d(dirNode.value.updatedAt.toDate(), 'dateSec')}`
+      return `${i18n.d(dirNode.value.updatedAt.toDate(), 'dateSec')}`
     })
 
     const progress = computed(() => downloader.progress.value)
@@ -295,7 +307,7 @@ namespace StorageDirDetailView {
           const responseData = await downloader.execute('blob')
           if (downloader.canceled) continue
           if (downloader.failed) {
-            const message = String(t('storage.download.downloadFailure', { nodeName: downloader.name }))
+            const message = String(i18n.t('storage.download.downloadFailure', { nodeName: downloader.name }))
             pageService.showNotification('warning', message)
             continue
           }
@@ -326,7 +338,7 @@ namespace StorageDirDetailView {
     //----------------------------------------------------------------------
 
     return {
-      t,
+      ...i18n,
       downloadLinear,
       icon,
       iconSize,

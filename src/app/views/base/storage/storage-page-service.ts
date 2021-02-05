@@ -268,6 +268,11 @@ interface StoragePageService {
    */
   nodeToTreeData(storageType: StorageType, source: StorageTreeNodeInput | StorageTreeNode): StorageTreeNodeData
   /**
+   * ノードパスをフルパスに変換します。
+   * @param nodePath
+   */
+  toFullPath(nodePath: string): string
+  /**
    * ノードの表示用の名前を取得します。
    * @param node
    */
@@ -1285,6 +1290,10 @@ namespace StoragePageService {
       return result
     }
 
+    const toFullPath: StoragePageService['toFullPath'] = nodePath => {
+      return storageService.toFullPath(nodePath)
+    }
+
     const getDisplayNodeName: StoragePageService['getDisplayNodeName'] = node => {
       if (isAssetsDir(node)) {
         return String(tc('storage.asset', 2))
@@ -1551,6 +1560,7 @@ namespace StoragePageService {
       getInheritedShare,
       createRootNodeData,
       nodeToTreeData,
+      toFullPath,
       getDisplayNodeName,
       getDisplayNodePath,
       getNodeIcon,

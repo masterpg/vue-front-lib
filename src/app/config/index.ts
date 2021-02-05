@@ -13,9 +13,14 @@ const firebaseConfig = require('../../../firebase.config')
 //========================================================================
 
 interface Config {
-  firebase: FirebaseConfig
-  api: APIConfig
-  storage: StorageConfig
+  readonly env: EnvConfig
+  readonly firebase: FirebaseConfig
+  readonly api: APIConfig
+  readonly storage: StorageConfig
+}
+
+interface EnvConfig {
+  mode: 'prod' | 'dev' | 'test'
 }
 
 interface FirebaseConfig {
@@ -89,6 +94,17 @@ function createConfig(params: CreateConfigParams = {}): Config {
   //----------------------------------------------------------------------
 
   const state = reactive({
+    env: {
+      mode:
+        process.env.NODE_ENV === 'production'
+          ? 'prod'
+          : process.env.NODE_ENV === 'development'
+          ? 'dev'
+          : process.env.NODE_ENV === 'test'
+          ? 'test'
+          : 'dev',
+    } as EnvConfig,
+
     firebase: merge(firebaseConfig, params.firebase),
 
     api: getAPIConfig(
@@ -131,6 +147,7 @@ function createConfig(params: CreateConfigParams = {}): Config {
   //----------------------------------------------------------------------
 
   return {
+    env: state.env,
     firebase: state.firebase,
     api: state.api,
     storage: state.storage,

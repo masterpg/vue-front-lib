@@ -3,16 +3,21 @@
 
 .StorageFileNodeView
   width: 100%
-  padding: 0 16px 16px 32px
 
 .content-area
   overflow-y: auto
   > *
     margin-top: 20px
 
-.node-name
-  @extend %text-h6
-  word-break: break-all
+.node-icon
+  margin-top: 10px
+  margin-right: 10px
+
+.node-label
+  @extend %text-subtitle1
+  font-weight: map-get($text-weights, "bold")
+  overflow-wrap: anywhere
+  margin-top: 7px
 
 .img
   --img-max-height: 300px
@@ -40,9 +45,9 @@
 <template>
   <div class="StorageFileNodeView layout vertical">
     <!-- ノード名 -->
-    <div class="layout horizontal center">
-      <q-icon :name="icon" :size="iconSize" class="app-mr-12" />
-      <div class="node-name flex-1">{{ fileName }}</div>
+    <div class="layout horizontal start">
+      <q-icon :name="icon" :size="iconSize" class="node-icon" />
+      <div class="node-label flex-1">{{ fileName }}</div>
       <q-btn flat round color="primary" icon="close" @click="closeOnClick" />
     </div>
     <!-- コンテンツエリア -->
@@ -57,9 +62,9 @@
       <div class="layout horizontal center end-justified app-mt-10">
         <q-linear-progress ref="downloadLinear" :value="progress" :stripe="running" size="md" class="flex-1" />
         <!-- ダウンロードボタン -->
-        <div v-if="!running" class="btn app-ml-10" @click="download()">{{ $t('common.download') }}</div>
+        <div v-if="!running" class="btn app-ml-10" @click="download()">{{ t('common.download') }}</div>
         <!-- キャンセルボタン -->
-        <div v-else class="btn app-ml-10" @click="cancel()">{{ $t('common.cancel') }}</div>
+        <div v-else class="btn app-ml-10" @click="cancel()">{{ t('common.cancel') }}</div>
       </div>
       <!-- ノード詳細 -->
       <div class="layout vertical">
@@ -106,7 +111,7 @@
 
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, ref } from '@vue/composition-api'
-import { StorageNode, StorageType } from '@/app/service'
+import { StorageNode, StorageType, injectService } from '@/app/service'
 import { Dialog } from '@/app/components/dialog'
 import { QLinearProgress } from 'quasar'
 import { StorageImg } from '@/app/components/storage/storage-img.vue'
@@ -115,6 +120,7 @@ import _bytes from 'bytes'
 import anime from 'animejs'
 import { isFontAwesome } from '@/app/base'
 import { removeBothEndsSlash } from 'web-base-lib'
+import { useConfig } from '@/app/config'
 import { useI18n } from '@/app/i18n'
 
 interface StorageFileDetailView extends Dialog<string[], boolean>, StorageFileDetailView.Props {
@@ -152,7 +158,9 @@ namespace StorageFileDetailView {
     //----------------------------------------------------------------------
 
     const pageService = StoragePageService.getInstance(props.storageType)
-    const { t, d } = useI18n()
+    const config = useConfig()
+    const service = injectService()
+    const i18n = useI18n()
 
     const downloadLinear = ref<QLinearProgress>()
 
@@ -193,7 +201,11 @@ namespace StorageFileDetailView {
 
     const path = computed(() => {
       if (!fileNode.value) return ''
-      return fileNode.value.path
+      if (config.env.mode === 'dev' || service.auth.user.isAppAdmin) {
+        return pageService.toFullPath(fileNode.value.path)
+      } else {
+        return fileNode.value.path
+      }
     })
 
     const displayPath = computed(() => {
@@ -225,16 +237,16 @@ namespace StorageFileDetailView {
       if (fileNode.value.share.isPublic === null) {
         const inheritedShare = pageService.getInheritedShare(fileNode.value.path)
         if (inheritedShare.isPublic) {
-          result = `${t('storage.share.public')}`
+          result = `${i18n.t('storage.share.public')}`
         } else {
-          result = `${t('storage.share.private')}`
+          result = `${i18n.t('storage.share.private')}`
         }
-        result += ` (${t('storage.share.notSet')})`
+        result += ` (${i18n.t('storage.share.notSet')})`
       } else {
         if (fileNode.value.share.isPublic) {
-          result = `${t('storage.share.public')}`
+          result = `${i18n.t('storage.share.public')}`
         } else {
-          result = `${t('storage.share.private')}`
+          result = `${i18n.t('storage.share.private')}`
         }
       }
 
@@ -248,12 +260,12 @@ namespace StorageFileDetailView {
 
     const createdAt = computed(() => {
       if (!fileNode.value) return ''
-      return `${d(fileNode.value.createdAt.toDate(), 'dateSec')}`
+      return `${i18n.d(fileNode.value.createdAt.toDate(), 'dateSec')}`
     })
 
     const updatedAt = computed(() => {
       if (!fileNode.value) return ''
-      return `${d(fileNode.value.updatedAt.toDate(), 'dateSec')}`
+      return `${i18n.d(fileNode.value.updatedAt.toDate(), 'dateSec')}`
     })
 
     const progress = computed(() => downloader.progress.value)
@@ -335,7 +347,7 @@ namespace StorageFileDetailView {
           const responseData = await downloader.execute('blob')
           if (downloader.canceled) continue
           if (downloader.failed) {
-            const message = String(t('storage.download.downloadFailure', { nodeName: downloader.name }))
+            const message = String(i18n.t('storage.download.downloadFailure', { nodeName: downloader.name }))
             pageService.showNotification('warning', message)
             continue
           }
@@ -366,7 +378,7 @@ namespace StorageFileDetailView {
     //----------------------------------------------------------------------
 
     return {
-      t,
+      ...i18n,
       downloadLinear,
       textData,
       icon,

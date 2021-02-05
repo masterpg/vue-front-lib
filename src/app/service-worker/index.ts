@@ -1,5 +1,6 @@
 import { InjectionKey, inject, provide, reactive } from '@vue/composition-api'
 import { ServiceWorkerChangeState } from '@/app/service-worker/register'
+import { useConfig } from '@/app/config'
 import { useI18n } from '@/app/i18n'
 const path = require('path')
 
@@ -37,8 +38,9 @@ const emptyInstance: ServiceWorkerManager = {
 function createServiceWorker(): ServiceWorkerManager {
   if (!('serviceWorker' in navigator)) return emptyInstance
 
-  const execute = process.env.NODE_ENV === 'production'
-  if (!execute) return emptyInstance
+  const config = useConfig()
+
+  if (config.env.mode !== 'prod') return emptyInstance
 
   //----------------------------------------------------------------------
   //

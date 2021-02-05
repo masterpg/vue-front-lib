@@ -97,8 +97,8 @@ export default {
     },
   },
   storage: {
-    userRootName: 'Home',
     appRootName: 'Storage',
+    userRootName: 'Storage',
     articleRootName: 'Article',
     uploading: 'Uploading',
     uploadTotalRatio: 'Upload {0} / {1}',
