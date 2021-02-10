@@ -1,8 +1,8 @@
 import 'firebase/auth'
 import 'firebase/storage'
 import { ComputedRef, UnwrapRef, computed, reactive, ref } from '@vue/composition-api'
+import { StorageNodeKeyInput, StorageNodeType } from '@/app/service/base'
 import axios, { AxiosResponse, Canceler } from 'axios'
-import { StorageNodeType } from '@/app/service/base'
 import { StorageService } from '@/app/service/modules/storage/base'
 import firebase from 'firebase/app'
 import path from 'path'
@@ -222,16 +222,16 @@ namespace StorageDownloader {
 
       switch (node.nodeType) {
         case StorageNodeType.Dir: {
-          const _fileDownloaders = storageService.getChildren(nodePath).reduce((result, node) => {
+          const _fileDownloaders = storageService.getChildren(nodePath).reduce((result, node, index, children) => {
             if (node.nodeType === StorageNodeType.Dir) return result
-            result.push(newFileDownloader(type, node.path))
+            result.push(newFileDownloader(type, node.path, children.length - 1 === index))
             return result
           }, [] as UnwrapRef<StorageFileDownloader>[])
           fileDownloaders.value.push(..._fileDownloaders)
           break
         }
         case StorageNodeType.File: {
-          fileDownloaders.value.push(newFileDownloader(type, node.path))
+          fileDownloaders.value.push(newFileDownloader(type, node.path, true))
           break
         }
       }
@@ -261,8 +261,8 @@ namespace StorageDownloader {
     //
     //----------------------------------------------------------------------
 
-    function newFileDownloader(type: StorageFileDownloaderType, filePath: string) {
-      return reactive(StorageFileDownloader.newInstance(storageService, type, filePath))
+    function newFileDownloader(type: StorageFileDownloaderType, filePath: string, last: boolean) {
+      return reactive(StorageFileDownloader.newInstance(storageService, type, filePath, last))
     }
 
     //----------------------------------------------------------------------
@@ -288,10 +288,10 @@ namespace StorageDownloader {
 }
 
 namespace StorageFileDownloader {
-  export function newInstance(storageService: StorageService, type: StorageFileDownloaderType, filePath: string): StorageFileDownloader {
+  export function newInstance(storageService: StorageService, type: StorageFileDownloaderType, filePath: string, last = true): StorageFileDownloader {
     switch (type) {
       case 'firebase':
-        return StorageFileFirebaseDownloader.newInstance(storageService, filePath)
+        return StorageFileFirebaseDownloader.newInstance(storageService, filePath, last)
       case 'http':
         return StorageFileHTTPDownloader.newInstance(storageService, filePath)
     }
@@ -422,7 +422,7 @@ namespace StorageFileDownloader {
 }
 
 namespace StorageFileFirebaseDownloader {
-  export function newInstance(storageService: StorageService, filePath: string): StorageFileDownloader {
+  export function newInstance(storageService: StorageService, filePath: string, last: boolean): StorageFileDownloader {
     //----------------------------------------------------------------------
     //
     //  Variables
@@ -445,6 +445,7 @@ namespace StorageFileFirebaseDownloader {
       base.status.value = 'running'
 
       // URLの取得
+      await setFileAccessAuth(base.fileNode)
       const fileRef = firebase.storage().ref(base.fileNode.id)
       const downloadURL = await fileRef.getDownloadURL()
 
@@ -470,11 +471,14 @@ namespace StorageFileFirebaseDownloader {
         })
       } catch (err) {
         if (!base.canceled.value) {
+          await removeFileAccessAuth()
           base.failed.value = true
           throw err
         }
         return
       }
+
+      await removeFileAccessAuth()
 
       base.completed.value = true
 
@@ -484,6 +488,27 @@ namespace StorageFileFirebaseDownloader {
     const cancel: StorageFileDownloader['cancel'] = () => {
       canceler && canceler()
       base.canceled.value = true
+    }
+
+    //----------------------------------------------------------------------
+    //
+    //  Internal methods
+    //
+    //----------------------------------------------------------------------
+
+    /**
+     * Cloud Storageのセキュリティルールを通過させるために権限を設定します。
+     * @param fileKey
+     */
+    async function setFileAccessAuth(fileKey: StorageNodeKeyInput): Promise<void> {
+      await storageService.setFileAccessAuthClaims(fileKey)
+    }
+
+    /**
+     * Cloud Storageのセキュリティルールを通過させるための権限を削除します。
+     */
+    async function removeFileAccessAuth(): Promise<void> {
+      last && (await storageService.removeFileAccessAuthClaims())
     }
 
     //----------------------------------------------------------------------

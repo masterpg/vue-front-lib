@@ -9,7 +9,7 @@ export function GeneralToken(): TestAuthToken {
   }
 }
 
-export function GeneralFirebaseUser(): Required<TestFirebaseUserInput> {
+export function GeneralFirebaseUser(): Required<Omit<TestFirebaseUserInput, 'readableNodeId' | 'writableNodeId'>> {
   return {
     uid: GeneralToken().uid,
     email: 'test.general@example.com',
@@ -38,7 +38,7 @@ export function AppAdminToken(): TestAuthToken {
   }
 }
 
-export function AppAdminFirebaseUser(): Required<TestFirebaseUserInput> {
+export function AppAdminFirebaseUser(): Required<Omit<TestFirebaseUserInput, 'readableNodeId' | 'writableNodeId'>> {
   return {
     uid: AppAdminToken().uid,
     email: 'test.app.admin@example.com',

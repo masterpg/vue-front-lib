@@ -1,6 +1,6 @@
 import 'firebase/storage'
 import { ComputedRef, Ref, UnwrapRef, computed, reactive, ref, watch } from '@vue/composition-api'
-import { StorageNode, StorageUtil } from '@/app/service/base'
+import { StorageNode, StorageNodeKeyInput, StorageUtil } from '@/app/service/base'
 import { removeBothEndsSlash, splitHierarchicalPaths } from 'web-base-lib'
 import { StorageService } from '@/app/service/modules/storage/base'
 import _path from 'path'
@@ -260,17 +260,21 @@ namespace StorageUploader {
 
     const createUploadingFiles = extendedMethod((files: File[]) => {
       const result: UnwrapRef<StorageFileUploader>[] = []
-      for (const file of files) {
+      files.forEach((file, index) => {
         const fileUploader = reactive(
-          StorageFileUploader.newInstance(storageService, {
-            data: file,
-            name: file.name,
-            dir: removeBothEndsSlash(getUploadDirPath(file)),
-            contentType: file.type,
-          })
+          StorageFileUploader.newInstance(
+            storageService,
+            {
+              data: file,
+              name: file.name,
+              dir: removeBothEndsSlash(getUploadDirPath(file)),
+              contentType: file.type,
+            },
+            files.length - 1 === index
+          )
         )
         result.push(fileUploader)
-      }
+      })
       return result
     })
 
@@ -390,11 +394,11 @@ namespace StorageUploader {
 }
 
 namespace StorageFileUploader {
-  export function newInstance(storageService: StorageService, uploadParam: UploadFileParam): StorageFileUploader {
-    return newRawInstance(storageService, uploadParam)
+  export function newInstance(storageService: StorageService, uploadParam: UploadFileParam, last = true): StorageFileUploader {
+    return newRawInstance(storageService, uploadParam, last)
   }
 
-  export function newRawInstance(storageService: StorageService, uploadParam: UploadFileParam) {
+  export function newRawInstance(storageService: StorageService, uploadParam: UploadFileParam, last = true) {
     //----------------------------------------------------------------------
     //
     //  Variables
@@ -493,6 +497,7 @@ namespace StorageFileUploader {
       const uid = StorageUtil.extractUId(storageService.basePath.value) || undefined
 
       // アップロード先の参照を取得
+      await setFileAccessAuth({ id: nodeId, path: path.value })
       const fileRef = firebase.storage().ref(nodeId)
 
       // アップロード可能なデータ形式へ変換
@@ -521,8 +526,10 @@ namespace StorageFileUploader {
             if (canceled.value) {
               resolve()
             } else {
-              failed.value = true
-              reject(err)
+              removeFileAccessAuth().then(() => {
+                failed.value = true
+                reject(err)
+              })
             }
           },
           () => {
@@ -533,6 +540,7 @@ namespace StorageFileUploader {
 
       // アップロード進捗が100%に達していない場合
       if (progress.value < 1) {
+        await removeFileAccessAuth()
         // ここで終了
         return
       }
@@ -544,6 +552,7 @@ namespace StorageFileUploader {
 
       // ファイルアップロード後に必要な処理を実行
       await storageService.handleUploadedFile({ id: nodeId, path: path.value })
+      await removeFileAccessAuth()
 
       // アップロード完了
       completed.value = true
@@ -553,6 +562,27 @@ namespace StorageFileUploader {
       canceled.value = true
       uploadTask?.cancel()
     })
+
+    //----------------------------------------------------------------------
+    //
+    //  Internal methods
+    //
+    //----------------------------------------------------------------------
+
+    /**
+     * Cloud Storageのセキュリティルールを通過させるために権限を設定します。
+     * @param fileKey
+     */
+    async function setFileAccessAuth(fileKey: StorageNodeKeyInput): Promise<void> {
+      await storageService.setFileAccessAuthClaims(fileKey)
+    }
+
+    /**
+     * Cloud Storageのセキュリティルールを通過させるための権限を削除します。
+     */
+    async function removeFileAccessAuth(): Promise<void> {
+      last && (await storageService.removeFileAccessAuthClaims())
+    }
 
     //----------------------------------------------------------------------
     //

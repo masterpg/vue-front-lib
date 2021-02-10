@@ -37,6 +37,8 @@ enum AuthStatus {
 interface UserClaims {
   isAppAdmin?: boolean
   authStatus?: AuthStatus
+  readableNodeId?: string
+  writableNodeId?: string
 }
 
 interface IdToken extends firebase.auth.IdTokenResult, UserClaims {}

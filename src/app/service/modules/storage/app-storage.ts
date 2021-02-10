@@ -1,3 +1,4 @@
+import 'firebase/auth'
 import * as _path from 'path'
 import {
   APIStorageNode,
@@ -18,6 +19,7 @@ import { StorageService } from '@/app/service/modules/storage/base'
 import { StorageURLUploader } from '@/app/service/modules/storage/upload-url'
 import { StorageUtil } from '@/app/service/base'
 import { extendedMethod } from '@/app/base'
+import firebase from 'firebase/app'
 import { injectAPI } from '@/app/service/api'
 import { injectStore } from '@/app/service/store'
 
@@ -50,6 +52,8 @@ interface AppStorageService extends StorageService {
   renameFileAPI(filePath: string, newName: string): Promise<StorageNode>
   setDirShareSettingsAPI(dirPath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode>
   handleUploadedFileAPI(input: StorageNodeKeyInput): Promise<StorageNode>
+  setFileAccessAuthClaimsAPI(input: StorageNodeKeyInput): Promise<string>
+  removeFileAccessAuthClaimsAPI(): Promise<string>
   getSignedUploadUrlsAPI(inputs: SignedUploadUrlInput[]): Promise<string[]>
   setFileShareSettingsAPI(filePath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode>
 
@@ -573,6 +577,22 @@ namespace AppStorageService {
       return toBasePathNode(node)!
     }
 
+    const setFileAccessAuthClaims: AppStorageService['setFileAccessAuthClaims'] = async input => {
+      // ユーザークレイムにノードアクセス権限を設定
+      // ※戻り値は設定が行われたカスタムトークンとなる
+      const token = await setFileAccessAuthClaimsAPI(input)
+      // 取得したカスタムトークンを認証トークンに設定
+      await firebase.auth().signInWithCustomToken(token)
+    }
+
+    const removeFileAccessAuthClaims: AppStorageService['removeFileAccessAuthClaims'] = async () => {
+      // ユーザークレイムからノードアクセス権限を削除
+      // ※戻り値は設定が削除されたカスタムトークンとなる
+      const token = await removeFileAccessAuthClaimsAPI()
+      // 取得したカスタムトークンを認証トークンに設定
+      await firebase.auth().signInWithCustomToken(token)
+    }
+
     const getSignedUploadUrl: AppStorageService['getSignedUploadUrl'] = async input => {
       const fullInput: SignedUploadUrlInput = {
         id: input.id,
@@ -692,6 +712,14 @@ namespace AppStorageService {
     const handleUploadedFileAPI = extendedMethod<AppStorageService['handleUploadedFileAPI']>(async input => {
       const apiNode = await api.handleUploadedFile(input)
       return apiNodeToStorageNode(apiNode)!
+    })
+
+    const setFileAccessAuthClaimsAPI = extendedMethod<AppStorageService['setFileAccessAuthClaimsAPI']>(async input => {
+      return await api.setFileAccessAuthClaims(input)
+    })
+
+    const removeFileAccessAuthClaimsAPI = extendedMethod<AppStorageService['removeFileAccessAuthClaimsAPI']>(async () => {
+      return await api.removeFileAccessAuthClaims()
     })
 
     const getSignedUploadUrlsAPI = extendedMethod<AppStorageService['getSignedUploadUrlsAPI']>(async inputs => {
@@ -876,6 +904,8 @@ namespace AppStorageService {
       setDirShareSettings,
       setFileShareSettings,
       handleUploadedFile,
+      setFileAccessAuthClaims,
+      removeFileAccessAuthClaims,
       getSignedUploadUrl,
       newUploader,
       newFileUploader,
@@ -903,6 +933,8 @@ namespace AppStorageService {
       renameFileAPI,
       setDirShareSettingsAPI,
       handleUploadedFileAPI,
+      setFileAccessAuthClaimsAPI,
+      removeFileAccessAuthClaimsAPI,
       getSignedUploadUrlsAPI,
       setFileShareSettingsAPI,
       apiNodeToStorageNode,

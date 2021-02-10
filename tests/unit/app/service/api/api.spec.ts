@@ -6,6 +6,7 @@ import {
   StorageArticleDirType,
   StorageArticleFileType,
   StorageNode,
+  StorageNodeKeyInput,
   StorageNodeShareSettings,
   StorageUtil,
   User,
@@ -440,21 +441,6 @@ describe('Storage API', () => {
     })
   })
 
-  describe('handleUploadedFile', () => {
-    it('疎通確認', async () => {
-      const { api } = provideDependency()
-      api.setTestAuthToken(AppAdminToken())
-
-      await api.createStorageHierarchicalDirs([`${TEST_DIR}/docs`])
-      const uploadItem = { id: StorageNode.generateId(), path: `${TEST_DIR}/docs/fileA.txt`, contentType: 'text/plain', data: 'test' }
-      await api.uploadTestHierarchyFiles([uploadItem])
-
-      const actual = await api.handleUploadedFile(uploadItem)
-
-      expect(actual.path).toBe(`${TEST_DIR}/docs/fileA.txt`)
-    })
-  })
-
   describe('createStorageDir', () => {
     it('疎通確認', async () => {
       const { api } = provideDependency()
@@ -658,6 +644,47 @@ describe('Storage API', () => {
       })
 
       expect(actual.path).toBe(`${TEST_DIR}/dir1/fileA.txt`)
+    })
+  })
+
+  describe('handleUploadedFile', () => {
+    it('疎通確認', async () => {
+      const { api } = provideDependency()
+      api.setTestAuthToken(AppAdminToken())
+
+      await api.createStorageHierarchicalDirs([`${TEST_DIR}/docs`])
+      const uploadItem = { id: StorageNode.generateId(), path: `${TEST_DIR}/docs/fileA.txt`, contentType: 'text/plain', data: 'test' }
+      await api.uploadTestHierarchyFiles([uploadItem])
+
+      const actual = await api.handleUploadedFile(uploadItem)
+
+      expect(actual.path).toBe(`${TEST_DIR}/docs/fileA.txt`)
+    })
+  })
+
+  describe('setFileAccessAuthClaims', () => {
+    it('疎通確認', async () => {
+      const { api } = provideDependency()
+      const fileNodeKey: StorageNodeKeyInput = { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileA.txt` }
+      await api.uploadTestHierarchyFiles([{ ...fileNodeKey, contentType: 'text/plain', data: 'test' }])
+      api.setTestAuthToken(AppAdminToken())
+
+      const actual = await api.setFileAccessAuthClaims(fileNodeKey)
+
+      expect(actual.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('removeFileAccessAuthClaims', () => {
+    it('疎通確認', async () => {
+      const { api } = provideDependency()
+      const fileNodeKey: StorageNodeKeyInput = { id: StorageNode.generateId(), path: `${TEST_DIR}/d1/fileA.txt` }
+      await api.uploadTestHierarchyFiles([{ ...fileNodeKey, contentType: 'text/plain', data: 'test' }])
+      api.setTestAuthToken(AppAdminToken())
+
+      const actual = await api.removeFileAccessAuthClaims()
+
+      expect(actual.length).toBeGreaterThan(0)
     })
   })
 

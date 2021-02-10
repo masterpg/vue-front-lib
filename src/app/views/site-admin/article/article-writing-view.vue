@@ -168,7 +168,7 @@ namespace ArticleWritingView {
           }
           master.value.node = node
 
-          const downloader = pageService.newFileDownloader('firebase', master.value.node.path)
+          const downloader = pageService.newFileDownloader('http', master.value.node.path)
           const srcContent = await downloader.execute('text')
           master.value.srcContent = srcContent ?? ''
         })()
@@ -181,7 +181,7 @@ namespace ArticleWritingView {
           }
           draft.value.node = node
 
-          const downloader = pageService.newFileDownloader('firebase', draft.value.node.path)
+          const downloader = pageService.newFileDownloader('http', draft.value.node.path)
           draft.value.srcContent = (await downloader.execute('text')) ?? ''
 
           const localDraftData = getLocalDraftData()

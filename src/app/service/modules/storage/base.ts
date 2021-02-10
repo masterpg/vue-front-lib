@@ -253,6 +253,17 @@ interface StorageService {
    */
   handleUploadedFile(input: StorageNodeKeyInput): Promise<StorageNode>
   /**
+   * Cloud Storageのセキュリティルールを通過させるため、
+   * ユーザークレイムにファイルアクセス権限を設定します。
+   * @param key
+   */
+  setFileAccessAuthClaims(key: StorageNodeKeyInput): Promise<void>
+  /**
+   * Cloud Storageのセキュリティルールを通過させるために
+   * ユーザークレイムに設定されていたファイルアクセス権限を削除します。
+   */
+  removeFileAccessAuthClaims(): Promise<void>
+  /**
    * 署名付きのアップロードURLを取得します。
    * @param input
    */

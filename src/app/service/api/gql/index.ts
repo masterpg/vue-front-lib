@@ -78,6 +78,10 @@ interface GQLAPIContainer {
 
   handleUploadedFile(input: StorageNodeKeyInput): Promise<APIStorageNode>
 
+  setFileAccessAuthClaims(input: StorageNodeKeyInput): Promise<string>
+
+  removeFileAccessAuthClaims(): Promise<string>
+
   getSignedUploadUrls(inputs: SignedUploadUrlInput[]): Promise<string[]>
 
   //--------------------------------------------------
@@ -621,24 +625,6 @@ namespace GQLAPIContainer {
       return toStorageNode(response.data!.setStorageDirShareSettings)
     }
 
-    const handleUploadedFile: GQLAPIContainer['handleUploadedFile'] = async input => {
-      const response = await clientLv1.mutate<{ handleUploadedFile: RawStorageNode }, { input: StorageNodeKeyInput }>({
-        mutation: gql`
-          mutation HandleUploadedFile($input: StorageNodeKeyInput!) {
-            handleUploadedFile(input: $input) {
-              ...${StorageNodeFieldsName}
-            }
-          }
-          ${StorageNodeFields}
-        `,
-        variables: {
-          input: StorageNodeKeyInput.squeeze(input),
-        },
-        isAuth: true,
-      })
-      return toStorageNode(response.data!.handleUploadedFile)
-    }
-
     const setStorageFileShareSettings: GQLAPIContainer['setStorageFileShareSettings'] = async (filePath, input) => {
       const response = await clientLv1.mutate<
         { setStorageFileShareSettings: RawStorageNode },
@@ -659,6 +645,51 @@ namespace GQLAPIContainer {
         isAuth: true,
       })
       return toStorageNode(response.data!.setStorageFileShareSettings)
+    }
+
+    const handleUploadedFile: GQLAPIContainer['handleUploadedFile'] = async input => {
+      const response = await clientLv1.mutate<{ handleUploadedFile: RawStorageNode }, { input: StorageNodeKeyInput }>({
+        mutation: gql`
+          mutation HandleUploadedFile($input: StorageNodeKeyInput!) {
+            handleUploadedFile(input: $input) {
+              ...${StorageNodeFieldsName}
+            }
+          }
+          ${StorageNodeFields}
+        `,
+        variables: {
+          input: StorageNodeKeyInput.squeeze(input),
+        },
+        isAuth: true,
+      })
+      return toStorageNode(response.data!.handleUploadedFile)
+    }
+
+    const setFileAccessAuthClaims: GQLAPIContainer['setFileAccessAuthClaims'] = async input => {
+      const response = await clientLv1.mutate<{ setFileAccessAuthClaims: string }, { input: StorageNodeKeyInput }>({
+        mutation: gql`
+          mutation SetFileAccessAuthClaims($input: StorageNodeKeyInput!) {
+            setFileAccessAuthClaims(input: $input)
+          }
+        `,
+        variables: {
+          input: StorageNodeKeyInput.squeeze(input),
+        },
+        isAuth: true,
+      })
+      return response.data!.setFileAccessAuthClaims
+    }
+
+    const removeFileAccessAuthClaims: GQLAPIContainer['removeFileAccessAuthClaims'] = async () => {
+      const response = await clientLv1.mutate<{ removeFileAccessAuthClaims: string }>({
+        mutation: gql`
+          mutation RemoveFileAccessAuthClaims {
+            removeFileAccessAuthClaims
+          }
+        `,
+        isAuth: true,
+      })
+      return response.data!.removeFileAccessAuthClaims
     }
 
     const getSignedUploadUrls: GQLAPIContainer['getSignedUploadUrls'] = async inputs => {
@@ -876,8 +907,10 @@ namespace GQLAPIContainer {
       renameStorageDir,
       renameStorageFile,
       setStorageDirShareSettings,
-      handleUploadedFile,
       setStorageFileShareSettings,
+      handleUploadedFile,
+      setFileAccessAuthClaims,
+      removeFileAccessAuthClaims,
       getSignedUploadUrls,
       createArticleTypeDir,
       createArticleGeneralDir,
