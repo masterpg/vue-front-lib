@@ -1452,7 +1452,7 @@ describe('AppStorageService', () => {
   })
 
   describe('createDir', () => {
-    const SHARE_SETTINGS: StorageNodeShareSettings = {
+    const ShareSettings: StorageNodeShareSettings = {
       isPublic: true,
       readUIds: ['ichiro'],
       writeUIds: ['ichiro'],
@@ -1463,16 +1463,16 @@ describe('AppStorageService', () => {
       // └d1
       //   └[d11] ← 作成
       const d1 = newStorageDirNode(`d1`)
-      const d11 = newStorageDirNode(`d1/d11`, { share: SHARE_SETTINGS })
+      const d11 = newStorageDirNode(`d1/d11`, { share: ShareSettings })
       const {
         service: { appStorage },
       } = provideDependency(({ store }) => {
         store.storage.setAll([d1])
       })
 
-      td.when(appStorage.createDirAPI(d11.path, SHARE_SETTINGS)).thenResolve(d11)
+      td.when(appStorage.createDirAPI(d11.path, { share: ShareSettings })).thenResolve(d11)
 
-      const actual = await appStorage.createDir(d11.path, SHARE_SETTINGS)
+      const actual = await appStorage.createDir(d11.path, { share: ShareSettings })
 
       // bucketRoot
       // └d1

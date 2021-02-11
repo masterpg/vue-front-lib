@@ -1,6 +1,6 @@
 import { ComputedRef, Ref } from '@vue/composition-api'
 import {
-  CreateStorageNodeInput,
+  CreateStorageNodeOptions,
   RequiredStorageNodeShareSettings,
   SignedUploadUrlInput,
   StorageNode,
@@ -165,9 +165,9 @@ interface StorageService {
   /**
    * 指定ディレクトリを作成します。
    * @param dirPath 作成するディレクトリを指定します。
-   * @param input
+   * @param options
    */
-  createDir(dirPath: string, input?: CreateStorageNodeInput): Promise<StorageNode>
+  createDir(dirPath: string, options?: CreateStorageNodeOptions): Promise<StorageNode>
   /**
    * 指定ディレクトリとその階層を構成するディレクトリを作成します。
    * @param dirPaths 作成するディレクトリを指定します。

@@ -206,12 +206,16 @@ namespace SignedUploadUrlInput {
   }
 }
 
-interface CreateStorageNodeInput extends StorageNodeShareSettingsInput {}
+interface CreateStorageNodeOptions {
+  share?: StorageNodeShareSettingsInput
+}
 
-namespace CreateStorageNodeInput {
-  export function squeeze<T extends CreateStorageNodeInput | undefined>(input?: CreateStorageNodeInput): T {
-    if (!input) return undefined as T
-    return StorageNodeShareSettingsInput.squeeze(input) as T
+namespace CreateStorageNodeOptions {
+  export function squeeze<T extends CreateStorageNodeOptions | undefined>(options?: CreateStorageNodeOptions): T {
+    if (!options) return undefined as T
+    return {
+      share: StorageNodeShareSettingsInput.squeeze(options.share),
+    } as T
   }
 }
 
@@ -231,6 +235,18 @@ namespace CreateArticleTypeDirInput {
 interface SaveArticleSrcMasterFileResult {
   master: StorageNode
   draft: StorageNode
+}
+
+interface GetArticleChildrenInput {
+  dirPath: string
+  types: StorageArticleDirType[]
+}
+
+namespace GetArticleChildrenInput {
+  export function squeeze<T extends GetArticleChildrenInput | undefined>(input?: GetArticleChildrenInput): T {
+    if (!input) return undefined as T
+    return pickProps(input, ['dirPath', 'types']) as T
+  }
 }
 
 type StorageType = 'user' | 'app' | 'article'
@@ -741,7 +757,8 @@ namespace StorageArticleSettings {
 export {
   APIStorageNode,
   CreateArticleTypeDirInput,
-  CreateStorageNodeInput,
+  CreateStorageNodeOptions,
+  GetArticleChildrenInput,
   RequiredStorageNodeShareSettings,
   SaveArticleSrcMasterFileResult,
   SignedUploadUrlInput,

@@ -466,7 +466,7 @@ describe('Storage API', () => {
       // 祖先ディレクトリを事前に作成
       await api.createStorageHierarchicalDirs([`${TEST_DIR}`])
 
-      const actual = await api.createStorageDir(`${TEST_DIR}/d1`, { isPublic: true })
+      const actual = await api.createStorageDir(`${TEST_DIR}/d1`, { share: { isPublic: true } })
 
       expect(actual.path).toBe(`${TEST_DIR}/d1`)
       expect(actual.share).toMatchObject({
@@ -1033,7 +1033,7 @@ describe('Storage API', () => {
       const { api } = provideDependency()
       api.setTestAuthToken(GeneralToken())
 
-      const actual = await api.getArticleChildren(`${bundle.path}`, [StorageArticleDirType.Article])
+      const actual = await api.getArticleChildren({ dirPath: `${bundle.path}`, types: [StorageArticleDirType.Article] })
 
       expect(actual.nextPageToken).toBeUndefined()
       expect(actual.isPaginationTimeout).toBeFalsy()
@@ -1049,7 +1049,11 @@ describe('Storage API', () => {
       const { api } = provideDependency()
       api.setTestAuthToken(GeneralToken())
 
-      const actual = await api.callStoragePaginationAPI(api.getArticleChildren, `${bundle.path}`, [StorageArticleDirType.Article], { maxChunk: 2 })
+      const actual = await api.callStoragePaginationAPI(
+        api.getArticleChildren,
+        { dirPath: `${bundle.path}`, types: [StorageArticleDirType.Article] },
+        { maxChunk: 2 }
+      )
 
       expect(actual.length).toBe(3)
       expect(actual[0].path).toBe(`${art3.path}`)

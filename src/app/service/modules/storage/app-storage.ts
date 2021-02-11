@@ -2,7 +2,7 @@ import 'firebase/auth'
 import * as _path from 'path'
 import {
   APIStorageNode,
-  CreateStorageNodeInput,
+  CreateStorageNodeOptions,
   RequiredStorageNodeShareSettings,
   SignedUploadUrlInput,
   StorageNode,
@@ -42,7 +42,7 @@ interface AppStorageService extends StorageService {
   getChildrenAPI(dirPath?: string): Promise<StorageNode[]>
   getHierarchicalNodesAPI(nodePath: string): Promise<StorageNode[]>
   getAncestorDirsAPI(nodePath: string): Promise<StorageNode[]>
-  createDirAPI(dirPath: string, input?: CreateStorageNodeInput): Promise<StorageNode>
+  createDirAPI(dirPath: string, options?: CreateStorageNodeOptions): Promise<StorageNode>
   createHierarchicalDirsAPI(dirPaths: string[]): Promise<StorageNode[]>
   removeDirAPI(dirPath: string): Promise<void>
   removeFileAPI(filePath: string): Promise<StorageNode | undefined>
@@ -434,7 +434,7 @@ namespace AppStorageService {
       return result
     }
 
-    const createDir = extendedMethod<AppStorageService['createDir']>(async (dirPath, input) => {
+    const createDir = extendedMethod<AppStorageService['createDir']>(async (dirPath, options) => {
       validateNotBasePathRoot('dirPath', dirPath)
 
       // 指定ディレクトリの祖先が読み込まれていない場合、例外をスロー
@@ -443,7 +443,7 @@ namespace AppStorageService {
         throw new Error(`One of the ancestor nodes in the path '${toFullPath(dirPath)}' does not exist.`)
       }
 
-      const apiNode = await createDirAPI(toFullPath(dirPath), input)
+      const apiNode = await createDirAPI(toFullPath(dirPath), options)
       const node = setAPINodeToStore(apiNode)
 
       return toBasePathNode(node)!

@@ -1,5 +1,7 @@
 import {
   CreateArticleTypeDirInput,
+  CreateStorageNodeOptions,
+  GetArticleChildrenInput,
   SaveArticleSrcMasterFileResult,
   StorageArticleDirType,
   StorageNode,
@@ -24,15 +26,11 @@ import { watch } from '@vue/composition-api'
 //========================================================================
 
 interface ArticleStorageService extends StorageService {
-  createArticleTypeDir(input: CreateArticleTypeDirInput): Promise<StorageNode>
+  createArticleTypeDir(input: CreateArticleTypeDirInput, options?: CreateStorageNodeOptions): Promise<StorageNode>
   setArticleSortOrder(orderNodePaths: string[]): Promise<StorageNode[]>
   saveArticleSrcMasterFile(articleDirPath: string, srcContent: string, textContent: string): Promise<SaveArticleSrcMasterFileResult>
   saveArticleSrcDraftFile(articleDirPath: string, srcContent: string): Promise<StorageNode>
-  fetchArticleChildren(
-    dirPath: string,
-    articleTypes: StorageArticleDirType[],
-    input?: StoragePaginationInput
-  ): Promise<StoragePaginationResult<StorageNode>>
+  fetchArticleChildren(input: GetArticleChildrenInput, pagination?: StoragePaginationInput): Promise<StoragePaginationResult<StorageNode>>
 }
 
 //========================================================================
@@ -134,7 +132,7 @@ namespace ArticleStorageService {
       return base.toBasePathNode(dirNode)!
     }
 
-    const createArticleTypeDir: ArticleStorageService['createArticleTypeDir'] = async input => {
+    const createArticleTypeDir: ArticleStorageService['createArticleTypeDir'] = async (input, options) => {
       const parentPath = input.dir
 
       // 指定ディレクトリの祖先が読み込まれていない場合、例外をスロー
@@ -144,10 +142,13 @@ namespace ArticleStorageService {
       }
 
       // 指定された記事系ディレクトリをAPIで作成
-      const apiNode = await createArticleTypeDirAPI({
-        ...input,
-        dir: base.toFullPath(parentPath),
-      })
+      const apiNode = await createArticleTypeDirAPI(
+        {
+          ...input,
+          dir: base.toFullPath(parentPath),
+        },
+        options
+      )
       // 作成されたディレクトリをストアに反映
       const dirNode = base.setAPINodeToStore(apiNode)
 
@@ -200,9 +201,13 @@ namespace ArticleStorageService {
       return base.toBasePathNode(node)!
     }
 
-    const fetchArticleChildren: ArticleStorageService['fetchArticleChildren'] = async (dirPath, articleTypes, input) => {
+    const fetchArticleChildren: ArticleStorageService['fetchArticleChildren'] = async (input, pagination) => {
+      const { dirPath, types } = input
       // APIノードをストアへ反映
-      const { nextPageToken, list: apiNodes, isPaginationTimeout } = await getArticleChildrenAPI(base.toFullPath(dirPath), articleTypes, input)
+      const { nextPageToken, list: apiNodes, isPaginationTimeout } = await getArticleChildrenAPI(
+        { dirPath: base.toFullPath(dirPath), types },
+        pagination
+      )
       // APIノードにないストアノードを削除
       base.removeNotExistsStoreNodes(apiNodes, store.storage.getChildren(dirPath))
 
@@ -220,8 +225,8 @@ namespace ArticleStorageService {
     //  API
     //--------------------------------------------------
 
-    const createArticleTypeDirAPI = extendedMethod(async (input: CreateArticleTypeDirInput) => {
-      const apiNode = await api.createArticleTypeDir(input)
+    const createArticleTypeDirAPI = extendedMethod(async (input: CreateArticleTypeDirInput, options?: CreateStorageNodeOptions) => {
+      const apiNode = await api.createArticleTypeDir(input, options)
       return base.apiNodeToStorageNode(apiNode)!
     })
 
@@ -252,12 +257,12 @@ namespace ArticleStorageService {
       return base.apiNodeToStorageNode(apiNode)!
     })
 
-    const getArticleChildrenAPI = extendedMethod(async (dirPath: string, articleTypes: StorageArticleDirType[], input?: StoragePaginationInput) => {
-      const pagination = await api.getArticleChildren(dirPath, articleTypes, input)
+    const getArticleChildrenAPI = extendedMethod(async (input: GetArticleChildrenInput, pagination?: StoragePaginationInput) => {
+      const { list, nextPageToken, isPaginationTimeout } = await api.getArticleChildren(input, pagination)
       return {
-        nextPageToken: pagination.nextPageToken,
-        list: base.apiNodesToStorageNodes(pagination.list),
-        isPaginationTimeout: pagination.isPaginationTimeout,
+        nextPageToken,
+        list: base.apiNodesToStorageNodes(list),
+        isPaginationTimeout,
       }
     })
 

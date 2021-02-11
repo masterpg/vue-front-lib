@@ -353,11 +353,14 @@ describe('AppStorageService', () => {
 
       // モック設定
       td.when(
-        articleStorage.createArticleTypeDirAPI({
-          dir: bundle.dir,
-          name: bundle.article?.dir?.name!,
-          type: bundle.article?.dir?.type!,
-        })
+        articleStorage.createArticleTypeDirAPI(
+          {
+            dir: bundle.dir,
+            name: bundle.article?.dir?.name!,
+            type: bundle.article?.dir?.type!,
+          },
+          undefined
+        )
       ).thenResolve(bundle)
 
       // テスト対象実行
@@ -431,11 +434,14 @@ describe('AppStorageService', () => {
 
       // モック設定
       td.when(
-        articleStorage.createArticleTypeDirAPI({
-          dir: art1.dir,
-          name: art1.article?.dir?.name!,
-          type: art1.article?.dir?.type!,
-        })
+        articleStorage.createArticleTypeDirAPI(
+          {
+            dir: art1.dir,
+            name: art1.article?.dir?.name!,
+            type: art1.article?.dir?.type!,
+          },
+          undefined
+        )
       ).thenResolve(art1)
       td.when(articleStorage.getChildrenAPI(art1.path)).thenResolve([art1_master, art1_draft])
 
@@ -465,6 +471,53 @@ describe('AppStorageService', () => {
       expect(childNodes.length).toBe(2)
       expect(childNodes[0].path).toBe(art1_master.path)
       expect(childNodes[1].path).toBe(art1_draft.path)
+    })
+
+    it('共有設定を指定した場合', async () => {
+      const bundle = newStorageDirNode(`${articles.path}/${StorageNode.generateId()}`, {
+        article: {
+          dir: {
+            name: 'バンドル',
+            type: StorageArticleDirType.ListBundle,
+            sortOrder: 1,
+          },
+        },
+        share: { isPublic: true, readUIds: ['ichiro'], writeUIds: ['ichiro'] },
+      })
+      const {
+        service: { articleStorage, appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([users, user, articles])
+      })
+
+      // モック設定
+      td.when(
+        articleStorage.createArticleTypeDirAPI(
+          {
+            dir: bundle.dir,
+            name: bundle.article?.dir?.name!,
+            type: bundle.article?.dir?.type!,
+          },
+          { share: bundle.share }
+        )
+      ).thenResolve(bundle)
+
+      // テスト対象実行
+      const actual = await articleStorage.createArticleTypeDir(
+        {
+          dir: ``,
+          name: bundle.article?.dir?.name!,
+          type: bundle.article?.dir?.type!,
+        },
+        { share: bundle.share }
+      )
+
+      expect(actual.id).toBe(bundle.id)
+      expect(actual.path).toBe(toBasePath(bundle.path))
+      expect(actual.article?.dir?.name).toBe(bundle.article?.dir?.name)
+      expect(actual.article?.dir?.type).toBe(bundle.article?.dir?.type)
+      expect(actual.article?.dir?.sortOrder).toBe(bundle.article?.dir?.sortOrder)
+      expect(actual.share).toEqual(bundle.share)
     })
 
     it('階層を構成するノードが欠けていた場合', async () => {

@@ -2,7 +2,8 @@ import {
   APIStorageNode,
   AuthDataResult,
   CreateArticleTypeDirInput,
-  CreateStorageNodeInput,
+  CreateStorageNodeOptions,
+  GetArticleChildrenInput,
   SetOwnUserInfoResult,
   SignedUploadUrlInput,
   StorageArticleDirType,
@@ -44,19 +45,19 @@ interface GQLAPIContainer {
 
   getStorageNodes(input: StorageNodeGetKeysInput): Promise<APIStorageNode[]>
 
-  getStorageDirDescendants(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
+  getStorageDirDescendants(dirPath?: string, pagination?: StoragePaginationInput): Promise<StoragePaginationResult>
 
-  getStorageDescendants(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
+  getStorageDescendants(dirPath?: string, pagination?: StoragePaginationInput): Promise<StoragePaginationResult>
 
-  getStorageDirChildren(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
+  getStorageDirChildren(dirPath?: string, pagination?: StoragePaginationInput): Promise<StoragePaginationResult>
 
-  getStorageChildren(dirPath?: string, input?: StoragePaginationInput): Promise<StoragePaginationResult>
+  getStorageChildren(dirPath?: string, pagination?: StoragePaginationInput): Promise<StoragePaginationResult>
 
   getStorageHierarchicalNodes(nodePath: string): Promise<APIStorageNode[]>
 
   getStorageAncestorDirs(nodePath: string): Promise<APIStorageNode[]>
 
-  createStorageDir(dirPath: string, input?: CreateStorageNodeInput): Promise<APIStorageNode>
+  createStorageDir(dirPath: string, options?: CreateStorageNodeOptions): Promise<APIStorageNode>
 
   createStorageHierarchicalDirs(dirPaths: string[]): Promise<APIStorageNode[]>
 
@@ -88,9 +89,9 @@ interface GQLAPIContainer {
   //  Article
   //--------------------------------------------------
 
-  createArticleTypeDir(input: CreateArticleTypeDirInput): Promise<APIStorageNode>
+  createArticleTypeDir(input: CreateArticleTypeDirInput, options?: CreateStorageNodeOptions): Promise<APIStorageNode>
 
-  createArticleGeneralDir(dirPath: string): Promise<APIStorageNode>
+  createArticleGeneralDir(dirPath: string, options?: CreateStorageNodeOptions): Promise<APIStorageNode>
 
   renameArticleDir(dirPath: string, newName: string): Promise<APIStorageNode>
 
@@ -104,7 +105,7 @@ interface GQLAPIContainer {
 
   saveArticleSrcDraftFile(articleDirPath: string, srcContent: string): Promise<APIStorageNode>
 
-  getArticleChildren(dirPath: string, types: StorageArticleDirType[], input?: StoragePaginationInput): Promise<StoragePaginationResult>
+  getArticleChildren(input: GetArticleChildrenInput, pagination?: StoragePaginationInput): Promise<StoragePaginationResult>
 
   //--------------------------------------------------
   //  Helpers
@@ -335,14 +336,14 @@ namespace GQLAPIContainer {
       return toStorageNodes(response.data.storageNodes)
     }
 
-    const getStorageDirDescendants: GQLAPIContainer['getStorageDirDescendants'] = async (dirPath, input) => {
+    const getStorageDirDescendants: GQLAPIContainer['getStorageDirDescendants'] = async (dirPath, pagination) => {
       const response = await clientLv1.query<
         { storageDirDescendants: RawStoragePaginationResult },
-        { dirPath?: string; input?: StoragePaginationInput }
+        { dirPath?: string; pagination?: StoragePaginationInput }
       >({
         query: gql`
-          query GetStorageDirDescendants($dirPath: String, $input: StoragePaginationInput) {
-            storageDirDescendants(dirPath: $dirPath, input: $input) {
+          query GetStorageDirDescendants($dirPath: String, $pagination: StoragePaginationInput) {
+            storageDirDescendants(dirPath: $dirPath, pagination: $pagination) {
               list {
                 ...${StorageNodeFieldsName}
               }
@@ -354,7 +355,7 @@ namespace GQLAPIContainer {
         `,
         variables: {
           dirPath,
-          input: StoragePaginationInput.squeeze(input),
+          pagination: StoragePaginationInput.squeeze(pagination),
         },
         isAuth: true,
       })
@@ -365,14 +366,14 @@ namespace GQLAPIContainer {
       }
     }
 
-    const getStorageDescendants: GQLAPIContainer['getStorageDescendants'] = async (dirPath, input) => {
+    const getStorageDescendants: GQLAPIContainer['getStorageDescendants'] = async (dirPath, pagination) => {
       const response = await clientLv1.query<
         { storageDescendants: RawStoragePaginationResult },
-        { dirPath?: string; input?: StoragePaginationInput }
+        { dirPath?: string; pagination?: StoragePaginationInput }
       >({
         query: gql`
-          query GetStorageDescendants($dirPath: String, $input: StoragePaginationInput) {
-            storageDescendants(dirPath: $dirPath, input: $input) {
+          query GetStorageDescendants($dirPath: String, $pagination: StoragePaginationInput) {
+            storageDescendants(dirPath: $dirPath, pagination: $pagination) {
               list {
                 ...${StorageNodeFieldsName}
               }
@@ -384,7 +385,7 @@ namespace GQLAPIContainer {
         `,
         variables: {
           dirPath,
-          input: StoragePaginationInput.squeeze(input),
+          pagination: StoragePaginationInput.squeeze(pagination),
         },
         isAuth: true,
       })
@@ -395,14 +396,14 @@ namespace GQLAPIContainer {
       }
     }
 
-    const getStorageDirChildren: GQLAPIContainer['getStorageDirChildren'] = async (dirPath, input) => {
+    const getStorageDirChildren: GQLAPIContainer['getStorageDirChildren'] = async (dirPath, pagination) => {
       const response = await clientLv1.query<
         { storageDirChildren: RawStoragePaginationResult },
-        { dirPath?: string; input?: StoragePaginationInput }
+        { dirPath?: string; pagination?: StoragePaginationInput }
       >({
         query: gql`
-          query GetStorageDirChildren($dirPath: String, $input: StoragePaginationInput) {
-            storageDirChildren(dirPath: $dirPath, input: $input) {
+          query GetStorageDirChildren($dirPath: String, $pagination: StoragePaginationInput) {
+            storageDirChildren(dirPath: $dirPath, pagination: $pagination) {
               list {
                 ...${StorageNodeFieldsName}
               }
@@ -414,7 +415,7 @@ namespace GQLAPIContainer {
         `,
         variables: {
           dirPath,
-          input: StoragePaginationInput.squeeze(input),
+          pagination: StoragePaginationInput.squeeze(pagination),
         },
         isAuth: true,
       })
@@ -425,11 +426,14 @@ namespace GQLAPIContainer {
       }
     }
 
-    const getStorageChildren: GQLAPIContainer['getStorageChildren'] = async (dirPath, input) => {
-      const response = await clientLv1.query<{ storageChildren: RawStoragePaginationResult }, { dirPath?: string; input?: StoragePaginationInput }>({
+    const getStorageChildren: GQLAPIContainer['getStorageChildren'] = async (dirPath, pagination) => {
+      const response = await clientLv1.query<
+        { storageChildren: RawStoragePaginationResult },
+        { dirPath?: string; pagination?: StoragePaginationInput }
+      >({
         query: gql`
-          query GetStorageChildren($dirPath: String, $input: StoragePaginationInput) {
-            storageChildren(dirPath: $dirPath, input: $input) {
+          query GetStorageChildren($dirPath: String, $pagination: StoragePaginationInput) {
+            storageChildren(dirPath: $dirPath, pagination: $pagination) {
               list {
                 ...${StorageNodeFieldsName}
               }
@@ -441,7 +445,7 @@ namespace GQLAPIContainer {
         `,
         variables: {
           dirPath,
-          input: StoragePaginationInput.squeeze(input),
+          pagination: StoragePaginationInput.squeeze(pagination),
         },
         isAuth: true,
       })
@@ -484,11 +488,11 @@ namespace GQLAPIContainer {
       return toStorageNodes(response.data!.storageAncestorDirs)
     }
 
-    const createStorageDir: GQLAPIContainer['createStorageDir'] = async (dirPath, input) => {
-      const response = await clientLv1.mutate<{ createStorageDir: RawStorageNode }, { dirPath: string; input?: CreateStorageNodeInput }>({
+    const createStorageDir: GQLAPIContainer['createStorageDir'] = async (dirPath, options) => {
+      const response = await clientLv1.mutate<{ createStorageDir: RawStorageNode }, { dirPath: string; options?: CreateStorageNodeOptions }>({
         mutation: gql`
-          mutation CreateStorageDir($dirPath: String!, $input: CreateStorageNodeInput) {
-            createStorageDir(dirPath: $dirPath, input: $input) {
+          mutation CreateStorageDir($dirPath: String!, $options: CreateStorageNodeOptions) {
+            createStorageDir(dirPath: $dirPath, options: $options) {
               ...${StorageNodeFieldsName}
             }
           }
@@ -496,7 +500,7 @@ namespace GQLAPIContainer {
         `,
         variables: {
           dirPath,
-          input: CreateStorageNodeInput.squeeze(input),
+          options: CreateStorageNodeOptions.squeeze(options),
         },
         isAuth: true,
       })
@@ -711,33 +715,39 @@ namespace GQLAPIContainer {
     //  Article
     //--------------------------------------------------
 
-    const createArticleTypeDir: GQLAPIContainer['createArticleTypeDir'] = async input => {
-      const response = await clientLv1.mutate<{ createArticleTypeDir: RawStorageNode }, { input: CreateArticleTypeDirInput }>({
+    const createArticleTypeDir: GQLAPIContainer['createArticleTypeDir'] = async (input, options) => {
+      const response = await clientLv1.mutate<
+        { createArticleTypeDir: RawStorageNode },
+        { input: CreateArticleTypeDirInput; options?: CreateStorageNodeOptions }
+      >({
         mutation: gql`
-          mutation CreateArticleTypeDir($input: CreateArticleTypeDirInput!) {
-            createArticleTypeDir(input: $input) {
+          mutation CreateArticleTypeDir($input: CreateArticleTypeDirInput!, $options: CreateStorageNodeOptions) {
+            createArticleTypeDir(input: $input, options: $options) {
               ...${StorageNodeFieldsName}
             }
           }
           ${StorageNodeFields}
         `,
-        variables: { input: CreateArticleTypeDirInput.squeeze(input) },
+        variables: {
+          input: CreateArticleTypeDirInput.squeeze(input),
+          options: CreateStorageNodeOptions.squeeze(options),
+        },
         isAuth: true,
       })
       return toStorageNode(response.data!.createArticleTypeDir)
     }
 
-    const createArticleGeneralDir: GQLAPIContainer['createArticleGeneralDir'] = async dirPath => {
-      const response = await clientLv1.mutate<{ createArticleGeneralDir: RawStorageNode }, { dirPath: string }>({
+    const createArticleGeneralDir: GQLAPIContainer['createArticleGeneralDir'] = async (dirPath, options) => {
+      const response = await clientLv1.mutate<{ createArticleGeneralDir: RawStorageNode }, { dirPath: string; options?: CreateStorageNodeOptions }>({
         mutation: gql`
-          mutation CreateArticleGeneralDir($dirPath: String!) {
-            createArticleGeneralDir(dirPath: $dirPath) {
+          mutation CreateArticleGeneralDir($dirPath: String!, $options: CreateStorageNodeOptions) {
+            createArticleGeneralDir(dirPath: $dirPath, options: $options) {
               ...${StorageNodeFieldsName}
             }
           }
           ${StorageNodeFields}
         `,
-        variables: { dirPath },
+        variables: { dirPath, options },
         isAuth: true,
       })
       return toStorageNode(response.data!.createArticleGeneralDir)
@@ -814,14 +824,14 @@ namespace GQLAPIContainer {
       return toStorageNode(response.data!.saveArticleSrcDraftFile)
     }
 
-    const getArticleChildren: GQLAPIContainer['getArticleChildren'] = async (dirPath, types, input) => {
+    const getArticleChildren: GQLAPIContainer['getArticleChildren'] = async (input, pagination) => {
       const response = await clientLv1.query<
         { articleChildren: RawStoragePaginationResult },
-        { dirPath: string; types: StorageArticleDirType[]; input: StoragePaginationInput }
+        { input: GetArticleChildrenInput; pagination?: StoragePaginationInput }
       >({
         query: gql`
-          query GetArticleChildren($dirPath: String!, $types: [StorageArticleDirType!]!, $input: StoragePaginationInput) {
-            articleChildren(dirPath: $dirPath, types: $types, input: $input) {
+          query GetArticleChildren($input: GetArticleChildrenInput!, $pagination: StoragePaginationInput) {
+            articleChildren(input: $input, pagination: $pagination) {
               list {
                 ...${StorageNodeFieldsName}
               }
@@ -832,9 +842,8 @@ namespace GQLAPIContainer {
           ${StorageNodeFields}
         `,
         variables: {
-          dirPath,
-          types,
-          input: StoragePaginationInput.squeeze(input),
+          input: GetArticleChildrenInput.squeeze(input),
+          pagination: StoragePaginationInput.squeeze(pagination),
         },
         isAuth: true,
       })
@@ -852,19 +861,19 @@ namespace GQLAPIContainer {
     const callStoragePaginationAPI: GQLAPIContainer['callStoragePaginationAPI'] = async (func, ...params) => {
       const result: APIStorageNode[] = []
 
-      // ノード検索APIの検索オプションを取得
-      // ※ノード検索APIの引数の最後は検索オプションという前提
-      let input: StoragePaginationInput
+      // ノード検索APIのページネーションオプションを取得
+      // ※ノード検索APIの引数の最後はページネーションオプションという前提
+      let pagination: StoragePaginationInput
       const lastParam = params[params.length - 1]
       if (typeof lastParam.maxChunk === 'number' || typeof lastParam.pageToken === 'string') {
-        input = lastParam
-        params[params.length - 1] = input
+        pagination = lastParam
+        params[params.length - 1] = pagination
       } else {
-        input = {
+        pagination = {
           maxChunk: undefined,
           pageToken: undefined,
         }
-        params.push(input)
+        params.push(pagination)
       }
 
       // ノード検索APIの実行
@@ -872,7 +881,7 @@ namespace GQLAPIContainer {
       let nodeData = await func(...params)
       result.push(...nodeData.list)
       while (nodeData.nextPageToken) {
-        input.pageToken = nodeData.nextPageToken
+        pagination.pageToken = nodeData.nextPageToken
         nodeData = await func(...params)
         result.push(...nodeData.list)
       }
