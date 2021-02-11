@@ -29,7 +29,6 @@ $ gcloud init
 * vue-front-lib/.env.staging
 * vue-front-lib/.env.test
 * vue-front-lib/.firebaserc
-* vue-front-lib/firebase.storage.cors.json
 * vue-front-lib/package.json
 
 ### Storage
@@ -44,32 +43,8 @@ Cloud Storage バケットに対して CORS を構成する必要があります
 $ yarn env:storage
 ```
 
-#### 開発環境用
-開発環境は各開発者によって設定内容が変わるので個別に設定する必要があります。
-
-1. `firebase.storage.cors.json`をコピーし、同じ場所に`firebase.storage.cors.dev.json`という名前で配置します。
-2. コピーしたファイルを開き、`origin`の項目を以下の例を参考に、自身の開発環境に合わせて変更します。
-```json
-[
-  {
-    "origin": [
-      "https://my-app-dev-1234.web.app",
-      "https://my-app-dev-1234.firebaseapp.com",
-      "http://localhost:5030",
-      "http://192.168.1.123:5030"
-    ],
-    ・・・
-  }
-]
-```
-3. 次のコマンドで上記内容を Cloud Storage バケットに設定します。
-
-```shell
-$ gsutil cors set firebase.storage.cors.dev.json gs://<your-cloud-storage-bucket>
-```
-
 ## 単体テスト
 
 ### FirestoreEx の単体テスト実行
-1. ターミナルで`yarn firestore`を実行。
+1. ターミナルで`yarn firestore:emulators`を実行。
 2. 別のターミナルを開き、`yarn test:firestore-ex`を実行。

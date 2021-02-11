@@ -13,9 +13,6 @@
       }
     ]
   },
-  "storage": {
-    "rules": "firebase.storage.rules"
-  },
   "emulators": {
     "firestore": {
       "port": 5020

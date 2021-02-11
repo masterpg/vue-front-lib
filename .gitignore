@@ -27,7 +27,6 @@ dist/
 node_modules/
 screenshots/
 firebase.config.js
-firebase.storage.cors.dev.json
 
 src/**/*.js.map
 

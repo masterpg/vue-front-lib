@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "env:storage": "gsutil cors set firebase.storage.cors.json gs://lived-web-app-b9f08.appspot.com",
     "build:dev": "vue-cli-service build --mode development",
     "build:stg": "vue-cli-service build --mode staging",
     "build": "vue-cli-service build --mode production",
@@ -14,7 +13,7 @@
     "test:firestore-ex": "export FIRESTORE_EMULATOR_HOST=localhost:5020 && vue-cli-service test:unit --runInBand /firestore-ex/",
     "lint": "./node_modules/web-base-lib/tools/lint.sh",
     "deploy": "firebase deploy --only hosting,storage",
-    "firebase": "firebase emulators:start"
+    "firebase:emulators": "firebase emulators:start"
   },
   "dependencies": {
     "@quasar/extras": "^1.9.14",

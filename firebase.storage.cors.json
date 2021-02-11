@@ -1,8 +1,0 @@
-[
-  {
-    "origin": ["https://lived-web-app-b9f08.web.app", "https://lived-web-app-b9f08.firebaseapp.com"],
-    "responseHeader": ["Content-Type"],
-    "method": ["GET", "HEAD", "DELETE"],
-    "maxAgeSeconds": 3600
-  }
-]
