@@ -24,7 +24,7 @@ import {
   injectService,
 } from '@/app/service'
 import { DeepPartial, PartialAre, arrayToDict, pickProps, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
-import { StorageRoute, useViewRoutes } from '@/app/router'
+import { StorageRoute, useRoutes } from '@/app/router'
 import { StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/storage/base'
 import { TreeView, TreeViewLazyLoadStatus, newTreeNode } from '@/app/components/tree-view'
 import { Notify } from 'quasar'
@@ -428,7 +428,7 @@ namespace StoragePageService {
 
     const config = useConfig()
     const service = injectService()
-    const viewRoutes = useViewRoutes()
+    const routes = useRoutes()
     const i18n = useI18n()
 
     const storageService: StorageService = (() => {
@@ -455,11 +455,11 @@ namespace StoragePageService {
     const route: StorageRoute = (() => {
       switch (storageType) {
         case 'app':
-          return viewRoutes.appAdmin.storage
+          return routes.appAdmin.storage
         case 'user':
-          return viewRoutes.siteAdmin.storage
+          return routes.siteAdmin.storage
         case 'article':
-          return viewRoutes.siteAdmin.article
+          return routes.siteAdmin.article
       }
     })()
 

@@ -1,7 +1,7 @@
 import 'animate.css/animate.css'
 import '@/app/styles/app.sass'
 
-import DemoPage from '@/demo/index.vue'
+import DemoMainPage from '@/demo/views/main'
 import Vue from 'vue'
 import VueCompositionApi from '@vue/composition-api'
 import firebase from 'firebase/app'
@@ -28,7 +28,7 @@ async function init() {
   new Vue({
     router,
     i18n,
-    render: h => h(DemoPage),
+    render: h => h(DemoMainPage),
   }).$mount('#app')
 }
 init()

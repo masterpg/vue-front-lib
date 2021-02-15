@@ -45,6 +45,7 @@ export default {
   },
   index: {
     mainMenu: {
+      articleBrowser: '記事',
       siteAdmin: 'サイト管理',
       articleAdmin: '記事',
       userStorageAdmin: 'ストレージ',

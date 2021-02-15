@@ -1,6 +1,6 @@
 import VueRouter, { RouteConfig } from 'vue-router'
 import HomePage from '@/demo/views/home'
-import { ViewRoute } from '@/app/router'
+import { Route } from '@/app/router'
 import Vue from 'vue'
 
 Vue.use(VueRouter)
@@ -11,14 +11,19 @@ Vue.use(VueRouter)
 //
 //========================================================================
 
-interface ViewRoutes {
-  home: ViewRoute
-  abc: ViewRoute
-  shop: ViewRoute
-  tree: ViewRoute
-  img: ViewRoute
-  markdown: ViewRoute
-  markdownIt: ViewRoute
+interface RouterContainer {
+  router: VueRouter
+  routes: Routes
+}
+
+interface Routes {
+  home: Route
+  abc: Route
+  shop: Route
+  tree: Route
+  img: Route
+  markdown: Route
+  markdownIt: Route
 }
 
 //========================================================================
@@ -31,98 +36,88 @@ interface ViewRoutes {
 //  Setup router
 //------------------------------------------------------------------------
 
-namespace Router {
-  let router: VueRouter
+namespace RouterContainer {
+  let instance: RouterContainer
 
-  let viewRoutes: ViewRoutes
-
-  export function getInstance(): VueRouter {
-    router = router ?? newInstance()
-    return router
+  export function useRouter(): VueRouter {
+    instance = instance ?? newInstance()
+    return instance.router
   }
 
-  export function getViewRoutes(): ViewRoutes {
-    !viewRoutes && newInstance()
-    return viewRoutes
+  export function useRoutes(): Routes {
+    instance = instance ?? newInstance()
+    return instance.routes
   }
 
-  function newInstance(): VueRouter {
-    const home = ViewRoute.newInstance({
-      path: '/demo',
+  function newInstance(): RouterContainer {
+    const home = Route.newInstance({
+      routePath: '/demo',
       component: HomePage,
     })
 
-    const abc = ViewRoute.newInstance({
-      path: '/demo/abc',
+    const abc = Route.newInstance({
+      routePath: '/demo/abc',
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import(/* webpackChunkName: "demo/views/abc" */ '@/demo/views/abc'),
     })
 
-    const shop = ViewRoute.newInstance({
-      path: '/demo/shop',
+    const shop = Route.newInstance({
+      routePath: '/demo/shop',
       component: () => import(/* webpackChunkName: "demo/views/shop" */ '@/demo/views/shop'),
     })
 
-    const tree = ViewRoute.newInstance({
-      path: '/demo/tree',
+    const tree = Route.newInstance({
+      routePath: '/demo/tree',
       component: () => import(/* webpackChunkName: "demo/views/tree-view" */ '@/demo/views/tree-view'),
     })
 
-    const img = ViewRoute.newInstance({
-      path: '/demo/img',
+    const img = Route.newInstance({
+      routePath: '/demo/img',
       component: () => import(/* webpackChunkName: "demo/views/img" */ '@/demo/views/img'),
     })
 
-    const markdown = ViewRoute.newInstance({
-      path: '/demo/markdown',
+    const markdown = Route.newInstance({
+      routePath: '/demo/markdown',
       component: () => import(/* webpackChunkName: "demo/views/markdown" */ '@/demo/views/markdown'),
     })
 
-    const markdownIt = ViewRoute.newInstance({
-      path: '/demo/markdownIt',
+    const markdownIt = Route.newInstance({
+      routePath: '/demo/markdownIt',
       component: () => import(/* webpackChunkName: "demo/views/markdown-it" */ '@/demo/views/markdown-it'),
     })
 
-    const fallback = ViewRoute.newInstance({
-      path: '/demo/*',
+    const fallback = Route.newInstance({
+      routePath: '/demo/*',
       redirect: '/demo',
     })
 
-    const viewRouteList = [home, abc, shop, tree, img, markdown, markdownIt, fallback]
+    const routeList = [home, abc, shop, tree, img, markdown, markdownIt, fallback]
 
-    router = new (class extends VueRouter {
+    const router = new (class extends VueRouter {
       constructor() {
         super({
           mode: 'history',
           base: process.env.BASE_URL,
-          routes: viewRouteList.map(item => item.toRouteConfig()),
+          routes: routeList.map(item => item.toRouteConfig()),
         })
       }
     })()
 
     router.beforeEach((to, from, next) => {
-      viewRouteList.forEach(vieRoute => vieRoute.update(router))
+      routeList.forEach(vieRoute => vieRoute.update())
       next()
     })
 
     router.afterEach(() => {
-      viewRouteList.forEach(vieRoute => vieRoute.update(router))
+      routeList.forEach(vieRoute => vieRoute.update())
     })
 
-    viewRoutes = { home, abc, shop, tree, img, markdown, markdownIt }
+    const routes = { home, abc, shop, tree, img, markdown, markdownIt }
 
-    return router
+    return { router, routes }
   }
-}
-
-function useRouter(): VueRouter {
-  return Router.getInstance()
-}
-
-function useViewRoutes(): ViewRoutes {
-  return Router.getViewRoutes()
 }
 
 //========================================================================
@@ -131,4 +126,5 @@ function useViewRoutes(): ViewRoutes {
 //
 //========================================================================
 
-export { useRouter, useViewRoutes }
+const { useRouter, useRoutes } = RouterContainer
+export { useRouter, useRoutes }

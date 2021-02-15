@@ -1,9 +1,10 @@
 import * as _path from 'path'
 import { Component, Dictionary, RedirectOption } from 'vue-router/types/router'
-import { ComputedRef, computed, ref } from '@vue/composition-api'
+import { ComputedRef, Ref, computed, ref } from '@vue/composition-api'
 import VueRouter, { RouteConfig } from 'vue-router'
 import HomePage from '@/demo/views/home'
 import Vue from 'vue'
+import { extendedMethod } from '@/app/base'
 import { removeEndSlash } from 'web-base-lib'
 
 Vue.use(VueRouter)
@@ -14,19 +15,54 @@ Vue.use(VueRouter)
 //
 //========================================================================
 
-interface ViewRoutes {
-  home: ViewRoute
-  siteAdmin: SiteAdmin
-  appAdmin: AppAdmin
+const UserNameProp = 'userName'
+
+interface RouterContainer {
+  router: VueRouter
+  routes: Routes
+  params: RouteParams
 }
 
-interface SiteAdmin {
-  article: StorageRoute
-  storage: StorageRoute
+interface Route<T extends Dictionary<string> = Dictionary<string>> {
+  readonly path: ComputedRef<string>
+  readonly params: ComputedRef<Partial<T>>
+  readonly isCurrent: ComputedRef<boolean>
 }
 
-interface AppAdmin {
-  storage: StorageRoute
+interface RouteInput {
+  routePath: string
+  component?: Component
+  redirect?: RedirectOption
+}
+
+interface RawRoute {
+  toRouteConfig(): { path: string; component: any }
+  update(): void
+}
+
+interface UserRoute<T extends UserRouteParams = UserRouteParams> extends Route<T> {}
+
+type UserRouteParams = { [UserNameProp]: string } & Dictionary<string>
+
+interface StorageRoute<T extends UserRouteParams = UserRouteParams> extends UserRoute<T> {
+  move(nodePath: string): boolean
+  getNodePath(): string
+}
+
+interface Routes {
+  home: Route
+  articles: Route
+  siteAdmin: {
+    article: StorageRoute
+    storage: StorageRoute
+  }
+  appAdmin: {
+    storage: StorageRoute
+  }
+}
+
+interface RouteParams {
+  userName: ComputedRef<string>
 }
 
 //========================================================================
@@ -51,13 +87,18 @@ interface AppAdmin {
  * @param routePath
  * @param routeParams
  */
-function replaceRouteParams(routePath: string, routeParams: Record<string, string>): string {
+function replaceRouteParams(routePath: string, routeParams: Partial<Dictionary<string>>): string {
   let result = routePath
 
   // 変数プレースホルダーの置き換え
   for (const paramName of Object.keys(routeParams)) {
     const pattern = new RegExp(`^(:${paramName})|/(:${paramName})`, 'g')
-    const paramValue = routeParams[paramName]
+    let paramValue: string
+    if (routeParams[paramName]) {
+      paramValue = routeParams[paramName]!
+    } else {
+      paramValue = routeParams[paramName] === 'null' ? 'null' : 'undefined'
+    }
     result = result.replaceAll(pattern, (str, p1, p2, offset, s) => {
       return str.replace(p1 || p2, paramValue)
     })
@@ -70,49 +111,102 @@ function replaceRouteParams(routePath: string, routeParams: Record<string, strin
   return result
 }
 
+function replaceUserNameRouteParams(routePath: string, routeParams: Partial<Dictionary<string>>): string {
+  let result = routePath
+
+  // パラメータからユーザー名を取得
+  // ※取得できなかった場合、空文字を返す
+  const userName = routeParams[UserNameProp]
+  if (!userName) return ''
+
+  // 変数プレースホルダーの置き換え
+  const pattern = new RegExp(`^/(:${UserNameProp})$|^/(:${UserNameProp})/`)
+  result = result.replace(pattern, (str, p1, p2, offset, s) => {
+    return str.replace(p1 || p2, userName)
+  })
+
+  // 置き換えられない変数プレースホルダーがあった場合、空文字を返す
+  if (pattern.test(result)) return ''
+
+  return result
+}
+
 //------------------------------------------------------------------------
 //  Routes
 //------------------------------------------------------------------------
 
 //--------------------------------------------------
-//  ViewRoute
+//  Route
 //--------------------------------------------------
 
-interface ViewRoute {
-  readonly path: ComputedRef<string>
-}
+namespace Route {
+  export function newInstance<T extends Dictionary<string>>(input: RouteInput): Route<T> & RawRoute {
+    return newRawInstance(input)
+  }
 
-interface RawRoute extends ViewRoute {
-  toRouteConfig(): { path: string; component: any }
-  update(router: VueRouter): void
-}
-
-namespace ViewRoute {
-  export function newInstance(params: { path: string; component?: Component; redirect?: RedirectOption }): ViewRoute & RawRoute {
-    const routePath = ref(params.path)
-
-    const routeParams = ref<Record<string, string>>({})
-
-    const component = ref(params.component)
-
-    const redirect = ref(params.redirect)
+  export function newRawInstance<T extends Dictionary<string>>(input: RouteInput) {
+    const routePath = ref(input.routePath)
 
     const path = computed(() => {
-      return replaceRouteParams(routePath.value, routeParams.value)
+      return path_get()
     })
 
-    const toRouteConfig: RawRoute['toRouteConfig'] = () => {
+    const path_get = extendedMethod(() => {
+      return replaceRouteParams(routePath.value, params.value)
+    })
+
+    const params = ref({}) as Ref<Partial<T>>
+
+    const isCurrent = ref(false)
+
+    const component = ref(input.component)
+
+    const redirect = ref(input.redirect)
+
+    const toRouteConfig = extendedMethod<RawRoute['toRouteConfig']>(() => {
       return { path: routePath.value, component: component.value, redirect: redirect.value }
+    })
+
+    const update: RawRoute['update'] = () => {
+      const router = RouterContainer.useRouter()
+      isCurrent.value = isCurrentRoute()
+      params.value = router.currentRoute.params as T
     }
 
-    const update: RawRoute['update'] = router => {
-      routeParams.value = router.currentRoute.params
+    function isCurrentRoute(): boolean {
+      const router = RouterContainer.useRouter()
+      const currentPath = replaceRouteParams(routePath.value, router.currentRoute.params)
+      if (!currentPath) return false
+      return router.currentRoute.path.startsWith(currentPath)
     }
 
     return {
+      routePath,
       path,
+      path_get,
+      params,
+      isCurrent,
+      component,
       toRouteConfig,
       update,
+    }
+  }
+}
+
+//--------------------------------------------------
+//  UserRoute
+//--------------------------------------------------
+
+namespace UserRoute {
+  export function newInstance<T extends UserRouteParams = UserRouteParams>(input: RouteInput): UserRoute<T> & RawRoute {
+    const base = Route.newRawInstance<T>(input)
+
+    base.path_get.value = () => {
+      return replaceUserNameRouteParams(base.routePath.value, base.params.value)
+    }
+
+    return {
+      ...base,
     }
   }
 }
@@ -121,27 +215,17 @@ namespace ViewRoute {
 //  StorageRoute
 //--------------------------------------------------
 
-interface StorageRoute extends ViewRoute {
-  move(nodePath: string): boolean
-  getNodePath(): string
-}
-
 namespace StorageRoute {
-  export function newInstance(params: { path: string; component: Component }): StorageRoute & RawRoute {
-    const routePath = ref(params.path)
-
-    const routeParams = ref<Dictionary<string>>({})
-
-    const component = ref(params.component)
-
-    const path = computed(() => {
-      return replaceRouteParams(routePath.value, routeParams.value)
-    })
+  export function newInstance<T extends UserRouteParams = UserRouteParams>(input: {
+    routePath: string
+    component: Component
+  }): StorageRoute<T> & RawRoute {
+    const base = Route.newRawInstance<T>(input)
 
     const move: StorageRoute['move'] = nodePath => {
-      const router = Router.getInstance()
+      const router = RouterContainer.useRouter()
       const currentRoutePath = removeEndSlash(router.currentRoute.path)
-      const nextPath = removeEndSlash(_path.join(path.value, nodePath))
+      const nextPath = removeEndSlash(_path.join(base.path.value, nodePath))
       if (currentRoutePath === nextPath) {
         return false
       }
@@ -151,31 +235,24 @@ namespace StorageRoute {
     }
 
     const getNodePath: StorageRoute['getNodePath'] = () => {
-      const router = Router.getInstance()
-      const reg = new RegExp(`^${path.value}/`, 'g')
-      if (!reg.test(router.currentRoute.path)) return ''
+      const router = RouterContainer.useRouter()
+      if (!base.isCurrent) return ''
 
       return router.currentRoute.params.nodePath ?? ''
     }
 
-    const toConfig: RawRoute['toRouteConfig'] = () => {
+    base.toRouteConfig.value = () => {
       return {
         // https://github.com/pillarjs/path-to-regexp/tree/v1.7.0#zero-or-more
-        path: `${routePath.value}/:nodePath*`,
-        component: component.value,
+        path: `${base.routePath.value}/:nodePath*`,
+        component: base.component.value,
       }
     }
 
-    const update: RawRoute['update'] = router => {
-      routeParams.value = router.currentRoute.params
-    }
-
     return {
-      path,
+      ...base,
       move,
       getNodePath,
-      toRouteConfig: toConfig,
-      update,
     }
   }
 }
@@ -184,84 +261,90 @@ namespace StorageRoute {
 //  Setup router
 //------------------------------------------------------------------------
 
-namespace Router {
-  let router: VueRouter
+namespace RouterContainer {
+  let instance: RouterContainer
 
-  let viewRoutes: ViewRoutes
-
-  export function getInstance(): VueRouter {
-    router = router ?? newInstance()
-    return router
+  export function useRouter(): VueRouter {
+    instance = instance ?? newInstance()
+    return instance.router
   }
 
-  export function getViewRoutes(): ViewRoutes {
-    !viewRoutes && newInstance()
-    return viewRoutes
+  export function useRoutes(): Routes {
+    instance = instance ?? newInstance()
+    return instance.routes
   }
 
-  function newInstance(): VueRouter {
-    const home = ViewRoute.newInstance({
-      path: '/',
+  export function useRouteParams(): RouteParams {
+    instance = instance ?? newInstance()
+    return instance.params
+  }
+
+  function newInstance(): RouterContainer {
+    const params = {
+      userName: ref(''),
+    }
+
+    const home = Route.newInstance({
+      routePath: '/',
+      component: HomePage,
+    })
+
+    const articles = UserRoute.newInstance({
+      routePath: `/:${UserNameProp}/articles/:articleId`,
       component: HomePage,
     })
 
     const siteAdmin = {
       article: StorageRoute.newInstance({
-        path: '/:userName/siteAdmin/article',
+        routePath: `/:${UserNameProp}/siteAdmin/article`,
         component: () => import(/* webpackChunkName: "views/site-admin/article" */ '@/app/views/site-admin/article'),
       }),
 
       storage: StorageRoute.newInstance({
-        path: '/:userName/siteAdmin/storage',
+        routePath: `/:${UserNameProp}/siteAdmin/storage`,
         component: () => import(/* webpackChunkName: "views/site-admin/storage" */ '@/app/views/site-admin/storage'),
       }),
     }
 
     const appAdmin = {
       storage: StorageRoute.newInstance({
-        path: '/:userName/appAdmin/storage',
+        routePath: `/:${UserNameProp}/appAdmin/storage`,
         component: () => import(/* webpackChunkName: "views/app-admin/storage" */ '@/app/views/app-admin/storage'),
       }),
     }
 
-    const fallback = ViewRoute.newInstance({
-      path: '*',
+    const fallback = Route.newInstance({
+      routePath: '*',
       redirect: '/',
     })
 
-    const viewRouteList = [home, siteAdmin.article, siteAdmin.storage, appAdmin.storage, fallback]
+    const routeList = [home, articles, siteAdmin.article, siteAdmin.storage, appAdmin.storage, fallback]
 
-    router = new (class extends VueRouter {
+    const router = new (class extends VueRouter {
       constructor() {
         super({
           mode: 'history',
           base: process.env.BASE_URL,
-          routes: viewRouteList.map(item => item.toRouteConfig()),
+          routes: routeList.map(item => item.toRouteConfig()),
         })
       }
     })()
 
     router.beforeEach((to, from, next) => {
-      viewRouteList.forEach(vieRoute => vieRoute.update(router))
+      routeList.forEach(vieRoute => vieRoute.update())
+      params.userName.value = to.params[UserNameProp] || ''
       next()
     })
 
     router.afterEach(() => {
-      viewRouteList.forEach(vieRoute => vieRoute.update(router))
+      routeList.forEach(vieRoute => vieRoute.update())
+      params.userName.value = router.currentRoute.params[UserNameProp] || ''
     })
 
-    viewRoutes = { home, siteAdmin, appAdmin }
+    const routes = { home, articles, siteAdmin, appAdmin }
 
-    return router
+    return { router, routes, params }
   }
-}
-
-function useRouter(): VueRouter {
-  return Router.getInstance()
-}
-
-function useViewRoutes(): ViewRoutes {
-  return Router.getViewRoutes()
 }
 
 //========================================================================
@@ -270,4 +353,5 @@ function useViewRoutes(): ViewRoutes {
 //
 //========================================================================
 
-export { ViewRoute, RawRoute, StorageRoute, replaceRouteParams, useRouter, useViewRoutes }
+const { useRouter, useRoutes, useRouteParams } = RouterContainer
+export { Route, RawRoute, StorageRoute, replaceRouteParams, useRouter, useRoutes, useRouteParams }

@@ -1,7 +1,7 @@
 <style lang="sass">
 @import 'src/app/styles/app.variables'
 
-.DemoPage
+.DemoMainPage
 
 .header
   background-color: $indigo-5
@@ -17,7 +17,7 @@
 </style>
 
 <template>
-  <q-layout id="app" class="DemoPage" view="lHh Lpr lFf">
+  <q-layout id="app" class="DemoMainPage" view="lHh Lpr lFf">
     <q-header elevated class="glossy header">
       <q-toolbar>
         <q-btn flat dense round aria-label="Menu" icon="menu" @click="leftDrawerOpen = !leftDrawerOpen" />
@@ -82,7 +82,7 @@ import { AuthStatus } from '@/app/service'
 import { Dialogs } from '@/app/dialogs'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
 import { useI18n } from '@/demo/i18n'
-import { useViewRoutes } from '@/demo/router'
+import { useRoutes } from '@/demo/router'
 
 export default defineComponent({
   components: {
@@ -102,7 +102,7 @@ export default defineComponent({
 
     const service = injectService()
     const serviceWorker = injectServiceWorker()
-    const viewRoutes = useViewRoutes()
+    const routes = useRoutes()
     const { t } = useI18n()
 
     const dialogsRef = ref<Dialogs>()
@@ -117,31 +117,31 @@ export default defineComponent({
       return [
         {
           title: 'Home',
-          path: viewRoutes.home.path.value,
+          path: routes.home.path.value,
         },
         {
           title: 'ABC',
-          path: viewRoutes.abc.path.value,
+          path: routes.abc.path.value,
         },
         {
           title: 'Shop',
-          path: viewRoutes.shop.path.value,
+          path: routes.shop.path.value,
         },
         {
           title: 'TreeView',
-          path: viewRoutes.tree.path.value,
+          path: routes.tree.path.value,
         },
         {
           title: 'Img',
-          path: viewRoutes.img.path.value,
+          path: routes.img.path.value,
         },
         {
           title: 'Markdown',
-          path: viewRoutes.markdown.path.value,
+          path: routes.markdown.path.value,
         },
         {
           title: 'markdown-it',
-          path: viewRoutes.markdownIt.path.value,
+          path: routes.markdownIt.path.value,
         },
       ]
     })

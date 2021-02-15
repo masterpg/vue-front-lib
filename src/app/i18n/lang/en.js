@@ -45,8 +45,9 @@ export default {
   },
   index: {
     mainMenu: {
+      articleBrowser: 'Articles',
       siteAdmin: 'Site Admin',
-      articleAdmin: 'Article',
+      articleAdmin: 'Articles',
       userStorageAdmin: 'Storage',
       appAdmin: 'Application Admin',
       appStorageAdmin: 'Storage',

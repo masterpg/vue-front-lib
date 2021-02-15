@@ -278,10 +278,6 @@ namespace StorageFileDetailView {
     //
     //----------------------------------------------------------------------
 
-    /**
-     * ビューに表示するファイルのパスを設定します。
-     * @param filePath
-     */
     const setNodePath: StorageFileDetailView['setNodePath'] = filePath => {
       const clear = () => {
         fileNode.value = null

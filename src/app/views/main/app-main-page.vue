@@ -1,7 +1,7 @@
 <style lang="sass">
 @import 'src/app/styles/app.variables'
 
-.AppPage
+.AppMainPage
 
 .header
   background-color: $indigo-5
@@ -17,7 +17,7 @@
 </style>
 
 <template>
-  <q-layout id="app" class="AppPage" view="lHh Lpr lff">
+  <q-layout id="app" class="AppMainPage" view="lHh Lpr lff">
     <q-header reveal elevated class="glossy header">
       <q-toolbar>
         <q-btn flat dense round aria-label="Menu" icon="menu" @click="leftDrawerOpen = !leftDrawerOpen" />
@@ -96,12 +96,12 @@
 import { AuthStatus, injectService, provideService } from '@/app/service'
 import { computed, defineComponent, ref, watch } from '@vue/composition-api'
 import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
+import { useRouteParams, useRoutes } from '@/app/router'
 import { Dialogs } from '@/app/dialogs'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
 import { Notify } from 'quasar'
 import { Screen } from 'quasar'
 import { useI18n } from '@/app/i18n'
-import { useViewRoutes } from '@/app/router'
 
 export default defineComponent({
   components: {
@@ -121,8 +121,9 @@ export default defineComponent({
 
     const service = injectService()
     const serviceWorker = injectServiceWorker()
-    const viewRoutes = useViewRoutes()
+    const routes = useRoutes()
     const i18n = useI18n()
+    const { userName } = useRouteParams()
 
     const dialogsRef = ref<Dialogs>()
     Dialogs.provide(dialogsRef)
@@ -138,11 +139,11 @@ export default defineComponent({
       return [
         {
           title: String(i18n.t('index.mainMenu.articleAdmin')),
-          path: viewRoutes.siteAdmin.article.path.value,
+          path: routes.siteAdmin.article.path.value,
         },
         {
           title: String(i18n.t('index.mainMenu.userStorageAdmin')),
-          path: viewRoutes.siteAdmin.storage.path.value,
+          path: routes.siteAdmin.storage.path.value,
         },
       ]
     })
@@ -151,7 +152,7 @@ export default defineComponent({
       return [
         {
           title: String(i18n.t('index.mainMenu.appStorageAdmin')),
-          path: viewRoutes.appAdmin.storage.path.value,
+          path: routes.appAdmin.storage.path.value,
         },
       ]
     })

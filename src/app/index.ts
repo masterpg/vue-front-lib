@@ -1,7 +1,7 @@
 import 'animate.css/animate.css'
 import '@/app/styles/app.sass'
 
-import AppPage from '@/app/index.vue'
+import AppMainPage from '@/app/views/main'
 import Vue from 'vue'
 import VueCompositionApi from '@vue/composition-api'
 import firebase from 'firebase/app'
@@ -33,7 +33,7 @@ async function init() {
   new Vue({
     router,
     i18n,
-    render: h => h(AppPage),
+    render: h => h(AppMainPage),
   }).$mount('#app')
 }
 init()
