@@ -26,6 +26,14 @@ interface StorageNode extends TimestampEntity {
 
 interface APIStorageNode extends Omit<StorageNode, 'url'> {}
 
+interface ArticleTableOfContentsNode extends TimestampEntity {
+  type: StorageArticleDirType
+  name: string
+  dir: string
+  path: string
+  label: string
+}
+
 enum StorageNodeType {
   File = 'File',
   Dir = 'Dir',
@@ -756,6 +764,7 @@ namespace StorageArticleSettings {
 
 export {
   APIStorageNode,
+  ArticleTableOfContentsNode,
   CreateArticleTypeDirInput,
   CreateStorageNodeOptions,
   GetArticleChildrenInput,

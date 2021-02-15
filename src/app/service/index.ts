@@ -2,6 +2,7 @@ import { APIContainer, provideAPI } from '@/app/service/api'
 import { AppStorageService, ArticleStorageService, StorageService, UserStorageService } from '@/app/service/modules/storage'
 import { InternalService, provideInternalService } from '@/app/service/modules/internal'
 import { StoreContainer, provideStore } from '@/app/service/store'
+import { ArticleService } from '@/app/service/modules/article'
 import { AuthService } from '@/app/service/modules/auth'
 
 //========================================================================
@@ -15,6 +16,7 @@ interface ServiceContainer {
   readonly appStorage: StorageService
   readonly userStorage: StorageService
   readonly articleStorage: ArticleStorageService
+  readonly article: ArticleService
 }
 
 //========================================================================
@@ -31,8 +33,10 @@ namespace ServiceContainer {
   export function newRawInstance(options?: { api?: APIContainer; store?: StoreContainer; internal?: InternalService }) {
     const api = options?.api ?? APIContainer.newRawInstance()
     provideAPI(api)
+
     const store = options?.store ?? StoreContainer.newRawInstance()
     provideStore(store)
+
     const internal = options?.internal ?? InternalService.newRawInstance()
     provideInternalService(internal)
 
@@ -41,6 +45,7 @@ namespace ServiceContainer {
       appStorage: AppStorageService.newRawInstance(),
       userStorage: UserStorageService.newRawInstance(),
       articleStorage: ArticleStorageService.newRawInstance(),
+      article: ArticleService.newRawInstance(),
     }
   }
 }

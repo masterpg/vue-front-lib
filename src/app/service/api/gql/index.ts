@@ -1,12 +1,12 @@
 import {
   APIStorageNode,
+  ArticleTableOfContentsNode,
   AuthDataResult,
   CreateArticleTypeDirInput,
   CreateStorageNodeOptions,
   GetArticleChildrenInput,
   SetOwnUserInfoResult,
   SignedUploadUrlInput,
-  StorageArticleDirType,
   StorageNodeGetKeyInput,
   StorageNodeGetKeysInput,
   StorageNodeKeyInput,
@@ -106,6 +106,8 @@ interface GQLAPIContainer {
   saveArticleSrcDraftFile(articleDirPath: string, srcContent: string): Promise<APIStorageNode>
 
   getArticleChildren(input: GetArticleChildrenInput, pagination?: StoragePaginationInput): Promise<StoragePaginationResult>
+
+  getArticleTableOfContents(userName: string): Promise<ArticleTableOfContentsNode[]>
 
   //--------------------------------------------------
   //  Helpers
@@ -284,6 +286,22 @@ namespace GQLAPIContainer {
       }
     `
 
+    const ArticleTableOfContentsNodeFieldsName = 'ArticleTableOfContentsNodeFields'
+
+    const ArticleTableOfContentsNodeFields = `
+      fragment ${ArticleTableOfContentsNodeFieldsName} on ArticleTableOfContentsNode {
+        id
+        type
+        name
+        dir
+        path
+        label
+        version
+        createdAt
+        updatedAt
+      }
+    `
+
     function toStorageNode<T extends RawStorageNode | undefined | null>(rawEntity: T): ToEntity<T> {
       if (!rawEntity) return undefined as ToEntity<T>
 
@@ -298,6 +316,16 @@ namespace GQLAPIContainer {
 
     function toStorageNodes<T extends RawStorageNode>(rawEntities: T[]): ToEntity<T>[] {
       return rawEntities.map(rawEntity => toStorageNode(rawEntity))
+    }
+
+    function toArticleTableOfContentsNode<T extends RawEntity<ArticleTableOfContentsNode> | undefined | null>(rawEntity: T): ToEntity<T> {
+      if (!rawEntity) return undefined as ToEntity<T>
+
+      return toEntity(rawEntity)
+    }
+
+    function toArticleTableOfContentsNodes<T extends RawEntity<ArticleTableOfContentsNode>>(rawEntities: T[]): ToEntity<T>[] {
+      return rawEntities.map(rawEntity => toArticleTableOfContentsNode(rawEntity))
     }
 
     const getStorageNode: GQLAPIContainer['getStorageNode'] = async input => {
@@ -854,6 +882,23 @@ namespace GQLAPIContainer {
       }
     }
 
+    const getArticleTableOfContents: GQLAPIContainer['getArticleTableOfContents'] = async userName => {
+      const response = await clientLv1.query<{ articleTableOfContents: RawEntity<ArticleTableOfContentsNode>[] }, { userName: string }>({
+        query: gql`
+          query GetArticleTableOfContents($userName: String!) {
+            articleTableOfContents(userName: $userName) {
+              ...${ArticleTableOfContentsNodeFieldsName}
+            }
+          }
+          ${ArticleTableOfContentsNodeFields}
+        `,
+        variables: {
+          userName,
+        },
+      })
+      return toArticleTableOfContentsNodes(response.data.articleTableOfContents)
+    }
+
     //--------------------------------------------------
     //  Helpers
     //--------------------------------------------------
@@ -928,6 +973,7 @@ namespace GQLAPIContainer {
       saveArticleSrcMasterFile,
       saveArticleSrcDraftFile,
       getArticleChildren,
+      getArticleTableOfContents,
       callStoragePaginationAPI,
     }
   }

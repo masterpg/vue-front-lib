@@ -41,12 +41,15 @@ quasar.setup()
 // https://github.com/facebook/jest/issues/9983#issuecomment-696427273
 window.TextEncoder = TextEncoder
 
-beforeEach(async () => {
+beforeAll(async () => {
   const config = useConfig()
   if (!initializedFirebase) {
     firebase.initializeApp(config.firebase)
     initializedFirebase = true
   }
+})
+
+beforeEach(async () => {
   const { i18n } = useI18n()
   await i18n.load()
 })

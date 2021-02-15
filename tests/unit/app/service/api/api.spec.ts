@@ -47,131 +47,14 @@ describe('Env API', () => {
   })
 })
 
-describe('User API', () => {
-  describe('getAuthData', () => {
-    it('疎通確認', async () => {
-      const { api } = provideDependency()
-
-      // テストユーザーを登録
-      await api.setTestUsers(GeneralUser())
-
-      api.setTestAuthToken(GeneralToken())
-
-      // 認証データの取得
-      const actual = await api.getAuthData()
-
-      expect(actual.status).toBe(AuthStatus.Available)
-      expect(actual.token).toBeDefined()
-      expect(actual.user).toMatchObject({
-        id: GeneralUser().uid,
-        email: GeneralUser().email,
-        emailVerified: GeneralUser().emailVerified,
-        userName: GeneralUser().userName,
-        fullName: GeneralUser().fullName,
-        isAppAdmin: GeneralUser().isAppAdmin,
-        photoURL: GeneralUser().photoURL,
-      } as OmitTimestamp<User>)
-      expect(actual.user?.version).toBeGreaterThanOrEqual(1)
-      expect(actual.user?.createdAt.isValid()).toBeTruthy()
-      expect(actual.user?.updatedAt.isValid()).toBeTruthy()
-    })
-
-    it('サインインしていない場合', async () => {
-      const { api } = provideDependency()
-      api.setTestAuthToken(null)
-
-      let actual!: Error
-      try {
-        await api.getAuthData()
-      } catch (err) {
-        actual = err
-      }
-
-      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
-    })
-  })
-
-  describe('setOwnUserInfo', () => {
-    it('疎通確認', async () => {
-      const { api } = provideDependency()
-
-      // テストユーザーを登録
-      const [user] = await api.setTestUsers(GeneralUser())
-
-      api.setTestAuthToken(GeneralToken())
-
-      // ユーザー情報設定
-      const userInput: UserInput = {
-        userName: 'john',
-        fullName: 'John Doe',
-        photoURL: 'https://example.com/john/user.png',
-      }
-      const actual = (await api.setOwnUserInfo(userInput))!
-
-      expect(actual.status).toBe(SetOwnUserInfoResultStatus.Success)
-      expect(actual.user).toMatchObject({
-        id: GeneralUser().uid,
-        email: GeneralUser().email,
-        emailVerified: GeneralUser().emailVerified,
-        userName: userInput.userName,
-        fullName: userInput.fullName,
-        isAppAdmin: GeneralUser().isAppAdmin,
-        photoURL: userInput.photoURL,
-      } as OmitTimestamp<User>)
-      expect(actual.user?.version).toBeGreaterThanOrEqual(1)
-      expect(actual.user?.createdAt).toEqual(user.createdAt)
-      expect(actual.user?.updatedAt.isAfter(user.updatedAt)).toBeTruthy()
-    })
-
-    it('サインインしていない場合', async () => {
-      const { api } = provideDependency()
-      api.setTestAuthToken(null)
-
-      let actual!: Error
-      try {
-        await api.setOwnUserInfo({
-          userName: GeneralUser().userName,
-          fullName: GeneralUser().fullName,
-        })
-      } catch (err) {
-        actual = err
-      }
-
-      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
-    })
-  })
-
-  describe('deleteOwnUser', () => {
-    it('疎通確認', async () => {
-      // テストユーザーを登録
-      const { api } = provideDependency()
-      await api.setTestUsers(GeneralUser())
-
-      api.setTestAuthToken(GeneralToken())
-
-      // ユーザー削除
-      const actual = await api.deleteOwnUser()
-
-      expect(actual).toBeTruthy()
-    })
-
-    it('サインインしていない場合', async () => {
-      const { api } = provideDependency()
-      api.setTestAuthToken(null)
-
-      let actual!: Error
-      try {
-        await api.deleteOwnUser()
-      } catch (err) {
-        actual = err
-      }
-
-      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
-    })
-  })
-})
-
 describe('Storage API', () => {
+  beforeAll(async () => {
+    const { api } = provideDependency()
+
+    // テストユーザーを登録
+    await api.setTestUsers(GeneralUser())
+  })
+
   beforeEach(async () => {
     const { api } = provideDependency()
     await api.removeTestUserDir(GeneralToken())
@@ -1059,6 +942,180 @@ describe('Storage API', () => {
       expect(actual[0].path).toBe(`${art3.path}`)
       expect(actual[1].path).toBe(`${art2.path}`)
       expect(actual[2].path).toBe(`${art1.path}`)
+    })
+  })
+
+  describe('getArticleTableOfContents', () => {
+    let articleRootPath: string
+    let bundle: APIStorageNode
+    let cat1: APIStorageNode
+    let art1: APIStorageNode
+
+    async function setupArticleNodes(): Promise<void> {
+      const { api } = provideDependency()
+      api.setTestAuthToken(GeneralToken())
+
+      articleRootPath = StorageUtil.toArticleRootPath(GeneralToken().uid)
+      await api.createStorageHierarchicalDirs([articleRootPath])
+
+      bundle = await api.createArticleTypeDir({
+        dir: `${articleRootPath}`,
+        name: 'バンドル',
+        type: StorageArticleDirType.TreeBundle,
+      })
+
+      cat1 = await api.createArticleTypeDir(
+        {
+          dir: `${bundle.path}`,
+          name: 'カテゴリ1',
+          type: StorageArticleDirType.Category,
+        },
+        { share: { isPublic: true } }
+      )
+
+      art1 = await api.createArticleTypeDir({
+        dir: `${cat1.path}`,
+        name: '記事1',
+        type: StorageArticleDirType.Article,
+      })
+    }
+
+    it('疎通確認', async () => {
+      await setupArticleNodes()
+
+      const { api } = provideDependency()
+      api.setTestAuthToken(GeneralToken())
+
+      const actual = await api.getArticleTableOfContents(GeneralUser().userName)
+
+      expect(actual.length).toBe(3)
+      expect(actual[0].id).toBe(`${bundle.id}`)
+      expect(actual[1].id).toBe(`${cat1.id}`)
+      expect(actual[2].id).toBe(`${art1.id}`)
+    })
+  })
+})
+
+describe('User API', () => {
+  describe('getAuthData', () => {
+    it('疎通確認', async () => {
+      const { api } = provideDependency()
+
+      // テストユーザーを登録
+      await api.setTestUsers(GeneralUser())
+
+      api.setTestAuthToken(GeneralToken())
+
+      // 認証データの取得
+      const actual = await api.getAuthData()
+
+      expect(actual.status).toBe(AuthStatus.Available)
+      expect(actual.token).toBeDefined()
+      expect(actual.user).toMatchObject({
+        id: GeneralUser().uid,
+        email: GeneralUser().email,
+        emailVerified: GeneralUser().emailVerified,
+        userName: GeneralUser().userName,
+        fullName: GeneralUser().fullName,
+        isAppAdmin: GeneralUser().isAppAdmin,
+        photoURL: GeneralUser().photoURL,
+      } as OmitTimestamp<User>)
+      expect(actual.user?.version).toBeGreaterThanOrEqual(1)
+      expect(actual.user?.createdAt.isValid()).toBeTruthy()
+      expect(actual.user?.updatedAt.isValid()).toBeTruthy()
+    })
+
+    it('サインインしていない場合', async () => {
+      const { api } = provideDependency()
+      api.setTestAuthToken(null)
+
+      let actual!: Error
+      try {
+        await api.getAuthData()
+      } catch (err) {
+        actual = err
+      }
+
+      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
+    })
+  })
+
+  describe('setOwnUserInfo', () => {
+    it('疎通確認', async () => {
+      const { api } = provideDependency()
+
+      // テストユーザーを登録
+      const [user] = await api.setTestUsers(GeneralUser())
+
+      api.setTestAuthToken(GeneralToken())
+
+      // ユーザー情報設定
+      const userInput: UserInput = {
+        userName: 'john',
+        fullName: 'John Doe',
+        photoURL: 'https://example.com/john/user.png',
+      }
+      const actual = (await api.setOwnUserInfo(userInput))!
+
+      expect(actual.status).toBe(SetOwnUserInfoResultStatus.Success)
+      expect(actual.user).toMatchObject({
+        id: GeneralUser().uid,
+        email: GeneralUser().email,
+        emailVerified: GeneralUser().emailVerified,
+        userName: userInput.userName,
+        fullName: userInput.fullName,
+        isAppAdmin: GeneralUser().isAppAdmin,
+        photoURL: userInput.photoURL,
+      } as OmitTimestamp<User>)
+      expect(actual.user?.version).toBeGreaterThanOrEqual(1)
+      expect(actual.user?.createdAt).toEqual(user.createdAt)
+      expect(actual.user?.updatedAt.isAfter(user.updatedAt)).toBeTruthy()
+    })
+
+    it('サインインしていない場合', async () => {
+      const { api } = provideDependency()
+      api.setTestAuthToken(null)
+
+      let actual!: Error
+      try {
+        await api.setOwnUserInfo({
+          userName: GeneralUser().userName,
+          fullName: GeneralUser().fullName,
+        })
+      } catch (err) {
+        actual = err
+      }
+
+      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
+    })
+  })
+
+  describe('deleteOwnUser', () => {
+    it('疎通確認', async () => {
+      // テストユーザーを登録
+      const { api } = provideDependency()
+      await api.setTestUsers(GeneralUser())
+
+      api.setTestAuthToken(GeneralToken())
+
+      // ユーザー削除
+      const actual = await api.deleteOwnUser()
+
+      expect(actual).toBeTruthy()
+    })
+
+    it('サインインしていない場合', async () => {
+      const { api } = provideDependency()
+      api.setTestAuthToken(null)
+
+      let actual!: Error
+      try {
+        await api.deleteOwnUser()
+      } catch (err) {
+        actual = err
+      }
+
+      expect(getAPIErrorResponse(actual).statusCode).toBe(401)
     })
   })
 })
