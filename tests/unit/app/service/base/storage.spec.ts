@@ -244,63 +244,63 @@ describe('StorageUtil', () => {
       const articleRoot = newStorageDirNode(StorageUtil.toArticleRootPath(GeneralUser().uid))
 
       const blog = newStorageDirNode(`${articleRoot.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'blog', type: StorageArticleDirType.ListBundle, sortOrder: 2 } },
+        article: { dir: { name: 'blog', type: 'ListBundle', sortOrder: 2 } },
       })
       const blog_artA = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'art1', type: StorageArticleDirType.Article, sortOrder: 2 } },
+        article: { dir: { name: 'art1', type: 'Article', sortOrder: 2 } },
       })
       const blog_artA_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(blog_artA.path), {
-        article: { file: { type: StorageArticleFileType.Master } },
+        article: { file: { type: 'Master' } },
       })
       const blog_artA_draft = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(blog_artA.path), {
-        article: { file: { type: StorageArticleFileType.Draft } },
+        article: { file: { type: 'Draft' } },
       })
       const blog_artA_images = newStorageDirNode(`${blog_artA.path}/images`)
       const blog_artA_images_picA = newStorageFileNode(`${blog_artA_images.path}/picA.png`)
       const blog_artA_images_picB = newStorageFileNode(`${blog_artA_images.path}/picB.png`)
       const blog_artA_memo = newStorageFileNode(`${blog_artA.path}/memo.txt`)
       const blog_artB = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'art2', type: StorageArticleDirType.Article, sortOrder: 1 } },
+        article: { dir: { name: 'art2', type: 'Article', sortOrder: 1 } },
       })
       const blog_artB_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(blog_artB.path), {
-        article: { file: { type: StorageArticleFileType.Master } },
+        article: { file: { type: 'Master' } },
       })
       const blog_artB_draft = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(blog_artB.path), {
-        article: { file: { type: StorageArticleFileType.Draft } },
+        article: { file: { type: 'Draft' } },
       })
 
       const programming = newStorageDirNode(`${articleRoot.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'programming', type: StorageArticleDirType.TreeBundle, sortOrder: 1 } },
+        article: { dir: { name: 'programming', type: 'TreeBundle', sortOrder: 1 } },
       })
       const programming_artC = newStorageDirNode(`${programming.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'art1', type: StorageArticleDirType.Article, sortOrder: 4 } },
+        article: { dir: { name: 'art1', type: 'Article', sortOrder: 4 } },
       })
       const programming_artD = newStorageDirNode(`${programming.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'art2', type: StorageArticleDirType.Article, sortOrder: 3 } },
+        article: { dir: { name: 'art2', type: 'Article', sortOrder: 3 } },
       })
       const programming_ts = newStorageDirNode(`${programming.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'TypeScript', type: StorageArticleDirType.Category, sortOrder: 2 } },
+        article: { dir: { name: 'TypeScript', type: 'Category', sortOrder: 2 } },
       })
       const programming_ts_artE = newStorageDirNode(`${programming_ts.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'art1', type: StorageArticleDirType.Article, sortOrder: 2 } },
+        article: { dir: { name: 'art1', type: 'Article', sortOrder: 2 } },
       })
       const programming_ts_artE_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(programming_ts_artE.path), {
-        article: { file: { type: StorageArticleFileType.Master } },
+        article: { file: { type: 'Master' } },
       })
       const programming_ts_artE_draft = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(programming_ts_artE.path), {
-        article: { file: { type: StorageArticleFileType.Draft } },
+        article: { file: { type: 'Draft' } },
       })
       const programming_ts_artF = newStorageDirNode(`${programming_ts.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'art2', type: StorageArticleDirType.Article, sortOrder: 1 } },
+        article: { dir: { name: 'art2', type: 'Article', sortOrder: 1 } },
       })
       const programming_ts_artF_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(programming_ts_artF.path), {
-        article: { file: { type: StorageArticleFileType.Master } },
+        article: { file: { type: 'Master' } },
       })
       const programming_ts_artF_draft = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(programming_ts_artF.path), {
-        article: { file: { type: StorageArticleFileType.Draft } },
+        article: { file: { type: 'Draft' } },
       })
       const programming_js = newStorageDirNode(`${programming.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'JavaScript', type: StorageArticleDirType.Category, sortOrder: 1 } },
+        article: { dir: { name: 'JavaScript', type: 'Category', sortOrder: 1 } },
       })
 
       const assets = newStorageDirNode(StorageUtil.toArticleAssetsPath(GeneralUser().uid))
@@ -405,28 +405,28 @@ describe('StorageUtil', () => {
       const programmingPath = `${articleRootPath}/programming`
 
       const programming_art1 = newStorageDirNode(`${programmingPath}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'art1', type: StorageArticleDirType.Article, sortOrder: 4 } },
+        article: { dir: { name: 'art1', type: 'Article', sortOrder: 4 } },
       })
       const programming_art2 = newStorageDirNode(`${programmingPath}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'art2', type: StorageArticleDirType.Article, sortOrder: 3 } },
+        article: { dir: { name: 'art2', type: 'Article', sortOrder: 3 } },
       })
       const programming_ts = newStorageDirNode(`${programmingPath}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'TypeScript', type: StorageArticleDirType.Category, sortOrder: 2 } },
+        article: { dir: { name: 'TypeScript', type: 'Category', sortOrder: 2 } },
       })
       const programming_ts_art1 = newStorageDirNode(`${programming_ts.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'art1', type: StorageArticleDirType.Article, sortOrder: 2 } },
+        article: { dir: { name: 'art1', type: 'Article', sortOrder: 2 } },
       })
       const programming_ts_art2 = newStorageDirNode(`${programming_ts.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'art2', type: StorageArticleDirType.Article, sortOrder: 1 } },
+        article: { dir: { name: 'art2', type: 'Article', sortOrder: 1 } },
       })
       const programming_js = newStorageDirNode(`${programmingPath}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'JavaScript', type: StorageArticleDirType.Category, sortOrder: 1 } },
+        article: { dir: { name: 'JavaScript', type: 'Category', sortOrder: 1 } },
       })
       const programming_js_art1 = newStorageDirNode(`${programming_js.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'art1', type: StorageArticleDirType.Article, sortOrder: 2 } },
+        article: { dir: { name: 'art1', type: 'Article', sortOrder: 2 } },
       })
       const programming_js_art2 = newStorageDirNode(`${programming_js.path}/${StorageNode.generateId()}`, {
-        article: { dir: { name: 'art2', type: StorageArticleDirType.Article, sortOrder: 1 } },
+        article: { dir: { name: 'art2', type: 'Article', sortOrder: 1 } },
       })
 
       // 実際は上位ディレクトリ(programming)は存在するが、配列には追加されないパターン

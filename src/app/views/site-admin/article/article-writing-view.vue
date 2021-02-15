@@ -162,7 +162,7 @@ namespace ArticleWritingView {
 
         // 記事ソースを取得
         await (async () => {
-          const node = pageService.getStorageChildren(articlePath).find(node => node.article?.file?.type === StorageArticleFileType.Master)
+          const node = pageService.getStorageChildren(articlePath).find(node => node.article?.file?.type === 'Master')
           if (!node) {
             throw new Error(`Article source master file node was not found: '${articlePath}'`)
           }
@@ -175,7 +175,7 @@ namespace ArticleWritingView {
 
         // 下書きのソースを取得
         await (async () => {
-          const node = pageService.getStorageChildren(articlePath).find(node => node.article?.file?.type === StorageArticleFileType.Draft)
+          const node = pageService.getStorageChildren(articlePath).find(node => node.article?.file?.type === 'Draft')
           if (!node) {
             throw new Error(`Article source draft file node was not found: '${articlePath}'`)
           }

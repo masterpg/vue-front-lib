@@ -94,7 +94,7 @@ interface ProviderListView extends ProviderListView.Props {}
 namespace ProviderListView {
   export interface Props {
     title: string
-    type: 'signIn' | 'signUp'
+    type: 'SignIn' | 'SignUp'
     visibleProviders: AuthProviderType[]
   }
 
@@ -120,7 +120,7 @@ namespace ProviderListView {
       const i18n = useI18n()
 
       const typeName = computed(() => {
-        return props.type === 'signIn' ? String(i18n.t('common.signIn')) : String(i18n.t('common.signUp'))
+        return props.type === 'SignIn' ? String(i18n.t('common.signIn')) : String(i18n.t('common.signUp'))
       })
 
       const visibleGoogle = computed(() => {
@@ -136,7 +136,7 @@ namespace ProviderListView {
       })
 
       const visibleAnonymous = computed(() => {
-        return props.visibleProviders.includes(AuthProviderType.Anonymous) && props.type === 'signIn'
+        return props.visibleProviders.includes(AuthProviderType.Anonymous) && props.type === 'SignIn'
       })
 
       //----------------------------------------------------------------------

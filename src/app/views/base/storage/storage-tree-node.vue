@@ -229,7 +229,7 @@ namespace StorageTreeNode {
     })
 
     const nodeTypeName = computed(() => {
-      if (nodeData.value.nodeType === StorageNodeType.Dir) {
+      if (nodeData.value.nodeType === 'Dir') {
         return String(i18n.tc('common.folder', 1))
       } else {
         return String(i18n.tc('common.file', 1))

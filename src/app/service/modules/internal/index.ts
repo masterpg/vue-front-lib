@@ -43,16 +43,16 @@ namespace InternalHelperService {
 namespace InternalAuthService {
   export function newInstance(): InternalAuthService {
     const state = reactive({
-      status: AuthStatus.None,
+      status: 'None' as AuthStatus,
       isSignedIn: false,
     })
 
-    const status = computed({
+    const status = computed<AuthStatus>({
       get: () => state.status,
       set: value => (state.status = value),
     })
 
-    const isSignedIn = computed(() => state.status === AuthStatus.Available)
+    const isSignedIn = computed(() => state.status === 'Available')
 
     const validateSignedIn: InternalAuthService['validateSignedIn'] = () => {
       if (!isSignedIn.value) {

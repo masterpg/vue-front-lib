@@ -48,10 +48,10 @@ function verifyStateNodes() {
     expect(node.name).toBe(expectName)
     expect(node.dir).toBe(expectDir)
     expect(node.path).toBe(expectPath)
-    if (node.nodeType === StorageNodeType.Dir) {
+    if (node.nodeType === 'Dir') {
       expect(node.contentType).toBe('')
       expect(node.size).toBe(0)
-    } else if (node.nodeType === StorageNodeType.File) {
+    } else if (node.nodeType === 'File') {
       expect(node.contentType).toBeDefined()
       expect(node.size).toBeGreaterThan(0)
     }
@@ -477,7 +477,7 @@ describe('StorageStore', () => {
       )
 
       expect(actual.id).toBe(f111.id)
-      expect(actual.nodeType).toBe(StorageNodeType.File)
+      expect(actual.nodeType).toBe('File')
       expect(actual.name).toBe('new_f111.txt')
       expect(actual.dir).toBe('d1')
       expect(actual.path).toBe('d1/new_f111.txt')
@@ -506,7 +506,7 @@ describe('StorageStore', () => {
         article: {
           dir: {
             name: 'Bundle',
-            type: StorageArticleDirType.ListBundle,
+            type: 'ListBundle',
             sortOrder: 1,
           },
         },
@@ -520,7 +520,7 @@ describe('StorageStore', () => {
           article: {
             dir: {
               name: 'バンドル',
-              type: StorageArticleDirType.TreeBundle,
+              type: 'TreeBundle',
               sortOrder: 2,
             },
           },
@@ -532,7 +532,7 @@ describe('StorageStore', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             sortOrder: 2,
           },
         },
@@ -1275,7 +1275,7 @@ describe('StorageStore', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             sortOrder: 1,
           },
         },
@@ -1289,7 +1289,7 @@ describe('StorageStore', () => {
         article: {
           dir: {
             name: 'カテゴリ1',
-            type: StorageArticleDirType.Category,
+            type: 'Category',
             sortOrder: 1,
           },
         },
@@ -1298,16 +1298,16 @@ describe('StorageStore', () => {
         article: {
           dir: {
             name: '記事1',
-            type: StorageArticleDirType.Article,
+            type: 'Article',
             sortOrder: 1,
           },
         },
       })
       const art1_master = newStorageFileNode(`${art1.path}/${config.storage.article.srcMasterFileName}`, {
-        article: { file: { type: StorageArticleFileType.Master } },
+        article: { file: { type: 'Master' } },
       })
       const art1_draft = newStorageFileNode(`${art1.path}/${config.storage.article.srcDraftFileName}`, {
-        article: { file: { type: StorageArticleFileType.Draft } },
+        article: { file: { type: 'Draft' } },
       })
 
       expect(bundle).toEqual(StorageNode.clone(bundle))

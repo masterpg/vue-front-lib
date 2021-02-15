@@ -221,16 +221,16 @@ namespace StorageDownloader {
       }
 
       switch (node.nodeType) {
-        case StorageNodeType.Dir: {
+        case 'Dir': {
           const _fileDownloaders = storageService.getChildren(nodePath).reduce((result, node, index, children) => {
-            if (node.nodeType === StorageNodeType.Dir) return result
+            if (node.nodeType === 'Dir') return result
             result.push(newFileDownloader(type, node.path, children.length - 1 === index))
             return result
           }, [] as UnwrapRef<StorageFileDownloader>[])
           fileDownloaders.value.push(..._fileDownloaders)
           break
         }
-        case StorageNodeType.File: {
+        case 'File': {
           fileDownloaders.value.push(newFileDownloader(type, node.path, true))
           break
         }

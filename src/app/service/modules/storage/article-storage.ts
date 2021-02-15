@@ -153,7 +153,7 @@ namespace ArticleStorageService {
       const dirNode = base.setAPINodeToStore(apiNode)
 
       // 記事作成時は記事ファイルも作成されるので読み込みを行う
-      if (apiNode.article?.dir?.type === StorageArticleDirType.Article) {
+      if (apiNode.article?.dir?.type === 'Article') {
         await base.fetchChildren(base.toBasePath(apiNode.path))
       }
 

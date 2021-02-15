@@ -35,7 +35,7 @@ function newStorageDirNode(dirPath: string, data?: NewTestStorageNodeData): Stor
   }
   const result: StorageNode = {
     id: nodeId,
-    nodeType: StorageNodeType.Dir,
+    nodeType: 'Dir',
     name,
     dir,
     path: dirPath,
@@ -59,7 +59,7 @@ function newStorageFileNode(filePath: string, data?: NewTestStorageNodeData): St
   const nodeId = data.id || StorageNode.generateId()
   const result: StorageNode = {
     id: data.id || StorageNode.generateId(),
-    nodeType: StorageNodeType.File,
+    nodeType: 'File',
     name,
     dir,
     path: filePath,

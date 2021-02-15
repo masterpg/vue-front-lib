@@ -8,9 +8,9 @@
   <q-dialog ref="dialog" class="SignInDialog" v-model="opened" persistent>
     <!-- プロバイダリストビュー -->
     <ProviderListView
-      v-if="state.viewType === 'providerList'"
+      v-if="state.viewType === 'ProviderList'"
       :title="state.title"
-      type="signIn"
+      type="SignIn"
       @select-google="selectGoogle()"
       @select-facebook="selectFacebook()"
       @select-email="selectEmail()"
@@ -19,13 +19,13 @@
     />
 
     <!-- メールアドレスサインインビュー -->
-    <EmailSignInView v-else-if="state.viewType === 'emailSignIn'" :title="state.title" password-reset @closed="emailSignInViewOnClose" />
+    <EmailSignInView v-else-if="state.viewType === 'EmailSignIn'" :title="state.title" password-reset @closed="emailSignInViewOnClose" />
 
     <!-- パスワードリセットビュー -->
-    <PasswordResetView v-else-if="state.viewType === 'passwordReset'" @closed="close()" />
+    <PasswordResetView v-else-if="state.viewType === 'PasswordReset'" @closed="close()" />
 
     <!-- メールアドレス検証中ビュー -->
-    <AuthMessageView v-else-if="state.viewType === 'emailVerifying'" :title="state.title">
+    <AuthMessageView v-else-if="state.viewType === 'EmailVerifying'" :title="state.title">
       <template v-slot:message>{{ t('auth.emailVerifyingMsg', { email: state.email }) }}</template>
     </AuthMessageView>
   </q-dialog>
@@ -75,7 +75,7 @@ namespace SignInDialog {
 
     const state = reactive({
       title: String(i18n.t('common.signIn')),
-      viewType: 'providerList' as 'providerList' | 'emailSignIn' | 'passwordReset' | 'emailVerifying',
+      viewType: 'ProviderList' as 'ProviderList' | 'EmailSignIn' | 'PasswordReset' | 'EmailVerifying',
       email: '',
     })
 
@@ -86,7 +86,7 @@ namespace SignInDialog {
     //----------------------------------------------------------------------
 
     const open: SignInDialog['open'] = async () => {
-      state.viewType = 'providerList'
+      state.viewType = 'ProviderList'
       return base.open()
     }
 
@@ -111,7 +111,7 @@ namespace SignInDialog {
     }
 
     function selectEmail(): void {
-      state.viewType = 'emailSignIn'
+      state.viewType = 'EmailSignIn'
     }
 
     async function selectAnonymous(): Promise<void> {
@@ -121,31 +121,31 @@ namespace SignInDialog {
 
     async function emailSignInViewOnClose(closeResult: EmailSignInViewResult) {
       switch (closeResult.status) {
-        case AuthStatus.WaitForEmailVerified: {
+        case 'WaitForEmailVerified': {
           // メールアドレス検証中ビューに遷移
           state.email = closeResult.email
-          state.viewType = 'emailVerifying'
+          state.viewType = 'EmailVerifying'
           // URLからダイアログクエリを削除
           Dialogs.clearQuery()
           break
         }
-        case AuthStatus.WaitForEntry: {
+        case 'WaitForEntry': {
           // ユーザー情報登録ダイアログを表示
           Dialogs.userEntry.open()
           close()
           break
         }
-        case AuthStatus.Available: {
+        case 'Available': {
           // サインイン完了
           close()
           break
         }
-        case 'passwordReset': {
+        case 'PasswordReset': {
           // パスワードリセットビューに遷移
-          state.viewType = 'passwordReset'
+          state.viewType = 'PasswordReset'
           break
         }
-        case 'cancel': {
+        case 'Cancel': {
           close()
           break
         }

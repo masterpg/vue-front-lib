@@ -589,7 +589,7 @@ describe('Storage API', () => {
       bundle = await api.createArticleTypeDir({
         dir: `${articleRootPath}`,
         name: 'バンドル',
-        type: StorageArticleDirType.TreeBundle,
+        type: 'TreeBundle',
       })
     }
 
@@ -603,12 +603,12 @@ describe('Storage API', () => {
       const actual = await api.createArticleTypeDir({
         dir: `${bundle.path}`,
         name: 'カテゴリ1',
-        type: StorageArticleDirType.Category,
+        type: 'Category',
       })
 
       expect(actual.path).toBe(`${actual.dir}/${actual.name}`)
       expect(actual.article?.dir?.name).toBe('カテゴリ1')
-      expect(actual.article?.dir?.type).toBe(StorageArticleDirType.Category)
+      expect(actual.article?.dir?.type).toBe<StorageArticleDirType>('Category')
       expect(typeof actual.article?.dir?.sortOrder === 'number').toBeTruthy()
       expect(actual.article?.file).toBeUndefined()
     })
@@ -623,25 +623,23 @@ describe('Storage API', () => {
       const actual = await api.createArticleTypeDir({
         dir: `${bundle.path}`,
         name: '記事1',
-        type: StorageArticleDirType.Article,
+        type: 'Article',
       })
 
       expect(actual.path).toBe(`${actual.dir}/${actual.name}`)
       expect(actual.article?.dir?.name).toBe('記事1')
-      expect(actual.article?.dir?.type).toBe(StorageArticleDirType.Article)
+      expect(actual.article?.dir?.type).toBe<StorageArticleDirType>('Article')
       expect(typeof actual.article?.dir?.sortOrder === 'number').toBeTruthy()
       expect(actual.article?.file).toBeUndefined()
 
       // 記事ソースファイルが作成されていることを検証
-      const masterFileNode = (await api.getStorageChildren(actual.path)).list.find(
-        node => node.article?.file?.type === StorageArticleFileType.Master
-      )!
-      expect(masterFileNode.article?.file?.type).toBe(StorageArticleFileType.Master)
+      const masterFileNode = (await api.getStorageChildren(actual.path)).list.find(node => node.article?.file?.type === 'Master')!
+      expect(masterFileNode.article?.file?.type).toBe<StorageArticleFileType>('Master')
       expect(masterFileNode.article?.dir).toBeUndefined()
 
       // 下書きファイルが作成されていることを検証
-      const draftFileNode = (await api.getStorageChildren(actual.path)).list.find(node => node.article?.file?.type === StorageArticleFileType.Draft)!
-      expect(draftFileNode.article?.file?.type).toBe(StorageArticleFileType.Draft)
+      const draftFileNode = (await api.getStorageChildren(actual.path)).list.find(node => node.article?.file?.type === 'Draft')!
+      expect(draftFileNode.article?.file?.type).toBe<StorageArticleFileType>('Draft')
       expect(draftFileNode.article?.dir).toBeUndefined()
     })
   })
@@ -661,13 +659,13 @@ describe('Storage API', () => {
       bundle = await api.createArticleTypeDir({
         dir: `${articleRootPath}`,
         name: 'バンドル',
-        type: StorageArticleDirType.ListBundle,
+        type: 'ListBundle',
       })
 
       art1 = await api.createArticleTypeDir({
         dir: `${bundle.path}`,
         name: '記事1',
-        type: StorageArticleDirType.Article,
+        type: 'Article',
       })
     }
 
@@ -700,7 +698,7 @@ describe('Storage API', () => {
       bundle = await api.createArticleTypeDir({
         dir: `${articleRootPath}`,
         name: 'バンドル',
-        type: StorageArticleDirType.ListBundle,
+        type: 'ListBundle',
       })
     }
 
@@ -734,7 +732,7 @@ describe('Storage API', () => {
       bundle = await api.createArticleTypeDir({
         dir: `${articleRootPath}`,
         name: 'バンドル',
-        type: StorageArticleDirType.ListBundle,
+        type: 'ListBundle',
       })
     }
 
@@ -749,12 +747,12 @@ describe('Storage API', () => {
       const art1 = await api.createArticleTypeDir({
         dir: `${bundle.path}`,
         name: '記事1',
-        type: StorageArticleDirType.Article,
+        type: 'Article',
       })
       const art2 = await api.createArticleTypeDir({
         dir: `${bundle.path}`,
         name: '記事2',
-        type: StorageArticleDirType.Article,
+        type: 'Article',
       })
 
       await api.setArticleSortOrder([art1.path, art2.path])
@@ -785,13 +783,13 @@ describe('Storage API', () => {
       bundle = await api.createArticleTypeDir({
         dir: `${articleRootPath}`,
         name: 'バンドル',
-        type: StorageArticleDirType.ListBundle,
+        type: 'ListBundle',
       })
 
       art1 = await api.createArticleTypeDir({
         dir: `${bundle.path}`,
         name: '記事1',
-        type: StorageArticleDirType.Article,
+        type: 'Article',
       })
 
       art1_master = (await api.getStorageNode({
@@ -843,13 +841,13 @@ describe('Storage API', () => {
       bundle = await api.createArticleTypeDir({
         dir: `${articleRootPath}`,
         name: 'バンドル',
-        type: StorageArticleDirType.ListBundle,
+        type: 'ListBundle',
       })
 
       art1 = await api.createArticleTypeDir({
         dir: `${bundle.path}`,
         name: '記事1',
-        type: StorageArticleDirType.Article,
+        type: 'Article',
       })
 
       art1_draft = (await api.getStorageNode({
@@ -890,23 +888,23 @@ describe('Storage API', () => {
       bundle = await api.createArticleTypeDir({
         dir: `${articleRootPath}`,
         name: 'バンドル',
-        type: StorageArticleDirType.ListBundle,
+        type: 'ListBundle',
       })
 
       art1 = await api.createArticleTypeDir({
         dir: `${bundle.path}`,
         name: '記事1',
-        type: StorageArticleDirType.Article,
+        type: 'Article',
       })
       art2 = await api.createArticleTypeDir({
         dir: `${bundle.path}`,
         name: '記事2',
-        type: StorageArticleDirType.Article,
+        type: 'Article',
       })
       art3 = await api.createArticleTypeDir({
         dir: `${bundle.path}`,
         name: '記事3',
-        type: StorageArticleDirType.Article,
+        type: 'Article',
       })
     }
 
@@ -916,7 +914,7 @@ describe('Storage API', () => {
       const { api } = provideDependency()
       api.setTestAuthToken(GeneralToken())
 
-      const actual = await api.getArticleChildren({ dirPath: `${bundle.path}`, types: [StorageArticleDirType.Article] })
+      const actual = await api.getArticleChildren({ dirPath: `${bundle.path}`, types: ['Article'] })
 
       expect(actual.nextPageToken).toBeUndefined()
       expect(actual.isPaginationTimeout).toBeFalsy()
@@ -932,11 +930,7 @@ describe('Storage API', () => {
       const { api } = provideDependency()
       api.setTestAuthToken(GeneralToken())
 
-      const actual = await api.callStoragePaginationAPI(
-        api.getArticleChildren,
-        { dirPath: `${bundle.path}`, types: [StorageArticleDirType.Article] },
-        { maxChunk: 2 }
-      )
+      const actual = await api.callStoragePaginationAPI(api.getArticleChildren, { dirPath: `${bundle.path}`, types: ['Article'] }, { maxChunk: 2 })
 
       expect(actual.length).toBe(3)
       expect(actual[0].path).toBe(`${art3.path}`)
@@ -961,14 +955,14 @@ describe('Storage API', () => {
       bundle = await api.createArticleTypeDir({
         dir: `${articleRootPath}`,
         name: 'バンドル',
-        type: StorageArticleDirType.TreeBundle,
+        type: 'TreeBundle',
       })
 
       cat1 = await api.createArticleTypeDir(
         {
           dir: `${bundle.path}`,
           name: 'カテゴリ1',
-          type: StorageArticleDirType.Category,
+          type: 'Category',
         },
         { share: { isPublic: true } }
       )
@@ -976,7 +970,7 @@ describe('Storage API', () => {
       art1 = await api.createArticleTypeDir({
         dir: `${cat1.path}`,
         name: '記事1',
-        type: StorageArticleDirType.Article,
+        type: 'Article',
       })
     }
 
@@ -1009,7 +1003,7 @@ describe('User API', () => {
       // 認証データの取得
       const actual = await api.getAuthData()
 
-      expect(actual.status).toBe(AuthStatus.Available)
+      expect(actual.status).toBe<AuthStatus>('Available')
       expect(actual.token).toBeDefined()
       expect(actual.user).toMatchObject({
         id: GeneralUser().uid,
@@ -1057,7 +1051,7 @@ describe('User API', () => {
       }
       const actual = (await api.setOwnUserInfo(userInput))!
 
-      expect(actual.status).toBe(SetOwnUserInfoResultStatus.Success)
+      expect(actual.status).toBe<SetOwnUserInfoResultStatus>('Success')
       expect(actual.user).toMatchObject({
         id: GeneralUser().uid,
         email: GeneralUser().email,

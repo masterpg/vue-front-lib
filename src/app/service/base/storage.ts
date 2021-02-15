@@ -34,52 +34,44 @@ interface ArticleTableOfContentsNode extends TimestampEntity {
   label: string
 }
 
-enum StorageNodeType {
-  File = 'File',
-  Dir = 'Dir',
-}
+type StorageNodeType = 'File' | 'Dir'
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 namespace StorageNodeType {
   export function getLabel(nodeType: StorageNodeType, choice = 1): string {
     const i18n = useI18n()
     switch (nodeType) {
-      case StorageNodeType.Dir:
+      case 'Dir':
         return String(i18n.tc('common.folder', choice))
-      case StorageNodeType.File:
+      case 'File':
         return String(i18n.tc('common.file', choice))
     }
   }
 
   export function getIcon(nodeType: StorageNodeType): string {
     switch (nodeType) {
-      case StorageNodeType.Dir:
+      case 'Dir':
         return 'folder'
-      case StorageNodeType.File:
+      case 'File':
         return 'far fa-file'
     }
   }
 }
 
-enum StorageArticleDirType {
-  ListBundle = 'ListBundle',
-  TreeBundle = 'TreeBundle',
-  Category = 'Category',
-  Article = 'Article',
-}
+type StorageArticleDirType = 'ListBundle' | 'TreeBundle' | 'Category' | 'Article'
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 namespace StorageArticleDirType {
   export function getLabel(nodeType?: StorageArticleDirType, choice = 1): string {
     const i18n = useI18n()
     switch (nodeType) {
-      case StorageArticleDirType.ListBundle:
+      case 'ListBundle':
         return String(i18n.tc('article.nodeType.listBundle', choice))
-      case StorageArticleDirType.TreeBundle:
+      case 'TreeBundle':
         return String(i18n.tc('article.nodeType.treeBundle', choice))
-      case StorageArticleDirType.Category:
+      case 'Category':
         return String(i18n.tc('article.nodeType.category', choice))
-      case StorageArticleDirType.Article:
+      case 'Article':
         return String(i18n.tc('article.nodeType.article', choice))
       default:
         return ''
@@ -88,13 +80,13 @@ namespace StorageArticleDirType {
 
   export function getIcon(nodeType?: StorageArticleDirType): string {
     switch (nodeType) {
-      case StorageArticleDirType.ListBundle:
+      case 'ListBundle':
         return 'fas fa-bars'
-      case StorageArticleDirType.TreeBundle:
+      case 'TreeBundle':
         return 'fas fa-stream'
-      case StorageArticleDirType.Category:
+      case 'Category':
         return 'fas fa-list-alt'
-      case StorageArticleDirType.Article:
+      case 'Article':
         return 'fas fa-file-alt'
       default:
         return ''
@@ -102,10 +94,7 @@ namespace StorageArticleDirType {
   }
 }
 
-enum StorageArticleFileType {
-  Master = 'Master',
-  Draft = 'Draft',
-}
+type StorageArticleFileType = 'Master' | 'Draft'
 
 interface StorageNodeShareSettings {
   isPublic: boolean | null
@@ -573,10 +562,10 @@ namespace StorageUtil {
 
     let strA = a.path
     let strB = b.path
-    if (a.nodeType === StorageNodeType.File) {
+    if (a.nodeType === 'File') {
       strA = `${a.dir}${String.fromCodePoint(0xffff)}${a.name}`
     }
-    if (b.nodeType === StorageNodeType.File) {
+    if (b.nodeType === 'File') {
       strB = `${b.dir}${String.fromCodePoint(0xffff)}${b.name}`
     }
 
@@ -587,10 +576,10 @@ namespace StorageUtil {
    * ディレクトリの子ノードをソートする関数です。
    */
   export function childrenSortFunc<NODE extends SortStorageNode>(a: NODE, b: NODE): number {
-    if (a.article?.file?.type === StorageArticleFileType.Master) return -1
-    if (b.article?.file?.type === StorageArticleFileType.Master) return 1
-    if (a.article?.file?.type === StorageArticleFileType.Draft) return -1
-    if (b.article?.file?.type === StorageArticleFileType.Draft) return 1
+    if (a.article?.file?.type === 'Master') return -1
+    if (b.article?.file?.type === 'Master') return 1
+    if (a.article?.file?.type === 'Draft') return -1
+    if (b.article?.file?.type === 'Draft') return 1
 
     if (a.nodeType === b.nodeType) {
       const orderA = a.article?.dir?.sortOrder ?? 0
@@ -603,7 +592,7 @@ namespace StorageUtil {
         return orderB - orderA
       }
     } else {
-      return a.nodeType === StorageNodeType.Dir ? -1 : 1
+      return a.nodeType === 'Dir' ? -1 : 1
     }
   }
 

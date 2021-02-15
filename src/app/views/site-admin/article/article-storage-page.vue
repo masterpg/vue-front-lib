@@ -163,13 +163,13 @@ namespace ArticleStoragePage {
 
         const node = pageService.getTreeNode(nodePath) ?? pageService.getRootTreeNode()
         switch (node.nodeType) {
-          case StorageNodeType.Dir: {
+          case 'Dir': {
             // ディレクトリビューを表示
             showDirView()
             break
           }
-          case StorageNodeType.File: {
-            if (node.article?.file?.type === StorageArticleFileType.Master) {
+          case 'File': {
+            if (node.article?.file?.type === 'Master') {
               // 記事編集ビューを表示
               showWritingView(node.dir)
             }
@@ -207,9 +207,9 @@ namespace ArticleStoragePage {
         const { node: selectedNode, oldNode: oldSelectedNode } = e
 
         // 選択ノードがファイルの場合
-        if (selectedNode.nodeType === StorageNodeType.File) {
+        if (selectedNode.nodeType === 'File') {
           // 選択ノードが｢記事ソースファイル｣の場合
-          if (selectedNode.article?.file?.type === StorageArticleFileType.Master) {
+          if (selectedNode.article?.file?.type === 'Master') {
             // 選択ノードのパスをURLに付与
             // ※記事編集ビューが表示されることになる
             base.changeDirOnPage(selectedNode.path)

@@ -175,7 +175,7 @@ export default defineComponent({
     watch(
       () => service.auth.status.value,
       (newValue, oldValue) => {
-        if (newValue === AuthStatus.WaitForEntry) {
+        if (newValue === 'WaitForEntry') {
           Dialogs.userEntry.open()
         }
       }

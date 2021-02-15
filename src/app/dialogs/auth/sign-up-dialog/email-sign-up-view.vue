@@ -92,7 +92,7 @@ type EmailSignUpViewResult = {
   email: string
 }
 
-type EmailSignUpViewStatus = AuthStatus.WaitForEmailVerified | 'cancel'
+type EmailSignUpViewStatus = 'WaitForEmailVerified' | 'Cancel'
 
 namespace EmailSignUpView {
   export interface Props {
@@ -152,7 +152,7 @@ namespace EmailSignUpView {
        * ビューを閉じます。
        */
       function close(closeResult?: EmailSignUpViewResult) {
-        closeResult = closeResult ?? { status: 'cancel', email: '' }
+        closeResult = closeResult ?? { status: 'Cancel', email: '' }
         ctx.emit('closed', closeResult)
       }
 
@@ -198,7 +198,7 @@ namespace EmailSignUpView {
           return
         }
 
-        if (service.auth.status.value !== AuthStatus.WaitForEmailVerified) {
+        if (service.auth.status.value !== 'WaitForEmailVerified') {
           Loading.hide()
           throw new Error(`This is a auth status not assumed: ${service.auth.status.value}`)
         }
@@ -218,7 +218,7 @@ namespace EmailSignUpView {
         }
 
         close({
-          status: AuthStatus.WaitForEmailVerified,
+          status: 'WaitForEmailVerified',
           email: state.email!,
         })
 

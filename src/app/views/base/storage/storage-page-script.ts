@@ -285,13 +285,13 @@ namespace StoragePage {
       const node = pageService.sgetStorageNode({ path: nodePath })
 
       switch (node.nodeType) {
-        case StorageNodeType.Dir: {
+        case 'Dir': {
           // ディレクトリ詳細ビューを表示
           dirDetailView.value!.setNodePath(node.path)
           visibleDirDetailView.value = true
           break
         }
-        case StorageNodeType.File: {
+        case 'File': {
           // ファイル詳細ビューを表示
           fileDetailView.value!.setNodePath(node.path)
           visibleFileDetailView.value = true

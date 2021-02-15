@@ -261,7 +261,7 @@ namespace StorageStore {
         throw new Error(`The specified node was not found: '${fromPath}'`)
       }
 
-      if (targetTopNode.nodeType === StorageNodeType.Dir) {
+      if (targetTopNode.nodeType === 'Dir') {
         // 移動先ディレクトリが移動対象のサブディレクトリでないことを確認
         // from: aaa/bbb → to: aaa/bbb/ccc/bbb [NG]
         //               → to: aaa/zzz/ccc/bbb [OK]

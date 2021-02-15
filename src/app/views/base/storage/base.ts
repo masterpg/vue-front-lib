@@ -97,16 +97,16 @@ class StorageNodeActionEvent<T extends keyof StorageNodeActionEventType = any> {
       case 'createArticleTypeDir': {
         const _params = params as StorageNodeActionEventType['createArticleTypeDir']
         switch (_params.type) {
-          case StorageArticleDirType.ListBundle:
+          case 'ListBundle':
             this.label = String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.listBundle') }))
             break
-          case StorageArticleDirType.TreeBundle:
+          case 'TreeBundle':
             this.label = String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.treeBundle') }))
             break
-          case StorageArticleDirType.Category:
+          case 'Category':
             this.label = String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.category') }))
             break
-          case StorageArticleDirType.Article:
+          case 'Article':
             this.label = String(i18n.t('common.createSth', { sth: i18n.t('article.nodeType.article') }))
             break
         }

@@ -103,7 +103,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             sortOrder: 1,
           },
         },
@@ -235,7 +235,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             sortOrder: 1,
           },
         },
@@ -244,7 +244,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'カテゴリ1',
-            type: StorageArticleDirType.Category,
+            type: 'Category',
             sortOrder: 1,
           },
         },
@@ -253,7 +253,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: '記事1',
-            type: StorageArticleDirType.Article,
+            type: 'Article',
             sortOrder: 1,
           },
         },
@@ -291,7 +291,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             sortOrder: 1,
           },
         },
@@ -300,7 +300,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'カテゴリ1',
-            type: StorageArticleDirType.Category,
+            type: 'Category',
             sortOrder: 1,
           },
         },
@@ -309,7 +309,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: '記事1',
-            type: StorageArticleDirType.Article,
+            type: 'Article',
             sortOrder: 1,
           },
         },
@@ -340,7 +340,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.ListBundle,
+            type: 'ListBundle',
             sortOrder: 1,
           },
         },
@@ -389,7 +389,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             sortOrder: 1,
           },
         },
@@ -398,7 +398,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'カテゴリ1',
-            type: StorageArticleDirType.Category,
+            type: 'Category',
             sortOrder: 1,
           },
         },
@@ -407,7 +407,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: '記事1',
-            type: StorageArticleDirType.Article,
+            type: 'Article',
             sortOrder: 1,
           },
         },
@@ -415,14 +415,14 @@ describe('AppStorageService', () => {
       const art1_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(art1.path), {
         article: {
           file: {
-            type: StorageArticleFileType.Master,
+            type: 'Master',
           },
         },
       })
       const art1_draft = newStorageFileNode(StorageUtil.toArticleSrcDraftPath(art1.path), {
         article: {
           file: {
-            type: StorageArticleFileType.Draft,
+            type: 'Draft',
           },
         },
       })
@@ -478,7 +478,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.ListBundle,
+            type: 'ListBundle',
             sortOrder: 1,
           },
         },
@@ -525,7 +525,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             sortOrder: 1,
           },
         },
@@ -534,7 +534,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'カテゴリ1',
-            type: StorageArticleDirType.Category,
+            type: 'Category',
             sortOrder: 1,
           },
         },
@@ -543,7 +543,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: '記事1',
-            type: StorageArticleDirType.Article,
+            type: 'Article',
             sortOrder: 1,
           },
         },
@@ -577,7 +577,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.ListBundle,
+            type: 'ListBundle',
             sortOrder: 1,
           },
         },
@@ -586,7 +586,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: '記事1',
-            type: StorageArticleDirType.Article,
+            type: 'Article',
             sortOrder: 1,
           },
         },
@@ -595,7 +595,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: '記事2',
-            type: StorageArticleDirType.Article,
+            type: 'Article',
             sortOrder: 2,
           },
         },
@@ -642,7 +642,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.ListBundle,
+            type: 'ListBundle',
             sortOrder: 1,
           },
         },
@@ -654,7 +654,7 @@ describe('AppStorageService', () => {
             article: {
               dir: {
                 name: `記事${i + 1}`,
-                type: StorageArticleDirType.Article,
+                type: 'Article',
                 sortOrder: -1,
               },
             },
@@ -705,7 +705,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.ListBundle,
+            type: 'ListBundle',
             sortOrder: 1,
           },
         },
@@ -714,16 +714,16 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: '記事1',
-            type: StorageArticleDirType.Article,
+            type: 'Article',
             sortOrder: 1,
           },
         },
       })
       const art1_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(art1.path), {
-        article: { file: { type: StorageArticleFileType.Master } },
+        article: { file: { type: 'Master' } },
       })
       const art1_draft = newStorageFileNode(StorageUtil.toArticleSrcDraftPath(art1.path), {
-        article: { file: { type: StorageArticleFileType.Draft } },
+        article: { file: { type: 'Draft' } },
       })
       const {
         service: { articleStorage, appStorage },
@@ -790,7 +790,7 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: 'バンドル',
-            type: StorageArticleDirType.ListBundle,
+            type: 'ListBundle',
             sortOrder: 1,
           },
         },
@@ -799,16 +799,16 @@ describe('AppStorageService', () => {
         article: {
           dir: {
             name: '記事1',
-            type: StorageArticleDirType.Article,
+            type: 'Article',
             sortOrder: 1,
           },
         },
       })
       const art1_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(art1.path), {
-        article: { file: { type: StorageArticleFileType.Master } },
+        article: { file: { type: 'Master' } },
       })
       const art1_draft = newStorageFileNode(StorageUtil.toArticleSrcDraftPath(art1.path), {
-        article: { file: { type: StorageArticleFileType.Draft } },
+        article: { file: { type: 'Draft' } },
       })
       const {
         service: { articleStorage, appStorage },

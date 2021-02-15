@@ -143,17 +143,17 @@ namespace StorageNodePopupMenu {
           // 記事ルート用メニュー
           else if (props.isRoot) {
             return [
-              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.ListBundle }),
+              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: 'ListBundle' }),
               new StorageNodeActionEvent('createArticleTypeDir', {
                 parentPath: selectedNodePaths.value[0],
-                type: StorageArticleDirType.TreeBundle,
+                type: 'TreeBundle',
               }),
             ]
           }
           // リストバンドル用メニュー
           else if (isListBundle.value) {
             return [
-              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Article }),
+              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: 'Article' }),
               new StorageNodeActionEvent('separator', undefined),
               new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
               new StorageNodeActionEvent('share', { targetPaths: selectedNodePaths.value }),
@@ -164,8 +164,8 @@ namespace StorageNodePopupMenu {
           // ツリーバンドル用メニュー
           else if (isTreeBundle.value) {
             return [
-              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Category }),
-              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Article }),
+              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: 'Category' }),
+              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: 'Article' }),
               new StorageNodeActionEvent('separator', undefined),
               new StorageNodeActionEvent('move', { targetPaths: selectedNodePaths.value }),
               new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
@@ -177,8 +177,8 @@ namespace StorageNodePopupMenu {
           // カテゴリ用メニュー
           else if (isCategoryDir.value) {
             return [
-              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Category }),
-              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: StorageArticleDirType.Article }),
+              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: 'Category' }),
+              new StorageNodeActionEvent('createArticleTypeDir', { parentPath: selectedNodePaths.value[0], type: 'Article' }),
               new StorageNodeActionEvent('separator', undefined),
               new StorageNodeActionEvent('move', { targetPaths: selectedNodePaths.value }),
               new StorageNodeActionEvent('rename', { targetPath: selectedNodePaths.value[0] }),
@@ -263,11 +263,11 @@ namespace StorageNodePopupMenu {
       })
 
       const isStorageDir = computed(() => {
-        return !props.isRoot && !isMulti.value && props.node.nodeType === StorageNodeType.Dir
+        return !props.isRoot && !isMulti.value && props.node.nodeType === 'Dir'
       })
 
       const isStorageFile = computed(() => {
-        return !props.isRoot && !isMulti.value && props.node.nodeType === StorageNodeType.File
+        return !props.isRoot && !isMulti.value && props.node.nodeType === 'File'
       })
 
       const isListBundle = computed(() => {

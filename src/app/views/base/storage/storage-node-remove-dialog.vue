@@ -100,9 +100,9 @@ namespace StorageNodeRemoveDialog {
         let fileNum = 0
         let folderNum = 0
         for (const removingNode of state.removingNodes) {
-          if (removingNode.nodeType === StorageNodeType.Dir) {
+          if (removingNode.nodeType === 'Dir') {
             folderNum++
-          } else if (removingNode.nodeType === StorageNodeType.File) {
+          } else if (removingNode.nodeType === 'File') {
             fileNum++
           }
         }

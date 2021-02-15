@@ -27,12 +27,7 @@ type TimestampEntity<T = unknown> = Entity & OmitTimestamp<T> & EntityTimestamp
 //  Auth
 //--------------------------------------------------
 
-enum AuthStatus {
-  None = 'None',
-  WaitForEmailVerified = 'WaitForEmailVerified',
-  WaitForEntry = 'WaitForEntry',
-  Available = 'Available',
-}
+type AuthStatus = 'None' | 'WaitForEmailVerified' | 'WaitForEntry' | 'Available'
 
 interface UserClaims {
   isAppAdmin?: boolean

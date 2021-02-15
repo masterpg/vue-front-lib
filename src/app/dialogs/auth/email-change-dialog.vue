@@ -25,7 +25,7 @@
       サインインビュー
     -->
     <EmailSignInView
-      v-if="state.viewType === 'emailSignIn'"
+      v-if="state.viewType === 'EmailSignIn'"
       :title="state.title"
       :email="state.currentEmail"
       readonly-email
@@ -35,14 +35,14 @@
     <!--
       メールアドレス未検証ビュー
     -->
-    <AuthMessageView v-else-if="state.viewType === 'emailUnverified'" :title="state.title">
+    <AuthMessageView v-else-if="state.viewType === 'EmailUnverified'" :title="state.title">
       {{ t('auth.emailUnverifiedMsg') }}
     </AuthMessageView>
 
     <!--
       メールアドレス変更ビュー
     -->
-    <q-card v-else-if="state.viewType === 'emailChange'" class="container">
+    <q-card v-else-if="state.viewType === 'EmailChange'" class="container">
       <!-- タイトル -->
       <q-card-section>
         <div class="title">{{ state.title }}</div>
@@ -52,7 +52,7 @@
       <q-card-section>
         <!-- メールアドレスインプット -->
         <q-input
-          v-show="state.viewType === 'emailChange'"
+          v-show="state.viewType === 'EmailChange'"
           ref="emailInput"
           v-model="state.email"
           type="email"
@@ -76,16 +76,16 @@
       <!-- ボタンエリア -->
       <q-card-section align="right">
         <!-- CANCELボタン -->
-        <q-btn v-show="state.viewType === 'emailChange'" flat rounded color="primary" :label="t('common.cancel')" @click="close()" />
+        <q-btn v-show="state.viewType === 'EmailChange'" flat rounded color="primary" :label="t('common.cancel')" @click="close()" />
         <!-- NEXTボタン -->
-        <q-btn v-show="state.viewType === 'emailChange'" flat rounded color="primary" :label="t('common.next')" @click="changeEmail()" />
+        <q-btn v-show="state.viewType === 'EmailChange'" flat rounded color="primary" :label="t('common.next')" @click="changeEmail()" />
       </q-card-section>
     </q-card>
 
     <!--
       メールアドレス検証中ビュー
     -->
-    <AuthMessageView v-else-if="state.viewType === 'emailVerifying'" :title="state.title">
+    <AuthMessageView v-else-if="state.viewType === 'EmailVerifying'" :title="state.title">
       <template v-slot:message>{{ t('auth.emailVerifyingMsg', { email: state.email }) }}</template>
     </AuthMessageView>
   </q-dialog>
@@ -134,7 +134,7 @@ namespace EmailChangeDialog {
 
     const state = reactive({
       title: String(i18n.t('auth.changeEmail')),
-      viewType: 'emailSignIn' as 'emailSignIn' | 'emailChange' | 'emailUnverified' | 'emailVerifying',
+      viewType: 'EmailSignIn' as 'EmailSignIn' | 'EmailChange' | 'EmailUnverified' | 'EmailVerifying',
       currentEmail: null as string | null,
       email: null as string | null,
       emailErrorMessage: '',
@@ -156,7 +156,7 @@ namespace EmailChangeDialog {
         return
       }
       state.currentEmail = service.auth.user.email
-      state.viewType = 'emailSignIn'
+      state.viewType = 'EmailSignIn'
       return base.open()
     }
 
@@ -203,7 +203,7 @@ namespace EmailChangeDialog {
       // URLからダイアログクエリを削除
       Dialogs.clearQuery()
       // 画面をメールアドレス検証中へ変更
-      state.viewType = 'emailVerifying'
+      state.viewType = 'EmailVerifying'
 
       Loading.hide()
     }
@@ -244,17 +244,17 @@ namespace EmailChangeDialog {
 
     async function emailSignInViewOnClose(closeResult: EmailSignInViewResult) {
       switch (closeResult.status) {
-        case AuthStatus.WaitForEmailVerified:
-        case AuthStatus.WaitForEntry: {
-          state.viewType = 'emailUnverified'
+        case 'WaitForEmailVerified':
+        case 'WaitForEntry': {
+          state.viewType = 'EmailUnverified'
           break
         }
-        case AuthStatus.Available: {
-          state.viewType = 'emailChange'
+        case 'Available': {
+          state.viewType = 'EmailChange'
           nextTick(() => emailInput.value!.focus())
           break
         }
-        case 'cancel': {
+        case 'Cancel': {
           close()
         }
       }

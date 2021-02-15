@@ -650,7 +650,7 @@ namespace StoragePageService {
           }
         }
         for (const treeNode of treeDescendants) {
-          if (treeNode.nodeType === StorageNodeType.Dir) {
+          if (treeNode.nodeType === 'Dir') {
             treeNode.lazyLoadStatus = 'loaded'
           }
         }
@@ -680,7 +680,7 @@ namespace StoragePageService {
 
     const setTreeNode: StoragePageService['setTreeNode'] = node => {
       // 対象ノードが記事下書きノードの場合
-      if (node.article?.file?.type === StorageArticleFileType.Draft) {
+      if (node.article?.file?.type === 'Draft') {
         // ローカルストレージに下書きが存在した場合、その下書き情報のバージョンを更新
         const draftInfo = getLocalArticleDraftData(node.id)
         if (draftInfo.version) {
@@ -920,7 +920,7 @@ namespace StoragePageService {
 
       // 記事ディレクトリ作成時は記事ファイルも作成されるので読み込みを行う
       let dirChildren: StorageNode[] = []
-      if (dirNode.article?.dir?.type === StorageArticleDirType.Article) {
+      if (dirNode.article?.dir?.type === 'Article') {
         dirChildren = articleService.getChildren(dirNode.path)
       }
 
@@ -952,11 +952,11 @@ namespace StoragePageService {
         const node = storageService.sgetNode({ path: nodePath })
         try {
           switch (node.nodeType) {
-            case StorageNodeType.Dir:
+            case 'Dir':
               await storageService.removeDir(node.path)
               removedNodePaths.push(node.path)
               break
-            case StorageNodeType.File:
+            case 'File':
               await storageService.removeFile(node.path)
               removedNodePaths.push(node.path)
               break
@@ -988,7 +988,7 @@ namespace StoragePageService {
         // ストレージストアに指定ノードが存在するかチェック
         const fromNode = storageService.sgetNode({ path: fromNodePath })
 
-        if (fromNode.nodeType === StorageNodeType.Dir) {
+        if (fromNode.nodeType === 'Dir') {
           // 移動先ディレクトリが移動対象のサブディレクトリでないことを確認
           // from: aaa/bbb → to: aaa/bbb/ccc/bbb [NG]
           //               → to: aaa/zzz/ccc/bbb [OK]
@@ -1007,12 +1007,12 @@ namespace StoragePageService {
         const toNodePath = _path.join(toParentPath, fromNode.name)
         try {
           switch (fromNode.nodeType) {
-            case StorageNodeType.Dir: {
+            case 'Dir': {
               const nodes = await storageService.moveDir(fromNode.path, toNodePath)
               movedNodes.push(...nodes)
               break
             }
-            case StorageNodeType.File: {
+            case 'File': {
               const node = await storageService.moveFile(fromNode.path, toNodePath)
               movedNodes.push(node)
               break
@@ -1057,10 +1057,10 @@ namespace StoragePageService {
       //
       const renamedNodes: StorageNode[] = []
       try {
-        if (targetNode.nodeType === StorageNodeType.Dir) {
+        if (targetNode.nodeType === 'Dir') {
           const nodes = await storageService.renameDir(targetNode.path, newName)
           renamedNodes.push(...nodes)
-        } else if (targetNode.nodeType === StorageNodeType.File) {
+        } else if (targetNode.nodeType === 'File') {
           const node = await storageService.renameFile(targetNode.path, newName)
           renamedNodes.push(node)
         }
@@ -1098,9 +1098,9 @@ namespace StoragePageService {
       for (const nodePath of nodePaths) {
         const node = storageService.sgetNode({ path: nodePath })
         try {
-          if (node.nodeType === StorageNodeType.Dir) {
+          if (node.nodeType === 'Dir') {
             processedNodes.push(await storageService.setDirShareSettings(node.path, input))
-          } else if (node.nodeType === StorageNodeType.File) {
+          } else if (node.nodeType === 'File') {
             processedNodes.push(await storageService.setFileShareSettings(node.path, input))
           }
         } catch (err) {
@@ -1258,7 +1258,7 @@ namespace StoragePageService {
         value: removeBothEndsSlash(source.path),
         label: getDisplayNodeName(source),
         icon: getNodeIcon(source),
-        lazy: source.nodeType === StorageNodeType.Dir,
+        lazy: source.nodeType === 'Dir',
         sortFunc: StorageUtil.childrenSortFunc,
         id: source.id,
         nodeType: source.nodeType,
@@ -1324,7 +1324,7 @@ namespace StoragePageService {
       if (node.article?.dir) {
         return StorageArticleDirType.getIcon(node.article.dir.type)
       } else {
-        if (node.article?.file?.type === StorageArticleFileType.Master) {
+        if (node.article?.file?.type === 'Master') {
           return 'fas fa-pen-square'
         } else {
           return StorageNodeType.getIcon(node.nodeType)
@@ -1334,13 +1334,13 @@ namespace StoragePageService {
 
     const getNodeTypeLabel: StoragePageService['getNodeTypeLabel'] = node => {
       switch (node.nodeType) {
-        case StorageNodeType.Dir: {
+        case 'Dir': {
           if (node.article?.dir) {
             return StorageArticleDirType.getLabel(node.article.dir.type)
           }
           return StorageNodeType.getLabel(node.nodeType)
         }
-        case StorageNodeType.File: {
+        case 'File': {
           return StorageNodeType.getLabel(node.nodeType)
         }
         default: {
@@ -1366,25 +1366,25 @@ namespace StoragePageService {
     const isListBundle: StoragePageService['isListBundle'] = key => {
       const node = storageService.getNode(key)
       if (!node) return false
-      return node.article?.dir?.type === StorageArticleDirType.ListBundle
+      return node.article?.dir?.type === 'ListBundle'
     }
 
     const isTreeBundle: StoragePageService['isTreeBundle'] = key => {
       const node = storageService.getNode(key)
       if (!node) return false
-      return node.article?.dir?.type === StorageArticleDirType.TreeBundle
+      return node.article?.dir?.type === 'TreeBundle'
     }
 
     const isCategoryDir: StoragePageService['isCategoryDir'] = key => {
       const node = storageService.getNode(key)
       if (!node) return false
-      return node.article?.dir?.type === StorageArticleDirType.Category
+      return node.article?.dir?.type === 'Category'
     }
 
     const isArticleDir: StoragePageService['isArticleDir'] = key => {
       const node = storageService.getNode(key)
       if (!node) return false
-      return node.article?.dir?.type === StorageArticleDirType.Article
+      return node.article?.dir?.type === 'Article'
     }
 
     const isArticleDirUnder: StoragePageService['isArticleDirUnder'] = key => {
@@ -1394,7 +1394,7 @@ namespace StoragePageService {
         const parentNode = storageService.getNode({ path: parentPath })
         if (!parentNode) return false
 
-        if (parentNode.article?.dir?.type === StorageArticleDirType.Article) {
+        if (parentNode.article?.dir?.type === 'Article') {
           return true
         } else {
           return existsArticle(parentPath)
@@ -1413,13 +1413,13 @@ namespace StoragePageService {
     const isArticleMasterSrc: StoragePageService['isArticleMasterSrc'] = key => {
       const node = storageService.getNode(key)
       if (!node) return false
-      return node.article?.file?.type === StorageArticleFileType.Master
+      return node.article?.file?.type === 'Master'
     }
 
     const isArticleDraftSrc: StoragePageService['isArticleDraftSrc'] = key => {
       const node = storageService.getNode(key)
       if (!node) return false
-      return node.article?.file?.type === StorageArticleFileType.Draft
+      return node.article?.file?.type === 'Draft'
     }
 
     const getLocalArticleDraftData: StoragePageService['getLocalArticleDraftData'] = draftNodeIdd => {
@@ -1616,7 +1616,7 @@ namespace StoragePageService {
       sortFunc: StorageUtil.childrenSortFunc,
       selected: false,
       id: '',
-      nodeType: StorageNodeType.Dir,
+      nodeType: 'Dir',
       contentType: '',
       size: 0,
       share: {
@@ -1665,12 +1665,12 @@ namespace StorageTreeNodeFilter {
 
   export const DirFilter = (node: StorageNode) => {
     // ファイルを除外
-    return node.nodeType === StorageNodeType.Dir
+    return node.nodeType === 'Dir'
   }
 
   export const ArticleFilter = (node: StorageNode) => {
     // 下書きファイルは除外
-    return node.article?.file?.type !== StorageArticleFileType.Draft
+    return node.article?.file?.type !== 'Draft'
   }
 }
 

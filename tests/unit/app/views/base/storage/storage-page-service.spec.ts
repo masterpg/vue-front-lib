@@ -233,7 +233,7 @@ function newListBundleFamilyNodes() {
     article: {
       dir: {
         name: 'ブログ',
-        type: StorageArticleDirType.ListBundle,
+        type: 'ListBundle',
         sortOrder: 1,
       },
     },
@@ -242,31 +242,31 @@ function newListBundleFamilyNodes() {
     article: {
       dir: {
         name: '記事2',
-        type: StorageArticleDirType.Article,
+        type: 'Article',
         sortOrder: 2,
       },
     },
   })
   const art2_master = newStorageDirNode(StorageUtil.toArticleSrcMasterPath(art2.path), {
-    article: { file: { type: StorageArticleFileType.Master } },
+    article: { file: { type: 'Master' } },
   })
   const art2_draft = newStorageDirNode(StorageUtil.toArticleSrcDraftPath(art2.path), {
-    article: { file: { type: StorageArticleFileType.Draft } },
+    article: { file: { type: 'Draft' } },
   })
   const art1 = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
     article: {
       dir: {
         name: '記事1',
-        type: StorageArticleDirType.Article,
+        type: 'Article',
         sortOrder: 1,
       },
     },
   })
   const art1_master = newStorageDirNode(StorageUtil.toArticleSrcMasterPath(art1.path), {
-    article: { file: { type: StorageArticleFileType.Master } },
+    article: { file: { type: 'Master' } },
   })
   const art1_draft = newStorageDirNode(StorageUtil.toArticleSrcDraftPath(art1.path), {
-    article: { file: { type: StorageArticleFileType.Draft } },
+    article: { file: { type: 'Draft' } },
   })
 
   return { assets, blog, art2, art2_master, art2_draft, art1, art1_master, art1_draft }
@@ -290,7 +290,7 @@ function newTreeBundleFamilyNodes() {
     article: {
       dir: {
         name: 'プログラミング',
-        type: StorageArticleDirType.TreeBundle,
+        type: 'TreeBundle',
         sortOrder: 1,
       },
     },
@@ -299,7 +299,7 @@ function newTreeBundleFamilyNodes() {
     article: {
       dir: {
         name: 'TypeScript',
-        type: StorageArticleDirType.Category,
+        type: 'Category',
         sortOrder: 1,
       },
     },
@@ -308,31 +308,31 @@ function newTreeBundleFamilyNodes() {
     article: {
       dir: {
         name: '変数',
-        type: StorageArticleDirType.Article,
+        type: 'Article',
         sortOrder: 2,
       },
     },
   })
   const variable_master = newStorageDirNode(StorageUtil.toArticleSrcMasterPath(variable.path), {
-    article: { file: { type: StorageArticleFileType.Master } },
+    article: { file: { type: 'Master' } },
   })
   const variable_draft = newStorageDirNode(StorageUtil.toArticleSrcDraftPath(variable.path), {
-    article: { file: { type: StorageArticleFileType.Draft } },
+    article: { file: { type: 'Draft' } },
   })
   const clazz = newStorageDirNode(`${ts.path}/${StorageNode.generateId()}`, {
     article: {
       dir: {
         name: 'クラス',
-        type: StorageArticleDirType.Article,
+        type: 'Article',
         sortOrder: 1,
       },
     },
   })
   const clazz_master = newStorageDirNode(StorageUtil.toArticleSrcMasterPath(clazz.path), {
-    article: { file: { type: StorageArticleFileType.Master } },
+    article: { file: { type: 'Master' } },
   })
   const clazz_draft = newStorageDirNode(StorageUtil.toArticleSrcDraftPath(clazz.path), {
-    article: { file: { type: StorageArticleFileType.Draft } },
+    article: { file: { type: 'Draft' } },
   })
 
   return { assets, programming, ts, variable, variable_master, variable_draft, clazz, clazz_master, clazz_draft }
@@ -1986,7 +1986,7 @@ describe('StoragePageService', () => {
       const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         article: {
           dir: {
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             name: 'バンドル',
             sortOrder: 1,
           },
@@ -2027,7 +2027,7 @@ describe('StoragePageService', () => {
       const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         article: {
           dir: {
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             name: 'バンドル',
             sortOrder: 1,
           },
@@ -2037,7 +2037,7 @@ describe('StoragePageService', () => {
       const cat1 = newTreeDirNodeInput(`${bundle.path}/${StorageNode.generateId()}`, {
         article: {
           dir: {
-            type: StorageArticleDirType.Category,
+            type: 'Category',
             name: 'カテゴリ1',
             sortOrder: 1,
           },
@@ -2086,7 +2086,7 @@ describe('StoragePageService', () => {
       const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         article: {
           dir: {
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             name: 'バンドル',
             sortOrder: 1,
           },
@@ -2096,7 +2096,7 @@ describe('StoragePageService', () => {
       const art1 = newTreeDirNodeInput(`${bundle.path}/${StorageNode.generateId()}`, {
         article: {
           dir: {
-            type: StorageArticleDirType.Article,
+            type: 'Article',
             name: '記事1',
             sortOrder: 1,
           },
@@ -2104,10 +2104,10 @@ describe('StoragePageService', () => {
         lazyLoadStatus: 'none',
       })
       const art1_master = newTreeFileNodeInput(StorageUtil.toArticleSrcMasterPath(art1.path), {
-        article: { file: { type: StorageArticleFileType.Master } },
+        article: { file: { type: 'Master' } },
       })
       const art1_draft = newTreeFileNodeInput(StorageUtil.toArticleSrcDraftPath(art1.path), {
-        article: { file: { type: StorageArticleFileType.Draft } },
+        article: { file: { type: 'Draft' } },
       })
       pageService.setAllTreeNodes([bundle])
 
@@ -2149,7 +2149,7 @@ describe('StoragePageService', () => {
       const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         article: {
           dir: {
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             name: 'バンドル',
             sortOrder: 1,
           },
@@ -2178,7 +2178,7 @@ describe('StoragePageService', () => {
       const bundle = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         article: {
           dir: {
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             name: 'バンドル',
             sortOrder: 1,
           },
@@ -3344,7 +3344,7 @@ describe('StoragePageService', () => {
       const bundle1 = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         article: {
           dir: {
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             name: 'バンドル1',
             sortOrder: 2,
           },
@@ -3353,7 +3353,7 @@ describe('StoragePageService', () => {
       const bundle2 = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         article: {
           dir: {
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             name: 'バンドル2',
             sortOrder: 1,
           },
@@ -3401,7 +3401,7 @@ describe('StoragePageService', () => {
       const bundle1 = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         article: {
           dir: {
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             name: 'バンドル1',
             sortOrder: 2,
           },
@@ -3410,7 +3410,7 @@ describe('StoragePageService', () => {
       const bundle2 = newTreeDirNodeInput(`${StorageNode.generateId()}`, {
         article: {
           dir: {
-            type: StorageArticleDirType.TreeBundle,
+            type: 'TreeBundle',
             name: 'バンドル2',
             sortOrder: 1,
           },

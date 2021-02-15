@@ -149,9 +149,9 @@ namespace StorageDirTableRow {
 
     const type = computed(() => {
       switch (nodeType.value) {
-        case StorageNodeType.Dir:
+        case 'Dir':
           return pageService.getNodeTypeLabel(node)
-        case StorageNodeType.File:
+        case 'File':
           return node.contentType
         default:
           return ''
@@ -160,7 +160,7 @@ namespace StorageDirTableRow {
 
     const label = computed(() => {
       const nodeLabel = pageService.getDisplayNodeName(node)
-      return nodeType.value === StorageNodeType.Dir ? `${nodeLabel}/` : nodeLabel
+      return nodeType.value === 'Dir' ? `${nodeLabel}/` : nodeLabel
     })
 
     const id = computed(() => node.id)
@@ -186,7 +186,7 @@ namespace StorageDirTableRow {
     })
 
     const size = computed(() => {
-      return nodeType.value === StorageNodeType.Dir ? '' : bytes(node.size)
+      return nodeType.value === 'Dir' ? '' : bytes(node.size)
     })
 
     const article = computed(() => node.article)
@@ -195,9 +195,9 @@ namespace StorageDirTableRow {
 
     const updatedAtNum = computed(() => node.updatedAt.unix())
 
-    const isDir = computed(() => nodeType.value === StorageNodeType.Dir)
+    const isDir = computed(() => nodeType.value === 'Dir')
 
-    const isFile = computed(() => nodeType.value === StorageNodeType.File)
+    const isFile = computed(() => nodeType.value === 'File')
 
     const selected = computed<boolean>(() => {
       if (!table.selected) return false
@@ -332,7 +332,7 @@ namespace StorageDirView {
       // 選択ノードがルートノード配下のノードの場合
       else {
         const selectedNode = pageService.sgetStorageNode({ path: selectedNodePath })
-        dirPath = selectedNode.nodeType === StorageNodeType.Dir ? selectedNode.path : selectedNode.dir
+        dirPath = selectedNode.nodeType === 'Dir' ? selectedNode.path : selectedNode.dir
       }
 
       // 前回と今回で対象となるディレクトリが異なる場合
@@ -388,9 +388,9 @@ namespace StorageDirView {
           const y = descending ? a : b
 
           if (sortBy_ === 'label') {
-            if (x.nodeType === StorageNodeType.Dir && y.nodeType === StorageNodeType.File) {
+            if (x.nodeType === 'Dir' && y.nodeType === 'File') {
               return -1
-            } else if (x.nodeType === StorageNodeType.File && y.nodeType === StorageNodeType.Dir) {
+            } else if (x.nodeType === 'File' && y.nodeType === 'Dir') {
               return 1
             }
             return x[sortBy_] > y[sortBy_] ? 1 : x[sortBy_] < y[sortBy_] ? -1 : 0

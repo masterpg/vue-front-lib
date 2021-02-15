@@ -6,9 +6,9 @@
   <q-dialog ref="dialog" class="SignUpDialog" v-model="opened" persistent>
     <!-- プロバイダリストビュー -->
     <ProviderListView
-      v-if="state.viewType === 'providerList'"
+      v-if="state.viewType === 'ProviderList'"
       :title="state.title"
-      type="signUp"
+      type="SignUp"
       @select-google="selectGoogle()"
       @select-facebook="selectFacebook()"
       @select-email="selectEmail()"
@@ -16,10 +16,10 @@
     />
 
     <!-- メールアドレスサインアップビュー -->
-    <EmailSignUpView v-else-if="state.viewType === 'emailSignUp'" :title="state.title" @closed="emailSignUpViewOnClose" />
+    <EmailSignUpView v-else-if="state.viewType === 'EmailSignUp'" :title="state.title" @closed="emailSignUpViewOnClose" />
 
     <!-- メールアドレス検証中ビュー -->
-    <AuthMessageView v-else-if="state.viewType === 'emailVerifying'" :title="state.title">
+    <AuthMessageView v-else-if="state.viewType === 'EmailVerifying'" :title="state.title">
       <template v-slot:message>{{ t('auth.emailVerifyingMsg', { email: state.email }) }}</template>
     </AuthMessageView>
   </q-dialog>
@@ -67,7 +67,7 @@ namespace SignUpDialog {
 
     const state = reactive({
       title: String(i18n.t('common.signUp')),
-      viewType: 'providerList' as 'providerList' | 'emailSignUp' | 'emailVerifying',
+      viewType: 'ProviderList' as 'ProviderList' | 'EmailSignUp' | 'EmailVerifying',
       email: '',
     })
 
@@ -78,7 +78,7 @@ namespace SignUpDialog {
     //----------------------------------------------------------------------
 
     const open: SignUpDialog['open'] = async () => {
-      state.viewType = 'providerList'
+      state.viewType = 'ProviderList'
       return base.open()
     }
 
@@ -103,20 +103,20 @@ namespace SignUpDialog {
     }
 
     function selectEmail(): void {
-      state.viewType = 'emailSignUp'
+      state.viewType = 'EmailSignUp'
     }
 
     async function emailSignUpViewOnClose(closeResult: EmailSignUpViewResult) {
       switch (closeResult.status) {
-        case AuthStatus.WaitForEmailVerified: {
+        case 'WaitForEmailVerified': {
           // メールアドレス検証中ビューに遷移
           state.email = closeResult.email
-          state.viewType = 'emailVerifying'
+          state.viewType = 'EmailVerifying'
           // URLからダイアログクエリを削除
           Dialogs.clearQuery()
           break
         }
-        case 'cancel': {
+        case 'Cancel': {
           close()
           break
         }

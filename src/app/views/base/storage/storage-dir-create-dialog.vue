@@ -98,7 +98,7 @@ namespace StorageDirCreateDialog {
     const parentNode: Ref<StorageNode | null> = ref(null)
 
     const icon = computed(() => {
-      return pageService.getNodeTypeIcon({ nodeType: StorageNodeType.Dir, article: state.article })
+      return pageService.getNodeTypeIcon({ nodeType: 'Dir', article: state.article })
     })
 
     const iconSize = computed(() => {
@@ -106,7 +106,7 @@ namespace StorageDirCreateDialog {
     })
 
     const title = computed(() => {
-      const nodeTypeLabel = pageService.getNodeTypeLabel({ nodeType: StorageNodeType.Dir, article: state.article })
+      const nodeTypeLabel = pageService.getNodeTypeLabel({ nodeType: 'Dir', article: state.article })
       return String(i18n.t('common.createSth', { sth: nodeTypeLabel }))
     })
 
@@ -174,7 +174,7 @@ namespace StorageDirCreateDialog {
     function validate(): boolean {
       // ディレクトリ名必須入力チェック
       if (dirName.value === '') {
-        const target = String(i18n.t('common.sthName', { sth: StorageNodeType.getLabel(StorageNodeType.Dir) }))
+        const target = String(i18n.t('common.sthName', { sth: StorageNodeType.getLabel('Dir') }))
         errorMessage.value = String(i18n.t('error.required', { target }))
         return false
       }

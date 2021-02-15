@@ -151,11 +151,11 @@ namespace StorageDirPathBreadcrumb {
         if (selectedNode) {
           let dirPath = ''
           switch (selectedNode.nodeType) {
-            case StorageNodeType.Dir: {
+            case 'Dir': {
               dirPath = selectedNode.path
               break
             }
-            case StorageNodeType.File: {
+            case 'File': {
               dirPath = selectedNode.dir
               break
             }
@@ -176,7 +176,7 @@ namespace StorageDirPathBreadcrumb {
               // パンくず経由で記事編集画面からディレクトリ一覧画面に戻りたい。
               // 次の記述により、パンくずの最後尾ディレクトリであっても記事ディレクトリの
               // 場合はクリック可能になる。
-              lastEnabled: parentNode?.article?.dir?.type === StorageArticleDirType.Article,
+              lastEnabled: parentNode?.article?.dir?.type === 'Article',
             })
           }
         }

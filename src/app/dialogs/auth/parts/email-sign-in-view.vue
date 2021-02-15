@@ -95,7 +95,7 @@ type EmailSignInViewResult = {
   email: string
 }
 
-type EmailSignInViewStatus = AuthStatus.WaitForEmailVerified | AuthStatus.WaitForEntry | AuthStatus.Available | 'passwordReset' | 'cancel'
+type EmailSignInViewStatus = 'WaitForEmailVerified' | 'WaitForEntry' | 'Available' | 'PasswordReset' | 'Cancel'
 
 namespace EmailSignInView {
   export interface Props {
@@ -165,7 +165,7 @@ namespace EmailSignInView {
        * ビューを閉じます。
        */
       function close(closeResult?: EmailSignInViewResult) {
-        closeResult = closeResult ?? { status: 'cancel', email: '' }
+        closeResult = closeResult ?? { status: 'Cancel', email: '' }
         ctx.emit('closed', closeResult)
         clear()
       }
@@ -210,13 +210,13 @@ namespace EmailSignInView {
           return
         }
 
-        if (service.auth.status.value === AuthStatus.None) {
+        if (service.auth.status.value === 'None') {
           Loading.hide()
           throw new Error(`This is a auth status not assumed: ${service.auth.status}`)
         }
 
         // メールアドレス検証中の場合、再度検証用メールを送信
-        if (service.auth.status.value === AuthStatus.WaitForEmailVerified) {
+        if (service.auth.status.value === 'WaitForEmailVerified') {
           const continueURL = `${window.location.origin}/?${Dialogs.createQuery('signIn')}`
           const authResult = await service.auth.sendEmailVerification(continueURL)
           if (!authResult.result) {
@@ -244,7 +244,7 @@ namespace EmailSignInView {
        */
       function resetPassword(): void {
         close({
-          status: 'passwordReset',
+          status: 'PasswordReset',
           email: state.email ?? '',
         })
       }

@@ -290,11 +290,11 @@ namespace ArticleDirView {
 
       function rowFilter(rows: StorageDirTableRow[]): StorageDirTableRow[] {
         // 下書きファイルはテーブルに表示しない
-        return rows.filter(row => row.article?.file?.type !== StorageArticleFileType.Draft)
+        return rows.filter(row => row.article?.file?.type !== 'Draft')
       }
 
       function isArticleSrcMaster(row: StorageDirTableRow): boolean {
-        return row.article?.file?.type === StorageArticleFileType.Master
+        return row.article?.file?.type === 'Master'
       }
 
       //----------------------------------------------------------------------
@@ -307,7 +307,7 @@ namespace ArticleDirView {
         // 対象ディレクトリが記事の場合
         if (base.targetDir.value && pageService.isArticleDir(base.targetDir.value)) {
           // 選択に記事ソースファイルが含まれていた場合、選択から記事ファイルを除去
-          const articleFileIndex = e.rows.findIndex(row => row.article?.file?.type === StorageArticleFileType.Master)
+          const articleFileIndex = e.rows.findIndex(row => row.article?.file?.type === 'Master')
           if (articleFileIndex >= 0) {
             e.rows.splice(articleFileIndex, 1)
           }

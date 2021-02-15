@@ -21,7 +21,7 @@
     <!--
       アカウント削除ビュー
     -->
-    <q-card v-if="state.viewType === 'userDelete' || sate.viewType === 'userDelete.signIn'" class="container">
+    <q-card v-if="state.viewType === 'UserDelete' || sate.viewType === 'UserDelete.SignIn'" class="container">
       <!-- タイトル -->
       <q-card-section>
         <div class="title">{{ t('auth.deleteUser') }}</div>
@@ -29,8 +29,8 @@
 
       <!-- コンテンツエリア -->
       <q-card-section>
-        <div v-if="state.viewType === 'userDelete'">{{ t('auth.deleteUserMsg') }}</div>
-        <div v-else-if="state.viewType === 'userDelete.signIn'">{{ t('auth.deleteUserSignInMsg') }}</div>
+        <div v-if="state.viewType === 'UserDelete'">{{ t('auth.deleteUserMsg') }}</div>
+        <div v-else-if="state.viewType === 'UserDelete.SignIn'">{{ t('auth.deleteUserSignInMsg') }}</div>
       </q-card-section>
 
       <!-- エラーメッセージ -->
@@ -43,10 +43,10 @@
         <!-- CANCELボタン -->
         <q-btn flat rounded color="primary" :label="t('common.cancel')" @click="close()" />
         <!-- OKボタン -->
-        <q-btn v-show="state.viewType === 'userDelete'" flat rounded color="primary" :label="t('common.ok')" @click="deleteUser()" />
+        <q-btn v-show="state.viewType === 'UserDelete'" flat rounded color="primary" :label="t('common.ok')" @click="deleteUser()" />
         <!-- SIGN INボタン -->
         <q-btn
-          v-show="state.viewType === 'userDelete.signIn'"
+          v-show="state.viewType === 'UserDelete.SignIn'"
           flat
           rounded
           color="primary"
@@ -60,9 +60,9 @@
       プロバイダリストビュー
     -->
     <ProviderListView
-      v-if="state.viewType === 'providerList'"
+      v-if="state.viewType === 'ProviderList'"
       :title="t('common.signIn')"
-      type="signIn"
+      type="SignIn"
       :visible-providers="state.visibleProviders"
       @select-google="selectGoogle()"
       @select-facebook="selectFacebook()"
@@ -75,7 +75,7 @@
       サインインビュー
     -->
     <EmailSignInView
-      v-else-if="state.viewType === 'emailSignIn'"
+      v-else-if="state.viewType === 'EmailSignIn'"
       :title="t('common.signIn')"
       :email="state.currentEmail"
       readonly-email
@@ -124,7 +124,7 @@ namespace UserDeleteDialog {
 
     const state = reactive({
       title: String(i18n.t('auth.deleteUser')),
-      viewType: 'userDelete' as 'userDelete' | 'userDelete.signIn' | 'providerList' | 'emailSignIn',
+      viewType: 'UserDelete' as 'UserDelete' | 'UserDelete.SignIn' | 'ProviderList' | 'EmailSignIn',
       currentEmail: null as string | null,
       visibleProviders: [] as AuthProviderType[],
       errorMessage: '',
@@ -166,7 +166,7 @@ namespace UserDeleteDialog {
         state.errorMessage = deleteResult.errorMessage
         // ユーザーの認証情報が古すぎる場合、再度サインインが必要
         if (deleteResult.code === 'auth/requires-recent-login') {
-          state.viewType = 'userDelete.signIn'
+          state.viewType = 'UserDelete.SignIn'
         }
         Loading.hide()
         return
@@ -185,7 +185,7 @@ namespace UserDeleteDialog {
     }
 
     function selectEmail(): void {
-      state.viewType = 'emailSignIn'
+      state.viewType = 'EmailSignIn'
     }
 
     async function selectAnonymous(): Promise<void> {
@@ -194,13 +194,13 @@ namespace UserDeleteDialog {
 
     function visibleUserDelete() {
       state.errorMessage = ''
-      state.viewType = 'userDelete'
+      state.viewType = 'UserDelete'
     }
 
     async function visibleProviderList(): Promise<void> {
       const user = service.auth.user
       state.visibleProviders = await service.auth.fetchSignInMethodsForEmail(user.email)
-      state.viewType = 'providerList'
+      state.viewType = 'ProviderList'
     }
 
     //----------------------------------------------------------------------
@@ -211,13 +211,13 @@ namespace UserDeleteDialog {
 
     async function emailSignInViewOnClose(closeResult: EmailSignInViewResult) {
       switch (closeResult.status) {
-        case AuthStatus.WaitForEmailVerified:
-        case AuthStatus.WaitForEntry:
-        case AuthStatus.Available: {
+        case 'WaitForEmailVerified':
+        case 'WaitForEntry':
+        case 'Available': {
           visibleUserDelete()
           break
         }
-        case 'cancel': {
+        case 'Cancel': {
           close()
         }
       }

@@ -35,10 +35,7 @@ interface SetOwnUserInfoResult {
   user?: User
 }
 
-enum SetOwnUserInfoResultStatus {
-  AlreadyExists = 'AlreadyExists',
-  Success = 'Success',
-}
+type SetOwnUserInfoResultStatus = 'AlreadyExists' | 'Success'
 
 interface AuthDataResult {
   status: AuthStatus

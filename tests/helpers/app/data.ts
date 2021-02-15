@@ -4,7 +4,7 @@ import { AuthStatus } from '@/app/service'
 export function GeneralToken(): TestAuthToken {
   return {
     uid: 'test.general',
-    authStatus: AuthStatus.Available,
+    authStatus: 'Available',
     isAppAdmin: false,
   }
 }
@@ -33,7 +33,7 @@ export function GeneralUser(): TestUserInput {
 export function AppAdminToken(): TestAuthToken {
   return {
     uid: 'test.app.admin',
-    authStatus: AuthStatus.Available,
+    authStatus: 'Available',
     isAppAdmin: true,
   }
 }

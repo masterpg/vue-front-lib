@@ -315,7 +315,7 @@ namespace StorageNodeMoveDialog {
 
       for (const node of nodes) {
         // ディレクトリノード以外はツリービューに追加しない
-        if (node.nodeType !== StorageNodeType.Dir) continue
+        if (node.nodeType !== 'Dir') continue
         // 移動ノードはツリービューに追加しない
         if (movingNodes.value.some(movingNode => movingNode.path === node.path)) continue
         // 現在の親ディレクトリは選択できないよう設定
@@ -336,14 +336,14 @@ namespace StorageNodeMoveDialog {
      * 移動ノードに｢カテゴリ｣を含んでいるかを取得します。
      */
     function containsCategory(): boolean {
-      return movingNodes.value.some(node => node.article?.dir?.type === StorageArticleDirType.Category)
+      return movingNodes.value.some(node => node.article?.dir?.type === 'Category')
     }
 
     /**
      * 移動ノードに｢記事｣を含んでいるかを取得します。
      */
     function containsArticle(): boolean {
-      return movingNodes.value.some(node => node.article?.dir?.type === StorageArticleDirType.Article)
+      return movingNodes.value.some(node => node.article?.dir?.type === 'Article')
     }
 
     //--------------------------------------------------
@@ -360,7 +360,7 @@ namespace StorageNodeMoveDialog {
         const nodeData = childNodeDataList[i]
         // 一般ディレクトリまたはファイルは｢一般ディレクトリ、記事｣へのみ移動可能であり、それ以外は選択不可
         const articleDirType = nodeData.article?.dir?.type
-        if (!(!articleDirType || articleDirType === StorageArticleDirType.Article)) {
+        if (!(!articleDirType || articleDirType === 'Article')) {
           nodeData.unselectable = true
         }
       }
@@ -378,7 +378,7 @@ namespace StorageNodeMoveDialog {
         const nodeData = childNodeDataList[i]
         // カテゴリは｢ツリーバンドル、カテゴリ｣へのみ移動可能であり、それ以外の移動先ノードは除去
         const articleDirType = nodeData.article?.dir?.type
-        if (!(articleDirType === StorageArticleDirType.TreeBundle || articleDirType === StorageArticleDirType.Category)) {
+        if (!(articleDirType === 'TreeBundle' || articleDirType === 'Category')) {
           childNodeDataList.splice(i--, 1)
         }
       }
@@ -396,13 +396,7 @@ namespace StorageNodeMoveDialog {
         const nodeData = childNodeDataList[i]
         // 記事は｢リストバンドル、ツリーバンドル、カテゴリ｣へのみ移動可能であり、それ以外の移動先ノードは除去
         const articleDirType = nodeData.article?.dir?.type
-        if (
-          !(
-            articleDirType === StorageArticleDirType.ListBundle ||
-            articleDirType === StorageArticleDirType.TreeBundle ||
-            articleDirType === StorageArticleDirType.Category
-          )
-        ) {
+        if (!(articleDirType === 'ListBundle' || articleDirType === 'TreeBundle' || articleDirType === 'Category')) {
           childNodeDataList.splice(i--, 1)
         }
       }

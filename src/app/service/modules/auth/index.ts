@@ -275,11 +275,11 @@ namespace AuthService {
 
     const setUserInfo: AuthService['setUserInfo'] = async input => {
       const apiResult = await api.setOwnUserInfo(input)
-      if (apiResult.status === SetOwnUserInfoResultStatus.AlreadyExists) {
+      if (apiResult.status === 'AlreadyExists') {
         return apiResult
       }
 
-      if (status.value === AuthStatus.WaitForEntry) {
+      if (status.value === 'WaitForEntry') {
         await refreshUser()
       } else {
         store.user.set(apiResult.user!)
@@ -302,7 +302,7 @@ namespace AuthService {
       if (user) {
         // 認証データをサーバーから取得
         const authData = await api.getAuthData()
-        if (authData.status === AuthStatus.Available) {
+        if (authData.status === 'Available') {
           // ストアにユーザーデータを設定
           store.user.set(authData.user!)
           // カスタムトークンを認証トークンに設定
@@ -330,7 +330,7 @@ namespace AuthService {
         // ストアをクリア
         store.user.clear()
         // 認証ステータスをクリア
-        internal.auth.status.value = AuthStatus.None
+        internal.auth.status.value = 'None'
         // サインイン中フラグをオフ
         state.isSigningIn = false
       }
