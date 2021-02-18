@@ -588,10 +588,14 @@ namespace StoragePage {
       await pageService.fetchStorageChildren(e.node.path)
       e.done()
 
-      // ディレクトリビューをリフレッシュ
+      // 遅延ロードの対象ノードがディレクトリビューに表示されている場合
       if (e.node.id === dirView.value!.targetDir?.id) {
+        // ディレクトリビューをリフレッシュ
         dirView.value!.refresh()
       }
+
+      // 遅延ロードの対象ノードを展開
+      e.node.open()
 
       dirView.value!.loading = false
     }
