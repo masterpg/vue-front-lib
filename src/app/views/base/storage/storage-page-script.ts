@@ -588,6 +588,11 @@ namespace StoragePage {
       await pageService.fetchStorageChildren(e.node.path)
       e.done()
 
+      // ディレクトリビューをリフレッシュ
+      if (e.node.id === dirView.value!.targetDir?.id) {
+        dirView.value!.refresh()
+      }
+
       dirView.value!.loading = false
     }
 

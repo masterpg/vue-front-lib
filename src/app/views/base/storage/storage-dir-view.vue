@@ -94,6 +94,10 @@ interface StorageDirView extends StorageDirView.Props {
    */
   setSelectedNode(selectedNodePath: string | null): void
   /**
+   * 現在設定されているノードでビューをリフレッシュします。
+   */
+  refresh(): void
+  /**
    * 現在表示されているディレクトリノードです。
    */
   readonly targetDir: StorageNode | null
@@ -345,6 +349,10 @@ namespace StorageDirView {
       buildDirChildNodes(dirPath)
     }
 
+    const refresh: StorageDirView['refresh'] = () => {
+      setSelectedNode(state.dirPath)
+    }
+
     //----------------------------------------------------------------------
     //
     //  Internal methods
@@ -494,6 +502,7 @@ namespace StorageDirView {
       filteredSortedRows,
       loading,
       setSelectedNode,
+      refresh,
       clear,
       sortMethod,
       buildDirChildNodes,
