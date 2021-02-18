@@ -9,7 +9,7 @@ import {
   newStorageFileNode,
   provideDependency,
 } from '../../../../../helpers/app'
-import { StorageArticleDirType, StorageArticleFileType, StorageNode, StorageUtil } from '@/app/service'
+import { StorageNode, StorageUtil } from '@/app/service'
 import _path from 'path'
 import dayjs from 'dayjs'
 import { useConfig } from '@/app/config'
@@ -22,7 +22,7 @@ import { useConfig } from '@/app/config'
 
 describe('AppStorageService', () => {
   let users: StorageNode
-  let user: StorageNode
+  let userRoot: StorageNode
   let articles: StorageNode
   let assets: StorageNode
   let basePath: string
@@ -33,14 +33,16 @@ describe('AppStorageService', () => {
 
   beforeEach(async () => {
     provideDependency(({ service }) => {
+      // Firebaseの認証状態が変化した際の処理は実行されたくないので無効化
+      service.auth.firebaseOnAuthStateChanged.value = async user => {}
       // ベースパスをモック化
       const config = useConfig()
       basePath = _path.join(config.storage.user.rootName, GeneralToken().uid, config.storage.article.rootName)
       service.articleStorage.basePath.value = basePath
       // ベースパスノードの作成
       users = newStorageDirNode(`${config.storage.user.rootName}`)
-      user = newStorageDirNode(`${users.path}/${GeneralToken().uid}`)
-      articles = newStorageDirNode(`${user.path}/${config.storage.article.rootName}`)
+      userRoot = newStorageDirNode(`${users.path}/${GeneralToken().uid}`)
+      articles = newStorageDirNode(`${userRoot.path}/${config.storage.article.rootName}`)
       assets = newStorageDirNode(`${articles.path}/${config.storage.article.assetsName}`)
       // サービスのAPI系メソッドをモック化
       mockStorageServiceAPIMethods(service)
@@ -59,7 +61,7 @@ describe('AppStorageService', () => {
       } = provideDependency()
 
       // モック設定
-      td.when(articleStorage.getHierarchicalNodesAPI(basePath)).thenResolve([users, user, articles])
+      td.when(articleStorage.getHierarchicalNodesAPI(basePath)).thenResolve([users, userRoot, articles])
       td.when(articleStorage.getNodeAPI({ path: assets.path })).thenResolve(assets)
 
       // テスト対象実行
@@ -68,7 +70,7 @@ describe('AppStorageService', () => {
       const hierarchicalNodes = appStorage.getHierarchicalNodes(assets.path)
       expect(hierarchicalNodes.length).toBe(4)
       expect(hierarchicalNodes[0].path).toBe(users.path)
-      expect(hierarchicalNodes[1].path).toBe(user.path)
+      expect(hierarchicalNodes[1].path).toBe(userRoot.path)
       expect(hierarchicalNodes[2].path).toBe(articles.path)
       expect(hierarchicalNodes[3].path).toBe(assets.path)
     })
@@ -80,7 +82,7 @@ describe('AppStorageService', () => {
 
       // モック設定
       td.when(articleStorage.getHierarchicalNodesAPI(basePath)).thenResolve([])
-      td.when(articleStorage.createHierarchicalDirsAPI([basePath])).thenResolve([users, user, articles])
+      td.when(articleStorage.createHierarchicalDirsAPI([basePath])).thenResolve([users, userRoot, articles])
       td.when(articleStorage.getNodeAPI({ path: assets.path })).thenResolve(undefined)
       td.when(articleStorage.createArticleGeneralDirAPI(assets.path)).thenResolve(assets)
 
@@ -90,7 +92,7 @@ describe('AppStorageService', () => {
       const hierarchicalNodes = appStorage.getHierarchicalNodes(assets.path)
       expect(hierarchicalNodes.length).toBe(4)
       expect(hierarchicalNodes[0].path).toBe(users.path)
-      expect(hierarchicalNodes[1].path).toBe(user.path)
+      expect(hierarchicalNodes[1].path).toBe(userRoot.path)
       expect(hierarchicalNodes[2].path).toBe(articles.path)
       expect(hierarchicalNodes[3].path).toBe(assets.path)
     })
@@ -111,7 +113,7 @@ describe('AppStorageService', () => {
       const {
         service: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
-        store.storage.setAll([users, user, articles, bundle])
+        store.storage.setAll([users, userRoot, articles, bundle])
       })
 
       // モック設定
@@ -144,7 +146,7 @@ describe('AppStorageService', () => {
       const hierarchicalNodes = appStorage.getHierarchicalNodes(renamed_bundle.path)
       expect(hierarchicalNodes.length).toBe(4)
       expect(hierarchicalNodes[0].path).toBe(users.path)
-      expect(hierarchicalNodes[1].path).toBe(user.path)
+      expect(hierarchicalNodes[1].path).toBe(userRoot.path)
       expect(hierarchicalNodes[2].path).toBe(articles.path)
       expect(hierarchicalNodes[3].path).toBe(renamed_bundle.path)
     })
@@ -154,7 +156,7 @@ describe('AppStorageService', () => {
       const {
         service: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
-        store.storage.setAll([users, user, articles, assets, d1])
+        store.storage.setAll([users, userRoot, articles, assets, d1])
       })
 
       // モック設定
@@ -180,7 +182,7 @@ describe('AppStorageService', () => {
       const hierarchicalNodes = appStorage.getHierarchicalNodes(renamed_x1.path)
       expect(hierarchicalNodes.length).toBe(5)
       expect(hierarchicalNodes[0].path).toBe(users.path)
-      expect(hierarchicalNodes[1].path).toBe(user.path)
+      expect(hierarchicalNodes[1].path).toBe(userRoot.path)
       expect(hierarchicalNodes[2].path).toBe(articles.path)
       expect(hierarchicalNodes[3].path).toBe(assets.path)
       expect(hierarchicalNodes[4].path).toBe(renamed_x1.path)
@@ -196,7 +198,7 @@ describe('AppStorageService', () => {
       const {
         service: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
-        store.storage.setAll([users, user, articles, assets, f1])
+        store.storage.setAll([users, userRoot, articles, assets, f1])
       })
 
       // モック設定
@@ -222,7 +224,7 @@ describe('AppStorageService', () => {
       const hierarchicalNodes = appStorage.getHierarchicalNodes(renamed_x1.path)
       expect(hierarchicalNodes.length).toBe(5)
       expect(hierarchicalNodes[0].path).toBe(users.path)
-      expect(hierarchicalNodes[1].path).toBe(user.path)
+      expect(hierarchicalNodes[1].path).toBe(userRoot.path)
       expect(hierarchicalNodes[2].path).toBe(articles.path)
       expect(hierarchicalNodes[3].path).toBe(assets.path)
       expect(hierarchicalNodes[4].path).toBe(renamed_x1.path)
@@ -262,7 +264,7 @@ describe('AppStorageService', () => {
       const {
         service: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
-        store.storage.setAll([users, user, articles, bundle, cat1, art1])
+        store.storage.setAll([users, userRoot, articles, bundle, cat1, art1])
       })
 
       // モック設定
@@ -278,7 +280,7 @@ describe('AppStorageService', () => {
       const hierarchicalNodes = appStorage.getHierarchicalNodes(d1.path)
       expect(hierarchicalNodes.length).toBe(7)
       expect(hierarchicalNodes[0].path).toBe(users.path)
-      expect(hierarchicalNodes[1].path).toBe(user.path)
+      expect(hierarchicalNodes[1].path).toBe(userRoot.path)
       expect(hierarchicalNodes[2].path).toBe(articles.path)
       expect(hierarchicalNodes[3].path).toBe(bundle.path)
       expect(hierarchicalNodes[4].path).toBe(cat1.path)
@@ -319,7 +321,7 @@ describe('AppStorageService', () => {
         service: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
         // ※｢bundle｣が欠けているように設定
-        store.storage.setAll([users, user, articles, cat1, art1])
+        store.storage.setAll([users, userRoot, articles, cat1, art1])
       })
 
       let actual!: Error
@@ -348,7 +350,7 @@ describe('AppStorageService', () => {
       const {
         service: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
-        store.storage.setAll([users, user, articles])
+        store.storage.setAll([users, userRoot, articles])
       })
 
       // モック設定
@@ -379,7 +381,7 @@ describe('AppStorageService', () => {
       const hierarchicalNodes = appStorage.getHierarchicalNodes(bundle.path)
       expect(hierarchicalNodes.length).toBe(4)
       expect(hierarchicalNodes[0].path).toBe(users.path)
-      expect(hierarchicalNodes[1].path).toBe(user.path)
+      expect(hierarchicalNodes[1].path).toBe(userRoot.path)
       expect(hierarchicalNodes[2].path).toBe(articles.path)
       expect(hierarchicalNodes[3].path).toBe(bundle.path)
     })
@@ -429,7 +431,7 @@ describe('AppStorageService', () => {
       const {
         service: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
-        store.storage.setAll([users, user, articles, bundle, cat1])
+        store.storage.setAll([users, userRoot, articles, bundle, cat1])
       })
 
       // モック設定
@@ -461,7 +463,7 @@ describe('AppStorageService', () => {
       const hierarchicalNodes = appStorage.getHierarchicalNodes(art1.path)
       expect(hierarchicalNodes.length).toBe(6)
       expect(hierarchicalNodes[0].path).toBe(users.path)
-      expect(hierarchicalNodes[1].path).toBe(user.path)
+      expect(hierarchicalNodes[1].path).toBe(userRoot.path)
       expect(hierarchicalNodes[2].path).toBe(articles.path)
       expect(hierarchicalNodes[3].path).toBe(bundle.path)
       expect(hierarchicalNodes[4].path).toBe(cat1.path)
@@ -487,7 +489,7 @@ describe('AppStorageService', () => {
       const {
         service: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
-        store.storage.setAll([users, user, articles])
+        store.storage.setAll([users, userRoot, articles])
       })
 
       // モック設定
@@ -552,7 +554,7 @@ describe('AppStorageService', () => {
         service: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
         // ※｢bundle｣が欠けているように設定
-        store.storage.setAll([users, user, articles, cat1])
+        store.storage.setAll([users, userRoot, articles, cat1])
       })
 
       let actual!: Error
@@ -603,7 +605,7 @@ describe('AppStorageService', () => {
       const {
         service: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
-        store.storage.setAll([users, user, articles, bundle, art2, art1])
+        store.storage.setAll([users, userRoot, articles, bundle, art2, art1])
       })
 
       // モック設定
@@ -664,7 +666,7 @@ describe('AppStorageService', () => {
       const {
         service: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
-        store.storage.setAll([users, user, articles, bundle, ...arts])
+        store.storage.setAll([users, userRoot, articles, bundle, ...arts])
       })
 
       // モック設定
@@ -728,7 +730,7 @@ describe('AppStorageService', () => {
       const {
         service: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
-        store.storage.setAll([users, user, articles, bundle, art1, art1_master, art1_draft])
+        store.storage.setAll([users, userRoot, articles, bundle, art1, art1_master, art1_draft])
       })
 
       // モック設定
@@ -813,7 +815,7 @@ describe('AppStorageService', () => {
       const {
         service: { articleStorage, appStorage },
       } = provideDependency(({ store }) => {
-        store.storage.setAll([users, user, articles, bundle, art1, art1_master, art1_draft])
+        store.storage.setAll([users, userRoot, articles, bundle, art1, art1_master, art1_draft])
       })
 
       // モック設定

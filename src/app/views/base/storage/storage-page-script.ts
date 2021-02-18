@@ -81,6 +81,8 @@ namespace StoragePage {
 
     const pageService = StoragePageService.newInstance({ storageType, treeViewRef, nodeFilter })
     const screenSize = useScreenSize()
+    const isSignedIn = pageService.isSignedIn
+    const isSigningIn = pageService.isSigningIn
 
     const state = reactive({
       visibleDirDetailView: false,
@@ -89,6 +91,9 @@ namespace StoragePage {
       splitterModelBk: 300,
     })
 
+    /**
+     * ディレクトリorファイル詳細ドロワーの表示フラグです。
+     */
     const visibleDetailDrawer = ref(false)
 
     /**
@@ -161,7 +166,7 @@ namespace StoragePage {
       }
 
       // ページの選択ノードを設定
-      changeDirOnPage(dirPath)
+      await changeDirOnPage(dirPath)
       // 選択ノードの位置までスクロールする
       scrollToSelectedNode(dirPath, false)
 
@@ -191,7 +196,7 @@ namespace StoragePage {
      * 指定ディレクトリのパスをURLへ付与してディレクトリを移動します。
      * @param dirPath ディレクトリパス
      */
-    function changeDirOnPage(dirPath: string): void {
+    async function changeDirOnPage(dirPath: string): Promise<void> {
       dirPath = removeBothEndsSlash(dirPath)
 
       const urlDirPath = removeBothEndsSlash(pageService.route.getNodePath())
@@ -205,7 +210,7 @@ namespace StoragePage {
       else {
         // 選択ディレクトリのパスをURLに付与
         // ※ルーターによって本ページ内のbeforeRouteUpdate()が実行される
-        pageService.route.move(dirPath)
+        await pageService.route.move(dirPath)
       }
     }
 
@@ -311,7 +316,7 @@ namespace StoragePage {
       await pageService.createStorageDir(dirPath)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageService.selectedTreeNode.value.path)
+      await changeDirOnPage(pageService.selectedTreeNode.value.path)
 
       Loading.hide()
     }
@@ -328,7 +333,7 @@ namespace StoragePage {
       await pageService.moveStorageNodes(nodePaths, toParentPath)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageService.selectedTreeNode.value.path)
+      await changeDirOnPage(pageService.selectedTreeNode.value.path)
 
       Loading.hide()
     }
@@ -345,7 +350,7 @@ namespace StoragePage {
       await pageService.renameStorageNode(nodePath, newName)
 
       // 現在選択されているノードへURL遷移
-      changeDirOnPage(pageService.selectedTreeNode.value.path)
+      await changeDirOnPage(pageService.selectedTreeNode.value.path)
 
       Loading.hide()
     }
@@ -362,7 +367,7 @@ namespace StoragePage {
       await pageService.setStorageNodeShareSettings(nodePaths, input)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageService.selectedTreeNode.value.path)
+      await changeDirOnPage(pageService.selectedTreeNode.value.path)
 
       Loading.hide()
     }
@@ -392,7 +397,7 @@ namespace StoragePage {
       await pageService.removeStorageNodes(nodePaths)
 
       // 上記で取得したノードへURL遷移
-      changeDirOnPage(toNodePath)
+      await changeDirOnPage(toNodePath)
 
       Loading.hide()
     }
@@ -408,10 +413,19 @@ namespace StoragePage {
       await pageService.createArticleTypeDir(input)
 
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageService.selectedTreeNode.value.path)
+      await changeDirOnPage(pageService.selectedTreeNode.value.path)
 
       Loading.hide()
     }
+
+    /**
+     * ページ状態をクリアします。
+     */
+    const clear = extendedMethod(() => {
+      pageService.clear()
+      pathDirBreadcrumb.value?.setSelectedNode(null)
+      dirView.value?.setSelectedNode(null)
+    })
 
     //----------------------------------------------------------------------
     //
@@ -420,15 +434,20 @@ namespace StoragePage {
     //----------------------------------------------------------------------
 
     watch(
-      () => pageService.isSignedIn.value,
-      async isSignedIn => {
-        if (isSignedIn) await fetchInitialNodes()
+      () => isSignedIn.value,
+      async newValue => {
+        if (newValue) {
+          await fetchInitialNodes()
+        } else {
+          clear()
+        }
       }
     )
 
     watch(
       () => ctx.root.$route,
       (newValue, oldValue) => {
+        if (!isSignedIn.value || !pageService.route.isCurrent.value) return
         // URLから選択ノードパスを取得(取得できなかった場合はルートノード)
         const dirPath = pageService.route.getNodePath()
         // ページの選択ノードを設定
@@ -472,7 +491,7 @@ namespace StoragePage {
       // アップロードが行われた後のツリーの更新処理
       await pageService.onUploaded(e)
       // 現在選択されているノードへURL遷移 ※ページ更新
-      changeDirOnPage(pageService.selectedTreeNode.value.path)
+      await changeDirOnPage(pageService.selectedTreeNode.value.path)
     }
 
     /**
@@ -590,7 +609,7 @@ namespace StoragePage {
       }
 
       // 選択ノードのパスをURLに付与
-      changeDirOnPage(selectedNode.path)
+      return changeDirOnPage(selectedNode.path)
     })
 
     //--------------------------------------------------
@@ -640,6 +659,8 @@ namespace StoragePage {
       nodeRenameDialog,
       nodeShareDialog,
       uploadProgressFloat,
+      isSignedIn,
+      isSigningIn,
       dirView,
       dirDetailView,
       fileDetailView,
@@ -653,6 +674,7 @@ namespace StoragePage {
       openParentNode,
       scrollToSelectedNode,
       showNodeDetail,
+      clear,
       pathDirBreadcrumbOnSelect,
       pathDirBreadcrumbOnToggleDrawer,
       uploadProgressFloatOnUploadEnds,

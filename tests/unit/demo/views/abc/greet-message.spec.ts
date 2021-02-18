@@ -14,10 +14,10 @@ describe('GreetMessage', () => {
       propsData: { message },
       setup() {
         provideDependencyToVue(({ service }) => {
-          td.replace<AuthService, 'isSignedIn'>(
+          td.replace<AuthService, 'signInStatus'>(
             service.auth,
-            'isSignedIn',
-            computed(() => true)
+            'signInStatus',
+            computed(() => 'SignedIn')
           )
           td.replace<User, 'fullName'>(service.auth.user, 'fullName', userName)
         })

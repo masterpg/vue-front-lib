@@ -1234,7 +1234,7 @@ describe('StorageStore', () => {
 
       const beforeAll = store.storage.all.value
 
-      store.storage.clear()
+      store.storage.removeAll()
 
       expect(store.storage.all.value.length).toBe(0)
       notExistsStateNodes(beforeAll)

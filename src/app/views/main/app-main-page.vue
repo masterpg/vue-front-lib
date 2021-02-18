@@ -56,7 +56,13 @@
     <q-drawer v-model="leftDrawerOpen" :width="300" :breakpoint="1440" bordered content-class="bg-grey-2">
       <q-scroll-area class="drawer-scroll-area">
         <!-- Site Admin -->
-        <q-expansion-item v-model="isSiteAdminExpanded" icon="fas fa-user-cog" :label="t('index.mainMenu.siteAdmin')" expand-separator>
+        <q-expansion-item
+          v-show="isSignedIn"
+          v-model="isSiteAdminExpanded"
+          icon="fas fa-user-cog"
+          :label="t('index.mainMenu.siteAdmin')"
+          expand-separator
+        >
           <q-list padding>
             <template v-for="(item, index) in siteAdminItems">
               <q-item :key="index" v-ripple :to="item.path" class="app-ml-20" clickable>
@@ -67,7 +73,7 @@
         </q-expansion-item>
         <!-- App Admin -->
         <q-expansion-item
-          v-show="user.isAppAdmin"
+          v-show="isSignedIn && user.isAppAdmin"
           v-model="isAppAdminExpanded"
           icon="fas fa-cog"
           :label="t('index.mainMenu.appAdmin')"
@@ -93,8 +99,8 @@
 </template>
 
 <script lang="ts">
-import { AuthStatus, injectService, provideService } from '@/app/service'
 import { computed, defineComponent, ref, watch } from '@vue/composition-api'
+import { injectService, provideService } from '@/app/service'
 import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
 import { useRouteParams, useRoutes } from '@/app/router'
 import { Dialogs } from '@/app/dialogs'
@@ -133,6 +139,7 @@ export default defineComponent({
     const isAppAdminExpanded = ref(true)
     const isSignedIn = service.auth.isSignedIn
     const isSigningIn = service.auth.isSigningIn
+    const isNotSigningIn = service.auth.isNotSignedIn
     const user = computed(() => service.auth.user)
 
     const siteAdminItems = computed<{ title: string; path: string }[]>(() => {
@@ -163,6 +170,28 @@ export default defineComponent({
     //
     //----------------------------------------------------------------------
 
+    watch(
+      () => service.auth.signInStatus.value,
+      (newValue, oldValue) => {
+        if (newValue === 'None') {
+          const needSignedIn = [routes.siteAdmin.article, routes.siteAdmin.storage, routes.appAdmin.storage].some(page => page.isCurrent.value)
+          if (needSignedIn) {
+            routes.home.move()
+          }
+        }
+      },
+      { immediate: true }
+    )
+
+    watch(
+      () => service.auth.authStatus.value,
+      (newValue, oldValue) => {
+        if (newValue === 'WaitForEntry') {
+          Dialogs.userEntry.open()
+        }
+      }
+    )
+
     function signInMenuItemOnClick() {
       Dialogs.signIn.open()
     }
@@ -182,15 +211,6 @@ export default defineComponent({
     function userDeleteMenuItemOnClick() {
       Dialogs.userDelete.open()
     }
-
-    watch(
-      () => service.auth.status.value,
-      (newValue, oldValue) => {
-        if (newValue === 'WaitForEntry') {
-          Dialogs.userEntry.open()
-        }
-      }
-    )
 
     serviceWorker.addStateChangeListener(info => {
       if (info.state === 'updated') {
@@ -232,6 +252,7 @@ export default defineComponent({
       isAppAdminExpanded,
       isSignedIn,
       isSigningIn,
+      isNotSigningIn,
       user,
       siteAdminItems,
       appAdminItems,

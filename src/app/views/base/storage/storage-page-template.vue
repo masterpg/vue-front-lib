@@ -3,6 +3,10 @@
 
 .StoragePage
   height: 100%
+  position: relative
+
+.page-layout
+  height: 100%
   // quasarが設定するmin-heightを無効化
   min-height: unset !important
 
@@ -34,74 +38,80 @@
 </style>
 
 <template>
-  <q-layout class="StoragePage" view="hHh lpr fff">
-    <q-drawer v-model="visibleDetailDrawer" side="right" :width="320" overlay elevated>
-      <div class="node-detail-container">
-        <storage-dir-detail-view
-          v-show="visibleDirDetailView"
-          ref="dirDetailView"
-          class="node-detail-view"
-          :storage-type="storageType"
-          @close="nodeDetailViewOnClose"
-        />
-        <storage-file-detail-view
-          v-show="visibleFileDetailView"
-          ref="fileDetailView"
-          class="node-detail-view"
-          :storage-type="storageType"
-          @close="nodeDetailViewOnClose"
-        />
-      </div>
-    </q-drawer>
+  <div class="StoragePage">
+    <q-layout v-show="isSignedIn" class="page-layout" view="hHh lpr fff">
+      <q-drawer v-model="visibleDetailDrawer" side="right" :width="320" overlay elevated>
+        <div class="node-detail-container">
+          <storage-dir-detail-view
+            v-show="visibleDirDetailView"
+            ref="dirDetailView"
+            class="node-detail-view"
+            :storage-type="storageType"
+            @close="nodeDetailViewOnClose"
+          />
+          <storage-file-detail-view
+            v-show="visibleFileDetailView"
+            ref="fileDetailView"
+            class="node-detail-view"
+            :storage-type="storageType"
+            @close="nodeDetailViewOnClose"
+          />
+        </div>
+      </q-drawer>
 
-    <q-page-container ref="pageContainer" class="page-container">
-      <q-splitter v-model="splitterModel" unit="px" class="splitter" :limits="[0, Infinity]">
-        <template v-slot:before>
-          <div ref="treeViewContainer" class="tree-view-container">
-            <tree-view
-              ref="treeViewRef"
-              class="tree-view"
-              @select="treeViewOnSelect($event)"
-              @lazy-load="treeViewOnLazyLoad($event)"
-              @node-action="popupMenuOnNodeAction"
-            />
-          </div>
-        </template>
-        <template v-slot:after>
-          <div class="content-container layout vertical">
-            <storage-dir-path-breadcrumb
-              ref="pathDirBreadcrumb"
-              :storage-type="storageType"
-              @select="pathDirBreadcrumbOnSelect($event)"
-              @node-action="popupMenuOnNodeAction($event)"
-              @toggle-drawer="pathDirBreadcrumbOnToggleDrawer"
-            />
-            <div class="view-container layout horizontal flex-1">
-              <storage-dir-view
-                ref="dirView"
-                class="dir-view flex-1"
-                :storage-type="storageType"
-                @select="dirViewOnSelect($event)"
-                @deep-select="dirViewOnDeepSelect($event)"
-                @node-action="popupMenuOnNodeAction($event)"
+      <q-page-container ref="pageContainer" class="page-container">
+        <q-splitter v-model="splitterModel" unit="px" class="splitter" :limits="[0, Infinity]">
+          <template v-slot:before>
+            <div ref="treeViewContainer" class="tree-view-container">
+              <tree-view
+                ref="treeViewRef"
+                class="tree-view"
+                @select="treeViewOnSelect($event)"
+                @lazy-load="treeViewOnLazyLoad($event)"
+                @node-action="popupMenuOnNodeAction"
               />
             </div>
-          </div>
-        </template>
-      </q-splitter>
-    </q-page-container>
+          </template>
+          <template v-slot:after>
+            <div class="content-container layout vertical">
+              <storage-dir-path-breadcrumb
+                ref="pathDirBreadcrumb"
+                :storage-type="storageType"
+                @select="pathDirBreadcrumbOnSelect($event)"
+                @node-action="popupMenuOnNodeAction($event)"
+                @toggle-drawer="pathDirBreadcrumbOnToggleDrawer"
+              />
+              <div class="view-container layout horizontal flex-1">
+                <storage-dir-view
+                  ref="dirView"
+                  class="dir-view flex-1"
+                  :storage-type="storageType"
+                  @select="dirViewOnSelect($event)"
+                  @deep-select="dirViewOnDeepSelect($event)"
+                  @node-action="popupMenuOnNodeAction($event)"
+                />
+              </div>
+            </div>
+          </template>
+        </q-splitter>
+      </q-page-container>
 
-    <storage-dir-create-dialog ref="dirCreateDialog" :storage-type="storageType" />
-    <storage-node-move-dialog ref="nodeMoveDialog" :storage-type="storageType" />
-    <storage-node-rename-dialog ref="nodeRenameDialog" :storage-type="storageType" />
-    <storage-node-remove-dialog ref="nodeRemoveDialog" :storage-type="storageType" />
-    <storage-node-share-dialog ref="nodeShareDialog" :storage-type="storageType" />
+      <storage-dir-create-dialog ref="dirCreateDialog" :storage-type="storageType" />
+      <storage-node-move-dialog ref="nodeMoveDialog" :storage-type="storageType" />
+      <storage-node-rename-dialog ref="nodeRenameDialog" :storage-type="storageType" />
+      <storage-node-remove-dialog ref="nodeRemoveDialog" :storage-type="storageType" />
+      <storage-node-share-dialog ref="nodeShareDialog" :storage-type="storageType" />
 
-    <storage-upload-progress-float
-      ref="uploadProgressFloat"
-      class="fixed-bottom-right"
-      :storage-type="storageType"
-      @upload-ends="uploadProgressFloatOnUploadEnds($event)"
-    />
-  </q-layout>
+      <storage-upload-progress-float
+        ref="uploadProgressFloat"
+        class="fixed-bottom-right"
+        :storage-type="storageType"
+        @upload-ends="uploadProgressFloatOnUploadEnds($event)"
+      />
+    </q-layout>
+
+    <q-inner-loading :showing="isSigningIn">
+      <q-spinner size="50px" color="primary" />
+    </q-inner-loading>
+  </div>
 </template>

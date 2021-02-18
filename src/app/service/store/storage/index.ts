@@ -1,6 +1,6 @@
 import { ComputedRef, computed, reactive } from '@vue/composition-api'
 import { DeepReadonly, arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
-import { StorageNode, StorageNodeGetKeysInput, StorageNodeType, StorageUtil } from '@/app/service/base'
+import { StorageNode, StorageNodeGetKeysInput, StorageUtil } from '@/app/service/base'
 import _path from 'path'
 
 //========================================================================
@@ -28,25 +28,25 @@ interface StorageStore {
 
   getAncestors(targetPath: string): StorageNode[]
 
-  addList(nodes: StorageNode[]): StorageNode[]
-
   add(node: StorageNode): StorageNode
 
-  setAll(nodes: StorageNode[]): void
-
-  setList(nodes: StorageNodeForSet[]): StorageNode[]
+  addList(nodes: StorageNode[]): StorageNode[]
 
   set(node: StorageNodeForSet): StorageNode
 
-  removeList(key: { ids?: string[]; paths?: string[] }): StorageNode[]
+  setList(nodes: StorageNodeForSet[]): StorageNode[]
+
+  setAll(nodes: StorageNode[]): void
 
   remove(key: { id?: string; path?: string }): StorageNode[]
+
+  removeList(key: { ids?: string[]; paths?: string[] }): StorageNode[]
+
+  removeAll(): StorageNode[]
 
   move(fromPath: string, toPath: string): StorageNode[]
 
   rename(path: string, newName: string): StorageNode[]
-
-  clear(): void
 
   sort(): void
 }
@@ -180,17 +180,6 @@ namespace StorageStore {
       return result
     }
 
-    const setAll: StorageStore['setAll'] = nodes => {
-      clear()
-      for (const node of nodes) {
-        state.all.push(StorageNode.clone(node))
-      }
-    }
-
-    const setList: StorageStore['setList'] = nodes => {
-      return nodes.map(node => set(node))
-    }
-
     const set: StorageStore['set'] = node => {
       // id検索が必要な理由:
       //   他端末でノード移動するとidは変わらないがpathは変化する。
@@ -207,14 +196,40 @@ namespace StorageStore {
       return StorageNode.clone(StorageNode.populate(node, stateNode))
     }
 
-    const addList: StorageStore['addList'] = nodes => {
-      return nodes.map(node => add(node))
+    const setList: StorageStore['setList'] = nodes => {
+      return nodes.map(node => set(node))
+    }
+
+    const setAll: StorageStore['setAll'] = nodes => {
+      removeAll()
+      for (const node of nodes) {
+        state.all.push(StorageNode.clone(node))
+      }
     }
 
     const add: StorageStore['add'] = node => {
       const stateNode = StorageNode.clone(node)
       state.all.push(stateNode)
       return StorageNode.clone(stateNode)
+    }
+
+    const addList: StorageStore['addList'] = nodes => {
+      return nodes.map(node => add(node))
+    }
+
+    const remove: StorageStore['remove'] = key => {
+      const stateNode = getStateNode(key)
+      if (!stateNode) return []
+
+      const result: StorageNode[] = []
+      for (let i = 0; i < state.all.length; i++) {
+        const node = state.all[i]
+        if (node.path === stateNode.path || node.path.startsWith(`${stateNode.path}/`)) {
+          state.all.splice(i--, 1)
+          result.push(node)
+        }
+      }
+      return StorageNode.clone(result)
     }
 
     const removeList: StorageStore['removeList'] = key => {
@@ -236,19 +251,8 @@ namespace StorageStore {
       return result
     }
 
-    const remove: StorageStore['remove'] = key => {
-      const stateNode = getStateNode(key)
-      if (!stateNode) return []
-
-      const result: StorageNode[] = []
-      for (let i = 0; i < state.all.length; i++) {
-        const node = state.all[i]
-        if (node.path === stateNode.path || node.path.startsWith(`${stateNode.path}/`)) {
-          state.all.splice(i--, 1)
-          result.push(node)
-        }
-      }
-      return StorageNode.clone(result)
+    const removeAll: StorageStore['removeAll'] = () => {
+      return state.all.splice(0)
     }
 
     const move: StorageStore['move'] = (fromPath, toPath) => {
@@ -305,10 +309,6 @@ namespace StorageStore {
       const reg = new RegExp(`${_path.basename(path)}$`)
       const toPath = path.replace(reg, newName)
       return move(path, toPath)
-    }
-
-    const clear: StorageStore['clear'] = () => {
-      state.all.splice(0)
     }
 
     const sort: StorageStore['sort'] = () => {
@@ -401,16 +401,16 @@ namespace StorageStore {
       getDirDescendants,
       getHierarchical,
       getAncestors,
-      addList,
       add,
-      setAll,
-      setList,
+      addList,
       set,
-      removeList,
+      setList,
+      setAll,
       remove,
+      removeList,
+      removeAll,
       move,
       rename,
-      clear,
       sort,
       state,
     }

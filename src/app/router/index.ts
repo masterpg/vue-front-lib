@@ -40,18 +40,20 @@ interface RawRoute {
   update(): void
 }
 
-interface UserRoute<T extends UserRouteParams = UserRouteParams> extends Route<T> {}
+interface UserRoute<T extends UserRouteParams = UserRouteParams> extends Route<T> {
+  move(): Promise<boolean>
+}
 
 type UserRouteParams = { [UserNameProp]: string } & Dictionary<string>
 
-interface StorageRoute<T extends UserRouteParams = UserRouteParams> extends UserRoute<T> {
-  move(nodePath: string): boolean
+interface StorageRoute<T extends UserRouteParams = UserRouteParams> extends Route<T> {
+  move(nodePath: string): Promise<boolean>
   getNodePath(): string
 }
 
 interface Routes {
-  home: Route
-  articles: Route
+  home: UserRoute
+  articles: UserRoute
   siteAdmin: {
     article: StorageRoute
     storage: StorageRoute
@@ -205,8 +207,15 @@ namespace UserRoute {
       return replaceUserNameRouteParams(base.routePath.value, base.params.value)
     }
 
+    const move: UserRoute['move'] = async () => {
+      const router = RouterContainer.useRouter()
+      await router.push(base.path.value)
+      return true
+    }
+
     return {
       ...base,
+      move,
     }
   }
 }
@@ -222,7 +231,7 @@ namespace StorageRoute {
   }): StorageRoute<T> & RawRoute {
     const base = Route.newRawInstance<T>(input)
 
-    const move: StorageRoute['move'] = nodePath => {
+    const move: StorageRoute['move'] = async nodePath => {
       const router = RouterContainer.useRouter()
       const currentRoutePath = removeEndSlash(router.currentRoute.path)
       const nextPath = removeEndSlash(_path.join(base.path.value, nodePath))
@@ -230,7 +239,7 @@ namespace StorageRoute {
         return false
       }
 
-      router.push(nextPath)
+      await router.push(nextPath)
       return true
     }
 
@@ -284,8 +293,8 @@ namespace RouterContainer {
       userName: ref(''),
     }
 
-    const home = Route.newInstance({
-      routePath: '/',
+    const home = UserRoute.newInstance({
+      routePath: `/:${UserNameProp}`,
       component: HomePage,
     })
 

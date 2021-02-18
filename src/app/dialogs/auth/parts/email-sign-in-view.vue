@@ -210,13 +210,13 @@ namespace EmailSignInView {
           return
         }
 
-        if (service.auth.status.value === 'None') {
+        if (service.auth.authStatus.value === 'None') {
           Loading.hide()
-          throw new Error(`This is a auth status not assumed: ${service.auth.status}`)
+          throw new Error(`'authStatus' is set to an unexpected value: ${service.auth.authStatus.value}`)
         }
 
         // メールアドレス検証中の場合、再度検証用メールを送信
-        if (service.auth.status.value === 'WaitForEmailVerified') {
+        if (service.auth.authStatus.value === 'WaitForEmailVerified') {
           const continueURL = `${window.location.origin}/?${Dialogs.createQuery('signIn')}`
           const authResult = await service.auth.sendEmailVerification(continueURL)
           if (!authResult.result) {
@@ -232,7 +232,7 @@ namespace EmailSignInView {
         }
 
         close({
-          status: service.auth.status.value,
+          status: service.auth.authStatus.value,
           email: state.email!,
         })
 

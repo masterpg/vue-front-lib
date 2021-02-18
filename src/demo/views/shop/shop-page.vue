@@ -119,6 +119,8 @@ namespace ShopPage {
       const service = injectService()
       const { t } = useI18n()
 
+      const isSignedIn = service.auth.isSignedIn
+
       const cartIsEmpty = computed(() => {
         return service.shop.cartItems.value.length === 0
       })
@@ -167,7 +169,7 @@ namespace ShopPage {
 
       return {
         t,
-        isSignedIn: service.auth.isSignedIn,
+        isSignedIn,
         products: service.shop.products,
         cartItems: service.shop.cartItems,
         cartTotalPrice: service.shop.cartTotalPrice,

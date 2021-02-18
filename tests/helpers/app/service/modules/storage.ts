@@ -103,6 +103,8 @@ function mockStorageServiceAPIMethods(params: Pick<TestServiceContainer, 'appSto
     storageService.setDirShareSettingsAPI.value = td.func() as any
     storageService.setFileShareSettingsAPI.value = td.func() as any
     storageService.handleUploadedFileAPI.value = td.func() as any
+    storageService.setFileAccessAuthClaimsAPI.value = td.func() as any
+    storageService.removeFileAccessAuthClaimsAPI.value = td.func() as any
   }
 
   articleStorage.createArticleTypeDirAPI.value = td.func() as any

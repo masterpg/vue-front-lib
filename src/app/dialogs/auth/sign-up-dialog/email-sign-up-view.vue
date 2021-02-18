@@ -198,9 +198,9 @@ namespace EmailSignUpView {
           return
         }
 
-        if (service.auth.status.value !== 'WaitForEmailVerified') {
+        if (service.auth.authStatus.value !== 'WaitForEmailVerified') {
           Loading.hide()
-          throw new Error(`This is a auth status not assumed: ${service.auth.status.value}`)
+          throw new Error(`'authStatus' is set to an unexpected value: ${service.auth.authStatus.value}`)
         }
 
         // メールアドレスに検証用メールを送信

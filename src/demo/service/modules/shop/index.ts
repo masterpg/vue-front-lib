@@ -157,12 +157,12 @@ namespace ShopService {
     watch(
       () => internal.auth.isSignedIn.value,
       async (newValue, oldValue) => {
-        // サインインした場合
+        // サインインが完了している場合
         if (newValue) {
           await fetchProducts()
           await fetchCartItems()
         }
-        // サインアウトした場合
+        // サインインが完了していない場合
         else {
           store.cart.setAll([])
         }

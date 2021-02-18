@@ -9070,6 +9070,11 @@ nan@^2.12.1, nan@^2.13.2:
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.2.tgz#f5376400695168f4cc694ac9393d0c9585eeea19"
   integrity sha512-M2ufzIiINKCuDfBSAUr1vWQ+vuVcA9kqx8JJUsbQi6yf1uGRyb7HfpdfUr5qLXf3B/t8dPvcjhKMmlfnP47EzQ==
 
+nanoevents@^5.1.11:
+  version "5.1.11"
+  resolved "https://registry.yarnpkg.com/nanoevents/-/nanoevents-5.1.11.tgz#a2630f82f209274fafc95a38afc230c6f81afbde"
+  integrity sha512-2miSPjLe0ffTp4UzdC2nn9G7O9Pi6xBGlo86UTfJ3qYF7whtNYjY/HuRbXx+0Vk/l1lIvhBCEhd3TmfB1YAgEQ==
+
 nanoid@^3.1.16:
   version "3.1.20"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.20.tgz#badc263c6b1dcf14b71efaa85f6ab4c1d6cfc788"

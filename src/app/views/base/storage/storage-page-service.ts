@@ -13,7 +13,6 @@ import {
   RequiredStorageNodeShareSettings,
   SaveArticleSrcMasterFileResult,
   StorageArticleDirType,
-  StorageArticleFileType,
   StorageArticleSettings,
   StorageNode,
   StorageNodeGetKeyInput,
@@ -52,6 +51,10 @@ interface StoragePageService {
    * ユーザーがサインインしているか否かを表すフラグです。
    */
   isSignedIn: ComputedRef<boolean>
+  /**
+   * ユーザーがサインイン中か否かを表すフラグです。
+   */
+  isSigningIn: ComputedRef<boolean>
   /**
    * ストレージ用ルートオブジェクトです。
    */
@@ -247,6 +250,10 @@ interface StoragePageService {
   //--------------------------------------------------
 
   /**
+   * ページサービスをクリアします。
+   */
+  clear(): void
+  /**
    * 画面に通知バーを表示します。
    * @param type
    * @param message
@@ -346,20 +353,20 @@ interface StoragePageService {
    * 記事の下書きソースをローカルストレージから取得します。
    * @param draftNodeId 下書きファイルノードのID
    */
-  getLocalArticleDraftData(draftNodeIdd: string): { version: number; srcContent: string }
+  getLocalArticleDraftData(draftNodeId: string): { version: number; srcContent: string }
   /**
    * 記事の下書きソースをローカルストレージへ保存します。
-   * @param draftNodeIdd 下書きファイルノードのID
+   * @param draftNodeId 下書きファイルノードのID
    * @param data
    *   - version: 下書きファイルノードのバージョン<br>
    *   - srcContent: 記事の下書きソース
    */
-  setLocalArticleDraftData(draftNodeIdd: string, data: { version?: number; srcContent?: string }): void
+  setLocalArticleDraftData(draftNodeId: string, data: { version?: number; srcContent?: string }): void
   /**
    * 記事の下書きソースをローカルストレージから削除します。
    * @param draftNodeId 下書きファイルノードのID
    */
-  discardLocalArticleDraftData(draftNodeIdd: string): void
+  discardLocalArticleDraftData(draftNodeId: string): void
 }
 
 interface StoragePageStore {
@@ -448,9 +455,11 @@ namespace StoragePageService {
     //
     //----------------------------------------------------------------------
 
-    const store: StoragePageService['store'] = StoragePageStore.getInstance(storageType)
+    const store = StoragePageStore.getInstance(storageType)
 
     const isSignedIn = service.auth.isSignedIn
+
+    const isSigningIn = service.auth.isSigningIn
 
     const route: StorageRoute = (() => {
       switch (storageType) {
@@ -544,6 +553,7 @@ namespace StoragePageService {
       // ストアにある最新のストレージノードを格納
       const storageDirNodes: StorageNode[] = []
 
+      // ストレージノードの初回読み込みが行われていない場合
       if (!store.isFetchedInitialStorage.value) {
         // ルートノードを読み込み
         await storageService.fetchRoot()
@@ -585,7 +595,7 @@ namespace StoragePageService {
       // ルートノードを遅延ロード済みに設定
       getRootTreeNode().lazyLoadStatus = 'loaded'
 
-      // ストレージノードの初回読み込み済みを設定
+      // ストレージノードの初回読み込みフラグをオンに設定
       store.isFetchedInitialStorage.value = true
     }
 
@@ -1235,6 +1245,14 @@ namespace StoragePageService {
     //  Helper methods
     //--------------------------------------------------
 
+    const clear: StoragePageService['clear'] = () => {
+      // 表示中のルートノード配下全ノードを削除し、ルートノードを選択ノードにする
+      getRootTreeNode().removeAllChildren()
+      setSelectedTreeNode(getRootTreeNode().path, true, true)
+      // ページストアをクリア
+      store.clear()
+    }
+
     const showNotification: StoragePageService['showNotification'] = (type, message) => {
       Notify.create({
         icon: type === 'error' ? 'error' : 'warning',
@@ -1422,9 +1440,9 @@ namespace StoragePageService {
       return node.article?.file?.type === 'Draft'
     }
 
-    const getLocalArticleDraftData: StoragePageService['getLocalArticleDraftData'] = draftNodeIdd => {
+    const getLocalArticleDraftData: StoragePageService['getLocalArticleDraftData'] = draftNodeId => {
       // ローカルストレージに保存されている下書きソースを取得
-      const dataString = localStorage.getItem(`article.draft.${draftNodeIdd}`)
+      const dataString = localStorage.getItem(`article.draft.${draftNodeId}`)
       // 保存されてなかった場合は空状態として返す
       if (!dataString) return { version: 0, srcContent: '' }
 
@@ -1433,21 +1451,21 @@ namespace StoragePageService {
       return { version: version ?? 0, srcContent: srcContent ?? '' }
     }
 
-    const setLocalArticleDraftData: StoragePageService['setLocalArticleDraftData'] = (draftNodeIdd, data) => {
+    const setLocalArticleDraftData: StoragePageService['setLocalArticleDraftData'] = (draftNodeId, data) => {
       // 引数データが新規保存だった場合(まだローカルストレージに保存されていない場合)、
       // バージョン指定されていなかったらエラー
-      const existingData = getLocalArticleDraftData(draftNodeIdd)
+      const existingData = getLocalArticleDraftData(draftNodeId)
       if (!existingData.version && !data.version) {
         throw new Error('When you save a new draft to local storage, must specify the version.')
       }
 
       // 引数データをJSON文字列に変換してローカルストレージに保存
       const dataString = JSON.stringify(merge(existingData, data))
-      localStorage.setItem(`article.draft.${draftNodeIdd}`, dataString)
+      localStorage.setItem(`article.draft.${draftNodeId}`, dataString)
     }
 
-    const discardLocalArticleDraftData: StoragePageService['discardLocalArticleDraftData'] = draftNodeIdd => {
-      localStorage.removeItem(`article.draft.${draftNodeIdd}`)
+    const discardLocalArticleDraftData: StoragePageService['discardLocalArticleDraftData'] = draftNodeId => {
+      localStorage.removeItem(`article.draft.${draftNodeId}`)
     }
 
     //----------------------------------------------------------------------
@@ -1496,23 +1514,6 @@ namespace StoragePageService {
 
     //----------------------------------------------------------------------
     //
-    //  Event listeners
-    //
-    //----------------------------------------------------------------------
-
-    watch(
-      () => isSignedIn.value,
-      isSignedIn => {
-        if (!isSignedIn) {
-          // 表示中のルートノード配下全ノードを削除し、ルートノードを選択ノードにする
-          getRootTreeNode().removeAllChildren()
-          selectedTreeNode.value = getRootTreeNode()
-        }
-      }
-    )
-
-    //----------------------------------------------------------------------
-    //
     //  result
     //
     //----------------------------------------------------------------------
@@ -1520,6 +1521,7 @@ namespace StoragePageService {
     return {
       store,
       isSignedIn,
+      isSigningIn,
       route,
       selectedTreeNode,
       setSelectedTreeNode,
@@ -1556,6 +1558,7 @@ namespace StoragePageService {
       newDownloader,
       newFileDownloader,
       newFileUploader,
+      clear,
       showNotification,
       getInheritedShare,
       createRootNodeData,
@@ -1635,9 +1638,11 @@ namespace StoragePageService {
 }
 
 namespace StoragePageStore {
-  const storeDict: { [storageType: string]: StoragePageStore } = {}
+  interface RawStoragePageStore extends StoragePageStore, ReturnType<typeof newRawInstance> {}
 
-  export function getInstance(storageType: StorageType): StoragePageStore {
+  const storeDict: { [storageType: string]: RawStoragePageStore } = {}
+
+  export function getInstance(storageType: StorageType): RawStoragePageStore {
     let store = storeDict[storageType]
     if (!store) {
       store = newRawInstance()
@@ -1647,13 +1652,25 @@ namespace StoragePageStore {
   }
 
   export function newRawInstance() {
-    const isFetchedInitialStorage = ref(false)
+    const service = injectService()
 
-    const selectedTreeNodePath = ref('')
+    const isFetchedInitialStorage = ref(false) as Ref<boolean>
+
+    const selectedTreeNodePath = ref('') as Ref<string>
+
+    function clear(): void {
+      isFetchedInitialStorage.value = false
+      selectedTreeNodePath.value = ''
+    }
+
+    service.auth.watchSignInStatus(newValue => {
+      newValue === 'None' && clear()
+    })
 
     return {
       isFetchedInitialStorage,
       selectedTreeNodePath,
+      clear,
     }
   }
 }

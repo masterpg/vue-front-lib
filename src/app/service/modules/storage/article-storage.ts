@@ -60,8 +60,8 @@ namespace ArticleStorageService {
 
     watch(
       () => internal.auth.isSignedIn.value,
-      isSignedIn => {
-        if (isSignedIn) {
+      newValue => {
+        if (newValue) {
           base.basePath.value = _path.join(config.storage.user.rootName, store.user.value.id, config.storage.article.rootName)
         } else {
           base.basePath.value = ''

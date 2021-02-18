@@ -14,12 +14,12 @@
 
 <template>
   <div class="GreetMessage layout horizontal center">
-    <div v-show="state.isSignIn" class="message layout vertical">
+    <div v-show="isSignedIn" class="message layout vertical">
       <div>{{ t('abc.hello', { name: state.user.fullName }) }}</div>
       <div>{{ t('abc.today', { date: d(new Date(), 'dateSec') }) }}</div>
     </div>
     <div class="flex-1" />
-    <q-btn flat rounded color="primary" :label="state.isSignIn ? t('common.signOut') : t('common.signIn')" @click="signInOrOutButtonOnClick" />
+    <q-btn flat rounded color="primary" :label="isSignedIn ? t('common.signOut') : t('common.signIn')" @click="signInOrOutButtonOnClick" />
   </div>
 </template>
 
@@ -55,13 +55,14 @@ namespace GreetMessage {
       //----------------------------------------------------------------------
 
       const service = injectService()
-      const { t, d } = useI18n()
+      const i18n = useI18n()
 
       const state = reactive({
-        isSignIn: service.auth.isSignedIn,
         user: service.auth.user,
         times: 0,
       })
+
+      const isSignedIn = service.auth.isSignedIn
 
       //----------------------------------------------------------------------
       //
@@ -94,7 +95,7 @@ namespace GreetMessage {
       //----------------------------------------------------------------------
 
       const signInOrOutButtonOnClick = async () => {
-        if (state.isSignIn) {
+        if (isSignedIn.value) {
           await service.auth.signOut()
         } else {
           await Dialogs.signIn.open()
@@ -108,11 +109,11 @@ namespace GreetMessage {
       //----------------------------------------------------------------------
 
       return {
+        ...i18n,
         times,
         greet,
-        t,
-        d,
         state,
+        isSignedIn,
         signInOrOutButtonOnClick,
       }
     },

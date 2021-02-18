@@ -49,7 +49,7 @@
     </div>
     <div class="app-my-16">
       <span class="title">Greet Times: </span><span class="value">{{ greetTimes }}</span>
-      <q-btn flat rounded color="primary" label="Greet" class="app-ml-12" :disable="!isSignIn" @click="greetButtonOnClick" />
+      <q-btn flat rounded color="primary" label="Greet" class="app-ml-12" :disable="!isSignedIn" @click="greetButtonOnClick" />
     </div>
     <div class="app-my-16">
       <span class="title">Post Times: </span><span class="value">{{ state.post.times }}</span>
@@ -122,7 +122,7 @@ namespace AbcPage {
       //----------------------------------------------------------------------
 
       const service = injectService()
-      const { t } = useI18n()
+      const i18n = useI18n()
 
       const greetMessage = ref<GreetMessage>()
 
@@ -140,7 +140,7 @@ namespace AbcPage {
 
       const doubleReversedYourName = computed(() => reversedMessage.value.split('').reverse().join(''))
 
-      const isSignIn = service.auth.isSignedIn
+      const isSignedIn = service.auth.isSignedIn
 
       const greetTimes = computed(() => greetMessage.value?.times)
 
@@ -187,12 +187,12 @@ namespace AbcPage {
       //----------------------------------------------------------------------
 
       return {
-        t,
+        ...i18n,
         state,
         greetMessage,
         reversedMessage,
         doubleReversedYourName,
-        isSignIn,
+        isSignedIn,
         greetTimes,
         greetButtonOnClick,
         postButtonOnClick,

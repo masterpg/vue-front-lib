@@ -85,6 +85,13 @@ function CartItems(): CartItem[] {
 //========================================================================
 
 describe('ShopService', () => {
+  beforeEach(async () => {
+    provideDependency(({ service }) => {
+      // Firebaseの認証状態が変化した際の処理は実行されたくないので無効化
+      service.auth.firebaseOnAuthStateChanged.value = async user => {}
+    })
+  })
+
   it('fetchProducts', async () => {
     const { store, service } = provideDependency(({ api }) => {
       // モック設定

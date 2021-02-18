@@ -4,7 +4,6 @@ import { ArticleStorageService, StorageService } from '@/app/service/modules/sto
 import {
   CreateArticleTypeDirInput,
   StorageArticleDirType,
-  StorageArticleFileType,
   StorageNode,
   StorageNodeShareSettings,
   StorageNodeType,
@@ -12,10 +11,11 @@ import {
   StorageUtil,
 } from '@/app/service'
 import { GeneralUser, NewTestStorageNodeData, TestServiceContainer, newStorageDirNode, newStorageFileNode } from '../../../../../helpers/app'
-import { Ref, ref } from '@vue/composition-api'
+import { Ref, computed, ref } from '@vue/composition-api'
 import { StoragePageService, StorageTreeNodeFilter } from '@/app/views/base/storage'
 import { StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/storage/base'
 import { TreeNode, TreeView, TreeViewImpl } from '@/app/components/tree-view'
+import { AuthService } from '@/app/service/modules/auth'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
 import { UploadEndedEvent } from '@/app/components/storage'
 import { VueRouter } from 'vue-router/types/router'
@@ -113,6 +113,13 @@ function newStoragePageService(
     return result
   })()
 
+  // サインイン済みに設定
+  td.replace<AuthService, 'isSignedIn'>(
+    service.auth,
+    'isSignedIn',
+    computed(() => true)
+  )
+
   // ルーターをモック化
   const router = td.object<VueRouter>()
   td.replace(require('@/app/router'), 'default', router)
@@ -127,9 +134,6 @@ function newStoragePageService(
 
   // ストレージノードの初回｢未｣読み込みに設定
   pageService.store.isFetchedInitialStorage.value = false
-
-  // サインイン済みに設定
-  td.replace(service.auth.isSignedIn, 'value', true)
 
   return { pageService, treeView, storageService }
 }

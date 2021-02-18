@@ -29,6 +29,8 @@ type TimestampEntity<T = unknown> = Entity & OmitTimestamp<T> & EntityTimestamp
 
 type AuthStatus = 'None' | 'WaitForEmailVerified' | 'WaitForEntry' | 'Available'
 
+type SignInStatus = 'None' | 'SigningIn' | 'SignedIn'
+
 interface UserClaims {
   isAppAdmin?: boolean
   authStatus?: AuthStatus
@@ -73,4 +75,16 @@ function generateEntityId(entityName: string): string {
 //
 //========================================================================
 
-export { AuthStatus, Entity, EntityTimestamp, IdToken, OmitTimestamp, TimestampEntity, UserClaims, generateEntityId, getIdToken, sgetIdToken }
+export {
+  AuthStatus,
+  Entity,
+  EntityTimestamp,
+  IdToken,
+  OmitTimestamp,
+  SignInStatus,
+  TimestampEntity,
+  UserClaims,
+  generateEntityId,
+  getIdToken,
+  sgetIdToken,
+}

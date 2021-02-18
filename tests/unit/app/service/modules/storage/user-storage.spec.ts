@@ -10,6 +10,7 @@ import {
 import { StorageNode, StorageNodeShareSettings } from '@/app/service'
 import _path from 'path'
 import dayjs from 'dayjs'
+import firebase from 'firebase'
 import { splitHierarchicalPaths } from 'web-base-lib'
 import { useConfig } from '@/app/config'
 
@@ -19,7 +20,7 @@ import { useConfig } from '@/app/config'
 //
 //========================================================================
 
-describe('AppStorageService', () => {
+describe('UserStorageService', () => {
   let basePath: string
   let basePathRoot: StorageNode
   let basePathNodes: StorageNode[]
@@ -31,7 +32,9 @@ describe('AppStorageService', () => {
   let toFullPaths: TestUserStorageService['toFullPaths']
 
   beforeEach(async () => {
-    provideDependency(({ service }) => {
+    provideDependency(({ service, internal }) => {
+      // Firebaseの認証状態が変化した際の処理は実行されたくないので無効化
+      service.auth.firebaseOnAuthStateChanged.value = async user => {}
       // ベースパスをモック化
       const config = useConfig()
       basePath = _path.join(config.storage.user.rootName, GeneralToken().uid)
@@ -420,6 +423,37 @@ describe('AppStorageService', () => {
       }
 
       expect(actual.message).toBe(`Base path root is set for 'nodePath'.`)
+    })
+  })
+
+  describe('fetchRoot', () => {
+    it('ベーシックケース - 構成ノードが未読み込み(構成ノードは存在する)', async () => {
+      const {
+        service: { userStorage, appStorage },
+      } = provideDependency()
+
+      // モック設定
+      td.when(userStorage.getHierarchicalNodesAPI(basePath)).thenResolve([...basePathNodes])
+
+      // テスト対象実行
+      await userStorage.fetchRoot()
+
+      expect(appStorage.getAllNodes()).toEqual([...basePathNodes])
+    })
+
+    it('ベーシックケース - 構成ノードが未読み込み(構成ノードが存在しない)', async () => {
+      const {
+        service: { userStorage, appStorage },
+      } = provideDependency()
+
+      // モック設定
+      td.when(userStorage.getHierarchicalNodesAPI(basePath)).thenResolve([])
+      td.when(userStorage.createHierarchicalDirsAPI([basePath])).thenResolve([...basePathNodes])
+
+      // テスト対象実行
+      await userStorage.fetchRoot()
+
+      expect(appStorage.getAllNodes()).toEqual([...basePathNodes])
     })
   })
 
@@ -1280,7 +1314,7 @@ describe('AppStorageService', () => {
   })
 
   describe('setDirShareSettings', () => {
-    const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
+    const NewShareSettings: StorageNodeShareSettings = {
       isPublic: true,
       readUIds: ['ichiro'],
       writeUIds: ['ichiro'],
@@ -1296,10 +1330,10 @@ describe('AppStorageService', () => {
         store.storage.setAll([...basePathNodes, d1, d11, f111])
       })
 
-      const updated_d11 = cloneStorageNode(d11, { share: NEW_SHARE_SETTINGS, updatedAt: dayjs() })
-      td.when(userStorage.setDirShareSettingsAPI(d11.path, NEW_SHARE_SETTINGS)).thenResolve(updated_d11)
+      const updated_d11 = cloneStorageNode(d11, { share: NewShareSettings, updatedAt: dayjs() })
+      td.when(userStorage.setDirShareSettingsAPI(d11.path, NewShareSettings)).thenResolve(updated_d11)
 
-      const actual = await userStorage.setDirShareSettings(toBasePath(d11.path), NEW_SHARE_SETTINGS)
+      const actual = await userStorage.setDirShareSettings(toBasePath(d11.path), NewShareSettings)
 
       expect(actual).toEqual(toBasePathNode(updated_d11))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, updated_d11, f111])
@@ -1307,7 +1341,7 @@ describe('AppStorageService', () => {
   })
 
   describe('setFileShareSettings', () => {
-    const NEW_SHARE_SETTINGS: StorageNodeShareSettings = {
+    const NewShareSettings: StorageNodeShareSettings = {
       isPublic: true,
       readUIds: ['ichiro'],
       writeUIds: ['ichiro'],
@@ -1323,44 +1357,88 @@ describe('AppStorageService', () => {
         store.storage.setAll([...basePathNodes, d1, d11, f111])
       })
 
-      const updatedFileA = cloneStorageNode(f111, { share: NEW_SHARE_SETTINGS, updatedAt: dayjs() })
-      td.when(userStorage.setFileShareSettingsAPI(f111.path, NEW_SHARE_SETTINGS)).thenResolve(updatedFileA)
+      const updatedFileA = cloneStorageNode(f111, { share: NewShareSettings, updatedAt: dayjs() })
+      td.when(userStorage.setFileShareSettingsAPI(f111.path, NewShareSettings)).thenResolve(updatedFileA)
 
-      const actual = await userStorage.setFileShareSettings(toBasePath(f111.path), NEW_SHARE_SETTINGS)
+      const actual = await userStorage.setFileShareSettings(toBasePath(f111.path), NewShareSettings)
 
       expect(actual).toEqual(toBasePathNode(updatedFileA))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, updatedFileA])
     })
   })
 
-  describe('fetchRoot', () => {
-    it('ベーシックケース - 構成ノードが未読み込み(構成ノードは存在する)', async () => {
+  describe('handleUploadedFile', () => {
+    it('ベーシックケース', async () => {
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const f11 = newStorageFileNode(`${basePath}/d1/f11.txt`)
       const {
         service: { userStorage, appStorage },
-      } = provideDependency()
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([...basePathNodes, d1, f11])
+      })
 
       // モック設定
-      td.when(userStorage.getHierarchicalNodesAPI(basePath)).thenResolve([...basePathNodes])
+      td.when(userStorage.handleUploadedFileAPI({ id: f11.id, path: f11.path })).thenResolve(f11)
 
       // テスト対象実行
-      await userStorage.fetchRoot()
+      const actual = await userStorage.handleUploadedFile({ id: f11.id, path: toBasePath(f11.path) })
 
-      expect(appStorage.getAllNodes()).toEqual([...basePathNodes])
+      expect(actual).toEqual(toBasePathNode(f11))
+      expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, f11])
     })
+  })
 
-    it('ベーシックケース - 構成ノードが未読み込み(構成ノードが存在しない)', async () => {
+  describe('setFileAccessAuthClaims', () => {
+    it('ベーシックケース', async () => {
+      // Firebaseのモック設定
+      const authFunc = td.replace(require('firebase/app'), 'auth')
+      const authObject = td.object<firebase.auth.Auth>()
+      td.when(authFunc()).thenReturn<firebase.auth.Auth>(authObject)
+
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const f11 = newStorageFileNode(`${basePath}/d1/f11.txt`)
       const {
         service: { userStorage, appStorage },
-      } = provideDependency()
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([...basePathNodes, d1, f11])
+      })
 
       // モック設定
-      td.when(userStorage.getHierarchicalNodesAPI(basePath)).thenResolve([])
-      td.when(userStorage.createHierarchicalDirsAPI([basePath])).thenResolve([...basePathNodes])
+      td.when(userStorage.setFileAccessAuthClaimsAPI({ id: f11.id, path: f11.path })).thenResolve('xxx')
 
       // テスト対象実行
-      await userStorage.fetchRoot()
+      await userStorage.setFileAccessAuthClaims({ id: f11.id, path: toBasePath(f11.path) })
 
-      expect(appStorage.getAllNodes()).toEqual([...basePathNodes])
+      const exp = td.explain(authObject.signInWithCustomToken)
+      expect(exp.calls.length).toBe(1)
+      expect(exp.calls[0].args).toEqual(['xxx'])
+    })
+  })
+
+  describe('removeFileAccessAuthClaims', () => {
+    it('ベーシックケース', async () => {
+      // Firebaseのモック設定
+      const authFunc = td.replace(require('firebase/app'), 'auth')
+      const authObject = td.object<firebase.auth.Auth>()
+      td.when(authFunc()).thenReturn<firebase.auth.Auth>(authObject)
+
+      const d1 = newStorageDirNode(`${basePath}/d1`)
+      const f11 = newStorageFileNode(`${basePath}/d1/f11.txt`)
+      const {
+        service: { userStorage, appStorage },
+      } = provideDependency(({ store }) => {
+        store.storage.setAll([...basePathNodes, d1, f11])
+      })
+
+      // モック設定
+      td.when(userStorage.removeFileAccessAuthClaimsAPI()).thenResolve('xxx')
+
+      // テスト対象実行
+      await userStorage.removeFileAccessAuthClaims()
+
+      const exp = td.explain(authObject.signInWithCustomToken)
+      expect(exp.calls.length).toBe(1)
+      expect(exp.calls[0].args).toEqual(['xxx'])
     })
   })
 })

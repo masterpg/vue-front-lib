@@ -14,13 +14,14 @@ import {
 import { DeepReadonly, arrayToDict, removeBothEndsSlash, splitArrayChunk, splitHierarchicalPaths } from 'web-base-lib'
 import { StorageDownloader, StorageFileDownloader } from '@/app/service/modules/storage/download'
 import { StorageFileUploader, StorageUploader } from '@/app/service/modules/storage/upload'
-import { computed, reactive } from '@vue/composition-api'
+import { computed, reactive, watch } from '@vue/composition-api'
 import { StorageService } from '@/app/service/modules/storage/base'
 import { StorageURLUploader } from '@/app/service/modules/storage/upload-url'
 import { StorageUtil } from '@/app/service/base'
 import { extendedMethod } from '@/app/base'
 import firebase from 'firebase/app'
 import { injectAPI } from '@/app/service/api'
+import { injectInternalService } from '@/app/service/modules/internal'
 import { injectStore } from '@/app/service/store'
 
 //========================================================================
@@ -155,6 +156,7 @@ namespace AppStorageService {
 
     const api = injectAPI()
     const store = injectStore()
+    const internal = injectInternalService()
 
     const state = reactive({
       basePath: '',
@@ -578,9 +580,13 @@ namespace AppStorageService {
     }
 
     const setFileAccessAuthClaims: AppStorageService['setFileAccessAuthClaims'] = async input => {
+      const fullInput: StorageNodeKeyInput = {
+        id: input.id,
+        path: toFullPath(input.path),
+      }
       // ユーザークレイムにノードアクセス権限を設定
       // ※戻り値は設定が行われたカスタムトークンとなる
-      const token = await setFileAccessAuthClaimsAPI(input)
+      const token = await setFileAccessAuthClaimsAPI(fullInput)
       // 取得したカスタムトークンを認証トークンに設定
       await firebase.auth().signInWithCustomToken(token)
     }
@@ -860,6 +866,19 @@ namespace AppStorageService {
         throw new Error(`Bucket root is set for '${argName}'.`)
       }
     }
+
+    //----------------------------------------------------------------------
+    //
+    //  Event listeners
+    //
+    //----------------------------------------------------------------------
+
+    watch(
+      () => internal.auth.isSignedIn.value,
+      newValue => {
+        !newValue && store.storage.removeAll()
+      }
+    )
 
     //----------------------------------------------------------------------
     //

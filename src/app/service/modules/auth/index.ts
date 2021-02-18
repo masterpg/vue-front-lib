@@ -1,11 +1,12 @@
 import 'firebase/auth'
-import { AuthStatus, SetOwnUserInfoResult, SetOwnUserInfoResultStatus, User, UserInput } from '@/app/service/base'
-import { ComputedRef, computed, reactive } from '@vue/composition-api'
+import { AuthStatus, SetOwnUserInfoResult, SignInStatus, User, UserInput } from '@/app/service/base'
+import { InternalAuthService, injectInternalService } from '@/app/service/modules/internal'
+import { ComputedRef } from '@vue/composition-api'
 import { DeepReadonly } from 'web-base-lib'
 import { Dialog } from 'quasar'
+import { extendedMethod } from '@/app/base'
 import firebase from 'firebase/app'
 import { injectAPI } from '@/app/service/api'
-import { injectInternalService } from '@/app/service/modules/internal'
 import { injectStore } from '@/app/service/store'
 import { useI18n } from '@/app/i18n'
 
@@ -18,11 +19,15 @@ import { useI18n } from '@/app/i18n'
 interface AuthService {
   readonly user: DeepReadonly<User>
 
-  readonly status: ComputedRef<AuthStatus>
+  readonly authStatus: ComputedRef<AuthStatus>
+
+  readonly signInStatus: ComputedRef<SignInStatus>
 
   readonly isSignedIn: ComputedRef<boolean>
 
   readonly isSigningIn: ComputedRef<boolean>
+
+  readonly isNotSignedIn: ComputedRef<boolean>
 
   checkSingedIn(): Promise<void>
 
@@ -54,7 +59,9 @@ interface AuthService {
 
   setUserInfo(input: UserInput): Promise<SetOwnUserInfoResult>
 
-  validateSignedIn(): void
+  validateSignedIn: InternalAuthService['validateSignedIn']
+
+  watchSignInStatus: InternalAuthService['watchSignInStatus']
 }
 
 enum AuthProviderType {
@@ -87,20 +94,14 @@ namespace AuthService {
     const internal = injectInternalService()
     const i18n = useI18n()
 
-    const state = reactive({
-      isSigningIn: false,
-    })
-
     const googleProvider = new firebase.auth.GoogleAuthProvider()
     googleProvider.addScope('https://www.googleapis.com/auth/contacts.readonly')
 
     const facebookProvider = new firebase.auth.FacebookAuthProvider()
     facebookProvider.addScope('user_birthday')
 
-    // サインイン中フラグをオン
-    state.isSigningIn = true
-
-    firebase.auth().onAuthStateChanged(firebaseOnAuthStateChanged)
+    // サインイン中に設定
+    internal.auth.changeStatus('SigningIn')
 
     //----------------------------------------------------------------------
     //
@@ -108,11 +109,15 @@ namespace AuthService {
     //
     //----------------------------------------------------------------------
 
-    const status = computed(() => internal.auth.status.value)
+    const authStatus = internal.auth.authStatus
 
-    const isSignedIn = computed(() => internal.auth.isSignedIn.value)
+    const signInStatus = internal.auth.signInStatus
 
-    const isSigningIn = computed(() => state.isSigningIn)
+    const isSignedIn = internal.auth.isSignedIn
+
+    const isSigningIn = internal.auth.isSigningIn
+
+    const isNotSignedIn = internal.auth.isNotSignedIn
 
     //----------------------------------------------------------------------
     //
@@ -279,7 +284,7 @@ namespace AuthService {
         return apiResult
       }
 
-      if (status.value === 'WaitForEntry') {
+      if (authStatus.value === 'WaitForEntry') {
         await refreshUser()
       } else {
         store.user.set(apiResult.user!)
@@ -289,6 +294,8 @@ namespace AuthService {
     }
 
     const validateSignedIn = internal.auth.validateSignedIn
+
+    const watchSignInStatus = internal.auth.watchSignInStatus
 
     //----------------------------------------------------------------------
     //
@@ -319,20 +326,14 @@ namespace AuthService {
           await store.user.reflectCustomToken()
         }
         // 認証ステータスを設定
-        internal.auth.status.value = authData.status
-        // サインインされたなら、サインイン中フラグをオフ
-        if (isSignedIn.value) {
-          state.isSigningIn = false
-        }
+        internal.auth.changeStatus(authData.status)
       }
       // ローカルに認証ユーザーがない場合
       else {
         // ストアをクリア
         store.user.clear()
         // 認証ステータスをクリア
-        internal.auth.status.value = 'None'
-        // サインイン中フラグをオフ
-        state.isSigningIn = false
+        internal.auth.changeStatus('None')
       }
     }
 
@@ -346,9 +347,10 @@ namespace AuthService {
      * Firebaseの認証状態が変化した際のリスナです。
      * @param user
      */
-    async function firebaseOnAuthStateChanged(user: firebase.User | null) {
+    const firebaseOnAuthStateChanged = extendedMethod(async (user: firebase.User | null) => {
       await refreshUser()
-    }
+    })
+    firebase.auth().onAuthStateChanged(firebaseOnAuthStateChanged)
 
     //----------------------------------------------------------------------
     //
@@ -358,9 +360,11 @@ namespace AuthService {
 
     return {
       user: store.user.value,
-      status,
+      authStatus,
+      signInStatus,
       isSignedIn,
       isSigningIn,
+      isNotSignedIn,
       checkSingedIn,
       signInWithGoogle,
       signInWithFacebook,
@@ -375,6 +379,8 @@ namespace AuthService {
       fetchSignInMethodsForEmail,
       setUserInfo,
       validateSignedIn,
+      watchSignInStatus,
+      firebaseOnAuthStateChanged,
     }
   }
 }
