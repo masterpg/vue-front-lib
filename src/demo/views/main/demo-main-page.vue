@@ -76,9 +76,9 @@
 <script lang="ts">
 import { Notify, Platform } from 'quasar'
 import { computed, defineComponent, ref, watch } from '@vue/composition-api'
-import { injectService, provideService } from '@/demo/service'
+import { injectService, provideService } from '@/demo/services'
 import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
-import { AuthStatus } from '@/app/service'
+import { AuthStatus } from '@/app/services'
 import { Dialogs } from '@/app/dialogs'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
 import { useI18n } from '@/demo/i18n'
@@ -100,7 +100,7 @@ export default defineComponent({
     provideService()
     provideServiceWorker()
 
-    const service = injectService()
+    const services = injectService()
     const serviceWorker = injectServiceWorker()
     const routes = useRoutes()
     const { t } = useI18n()
@@ -109,9 +109,9 @@ export default defineComponent({
     Dialogs.provide(dialogsRef)
 
     const leftDrawerOpen = Platform.is.desktop ? ref(true) : ref(false)
-    const isSignedIn = service.auth.isSignedIn
-    const isSigningIn = service.auth.isSigningIn
-    const user = computed(() => service.auth.user)
+    const isSignedIn = services.auth.isSignedIn
+    const isSigningIn = services.auth.isSigningIn
+    const user = computed(() => services.auth.user)
 
     const pages = computed<{ title: string; path: string }[]>(() => {
       return [
@@ -161,7 +161,7 @@ export default defineComponent({
     }
 
     function signOutMenuItemOnClick() {
-      service.auth.signOut()
+      services.auth.signOut()
     }
 
     function emailChangeMenuItemOnClick() {
@@ -173,7 +173,7 @@ export default defineComponent({
     }
 
     watch(
-      () => service.auth.authStatus.value,
+      () => services.auth.authStatus.value,
       (newValue, oldValue) => {
         if (newValue === 'WaitForEntry') {
           Dialogs.userEntry.open()

@@ -52,7 +52,7 @@
 <script lang="ts">
 import { QDialog, QInput } from 'quasar'
 import { Ref, SetupContext, computed, defineComponent, ref } from '@vue/composition-api'
-import { StorageNode, StorageType } from '@/app/service'
+import { StorageNode, StorageType } from '@/app/services'
 import { Dialog } from '@/app/components/dialog'
 import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
 import _path from 'path'

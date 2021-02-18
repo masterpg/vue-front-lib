@@ -78,7 +78,7 @@
 </template>
 
 <script lang="ts">
-import { AuthStatus, injectService } from '@/app/service'
+import { AuthStatus, injectService } from '@/app/services'
 import { Loading, QInput } from 'quasar'
 import { Ref, computed, defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
 import { Dialogs } from '@/app/dialogs'
@@ -124,7 +124,7 @@ namespace EmailSignUpView {
       //
       //----------------------------------------------------------------------
 
-      const service = injectService()
+      const services = injectService()
       const i18n = useI18n()
 
       const emailInput = ref() as Ref<QInput>
@@ -184,7 +184,7 @@ namespace EmailSignUpView {
         }
 
         // メールアドレス＋パスワードでアカウントを作成
-        const signUpResult = await service.auth.createUserWithEmailAndPassword(state.email!, state.password!, {
+        const signUpResult = await services.auth.createUserWithEmailAndPassword(state.email!, state.password!, {
           photoURL: null,
         })
         if (!signUpResult.result) {
@@ -198,14 +198,14 @@ namespace EmailSignUpView {
           return
         }
 
-        if (service.auth.authStatus.value !== 'WaitForEmailVerified') {
+        if (services.auth.authStatus.value !== 'WaitForEmailVerified') {
           Loading.hide()
-          throw new Error(`'authStatus' is set to an unexpected value: ${service.auth.authStatus.value}`)
+          throw new Error(`'authStatus' is set to an unexpected value: ${services.auth.authStatus.value}`)
         }
 
         // メールアドレスに検証用メールを送信
         const continueURL = `${window.location.origin}/?${Dialogs.createQuery('userEntry')}`
-        const authResult = await service.auth.sendEmailVerification(continueURL)
+        const authResult = await services.auth.sendEmailVerification(continueURL)
         if (!authResult.result) {
           if (authResult.code) {
             state.errorMessage = authResult.errorMessage

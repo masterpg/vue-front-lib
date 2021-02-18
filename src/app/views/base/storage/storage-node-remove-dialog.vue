@@ -37,7 +37,7 @@
 
 <script lang="ts">
 import { SetupContext, computed, defineComponent, reactive, ref } from '@vue/composition-api'
-import { StorageNode, StorageNodeType, StorageType } from '@/app/service'
+import { StorageNode, StorageNodeType, StorageType } from '@/app/services'
 import { Dialog } from '@/app/components/dialog'
 import { QDialog } from 'quasar'
 import { StoragePageService } from '@/app/views/base/storage/storage-page-service'

@@ -6,10 +6,10 @@ import 'vue'
  * 1. Vueインスタンスにグローバル変数を設定する。
  *
  * @example
- * const service: ServiceContainer = new ServiceContainerImpl()
+ * const services: ServiceContainer = new ServiceContainerImpl()
  *
- * Object.defineProperty(Vue.prototype, '$service', {
- *    value: service,
+ * Object.defineProperty(Vue.prototype, '$services', {
+ *    value: services,
  *    writable: false,
  *    configurable: true,
  *  })
@@ -17,11 +17,11 @@ import 'vue'
  * 2. Vueインスタンスに設定した変数の型を設定する
  *
  * @example
- * import { ServiceContainer } from '@/service'
+ * import { ServiceContainer } from '@/services'
  *
  * declare module 'vue/types/vue' {
  *   interface Vue {
- *     $service: ServiceContainer
+ *     $services: ServiceContainer
  *   }
  * }
  */

@@ -100,7 +100,7 @@
 </template>
 
 <script lang="ts">
-import { CartItem, Product, injectService } from '@/demo/service'
+import { CartItem, Product, injectService } from '@/demo/services'
 import { computed, defineComponent, onMounted, reactive } from '@vue/composition-api'
 import { Loading } from 'quasar'
 import { useI18n } from '@/demo/i18n'
@@ -116,13 +116,13 @@ namespace ShopPage {
       //
       //----------------------------------------------------------------------
 
-      const service = injectService()
+      const services = injectService()
       const { t } = useI18n()
 
-      const isSignedIn = service.auth.isSignedIn
+      const isSignedIn = services.auth.isSignedIn
 
       const cartIsEmpty = computed(() => {
-        return service.shop.cartItems.value.length === 0
+        return services.shop.cartItems.value.length === 0
       })
 
       //----------------------------------------------------------------------
@@ -133,7 +133,7 @@ namespace ShopPage {
 
       onMounted(async () => {
         Loading.show()
-        await service.shop.fetchProducts()
+        await services.shop.fetchProducts()
         Loading.hide()
       })
 
@@ -145,19 +145,19 @@ namespace ShopPage {
 
       async function addButtonOnClick(product: Product) {
         Loading.show()
-        await service.shop.addItemToCart(product.id)
+        await services.shop.addItemToCart(product.id)
         Loading.hide()
       }
 
       async function removeButtonOnClick(cartItem: CartItem) {
         Loading.show()
-        await service.shop.removeItemFromCart(cartItem.productId)
+        await services.shop.removeItemFromCart(cartItem.productId)
         Loading.hide()
       }
 
       async function checkoutButtonOnClick() {
         Loading.show()
-        await service.shop.checkout()
+        await services.shop.checkout()
         Loading.hide()
       }
 
@@ -170,9 +170,9 @@ namespace ShopPage {
       return {
         t,
         isSignedIn,
-        products: service.shop.products,
-        cartItems: service.shop.cartItems,
-        cartTotalPrice: service.shop.cartTotalPrice,
+        products: services.shop.products,
+        cartItems: services.shop.cartItems,
+        cartTotalPrice: services.shop.cartTotalPrice,
         cartIsEmpty,
         addButtonOnClick,
         removeButtonOnClick,

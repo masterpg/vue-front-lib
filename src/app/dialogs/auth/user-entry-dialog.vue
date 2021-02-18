@@ -66,7 +66,7 @@
 <script lang="ts">
 import { Loading, QDialog, QInput } from 'quasar'
 import { Ref, SetupContext, defineComponent, ref, watch } from '@vue/composition-api'
-import { SetOwnUserInfoResultStatus, injectService } from '@/app/service'
+import { SetOwnUserInfoResultStatus, injectService } from '@/app/services'
 import { Dialog } from '@/app/components/dialog'
 import { useI18n } from '@/app/i18n'
 
@@ -90,7 +90,7 @@ namespace UserEntryDialog {
 
     const dialog = ref<QDialog>()
     const base = Dialog.setup<void>(dialog)
-    const service = injectService()
+    const services = injectService()
     const i18n = useI18n()
 
     const userNameInput = ref() as Ref<QInput>
@@ -150,7 +150,7 @@ namespace UserEntryDialog {
         return
       }
 
-      const ret = await service.auth.setUserInfo({
+      const ret = await services.auth.setUserInfo({
         userName: userName.value!,
         fullName: fullName.value!,
       })

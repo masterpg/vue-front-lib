@@ -66,7 +66,7 @@
 
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
-import { StorageArticleSettings, StorageNode, StorageNodeType, StorageType } from '@/app/service'
+import { StorageArticleSettings, StorageNode, StorageNodeType, StorageType } from '@/app/services'
 import { extendedMethod, isFontAwesome } from '@/app/base'
 import { QTable } from 'quasar'
 import { StorageDirTable } from '@/app/views/base/storage/storage-dir-table.vue'

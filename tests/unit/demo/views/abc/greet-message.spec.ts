@@ -1,6 +1,6 @@
-import { ServiceContainer, User } from '@/app/service'
+import { ServiceContainer, User } from '@/app/services'
 import VGreetMessage, { GreetMessage } from '@/demo/views/abc/greet-message.vue'
-import { AuthService } from '@/app/service/modules/auth'
+import { AuthService } from '@/app/services/modules/auth'
 import { computed } from '@vue/composition-api'
 import { provideDependencyToVue } from '../../../../helpers/demo'
 import { shallowMount } from '@vue/test-utils'

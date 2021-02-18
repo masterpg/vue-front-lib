@@ -86,7 +86,7 @@
 
 <script lang="ts">
 import { computed, defineComponent } from '@vue/composition-api'
-import { AuthProviderType } from '@/app/service'
+import { AuthProviderType } from '@/app/services'
 import { useI18n } from '@/app/i18n'
 
 interface ProviderListView extends ProviderListView.Props {}

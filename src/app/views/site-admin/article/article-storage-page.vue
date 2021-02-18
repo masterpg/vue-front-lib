@@ -125,7 +125,7 @@ import { StoragePage, StoragePageService, StorageTreeNodeFilter } from '@/app/vi
 import { defineComponent, ref } from '@vue/composition-api'
 import { ArticleDirView } from '@/app/views/site-admin/article/article-dir-view.vue'
 import { ArticleWritingView } from '@/app/views/site-admin/article/article-writing-view.vue'
-import { StorageType } from '@/app/service'
+import { StorageType } from '@/app/services'
 
 namespace ArticleStoragePage {
   export const clazz = defineComponent({

@@ -1,7 +1,7 @@
-import { TestAPIContainer, TestServiceContainer, TestStoreContainer } from './service'
+import { TestAPIContainer, TestServiceContainer, TestStoreContainer } from './services'
 import { Dialogs } from '@/app/dialogs'
-import { InternalService } from '@/app/service/modules/internal'
-import { provideService } from '@/app/service'
+import { InternalService } from '@/app/services/modules/internal'
+import { provideService } from '@/app/services'
 import { shallowMount } from '@vue/test-utils'
 
 //========================================================================
@@ -11,10 +11,10 @@ import { shallowMount } from '@vue/test-utils'
 //========================================================================
 
 interface ProvidedDependency {
-  api: TestAPIContainer
-  store: TestStoreContainer
+  apis: TestAPIContainer
+  stores: TestStoreContainer
   internal: InternalService
-  service: TestServiceContainer
+  services: TestServiceContainer
 }
 
 type SetupFunc = (provided: ProvidedDependency) => void
@@ -44,8 +44,8 @@ function provideDependency(setup?: SetupFunc): ProvidedDependency {
     },
   })
 
-  const { api, store, internal, service } = wrapper.vm
-  return { api, store, internal, service }
+  const { apis, stores, internal, services } = wrapper.vm
+  return { apis, stores, internal, services }
 }
 
 /**
@@ -60,17 +60,17 @@ function provideDependency(setup?: SetupFunc): ProvidedDependency {
 function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
   if (!provided) {
     const {
-      dependency: { api, store, internal },
+      dependency: { apis, stores, internal },
       ...service
     } = TestServiceContainer.newInstance()
     provideService(service)
     Dialogs.provide(td.object())
 
     provided = {
-      api,
-      store,
+      apis,
+      stores,
       internal,
-      service,
+      services: service,
     }
   }
 
@@ -95,5 +95,5 @@ function clearProvidedDependency(): void {
 //========================================================================
 
 export { provideDependency, provideDependencyToVue, clearProvidedDependency, ProvidedDependency }
-export * from './service'
+export * from './services'
 export * from './data'

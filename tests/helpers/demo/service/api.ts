@@ -1,4 +1,4 @@
-import { DemoAPIContainer } from '@/demo/service/api'
+import { DemoAPIContainer } from '@/demo/services/apis'
 import { TestAPIContainer } from '../../app'
 
 //========================================================================

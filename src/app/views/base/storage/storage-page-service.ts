@@ -6,7 +6,7 @@ import {
   StorageFileUploader,
   StorageService,
   UploadFileParam,
-} from '@/app/service/modules/storage'
+} from '@/app/services/modules/storage'
 import { ComputedRef, Ref, WritableComputedRef, computed, ref, watch } from '@vue/composition-api'
 import {
   CreateArticleTypeDirInput,
@@ -21,7 +21,7 @@ import {
   StorageType,
   StorageUtil,
   injectService,
-} from '@/app/service'
+} from '@/app/services'
 import { DeepPartial, PartialAre, arrayToDict, pickProps, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
 import { StorageRoute, useRoutes } from '@/app/router'
 import { StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/storage/base'
@@ -434,18 +434,18 @@ namespace StoragePageService {
     //----------------------------------------------------------------------
 
     const config = useConfig()
-    const service = injectService()
+    const services = injectService()
     const routes = useRoutes()
     const i18n = useI18n()
 
     const storageService: StorageService = (() => {
       switch (storageType) {
         case 'app':
-          return service.appStorage
+          return services.appStorage
         case 'user':
-          return service.userStorage
+          return services.userStorage
         case 'article':
-          return service.articleStorage
+          return services.articleStorage
       }
     })()
 
@@ -457,9 +457,9 @@ namespace StoragePageService {
 
     const store = StoragePageStore.getInstance(storageType)
 
-    const isSignedIn = service.auth.isSignedIn
+    const isSignedIn = services.auth.isSignedIn
 
-    const isSigningIn = service.auth.isSigningIn
+    const isSigningIn = services.auth.isSigningIn
 
     const route: StorageRoute = (() => {
       switch (storageType) {
@@ -1652,7 +1652,7 @@ namespace StoragePageStore {
   }
 
   export function newRawInstance() {
-    const service = injectService()
+    const services = injectService()
 
     const isFetchedInitialStorage = ref(false) as Ref<boolean>
 
@@ -1663,7 +1663,7 @@ namespace StoragePageStore {
       selectedTreeNodePath.value = ''
     }
 
-    service.auth.watchSignInStatus(newValue => {
+    services.auth.watchSignInStatus(newValue => {
       newValue === 'None' && clear()
     })
 

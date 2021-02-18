@@ -100,7 +100,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref, watch } from '@vue/composition-api'
-import { injectService, provideService } from '@/app/service'
+import { injectService, provideService } from '@/app/services'
 import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
 import { useRouteParams, useRoutes } from '@/app/router'
 import { Dialogs } from '@/app/dialogs'
@@ -125,7 +125,7 @@ export default defineComponent({
     provideService()
     provideServiceWorker()
 
-    const service = injectService()
+    const services = injectService()
     const serviceWorker = injectServiceWorker()
     const routes = useRoutes()
     const i18n = useI18n()
@@ -137,10 +137,10 @@ export default defineComponent({
     const leftDrawerOpen = ref(Screen.gt.md ? true : false)
     const isSiteAdminExpanded = ref(true)
     const isAppAdminExpanded = ref(true)
-    const isSignedIn = service.auth.isSignedIn
-    const isSigningIn = service.auth.isSigningIn
-    const isNotSigningIn = service.auth.isNotSignedIn
-    const user = computed(() => service.auth.user)
+    const isSignedIn = services.auth.isSignedIn
+    const isSigningIn = services.auth.isSigningIn
+    const isNotSigningIn = services.auth.isNotSignedIn
+    const user = computed(() => services.auth.user)
 
     const siteAdminItems = computed<{ title: string; path: string }[]>(() => {
       return [
@@ -171,7 +171,7 @@ export default defineComponent({
     //----------------------------------------------------------------------
 
     watch(
-      () => service.auth.signInStatus.value,
+      () => services.auth.signInStatus.value,
       (newValue, oldValue) => {
         if (newValue === 'None') {
           const needSignedIn = [routes.siteAdmin.article, routes.siteAdmin.storage, routes.appAdmin.storage].some(page => page.isCurrent.value)
@@ -184,7 +184,7 @@ export default defineComponent({
     )
 
     watch(
-      () => service.auth.authStatus.value,
+      () => services.auth.authStatus.value,
       (newValue, oldValue) => {
         if (newValue === 'WaitForEntry') {
           Dialogs.userEntry.open()
@@ -201,7 +201,7 @@ export default defineComponent({
     }
 
     function signOutMenuItemOnClick() {
-      service.auth.signOut()
+      services.auth.signOut()
     }
 
     function emailChangeMenuItemOnClick() {

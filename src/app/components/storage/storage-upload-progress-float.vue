@@ -72,8 +72,8 @@
 </template>
 
 <script lang="ts">
-import { StorageFileUploader, StorageUploader } from '@/app/service/modules/storage'
-import { StorageType, injectService } from '@/app/service'
+import { StorageFileUploader, StorageUploader } from '@/app/services/modules/storage'
+import { StorageType, injectService } from '@/app/services'
 import { computed, defineComponent, onUnmounted, reactive, ref, watch } from '@vue/composition-api'
 import { useI18n } from '@/app/i18n'
 
@@ -128,7 +128,7 @@ namespace StorageUploadProgressFloat {
 
       const el = ref<HTMLElement>()
 
-      const service = injectService()
+      const services = injectService()
       const i18n = useI18n()
 
       const state = reactive({
@@ -143,14 +143,14 @@ namespace StorageUploadProgressFloat {
       let uploader: StorageUploader
       switch (props.storageType) {
         case 'user':
-          uploader = service.userStorage.newUploader(el)
-          // uploader = service.userStorage.newUrlUploader(el)
+          uploader = services.userStorage.newUploader(el)
+          // uploader = services.userStorage.newUrlUploader(el)
           break
         case 'article':
-          uploader = service.articleStorage.newUploader(el)
+          uploader = services.articleStorage.newUploader(el)
           break
         case 'app':
-          uploader = service.appStorage.newUploader(el)
+          uploader = services.appStorage.newUploader(el)
           break
       }
 

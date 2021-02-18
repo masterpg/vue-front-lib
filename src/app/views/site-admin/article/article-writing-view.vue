@@ -44,7 +44,7 @@
 </template>
 
 <script lang="ts">
-import { SaveArticleSrcMasterFileResult, StorageArticleFileType, StorageNode, StorageType } from '@/app/service'
+import { SaveArticleSrcMasterFileResult, StorageArticleFileType, StorageNode, StorageType } from '@/app/services'
 import { computed, defineComponent, ref, watch } from '@vue/composition-api'
 import { Dialogs } from '@/app/dialogs/dialogs.vue'
 import { MarkdownEditor } from '@/app/components/markdown-editor'

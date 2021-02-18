@@ -81,7 +81,7 @@
 </template>
 
 <script lang="ts">
-import { AuthStatus, injectService } from '@/app/service'
+import { AuthStatus, injectService } from '@/app/services'
 import { Loading, QInput } from 'quasar'
 import { Ref, computed, defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
 import { Dialogs } from '@/app/dialogs'
@@ -137,7 +137,7 @@ namespace EmailSignInView {
       //
       //----------------------------------------------------------------------
 
-      const service = injectService()
+      const services = injectService()
       const i18n = useI18n()
 
       const emailInput = ref() as Ref<QInput>
@@ -198,7 +198,7 @@ namespace EmailSignInView {
         }
 
         // メールアドレス＋パスワードでサインイン
-        const signInResult = await service.auth.signInWithEmailAndPassword(state.email!, state.password!)
+        const signInResult = await services.auth.signInWithEmailAndPassword(state.email!, state.password!)
         if (!signInResult.result) {
           if (signInResult.code) {
             state.errorMessage = signInResult.errorMessage
@@ -210,15 +210,15 @@ namespace EmailSignInView {
           return
         }
 
-        if (service.auth.authStatus.value === 'None') {
+        if (services.auth.authStatus.value === 'None') {
           Loading.hide()
-          throw new Error(`'authStatus' is set to an unexpected value: ${service.auth.authStatus.value}`)
+          throw new Error(`'authStatus' is set to an unexpected value: ${services.auth.authStatus.value}`)
         }
 
         // メールアドレス検証中の場合、再度検証用メールを送信
-        if (service.auth.authStatus.value === 'WaitForEmailVerified') {
+        if (services.auth.authStatus.value === 'WaitForEmailVerified') {
           const continueURL = `${window.location.origin}/?${Dialogs.createQuery('signIn')}`
-          const authResult = await service.auth.sendEmailVerification(continueURL)
+          const authResult = await services.auth.sendEmailVerification(continueURL)
           if (!authResult.result) {
             if (authResult.code) {
               state.errorMessage = authResult.errorMessage
@@ -232,7 +232,7 @@ namespace EmailSignInView {
         }
 
         close({
-          status: service.auth.authStatus.value,
+          status: services.auth.authStatus.value,
           email: state.email!,
         })
 

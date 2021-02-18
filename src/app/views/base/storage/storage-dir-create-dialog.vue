@@ -42,7 +42,7 @@
 <script lang="ts">
 import { QDialog, QInput } from 'quasar'
 import { Ref, SetupContext, computed, defineComponent, reactive, ref } from '@vue/composition-api'
-import { StorageArticleSettings, StorageNode, StorageNodeType, StorageType } from '@/app/service'
+import { StorageArticleSettings, StorageNode, StorageNodeType, StorageType } from '@/app/services'
 import { DeepPartial } from 'web-base-lib'
 import { Dialog } from '@/app/components/dialog'
 import { StoragePageService } from '@/app/views/base/storage/storage-page-service'

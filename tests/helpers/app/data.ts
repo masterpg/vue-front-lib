@@ -1,5 +1,5 @@
-import { TestAuthToken, TestFirebaseUserInput, TestUserInput } from './service'
-import { AuthStatus } from '@/app/service'
+import { TestAuthToken, TestFirebaseUserInput, TestUserInput } from './services'
+import { AuthStatus } from '@/app/services'
 
 export function GeneralToken(): TestAuthToken {
   return {

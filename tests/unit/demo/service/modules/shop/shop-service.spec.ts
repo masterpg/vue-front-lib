@@ -1,7 +1,7 @@
-import { CartItem, Product } from '@/demo/service'
+import { CartItem, Product } from '@/demo/services'
 import { TestDemoAPIContainer, provideDependency, toBeCopyCartItem, toBeCopyProduct } from '../../../../../helpers/demo'
-import { CartItemEditResponse } from '@/demo/service/api/base'
-import { InternalAuthService } from '@/app/service/modules/internal'
+import { CartItemEditResponse } from '@/demo/services/apis/base'
+import { InternalAuthService } from '@/app/services/modules/internal'
 import dayjs from 'dayjs'
 
 //========================================================================
@@ -93,9 +93,9 @@ describe('ShopService', () => {
   })
 
   it('fetchProducts', async () => {
-    const { store, service } = provideDependency(({ api }) => {
+    const { stores, service } = provideDependency(({ apis }) => {
       // モック設定
-      const getProducts = td.replace<TestDemoAPIContainer, 'getProducts'>(api, 'getProducts')
+      const getProducts = td.replace<TestDemoAPIContainer, 'getProducts'>(apis, 'getProducts')
       td.when(getProducts()).thenResolve(Products())
     })
 
@@ -103,16 +103,16 @@ describe('ShopService', () => {
     const actual = await service.shop.fetchProducts()
 
     expect(actual).toEqual(Products())
-    expect(store.product.all.value).toEqual(Products())
-    toBeCopyProduct(store, actual)
+    expect(stores.product.all.value).toEqual(Products())
+    toBeCopyProduct(stores, actual)
   })
 
   describe('fetchCartItems', () => {
     it('ベーシックケース', async () => {
-      const { store, internal, service } = provideDependency(({ api, internal }) => {
+      const { stores, internal, service } = provideDependency(({ apis, internal }) => {
         // モック設定
         td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const getCartItems = td.replace<TestDemoAPIContainer, 'getCartItems'>(api, 'getCartItems')
+        const getCartItems = td.replace<TestDemoAPIContainer, 'getCartItems'>(apis, 'getCartItems')
         td.when(getCartItems()).thenResolve(CartItems())
       })
 
@@ -120,8 +120,8 @@ describe('ShopService', () => {
       const actual = await service.shop.fetchCartItems()
 
       expect(actual).toEqual(CartItems())
-      expect(store.cart.all.value).toEqual(CartItems())
-      toBeCopyCartItem(store, actual)
+      expect(stores.cart.all.value).toEqual(CartItems())
+      toBeCopyCartItem(stores, actual)
 
       // validateSignedInの呼び出しを検証
       const exp = td.explain(internal.auth.validateSignedIn)
@@ -131,10 +131,10 @@ describe('ShopService', () => {
 
     it('APIでエラーが発生した場合', async () => {
       const expected = new Error()
-      const { store, service } = provideDependency(({ api, internal }) => {
+      const { stores, service } = provideDependency(({ apis, internal }) => {
         // モック設定
         td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const getCartItems = td.replace<TestDemoAPIContainer, 'getCartItems'>(api, 'getCartItems')
+        const getCartItems = td.replace<TestDemoAPIContainer, 'getCartItems'>(apis, 'getCartItems')
         td.when(getCartItems()).thenReject(expected)
       })
 
@@ -148,7 +148,7 @@ describe('ShopService', () => {
 
       expect(actual).toBe(expected)
       // ストアに変化がないことを検証
-      expect(store.cart.all.value.length).toBe(0)
+      expect(stores.cart.all.value.length).toBe(0)
     })
   })
 
@@ -178,12 +178,12 @@ describe('ShopService', () => {
         },
       }
 
-      const { api, store, internal, service } = provideDependency(({ api, store, internal }) => {
+      const { apis, stores, internal, service } = provideDependency(({ apis, stores, internal }) => {
         // ストア設定
-        store.product.setAll(products)
+        stores.product.setAll(products)
         // モック設定
         td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const addCartItems = td.replace<TestDemoAPIContainer, 'addCartItems'>(api, 'addCartItems')
+        const addCartItems = td.replace<TestDemoAPIContainer, 'addCartItems'>(apis, 'addCartItems')
         td.when(addCartItems(td.matchers.anything())).thenResolve([response])
       })
 
@@ -192,7 +192,7 @@ describe('ShopService', () => {
 
       // APIが適切な引数でコールされたか検証
       td.verify(
-        api.addCartItems([
+        apis.addCartItems([
           {
             productId: response.productId,
             title: response.title,
@@ -202,10 +202,10 @@ describe('ShopService', () => {
         ])
       )
       // カートにアイテムが追加されたか検証
-      const cartItem = store.cart.sgetById(response.id)
+      const cartItem = stores.cart.sgetById(response.id)
       expect(cartItem.quantity).toBe(response.quantity)
       // 商品の在庫数が適切にマイナスされたか検証
-      const product = store.product.sgetById(response.productId)
+      const product = stores.product.sgetById(response.productId)
       expect(product.stock).toBe(response.product.stock)
 
       // validateSignedInの呼び出しを検証
@@ -235,13 +235,13 @@ describe('ShopService', () => {
         },
       }
 
-      const { api, store, internal, service } = provideDependency(({ api, store, internal }) => {
+      const { apis, stores, internal, service } = provideDependency(({ apis, stores, internal }) => {
         // ストア設定
-        store.product.setAll(products)
-        store.cart.setAll(CartItems())
+        stores.product.setAll(products)
+        stores.cart.setAll(CartItems())
         // モック設定
         td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const updateCartItems = td.replace<TestDemoAPIContainer, 'updateCartItems'>(api, 'updateCartItems')
+        const updateCartItems = td.replace<TestDemoAPIContainer, 'updateCartItems'>(apis, 'updateCartItems')
         td.when(updateCartItems(td.matchers.anything())).thenResolve([response])
       })
 
@@ -250,7 +250,7 @@ describe('ShopService', () => {
 
       // APIが適切な引数でコールされたか検証
       td.verify(
-        api.updateCartItems([
+        apis.updateCartItems([
           {
             id: response.id,
             quantity: response.quantity,
@@ -258,10 +258,10 @@ describe('ShopService', () => {
         ])
       )
       // カートアイテムの個数が適切にプラスされたか検証
-      const cartItem = store.cart.sgetById(response.id)
+      const cartItem = stores.cart.sgetById(response.id)
       expect(cartItem.quantity).toBe(response.quantity)
       // 商品の在庫数が適切にマイナスされたか検証
-      const product = store.product.sgetById(response.productId)
+      const product = stores.product.sgetById(response.productId)
       expect(product.stock).toBe(response.product.stock)
 
       // validateSignedInの呼び出しを検証
@@ -276,12 +276,12 @@ describe('ShopService', () => {
       // 現在の商品の在庫数を設定
       product1.stock = 0
 
-      const { store, service } = provideDependency(({ api, store, internal }) => {
+      const { stores, service } = provideDependency(({ apis, stores, internal }) => {
         // ストア設定
-        store.product.setAll(products)
+        stores.product.setAll(products)
         // モック設定
         td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const addCartItems = td.replace<TestDemoAPIContainer, 'addCartItems'>(api, 'addCartItems')
+        const addCartItems = td.replace<TestDemoAPIContainer, 'addCartItems'>(apis, 'addCartItems')
         td.when(addCartItems(td.matchers.anything())).thenReject(new Error())
       })
 
@@ -295,20 +295,20 @@ describe('ShopService', () => {
 
       expect(actual).toBeInstanceOf(Error)
       // ストアに変化がないことを検証
-      expect(store.product.all.value).toEqual(products)
-      expect(store.cart.all.value.length).toBe(0)
+      expect(stores.product.all.value).toEqual(products)
+      expect(stores.cart.all.value.length).toBe(0)
     })
 
     it('APIでエラーが発生した場合', async () => {
       const product1 = Products()[0]
 
       const expected = new Error()
-      const { store, service } = provideDependency(({ api, store, internal }) => {
+      const { stores, service } = provideDependency(({ apis, stores, internal }) => {
         // ストア設定
-        store.product.setAll(Products())
+        stores.product.setAll(Products())
         // モック設定
         td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const addCartItems = td.replace<TestDemoAPIContainer, 'addCartItems'>(api, 'addCartItems')
+        const addCartItems = td.replace<TestDemoAPIContainer, 'addCartItems'>(apis, 'addCartItems')
         td.when(addCartItems(td.matchers.anything())).thenReject(expected)
       })
 
@@ -322,8 +322,8 @@ describe('ShopService', () => {
 
       expect(actual).toBe(expected)
       // ストアに変化がないことを検証
-      expect(store.product.all.value).toEqual(Products())
-      expect(store.cart.all.value.length).toBe(0)
+      expect(stores.product.all.value).toEqual(Products())
+      expect(stores.cart.all.value.length).toBe(0)
     })
   })
 
@@ -351,13 +351,13 @@ describe('ShopService', () => {
         },
       }
 
-      const { api, store, internal, service } = provideDependency(({ api, store, internal }) => {
+      const { apis, stores, internal, service } = provideDependency(({ apis, stores, internal }) => {
         // ストア設定
-        store.product.setAll(products)
-        store.cart.setAll(cartItems)
+        stores.product.setAll(products)
+        stores.cart.setAll(cartItems)
         // モック設定
         td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const updateCartItems = td.replace<TestDemoAPIContainer, 'updateCartItems'>(api, 'updateCartItems')
+        const updateCartItems = td.replace<TestDemoAPIContainer, 'updateCartItems'>(apis, 'updateCartItems')
         td.when(updateCartItems(td.matchers.anything())).thenResolve([response])
       })
 
@@ -366,7 +366,7 @@ describe('ShopService', () => {
 
       // APIが適切な引数でコールされたか検証
       td.verify(
-        api.updateCartItems([
+        apis.updateCartItems([
           {
             id: response.id,
             quantity: response.quantity,
@@ -374,10 +374,10 @@ describe('ShopService', () => {
         ])
       )
       // カートアイテムの個数が適切にマイナスされたか検証
-      const cartItem = store.cart.sgetById(response.id)
+      const cartItem = stores.cart.sgetById(response.id)
       expect(cartItem.quantity).toBe(response.quantity)
       // 商品の在庫数が適切にプラスされたか検証
-      const product = store.product.sgetById(response.productId)
+      const product = stores.product.sgetById(response.productId)
       expect(product.stock).toBe(response.product.stock)
 
       // validateSignedInの呼び出しを検証
@@ -409,13 +409,13 @@ describe('ShopService', () => {
         },
       }
 
-      const { api, store, internal, service } = provideDependency(({ api, store, internal }) => {
+      const { apis, stores, internal, service } = provideDependency(({ apis, stores, internal }) => {
         // ストア設定
-        store.product.setAll(products)
-        store.cart.setAll(cartItems)
+        stores.product.setAll(products)
+        stores.cart.setAll(cartItems)
         // モック設定
         td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const removeCartItems = td.replace<TestDemoAPIContainer, 'removeCartItems'>(api, 'removeCartItems')
+        const removeCartItems = td.replace<TestDemoAPIContainer, 'removeCartItems'>(apis, 'removeCartItems')
         td.when(removeCartItems(td.matchers.anything())).thenResolve([response])
       })
 
@@ -423,12 +423,12 @@ describe('ShopService', () => {
       await service.shop.removeItemFromCart(response.product.id)
 
       // APIが適切な引数でコールされたか検証
-      td.verify(api.removeCartItems([response.id]))
+      td.verify(apis.removeCartItems([response.id]))
       // カートアイテムが削除されたか検証
-      const cartItem = store.cart.getById(response.id)
+      const cartItem = stores.cart.getById(response.id)
       expect(cartItem).toBeUndefined()
       // 商品の在庫数が適切にプラスされたか検証
-      const product = store.product.sgetById(response.productId)
+      const product = stores.product.sgetById(response.productId)
       expect(product.stock).toBe(response.product.stock)
 
       // validateSignedInの呼び出しを検証
@@ -445,13 +445,13 @@ describe('ShopService', () => {
       cartItem1.quantity = 1
 
       const expected = new Error()
-      const { store, service } = provideDependency(({ api, store, internal }) => {
+      const { stores, service } = provideDependency(({ apis, stores, internal }) => {
         // ストア設定
-        store.product.setAll(Products())
-        store.cart.setAll(cartItems)
+        stores.product.setAll(Products())
+        stores.cart.setAll(cartItems)
         // モック設定
         td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const removeCartItems = td.replace<TestDemoAPIContainer, 'removeCartItems'>(api, 'removeCartItems')
+        const removeCartItems = td.replace<TestDemoAPIContainer, 'removeCartItems'>(apis, 'removeCartItems')
         td.when(removeCartItems(td.matchers.anything())).thenReject(expected)
       })
 
@@ -465,40 +465,40 @@ describe('ShopService', () => {
 
       expect(actual).toBe(expected)
       // ストアに変化がないことを検証
-      expect(store.product.all.value).toEqual(Products())
-      expect(store.cart.all.value).toEqual(cartItems)
+      expect(stores.product.all.value).toEqual(Products())
+      expect(stores.cart.all.value).toEqual(cartItems)
     })
   })
 
   describe('checkout', () => {
     it('ベーシックケース', async () => {
-      const { api, service } = provideDependency(({ api, store, internal }) => {
+      const { apis, service } = provideDependency(({ apis, stores, internal }) => {
         // ストア設定
-        store.product.setAll(Products())
-        store.cart.setAll(CartItems())
+        stores.product.setAll(Products())
+        stores.cart.setAll(CartItems())
         // モック設定
         td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const checkoutCart = td.replace<TestDemoAPIContainer, 'checkoutCart'>(api, 'checkoutCart')
+        const checkoutCart = td.replace<TestDemoAPIContainer, 'checkoutCart'>(apis, 'checkoutCart')
         td.when(checkoutCart()).thenResolve(true)
       })
 
       // テスト対象の実行
       await service.shop.checkout()
 
-      td.verify(api.checkoutCart())
+      td.verify(apis.checkoutCart())
       expect(service.shop.cartItems.value.length).toBe(0)
       expect(service.shop.products.value).toEqual(Products())
     })
 
     it('APIでエラーが発生した場合', async () => {
       const expected = new Error()
-      const { store, service } = provideDependency(({ api, store, internal }) => {
+      const { stores, service } = provideDependency(({ apis, stores, internal }) => {
         // ストア設定
-        store.product.setAll(Products())
-        store.cart.setAll(CartItems())
+        stores.product.setAll(Products())
+        stores.cart.setAll(CartItems())
         // モック設定
         td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
-        const checkoutCart = td.replace<TestDemoAPIContainer, 'checkoutCart'>(api, 'checkoutCart')
+        const checkoutCart = td.replace<TestDemoAPIContainer, 'checkoutCart'>(apis, 'checkoutCart')
         td.when(checkoutCart()).thenReject(expected)
       })
 
@@ -512,8 +512,8 @@ describe('ShopService', () => {
 
       expect(actual).toBe(expected)
       // ストアに変化がないことを検証
-      expect(store.product.all.value).toEqual(Products())
-      expect(store.cart.all.value).toEqual(CartItems())
+      expect(stores.product.all.value).toEqual(Products())
+      expect(stores.cart.all.value).toEqual(CartItems())
     })
   })
 })

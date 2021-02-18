@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 
-import { ArticleStorageService, StorageService } from '@/app/service/modules/storage'
+import { ArticleStorageService, StorageService } from '@/app/services/modules/storage'
 import {
   CreateArticleTypeDirInput,
   StorageArticleDirType,
@@ -9,13 +9,13 @@ import {
   StorageNodeType,
   StorageType,
   StorageUtil,
-} from '@/app/service'
+} from '@/app/services'
 import { GeneralUser, NewTestStorageNodeData, TestServiceContainer, newStorageDirNode, newStorageFileNode } from '../../../../../helpers/app'
 import { Ref, computed, ref } from '@vue/composition-api'
 import { StoragePageService, StorageTreeNodeFilter } from '@/app/views/base/storage'
 import { StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/storage/base'
 import { TreeNode, TreeView, TreeViewImpl } from '@/app/components/tree-view'
-import { AuthService } from '@/app/service/modules/auth'
+import { AuthService } from '@/app/services/modules/auth'
 import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
 import { UploadEndedEvent } from '@/app/components/storage'
 import { VueRouter } from 'vue-router/types/router'
@@ -59,51 +59,51 @@ function newStoragePageService(
   } = {}
 ): { pageService: RawStoragePageService; treeView: TestStorageTreeView; storageService: StorageService } {
   // ストレージサービスをモック化
-  const service = td.object<TestServiceContainer>()
-  td.replace(require('@/app/service'), 'injectService', () => service)
+  const services = td.object<TestServiceContainer>()
+  td.replace(require('@/app/services'), 'injectService', () => services)
   const { storageType, storageService, nodeFilter } = (() => {
     let result: { storageType: StorageType; storageService: StorageService; nodeFilter: (node: StorageNode) => boolean }
     switch (params.storageType) {
       case 'app': {
         const basePath = ''
-        service.appStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
-        service.appStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
+        services.appStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
+        services.appStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
         result = {
           storageType: 'app',
-          storageService: service.appStorage,
+          storageService: services.appStorage,
           nodeFilter: StorageTreeNodeFilter.DirFilter,
         }
         break
       }
       case 'user': {
         const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
-        service.userStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
-        service.userStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
+        services.userStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
+        services.userStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
         result = {
           storageType: 'user',
-          storageService: service.userStorage,
+          storageService: services.userStorage,
           nodeFilter: StorageTreeNodeFilter.DirFilter,
         }
         break
       }
       case 'article': {
         const basePath = StorageUtil.toArticleRootPath(GeneralUser().uid)
-        service.articleStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
-        service.articleStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
+        services.articleStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
+        services.articleStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
         result = {
           storageType: 'article',
-          storageService: service.articleStorage,
+          storageService: services.articleStorage,
           nodeFilter: StorageTreeNodeFilter.ArticleFilter,
         }
         break
       }
       default: {
         const basePath = ''
-        service.appStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
-        service.appStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
+        services.appStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
+        services.appStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
         result = {
           storageType: 'app',
-          storageService: service.appStorage,
+          storageService: services.appStorage,
           nodeFilter: StorageTreeNodeFilter.AllFilter,
         }
         break
@@ -115,7 +115,7 @@ function newStoragePageService(
 
   // サインイン済みに設定
   td.replace<AuthService, 'isSignedIn'>(
-    service.auth,
+    services.auth,
     'isSignedIn',
     computed(() => true)
   )

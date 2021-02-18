@@ -111,7 +111,7 @@
 
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, ref } from '@vue/composition-api'
-import { StorageNode, StorageType, injectService } from '@/app/service'
+import { StorageNode, StorageType, injectService } from '@/app/services'
 import { Dialog } from '@/app/components/dialog'
 import { QLinearProgress } from 'quasar'
 import { StorageImg } from '@/app/components/storage/storage-img.vue'
@@ -159,7 +159,7 @@ namespace StorageFileDetailView {
 
     const pageService = StoragePageService.getInstance(props.storageType)
     const config = useConfig()
-    const service = injectService()
+    const services = injectService()
     const i18n = useI18n()
 
     const downloadLinear = ref<QLinearProgress>()
@@ -201,7 +201,7 @@ namespace StorageFileDetailView {
 
     const path = computed(() => {
       if (!fileNode.value) return ''
-      if (config.env.mode === 'dev' || service.auth.user.isAppAdmin) {
+      if (config.env.mode === 'dev' || services.auth.user.isAppAdmin) {
         return pageService.toFullPath(fileNode.value.path)
       } else {
         return fileNode.value.path

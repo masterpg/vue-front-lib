@@ -109,7 +109,7 @@
 </template>
 
 <script lang="ts">
-import { StorageArticleFileType, StorageUtil } from '@/app/service'
+import { StorageArticleFileType, StorageUtil } from '@/app/services'
 import { StorageDirTableRow, StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
 import { computed, defineComponent, ref } from '@vue/composition-api'
 import { StorageDirTable } from '@/app/views/base/storage/storage-dir-table.vue'

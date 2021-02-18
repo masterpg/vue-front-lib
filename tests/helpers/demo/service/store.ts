@@ -1,8 +1,8 @@
-import { CartItem, Product } from '@/demo/service'
-import { CartStore } from '@/demo/service/store/cart'
+import { CartItem, Product } from '@/demo/services'
+import { CartStore } from '@/demo/services/stores/cart'
 import { DeepReadonly } from 'web-base-lib'
-import { DemoStoreContainer } from '@/demo/service/store'
-import { ProductStore } from '@/demo/service/store/product'
+import { DemoStoreContainer } from '@/demo/services/stores'
+import { ProductStore } from '@/demo/services/stores/product'
 
 //========================================================================
 //

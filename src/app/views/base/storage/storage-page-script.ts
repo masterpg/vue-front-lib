@@ -1,4 +1,4 @@
-import { CreateArticleTypeDirInput, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/service'
+import { CreateArticleTypeDirInput, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/services'
 import { Loading, QSplitter, Screen } from 'quasar'
 import { SetupContext, computed, onMounted, onUnmounted, reactive, ref, watch } from '@vue/composition-api'
 import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'

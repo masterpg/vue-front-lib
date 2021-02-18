@@ -85,7 +85,7 @@
 </template>
 
 <script lang="ts">
-import { AuthProviderType, AuthStatus, injectService } from '@/app/service'
+import { AuthProviderType, AuthStatus, injectService } from '@/app/services'
 import { EmailSignInView, EmailSignInViewResult } from '@/app/dialogs/auth/parts/email-sign-in-view.vue'
 import { Loading, QDialog } from 'quasar'
 import { SetupContext, computed, defineComponent, reactive, ref } from '@vue/composition-api'
@@ -119,7 +119,7 @@ namespace UserDeleteDialog {
 
     const dialog = ref<QDialog>()
     const base = Dialog.setup<void>(dialog)
-    const service = injectService()
+    const services = injectService()
     const i18n = useI18n()
 
     const state = reactive({
@@ -139,11 +139,11 @@ namespace UserDeleteDialog {
     //----------------------------------------------------------------------
 
     const open: UserDeleteDialog['open'] = async () => {
-      if (!service.auth.isSignedIn) {
+      if (!services.auth.isSignedIn) {
         Dialogs.clearQuery()
         return
       }
-      state.currentEmail = service.auth.user.email
+      state.currentEmail = services.auth.user.email
       visibleUserDelete()
       return base.open()
     }
@@ -161,7 +161,7 @@ namespace UserDeleteDialog {
     async function deleteUser(): Promise<void> {
       Loading.show()
 
-      const deleteResult = await service.auth.deleteUser()
+      const deleteResult = await services.auth.deleteUser()
       if (!deleteResult.result) {
         state.errorMessage = deleteResult.errorMessage
         // ユーザーの認証情報が古すぎる場合、再度サインインが必要
@@ -177,11 +177,11 @@ namespace UserDeleteDialog {
     }
 
     async function selectGoogle(): Promise<void> {
-      await service.auth.signInWithGoogle()
+      await services.auth.signInWithGoogle()
     }
 
     async function selectFacebook(): Promise<void> {
-      await service.auth.signInWithFacebook()
+      await services.auth.signInWithFacebook()
     }
 
     function selectEmail(): void {
@@ -189,7 +189,7 @@ namespace UserDeleteDialog {
     }
 
     async function selectAnonymous(): Promise<void> {
-      await service.auth.signInAnonymously()
+      await services.auth.signInAnonymously()
     }
 
     function visibleUserDelete() {
@@ -198,8 +198,8 @@ namespace UserDeleteDialog {
     }
 
     async function visibleProviderList(): Promise<void> {
-      const user = service.auth.user
-      state.visibleProviders = await service.auth.fetchSignInMethodsForEmail(user.email)
+      const user = services.auth.user
+      state.visibleProviders = await services.auth.fetchSignInMethodsForEmail(user.email)
       state.viewType = 'ProviderList'
     }
 

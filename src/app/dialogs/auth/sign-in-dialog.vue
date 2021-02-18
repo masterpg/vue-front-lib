@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import { AuthStatus, injectService } from '@/app/service'
+import { AuthStatus, injectService } from '@/app/services'
 import { EmailSignInView, EmailSignInViewResult } from '@/app/dialogs/auth/parts/email-sign-in-view.vue'
 import { SetupContext, defineComponent, reactive, ref } from '@vue/composition-api'
 import { AuthMessageView } from '@/app/dialogs/auth/parts/auth-message-view.vue'
@@ -70,7 +70,7 @@ namespace SignInDialog {
 
     const dialog = ref<QDialog>()
     const base = Dialog.setup<void>(dialog)
-    const service = injectService()
+    const services = injectService()
     const i18n = useI18n()
 
     const state = reactive({
@@ -102,12 +102,12 @@ namespace SignInDialog {
 
     async function selectGoogle(): Promise<void> {
       Dialogs.clearQuery()
-      await service.auth.signInWithGoogle()
+      await services.auth.signInWithGoogle()
     }
 
     async function selectFacebook(): Promise<void> {
       Dialogs.clearQuery()
-      await service.auth.signInWithFacebook()
+      await services.auth.signInWithFacebook()
     }
 
     function selectEmail(): void {
@@ -116,7 +116,7 @@ namespace SignInDialog {
 
     async function selectAnonymous(): Promise<void> {
       Dialogs.clearQuery()
-      await service.auth.signInAnonymously()
+      await services.auth.signInAnonymously()
     }
 
     async function emailSignInViewOnClose(closeResult: EmailSignInViewResult) {

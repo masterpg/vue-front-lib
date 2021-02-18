@@ -26,7 +26,6 @@
 </template>
 
 <script lang="ts">
-import { AuthStatus, injectService } from '@/app/service'
 import { EmailSignUpView, EmailSignUpViewResult } from '@/app/dialogs/auth/sign-up-dialog/email-sign-up-view.vue'
 import { SetupContext, defineComponent, reactive, ref } from '@vue/composition-api'
 import { AuthMessageView } from '@/app/dialogs/auth/parts/auth-message-view.vue'
@@ -34,6 +33,7 @@ import { Dialog } from '@/app/components/dialog'
 import { Dialogs } from '@/app/dialogs'
 import { ProviderListView } from '@/app/dialogs/auth/parts/provider-list-view.vue'
 import { QDialog } from 'quasar'
+import { injectService } from '@/app/services'
 import { useI18n } from '@/app/i18n'
 
 interface SignUpDialog extends Dialog<void, void>, SignUpDialog.Props {}
@@ -62,7 +62,7 @@ namespace SignUpDialog {
 
     const dialog = ref<QDialog>()
     const base = Dialog.setup<void>(dialog)
-    const service = injectService()
+    const services = injectService()
     const i18n = useI18n()
 
     const state = reactive({
@@ -94,12 +94,12 @@ namespace SignUpDialog {
 
     async function selectGoogle(): Promise<void> {
       Dialogs.clearQuery()
-      await service.auth.signInWithGoogle()
+      await services.auth.signInWithGoogle()
     }
 
     async function selectFacebook(): Promise<void> {
       Dialogs.clearQuery()
-      await service.auth.signInWithFacebook()
+      await services.auth.signInWithFacebook()
     }
 
     function selectEmail(): void {

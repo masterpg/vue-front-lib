@@ -66,7 +66,7 @@
 
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, ref } from '@vue/composition-api'
-import { StorageArticleDirType, StorageNode, StorageNodeType, StorageType, StorageUtil } from '@/app/service'
+import { StorageArticleDirType, StorageNode, StorageNodeType, StorageType, StorageUtil } from '@/app/services'
 import { TreeView, TreeViewEvent, TreeViewLazyLoadEvent } from '@/app/components/tree-view'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { Dialog } from '@/app/components/dialog'
