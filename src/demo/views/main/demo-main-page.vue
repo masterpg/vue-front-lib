@@ -77,12 +77,11 @@
 import { Notify, Platform } from 'quasar'
 import { computed, defineComponent, ref, watch } from '@vue/composition-api'
 import { injectService, provideService } from '@/demo/services'
-import { injectServiceWorker, provideServiceWorker } from '@/app/service-worker'
-import { AuthStatus } from '@/app/services'
 import { Dialogs } from '@/app/dialogs'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
 import { useI18n } from '@/demo/i18n'
 import { useRoutes } from '@/demo/router'
+import { useServiceWorker } from '@/app/service-worker'
 
 export default defineComponent({
   components: {
@@ -98,10 +97,9 @@ export default defineComponent({
     //----------------------------------------------------------------------
 
     provideService()
-    provideServiceWorker()
 
     const services = injectService()
-    const serviceWorker = injectServiceWorker()
+    const serviceWorker = useServiceWorker()
     const routes = useRoutes()
     const { t } = useI18n()
 
@@ -181,7 +179,7 @@ export default defineComponent({
       }
     )
 
-    serviceWorker.addStateChangeListener(info => {
+    serviceWorker.watchState(info => {
       if (info.state === 'updated') {
         Notify.create({
           icon: 'info',
