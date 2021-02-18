@@ -1,6 +1,6 @@
-import { StoreContainer, injectStore as _injectStore, provideStore as _provideStore } from '@/app/services/stores'
 import { CartStore } from '@/demo/services/stores/cart'
 import { ProductStore } from '@/demo/services/stores/product'
+import { StoreContainer } from '@/app/services/stores'
 
 //========================================================================
 //
@@ -20,8 +20,11 @@ interface DemoStoreContainer extends StoreContainer {
 //========================================================================
 
 namespace DemoStoreContainer {
-  export function newInstance(): DemoStoreContainer {
-    return newRawInstance()
+  let instance: DemoStoreContainer
+
+  export function useStore(stores?: DemoStoreContainer): DemoStoreContainer {
+    instance = stores ?? instance ?? newRawInstance()
+    return instance
   }
 
   export function newRawInstance() {
@@ -37,22 +40,9 @@ namespace DemoStoreContainer {
 
 //========================================================================
 //
-//  Dependency Injection
-//
-//========================================================================
-
-function provideStore(stores: DemoStoreContainer): void {
-  _provideStore(stores)
-}
-
-function injectStore(): DemoStoreContainer {
-  return _injectStore() as DemoStoreContainer
-}
-
-//========================================================================
-//
 //  Export
 //
 //========================================================================
 
-export { DemoStoreContainer, provideStore, injectStore }
+const { useStore } = DemoStoreContainer
+export { DemoStoreContainer, useStore }

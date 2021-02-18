@@ -1,14 +1,14 @@
 import 'firebase/auth'
 import { AuthStatus, SetOwnUserInfoResult, SignInStatus, User, UserInput } from '@/app/services/base'
-import { InternalAuthService, injectInternalService } from '@/app/services/modules/internal'
+import { InternalAuthService, useInternalService } from '@/app/services/modules/internal'
 import { ComputedRef } from '@vue/composition-api'
 import { DeepReadonly } from 'web-base-lib'
 import { Dialog } from 'quasar'
 import { extendedMethod } from '@/app/base'
 import firebase from 'firebase/app'
-import { injectAPI } from '@/app/services/apis'
-import { injectStore } from '@/app/services/stores'
+import { useAPI } from '@/app/services/apis'
 import { useI18n } from '@/app/i18n'
+import { useStore } from '@/app/services/stores'
 
 //========================================================================
 //
@@ -89,9 +89,9 @@ namespace AuthService {
     //
     //----------------------------------------------------------------------
 
-    const apis = injectAPI()
-    const stores = injectStore()
-    const internal = injectInternalService()
+    const apis = useAPI()
+    const stores = useStore()
+    const internal = useInternalService()
     const i18n = useI18n()
 
     const googleProvider = new firebase.auth.GoogleAuthProvider()

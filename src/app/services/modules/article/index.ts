@@ -1,6 +1,6 @@
 import { ArticleTableOfContentsNode } from '@/app/services'
 import { extendedMethod } from '@/app/base'
-import { injectAPI } from '@/app/services/apis'
+import { useAPI } from '@/app/services/apis'
 
 //========================================================================
 //
@@ -34,7 +34,7 @@ namespace ArticleService {
     //
     //----------------------------------------------------------------------
 
-    const apis = injectAPI()
+    const apis = useAPI()
 
     //----------------------------------------------------------------------
     //

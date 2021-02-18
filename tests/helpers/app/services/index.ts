@@ -1,7 +1,7 @@
 import { AppStorageService, ArticleStorageService, UserStorageService } from '@/app/services/modules/storage'
 import { AuthService } from '@/app/services/modules/auth'
 import { Entity } from '@/firestore-ex'
-import { InternalService } from '@/app/services/modules/internal'
+import { InternalServiceContainer } from '@/app/services/modules/internal'
 import { ServiceContainer } from '@/app/services'
 import { TestAPIContainer } from './apis'
 import { TestStoreContainer } from './stores'
@@ -27,7 +27,7 @@ type TestArticleStorageService = ReturnType<typeof ArticleStorageService.newRawI
 interface TestServiceDependency {
   apis: TestAPIContainer
   stores: TestStoreContainer
-  internal: InternalService
+  internal: InternalServiceContainer
 }
 
 //========================================================================
@@ -40,7 +40,7 @@ namespace TestServiceContainer {
   export function newInstance(): TestServiceContainer & { readonly dependency: TestServiceDependency } {
     const apis = TestAPIContainer.newInstance()
     const stores = TestStoreContainer.newInstance()
-    const internal = InternalService.newInstance()
+    const internal = InternalServiceContainer.newRawInstance()
     const dependency = { apis, stores, internal }
 
     const base = ServiceContainer.newRawInstance(dependency)

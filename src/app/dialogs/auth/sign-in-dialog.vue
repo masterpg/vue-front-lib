@@ -32,7 +32,6 @@
 </template>
 
 <script lang="ts">
-import { AuthStatus, injectService } from '@/app/services'
 import { EmailSignInView, EmailSignInViewResult } from '@/app/dialogs/auth/parts/email-sign-in-view.vue'
 import { SetupContext, defineComponent, reactive, ref } from '@vue/composition-api'
 import { AuthMessageView } from '@/app/dialogs/auth/parts/auth-message-view.vue'
@@ -42,6 +41,7 @@ import { PasswordResetView } from '@/app/dialogs/auth/parts/password-reset-view.
 import { ProviderListView } from '@/app/dialogs/auth/parts/provider-list-view.vue'
 import { QDialog } from 'quasar'
 import { useI18n } from '@/app/i18n'
+import { useService } from '@/app/services'
 
 interface SignInDialog extends Dialog<void, void> {}
 
@@ -70,7 +70,7 @@ namespace SignInDialog {
 
     const dialog = ref<QDialog>()
     const base = Dialog.setup<void>(dialog)
-    const services = injectService()
+    const services = useService()
     const i18n = useI18n()
 
     const state = reactive({

@@ -1,9 +1,9 @@
 import { CartItem, Product } from '@/demo/services/base'
 import { ComputedRef, watch } from '@vue/composition-api'
 import { DeepReadonly } from 'web-base-lib'
-import { injectAPI } from '@/demo/services/apis'
-import { injectInternalService } from '@/app/services/modules/internal'
-import { injectStore } from '@/demo/services/stores'
+import { useAPI } from '@/demo/services/apis'
+import { useInternalService } from '@/app/services/modules/internal'
+import { useStore } from '@/demo/services/stores'
 
 //========================================================================
 //
@@ -47,9 +47,9 @@ namespace ShopService {
     //
     //----------------------------------------------------------------------
 
-    const apis = injectAPI()
-    const stores = injectStore()
-    const internal = injectInternalService()
+    const apis = useAPI()
+    const stores = useStore()
+    const internal = useInternalService()
 
     //----------------------------------------------------------------------
     //

@@ -12,11 +12,11 @@ import { AppStorageService } from '@/app/services/modules/storage/app-storage'
 import { StorageService } from '@/app/services/modules/storage/base'
 import _path from 'path'
 import { extendedMethod } from '@/app/base'
-import { injectAPI } from '@/app/services/apis'
-import { injectInternalService } from '@/app/services/modules/internal'
-import { injectStore } from '@/app/services/stores'
 import { splitArrayChunk } from 'web-base-lib'
+import { useAPI } from '@/app/services/apis'
 import { useConfig } from '@/app/config'
+import { useInternalService } from '@/app/services/modules/internal'
+import { useStore } from '@/app/services/stores'
 import { watch } from '@vue/composition-api'
 
 //========================================================================
@@ -54,9 +54,9 @@ namespace ArticleStorageService {
     const base = AppStorageService.newRawInstance()
 
     const config = useConfig()
-    const apis = injectAPI()
-    const stores = injectStore()
-    const internal = injectInternalService()
+    const apis = useAPI()
+    const stores = useStore()
+    const internal = useInternalService()
 
     watch(
       () => internal.auth.isSignedIn.value,

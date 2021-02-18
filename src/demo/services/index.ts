@@ -1,7 +1,7 @@
-import { ServiceContainer, injectService as _injectService, provideService as _provideService } from '@/app/services'
-import { DemoAPIContainer } from '@/demo/services/apis'
-import { DemoStoreContainer } from '@/demo/services/stores'
-import { InternalService } from '@/app/services/modules/internal'
+import { DemoAPIContainer, useAPI } from '@/demo/services/apis'
+import { DemoStoreContainer, useStore } from '@/demo/services/stores'
+import { InternalServiceContainer, useInternalService } from '@/app/services/modules/internal'
+import { ServiceContainer } from '@/app/services'
 import { ShopService } from '@/demo/services/modules/shop'
 
 //========================================================================
@@ -21,14 +21,17 @@ interface DemoServiceContainer extends ServiceContainer {
 //========================================================================
 
 namespace DemoServiceContainer {
-  export function newInstance(): DemoServiceContainer {
-    return newRawInstance()
+  let instance: DemoServiceContainer
+
+  export function useService(services?: DemoServiceContainer): DemoServiceContainer {
+    instance = services ?? instance ?? newRawInstance()
+    return instance
   }
 
-  export function newRawInstance(options?: { apis?: DemoAPIContainer; stores?: DemoStoreContainer; internal?: InternalService }) {
-    const apis = options?.apis ?? DemoAPIContainer.newInstance()
-    const stores = options?.stores ?? DemoStoreContainer.newInstance()
-    const internal = options?.internal ?? InternalService.newInstance()
+  export function newRawInstance(options?: { apis?: DemoAPIContainer; stores?: DemoStoreContainer; internal?: InternalServiceContainer }) {
+    const apis = useAPI(options?.apis)
+    const stores = useStore(options?.stores)
+    const internal = useInternalService(options?.internal)
     const dependency = { apis, stores, internal }
 
     const base = ServiceContainer.newRawInstance(dependency)
@@ -42,24 +45,10 @@ namespace DemoServiceContainer {
 
 //========================================================================
 //
-//  Dependency Injection
-//
-//========================================================================
-
-function provideService(instance?: DemoServiceContainer): void {
-  instance = instance ?? DemoServiceContainer.newInstance()
-  _provideService(instance)
-}
-
-function injectService(): DemoServiceContainer {
-  return _injectService() as DemoServiceContainer
-}
-
-//========================================================================
-//
 //  Export
 //
 //========================================================================
 
-export { DemoServiceContainer, injectService, provideService }
+const { useService } = DemoServiceContainer
+export { DemoServiceContainer, useService }
 export * from '@/demo/services/base'

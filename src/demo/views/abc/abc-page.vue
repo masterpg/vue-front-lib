@@ -76,8 +76,8 @@ import { computed, defineComponent, onMounted, reactive, ref, watch, watchEffect
 import { CustomCheckbox } from '@/demo/views/abc/custom-checkbox.vue'
 import { CustomInput } from '@/demo/views/abc/custom-input.vue'
 import { GreetMessage } from '@/demo/views/abc/greet-message.vue'
-import { injectService } from '@/app/services'
 import { useI18n } from '@/demo/i18n'
+import { useService } from '@/app/services'
 
 interface Post {
   message: string
@@ -121,7 +121,7 @@ namespace AbcPage {
       //
       //----------------------------------------------------------------------
 
-      const services = injectService()
+      const services = useService()
       const i18n = useI18n()
 
       const greetMessage = ref<GreetMessage>()

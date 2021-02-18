@@ -60,7 +60,7 @@ function newStoragePageService(
 ): { pageService: RawStoragePageService; treeView: TestStorageTreeView; storageService: StorageService } {
   // ストレージサービスをモック化
   const services = td.object<TestServiceContainer>()
-  td.replace(require('@/app/services'), 'injectService', () => services)
+  td.replace(require('@/app/services'), 'useService', () => services)
   const { storageType, storageService, nodeFilter } = (() => {
     let result: { storageType: StorageType; storageService: StorageService; nodeFilter: (node: StorageNode) => boolean }
     switch (params.storageType) {

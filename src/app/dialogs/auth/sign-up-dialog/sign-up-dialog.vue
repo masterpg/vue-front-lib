@@ -33,8 +33,8 @@ import { Dialog } from '@/app/components/dialog'
 import { Dialogs } from '@/app/dialogs'
 import { ProviderListView } from '@/app/dialogs/auth/parts/provider-list-view.vue'
 import { QDialog } from 'quasar'
-import { injectService } from '@/app/services'
 import { useI18n } from '@/app/i18n'
+import { useService } from '@/app/services'
 
 interface SignUpDialog extends Dialog<void, void>, SignUpDialog.Props {}
 
@@ -62,7 +62,7 @@ namespace SignUpDialog {
 
     const dialog = ref<QDialog>()
     const base = Dialog.setup<void>(dialog)
-    const services = injectService()
+    const services = useService()
     const i18n = useI18n()
 
     const state = reactive({

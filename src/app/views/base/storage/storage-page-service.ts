@@ -20,7 +20,7 @@ import {
   StorageNodeType,
   StorageType,
   StorageUtil,
-  injectService,
+  useService,
 } from '@/app/services'
 import { DeepPartial, PartialAre, arrayToDict, pickProps, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
 import { StorageRoute, useRoutes } from '@/app/router'
@@ -434,7 +434,7 @@ namespace StoragePageService {
     //----------------------------------------------------------------------
 
     const config = useConfig()
-    const services = injectService()
+    const services = useService()
     const routes = useRoutes()
     const i18n = useI18n()
 
@@ -1652,7 +1652,7 @@ namespace StoragePageStore {
   }
 
   export function newRawInstance() {
-    const services = injectService()
+    const services = useService()
 
     const isFetchedInitialStorage = ref(false) as Ref<boolean>
 

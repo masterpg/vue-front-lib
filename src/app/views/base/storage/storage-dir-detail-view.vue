@@ -101,7 +101,7 @@
 
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, ref } from '@vue/composition-api'
-import { StorageNode, StorageType, injectService } from '@/app/services'
+import { StorageNode, StorageType, useService } from '@/app/services'
 import { Dialog } from '@/app/components/dialog'
 import { QLinearProgress } from 'quasar'
 import { StoragePageService } from '@/app/views/base/storage/storage-page-service'
@@ -144,7 +144,7 @@ namespace StorageDirDetailView {
 
     const pageService = StoragePageService.getInstance(props.storageType)
     const config = useConfig()
-    const services = injectService()
+    const services = useService()
     const i18n = useI18n()
 
     const downloadLinear = ref<QLinearProgress>()

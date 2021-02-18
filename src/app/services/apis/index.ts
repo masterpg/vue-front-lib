@@ -16,8 +16,11 @@ interface APIContainer extends GQLAPIContainer, RESTAPIContainer {}
 //========================================================================
 
 namespace APIContainer {
-  export function newInstance(): APIContainer {
-    return newRawInstance()
+  let instance: APIContainer
+
+  export function useAPI(apis?: APIContainer): APIContainer {
+    instance = apis ?? instance ?? newRawInstance()
+    return instance
   }
 
   export function newRawInstance() {
@@ -33,27 +36,9 @@ namespace APIContainer {
 
 //========================================================================
 //
-//  Dependency Injection
-//
-//========================================================================
-
-let instance: APIContainer
-
-function provideAPI(apis: APIContainer): void {
-  instance = apis
-}
-
-function injectAPI(): APIContainer {
-  if (!instance) {
-    throw new Error(`'APIContainer' is not provided`)
-  }
-  return instance
-}
-
-//========================================================================
-//
 //  Export
 //
 //========================================================================
 
-export { APIContainer, provideAPI, injectAPI }
+const { useAPI } = APIContainer
+export { APIContainer, useAPI }

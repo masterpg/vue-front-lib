@@ -85,7 +85,7 @@
 </template>
 
 <script lang="ts">
-import { AuthProviderType, AuthStatus, injectService } from '@/app/services'
+import { AuthProviderType, useService } from '@/app/services'
 import { EmailSignInView, EmailSignInViewResult } from '@/app/dialogs/auth/parts/email-sign-in-view.vue'
 import { Loading, QDialog } from 'quasar'
 import { SetupContext, computed, defineComponent, reactive, ref } from '@vue/composition-api'
@@ -119,7 +119,7 @@ namespace UserDeleteDialog {
 
     const dialog = ref<QDialog>()
     const base = Dialog.setup<void>(dialog)
-    const services = injectService()
+    const services = useService()
     const i18n = useI18n()
 
     const state = reactive({

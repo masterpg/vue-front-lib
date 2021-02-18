@@ -8,7 +8,7 @@ import { Unsubscribe, createNanoEvents } from 'nanoevents'
 //
 //========================================================================
 
-interface InternalService {
+interface InternalServiceContainer {
   helper: InternalHelperService
   auth: InternalAuthService
 }
@@ -121,9 +121,12 @@ namespace InternalAuthService {
   }
 }
 
-namespace InternalService {
-  export function newInstance(): InternalService {
-    return newRawInstance()
+namespace InternalServiceContainer {
+  let instance: InternalServiceContainer
+
+  export function useInternalService(internal?: InternalServiceContainer): InternalServiceContainer {
+    instance = internal ?? instance ?? newRawInstance()
+    return instance
   }
 
   export function newRawInstance(options?: { helper?: InternalHelperService; auth?: InternalAuthService }) {
@@ -139,27 +142,9 @@ namespace InternalService {
 
 //========================================================================
 //
-//  Dependency Injection
-//
-//========================================================================
-
-let instance: InternalService
-
-function provideInternalService(internal: InternalService): void {
-  instance = internal
-}
-
-function injectInternalService(): InternalService {
-  if (!instance) {
-    throw new Error(`'InternalService' is not provided`)
-  }
-  return instance
-}
-
-//========================================================================
-//
 //  Export
 //
 //========================================================================
 
-export { InternalAuthService, InternalHelperService, InternalService, provideInternalService, injectInternalService }
+const { useInternalService } = InternalServiceContainer
+export { InternalAuthService, InternalHelperService, InternalServiceContainer, useInternalService }

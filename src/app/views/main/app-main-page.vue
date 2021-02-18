@@ -100,13 +100,13 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref, watch } from '@vue/composition-api'
-import { injectService, provideService } from '@/app/services'
 import { useRouteParams, useRoutes } from '@/app/router'
 import { Dialogs } from '@/app/dialogs'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
 import { Notify } from 'quasar'
 import { Screen } from 'quasar'
 import { useI18n } from '@/app/i18n'
+import { useService } from '@/app/services'
 import { useServiceWorker } from '@/app/service-worker'
 
 export default defineComponent({
@@ -122,9 +122,7 @@ export default defineComponent({
     //
     //----------------------------------------------------------------------
 
-    provideService()
-
-    const services = injectService()
+    const services = useService()
     const serviceWorker = useServiceWorker()
     const routes = useRoutes()
     const i18n = useI18n()

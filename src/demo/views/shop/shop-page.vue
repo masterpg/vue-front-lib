@@ -100,8 +100,8 @@
 </template>
 
 <script lang="ts">
-import { CartItem, Product, injectService } from '@/demo/services'
-import { computed, defineComponent, onMounted, reactive } from '@vue/composition-api'
+import { CartItem, Product, useService } from '@/demo/services'
+import { computed, defineComponent, onMounted } from '@vue/composition-api'
 import { Loading } from 'quasar'
 import { useI18n } from '@/demo/i18n'
 
@@ -116,7 +116,7 @@ namespace ShopPage {
       //
       //----------------------------------------------------------------------
 
-      const services = injectService()
+      const services = useService()
       const { t } = useI18n()
 
       const isSignedIn = services.auth.isSignedIn

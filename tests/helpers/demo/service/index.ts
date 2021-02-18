@@ -1,7 +1,7 @@
 import { DemoServiceContainer } from '@/demo/services'
-import { InternalService } from '@/app/services/modules/internal'
-import { TestDemoAPIContainer } from './api'
-import { TestDemoStoreContainer } from './store'
+import { InternalServiceContainer } from '@/app/services/modules/internal'
+import { TestDemoAPIContainer } from './apis'
+import { TestDemoStoreContainer } from './stores'
 import { TestServiceContainer } from '../../app'
 
 //========================================================================
@@ -15,7 +15,7 @@ type TestDemoServiceContainer = DemoServiceContainer & TestServiceContainer
 interface TestDemoServiceDependency {
   apis: TestDemoAPIContainer
   stores: TestDemoStoreContainer
-  internal: InternalService
+  internal: InternalServiceContainer
 }
 
 //========================================================================
@@ -29,7 +29,7 @@ namespace TestDemoServiceContainer {
   export function newInstance(): TestDemoServiceContainer & { readonly dependency: TestDemoServiceDependency } {
     const apis = TestDemoAPIContainer.newInstance()
     const stores = TestDemoStoreContainer.newInstance()
-    const internal = InternalService.newInstance()
+    const internal = InternalServiceContainer.newRawInstance()
     const dependency = { apis, stores, internal }
 
     const base = DemoServiceContainer.newRawInstance(dependency)
@@ -48,5 +48,5 @@ namespace TestDemoServiceContainer {
 //========================================================================
 
 export { TestDemoServiceContainer }
-export * from './api'
-export * from './store'
+export * from './apis'
+export * from './stores'

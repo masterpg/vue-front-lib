@@ -1,8 +1,8 @@
 import { AppStorageService } from '@/app/services/modules/storage/app-storage'
 import _path from 'path'
-import { injectInternalService } from '@/app/services/modules/internal'
-import { injectStore } from '@/app/services/stores'
 import { useConfig } from '@/app/config'
+import { useInternalService } from '@/app/services/modules/internal'
+import { useStore } from '@/app/services/stores'
 import { watch } from '@vue/composition-api'
 
 //========================================================================
@@ -20,8 +20,8 @@ namespace UserStorageService {
     const base = AppStorageService.newRawInstance()
 
     const config = useConfig()
-    const stores = injectStore()
-    const internal = injectInternalService()
+    const stores = useStore()
+    const internal = useInternalService()
 
     watch(
       () => internal.auth.isSignedIn.value,

@@ -101,11 +101,11 @@ type APIContainerImpl = ReturnType<typeof APIContainer['newRawInstance']>
 
 namespace TestAPIContainer {
   export function newInstance(): TestAPIContainer {
-    const api = APIContainer.newRawInstance()
-    return mix(api)
+    const apis = APIContainer.newRawInstance()
+    return mix(apis)
   }
 
-  export function mix<T extends APIContainerImpl>(api: T): TestAPIContainer & T {
+  export function mix<T extends APIContainerImpl>(apis: T): TestAPIContainer & T {
     const config = useConfig()
     const clientDev = GQLAPIClient.newInstance('dev')
 
@@ -142,7 +142,7 @@ namespace TestAPIContainer {
 
       const _uploadList = uploadList.map(item => ({ ...item, signedUploadUrl: '' }))
 
-      const signedUploadUrls = await api.getSignedUploadUrls(_uploadList)
+      const signedUploadUrls = await apis.getSignedUploadUrls(_uploadList)
       signedUploadUrls.forEach((url, index) => {
         _uploadList[index].signedUploadUrl = url
       })
@@ -157,7 +157,7 @@ namespace TestAPIContainer {
             'content-type': 'application/octet-stream',
           },
         })
-        await api.handleUploadedFile({ id: uploadItem.id, path: uploadItem.path })
+        await apis.handleUploadedFile({ id: uploadItem.id, path: uploadItem.path })
       }
 
       _setTestAuthToken(tokenBackup)
@@ -169,7 +169,7 @@ namespace TestAPIContainer {
 
       for (const uploadItem of uploadList) {
         const parentPath = removeStartDirChars(path.dirname(uploadItem.path))
-        await api.createStorageHierarchicalDirs([parentPath])
+        await apis.createStorageHierarchicalDirs([parentPath])
       }
 
       await uploadTestFiles(uploadList)
@@ -191,7 +191,7 @@ namespace TestAPIContainer {
       setTestAuthToken(AppAdminToken())
 
       for (const dirPath of dirPaths) {
-        await api.removeStorageDir(dirPath)
+        await apis.removeStorageDir(dirPath)
       }
 
       _setTestAuthToken(tokenBackup)
@@ -219,7 +219,7 @@ namespace TestAPIContainer {
       setTestAuthToken(AppAdminToken())
 
       for (const filePath of filePaths) {
-        await api.removeStorageFile(filePath)
+        await apis.removeStorageFile(filePath)
       }
 
       _setTestAuthToken(tokenBackup)
@@ -335,7 +335,7 @@ namespace TestAPIContainer {
     }
 
     return {
-      ...api,
+      ...apis,
       setTestAuthToken,
       putTestStoreData,
       putTestIndexData,

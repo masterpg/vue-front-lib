@@ -68,9 +68,9 @@
 import { Loading, QInput } from 'quasar'
 import { Ref, computed, defineComponent, onMounted, reactive, ref } from '@vue/composition-api'
 import { Dialogs } from '@/app/dialogs'
-import { injectService } from '@/app/services'
 import isEmail from 'validator/lib/isEmail'
 import { useI18n } from '@/app/i18n'
+import { useService } from '@/app/services'
 
 interface PasswordResetView extends PasswordResetView.Props {}
 
@@ -97,7 +97,7 @@ namespace PasswordResetView {
       //
       //----------------------------------------------------------------------
 
-      const services = injectService()
+      const services = useService()
       const i18n = useI18n()
 
       const emailInput = ref() as Ref<QInput>

@@ -27,8 +27,8 @@
 import { computed, defineComponent, reactive } from '@vue/composition-api'
 import { Dialogs } from '@/app/dialogs'
 import Vue from 'vue'
-import { injectService } from '@/app/services'
 import { useI18n } from '@/demo/i18n'
+import { useService } from '@/app/services'
 
 interface GreetMessage extends Vue, GreetMessage.Props {
   readonly times: number
@@ -54,7 +54,7 @@ namespace GreetMessage {
       //
       //----------------------------------------------------------------------
 
-      const services = injectService()
+      const services = useService()
       const i18n = useI18n()
 
       const state = reactive({

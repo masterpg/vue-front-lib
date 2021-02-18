@@ -17,8 +17,8 @@ interface TestDemoAPIContainer extends DemoAPIContainer, TestAPIContainer {}
 
 namespace TestDemoAPIContainer {
   export function newInstance(): TestDemoAPIContainer {
-    const api = DemoAPIContainer.newRawInstance()
-    return TestAPIContainer.mix(api)
+    const apis = DemoAPIContainer.newRawInstance()
+    return TestAPIContainer.mix(apis)
   }
 }
 

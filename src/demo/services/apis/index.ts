@@ -1,5 +1,5 @@
-import { APIContainer, injectAPI as _injectAPI, provideAPI as _provideAPI } from '@/app/services/apis'
 import { WritableComputedRef, computed, reactive } from '@vue/composition-api'
+import { APIContainer } from '@/app/services/apis'
 import { DemoGQLAPIContainer } from '@/demo/services/apis/gql'
 import { DemoRESTAPIContainer } from '@/demo/services/apis/rest'
 import { ShopAPIContainer } from '@/demo/services/apis/base'
@@ -21,8 +21,11 @@ interface DemoAPIContainer extends APIContainer, ShopAPIContainer {
 //========================================================================
 
 namespace DemoAPIContainer {
-  export function newInstance(): DemoAPIContainer {
-    return newRawInstance()
+  let instance: DemoAPIContainer
+
+  export function useAPI(apis?: DemoAPIContainer): DemoAPIContainer {
+    instance = apis ?? instance ?? newRawInstance()
+    return instance
   }
 
   export function newRawInstance() {
@@ -111,22 +114,9 @@ namespace DemoAPIContainer {
 
 //========================================================================
 //
-//  Dependency Injection
-//
-//========================================================================
-
-function provideAPI(apis: DemoAPIContainer): void {
-  _provideAPI(apis)
-}
-
-function injectAPI(): DemoAPIContainer {
-  return _injectAPI() as DemoAPIContainer
-}
-
-//========================================================================
-//
 //  Exports
 //
 //========================================================================
 
-export { DemoAPIContainer, provideAPI, injectAPI }
+const { useAPI } = DemoAPIContainer
+export { DemoAPIContainer, useAPI }

@@ -20,9 +20,9 @@ import { StorageURLUploader } from '@/app/services/modules/storage/upload-url'
 import { StorageUtil } from '@/app/services/base'
 import { extendedMethod } from '@/app/base'
 import firebase from 'firebase/app'
-import { injectAPI } from '@/app/services/apis'
-import { injectInternalService } from '@/app/services/modules/internal'
-import { injectStore } from '@/app/services/stores'
+import { useAPI } from '@/app/services/apis'
+import { useInternalService } from '@/app/services/modules/internal'
+import { useStore } from '@/app/services/stores'
 
 //========================================================================
 //
@@ -154,9 +154,9 @@ namespace AppStorageService {
     //
     //----------------------------------------------------------------------
 
-    const apis = injectAPI()
-    const stores = injectStore()
-    const internal = injectInternalService()
+    const apis = useAPI()
+    const stores = useStore()
+    const internal = useInternalService()
 
     const state = reactive({
       basePath: '',

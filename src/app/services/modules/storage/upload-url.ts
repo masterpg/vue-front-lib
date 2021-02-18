@@ -3,7 +3,6 @@ import { StorageFileUploader, StorageUploader, UploadFileParam } from '@/app/ser
 import axios, { Canceler } from 'axios'
 import { StorageNode } from '@/app/services'
 import { StorageService } from '@/app/services/modules/storage/base'
-import { injectAPI } from '@/app/services/apis'
 
 //========================================================================
 //

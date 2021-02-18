@@ -76,11 +76,11 @@
 <script lang="ts">
 import { Notify, Platform } from 'quasar'
 import { computed, defineComponent, ref, watch } from '@vue/composition-api'
-import { injectService, provideService } from '@/demo/services'
 import { Dialogs } from '@/app/dialogs'
 import { LoadingSpinner } from '@/app/components/loading-spinner'
 import { useI18n } from '@/demo/i18n'
 import { useRoutes } from '@/demo/router'
+import { useService } from '@/demo/services'
 import { useServiceWorker } from '@/app/service-worker'
 
 export default defineComponent({
@@ -96,9 +96,7 @@ export default defineComponent({
     //
     //----------------------------------------------------------------------
 
-    provideService()
-
-    const services = injectService()
+    const services = useService()
     const serviceWorker = useServiceWorker()
     const routes = useRoutes()
     const { t } = useI18n()

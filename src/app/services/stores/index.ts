@@ -19,8 +19,11 @@ interface StoreContainer {
 //========================================================================
 
 namespace StoreContainer {
-  export function newInstance(): StoreContainer {
-    return newRawInstance()
+  let instance: StoreContainer
+
+  export function useStore(stores?: StoreContainer): StoreContainer {
+    instance = stores ?? instance ?? newRawInstance()
+    return instance
   }
 
   export function newRawInstance() {
@@ -32,27 +35,9 @@ namespace StoreContainer {
 
 //========================================================================
 //
-//  Dependency Injection
-//
-//========================================================================
-
-let instance: StoreContainer
-
-function provideStore(store: StoreContainer): void {
-  instance = store
-}
-
-function injectStore(): StoreContainer {
-  if (!instance) {
-    throw new Error(`'StoreContainer' is not provided`)
-  }
-  return instance
-}
-
-//========================================================================
-//
 //  Export
 //
 //========================================================================
 
-export { StoreContainer, provideStore, injectStore }
+const { useStore } = StoreContainer
+export { StoreContainer, useStore }
