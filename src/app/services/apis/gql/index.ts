@@ -5,10 +5,11 @@ import {
   CreateArticleTypeDirInput,
   CreateStorageNodeOptions,
   GetArticleChildrenInput,
-  SetOwnUserInfoResult,
+  SetUserInfoResult,
   SignedUploadUrlInput,
   StorageNodeGetKeyInput,
   StorageNodeGetKeysInput,
+  StorageNodeGetUnderInput,
   StorageNodeKeyInput,
   StorageNodeShareSettingsInput,
   StoragePaginationInput,
@@ -33,9 +34,9 @@ interface GQLAPIContainer {
 
   getAuthData(): Promise<AuthDataResult>
 
-  setOwnUserInfo(input: UserInput): Promise<SetOwnUserInfoResult>
+  setUserInfo(uid: string, input: UserInput): Promise<SetUserInfoResult>
 
-  deleteOwnUser(): Promise<boolean>
+  deleteUser(uid: string): Promise<boolean>
 
   //--------------------------------------------------
   //  Storage
@@ -45,13 +46,9 @@ interface GQLAPIContainer {
 
   getStorageNodes(input: StorageNodeGetKeysInput): Promise<APIStorageNode[]>
 
-  getStorageDirDescendants(dirPath?: string, pagination?: StoragePaginationInput): Promise<StoragePaginationResult>
+  getStorageDescendants(input: StorageNodeGetUnderInput, pagination?: StoragePaginationInput): Promise<StoragePaginationResult>
 
-  getStorageDescendants(dirPath?: string, pagination?: StoragePaginationInput): Promise<StoragePaginationResult>
-
-  getStorageDirChildren(dirPath?: string, pagination?: StoragePaginationInput): Promise<StoragePaginationResult>
-
-  getStorageChildren(dirPath?: string, pagination?: StoragePaginationInput): Promise<StoragePaginationResult>
+  getStorageChildren(input: StorageNodeGetUnderInput, pagination?: StoragePaginationInput): Promise<StoragePaginationResult>
 
   getStorageHierarchicalNodes(nodePath: string): Promise<APIStorageNode[]>
 
@@ -203,14 +200,14 @@ namespace GQLAPIContainer {
       return { status, token, user: toEntity(user) }
     }
 
-    const setOwnUserInfo: GQLAPIContainer['setOwnUserInfo'] = async input => {
+    const setUserInfo: GQLAPIContainer['setUserInfo'] = async (uid, input) => {
       const response = await clientLv1.mutate<
-        { setOwnUserInfo: Omit<SetOwnUserInfoResult, 'user'> & { user: RawEntity<User> } },
-        { input: UserInput }
+        { setUserInfo: Omit<SetUserInfoResult, 'user'> & { user: RawEntity<User> } },
+        { uid: string; input: UserInput }
       >({
         mutation: gql`
-          mutation SetOwnUserInfo($input: UserInput!) {
-            setOwnUserInfo(input: $input) {
+          mutation SetUserInfo($uid: String!, $input: UserInput!) {
+            setUserInfo(uid: $uid, input: $input) {
               status
               user {
                 id
@@ -227,27 +224,33 @@ namespace GQLAPIContainer {
             }
           }
         `,
-        variables: { input: UserInput.squeeze(input) },
+        variables: {
+          uid,
+          input: UserInput.squeeze(input),
+        },
         isAuth: true,
       })
 
-      const result = response.data!.setOwnUserInfo
+      const result = response.data!.setUserInfo
       return {
         status: result.status,
         user: toEntity(result.user),
       }
     }
 
-    const deleteOwnUser: GQLAPIContainer['deleteOwnUser'] = async () => {
-      const response = await clientLv1.mutate<{ deleteOwnUser: boolean }>({
+    const deleteUser: GQLAPIContainer['deleteUser'] = async uid => {
+      const response = await clientLv1.mutate<{ deleteUser: boolean }, { uid: string }>({
         mutation: gql`
-          mutation DeleteOwnUser {
-            deleteOwnUser
+          mutation DeleteUser($uid: String!) {
+            deleteUser(uid: $uid)
           }
         `,
+        variables: {
+          uid,
+        },
         isAuth: true,
       })
-      return response.data!.deleteOwnUser
+      return response.data!.deleteUser
     }
 
     //--------------------------------------------------
@@ -364,44 +367,14 @@ namespace GQLAPIContainer {
       return toStorageNodes(response.data.storageNodes)
     }
 
-    const getStorageDirDescendants: GQLAPIContainer['getStorageDirDescendants'] = async (dirPath, pagination) => {
-      const response = await clientLv1.query<
-        { storageDirDescendants: RawStoragePaginationResult },
-        { dirPath?: string; pagination?: StoragePaginationInput }
-      >({
-        query: gql`
-          query GetStorageDirDescendants($dirPath: String, $pagination: StoragePaginationInput) {
-            storageDirDescendants(dirPath: $dirPath, pagination: $pagination) {
-              list {
-                ...${StorageNodeFieldsName}
-              }
-              nextPageToken
-              isPaginationTimeout
-            }
-          }
-          ${StorageNodeFields}
-        `,
-        variables: {
-          dirPath,
-          pagination: StoragePaginationInput.squeeze(pagination),
-        },
-        isAuth: true,
-      })
-      return {
-        list: toStorageNodes(response.data.storageDirDescendants.list),
-        nextPageToken: response.data.storageDirDescendants.nextPageToken || undefined,
-        isPaginationTimeout: response.data.storageDirDescendants.isPaginationTimeout ?? false,
-      }
-    }
-
-    const getStorageDescendants: GQLAPIContainer['getStorageDescendants'] = async (dirPath, pagination) => {
+    const getStorageDescendants: GQLAPIContainer['getStorageDescendants'] = async (input, pagination) => {
       const response = await clientLv1.query<
         { storageDescendants: RawStoragePaginationResult },
-        { dirPath?: string; pagination?: StoragePaginationInput }
+        { input: StorageNodeGetUnderInput; pagination?: StoragePaginationInput }
       >({
         query: gql`
-          query GetStorageDescendants($dirPath: String, $pagination: StoragePaginationInput) {
-            storageDescendants(dirPath: $dirPath, pagination: $pagination) {
+          query GetStorageDescendants($input: StorageNodeGetUnderInput!, $pagination: StoragePaginationInput) {
+            storageDescendants(input: $input, pagination: $pagination) {
               list {
                 ...${StorageNodeFieldsName}
               }
@@ -412,7 +385,7 @@ namespace GQLAPIContainer {
           ${StorageNodeFields}
         `,
         variables: {
-          dirPath,
+          input: StorageNodeGetUnderInput.squeeze(input),
           pagination: StoragePaginationInput.squeeze(pagination),
         },
         isAuth: true,
@@ -424,44 +397,14 @@ namespace GQLAPIContainer {
       }
     }
 
-    const getStorageDirChildren: GQLAPIContainer['getStorageDirChildren'] = async (dirPath, pagination) => {
-      const response = await clientLv1.query<
-        { storageDirChildren: RawStoragePaginationResult },
-        { dirPath?: string; pagination?: StoragePaginationInput }
-      >({
-        query: gql`
-          query GetStorageDirChildren($dirPath: String, $pagination: StoragePaginationInput) {
-            storageDirChildren(dirPath: $dirPath, pagination: $pagination) {
-              list {
-                ...${StorageNodeFieldsName}
-              }
-              nextPageToken
-              isPaginationTimeout
-            }
-          }
-          ${StorageNodeFields}
-        `,
-        variables: {
-          dirPath,
-          pagination: StoragePaginationInput.squeeze(pagination),
-        },
-        isAuth: true,
-      })
-      return {
-        list: toStorageNodes(response.data.storageDirChildren.list),
-        nextPageToken: response.data.storageDirChildren.nextPageToken || undefined,
-        isPaginationTimeout: response.data.storageDirChildren.isPaginationTimeout ?? false,
-      }
-    }
-
-    const getStorageChildren: GQLAPIContainer['getStorageChildren'] = async (dirPath, pagination) => {
+    const getStorageChildren: GQLAPIContainer['getStorageChildren'] = async (input, pagination) => {
       const response = await clientLv1.query<
         { storageChildren: RawStoragePaginationResult },
-        { dirPath?: string; pagination?: StoragePaginationInput }
+        { input: StorageNodeGetUnderInput; pagination?: StoragePaginationInput }
       >({
         query: gql`
-          query GetStorageChildren($dirPath: String, $pagination: StoragePaginationInput) {
-            storageChildren(dirPath: $dirPath, pagination: $pagination) {
+          query GetStorageChildren($input: StorageNodeGetUnderInput!, $pagination: StoragePaginationInput) {
+            storageChildren(input: $input, pagination: $pagination) {
               list {
                 ...${StorageNodeFieldsName}
               }
@@ -472,7 +415,7 @@ namespace GQLAPIContainer {
           ${StorageNodeFields}
         `,
         variables: {
-          dirPath,
+          input: StorageNodeGetUnderInput.squeeze(input),
           pagination: StoragePaginationInput.squeeze(pagination),
         },
         isAuth: true,
@@ -942,13 +885,11 @@ namespace GQLAPIContainer {
 
     return {
       getAuthData,
-      setOwnUserInfo,
-      deleteOwnUser,
+      setUserInfo,
+      deleteUser,
       getStorageNode,
       getStorageNodes,
-      getStorageDirDescendants,
       getStorageDescendants,
-      getStorageDirChildren,
       getStorageChildren,
       getStorageHierarchicalNodes,
       getStorageAncestorDirs,

@@ -222,7 +222,7 @@ namespace StorageDownloader {
 
       switch (node.nodeType) {
         case 'Dir': {
-          const _fileDownloaders = storageService.getChildren(nodePath).reduce((result, node, index, children) => {
+          const _fileDownloaders = storageService.getChildren({ path: nodePath }).reduce((result, node, index, children) => {
             if (node.nodeType === 'Dir') return result
             result.push(newFileDownloader(type, node.path, children.length - 1 === index))
             return result

@@ -16,6 +16,7 @@ import {
   StorageArticleSettings,
   StorageNode,
   StorageNodeGetKeyInput,
+  StorageNodeGetUnderInput,
   StorageNodeShareSettings,
   StorageNodeType,
   StorageType,
@@ -80,15 +81,15 @@ interface StoragePageService {
   getAllTreeNodes(): StorageTreeNode[]
   /**
    * 指定されたパスと一致するツリーノードを取得します。
-   * @param path
+   * @param input
    */
-  getTreeNode(path: string): StorageTreeNode | undefined
+  getTreeNode(input: StorageNodeGetKeyInput): StorageTreeNode | undefined
   /**
    * 指定されたパスと一致するツリーノードを取得します。
    * ツリーノードが存在しない場合は例外がスローされます。
-   * @param path
+   * @param input
    */
-  sgetTreeNode(path: string): StorageTreeNode
+  sgetTreeNode(input: StorageNodeGetKeyInput): StorageTreeNode
   /**
    * ストレージノードを取得します。
    */
@@ -158,20 +159,20 @@ interface StoragePageService {
   /**
    * ストレージノードの初回読み込みを行います。
    * 指定されたディレクトリを基準にその祖先と直下の子ノードがサーバーから読み込まれます。
-   * @param dirPath
+   * @param input
    */
-  fetchInitialStorage(dirPath?: string): Promise<void>
+  fetchInitialStorage(input: StorageNodeGetKeyInput): Promise<void>
   /**
    * 指定されたディレクトリ直下の子ノードをサーバーから読み込みます。
-   * @param dirPath
+   * @param input
    */
-  fetchStorageChildren(dirPath: string): Promise<void>
+  fetchStorageChildren: (input: StorageNodeGetUnderInput) => Promise<void>
   /**
    * 指定されたディレクトリの再読み込みを行います。
-   * @param dirPath
+   * @param input
    * @param options
    */
-  reloadStorageDir(dirPath: string, options?: { deep: boolean }): Promise<void>
+  reloadStorageDir(input: StorageNodeGetKeyInput, options?: { deep: boolean }): Promise<void>
   /**
    * ディレクトリの作成を行います。
    * @param dirPath 作成するディレクトリのパス
@@ -286,9 +287,9 @@ interface StoragePageService {
   getDisplayNodeName(node: Pick<StorageNode, 'path' | 'name' | 'article'>): string
   /**
    * ノードの表示用パスを取得します。
-   * @param key
+   * @param input
    */
-  getDisplayNodePath(key: StorageNodeGetKeyInput): string
+  getDisplayNodePath(input: StorageNodeGetKeyInput): string
   /**
    * ノードのアイコンを取得します。
    * @param node
@@ -306,49 +307,49 @@ interface StoragePageService {
   getNodeTypeLabel(node: { nodeType: StorageNodeType; article?: DeepPartial<StorageArticleSettings> }): string
   /**
    * 指定されたノードが記事ルートの配下ノードか否かを取得します。
-   * @param key
+   * @param input
    */
-  isArticleRootUnder(key: StorageNodeGetKeyInput): boolean
+  isArticleRootUnder(input: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢アセットディレクトリ｣か否かを取得します。
-   * @param key
+   * @param input
    */
-  isAssetsDir(key: StorageNodeGetKeyInput): boolean
+  isAssetsDir(input: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢リストバンドル｣か否かを取得します。
-   * @param key
+   * @param input
    */
-  isListBundle(key: StorageNodeGetKeyInput): boolean
+  isListBundle(input: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢ツリーバンドル｣か否かを取得します。
-   * @param key
+   * @param input
    */
-  isTreeBundle(key: StorageNodeGetKeyInput): boolean
+  isTreeBundle(input: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢カテゴリディレクトリ｣か否かを取得します。
-   * @param key
+   * @param input
    */
-  isCategoryDir(key: StorageNodeGetKeyInput): boolean
+  isCategoryDir(input: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢記事ディレクトリ｣か否かを取得します。
-   * @param key
+   * @param input
    */
-  isArticleDir(key: StorageNodeGetKeyInput): boolean
+  isArticleDir(input: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢記事ディレクトリ｣配下のノードか否かを取得します。
-   * @param key
+   * @param input
    */
-  isArticleDirUnder(key: StorageNodeGetKeyInput): boolean
+  isArticleDirUnder(input: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢記事マスターソース｣か否かを取得します。
-   * @param key
+   * @param input
    */
-  isArticleMasterSrc(key: StorageNodeGetKeyInput): boolean
+  isArticleMasterSrc(input: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢記事下書きソース｣か否かを取得します。
-   * @param key
+   * @param input
    */
-  isArticleDraftSrc(key: StorageNodeGetKeyInput): boolean
+  isArticleDraftSrc(input: StorageNodeGetKeyInput): boolean
   /**
    * 記事の下書きソースをローカルストレージから取得します。
    * @param draftNodeId 下書きファイルノードのID
@@ -508,36 +509,47 @@ namespace StoragePageService {
       return getTreeView().getAllNodes()
     }
 
-    const getTreeNode: StoragePageService['getTreeNode'] = path => {
-      return getTreeView().getNode(path)
-    }
-
-    const sgetTreeNode: StoragePageService['sgetTreeNode'] = path => {
-      const node = getTreeView().getNode(path)
-      if (!node) {
-        throw new Error(`The specified tree node was not found: '${path}'`)
+    const getTreeNode: StoragePageService['getTreeNode'] = input => {
+      if (typeof input.id === 'string') {
+        const allTreeNodes = getTreeView().getAllNodes()
+        for (const treeNode of allTreeNodes) {
+          if (treeNode.id === input.id) return treeNode
+        }
       }
-      return node
+
+      if (typeof input.path === 'string') {
+        const treeNode = getTreeView().getNode(input.path)
+        if (treeNode) return treeNode
+      }
+
+      return undefined
     }
 
-    const getStorageNode: StoragePageService['getStorageNode'] = key => {
-      return storageService.getNode(key)
+    const sgetTreeNode: StoragePageService['sgetTreeNode'] = input => {
+      const treeNode = getTreeNode(input)
+      if (!treeNode) {
+        throw new Error(`The specified tree node was not found: ${JSON.stringify(input)}`)
+      }
+      return treeNode
     }
 
-    const sgetStorageNode: StoragePageService['sgetStorageNode'] = key => {
-      return storageService.sgetNode(key)
+    const getStorageNode: StoragePageService['getStorageNode'] = input => {
+      return storageService.getNode(input)
     }
 
-    const getStorageDescendants: StoragePageService['getStorageDescendants'] = dirPath => {
-      return storageService.getDescendants(dirPath)
+    const sgetStorageNode: StoragePageService['sgetStorageNode'] = input => {
+      return storageService.sgetNode(input)
     }
 
-    const getStorageChildren: StoragePageService['getStorageChildren'] = dirPath => {
-      return storageService.getChildren(dirPath)
+    const getStorageDescendants: StoragePageService['getStorageDescendants'] = input => {
+      return storageService.getDescendants(input)
     }
 
-    const fetchInitialStorage: StoragePageService['fetchInitialStorage'] = async dirPath => {
-      dirPath = removeBothEndsSlash(dirPath)
+    const getStorageChildren: StoragePageService['getStorageChildren'] = input => {
+      return storageService.getChildren(input)
+    }
+
+    const fetchInitialStorage: StoragePageService['fetchInitialStorage'] = async input => {
       if (!treeViewRef.value) return
       if (!isSignedIn.value) return
 
@@ -548,49 +560,59 @@ namespace StoragePageService {
       getRootTreeNode().lazy = true
       getRootTreeNode().lazyLoadStatus = 'loading'
 
-      // 引数ディレクトリとその上位ディレクトリのパス
-      const dirPaths = splitHierarchicalPaths(dirPath)
+      // 引数をノードパスへ変換
+      const targetNodePath = await (async (input: StorageNodeGetKeyInput) => {
+        let path = removeBothEndsSlash(input.path)
+        if (input.id) {
+          let node = storageService.getNode({ id: input.id })
+          !node && (node = await storageService.fetchNode({ id: input.id }))
+          node && (path = node.path)
+        }
+        return path
+      })(input)
+
+      // ノードパスを階層的に分割
+      const hierarchicalPaths = splitHierarchicalPaths(targetNodePath)
       // ストアにある最新のストレージノードを格納
-      const storageDirNodes: StorageNode[] = []
+      const hierarchicalDirNodes: StorageNode[] = []
 
       // ストレージノードの初回読み込みが行われていない場合
       if (!store.isFetchedInitialStorage.value) {
         // ルートノードを読み込み
         await storageService.fetchRoot()
         // 引数ディレクトリを含め、階層構造を形成する各ディレクトリの子ノードをサーバーから取得
-        for (const iDirPath of [getRootTreeNode().path, ...dirPaths]) {
-          storageDirNodes.push(...(await storageService.fetchChildren(iDirPath)))
+        for (const nodePath of [getRootTreeNode().path, ...hierarchicalPaths]) {
+          hierarchicalDirNodes.push(...(await storageService.fetchChildren({ path: nodePath })))
         }
       } else {
         // 引数ディレクトリを含め、階層構造を形成する各ディレクトリの子ノードを取得
-        for (const iDirPath of [getRootTreeNode().path, ...dirPaths]) {
-          storageDirNodes.push(...storageService.getChildren(iDirPath))
+        for (const nodePath of [getRootTreeNode().path, ...hierarchicalPaths]) {
+          hierarchicalDirNodes.push(...storageService.getChildren({ path: nodePath }))
         }
       }
 
-      const storageDirNodeDict = arrayToDict(storageDirNodes, 'path')
+      const hierarchicalDirNodeDict = arrayToDict(hierarchicalDirNodes, 'path')
 
-      // 引数ディレクトリのパスを構成するディレクトリは展開した状態にする
-      // ※初期表示時は指定されたディレクトリを表示しておきたいので
-      for (const iDirPath of dirPaths) {
-        if (iDirPath === dirPath) continue
-        const dirNode = storageDirNodeDict[iDirPath]
-        if (dirNode) {
-          ;(dirNode as StorageTreeNodeInput).opened = true
+      // 初期表示時は指定されたノードを表示しておきたいので祖先を全て展開する
+      for (const nodePath of hierarchicalPaths) {
+        if (nodePath === targetNodePath) continue
+        const node = hierarchicalDirNodeDict[nodePath]
+        if (node && node.nodeType === 'Dir') {
+          ;(node as StorageTreeNodeInput).opened = true
         }
       }
 
       // 引数ディレクトリのパスを構成する各ディレクトリは子ノードが取得済みなので、
       // 各ディレクトリの遅延ロードは済みにする
-      for (const dirPath of dirPaths) {
-        const dirNode = storageDirNodeDict[dirPath]
-        if (dirNode) {
-          ;(dirNode as StorageTreeNodeInput).lazyLoadStatus = 'loaded'
+      for (const nodePath of hierarchicalPaths) {
+        const node = hierarchicalDirNodeDict[nodePath]
+        if (node && node.nodeType === 'Dir') {
+          ;(node as StorageTreeNodeInput).lazyLoadStatus = 'loaded'
         }
       }
 
       // ストアから取得された最新のストレージノードをツリービューに設定
-      setTreeNodes(storageDirNodes)
+      setTreeNodes(hierarchicalDirNodes)
 
       // ルートノードを遅延ロード済みに設定
       getRootTreeNode().lazyLoadStatus = 'loaded'
@@ -599,15 +621,15 @@ namespace StoragePageService {
       store.isFetchedInitialStorage.value = true
     }
 
-    const fetchStorageChildren: StoragePageService['fetchStorageChildren'] = async dirPath => {
-      const storeChildDirNodes = await storageService.fetchChildren(dirPath)
+    const fetchStorageChildren: StoragePageService['fetchStorageChildren'] = async input => {
+      const storeChildDirNodes = await storageService.fetchChildren(input)
 
       // ストアのノードをツリービューに反映
       setTreeNodes(storeChildDirNodes)
 
-      const dirTreeNode = getTreeNode(dirPath)
+      const dirTreeNode = getTreeNode(input)
       if (!dirTreeNode) {
-        throw new Error(`The specified node was not found: '${dirPath}'`)
+        throw new Error(`The specified node was not found: ${JSON.stringify(input)}`)
       }
 
       // ストアにないがツリーには存在するノードをツリーから削除
@@ -618,12 +640,12 @@ namespace StoragePageService {
       dirTreeNode.lazyLoadStatus = 'loaded'
     }
 
-    const reloadStorageDir = extendedMethod<StoragePageService['reloadStorageDir']>(async (dirPath, options) => {
-      dirPath = removeBothEndsSlash(dirPath)
+    const reloadStorageDir = extendedMethod<StoragePageService['reloadStorageDir']>(async (input, options) => {
+      const { path: dirPath } = sgetTreeNode(input)
       const deep = options?.deep ?? false
 
       // 引数ディレクトリを遅延ロード中に設定
-      const dirTreeNode = getTreeNode(dirPath)!
+      const dirTreeNode = sgetTreeNode({ path: dirPath })
       dirTreeNode.lazyLoadStatus = 'loading'
 
       // 引数ディレクトリのパスを構成する各ディレクトリと、
@@ -707,7 +729,7 @@ namespace StoragePageService {
       //   他端末で'd1/d11'を削除してからまた同じパスの'd1/d11'が作成された場合、
       //   元のidと再作成されたidが異なり、パスは同じでもidが異なる状況が発生する。
       //   この場合id検索しても対象ノードが見つからないため、path検索する必要がある。
-      let treeNode = getTreeNodeById(node.id) || getTreeNode(node.path)
+      let treeNode = getTreeNode({ id: node.id }) || getTreeNode({ path: node.path })
 
       // ツリービューに引数ノードが既に存在する場合
       if (treeNode) {
@@ -717,7 +739,7 @@ namespace StoragePageService {
           // `moveNode()`によって`treeNode`が削除されるケースがあるので取得し直している
           // ※移動先に同名ノードがあると、移動ノードが移動先ノードを上書きし、その後移動ノードは削除される。
           //   これにより`treeNode`はツリービューには存在しないノードとなるため取得し直す必要がある。
-          treeNode = getTreeNode(node.path)!
+          treeNode = sgetTreeNode({ path: node.path })
         }
         treeNode.setNodeData(nodeToTreeData(storageType, node))
       }
@@ -758,11 +780,11 @@ namespace StoragePageService {
       toNodePath = removeBothEndsSlash(toNodePath)
 
       // ツリービューから移動するノードとその配下のノードを取得
-      const targetTreeTopNode = getTreeNode(fromNodePath)!
+      const targetTreeTopNode = sgetTreeNode({ path: fromNodePath })
       const targetTreeNodes = [targetTreeTopNode, ...targetTreeTopNode.getDescendants()]
 
       // ツリービューから移動先のノードを取得
-      const existsTreeTopNode = getTreeNode(toNodePath)
+      const existsTreeTopNode = getTreeNode({ path: toNodePath })
 
       // 移動ノード＋配下ノードのパスを移動先パスへ書き換え
       for (const targetTreeNode of targetTreeNodes) {
@@ -777,7 +799,7 @@ namespace StoragePageService {
       // 移動ノードと同名のノードが移動先に存在しない場合
       if (!existsTreeTopNode) {
         const parentPath = removeStartDirChars(_path.dirname(toNodePath))
-        const parentTreeNode = getTreeNode(parentPath)!
+        const parentTreeNode = sgetTreeNode({ path: parentPath })
         parentTreeNode.addChild(targetTreeTopNode)
       }
       // 移動ノードと同名のノードが移動先に存在する場合
@@ -837,7 +859,7 @@ namespace StoragePageService {
 
     const mergeTreeDirDescendants: StoragePageService['mergeTreeDirDescendants'] = dirPath => {
       // ストアから引数ディレクトリと配下のノードを取得
-      const storeDirDescendants = storageService.getDirDescendants(dirPath)
+      const storeDirDescendants = storageService.getDescendants({ path: dirPath, includeBase: true })
       const storeDirDescendantIdDict = arrayToDict(storeDirDescendants, 'id')
       const storeDirDescendantPathDict = arrayToDict(storeDirDescendants, 'path')
 
@@ -845,7 +867,7 @@ namespace StoragePageService {
       setTreeNodes(storeDirDescendants)
 
       // ツリービューから引数ディレクトリと配下のノードを取得
-      const dirTreeNode = getTreeNode(dirPath)
+      const dirTreeNode = getTreeNode({ path: dirPath })
       const driTreeDescendants: StorageTreeNode[] = []
       if (dirTreeNode) {
         driTreeDescendants.push(dirTreeNode)
@@ -865,7 +887,7 @@ namespace StoragePageService {
 
     const mergeTreeDirChildren: StoragePageService['mergeTreeDirChildren'] = dirPath => {
       // ストアから引数ディレクトリと直下のノードを取得
-      const storeDirChildren = storageService.getDirChildren(dirPath)
+      const storeDirChildren = storageService.getChildren({ path: dirPath, includeBase: true })
       const storeDirChildrenIdDict = arrayToDict(storeDirChildren, 'id')
       const storeDirChildrenPathDict = arrayToDict(storeDirChildren, 'path')
 
@@ -873,7 +895,7 @@ namespace StoragePageService {
       setTreeNodes(storeDirChildren)
 
       // ツリービューから引数ディレクトリと直下のノードを取得
-      const dirTreeNode = getTreeNode(dirPath)
+      const dirTreeNode = getTreeNode({ path: dirPath })
       const dirTreeChildren: StorageTreeNode[] = []
       if (dirTreeNode) {
         dirTreeChildren.push(dirTreeNode)
@@ -906,7 +928,7 @@ namespace StoragePageService {
 
       // ツリービューに作成したディレクトリノードを追加
       setTreeNode(dirNode)
-      const dirTreeNode = getTreeNode(dirPath)!
+      const dirTreeNode = sgetTreeNode({ path: dirPath })
       // 作成したディレクトリの遅延ロード状態を済みに設定
       dirTreeNode.lazyLoadStatus = 'loaded'
     }
@@ -931,12 +953,12 @@ namespace StoragePageService {
       // 記事ディレクトリ作成時は記事ファイルも作成されるので読み込みを行う
       let dirChildren: StorageNode[] = []
       if (dirNode.article?.dir?.type === 'Article') {
-        dirChildren = articleService.getChildren(dirNode.path)
+        dirChildren = articleService.getChildren({ path: dirNode.path })
       }
 
       // ツリービューに作成したディレクトリノードを追加
       setTreeNodes([dirNode, ...dirChildren])
-      const dirTreeNode = getTreeNode(dirNode.path)!
+      const dirTreeNode = sgetTreeNode({ path: dirNode.path })
       // 作成したディレクトリの遅延ロード状態を済みに設定
       dirTreeNode.lazyLoadStatus = 'loaded'
 
@@ -1047,7 +1069,7 @@ namespace StoragePageService {
 
       // 移動によって選択ノードのパスが変わることがあるため、
       // 保存しておいた選択ノードIDをもとに選択ノードを再設定
-      selectedTreeNode.value = getTreeNodeById(selectedNodeId)!
+      selectedTreeNode.value = sgetTreeNode({ id: selectedNodeId })
     }
 
     const renameStorageNode: StoragePageService['renameStorageNode'] = async (nodePath, newName) => {
@@ -1087,7 +1109,7 @@ namespace StoragePageService {
 
       // リネームによって選択ノードのパスが変わることがあるため、
       // 保存しておいた選択ノードIDをもとに選択ノードを再設定
-      selectedTreeNode.value = getTreeNodeById(selectedNodeId)!
+      selectedTreeNode.value = sgetTreeNode({ id: selectedNodeId })
     }
 
     const setStorageNodeShareSettings: StoragePageService['setStorageNodeShareSettings'] = async (nodePaths, input) => {
@@ -1197,7 +1219,7 @@ namespace StoragePageService {
     }
 
     const onUploaded: StoragePageService['onUploaded'] = async e => {
-      const uploadDirTreeNode = getTreeNode(e.uploadDirPath)
+      const uploadDirTreeNode = getTreeNode({ path: e.uploadDirPath })
       if (!uploadDirTreeNode) {
         throw new Error(`The specified node could not be found: '${e.uploadDirPath}'`)
       }
@@ -1319,8 +1341,8 @@ namespace StoragePageService {
       return node.article?.dir?.name || node.name
     }
 
-    const getDisplayNodePath: StoragePageService['getDisplayNodePath'] = key => {
-      const node = storageService.getNode(key)
+    const getDisplayNodePath: StoragePageService['getDisplayNodePath'] = input => {
+      const node = storageService.getNode(input)
       if (!node) return ''
 
       const hierarchicalNodes = storageService.getHierarchicalNodes(node.path)
@@ -1367,45 +1389,45 @@ namespace StoragePageService {
       }
     }
 
-    const isArticleRootUnder: StoragePageService['isArticleRootUnder'] = key => {
-      const node = storageService.getNode(key)
+    const isArticleRootUnder: StoragePageService['isArticleRootUnder'] = input => {
+      const node = storageService.getNode(input)
       if (!node) return false
       return StorageUtil.isArticleRootUnder(storageService.toFullPath(node.path))
     }
 
-    const isAssetsDir: StoragePageService['isAssetsDir'] = key => {
+    const isAssetsDir: StoragePageService['isAssetsDir'] = input => {
       if (storageType !== 'article') return false
-      const node = storageService.getNode(key)
+      const node = storageService.getNode(input)
       if (!node) return false
 
       return node.path === config.storage.article.assetsName
     }
 
-    const isListBundle: StoragePageService['isListBundle'] = key => {
-      const node = storageService.getNode(key)
+    const isListBundle: StoragePageService['isListBundle'] = input => {
+      const node = storageService.getNode(input)
       if (!node) return false
       return node.article?.dir?.type === 'ListBundle'
     }
 
-    const isTreeBundle: StoragePageService['isTreeBundle'] = key => {
-      const node = storageService.getNode(key)
+    const isTreeBundle: StoragePageService['isTreeBundle'] = input => {
+      const node = storageService.getNode(input)
       if (!node) return false
       return node.article?.dir?.type === 'TreeBundle'
     }
 
-    const isCategoryDir: StoragePageService['isCategoryDir'] = key => {
-      const node = storageService.getNode(key)
+    const isCategoryDir: StoragePageService['isCategoryDir'] = input => {
+      const node = storageService.getNode(input)
       if (!node) return false
       return node.article?.dir?.type === 'Category'
     }
 
-    const isArticleDir: StoragePageService['isArticleDir'] = key => {
-      const node = storageService.getNode(key)
+    const isArticleDir: StoragePageService['isArticleDir'] = input => {
+      const node = storageService.getNode(input)
       if (!node) return false
       return node.article?.dir?.type === 'Article'
     }
 
-    const isArticleDirUnder: StoragePageService['isArticleDirUnder'] = key => {
+    const isArticleDirUnder: StoragePageService['isArticleDirUnder'] = input => {
       function existsArticle(nodePath: string): boolean {
         const parentPath = removeStartDirChars(_path.dirname(nodePath))
         if (!parentPath) return false
@@ -1419,7 +1441,7 @@ namespace StoragePageService {
         }
       }
 
-      const node = storageService.getNode(key)
+      const node = storageService.getNode(input)
       if (!node) return false
 
       const parentPath = removeStartDirChars(_path.dirname(node.path))
@@ -1428,14 +1450,14 @@ namespace StoragePageService {
       return existsArticle(node.path)
     }
 
-    const isArticleMasterSrc: StoragePageService['isArticleMasterSrc'] = key => {
-      const node = storageService.getNode(key)
+    const isArticleMasterSrc: StoragePageService['isArticleMasterSrc'] = input => {
+      const node = storageService.getNode(input)
       if (!node) return false
       return node.article?.file?.type === 'Master'
     }
 
-    const isArticleDraftSrc: StoragePageService['isArticleDraftSrc'] = key => {
-      const node = storageService.getNode(key)
+    const isArticleDraftSrc: StoragePageService['isArticleDraftSrc'] = input => {
+      const node = storageService.getNode(input)
       if (!node) return false
       return node.article?.file?.type === 'Draft'
     }
@@ -1480,18 +1502,6 @@ namespace StoragePageService {
       }
       treeViewRef.value.setNodeClass(StorageTreeNode.clazz)
       return treeViewRef.value!
-    }
-
-    /**
-     * 指定されたIDと一致するツリーノードを取得します。
-     * @param id
-     */
-    function getTreeNodeById(id: string): StorageTreeNode | undefined {
-      const allTreeNodes = getTreeView().getAllNodes()
-      for (const treeNode of allTreeNodes) {
-        if (treeNode.id === id) return treeNode
-      }
-      return undefined
     }
 
     /**

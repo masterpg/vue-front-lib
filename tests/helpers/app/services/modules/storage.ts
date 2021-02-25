@@ -1,5 +1,5 @@
 import { DeepPartial, removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
-import { StorageArticleSettings, StorageNode, StorageNodeType, StorageUtil } from '@/app/services'
+import { StorageArticleSettings, StorageNode, StorageUtil } from '@/app/services'
 import { TestServiceContainer } from '../index'
 import _path from 'path'
 import dayjs from 'dayjs'
@@ -86,9 +86,7 @@ function mockStorageServiceAPIMethods(params: Pick<TestServiceContainer, 'appSto
   for (const storageService of storageServiceList) {
     storageService.getNodeAPI.value = td.func() as any
     storageService.getNodesAPI.value = td.func() as any
-    storageService.getDirDescendantsAPI.value = td.func() as any
     storageService.getDescendantsAPI.value = td.func() as any
-    storageService.getDirChildrenAPI.value = td.func() as any
     storageService.getChildrenAPI.value = td.func() as any
     storageService.getHierarchicalNodesAPI.value = td.func() as any
     storageService.getAncestorDirsAPI.value = td.func() as any

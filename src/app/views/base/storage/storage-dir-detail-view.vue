@@ -297,7 +297,7 @@ namespace StorageDirDetailView {
 
     async function download() {
       // 自ディレクトリ直下のノードをサーバーから取得しておく
-      await pageService.fetchStorageChildren(dirNode.value!.path)
+      await pageService.fetchStorageChildren({ path: dirNode.value!.path })
 
       // ダウンロード進捗バーを表示
       showDownloadProgress(true, async () => {

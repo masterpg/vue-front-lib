@@ -36,13 +36,13 @@ namespace UserStorageService {
 
     base.fetchRoot.value = async () => {
       // ユーザールートがストアに存在しない場合
-      if (!base.existsHierarchicalOnStore()) {
+      if (!base.existsHierarchicalOnStore('')) {
         // ユーザールートをサーバーから読み込み
-        await base.fetchHierarchicalNodes()
+        await base.fetchHierarchicalNodes('')
       }
 
       // サーバーからユーザールートを読み込んだ後でも、ユーザールートが存在しない場合
-      if (!base.existsHierarchicalOnStore()) {
+      if (!base.existsHierarchicalOnStore('')) {
         // ユーザールートを作成
         const apiNodes = await base.createHierarchicalDirsAPI([base.toFullPath('')])
         base.setAPINodesToStore(apiNodes)

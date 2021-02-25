@@ -173,7 +173,7 @@ namespace ArticleStoragePage {
       base.changeDir.value = nodePath => {
         base.changeDir.super(nodePath)
 
-        const node = pageService.getTreeNode(nodePath) ?? pageService.getRootTreeNode()
+        const node = pageService.getTreeNode({ path: nodePath }) ?? pageService.getRootTreeNode()
         switch (node.nodeType) {
           case 'Dir': {
             // ディレクトリビューを表示

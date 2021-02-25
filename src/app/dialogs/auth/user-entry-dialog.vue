@@ -155,8 +155,8 @@ namespace UserEntryDialog {
         fullName: fullName.value!,
       })
 
-      if (ret.status === 'AlreadyExists') {
-        userNameErrorMessage.value = String(i18n.t('auth.entry.userNameAlreadyExists'))
+      if (!ret.result) {
+        userNameErrorMessage.value = ret.errorMessage
         Loading.hide()
         return
       }

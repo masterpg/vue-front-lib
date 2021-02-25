@@ -30,12 +30,12 @@ namespace UserInput {
   }
 }
 
-interface SetOwnUserInfoResult {
-  status: SetOwnUserInfoResultStatus
+interface SetUserInfoResult {
+  status: SetUserInfoResultStatus
   user?: User
 }
 
-type SetOwnUserInfoResultStatus = 'AlreadyExists' | 'Success'
+type SetUserInfoResultStatus = 'AlreadyExists' | 'Success'
 
 interface AuthDataResult {
   status: AuthStatus
@@ -79,4 +79,4 @@ namespace User {
 //
 //========================================================================
 
-export { AuthDataResult, SetOwnUserInfoResult, SetOwnUserInfoResultStatus, User, UserInput }
+export { AuthDataResult, SetUserInfoResult, SetUserInfoResultStatus, User, UserInput }

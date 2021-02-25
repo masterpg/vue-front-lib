@@ -153,54 +153,6 @@ describe('UserStorageService', () => {
     })
   })
 
-  describe('getDirDescendants', () => {
-    it('ベーシックケース', async () => {
-      // basePathRoot
-      // ├d1 ← 対象ノードに指定
-      // │├d11
-      // ││└f111.txt
-      // │└d12
-      // └d2
-      const d1 = newStorageDirNode(`${basePath}/d1`)
-      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newStorageDirNode(`${basePath}/d2`)
-      const {
-        services: { userStorage },
-      } = provideDependency(({ stores }) => {
-        stores.storage.setAll([...basePathNodes, d1, d11, f111, d12, d2])
-      })
-
-      const actual = userStorage.getDirDescendants(toBasePath(d1.path))
-
-      expect(actual).toEqual(toBasePathNodes([d1, d11, f111, d12]))
-    })
-
-    it('対象ノードを指定しなかった場合', async () => {
-      // basePathRoot
-      // ├d1
-      // │├d11
-      // ││└f111.txt
-      // │└d12
-      // └d2
-      const d1 = newStorageDirNode(`${basePath}/d1`)
-      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newStorageDirNode(`${basePath}/d2`)
-      const {
-        services: { userStorage },
-      } = provideDependency(({ stores }) => {
-        stores.storage.setAll([...basePathNodes, d1, d11, f111, d12, d2])
-      })
-
-      const actual = userStorage.getDirDescendants()
-
-      expect(actual).toEqual(toBasePathNodes([d1, d11, f111, d12, d2]))
-    })
-  })
-
   describe('getDescendants', () => {
     it('ベーシックケース', async () => {
       // basePathRoot
@@ -220,12 +172,12 @@ describe('UserStorageService', () => {
         stores.storage.setAll([...basePathNodes, d1, d11, f111, d12, d2])
       })
 
-      const actual = userStorage.getDescendants(toBasePath(d1.path))
+      const actual = userStorage.getDescendants({ path: toBasePath(d1.path), includeBase: true })
 
-      expect(actual).toEqual(toBasePathNodes([d11, f111, d12]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, f111, d12]))
     })
 
-    it('対象ノードを指定しなかった場合', async () => {
+    it('ベースパス配下の検索', async () => {
       // basePathRoot
       // ├d1
       // │├d11
@@ -243,57 +195,9 @@ describe('UserStorageService', () => {
         stores.storage.setAll([...basePathNodes, d1, d11, f111, d12, d2])
       })
 
-      const actual = userStorage.getDescendants()
+      const actual = userStorage.getDescendants({ path: `` })
 
       expect(actual).toEqual(toBasePathNodes([d1, d11, f111, d12, d2]))
-    })
-  })
-
-  describe('getDirChildren', () => {
-    it('ベーシックケース', async () => {
-      // basePathRoot
-      // ├d1 ← 対象ノードに指定
-      // │├d11
-      // ││└f111.txt
-      // │└d12
-      // └d2
-      const d1 = newStorageDirNode(`${basePath}/d1`)
-      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newStorageDirNode(`${basePath}/d2`)
-      const {
-        services: { userStorage },
-      } = provideDependency(({ stores }) => {
-        stores.storage.setAll([...basePathNodes, d1, d11, f111, d12, d2])
-      })
-
-      const actual = userStorage.getDirChildren(toBasePath(d1.path))
-
-      expect(actual).toEqual(toBasePathNodes([d1, d11, d12]))
-    })
-
-    it('対象ノードを指定しなかった場合', async () => {
-      // basePathRoot
-      // ├d1
-      // │├d11
-      // ││└f111.txt
-      // │└d12
-      // └d2
-      const d1 = newStorageDirNode(`${basePath}/d1`)
-      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newStorageDirNode(`${basePath}/d2`)
-      const {
-        services: { userStorage },
-      } = provideDependency(({ stores }) => {
-        stores.storage.setAll([...basePathNodes, d1, d11, f111, d12, d2])
-      })
-
-      const actual = userStorage.getDirChildren()
-
-      expect(actual).toEqual(toBasePathNodes([d1, d2]))
     })
   })
 
@@ -316,9 +220,9 @@ describe('UserStorageService', () => {
         stores.storage.setAll([...basePathNodes, d1, d11, f111, d12, d2])
       })
 
-      const actual = userStorage.getChildren(toBasePath(d1.path))
+      const actual = userStorage.getChildren({ path: toBasePath(d1.path), includeBase: true })
 
-      expect(actual).toEqual(toBasePathNodes([d11, d12]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, d12]))
     })
 
     it('対象ノードを指定しなかった場合', async () => {
@@ -339,7 +243,7 @@ describe('UserStorageService', () => {
         stores.storage.setAll([...basePathNodes, d1, d11, f111, d12, d2])
       })
 
-      const actual = userStorage.getChildren()
+      const actual = userStorage.getChildren({ path: `` })
 
       expect(actual).toEqual(toBasePathNodes([d1, d2]))
     })
@@ -681,9 +585,9 @@ describe('UserStorageService', () => {
         stores.storage.setAll([...basePathNodes, d2])
       })
 
-      td.when(userStorage.getDirDescendantsAPI(d1.path)).thenResolve([d1, d11, f111, d12])
+      td.when(userStorage.getDescendantsAPI({ path: d1.path, includeBase: true })).thenResolve([d1, d11, f111, d12])
 
-      const actual = await userStorage.fetchDirDescendants(toBasePath(d1.path))
+      const actual = await userStorage.fetchDescendants({ path: toBasePath(d1.path), includeBase: true })
 
       // basePathRoot
       // ├d1
@@ -695,7 +599,7 @@ describe('UserStorageService', () => {
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, f111, d12, d2])
     })
 
-    it('ベースパスルートを指定した場合', async () => {
+    it('ベースパス配下の検索', async () => {
       // [basePathRoot] ← 対象ノードに指定
       // └[d1]
       //   ├[d11]
@@ -710,9 +614,9 @@ describe('UserStorageService', () => {
       } = provideDependency()
 
       // ベースパスルートを指定してAPIリクエストするので、ベースパスルートを含んだノードリストが取得される
-      td.when(userStorage.getDirDescendantsAPI(basePath)).thenResolve([...basePathNodes, d1, d11, f111, d12])
+      td.when(userStorage.getDescendantsAPI({ path: basePath })).thenResolve([...basePathNodes, d1, d11, f111, d12])
 
-      const actual = await userStorage.fetchDirDescendants()
+      const actual = await userStorage.fetchDescendants({ path: `` })
 
       // basePathRoot
       // └d1
@@ -722,123 +626,6 @@ describe('UserStorageService', () => {
       // 戻り値にはベースパスルートが含まれないことに注意
       expect(actual).toEqual(toBasePathNodes([d1, d11, f111, d12]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, f111, d12])
-    })
-  })
-
-  describe('fetchDescendants', () => {
-    it('ベーシックケース', async () => {
-      // basePathRoot
-      // ├d1 ← 対象ノードに指定
-      // │├[d11]
-      // ││└[f111.txt]
-      // │└[d12]
-      // └d2
-      const d1 = newStorageDirNode(`${basePath}/d1`)
-      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newStorageDirNode(`${basePath}/d2`)
-      const {
-        services: { userStorage, appStorage },
-      } = provideDependency(({ stores }) => {
-        stores.storage.setAll([...basePathNodes, d1, d2])
-      })
-
-      td.when(userStorage.getDescendantsAPI(d1.path)).thenResolve([d11, f111, d12])
-
-      const actual = await userStorage.fetchDescendants(toBasePath(d1.path))
-
-      // basePathRoot
-      // ├d1
-      // │├d11
-      // ││└f112.txt
-      // │└d12
-      // └d2
-      expect(actual).toEqual(toBasePathNodes([d11, f111, d12]))
-      expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, f111, d12, d2])
-    })
-
-    it('ベースパスルートを指定した場合', async () => {
-      // basePathRoot ← 対象ノードに指定
-      // └[d1]
-      //   ├[d11]
-      //   │└[f111.txt]
-      //   └[d12]
-      const d1 = newStorageDirNode(`${basePath}/d1`)
-      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
-      const f111 = newStorageFileNode(`${basePath}/d1/d11/f111.txt`)
-      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
-      const {
-        services: { userStorage, appStorage },
-      } = provideDependency(({ stores }) => {
-        stores.storage.setAll([...basePathNodes])
-      })
-
-      td.when(userStorage.getDescendantsAPI(basePath)).thenResolve([d1, d11, f111, d12])
-
-      const actual = await userStorage.fetchDescendants()
-
-      // basePathRoot
-      // └d1
-      //   ├d11
-      //   │└f111.txt
-      //   └d12
-      expect(actual).toEqual(toBasePathNodes([d1, d11, f111, d12]))
-      expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, f111, d12])
-    })
-  })
-
-  describe('fetchDirChildren', () => {
-    it('ベーシックケース', async () => {
-      // basePathRoot
-      // ├[d1] ← 対象ノードに指定
-      // │├[d11]
-      // │└[d12]
-      // └d2
-      const d1 = newStorageDirNode(`${basePath}/d1`)
-      const d11 = newStorageDirNode(`${basePath}/d1/d11`)
-      const d12 = newStorageDirNode(`${basePath}/d1/d12`)
-      const d2 = newStorageDirNode(`${basePath}/d2`)
-      const {
-        services: { userStorage, appStorage },
-      } = provideDependency(({ stores }) => {
-        stores.storage.setAll([...basePathNodes, d2])
-      })
-
-      td.when(userStorage.getDirChildrenAPI(d1.path)).thenResolve([d1, d11, d12])
-
-      const actual = await userStorage.fetchDirChildren(toBasePath(d1.path))
-
-      // basePathRoot
-      // ├d1
-      // │├d11
-      // │└d12
-      // └d2
-      expect(actual).toEqual(toBasePathNodes([d1, d11, d12]))
-      expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, d12, d2])
-    })
-
-    it('ベースパスルートを指定した場合', async () => {
-      // [basePathRoot] ← 対象ノードに指定
-      // ├[d1]
-      // └[d2]
-      const d1 = newStorageDirNode(`${basePath}/d1`)
-      const d2 = newStorageDirNode(`${basePath}/d2`)
-      const {
-        services: { userStorage, appStorage },
-      } = provideDependency()
-
-      // ベースパスルートを指定してAPIリクエストするので、ベースパスルートを含んだノードリストが取得される
-      td.when(userStorage.getDirChildrenAPI(basePath)).thenResolve([...basePathNodes, d1, d2])
-
-      const actual = await userStorage.fetchDirChildren()
-
-      // basePathRoot ← 対象ノードに指定
-      // ├d1
-      // └d2
-      // 戻り値にはベースパスルートが含まれないことに注意
-      expect(actual).toEqual(toBasePathNodes([d1, d2]))
-      expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d2])
     })
   })
 
@@ -856,38 +643,40 @@ describe('UserStorageService', () => {
       const {
         services: { userStorage, appStorage },
       } = provideDependency(({ stores }) => {
-        stores.storage.setAll([...basePathNodes, d1, d2])
+        stores.storage.setAll([...basePathNodes, d2])
       })
 
-      td.when(userStorage.getChildrenAPI(d1.path)).thenResolve([d11, d12])
+      td.when(userStorage.getChildrenAPI({ path: d1.path, includeBase: true })).thenResolve([d1, d11, d12])
 
-      const actual = await userStorage.fetchChildren(toBasePath(d1.path))
+      const actual = await userStorage.fetchChildren({ path: toBasePath(d1.path), includeBase: true })
 
       // basePathRoot
       // ├d1
       // │├d11
       // │└d12
       // └d2
-      expect(actual).toEqual(toBasePathNodes([d11, d12]))
+      expect(actual).toEqual(toBasePathNodes([d1, d11, d12]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d11, d12, d2])
     })
 
-    it('ベースパスルートを指定した場合', async () => {
-      // basePathRoot ← 対象ノードに指定
+    it('ベースパス配下の検索', async () => {
+      // [basePathRoot] ← 対象ノードに指定
       // ├[d1]
       // └[d2]
       const d1 = newStorageDirNode(`${basePath}/d1`)
       const d2 = newStorageDirNode(`${basePath}/d2`)
       const {
         services: { userStorage, appStorage },
-      } = provideDependency(({ stores }) => {
-        stores.storage.setAll([...basePathNodes])
-      })
+      } = provideDependency()
 
-      td.when(userStorage.getChildrenAPI(basePath)).thenResolve([d1, d2])
+      // ベースパスルートを指定してAPIリクエストするので、ベースパスルートを含んだノードリストが取得される
+      td.when(userStorage.getChildrenAPI({ path: basePath })).thenResolve([...basePathNodes, d1, d2])
 
-      const actual = await userStorage.fetchChildren()
+      const actual = await userStorage.fetchChildren({ path: `` })
 
+      // basePathRoot ← 対象ノードに指定
+      // ├d1
+      // └d2
       // 戻り値にはベースパスルートが含まれないことに注意
       expect(actual).toEqual(toBasePathNodes([d1, d2]))
       expect(appStorage.getAllNodes()).toEqual([...basePathNodes, d1, d2])
@@ -912,7 +701,7 @@ describe('UserStorageService', () => {
       } = provideDependency()
 
       td.when(userStorage.getHierarchicalNodesAPI(d11.path)).thenResolve([...basePathNodes, d1, d11])
-      td.when(userStorage.getDescendantsAPI(d11.path)).thenResolve([d111, f1111, f111])
+      td.when(userStorage.getDescendantsAPI({ path: d11.path })).thenResolve([d111, f1111, f111])
 
       const actual = await userStorage.fetchHierarchicalDescendants(toBasePath(d11.path))
 
@@ -944,9 +733,9 @@ describe('UserStorageService', () => {
       } = provideDependency()
 
       // ベースパスルートを指定してAPIリクエストするので、ベースパスルートを含んだノードリストが取得される
-      td.when(userStorage.getDirDescendantsAPI(basePath)).thenResolve([...basePathNodes, d1, d11, d111, f1111, f111])
+      td.when(userStorage.getDescendantsAPI({ path: basePath })).thenResolve([...basePathNodes, d1, d11, d111, f1111, f111])
 
-      const actual = await userStorage.fetchHierarchicalDescendants()
+      const actual = await userStorage.fetchHierarchicalDescendants(``)
 
       // basePathRoot
       // └d1
@@ -976,7 +765,7 @@ describe('UserStorageService', () => {
       } = provideDependency()
 
       td.when(userStorage.getHierarchicalNodesAPI(d11.path)).thenResolve([...basePathNodes, d1, d11])
-      td.when(userStorage.getChildrenAPI(d11.path)).thenResolve([d111, f111])
+      td.when(userStorage.getChildrenAPI({ path: d11.path })).thenResolve([d111, f111])
 
       const actual = await userStorage.fetchHierarchicalChildren(toBasePath(d11.path))
 
@@ -1004,9 +793,9 @@ describe('UserStorageService', () => {
         services: { userStorage, appStorage },
       } = provideDependency()
 
-      td.when(userStorage.getDirChildrenAPI(basePath)).thenResolve([...basePathNodes, d1, d11, d111, f111])
+      td.when(userStorage.getChildrenAPI({ path: basePath })).thenResolve([...basePathNodes, d1, d11, d111, f111])
 
-      const actual = await userStorage.fetchHierarchicalChildren()
+      const actual = await userStorage.fetchHierarchicalChildren(``)
 
       // basePathRoot
       // └d1

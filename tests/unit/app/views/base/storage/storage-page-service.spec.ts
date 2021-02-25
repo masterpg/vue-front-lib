@@ -379,14 +379,26 @@ describe('StoragePageService', () => {
   })
 
   describe('getTreeNode', () => {
-    it('ベーシックケース', () => {
+    it('ベーシックケース - id検索', () => {
       const { pageService, storageService, treeView } = newStoragePageService()
 
       const d1 = newTreeDirNodeInput(`d1`)
       const d2 = newTreeDirNodeInput(`d2`)
       pageService.setAllTreeNodes([d1, d2])
 
-      const actual = pageService.getTreeNode(`d1`)!
+      const actual = pageService.getTreeNode({ id: d1.id })!
+
+      expect(actual.path).toBe(`d1`)
+    })
+
+    it('ベーシックケース - path検索', () => {
+      const { pageService, storageService, treeView } = newStoragePageService()
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      pageService.setAllTreeNodes([d1, d2])
+
+      const actual = pageService.getTreeNode({ path: `d1` })!
 
       expect(actual.path).toBe(`d1`)
     })
@@ -398,9 +410,44 @@ describe('StoragePageService', () => {
       const d2 = newTreeDirNodeInput(`d2`)
       pageService.setAllTreeNodes([d1, d2])
 
-      const actual = pageService.getTreeNode(``)!
+      const actual = pageService.getTreeNode({ path: `` })!
 
       expect(actual.path).toBe(``)
+    })
+
+    it('IDとパス両方指定しなかった場合', () => {
+      const { pageService, storageService, treeView } = newStoragePageService()
+
+      const actual = pageService.getTreeNode({})
+
+      expect(actual).toBeUndefined()
+    })
+  })
+
+  describe('sgetTreeNode', () => {
+    it('ベーシックケース', () => {
+      const { pageService, storageService, treeView } = newStoragePageService()
+
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d2 = newTreeDirNodeInput(`d2`)
+      pageService.setAllTreeNodes([d1, d2])
+
+      const actual = pageService.sgetTreeNode(d1)
+
+      expect(actual.path).toBe(`d1`)
+    })
+
+    it('存在しないキーを指定した場合', () => {
+      const { pageService, storageService, treeView } = newStoragePageService()
+
+      let actual!: Error
+      try {
+        pageService.sgetTreeNode({ id: 'xxx' })
+      } catch (err) {
+        actual = err
+      }
+
+      expect(actual.message).toBe(`The specified tree node was not found: {"id":"xxx"}`)
     })
   })
 
@@ -513,7 +560,7 @@ describe('StoragePageService', () => {
       // ・'d1/d11/f112.txt'が追加された
       // ・'d1/f11.txt'が追加された
       // ・'d1/d12'が削除(または移動)された
-      td.when(storageService.getDirDescendants(d1.path)).thenReturn(toStorageNode([d1, d11, f111, f112, f11]))
+      td.when(storageService.getDescendants({ path: d1.path, includeBase: true })).thenReturn(toStorageNode([d1, d11, f111, f112, f11]))
 
       pageService.mergeTreeDirDescendants(d1.path)
       const actual = pageService.getAllTreeNodes()
@@ -553,7 +600,7 @@ describe('StoragePageService', () => {
 
       // ストアから以下の状態のノードリストが取得される
       // ・'d1'が削除された
-      td.when(storageService.getDirDescendants(d1.path)).thenReturn([])
+      td.when(storageService.getDescendants({ path: d1.path, includeBase: true })).thenReturn([])
 
       pageService.mergeTreeDirDescendants(d1.path)
       const actual = pageService.getAllTreeNodes()
@@ -580,7 +627,7 @@ describe('StoragePageService', () => {
 
       // ストアから以下の状態のノードリストが取得される
       // ・'d1/d11/f111.txt'が追加された
-      td.when(storageService.getDirDescendants(d1.path)).thenReturn(toStorageNode([d1, d11, f111]))
+      td.when(storageService.getDescendants({ path: d1.path, includeBase: true })).thenReturn(toStorageNode([d1, d11, f111]))
 
       pageService.mergeTreeDirDescendants(d1.path)
       const actual = pageService.getAllTreeNodes()
@@ -623,7 +670,7 @@ describe('StoragePageService', () => {
       // ・'d1/d11/f112.txt'が追加された
       // ・'d1/f11.txt'が追加された
       // ・'d1/d12'が削除された
-      td.when(storageService.getDirChildren(d1.path)).thenReturn(toStorageNode([d1, d11, f112, f11]))
+      td.when(storageService.getChildren({ path: d1.path, includeBase: true })).thenReturn(toStorageNode([d1, d11, f112, f11]))
 
       pageService.mergeTreeDirChildren(d1.path)
       const actual = pageService.getAllTreeNodes()
@@ -663,7 +710,7 @@ describe('StoragePageService', () => {
 
       // ストアから以下の状態のノードリストが取得される
       // ・'d1'が削除(または移動)された
-      td.when(storageService.getDirChildren(d1.path)).thenReturn([])
+      td.when(storageService.getChildren({ path: d1.path, includeBase: true })).thenReturn([])
 
       pageService.mergeTreeDirChildren(d1.path)
       const actual = pageService.getAllTreeNodes()
@@ -690,7 +737,7 @@ describe('StoragePageService', () => {
 
       // ストアから以下の状態のノードリストが取得される
       // ・'d1/f11.txt'が追加された
-      td.when(storageService.getDirChildren(d1.path)).thenReturn(toStorageNode([d1, d11, f11]))
+      td.when(storageService.getChildren({ path: d1.path, includeBase: true })).thenReturn(toStorageNode([d1, d11, f11]))
 
       pageService.mergeTreeDirChildren(d1.path)
       const actual = pageService.getAllTreeNodes()
@@ -720,8 +767,8 @@ describe('StoragePageService', () => {
       pageService.setTreeNodes([d1, d11, f111])
 
       // ノードが追加されたことを検証
-      expect(pageService.getTreeNode(`d1/d11`)!.path).toBe(`d1/d11`)
-      expect(pageService.getTreeNode(`d1/d11/f111.txt`)!.path).toBe(`d1/d11/f111.txt`)
+      expect(pageService.sgetTreeNode({ path: `d1/d11` }).path).toBe(`d1/d11`)
+      expect(pageService.sgetTreeNode({ path: `d1/d11/f111.txt` }).path).toBe(`d1/d11/f111.txt`)
 
       verifyParentChildRelationForTree(treeView)
     })
@@ -742,10 +789,10 @@ describe('StoragePageService', () => {
 
       pageService.setTreeNodes([updatingD11, updatingFileA])
 
-      expect(pageService.getTreeNode(`d1/d11`)!.createdAt).toEqual(createdAt)
-      expect(pageService.getTreeNode(`d1/d11`)!.updatedAt).toEqual(updatedAt)
-      expect(pageService.getTreeNode(`d1/d11/f111.txt`)!.createdAt).toEqual(createdAt)
-      expect(pageService.getTreeNode(`d1/d11/f111.txt`)!.updatedAt).toEqual(updatedAt)
+      expect(pageService.sgetTreeNode({ path: `d1/d11` }).createdAt).toEqual(createdAt)
+      expect(pageService.sgetTreeNode({ path: `d1/d11` }).updatedAt).toEqual(updatedAt)
+      expect(pageService.sgetTreeNode({ path: `d1/d11/f111.txt` }).createdAt).toEqual(createdAt)
+      expect(pageService.sgetTreeNode({ path: `d1/d11/f111.txt` }).updatedAt).toEqual(updatedAt)
     })
 
     it('ツリーに存在するノードの設定 - 親が変わっていた場合', () => {
@@ -763,10 +810,10 @@ describe('StoragePageService', () => {
       const f211_from_f111 = cloneTreeNodeInput(f111, { name: `f211.txt`, dir: `d2/d21`, path: `d2/d21/f211.txt`, updatedAt })
       pageService.setTreeNodes([d21_from_d11, f211_from_f111])
 
-      const _d21 = pageService.getTreeNode(`d2/d21`)!
+      const _d21 = pageService.sgetTreeNode({ path: `d2/d21` })
       expect(_d21.parent!.path).toBe(`d2`)
       expect(_d21.updatedAt).toEqual(updatedAt)
-      const _f211 = pageService.getTreeNode(`d2/d21/f211.txt`)!
+      const _f211 = pageService.sgetTreeNode({ path: `d2/d21/f211.txt` })
       expect(_f211.parent!.path).toBe(`d2/d21`)
       expect(_f211.updatedAt).toEqual(updatedAt)
 
@@ -809,7 +856,7 @@ describe('StoragePageService', () => {
       const created_d11 = cloneTreeNodeInput(d11, { id: StorageNode.generateId(), createdAt: dayjs(), updatedAt: dayjs() })
       pageService.setTreeNodes([created_d11])
 
-      const _d11 = pageService.getTreeNode(`d1/d11`)!
+      const _d11 = pageService.sgetTreeNode({ path: `d1/d11` })
       expect(_d11.id).toEqual(created_d11.id)
       expect(_d11.createdAt).toEqual(created_d11.createdAt)
       expect(_d11.updatedAt).toEqual(created_d11.updatedAt)
@@ -830,7 +877,7 @@ describe('StoragePageService', () => {
       const created_f111 = cloneTreeNodeInput(f111, { id: StorageNode.generateId(), createdAt: dayjs(), updatedAt: dayjs() })
       pageService.setTreeNodes([created_f111])
 
-      const _f111 = pageService.getTreeNode(`d1/d11/f111.txt`)!
+      const _f111 = pageService.sgetTreeNode({ path: `d1/d11/f111.txt` })
       expect(_f111.id).toEqual(created_f111.id)
       expect(_f111.createdAt).toEqual(created_f111.createdAt)
       expect(_f111.updatedAt).toEqual(created_f111.updatedAt)
@@ -883,9 +930,9 @@ describe('StoragePageService', () => {
 
       pageService.removeTreeNodes([`d1/d11`, `d2/d21/f211.txt`])
 
-      expect(pageService.getTreeNode(`d1/d11`)).toBeUndefined()
-      expect(pageService.getTreeNode(`d1/d11/f111.txt`)).toBeUndefined()
-      expect(pageService.getTreeNode(`d2/d21/f211.txt`)).toBeUndefined()
+      expect(pageService.getTreeNode({ path: `d1/d11` })).toBeUndefined()
+      expect(pageService.getTreeNode({ path: `d1/d11/f111.txt` })).toBeUndefined()
+      expect(pageService.getTreeNode({ path: `d2/d21/f211.txt` })).toBeUndefined()
 
       verifyParentChildRelationForTree(treeView)
     })
@@ -901,10 +948,10 @@ describe('StoragePageService', () => {
 
       pageService.removeTreeNodes([`d1/d11`, `d1`])
 
-      expect(pageService.getTreeNode(`d1`)).toBeUndefined()
-      expect(pageService.getTreeNode(`d1/d11`)).toBeUndefined()
-      expect(pageService.getTreeNode(`d1/d11/f111.txt`)).toBeUndefined()
-      expect(pageService.getTreeNode(`d1/d12`)).toBeUndefined()
+      expect(pageService.getTreeNode({ path: `d1` })).toBeUndefined()
+      expect(pageService.getTreeNode({ path: `d1/d11` })).toBeUndefined()
+      expect(pageService.getTreeNode({ path: `d1/d11/f111.txt` })).toBeUndefined()
+      expect(pageService.getTreeNode({ path: `d1/d12` })).toBeUndefined()
 
       verifyParentChildRelationForTree(treeView)
     })
@@ -930,12 +977,12 @@ describe('StoragePageService', () => {
       const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
       pageService.setAllTreeNodes([d1, d11, f111])
       // 'd1/d11/f111.txt'を選択ノードに設定
-      pageService.selectedTreeNode.value = pageService.getTreeNode(f111.path)!
+      pageService.selectedTreeNode.value = pageService.sgetTreeNode({ path: f111.path })
 
       pageService.removeTreeNodes([`d1/d11`])
 
-      expect(pageService.getTreeNode(`d1/d11`)).toBeUndefined()
-      expect(pageService.getTreeNode(`d1/d11/f111.txt`)).toBeUndefined()
+      expect(pageService.getTreeNode({ path: `d1/d11` })).toBeUndefined()
+      expect(pageService.getTreeNode({ path: `d1/d11/f111.txt` })).toBeUndefined()
       // 選択ノードがルートノードになっていることを検証
       expect(pageService.selectedTreeNode.value).toBe(pageService.getRootTreeNode())
 
@@ -979,10 +1026,10 @@ describe('StoragePageService', () => {
       //   │    └index.html
       //   └users
 
-      const _dev = pageService.getTreeNode(`dev`)!
+      const _dev = pageService.sgetTreeNode({ path: `dev` })
       expect(_dev.getDescendants().length).toBe(0)
 
-      const _work = pageService.getTreeNode(`work`)!
+      const _work = pageService.sgetTreeNode({ path: `work` })
       const _work_descendants = _work.getDescendants()
       const [_assets, _projects, _blog, _src, _index, _users] = _work_descendants
       expect(_work_descendants.length).toBe(6)
@@ -1018,7 +1065,7 @@ describe('StoragePageService', () => {
       //  ├fileA.txt
       //  ├fileB.txt
       //  └fileC.txt
-      const _d1 = pageService.getTreeNode(`d1`)!
+      const _d1 = pageService.sgetTreeNode({ path: `d1` })
       const _d1_descendants = _d1.getDescendants()
       const [_fileA, _fileB, _fileC] = _d1_descendants
       expect(_d1_descendants.length).toBe(3)
@@ -1105,7 +1152,7 @@ describe('StoragePageService', () => {
       // │└fileA.txt
       // └dB
       //   └fileB.txt
-      const _root = pageService.getTreeNode(``)!
+      const _root = pageService.sgetTreeNode({ path: `` })
       const [_dA, _fileA, _dB, _fileB] = _root.getDescendants()
       expect(_root.getDescendants().length).toBe(4)
       expect(_dA.path).toBe(`dA`)
@@ -1195,10 +1242,10 @@ describe('StoragePageService', () => {
       //     ├fileY.txt
       //     └fileZ.txt
 
-      const _dA = pageService.getTreeNode(`dA`)!
+      const _dA = pageService.sgetTreeNode({ path: `dA` })
       expect(_dA.getDescendants().length).toBe(0)
 
-      const _dB = pageService.getTreeNode(`dB`)!
+      const _dB = pageService.sgetTreeNode({ path: `dB` })
       const [_d1, _d11, _d111, _fileA, _fileB, _fileC, _d12, _d13, _fileX, _fileY, _fileZ] = _dB.getDescendants()
       expect(_dB.getDescendants().length).toBe(11)
       expect(_d1.path).toBe(`dB/d1`)
@@ -1234,16 +1281,19 @@ describe('StoragePageService', () => {
       const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
       const d2 = newTreeDirNodeInput(`d2`)
 
+      // APIからID指定されたノードがが取得される
+      td.when(storageService.getNode({ id: d11.id })).thenReturn(undefined)
+      td.when(storageService.fetchNode({ id: d11.id })).thenResolve(toStorageNode(d11))
       // APIから以下の状態のノードリストが取得される
       // ・'d1'
       // ・'d1/d11'
       // ・'d1/d11/f111.txt'
       // ・'d2'
-      td.when(storageService.fetchChildren(``)).thenResolve(toStorageNode([d1, d2]))
-      td.when(storageService.fetchChildren(d1.path)).thenResolve(toStorageNode([d11]))
-      td.when(storageService.fetchChildren(d11.path)).thenResolve(toStorageNode([f111]))
+      td.when(storageService.fetchChildren({ path: `` })).thenResolve(toStorageNode([d1, d2]))
+      td.when(storageService.fetchChildren({ path: d1.path })).thenResolve(toStorageNode([d11]))
+      td.when(storageService.fetchChildren({ path: d11.path })).thenResolve(toStorageNode([f111]))
 
-      await pageService.fetchInitialStorage(d11.path)
+      await pageService.fetchInitialStorage({ id: d11.id })
       const actual = pageService.getAllTreeNodes()
 
       // root
@@ -1298,16 +1348,18 @@ describe('StoragePageService', () => {
       const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
       const d2 = newTreeDirNodeInput(`d2`)
 
+      // ストアからID指定されたノードがが取得される
+      td.when(storageService.getNode({ id: d11.id })).thenReturn(d11)
       // ストアから以下の状態のノードリストが取得される
       // ・'d1'
       // ・'d1/d11'
       // ・'d1/d11/f111.txt'
       // ・'d2'
-      td.when(storageService.getChildren(``)).thenReturn(toStorageNode([d1, d2]))
-      td.when(storageService.getChildren(d1.path)).thenReturn(toStorageNode([d11]))
-      td.when(storageService.getChildren(d11.path)).thenReturn(toStorageNode([f111]))
+      td.when(storageService.getChildren({ path: `` })).thenReturn(toStorageNode([d1, d2]))
+      td.when(storageService.getChildren({ path: d1.path })).thenReturn(toStorageNode([d11]))
+      td.when(storageService.getChildren({ path: d11.path })).thenReturn(toStorageNode([f111]))
 
-      await pageService.fetchInitialStorage(d11.path)
+      await pageService.fetchInitialStorage({ id: d11.id })
       const actual = pageService.getAllTreeNodes()
 
       // root
@@ -1348,6 +1400,91 @@ describe('StoragePageService', () => {
       verifyParentChildRelationForTree(treeView)
     })
 
+    it('IDを指定した場合', async () => {
+      const { pageService, storageService, treeView } = newStoragePageService()
+
+      // ストレージの初期読み込みが行われていない状態に設定
+      pageService.store.isFetchedInitialStorage.value = false
+
+      // root
+      // ├[d1]
+      // │└[d11] ← 対象ノードに指定
+      // │  └[f111.txt]
+      // └[d2]
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const d2 = newTreeDirNodeInput(`d2`)
+
+      // APIからID指定されたノードがが取得される
+      td.when(storageService.getNode({ id: d11.id })).thenReturn(undefined)
+      td.when(storageService.fetchNode({ id: d11.id })).thenResolve(toStorageNode(d11))
+      // APIから以下の状態のノードリストが取得される
+      // ・'d1'
+      // ・'d1/d11'
+      // ・'d1/d11/f111.txt'
+      // ・'d2'
+      td.when(storageService.fetchChildren({ path: `` })).thenResolve(toStorageNode([d1, d2]))
+      td.when(storageService.fetchChildren({ path: d1.path })).thenResolve(toStorageNode([d11]))
+      td.when(storageService.fetchChildren({ path: d11.path })).thenResolve(toStorageNode([f111]))
+
+      await pageService.fetchInitialStorage({ id: d11.id })
+      const actual = pageService.getAllTreeNodes()
+
+      // root
+      // ├d1
+      // │└d11
+      // │  └f111.txt
+      // └d2
+      expect(actual.length).toBe(5)
+      expect(actual[0].path).toBe(``)
+      expect(actual[1].path).toBe(`d1`)
+      expect(actual[2].path).toBe(`d1/d11`)
+      expect(actual[3].path).toBe(`d1/d11/f111.txt`)
+      expect(actual[4].path).toBe(`d2`)
+    })
+
+    it('パスを指定した場合', async () => {
+      const { pageService, storageService, treeView } = newStoragePageService()
+
+      // ストレージの初期読み込みが行われていない状態に設定
+      pageService.store.isFetchedInitialStorage.value = false
+
+      // root
+      // ├[d1]
+      // │└[d11] ← 対象ノードに指定
+      // │  └[f111.txt]
+      // └[d2]
+      const d1 = newTreeDirNodeInput(`d1`)
+      const d11 = newTreeDirNodeInput(`d1/d11`)
+      const f111 = newTreeFileNodeInput(`d1/d11/f111.txt`)
+      const d2 = newTreeDirNodeInput(`d2`)
+
+      // APIから以下の状態のノードリストが取得される
+      // ・'d1'
+      // ・'d1/d11'
+      // ・'d1/d11/f111.txt'
+      // ・'d2'
+      td.when(storageService.fetchChildren({ path: `` })).thenResolve(toStorageNode([d1, d2]))
+      td.when(storageService.fetchChildren({ path: d1.path })).thenResolve(toStorageNode([d11]))
+      td.when(storageService.fetchChildren({ path: d11.path })).thenResolve(toStorageNode([f111]))
+
+      await pageService.fetchInitialStorage({ path: d11.path })
+      const actual = pageService.getAllTreeNodes()
+
+      // root
+      // ├d1
+      // │└d11
+      // │  └f111.txt
+      // └d2
+      expect(actual.length).toBe(5)
+      expect(actual[0].path).toBe(``)
+      expect(actual[1].path).toBe(`d1`)
+      expect(actual[2].path).toBe(`d1/d11`)
+      expect(actual[3].path).toBe(`d1/d11/f111.txt`)
+      expect(actual[4].path).toBe(`d2`)
+    })
+
     it('nodeFilterが機能しているか検証', async () => {
       const { pageService, storageService, treeView } = newStoragePageService({ nodeFilter: StorageTreeNodeFilter.DirFilter })
 
@@ -1360,9 +1497,9 @@ describe('StoragePageService', () => {
       // APIから以下の状態のノードリストが取得される
       // ・'d1'
       // ・'f1.txt'
-      td.when(storageService.fetchChildren(``)).thenResolve(toStorageNode([d1, f1]))
+      td.when(storageService.fetchChildren({ path: `` })).thenResolve(toStorageNode([d1, f1]))
 
-      await pageService.fetchInitialStorage()
+      await pageService.fetchInitialStorage({ path: `` })
       const actual = pageService.getAllTreeNodes()
 
       // root
@@ -1391,9 +1528,9 @@ describe('StoragePageService', () => {
       // APIから以下の状態のノードリストが取得される
       // ・'d2'が追加された
       // ・'d3'が削除(または移動)された
-      td.when(storageService.fetchChildren(``)).thenResolve(toStorageNode([d1, d2]))
+      td.when(storageService.fetchChildren({ path: `` })).thenResolve(toStorageNode([d1, d2]))
 
-      await pageService.fetchStorageChildren(``)
+      await pageService.fetchStorageChildren({ path: `` })
       const actual = pageService.getAllTreeNodes()
       const [_root, _d1, _d2] = actual
 
@@ -1428,9 +1565,9 @@ describe('StoragePageService', () => {
       // APIから以下の状態のノードリストが取得される
       // ・'d12'が追加された
       // ・'d13'が削除(または移動)された
-      td.when(storageService.fetchChildren(d1.path)).thenResolve(toStorageNode([d11, d12]))
+      td.when(storageService.fetchChildren({ path: d1.path })).thenResolve(toStorageNode([d11, d12]))
 
-      await pageService.fetchStorageChildren(d1.path)
+      await pageService.fetchStorageChildren({ path: d1.path })
       const actual = pageService.getAllTreeNodes()
       const [_root, _d1, _d11, _d12] = actual
 
@@ -1462,9 +1599,9 @@ describe('StoragePageService', () => {
 
       // APIから以下の状態のノードリストが取得される
       // ・'f1.txt'が追加された
-      td.when(storageService.fetchChildren(``)).thenResolve(toStorageNode([d1, f1]))
+      td.when(storageService.fetchChildren({ path: `` })).thenResolve(toStorageNode([d1, f1]))
 
-      await pageService.fetchStorageChildren(``)
+      await pageService.fetchStorageChildren({ path: `` })
       const actual = pageService.getAllTreeNodes()
       const [_root, _d1] = actual
 
@@ -1502,10 +1639,10 @@ describe('StoragePageService', () => {
         // ・'d2'が削除された
         // ・'f2.txt'が追加された
         // StorageService.getDirChildren()をモック化
-        td.when(storageService.getDirChildren(``)).thenReturn(toStorageNode([d1, f1, f2]))
+        td.when(storageService.getChildren({ path: ``, includeBase: true })).thenReturn(toStorageNode([d1, f1, f2]))
 
         // ルートノードを指定して実行
-        await pageService.reloadStorageDir(``)
+        await pageService.reloadStorageDir({ path: `` })
         const actual = pageService.getAllTreeNodes()
         const [_root, _d1, _d11, _f111, _f1, _f2] = actual
 
@@ -1573,10 +1710,12 @@ describe('StoragePageService', () => {
         // StorageService.getNode()をモック化
         td.when(storageService.getNode({ path: d1.path })).thenReturn(toStorageNode(d1))
         // StorageService.getDirChildren()をモック化
-        td.when(storageService.getDirChildren(d11.path)).thenReturn(toStorageNode([d11, d112, updated_f111, f112, renamed_f113]))
+        td.when(storageService.getChildren({ path: d11.path, includeBase: true })).thenReturn(
+          toStorageNode([d11, d112, updated_f111, f112, renamed_f113])
+        )
 
         // 'd1/d11'を指定して実行
-        await pageService.reloadStorageDir(d11.path)
+        await pageService.reloadStorageDir(d11)
         const actual = pageService.getAllTreeNodes()
         const [_root, _d1, _d11, _d112, _f111, _f112, _f113, _d12, _d2] = actual
 
@@ -1641,10 +1780,10 @@ describe('StoragePageService', () => {
         // ・'d1/d11/f112.txt'が追加された
         // ・'d1/d12'が削除された
         // StorageService.getDirDescendants()をモック化
-        td.when(storageService.getDirDescendants(``)).thenReturn(toStorageNode([d1, d11, f111, f112, d2]))
+        td.when(storageService.getDescendants({ path: ``, includeBase: true })).thenReturn(toStorageNode([d1, d11, f111, f112, d2]))
 
         // ルートノードを指定して実行
-        await pageService.reloadStorageDir(``, { deep: true })
+        await pageService.reloadStorageDir({ path: `` }, { deep: true })
         const actual = pageService.getAllTreeNodes()
         const [_root, _d1, _d11, _f111, _f112, _d2] = actual
 
@@ -1712,10 +1851,12 @@ describe('StoragePageService', () => {
         // StorageService.getNode()をモック化
         td.when(storageService.getNode({ path: d1.path })).thenReturn(toStorageNode(d1))
         // StorageService.getDirDescendants()をモック化
-        td.when(storageService.getDirDescendants(d11.path)).thenReturn(toStorageNode([d11, d112, updated_f111, f112, renamed_f113]))
+        td.when(storageService.getDescendants({ path: d11.path, includeBase: true })).thenReturn(
+          toStorageNode([d11, d112, updated_f111, f112, renamed_f113])
+        )
 
         // 'd1/d11'を指定して実行
-        await pageService.reloadStorageDir(d11.path, { deep: true })
+        await pageService.reloadStorageDir(d11, { deep: true })
         const actual = pageService.getAllTreeNodes()
         const [_root, _d1, _d11, _d112, _f111, _f112, _f113, _d12, _d2] = actual
 
@@ -1783,10 +1924,10 @@ describe('StoragePageService', () => {
       td.when(storageService.getNode({ path: d11.path })).thenReturn(toStorageNode(d11))
       td.when(storageService.getNode({ path: d111.path })).thenReturn(undefined)
       // StorageService.getDirDescendants()をモック化
-      td.when(storageService.getDirDescendants(d111.path)).thenReturn([])
+      td.when(storageService.getDescendants({ path: d111.path, includeBase: true })).thenReturn([])
 
       // 'd1/d11/d111'を指定して実行
-      await pageService.reloadStorageDir(d111.path, { deep: true })
+      await pageService.reloadStorageDir({ path: d111.path }, { deep: true })
       const actual = pageService.getAllTreeNodes()
       const [_root, _d1, _d11, _d12, _d2] = actual
 
@@ -1839,10 +1980,10 @@ describe('StoragePageService', () => {
       td.when(storageService.getNode({ path: d11.path })).thenReturn(undefined)
       td.when(storageService.getNode({ path: d111.path })).thenReturn(undefined)
       // StorageService.getDirDescendants()をモック化
-      td.when(storageService.getDirDescendants(d111.path)).thenReturn([])
+      td.when(storageService.getDescendants({ path: d111.path, includeBase: true })).thenReturn([])
 
       // 'd1/d11/d111'を指定して実行
-      await pageService.reloadStorageDir(d111.path, { deep: true })
+      await pageService.reloadStorageDir({ path: d111.path }, { deep: true })
       const actual = pageService.getAllTreeNodes()
       const [_root, _d1, _d12, _d2] = actual
 
@@ -1879,10 +2020,10 @@ describe('StoragePageService', () => {
       // 以下の状態のノードリストを再現する
       // ・'f1.txt'が追加された
       // StorageService.getDirDescendants()をモック化
-      td.when(storageService.getDirDescendants(``)).thenReturn([d1, f1])
+      td.when(storageService.getDescendants({ path: ``, includeBase: true })).thenReturn([d1, f1])
 
       // ルートノードを指定して実行
-      await pageService.reloadStorageDir(``, { deep: true })
+      await pageService.reloadStorageDir({ path: `` }, { deep: true })
       const actual = pageService.getAllTreeNodes()
       const [_root, _d1] = actual
 
@@ -1921,7 +2062,7 @@ describe('StoragePageService', () => {
       // root
       // └d1
       //   └d11
-      const _d1 = pageService.getTreeNode(`d1`)!
+      const _d1 = pageService.sgetTreeNode({ path: `d1` })
       const _d1_descendants = _d1.getDescendants()
       const [_d11, _d12] = _d1_descendants
       expect(_d1_descendants.length).toBe(2)
@@ -1954,7 +2095,7 @@ describe('StoragePageService', () => {
       // root
       // ├d1
       // └d2
-      const _root = pageService.getTreeNode(``)!
+      const _root = pageService.sgetTreeNode({ path: `` })
       const _root_descendants = _root.getDescendants()
       const [_d1, _d2] = _root_descendants
       expect(_root_descendants.length).toBe(2)
@@ -2013,7 +2154,7 @@ describe('StoragePageService', () => {
 
       // articles
       // └バンドル
-      const _bundle = pageService.getTreeNode(bundle.path)!
+      const _bundle = pageService.sgetTreeNode({ path: bundle.path })
       expect(_bundle.path).toBe(bundle.path)
 
       expect(_bundle.lazyLoadStatus).toBe('loaded')
@@ -2065,7 +2206,7 @@ describe('StoragePageService', () => {
       // articles
       // └バンドル
       //   └カテゴリ1
-      const _bundle = pageService.getTreeNode(bundle.path)!
+      const _bundle = pageService.sgetTreeNode({ path: bundle.path })
       const _bundle_descendants = _bundle.getDescendants()
       const [_cat1] = _bundle_descendants
       expect(_bundle_descendants.length).toBe(1)
@@ -2123,7 +2264,7 @@ describe('StoragePageService', () => {
 
       // モック設定
       td.when(articleService.createArticleTypeDir(art1Input)).thenResolve(toStorageNode(art1))
-      td.when(articleService.getChildren(art1.path)).thenReturn(toStorageNode([art1_master, art1_draft]))
+      td.when(articleService.getChildren({ path: art1.path })).thenReturn(toStorageNode([art1_master, art1_draft]))
 
       // 'バンドル/記事1'を作成
       await pageService.createArticleTypeDir(art1Input)
@@ -2133,7 +2274,7 @@ describe('StoragePageService', () => {
       //   └カテゴリ1
       //     ├index1.md
       //     └[index1.draft.md] ← 下書きはツリーには表示されない
-      const _bundle = pageService.getTreeNode(bundle.path)!
+      const _bundle = pageService.sgetTreeNode({ path: bundle.path })
       const _bundle_descendants = _bundle.getDescendants()
       const [_art1, _art1_master, _art1_draft] = _bundle_descendants
       expect(_bundle_descendants.length).toBe(2)
@@ -2354,7 +2495,7 @@ describe('StoragePageService', () => {
 
       // 'dev/projects'は削除されていないことを検証
       // ※'dev/memo.txt'は削除されている
-      const _projects = pageService.getTreeNode(`dev/projects`)!
+      const _projects = pageService.sgetTreeNode({ path: `dev/projects` })
       const _projects_descendants = _projects.getDescendants()
       expect(_projects_descendants.length).toBe(3)
       expect(_projects_descendants[0].path).toBe(`dev/projects/blog`)
@@ -2416,13 +2557,13 @@ describe('StoragePageService', () => {
 
       // 'dev'の階層構造の検証
       {
-        const _dev = pageService.getTreeNode(`dev`)!
+        const _dev = pageService.sgetTreeNode({ path: `dev` })
         // 子孫ノードの検証
         expect(_dev.getDescendants().length).toBe(0)
       }
       // 'work'の階層構造の検証
       {
-        const _work = pageService.getTreeNode(`work`)!
+        const _work = pageService.sgetTreeNode({ path: `work` })
         // 子孫ノードの検証
         const _work_descendants = _work.getDescendants()
         const [_projects, _blog, _src, _memo] = _work_descendants
@@ -2484,7 +2625,7 @@ describe('StoragePageService', () => {
 
       // 'root'の階層構造の検証
       {
-        const _root = pageService.getTreeNode(``)!
+        const _root = pageService.sgetTreeNode({ path: `` })
         // 子孫ノードの検証
         expect(_root.children.length).toBe(3)
         const [_dA, _dB, _fileB] = _root.children
@@ -2494,7 +2635,7 @@ describe('StoragePageService', () => {
       }
       // 'dA'の階層構造の検証
       {
-        const _dA = pageService.getTreeNode(`dA`)!
+        const _dA = pageService.sgetTreeNode({ path: `dA` })
         // 子孫ノードの検証
         expect(_dA.children.length).toBe(1)
         const [_fileA] = _dA.children
@@ -2504,7 +2645,7 @@ describe('StoragePageService', () => {
       }
       // 'dB'の階層構造の検証
       {
-        const _dB = pageService.getTreeNode(`dB`)!
+        const _dB = pageService.sgetTreeNode({ path: `dB` })
         // 子孫ノードの検証
         expect(_dB.children.length).toBe(0)
       }
@@ -2637,13 +2778,13 @@ describe('StoragePageService', () => {
 
       // 'dA'の階層構造の検証
       {
-        const _dA = pageService.getTreeNode(`dA`)!
+        const _dA = pageService.sgetTreeNode({ path: `dA` })
         // 子孫ノードの検証
         expect(_dA.getDescendants().length).toBe(0)
       }
       // 'dB'の階層構造の検証
       {
-        const _dB = pageService.getTreeNode(`dB`)!
+        const _dB = pageService.sgetTreeNode({ path: `dB` })
         // 子孫ノードの検証
         const _dB_descendants = _dB.getDescendants()
         const [_d1, _d11, _d111, _fileA, _fileB, _fileC, _d12, _d13, _d14, _fileX, _fileY, _fileZ] = _dB_descendants
@@ -2777,7 +2918,7 @@ describe('StoragePageService', () => {
 
       // 'dev'の階層構造の検証
       {
-        const _dev = pageService.getTreeNode(`dev`)!
+        const _dev = pageService.sgetTreeNode({ path: `dev` })
         // 子孫ノードの検証
         const _dev_descendants = _dev.getDescendants()
         const [_projects, _blog, _src, _memo] = _dev_descendants
@@ -2788,7 +2929,7 @@ describe('StoragePageService', () => {
       }
       // 'work'の階層構造の検証
       {
-        const _work = pageService.getTreeNode(`work`)!
+        const _work = pageService.sgetTreeNode({ path: `work` })
         // 子孫ノードの検証
         const _work_descendants = _work.getDescendants()
         const [_memo] = _work_descendants
@@ -2841,13 +2982,13 @@ describe('StoragePageService', () => {
 
       // 'dev'の階層構造の検証
       {
-        const _dev = pageService.getTreeNode(`dev`)!
+        const _dev = pageService.sgetTreeNode({ path: `dev` })
         // 子孫ノードの検証
         expect(_dev.getDescendants().length).toBe(0)
       }
       // 'work'の階層構造の検証
       {
-        const _work = pageService.getTreeNode(`work`)!
+        const _work = pageService.sgetTreeNode({ path: `work` })
         // 子孫ノードの検証
         const _work_descendants = _work.getDescendants()
         const [_projects] = _work_descendants
@@ -2879,9 +3020,9 @@ describe('StoragePageService', () => {
       pageService.setAllTreeNodes([dA, d1, d11, fileA, d12, fileB])
 
       // ディレクトリの子ノード読み込みの検証準備
-      pageService.getTreeNode(`dA/d1`)!.lazyLoadStatus = 'loaded'
-      pageService.getTreeNode(`dA/d1/d11`)!.lazyLoadStatus = 'loaded'
-      pageService.getTreeNode(`dA/d1/d12`)!.lazyLoadStatus = 'none'
+      pageService.sgetTreeNode({ path: `dA/d1` }).lazyLoadStatus = 'loaded'
+      pageService.sgetTreeNode({ path: `dA/d1/d11` }).lazyLoadStatus = 'loaded'
+      pageService.sgetTreeNode({ path: `dA/d1/d12` }).lazyLoadStatus = 'none'
 
       // モック設定
       {
@@ -2908,7 +3049,7 @@ describe('StoragePageService', () => {
       //     │└fileA.txt
       //     ├d12
       //     └fileB.txt
-      const _x1 = pageService.getTreeNode(`dA/x1`)!
+      const _x1 = pageService.sgetTreeNode({ path: `dA/x1` })
       const _x1_descendants = _x1.getDescendants()
       const [_d11, _fileA, _d12, _fileB] = _x1_descendants
 
@@ -2969,7 +3110,7 @@ describe('StoragePageService', () => {
       //     │└fileA.txt
       //     ├d12
       //     └fileB.txt
-      const _d1XXX = pageService.getTreeNode(`dA/d1XXX`)!
+      const _d1XXX = pageService.sgetTreeNode({ path: `dA/d1XXX` })
       const _d1XXX_descendants = _d1XXX.getDescendants()
       const [_d11, _fileA, _d12, _fileB] = _d1XXX_descendants
 
@@ -3020,7 +3161,7 @@ describe('StoragePageService', () => {
       // │└fileX.txt
       // └dB
       //   └fileB.txt
-      const actual = pageService.getTreeNode(`dA/fileX.txt`)!
+      const actual = pageService.sgetTreeNode({ path: `dA/fileX.txt` })
       expect(actual.path).toBe(`dA/fileX.txt`)
 
       verifyParentChildRelationForTree(treeView)
@@ -3065,7 +3206,7 @@ describe('StoragePageService', () => {
       // │└fileB.txt
       // └dX
       //   └fileA.txt
-      const _dX = pageService.getTreeNode(`dX`)!
+      const _dX = pageService.sgetTreeNode({ path: `dX` })
       const _dX_descendants = _dX.getDescendants()
       const [_fileA] = _dX_descendants
 
@@ -3142,7 +3283,7 @@ describe('StoragePageService', () => {
       // └dA
       //   └d1 ← リネームされなかった
       //     └fileA.txt
-      const _d1 = pageService.getTreeNode(`dA/d1`)!
+      const _d1 = pageService.sgetTreeNode({ path: `dA/d1` })
       const _d1_descendants = _d1.getDescendants()
       const [_fileA] = _d1_descendants
 
@@ -3195,7 +3336,7 @@ describe('StoragePageService', () => {
       // 'dA/d1'と'dA/fileB.txt'に共有設定
       await pageService.setStorageNodeShareSettings([`dA/d1`, `dA/fileB.txt`], InitialShareSettings())
 
-      const _dA = pageService.getTreeNode(`dA`)!
+      const _dA = pageService.sgetTreeNode({ path: `dA` })
       const _dA_descendants = _dA.getDescendants()
       const [_d1, _d11, _fileA, _fileB, _fileC] = _dA_descendants
       expect(_dA_descendants.length).toBe(5)
@@ -3285,7 +3426,7 @@ describe('StoragePageService', () => {
       //   │  └fileA.txt
       //   ├fileB.txt ← 設定された
       //   └fileC.txt
-      const _dA = pageService.getTreeNode(`dA`)!
+      const _dA = pageService.sgetTreeNode({ path: `dA` })
       const _dA_descendants = _dA.getDescendants()
       const [_d1, _d11, _fileA, _fileB, _fileC] = _dA_descendants
       expect(_dA_descendants.length).toBe(5)
@@ -3488,7 +3629,7 @@ describe('StoragePageService', () => {
       //   └記事1
       //     ├index.md
       //     └[index1.draft.md] ← 下書きはツリーには表示されない
-      const tree_art1 = pageService.getTreeNode(art1.path)!
+      const tree_art1 = pageService.sgetTreeNode({ path: art1.path })
       const tree_art1_descendants = tree_art1.getDescendants()
       expect(tree_art1_descendants.length).toBe(1)
 
@@ -3534,7 +3675,7 @@ describe('StoragePageService', () => {
       //   └記事1
       //     ├index.md
       //     └[index1.draft.md] ← 下書きはツリーには表示されない
-      const tree_art1 = pageService.getTreeNode(art1.path)!
+      const tree_art1 = pageService.sgetTreeNode({ path: art1.path })
       const tree_art1_descendants = tree_art1.getDescendants()
       expect(tree_art1_descendants.length).toBe(1)
       const [tree_art1_master] = tree_art1_descendants

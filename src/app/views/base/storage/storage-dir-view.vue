@@ -417,7 +417,7 @@ namespace StorageDirView {
       // ストアから最新の子ノードを取得
       const latestChildNodes: StorageNode[] = []
       const latestChildDict: { [path: string]: StorageNode } = {}
-      for (const child of pageService.getStorageChildren(dirPath)) {
+      for (const child of pageService.getStorageChildren({ path: dirPath })) {
         latestChildNodes.push(child)
         latestChildDict[child.path] = child
       }

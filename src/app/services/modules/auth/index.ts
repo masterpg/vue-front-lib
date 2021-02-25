@@ -1,5 +1,5 @@
 import 'firebase/auth'
-import { AuthStatus, SetOwnUserInfoResult, SignInStatus, User, UserInput } from '@/app/services/base'
+import { AuthStatus, SignInStatus, User, UserInput } from '@/app/services/base'
 import { InternalAuthService, useInternalService } from '@/app/services/modules/internal'
 import { ComputedRef } from '@vue/composition-api'
 import { DeepReadonly } from 'web-base-lib'
@@ -57,7 +57,7 @@ interface AuthService {
 
   fetchSignInMethodsForEmail(email: string): Promise<AuthProviderType[]>
 
-  setUserInfo(input: UserInput): Promise<SetOwnUserInfoResult>
+  setUserInfo(input: UserInput): Promise<{ result: boolean; code: string; errorMessage: string }>
 
   validateSignedIn: InternalAuthService['validateSignedIn']
 
@@ -243,8 +243,12 @@ namespace AuthService {
         return { result: false, code: '', errorMessage: 'There is not user signed-in.' }
       }
 
+      if (!(authStatus.value === 'WaitForEmailVerified' || authStatus.value === 'WaitForEntry' || authStatus.value === 'Available')) {
+        throw new Error(`Cannot be performed with the current auth status: ${JSON.stringify({ authStatus: authStatus.value })}`)
+      }
+
       try {
-        await apis.deleteOwnUser()
+        await apis.deleteUser(user.uid)
         await firebase.auth().signOut()
       } catch (err) {
         console.error(err)
@@ -260,6 +264,10 @@ namespace AuthService {
       const user = firebase.auth().currentUser
       if (!user) {
         return { result: false, code: '', errorMessage: 'There is not user signed-in.' }
+      }
+
+      if (!(authStatus.value === 'Available')) {
+        throw new Error(`Cannot be performed with the current auth status: ${JSON.stringify({ authStatus: authStatus.value })}`)
       }
 
       try {
@@ -279,18 +287,37 @@ namespace AuthService {
     }
 
     const setUserInfo: AuthService['setUserInfo'] = async input => {
-      const apiResult = await apis.setOwnUserInfo(input)
-      if (apiResult.status === 'AlreadyExists') {
-        return apiResult
+      const user = firebase.auth().currentUser
+      if (!user) {
+        return { result: false, code: '', errorMessage: 'There is not user signed-in.' }
       }
 
+      if (!(authStatus.value === 'WaitForEntry' || authStatus.value === 'Available')) {
+        throw new Error(`Cannot be performed with the current auth status: ${JSON.stringify({ authStatus: authStatus.value })}`)
+      }
+
+      const apiResult = await apis.setUserInfo(user.uid, input)
+      if (apiResult.status === 'AlreadyExists') {
+        return { result: false, code: '', errorMessage: String(i18n.t('auth.entry.userNameAlreadyExists')) }
+      }
+
+      // ユーザー情報登録待ちの状態だった場合
       if (authStatus.value === 'WaitForEntry') {
+        // サーバーから認証情報を取得しクライアント側に反映
         await refreshUser()
-      } else {
+      }
+      // 既にユーザー情報登録が済んでいた場合
+      else if (authStatus.value === 'Available') {
+        // サーバーからの戻り値のユーザー情報をストアに設定
+        // ※サーバーから認証情報を取得するまでの必要はない
         stores.user.set(apiResult.user!)
       }
+      // 上記以外の場合
+      else {
+        throw new Error(``)
+      }
 
-      return apiResult
+      return { result: true, code: '', errorMessage: '' }
     }
 
     const validateSignedIn = internal.auth.validateSignedIn

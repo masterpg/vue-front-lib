@@ -190,6 +190,19 @@ namespace StorageNodeGetKeysInput {
   }
 }
 
+interface StorageNodeGetUnderInput {
+  id?: string
+  path?: string
+  includeBase?: boolean
+}
+
+namespace StorageNodeGetUnderInput {
+  export function squeeze<T extends StorageNodeGetUnderInput | undefined>(input?: StorageNodeGetUnderInput): T {
+    if (!input) return undefined as T
+    return pickProps(input, ['id', 'path', 'includeBase']) as T
+  }
+}
+
 interface SignedUploadUrlInput {
   id: string
   path: string
@@ -769,6 +782,7 @@ export {
   StorageNode,
   StorageNodeGetKeyInput,
   StorageNodeGetKeysInput,
+  StorageNodeGetUnderInput,
   StorageNodeKeyInput,
   StorageNodeShareSettings,
   StorageNodeShareSettingsInput,

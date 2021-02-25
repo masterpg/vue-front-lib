@@ -1,6 +1,6 @@
 import { ComputedRef, computed, reactive } from '@vue/composition-api'
 import { DeepReadonly, arrayToDict, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
-import { StorageNode, StorageNodeGetKeysInput, StorageUtil } from '@/app/services/base'
+import { StorageNode, StorageNodeGetKeyInput, StorageNodeGetKeysInput, StorageNodeGetUnderInput, StorageUtil } from '@/app/services/base'
 import _path from 'path'
 
 //========================================================================
@@ -12,17 +12,13 @@ import _path from 'path'
 interface StorageStore {
   readonly all: ComputedRef<DeepReadonly<StorageNode>[]>
 
-  get(key: { id?: string; path?: string }): StorageNode | undefined
+  get(input: StorageNodeGetKeyInput): StorageNode | undefined
 
   getList(input: StorageNodeGetKeysInput): StorageNode[]
 
-  getChildren(dirPath?: string): StorageNode[]
+  getDescendants(input: StorageNodeGetUnderInput): StorageNode[]
 
-  getDirChildren(dirPath?: string): StorageNode[]
-
-  getDescendants(dirPath?: string): StorageNode[]
-
-  getDirDescendants(dirPath?: string): StorageNode[]
+  getChildren(input: StorageNodeGetUnderInput): StorageNode[]
 
   getHierarchical(targetPath: string): StorageNode[]
 
@@ -38,9 +34,9 @@ interface StorageStore {
 
   setAll(nodes: StorageNode[]): void
 
-  remove(key: { id?: string; path?: string }): StorageNode[]
+  remove(input: { id?: string; path?: string }): StorageNode[]
 
-  removeList(key: { ids?: string[]; paths?: string[] }): StorageNode[]
+  removeList(input: { ids?: string[]; paths?: string[] }): StorageNode[]
 
   removeAll(): StorageNode[]
 
@@ -100,8 +96,8 @@ namespace StorageStore {
     //
     //----------------------------------------------------------------------
 
-    const get: StorageStore['get'] = key => {
-      const stateNode = getStateNode(key)
+    const get: StorageStore['get'] = input => {
+      const stateNode = getStateNode(input)
       return StorageNode.clone(stateNode)
     }
 
@@ -124,40 +120,14 @@ namespace StorageStore {
       return StorageNode.clone(stateNodes)
     }
 
-    const getChildren: StorageStore['getChildren'] = dirPath => {
-      const children = getStateChildren(dirPath)
-      return children.map(child => StorageNode.clone(child))
-    }
-
-    const getDirChildren: StorageStore['getDirChildren'] = dirPath => {
-      if (!dirPath) {
-        return getChildren()
-      } else {
-        const dirNode = get({ path: dirPath })
-        let result: StorageNode[] = []
-        if (dirNode) {
-          result = [dirNode, ...getChildren(dirPath)]
-        }
-        return result
-      }
-    }
-
-    const getDescendants: StorageStore['getDescendants'] = dirPath => {
-      const descendants = getStateDescendants(dirPath)
+    const getDescendants: StorageStore['getDescendants'] = input => {
+      const descendants = getStateDescendants(input)
       return descendants.map(descendant => StorageNode.clone(descendant))
     }
 
-    const getDirDescendants: StorageStore['getDirDescendants'] = dirPath => {
-      if (!dirPath) {
-        return getDescendants()
-      } else {
-        const dirNode = get({ path: dirPath })
-        let result: StorageNode[] = []
-        if (dirNode) {
-          result = [dirNode, ...getDescendants(dirPath)]
-        }
-        return result
-      }
+    const getChildren: StorageStore['getChildren'] = input => {
+      const children = getStateChildren(input)
+      return children.map(child => StorageNode.clone(child))
     }
 
     const getHierarchical: StorageStore['getHierarchical'] = targetPath => {
@@ -217,8 +187,8 @@ namespace StorageStore {
       return nodes.map(node => add(node))
     }
 
-    const remove: StorageStore['remove'] = key => {
-      const stateNode = getStateNode(key)
+    const remove: StorageStore['remove'] = input => {
+      const stateNode = getStateNode(input)
       if (!stateNode) return []
 
       const result: StorageNode[] = []
@@ -232,18 +202,18 @@ namespace StorageStore {
       return StorageNode.clone(result)
     }
 
-    const removeList: StorageStore['removeList'] = key => {
-      if (!key.ids && !key.paths) {
-        throw new Error(`Either the 'ids' or the 'paths' must be specified.`)
+    const removeList: StorageStore['removeList'] = input => {
+      if (!input.ids && !input.paths) {
+        throw new Error(`Either 'ids' or 'paths' must be specified.`)
       }
 
       const result: StorageNode[] = []
-      if (key.ids) {
-        for (const id of key.ids) {
+      if (input.ids) {
+        for (const id of input.ids) {
           result.push(...remove({ id }))
         }
-      } else if (key.paths) {
-        for (const path of key.paths) {
+      } else if (input.paths) {
+        for (const path of input.paths) {
           result.push(...remove({ path }))
         }
       }
@@ -275,13 +245,13 @@ namespace StorageStore {
       }
 
       const result: StorageNode[] = []
-      const targetNodes = [targetTopNode, ...getStateDescendants(targetTopNode.path)]
+      const targetNodes = [targetTopNode, ...getStateDescendants({ path: targetTopNode.path })]
 
       // 移動先の同名ノード＋配下ノードを取得(ない場合もある)
       const existsTopNode = getStateNode({ path: toPath })
       const existsNodeDict: { [path: string]: StorageNode } = {}
       if (existsTopNode) {
-        const existsNodes = [existsTopNode, ...getStateDescendants(existsTopNode.path)]
+        const existsNodes = [existsTopNode, ...getStateDescendants({ path: existsTopNode.path })]
         Object.assign(existsNodeDict, arrayToDict(existsNodes, 'path'))
       }
 
@@ -321,10 +291,8 @@ namespace StorageStore {
     //
     //----------------------------------------------------------------------
 
-    function getStateNode(key: { id?: string; path?: string }): StorageNode | undefined {
-      const id = key.id
-      let path = key.path
-      if (typeof id !== 'string' && typeof path !== 'string') {
+    function getStateNode({ id, path }: StorageNodeGetKeyInput): StorageNode | undefined {
+      if (!id && typeof path !== 'string') {
         return undefined
       }
 
@@ -332,29 +300,30 @@ namespace StorageStore {
         path = removeBothEndsSlash(path)
       }
       for (const node of state.all) {
-        if (typeof id === 'string' && node.id === id) return node
+        if (id && node.id === id) return node
         if (typeof path === 'string' && node.path === path) return node
       }
       return undefined
     }
 
-    function getStateChildren(path?: string): StorageNode[] {
-      path = removeBothEndsSlash(path)
-      const result: StorageNode[] = []
-      for (const node of state.all) {
-        if (node.dir === path) {
-          result.push(node)
-        }
+    function getStateDescendants(input: StorageNodeGetUnderInput): StorageNode[] {
+      if (!input.id && typeof input.path !== 'string') {
+        throw new Error(`Either 'id' or 'path' must be specified.`)
       }
-      return result
-    }
 
-    function getStateDescendants(path?: string): StorageNode[] {
-      path = removeBothEndsSlash(path)
-      if (!path) return state.all
+      let path = removeBothEndsSlash(input.path)
+      if (input.id) {
+        const node = getStateNode({ id: input.id })
+        node && (path = node.path)
+      }
+      if (path === '') return state.all
 
       const result: StorageNode[] = []
       for (const node of state.all) {
+        if (input.includeBase && node.path === path) {
+          result.push(node)
+          continue
+        }
         if (node.dir === path || node.dir.startsWith(`${path}/`)) {
           result.push(node)
         }
@@ -362,20 +331,44 @@ namespace StorageStore {
       return result
     }
 
-    function removeSpecifiedNode(key: { id?: string; path?: string }): StorageNode | undefined {
-      if (!key.id && !key.path) {
-        throw new Error(`Either the 'id' or the 'path' must be specified.`)
+    function getStateChildren(input: StorageNodeGetUnderInput): StorageNode[] {
+      if (!input.id && typeof input.path !== 'string') {
+        throw new Error(`Either 'id' or 'path' must be specified.`)
+      }
+
+      let path = removeBothEndsSlash(input.path)
+      if (input.id) {
+        const node = getStateNode({ id: input.id })
+        node && (path = node.path)
+      }
+
+      const result: StorageNode[] = []
+      for (const node of state.all) {
+        if (input.includeBase && node.path === path) {
+          result.push(node)
+          continue
+        }
+        if (node.dir === path) {
+          result.push(node)
+        }
+      }
+      return result
+    }
+
+    function removeSpecifiedNode(input: { id?: string; path?: string }): StorageNode | undefined {
+      if (!input.id && !input.path) {
+        throw new Error(`Either 'id' or 'path' must be specified.`)
       }
 
       for (let i = 0; i < state.all.length; i++) {
         const node = state.all[i]
-        if (typeof key.id === 'string') {
-          if (node.id === key.id) {
+        if (typeof input.id === 'string') {
+          if (node.id === input.id) {
             state.all.splice(i--, 1)
             return node
           }
-        } else if (typeof key.path === 'string') {
-          if (node.path === key.path) {
+        } else if (typeof input.path === 'string') {
+          if (node.path === input.path) {
             state.all.splice(i--, 1)
             return node
           }
@@ -396,9 +389,7 @@ namespace StorageStore {
       get,
       getList,
       getChildren,
-      getDirChildren,
       getDescendants,
-      getDirDescendants,
       getHierarchical,
       getAncestors,
       add,

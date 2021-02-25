@@ -189,7 +189,7 @@ namespace StorageDirCreateDialog {
       }
 
       // 作成しようとする名前のディレクトリが存在しないことをチェック
-      const siblingNodes = pageService.getStorageChildren(parentNode.value ? parentNode.value.path : '')
+      const siblingNodes = pageService.getStorageChildren({ path: parentNode.value?.path ?? '' })
       for (const siblingNode of siblingNodes) {
         if (siblingNode.name === dirName.value) {
           const nodeTypeName = i18n.tc('common.folder', 1)

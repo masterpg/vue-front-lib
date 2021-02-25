@@ -6,6 +6,7 @@ import {
   StorageNode,
   StorageNodeGetKeyInput,
   StorageNodeGetKeysInput,
+  StorageNodeGetUnderInput,
   StorageNodeKeyInput,
   StorageNodeShareSettingsInput,
 } from '@/app/services/base'
@@ -30,9 +31,9 @@ interface StorageService {
   getAllNodes(): StorageNode[]
   /**
    * 指定ノードをストアから取得します。
-   * @param key
+   * @param input
    */
-  getNode(key: StorageNodeGetKeyInput): StorageNode | undefined
+  getNode(input: StorageNodeGetKeyInput): StorageNode | undefined
   /**
    * 指定されたノードリストを取得します。
    * @param input
@@ -41,35 +42,19 @@ interface StorageService {
   /**
    * 指定ノードをストアから取得します。
    * ノードが存在しない場合は例外がスローされます。
-   * @param key
+   * @param input
    */
-  sgetNode(key: StorageNodeGetKeyInput): StorageNode
+  sgetNode(input: StorageNodeGetKeyInput): StorageNode
   /**
    * 指定ディレクトリとその配下のノードをストアから取得します。
-   * @param dirPath 対象となるディレクトリを指定します。
-   *   引数が未指定(または空文字)な場合、ベースパスルート配下のノードを取得します。
+   * @param input
    */
-  getDirDescendants(dirPath?: string): StorageNode[]
-  /**
-   * 指定ディレクトリ配下のノードをストアから取得します。
-   * @param dirPath 対象となるディレクトリを指定します。
-   *   引数が未指定(または空文字)な場合、ベースパスルート配下のノードを取得します。
-   *   ※引数が未指定の場合、`getDirDescendants()`と同じ挙動となります。
-   */
-  getDescendants(dirPath?: string): StorageNode[]
+  getDescendants(input: StorageNodeGetUnderInput): StorageNode[]
   /**
    * 指定ディレクトリとその直下のノードをストアから取得します。
-   * @param dirPath 対象となるディレクトリを指定します。
-   *   引数が未指定(または空文字)な場合、ベースパスルート直下のノードを取得します。
+   * @param input
    */
-  getDirChildren(dirPath?: string): StorageNode[]
-  /**
-   * 指定ディレクトリ直下のノードをストアから取得します。
-   * @param dirPath 対象となるディレクトリを指定します。
-   *   引数が未指定(または空文字)な場合、ベースパスルート直下のノードを取得します。
-   *   ※引数が未指定の場合、`getDirChildren()`と同じ挙動となります。
-   */
-  getChildren(dirPath?: string): StorageNode[]
+  getChildren(input: StorageNodeGetUnderInput): StorageNode[]
   /**
    * 指定ノードとその階層を構成するディレクトリをストアから取得します。
    * 戻り値で取得される階層構造のトップは、ベースパスルート直下のディレクトリとなります。
@@ -102,66 +87,52 @@ interface StorageService {
   fetchNodes(input: StorageNodeGetKeysInput): Promise<StorageNode[]>
   /**
    * 指定ノードとその階層を構成するディレクトリをサーバーから取得します。
-   * 戻り値で取得される階層構造のトップは、ベースパスルート直下のディレクトリとなります。
+   * 戻り値で返される最上位のノードは、ベースパスルート直下のディレクトリとなります。
    *
    * 補足: 内部的にはベースパスルートを超え、バケットルート直下のディレクトリまで取得し、ストアに格納します 。
    *
    * @param nodePath 対象となるノードを指定します。
-   *   ベースパスルートの階層構造をストアに格納することを目的とする場合、引数を未指定(または空文字)にしてください。
+   *   ベースパスルートを構成する階層構造をストアに格納することを目的とする場合、空文字を指定してください。
    */
-  fetchHierarchicalNodes(nodePath?: string): Promise<StorageNode[]>
+  fetchHierarchicalNodes(nodePath: string): Promise<StorageNode[]>
   /**
    * 指定ノードの階層を構成する祖先(指定ノードは含まない)を取得し、ストアに格納します。
-   * 戻り値で取得される階層構造のトップは、ベースパスルート直下のディレクトリとなります。
+   * 戻り値で返される最上位のノードは、ベースパスルート直下のディレクトリとなります。
    *
    * 補足: 内部的にはベースパスルートを超え、バケットルート直下のディレクトリまで取得し、ストアに格納します 。
    *
    * @param nodePath 対象となるノードを指定します。
-   *   ベースパスルートの祖先をストアに格納することを目的とする場合、引数を未指定(または空文字)にしてください。
+   *   ベースパスルートを構成する祖先をストアに格納することを目的とする場合、空文字を指定してください。
    */
-  fetchAncestorDirs(nodePath?: string): Promise<StorageNode[]>
+  fetchAncestorDirs(nodePath: string): Promise<StorageNode[]>
   /**
    * 指定ディレクトリとその配下のノードをサーバーから取得し、ストアに格納します。
-   * @param dirPath 対象となるディレクトリを指定します。
-   *   引数が未指定(または空文字)な場合、ベースパスルートとその配下のノードを取得します。
+   * @param input
+   * - path: 空文字が指定された場合、ベースパスルート配下のノードを取得します。
    */
-  fetchDirDescendants(dirPath?: string): Promise<StorageNode[]>
-  /**
-   * 指定ディレクトリ配下のノードをサーバーから取得し、ストアに格納します。
-   * @param dirPath 対象となるディレクトリを指定します。
-   *   引数が未指定(または空文字)な場合、ベースパスルートとその配下のノードを取得します。
-   *   ※引数が未指定の場合、`fetchDirDescendants()`と同じ挙動となります。
-   */
-  fetchDescendants(dirPath?: string): Promise<StorageNode[]>
+  fetchDescendants(input: StorageNodeGetUnderInput): Promise<StorageNode[]>
   /**
    * 指定ディレクトリとその直下のノードをサーバーから取得し、ストアに格納します。
-   * @param dirPath 対象となるディレクトリを指定します。
-   *   引数が未指定(または空文字)な場合、ベースパスルートとその直下のノードを取得します。
+   * @param input
+   * - path: 空文字が指定された場合、ベースパスルート直下のノードを取得します。
    */
-  fetchDirChildren(dirPath?: string): Promise<StorageNode[]>
-  /**
-   * 指定ディレクトリ直下のノードをサーバーから取得し、ストアに格納します。
-   * @param dirPath 対象となるディレクトリを指定します。
-   *   引数が未指定(または空文字)な場合、ベースパスルートとその直下のノードを取得します。
-   *   ※引数が未指定の場合、`fetchDirChildren()`と同じ挙動となります。
-   */
-  fetchChildren(dirPath?: string): Promise<StorageNode[]>
+  fetchChildren(input: StorageNodeGetUnderInput): Promise<StorageNode[]>
   /**
    * 指定ディレクトリとその階層を構成するディレクトリ、さらに指定ディレクトリ配下のノードを取得し、
    * ストアに格納します。
    * @param dirPath 対象となるディレクトリを指定します。
-   *   引数が未指定(または空文字)な場合、ベースパスルートとその階層を構成するディレクトリ、
+   *   パスに空文字が指定された場合、ベースパスルートとその階層を構成するディレクトリ、
    *   さらにベースパスルート配下のノードを取得します。
    */
-  fetchHierarchicalDescendants(dirPath?: string): Promise<StorageNode[]>
+  fetchHierarchicalDescendants(dirPath: string): Promise<StorageNode[]>
   /**
    * 指定ディレクトリとその階層を構成するディレクトリ、さらに指定ディレクトリ直下のノードを取得し、
    * ストアに格納します。
    * @param dirPath 対象となるディレクトリを指定します。
-   *   引数が未指定(または空文字)な場合、ベースパスルートとその階層を構成するディレクトリ、
+   *   パスに空文字が指定された場合、ベースパスルートとその階層を構成するディレクトリ、
    *   さらにベースパスルート直下のノードを取得します。
    */
-  fetchHierarchicalChildren(dirPath?: string): Promise<StorageNode[]>
+  fetchHierarchicalChildren(dirPath: string): Promise<StorageNode[]>
   /**
    * 指定ディレクトリを作成します。
    * @param dirPath 作成するディレクトリを指定します。
@@ -255,9 +226,9 @@ interface StorageService {
   /**
    * Cloud Storageのセキュリティルールを通過させるため、
    * ユーザークレイムにファイルアクセス権限を設定します。
-   * @param key
+   * @param input
    */
-  setFileAccessAuthClaims(key: StorageNodeKeyInput): Promise<void>
+  setFileAccessAuthClaims(input: StorageNodeKeyInput): Promise<void>
   /**
    * Cloud Storageのセキュリティルールを通過させるために
    * ユーザークレイムに設定されていたファイルアクセス権限を削除します。

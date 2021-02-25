@@ -1,4 +1,4 @@
-import { CreateArticleTypeDirInput, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageType } from '@/app/services'
+import { CreateArticleTypeDirInput, StorageNode, StorageNodeShareSettings, StorageType } from '@/app/services'
 import { Loading, QSplitter, Screen } from 'quasar'
 import { SetupContext, computed, onMounted, onUnmounted, reactive, ref, watch } from '@vue/composition-api'
 import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'
@@ -159,7 +159,7 @@ namespace StoragePage {
       const dirPath = pageService.route.getNodePath() || selectedTreeNodePath.value
 
       // 初期ストレージノードの読み込み
-      await pageService.fetchInitialStorage(dirPath)
+      await pageService.fetchInitialStorage({ path: dirPath })
       if (!isFetchedInitialStorage.value) {
         dirView.value!.loading = false
         return
@@ -179,7 +179,7 @@ namespace StoragePage {
      * @param nodePath
      */
     const changeDir = extendedMethod((nodePath: string) => {
-      const selectedNodePath = pageService.getTreeNode(nodePath)?.path ?? pageService.getRootTreeNode().path
+      const selectedNodePath = pageService.getTreeNode({ path: nodePath })?.path ?? pageService.getRootTreeNode().path
 
       // ノード詳細ビューを非表示にする
       visibleDirDetailView.value = false
@@ -233,7 +233,7 @@ namespace StoragePage {
      * @param animate
      */
     function openParentNode(nodePath: string, animate: boolean): void {
-      const treeNode = pageService.getTreeNode(nodePath)
+      const treeNode = pageService.getTreeNode({ path: nodePath })
       if (!treeNode?.parent) return
 
       treeNode.parent.open(animate)
@@ -246,7 +246,7 @@ namespace StoragePage {
      * @param animate
      */
     function scrollToSelectedNode(nodePath: string, animate: boolean): void {
-      const treeNode = pageService.getTreeNode(nodePath)
+      const treeNode = pageService.getTreeNode({ path: nodePath })
       if (!treeNode) return
 
       // 本ページのグローバルな上位置を取得
@@ -502,7 +502,7 @@ namespace StoragePage {
       switch (e.type) {
         case 'reload': {
           const { targetPath } = (e as StorageNodeActionEvent<'reload'>).params
-          await pageService.reloadStorageDir(targetPath)
+          await pageService.reloadStorageDir({ path: targetPath })
           // ページの選択ノードを設定
           // ※ディレクトリビューの更新
           changeDir(pageService.selectedTreeNode.value.path)
@@ -585,7 +585,7 @@ namespace StoragePage {
 
       // 選択または展開されようとしているディレクトリ直下のノードをサーバーから取得
       // ※done()が実行された後にselectイベントが発火し、ページが更新される
-      await pageService.fetchStorageChildren(e.node.path)
+      await pageService.fetchStorageChildren({ path: e.node.path })
       e.done()
 
       // 遅延ロードの対象ノードがディレクトリビューに表示されている場合

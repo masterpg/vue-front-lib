@@ -130,8 +130,8 @@ describe('AppStorageService', () => {
     })
   })
 
-  describe('getDirDescendants', () => {
-    it('ベーシックケース', async () => {
+  describe('getDescendants', () => {
+    it('ベーシックケース - ID検索', async () => {
       // bucketRoot
       // ├d1 ← 対象ノードに指定
       // │├d11
@@ -149,37 +149,12 @@ describe('AppStorageService', () => {
         stores.storage.setAll([d1, d11, f111, d12, d2])
       })
 
-      const actual = appStorage.getDirDescendants(d1.path)
+      const actual = appStorage.getDescendants({ id: d1.id, includeBase: true })
 
       expect(actual).toEqual([d1, d11, f111, d12])
     })
 
-    it('対象ノードを指定しなかった場合', async () => {
-      // bucketRoot
-      // ├d1
-      // │├d11
-      // ││└f111.txt
-      // │└d12
-      // └d2
-      const d1 = newStorageDirNode(`d1`)
-      const d11 = newStorageDirNode(`d1/d11`)
-      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
-      const d12 = newStorageDirNode(`d1/d12`)
-      const d2 = newStorageDirNode(`d2`)
-      const {
-        services: { appStorage },
-      } = provideDependency(({ stores }) => {
-        stores.storage.setAll([d1, d11, f111, d12, d2])
-      })
-
-      const actual = appStorage.getDirDescendants()
-
-      expect(actual).toEqual([d1, d11, f111, d12, d2])
-    })
-  })
-
-  describe('getDescendants', () => {
-    it('ベーシックケース', async () => {
+    it('ベーシックケース - パス検索', async () => {
       // bucketRoot
       // ├d1 ← 対象ノードに指定
       // │├d11
@@ -197,13 +172,51 @@ describe('AppStorageService', () => {
         stores.storage.setAll([d1, d11, f111, d12, d2])
       })
 
-      const actual = appStorage.getDescendants(d1.path)
+      const actual = appStorage.getDescendants({ path: d1.path, includeBase: true })
 
-      expect(actual).toEqual([d11, f111, d12])
+      expect(actual).toEqual([d1, d11, f111, d12])
     })
 
-    it('対象ノードを指定しなかった場合', async () => {
+    it('ベースノードを含める場合', async () => {
       // bucketRoot
+      // └d1 ← 対象ノードに指定
+      //   └d11
+      //     └f111.txt
+      const d1 = newStorageDirNode(`d1`)
+      const d11 = newStorageDirNode(`d1/d11`)
+      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
+      const {
+        services: { appStorage },
+      } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1, d11, f111])
+      })
+
+      const actual = appStorage.getDescendants({ path: d1.path, includeBase: true })
+
+      expect(actual).toEqual([d1, d11, f111])
+    })
+
+    it('ベースノードを含めない場合', async () => {
+      // bucketRoot
+      // └d1 ← 対象ノードに指定
+      //   └d11
+      //     └f111.txt
+      const d1 = newStorageDirNode(`d1`)
+      const d11 = newStorageDirNode(`d1/d11`)
+      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
+      const {
+        services: { appStorage },
+      } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1, d11, f111])
+      })
+
+      const actual = appStorage.getDescendants({ path: d1.path })
+
+      expect(actual).toEqual([d11, f111])
+    })
+
+    it('ベースパス配下の検索', async () => {
+      // bucketRoot ← 対象ノードに指定
       // ├d1
       // │├d11
       // ││└f111.txt
@@ -220,62 +233,29 @@ describe('AppStorageService', () => {
         stores.storage.setAll([d1, d11, f111, d12, d2])
       })
 
-      const actual = appStorage.getDescendants()
+      const actual = appStorage.getDescendants({ path: '' })
 
       expect(actual).toEqual([d1, d11, f111, d12, d2])
     })
-  })
 
-  describe('getDirChildren', () => {
-    it('ベーシックケース', async () => {
-      // bucketRoot
-      // ├d1 ← 対象ノードに指定
-      // │├d11
-      // ││└f111.txt
-      // │└d12
-      // └d2
-      const d1 = newStorageDirNode(`d1`)
-      const d11 = newStorageDirNode(`d1/d11`)
-      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
-      const d12 = newStorageDirNode(`d1/d12`)
-      const d2 = newStorageDirNode(`d2`)
+    it('IDとパス両方指定しなかった場合', async () => {
       const {
         services: { appStorage },
-      } = provideDependency(({ stores }) => {
-        stores.storage.setAll([d1, d11, f111, d12, d2])
-      })
+      } = provideDependency()
 
-      const actual = appStorage.getDirChildren(d1.path)
+      let actual!: Error
+      try {
+        appStorage.getDescendants({})
+      } catch (err) {
+        actual = err
+      }
 
-      expect(actual).toEqual([d1, d11, d12])
-    })
-
-    it('対象ノードを指定しなかった場合', async () => {
-      // bucketRoot
-      // ├d1
-      // │├d11
-      // ││└f111.txt
-      // │└d12
-      // └d2
-      const d1 = newStorageDirNode(`d1`)
-      const d11 = newStorageDirNode(`d1/d11`)
-      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
-      const d12 = newStorageDirNode(`d1/d12`)
-      const d2 = newStorageDirNode(`d2`)
-      const {
-        services: { appStorage },
-      } = provideDependency(({ stores }) => {
-        stores.storage.setAll([d1, d11, f111, d12, d2])
-      })
-
-      const actual = appStorage.getDirChildren()
-
-      expect(actual).toEqual([d1, d2])
+      expect(actual.message).toBe(`Either 'id' or 'path' must be specified.`)
     })
   })
 
   describe('getChildren', () => {
-    it('ベーシックケース', async () => {
+    it('ベーシックケース - ID検索', async () => {
       // bucketRoot
       // ├d1 ← 対象ノードに指定
       // │├d11
@@ -293,13 +273,74 @@ describe('AppStorageService', () => {
         stores.storage.setAll([d1, d11, f111, d12, d2])
       })
 
-      const actual = appStorage.getChildren(d1.path)
+      const actual = appStorage.getChildren({ id: d1.id, includeBase: true })
 
-      expect(actual).toEqual([d11, d12])
+      expect(actual).toEqual([d1, d11, d12])
     })
 
-    it('対象ノードを指定しなかった場合', async () => {
+    it('ベーシックケース - パス検索', async () => {
       // bucketRoot
+      // ├d1 ← 対象ノードに指定
+      // │├d11
+      // ││└f111.txt
+      // │└d12
+      // └d2
+      const d1 = newStorageDirNode(`d1`)
+      const d11 = newStorageDirNode(`d1/d11`)
+      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
+      const d12 = newStorageDirNode(`d1/d12`)
+      const d2 = newStorageDirNode(`d2`)
+      const {
+        services: { appStorage },
+      } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1, d11, f111, d12, d2])
+      })
+
+      const actual = appStorage.getChildren({ path: d1.path, includeBase: true })
+
+      expect(actual).toEqual([d1, d11, d12])
+    })
+
+    it('ベースノードを含める場合', async () => {
+      // bucketRoot
+      // └d1 ← 対象ノードに指定
+      //   └d11
+      //     └f111.txt
+      const d1 = newStorageDirNode(`d1`)
+      const d11 = newStorageDirNode(`d1/d11`)
+      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
+      const {
+        services: { appStorage },
+      } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1, d11, f111])
+      })
+
+      const actual = appStorage.getChildren({ path: d1.path, includeBase: true })
+
+      expect(actual).toEqual([d1, d11])
+    })
+
+    it('ベースノードを含めない場合', async () => {
+      // bucketRoot
+      // └d1 ← 対象ノードに指定
+      //   └d11
+      //     └f111.txt
+      const d1 = newStorageDirNode(`d1`)
+      const d11 = newStorageDirNode(`d1/d11`)
+      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
+      const {
+        services: { appStorage },
+      } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1, d11, f111])
+      })
+
+      const actual = appStorage.getChildren({ path: d1.path })
+
+      expect(actual).toEqual([d11])
+    })
+
+    it('ベースパス直下の検索', async () => {
+      // bucketRoot ← 対象ノードに指定
       // ├d1
       // │├d11
       // ││└f111.txt
@@ -316,9 +357,24 @@ describe('AppStorageService', () => {
         stores.storage.setAll([d1, d11, f111, d12, d2])
       })
 
-      const actual = appStorage.getChildren()
+      const actual = appStorage.getChildren({ path: '' })
 
       expect(actual).toEqual([d1, d2])
+    })
+
+    it('IDとパス両方指定しなかった場合', async () => {
+      const {
+        services: { appStorage },
+      } = provideDependency()
+
+      let actual!: Error
+      try {
+        appStorage.getChildren({})
+      } catch (err) {
+        actual = err
+      }
+
+      expect(actual.message).toBe(`Either 'id' or 'path' must be specified.`)
     })
   })
 
@@ -809,8 +865,130 @@ describe('AppStorageService', () => {
     })
   })
 
-  describe('fetchDirDescendants', () => {
-    it('対象ノードを指定した場合 - ベーシックケース', async () => {
+  describe('fetchDescendants', () => {
+    it('ベーシックケース - ID検索', async () => {
+      // bucketRoot
+      // ├[d1] ← 対象ノードに指定
+      // │├[d11]
+      // ││└[f111.txt]
+      // │└[d12]
+      // └d2
+      const d1 = newStorageDirNode(`d1`)
+      const d11 = newStorageDirNode(`d1/d11`)
+      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
+      const f112 = newStorageFileNode(`d1/d11/f112.txt`)
+      const d12 = newStorageDirNode(`d1/d12`)
+      const d2 = newStorageDirNode(`d2`)
+      const {
+        services: { appStorage },
+      } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d2])
+      })
+
+      // APIからノードリストが取得される
+      td.when(appStorage.getDescendantsAPI({ id: d1.id, includeBase: true })).thenResolve([d1, d11, f111, f112, d12])
+
+      const actual = await appStorage.fetchDescendants({ id: d1.id, includeBase: true })
+
+      // bucketRoot
+      // ├d1 ← 対象ノードに指定
+      // │├d11
+      // ││└f111.txt
+      // │└d12
+      // └d2
+      expect(actual).toEqual([d1, d11, f111, f112, d12])
+      expect(appStorage.getAllNodes()).toEqual([d1, d11, f111, f112, d12, d2])
+    })
+
+    it('ベーシックケース - パス検索', async () => {
+      // bucketRoot
+      // ├[d1] ← 対象ノードに指定
+      // │├[d11]
+      // ││└[f111.txt]
+      // │└[d12]
+      // └d2
+      const d1 = newStorageDirNode(`d1`)
+      const d11 = newStorageDirNode(`d1/d11`)
+      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
+      const f112 = newStorageFileNode(`d1/d11/f112.txt`)
+      const d12 = newStorageDirNode(`d1/d12`)
+      const d2 = newStorageDirNode(`d2`)
+      const {
+        services: { appStorage },
+      } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d2])
+      })
+
+      // APIからノードリストが取得される
+      td.when(appStorage.getDescendantsAPI({ path: d1.path, includeBase: true })).thenResolve([d1, d11, f111, f112, d12])
+
+      const actual = await appStorage.fetchDescendants({ path: d1.path, includeBase: true })
+
+      // bucketRoot
+      // ├d1 ← 対象ノードに指定
+      // │├d11
+      // ││└f111.txt
+      // │└d12
+      // └d2
+      expect(actual).toEqual([d1, d11, f111, f112, d12])
+      expect(appStorage.getAllNodes()).toEqual([d1, d11, f111, f112, d12, d2])
+    })
+
+    it('ベースノードを含める場合', async () => {
+      // bucketRoot
+      // └[d1] ← 対象ノードに指定
+      //   └[d11]
+      //     └[f111.txt]
+      const d1 = newStorageDirNode(`d1`)
+      const d11 = newStorageDirNode(`d1/d11`)
+      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
+      const {
+        services: { appStorage },
+      } = provideDependency(({ stores }) => {
+        stores.storage.setAll([])
+      })
+
+      // APIからノードリストが取得される
+      td.when(appStorage.getDescendantsAPI({ path: d1.path, includeBase: true })).thenResolve([d1, d11, f111])
+
+      const actual = await appStorage.fetchDescendants({ path: d1.path, includeBase: true })
+
+      // bucketRoot
+      // └d1
+      //   └d11
+      //     └f111.txt
+      expect(actual).toEqual([d1, d11, f111])
+      expect(appStorage.getAllNodes()).toEqual([d1, d11, f111])
+    })
+
+    it('ベースノードを含めない場合', async () => {
+      // bucketRoot
+      // └d1 ← 対象ノードに指定
+      //   └[d11]
+      //     └[f111.txt]
+      const d1 = newStorageDirNode(`d1`)
+      const d11 = newStorageDirNode(`d1/d11`)
+      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
+      const {
+        services: { appStorage },
+      } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1])
+      })
+
+      // APIからノードリストが取得される
+      td.when(appStorage.getDescendantsAPI({ path: d1.path })).thenResolve([d11, f111])
+
+      const actual = await appStorage.fetchDescendants({ path: d1.path })
+
+      // bucketRoot
+      // └d1
+      //   └d11
+      //     └f111.txt
+      expect(actual).toEqual([d11, f111])
+      expect(appStorage.getAllNodes()).toEqual([d1, d11, f111])
+    })
+
+    it('様々なケースを想定したパターン', async () => {
       // bucketRoot
       // ├d1 ← 対象ノードに指定
       // │├d11
@@ -837,9 +1015,9 @@ describe('AppStorageService', () => {
       // ・'d1/d12'が削除された
       // ・'d1/f11.txt'が一度削除され、その後また同じディレクトリに同じ名前でアップロードされた
       const updated_f11 = cloneStorageNode(f11, { id: StorageNode.generateId(), updatedAt: dayjs() })
-      td.when(appStorage.getDirDescendantsAPI(d1.path)).thenResolve([d1, d11, f112, updated_f11])
+      td.when(appStorage.getDescendantsAPI({ path: d1.path, includeBase: true })).thenResolve([d1, d11, f112, updated_f11])
 
-      const actual = await appStorage.fetchDirDescendants(d1.path)
+      const actual = await appStorage.fetchDescendants({ path: d1.path, includeBase: true })
 
       // bucketRoot
       // ├d1
@@ -852,7 +1030,7 @@ describe('AppStorageService', () => {
       expect(appStorage.getAllNodes()).toEqual([d1, d11, f112, updated_f11, d2])
     })
 
-    it('対象ノードを指定した場合 - 対象ノードが削除されていた', async () => {
+    it('対象ノードが削除されていた', async () => {
       // bucketRoot
       // ├d1
       // │├d11 ← 対象ノードに指定
@@ -872,9 +1050,9 @@ describe('AppStorageService', () => {
 
       // APIから以下の状態のノードリストが取得される
       // ・'d1/d11'が削除され存在しない
-      td.when(appStorage.getDirDescendantsAPI(d11.path)).thenResolve([])
+      td.when(appStorage.getDescendantsAPI({ path: d11.path, includeBase: true })).thenResolve([])
 
-      const actual = await appStorage.fetchDirDescendants(d11.path)
+      const actual = await appStorage.fetchDescendants({ path: d11.path, includeBase: true })
 
       // bucketRoot
       // ├d1
@@ -884,7 +1062,7 @@ describe('AppStorageService', () => {
       expect(appStorage.getAllNodes()).toEqual([d1, d12, d2])
     })
 
-    it('バケットルートを指定した場合', async () => {
+    it('ベースパス配下の検索', async () => {
       // bucketRoot ← 対象ノードに指定
       // ├d1
       // │├d11
@@ -908,9 +1086,9 @@ describe('AppStorageService', () => {
       // ・'d1/d11/f112.txt'が追加された
       // ・'d1/d12'が削除された
       const f1 = cloneStorageNode(f111, { dir: ``, path: `f1.txt` })
-      td.when(appStorage.getDirDescendantsAPI(``)).thenResolve([d1, d11, f112, d2, f1])
+      td.when(appStorage.getDescendantsAPI({ path: `` })).thenResolve([d1, d11, f112, d2, f1])
 
-      const actual = await appStorage.fetchDirDescendants()
+      const actual = await appStorage.fetchDescendants({ path: `` })
 
       // bucketRoot
       // ├d1
@@ -923,90 +1101,122 @@ describe('AppStorageService', () => {
     })
   })
 
-  describe('fetchDescendants', () => {
-    it('対象ノードを指定した場合 - ベーシックケース', async () => {
+  describe('fetchChildren', () => {
+    it('ベーシックケース - ID検索', async () => {
       // bucketRoot
-      // ├d1 ← 対象ノードに指定
-      // │├d11
-      // ││└f111.txt
-      // │├d12
-      // │└f11.txt
+      // ├[d1] ← 対象ノードに指定
+      // │├[d11]
+      // ││└[f111.txt]
+      // │└[d12]
       // └d2
       const d1 = newStorageDirNode(`d1`)
       const d11 = newStorageDirNode(`d1/d11`)
       const f111 = newStorageFileNode(`d1/d11/f111.txt`)
-      const f112 = newStorageFileNode(`d1/d11/f112.txt`)
       const d12 = newStorageDirNode(`d1/d12`)
-      const f11 = newStorageFileNode(`d1/f11.txt`)
       const d2 = newStorageDirNode(`d2`)
       const {
         services: { appStorage },
       } = provideDependency(({ stores }) => {
-        stores.storage.setAll([d1, d11, f111, d12, f11, d2])
+        stores.storage.setAll([d2])
       })
 
-      // APIから以下の状態のノードリストが取得される
-      // ・'d1/d11/f111.txt'が'f1.txt'へ移動+リネームされた
-      // ・'d1/d11/f112.txt'が追加された
-      // ・'d1/d12'が削除された
-      // ・'d1/f11.txt'が一度削除され、その後また同じディレクトリに同じ名前でアップロードされた
-      const updated_f11 = cloneStorageNode(f11, { id: StorageNode.generateId(), updatedAt: dayjs() })
-      td.when(appStorage.getDescendantsAPI(d1.path)).thenResolve([d11, f112, updated_f11])
+      // APIからノードリストが取得される
+      td.when(appStorage.getChildrenAPI({ id: d1.id, includeBase: true })).thenResolve([d1, d11, f111, d12])
 
-      const actual = await appStorage.fetchDescendants(d1.path)
+      const actual = await appStorage.fetchChildren({ id: d1.id, includeBase: true })
 
       // bucketRoot
-      // ├d1
-      // │├d11
-      // ││└f112.txt
-      // │└f11.txt
-      // ├d2
-      // └[f1.txt] ← 移動+リネームされても、今回の検索範囲外なのでストアに反映されない
-      expect(actual).toEqual([d11, f112, updated_f11])
-      expect(appStorage.getAllNodes()).toEqual([d1, d11, f112, updated_f11, d2])
-    })
-
-    it('バケットルートを指定した場合', async () => {
-      // bucketRoot ← 対象ノードに指定
       // ├d1
       // │├d11
       // ││└f111.txt
       // │└d12
       // └d2
+      expect(actual).toEqual([d1, d11, f111, d12])
+      expect(appStorage.getAllNodes()).toEqual([d1, d11, f111, d12, d2])
+    })
+
+    it('ベーシックケース - パス検索', async () => {
+      // bucketRoot
+      // ├[d1] ← 対象ノードに指定
+      // │├[d11]
+      // ││└[f111.txt]
+      // │└[d12]
+      // └d2
       const d1 = newStorageDirNode(`d1`)
       const d11 = newStorageDirNode(`d1/d11`)
       const f111 = newStorageFileNode(`d1/d11/f111.txt`)
-      const f112 = newStorageFileNode(`d1/d11/f112.txt`)
       const d12 = newStorageDirNode(`d1/d12`)
       const d2 = newStorageDirNode(`d2`)
       const {
         services: { appStorage },
       } = provideDependency(({ stores }) => {
-        stores.storage.setAll([d1, d11, f111, d12, d2])
+        stores.storage.setAll([d2])
       })
 
-      // APIから以下の状態のノードリストが取得される
-      // ・'d1/d11/f111.txt'が'f1.txt'へ移動+リネームされた
-      // ・'d1/d11/f112.txt'が追加された
-      // ・'d1/d12'が削除された
-      const f1 = cloneStorageNode(f111, { dir: ``, path: `f1.txt` })
-      td.when(appStorage.getDescendantsAPI(``)).thenResolve([d1, d11, f112, d2, f1])
+      // APIからノードリストが取得される
+      td.when(appStorage.getChildrenAPI({ path: d1.path, includeBase: true })).thenResolve([d1, d11, f111, d12])
 
-      const actual = await appStorage.fetchDescendants()
+      const actual = await appStorage.fetchChildren({ path: d1.path, includeBase: true })
 
       // bucketRoot
       // ├d1
-      // │└d11
-      // │  └f112.txt
-      // ├d2
-      // └f1.txt
-      expect(actual).toEqual([d1, d11, f112, d2, f1])
-      expect(appStorage.getAllNodes()).toEqual([d1, d11, f112, d2, f1])
+      // │├d11
+      // ││└f111.txt
+      // │└d12
+      // └d2
+      expect(actual).toEqual([d1, d11, f111, d12])
+      expect(appStorage.getAllNodes()).toEqual([d1, d11, f111, d12, d2])
     })
-  })
 
-  describe('fetchDirChildren', () => {
-    it('対象ノードを指定した場合 - ベーシックケース', async () => {
+    it('ベースノードを含める場合', async () => {
+      // bucketRoot
+      // └[d1] ← 対象ノードに指定
+      //   └[d11]
+      const d1 = newStorageDirNode(`d1`)
+      const d11 = newStorageDirNode(`d1/d11`)
+      const {
+        services: { appStorage },
+      } = provideDependency(({ stores }) => {
+        stores.storage.setAll([])
+      })
+
+      // APIからノードリストが取得される
+      td.when(appStorage.getChildrenAPI({ path: d1.path, includeBase: true })).thenResolve([d1, d11])
+
+      const actual = await appStorage.fetchChildren({ path: d1.path, includeBase: true })
+
+      // bucketRoot
+      // └d1
+      //   └d11
+      expect(actual).toEqual([d1, d11])
+      expect(appStorage.getAllNodes()).toEqual([d1, d11])
+    })
+
+    it('ベースノードを含めない場合', async () => {
+      // bucketRoot
+      // └d1 ← 対象ノードに指定
+      //   └[d11]
+      const d1 = newStorageDirNode(`d1`)
+      const d11 = newStorageDirNode(`d1/d11`)
+      const {
+        services: { appStorage },
+      } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1])
+      })
+
+      // APIからノードリストが取得される
+      td.when(appStorage.getChildrenAPI({ path: d1.path })).thenResolve([d11])
+
+      const actual = await appStorage.fetchChildren({ path: d1.path })
+
+      // bucketRoot
+      // └d1
+      //   └d11
+      expect(actual).toEqual([d11])
+      expect(appStorage.getAllNodes()).toEqual([d1, d11])
+    })
+
+    it('様々なケースを想定したパターン', async () => {
       // bucketRoot
       // ├d1 ← 対象ノードに指定
       // │├d11
@@ -1034,9 +1244,9 @@ describe('AppStorageService', () => {
       // ・'d1/f12.txt'が追加された
       // ・'d1/d12'が削除された
       const updated_f11 = cloneStorageNode(f11, { id: StorageNode.generateId(), updatedAt: dayjs() })
-      td.when(appStorage.getDirChildrenAPI(d1.path)).thenResolve([d1, d11, updated_f11, f12])
+      td.when(appStorage.getChildrenAPI({ path: d1.path, includeBase: true })).thenResolve([d1, d11, updated_f11, f12])
 
-      const actual = await appStorage.fetchDirChildren(d1.path)
+      const actual = await appStorage.fetchChildren({ path: d1.path, includeBase: true })
 
       // bucketRoot
       // ├d1
@@ -1049,7 +1259,7 @@ describe('AppStorageService', () => {
       expect(appStorage.getAllNodes()).toEqual([d1, d11, f111, updated_f11, f12, d2])
     })
 
-    it('対象ノードを指定した場合 - 対象ノードが削除されていた', async () => {
+    it('対象ノードが削除されていた', async () => {
       // bucketRoot
       // ├d1
       // │├d11 ← 対象ノードに指定
@@ -1069,9 +1279,9 @@ describe('AppStorageService', () => {
 
       // APIから以下の状態のノードリストが取得される
       // ・'d1/d11'が削除され存在しない
-      td.when(appStorage.getDirChildrenAPI(d11.path)).thenResolve([])
+      td.when(appStorage.getChildrenAPI({ path: d11.path, includeBase: true })).thenResolve([])
 
-      const actual = await appStorage.fetchDirChildren(d11.path)
+      const actual = await appStorage.fetchChildren({ path: d11.path, includeBase: true })
 
       // bucketRoot
       // ├d1
@@ -1081,7 +1291,7 @@ describe('AppStorageService', () => {
       expect(appStorage.getAllNodes()).toEqual([d1, d12, d2])
     })
 
-    it('バケットルートを指定した場合', async () => {
+    it('ベースパス直下を検索', async () => {
       // bucketRoot ← 対象ノードに指定
       // ├[d1]
       // ├[d2]
@@ -1095,80 +1305,9 @@ describe('AppStorageService', () => {
         stores.storage.setAll([])
       })
 
-      td.when(appStorage.getDirChildrenAPI(``)).thenResolve([d1, d2, f1])
+      td.when(appStorage.getChildrenAPI({ path: `` })).thenResolve([d1, d2, f1])
 
-      const actual = await appStorage.fetchDirChildren()
-
-      // bucketRoot
-      // ├d1
-      // ├d2
-      // └f1.txt
-      expect(actual).toEqual([d1, d2, f1])
-      expect(appStorage.getAllNodes()).toEqual([d1, d2, f1])
-    })
-  })
-
-  describe('fetchChildren', () => {
-    it('対象ノードを指定した場合', async () => {
-      // bucketRoot
-      // ├d1 ← 対象ノードに指定
-      // │├d11
-      // ││└f111.txt
-      // │├d12
-      // ││└f121.txt
-      // │└f11.txt
-      // └d2
-      const d1 = newStorageDirNode(`d1`)
-      const d11 = newStorageDirNode(`d1/d11`)
-      const f111 = newStorageFileNode(`d1/d11/f111.txt`)
-      const d12 = newStorageDirNode(`d1/d12`)
-      const f121 = newStorageFileNode(`d1/d12/f121.txt`)
-      const f11 = newStorageFileNode(`d1/f11.txt`)
-      const f12 = newStorageFileNode(`d1/f12.txt`)
-      const d2 = newStorageDirNode(`d2`)
-      const {
-        services: { appStorage },
-      } = provideDependency(({ stores }) => {
-        stores.storage.setAll([d1, d11, f111, d12, f121, f11, d2])
-      })
-
-      // APIから以下の状態のノードリストが取得される
-      // ・'d1/f11.txt'が削除され、その後また同じディレクトリに同じ名前でアップロードされた
-      // ・'d1/f12.txt'が追加された
-      // ・'d1/d12'が削除された
-      const updated_f11 = cloneStorageNode(f11, { id: StorageNode.generateId(), updatedAt: dayjs() })
-      td.when(appStorage.getChildrenAPI(d1.path)).thenResolve([d11, updated_f11, f12])
-
-      const actual = await appStorage.fetchChildren(d1.path)
-
-      // bucketRoot
-      // ├d1
-      // │├d11
-      // ││└f111.txt
-      // │├f11.txt
-      // │└f12.txt
-      // └d2
-      expect(actual).toEqual([d11, updated_f11, f12])
-      expect(appStorage.getAllNodes()).toEqual([d1, d11, f111, updated_f11, f12, d2])
-    })
-
-    it('バケットルートを指定した場合', async () => {
-      // bucketRoot ← 対象ノードに指定
-      // ├[d1]
-      // ├[d2]
-      // └[f1.txt]
-      const d1 = newStorageDirNode(`d1`)
-      const d2 = newStorageDirNode(`d2`)
-      const f1 = newStorageFileNode(`f1.txt`)
-      const {
-        services: { appStorage },
-      } = provideDependency(({ stores }) => {
-        stores.storage.setAll([])
-      })
-
-      td.when(appStorage.getChildrenAPI(``)).thenResolve([d1, d2, f1])
-
-      const actual = await appStorage.fetchChildren()
+      const actual = await appStorage.fetchChildren({ path: `` })
 
       // bucketRoot
       // ├d1
@@ -1209,7 +1348,7 @@ describe('AppStorageService', () => {
       // ・'d1/d11/f112.txt'が追加された
       const updated_f111 = cloneStorageNode(f111, { id: StorageNode.generateId(), updatedAt: dayjs() })
       td.when(appStorage.getHierarchicalNodesAPI(d11.path)).thenResolve([d1, d11])
-      td.when(appStorage.getDescendantsAPI(d11.path)).thenResolve([updated_f111, f112])
+      td.when(appStorage.getDescendantsAPI({ path: d11.path })).thenResolve([updated_f111, f112])
 
       const actual = await appStorage.fetchHierarchicalDescendants(d11.path)
 
@@ -1247,7 +1386,7 @@ describe('AppStorageService', () => {
       // APIから以下の状態のノードリストが取得される
       // ・'d1/d11/d111'が削除され存在しない
       td.when(appStorage.getHierarchicalNodesAPI(d111.path)).thenResolve([d1, d11])
-      td.when(appStorage.getDescendantsAPI(d111.path)).thenResolve([])
+      td.when(appStorage.getDescendantsAPI({ path: d111.path })).thenResolve([])
 
       const actual = await appStorage.fetchHierarchicalDescendants(d111.path)
 
@@ -1283,7 +1422,7 @@ describe('AppStorageService', () => {
       // APIから以下の状態のノードリストが取得される
       // ・'d1/d11'が削除され存在しない
       td.when(appStorage.getHierarchicalNodesAPI(d111.path)).thenResolve([d1])
-      td.when(appStorage.getDescendantsAPI(d111.path)).thenResolve([])
+      td.when(appStorage.getDescendantsAPI({ path: d111.path })).thenResolve([])
 
       const actual = await appStorage.fetchHierarchicalDescendants(d111.path)
 
@@ -1319,9 +1458,9 @@ describe('AppStorageService', () => {
       // ・'d1/d11/f112.txt'が追加された
       // ・'d1/d12'が削除された
       const updated_f1 = cloneStorageNode(f111, { dir: ``, path: `f1.txt`, updatedAt: dayjs() })
-      td.when(appStorage.getDirDescendantsAPI(``)).thenResolve([d1, d11, f112, d2, updated_f1])
+      td.when(appStorage.getDescendantsAPI({ path: `` })).thenResolve([d1, d11, f112, d2, updated_f1])
 
-      const actual = await appStorage.fetchHierarchicalDescendants()
+      const actual = await appStorage.fetchHierarchicalDescendants(``)
 
       // bucketRoot
       // ├d1
@@ -1364,7 +1503,7 @@ describe('AppStorageService', () => {
       // ・'d1/d11/f112.txt'が追加された
       const updated_f111 = cloneStorageNode(f111, { id: StorageNode.generateId(), updatedAt: dayjs() })
       td.when(appStorage.getHierarchicalNodesAPI(d11.path)).thenResolve([d1, d11])
-      td.when(appStorage.getChildrenAPI(d11.path)).thenResolve([updated_f111, f112])
+      td.when(appStorage.getChildrenAPI({ path: d11.path })).thenResolve([updated_f111, f112])
 
       const actual = await appStorage.fetchHierarchicalChildren(d11.path)
 
@@ -1402,7 +1541,7 @@ describe('AppStorageService', () => {
       // APIから以下の状態のノードリストが取得される
       // ・'d1/d11/d111'が削除され存在しない
       td.when(appStorage.getHierarchicalNodesAPI(d111.path)).thenResolve([d1, d11])
-      td.when(appStorage.getChildrenAPI(d111.path)).thenResolve([])
+      td.when(appStorage.getChildrenAPI({ path: d111.path })).thenResolve([])
 
       const actual = await appStorage.fetchHierarchicalChildren(d111.path)
 
@@ -1437,9 +1576,9 @@ describe('AppStorageService', () => {
       // ・'d1/d11/f111.txt'が'f1.txt'へ移動+リネームされた
       // ・'d2'が削除された
       const updated_f1 = cloneStorageNode(f111, { dir: ``, path: `f1.txt`, updatedAt: dayjs() })
-      td.when(appStorage.getDirChildrenAPI(``)).thenResolve([d1, d11, updated_f1])
+      td.when(appStorage.getChildrenAPI({ path: `` })).thenResolve([d1, d11, updated_f1])
 
-      const actual = await appStorage.fetchHierarchicalChildren()
+      const actual = await appStorage.fetchHierarchicalChildren(``)
 
       // bucketRoot
       // ├d1

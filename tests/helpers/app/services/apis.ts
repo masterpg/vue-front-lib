@@ -35,6 +35,8 @@ interface TestAPIContainer extends APIContainer {
 
 interface TestAuthToken {
   uid: string
+  email?: string
+  email_verified?: boolean
   isAppAdmin: boolean
   authStatus: AuthStatus
 }

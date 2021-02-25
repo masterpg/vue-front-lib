@@ -445,7 +445,7 @@ describe('AppStorageService', () => {
           undefined
         )
       ).thenResolve(art1)
-      td.when(articleStorage.getChildrenAPI(art1.path)).thenResolve([art1_master, art1_draft])
+      td.when(articleStorage.getChildrenAPI({ path: art1.path })).thenResolve([art1_master, art1_draft])
 
       // テスト対象実行
       const actual = await articleStorage.createArticleTypeDir({
@@ -469,7 +469,7 @@ describe('AppStorageService', () => {
       expect(hierarchicalNodes[4].path).toBe(cat1.path)
       expect(hierarchicalNodes[5].path).toBe(art1.path)
 
-      const childNodes = appStorage.getChildren(art1.path)
+      const childNodes = appStorage.getChildren({ path: art1.path })
       expect(childNodes.length).toBe(2)
       expect(childNodes[0].path).toBe(art1_master.path)
       expect(childNodes[1].path).toBe(art1_draft.path)

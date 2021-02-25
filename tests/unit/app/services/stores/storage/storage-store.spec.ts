@@ -1,6 +1,6 @@
 import { DeepReadonly, removeStartDirChars } from 'web-base-lib'
 import { GeneralUser, cloneStorageNode, newStorageDirNode, newStorageFileNode, provideDependency } from '../../../../../helpers/app'
-import { StorageArticleDirType, StorageArticleFileType, StorageNode, StorageNodeShareSettings, StorageNodeType, StorageUtil } from '@/app/services'
+import { StorageNode, StorageNodeShareSettings, StorageUtil } from '@/app/services'
 import dayjs from 'dayjs'
 import path from 'path'
 import { useConfig } from '@/app/config'
@@ -112,7 +112,7 @@ describe('StorageStore', () => {
   })
 
   describe('get', () => {
-    it('ベーシックケース - id検索', () => {
+    it('ベーシックケース - ID検索', () => {
       const d1 = newStorageDirNode('d1')
       const d11 = newStorageDirNode('d1/d11')
       const f111 = newStorageFileNode('d1/d11/f111.txt')
@@ -129,7 +129,7 @@ describe('StorageStore', () => {
       toBeCopy(actual)
     })
 
-    it('ベーシックケース - path検索', () => {
+    it('ベーシックケース - パス検索', () => {
       const d1 = newStorageDirNode('d1')
       const d11 = newStorageDirNode('d1/d11')
       const f111 = newStorageFileNode('d1/d11/f111.txt')
@@ -163,7 +163,7 @@ describe('StorageStore', () => {
   })
 
   describe('getList', () => {
-    it('ベーシックケース - id検索', () => {
+    it('ベーシックケース - ID検索', () => {
       const d1 = newStorageDirNode('d1')
       const d11 = newStorageDirNode('d1/d11')
       const f111 = newStorageFileNode('d1/d11/f111.txt')
@@ -180,7 +180,7 @@ describe('StorageStore', () => {
       toBeCopy(actual)
     })
 
-    it('ベーシックケース - path検索', () => {
+    it('ベーシックケース - パス検索', () => {
       const d1 = newStorageDirNode('d1')
       const d11 = newStorageDirNode('d1/d11')
       const f111 = newStorageFileNode('d1/d11/f111.txt')
@@ -221,67 +221,8 @@ describe('StorageStore', () => {
     })
   })
 
-  describe('getChildren', () => {
-    it('ベーシックケース', () => {
-      const d1 = newStorageDirNode('d1')
-      const d11 = newStorageDirNode('d1/d11')
-      const f111 = newStorageFileNode('d1/d11/f111.txt')
-      const d12 = newStorageDirNode('d1/d12')
-      const d2 = newStorageDirNode('d2')
-      const { stores } = provideDependency(({ stores }) => {
-        stores.storage.setAll([d1, d11, f111, d12, d2])
-      })
-
-      const actual = stores.storage.getChildren(d1.path)
-
-      expect(actual.length).toBe(2)
-      expect(actual[0].path).toEqual('d1/d11')
-      expect(actual[1].path).toEqual('d1/d12')
-      toBeCopy(actual)
-    })
-  })
-
-  describe('getDirChildren', () => {
-    it('ベーシックケース', () => {
-      const d1 = newStorageDirNode('d1')
-      const d11 = newStorageDirNode('d1/d11')
-      const f111 = newStorageFileNode('d1/d11/f111.txt')
-      const d12 = newStorageDirNode('d1/d12')
-      const d2 = newStorageDirNode('d2')
-      const { stores } = provideDependency(({ stores }) => {
-        stores.storage.setAll([d1, d11, f111, d12, d2])
-      })
-
-      const actual = stores.storage.getDirChildren('d1')
-
-      expect(actual.length).toBe(3)
-      expect(actual[0].path).toEqual('d1')
-      expect(actual[1].path).toEqual('d1/d11')
-      expect(actual[2].path).toEqual('d1/d12')
-      toBeCopy(actual)
-    })
-
-    it('dirPathを指定しない場合', () => {
-      const d1 = newStorageDirNode('d1')
-      const d11 = newStorageDirNode('d1/d11')
-      const f111 = newStorageFileNode('d1/d11/f111.txt')
-      const d12 = newStorageDirNode('d1/d12')
-      const d2 = newStorageDirNode('d2')
-      const { stores } = provideDependency(({ stores }) => {
-        stores.storage.setAll([d1, d11, f111, d12, d2])
-      })
-
-      const actual = stores.storage.getDirChildren()
-
-      expect(actual.length).toBe(2)
-      expect(actual[0].path).toEqual('d1')
-      expect(actual[1].path).toEqual('d2')
-      toBeCopy(actual)
-    })
-  })
-
   describe('getDescendants', () => {
-    it('ベーシックケース', () => {
+    it('ベーシックケース - ID検索', () => {
       const d1 = newStorageDirNode('d1')
       const d11 = newStorageDirNode('d1/d11')
       const f111 = newStorageFileNode('d1/d11/f111.txt')
@@ -291,28 +232,7 @@ describe('StorageStore', () => {
         stores.storage.setAll([d1, d11, f111, d12, d2])
       })
 
-      const actual = stores.storage.getDescendants(d1.path)
-
-      expect(actual.length).toBe(3)
-      expect(actual[0].path).toEqual('d1/d11')
-      expect(actual[1].path).toEqual('d1/d11/f111.txt')
-      expect(actual[2].path).toEqual('d1/d12')
-      toBeCopy(actual)
-    })
-  })
-
-  describe('getDirDescendants', () => {
-    it('ベーシックケース', () => {
-      const d1 = newStorageDirNode('d1')
-      const d11 = newStorageDirNode('d1/d11')
-      const f111 = newStorageFileNode('d1/d11/f111.txt')
-      const d12 = newStorageDirNode('d1/d12')
-      const d2 = newStorageDirNode('d2')
-      const { stores } = provideDependency(({ stores }) => {
-        stores.storage.setAll([d1, d11, f111, d12, d2])
-      })
-
-      const actual = stores.storage.getDirDescendants(d1.path)
+      const actual = stores.storage.getDescendants({ id: d1.id, includeBase: true })
 
       expect(actual.length).toBe(4)
       expect(actual[0].path).toEqual('d1')
@@ -322,7 +242,7 @@ describe('StorageStore', () => {
       toBeCopy(actual)
     })
 
-    it('dirPathを指定しない場合', () => {
+    it('ベーシックケース - パス検索', () => {
       const d1 = newStorageDirNode('d1')
       const d11 = newStorageDirNode('d1/d11')
       const f111 = newStorageFileNode('d1/d11/f111.txt')
@@ -332,15 +252,177 @@ describe('StorageStore', () => {
         stores.storage.setAll([d1, d11, f111, d12, d2])
       })
 
-      const actual = stores.storage.getDirDescendants()
+      const actual = stores.storage.getDescendants({ path: d1.path, includeBase: true })
 
-      expect(actual.length).toBe(5)
+      expect(actual.length).toBe(4)
       expect(actual[0].path).toEqual('d1')
       expect(actual[1].path).toEqual('d1/d11')
       expect(actual[2].path).toEqual('d1/d11/f111.txt')
       expect(actual[3].path).toEqual('d1/d12')
-      expect(actual[4].path).toEqual('d2')
       toBeCopy(actual)
+    })
+
+    it('ベースノード含める', () => {
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const { stores } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1, d11, f111])
+      })
+
+      const actual = stores.storage.getDescendants({ path: d1.path, includeBase: true })
+
+      expect(actual.length).toBe(3)
+      expect(actual[0].path).toEqual('d1')
+      expect(actual[1].path).toEqual('d1/d11')
+      expect(actual[2].path).toEqual('d1/d11/f111.txt')
+      toBeCopy(actual)
+    })
+
+    it('ベースノード含めない', () => {
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const { stores } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1, d11, f111])
+      })
+
+      const actual = stores.storage.getDescendants({ path: d1.path })
+
+      expect(actual.length).toBe(2)
+      expect(actual[0].path).toEqual('d1/d11')
+      expect(actual[1].path).toEqual('d1/d11/f111.txt')
+      toBeCopy(actual)
+    })
+
+    it('ベースパス配下の検索', () => {
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const d2 = newStorageDirNode('d2')
+      const { stores } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1, d11, d2])
+      })
+
+      const actual = stores.storage.getDescendants({ path: `` })
+
+      expect(actual.length).toBe(3)
+      expect(actual[0].path).toEqual('d1')
+      expect(actual[1].path).toEqual('d1/d11')
+      expect(actual[2].path).toEqual('d2')
+      toBeCopy(actual)
+    })
+
+    it('IDとパス両方指定しなかった場合', async () => {
+      const { stores } = provideDependency()
+
+      let actual!: Error
+      try {
+        stores.storage.getDescendants({})
+      } catch (err) {
+        actual = err
+      }
+
+      expect(actual.message).toBe(`Either 'id' or 'path' must be specified.`)
+    })
+  })
+
+  describe('getChildren', () => {
+    it('ベーシックケース - ID検索', () => {
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
+      const { stores } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1, d11, f111, d12, d2])
+      })
+
+      const actual = stores.storage.getChildren({ id: d1.id, includeBase: true })
+
+      expect(actual.length).toBe(3)
+      expect(actual[0].path).toEqual('d1')
+      expect(actual[1].path).toEqual('d1/d11')
+      expect(actual[2].path).toEqual('d1/d12')
+      toBeCopy(actual)
+    })
+
+    it('ベーシックケース - パス検索', () => {
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const d12 = newStorageDirNode('d1/d12')
+      const d2 = newStorageDirNode('d2')
+      const { stores } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1, d11, f111, d12, d2])
+      })
+
+      const actual = stores.storage.getChildren({ path: d1.path, includeBase: true })
+
+      expect(actual.length).toBe(3)
+      expect(actual[0].path).toEqual('d1')
+      expect(actual[1].path).toEqual('d1/d11')
+      expect(actual[2].path).toEqual('d1/d12')
+      toBeCopy(actual)
+    })
+
+    it('ベースノードを含める場合', () => {
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const { stores } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1, d11, f111])
+      })
+
+      const actual = stores.storage.getChildren({ path: d1.path, includeBase: true })
+
+      expect(actual.length).toBe(2)
+      expect(actual[0].path).toEqual('d1')
+      expect(actual[1].path).toEqual('d1/d11')
+      toBeCopy(actual)
+    })
+
+    it('ベースノードを含めない場合', () => {
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const f111 = newStorageFileNode('d1/d11/f111.txt')
+      const { stores } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1, d11, f111])
+      })
+
+      const actual = stores.storage.getChildren({ path: d1.path })
+
+      expect(actual.length).toBe(1)
+      expect(actual[0].path).toEqual('d1/d11')
+      toBeCopy(actual)
+    })
+
+    it('ベースパス配下の検索', () => {
+      const d1 = newStorageDirNode('d1')
+      const d11 = newStorageDirNode('d1/d11')
+      const d2 = newStorageDirNode('d2')
+      const { stores } = provideDependency(({ stores }) => {
+        stores.storage.setAll([d1, d11, d2])
+      })
+
+      const actual = stores.storage.getChildren({ path: `` })
+
+      expect(actual.length).toBe(2)
+      expect(actual[0].path).toEqual('d1')
+      expect(actual[1].path).toEqual('d2')
+      toBeCopy(actual)
+    })
+
+    it('IDとパス両方指定しなかった場合', async () => {
+      const { stores } = provideDependency()
+
+      let actual!: Error
+      try {
+        stores.storage.getChildren({})
+      } catch (err) {
+        actual = err
+      }
+
+      expect(actual.message).toBe(`Either 'id' or 'path' must be specified.`)
     })
   })
 
@@ -779,7 +861,7 @@ describe('StorageStore', () => {
         actual = err
       }
 
-      expect(actual.message).toBe(`Either the 'ids' or the 'paths' must be specified.`)
+      expect(actual.message).toBe(`Either 'ids' or 'paths' must be specified.`)
     })
   })
 

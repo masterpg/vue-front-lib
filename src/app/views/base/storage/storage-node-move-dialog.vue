@@ -276,7 +276,7 @@ namespace StorageNodeMoveDialog {
       dirPath = removeBothEndsSlash(dirPath)
 
       // 引数ディレクトリ直下の子ノードをサーバーから取得
-      await pageService.fetchStorageChildren(dirPath)
+      await pageService.fetchStorageChildren({ path: dirPath })
 
       // 引数ディレクトリ直下の子ディレクトリのデータを取得
       const childNodeDataList = createTreeDirNodeDataList(dirPath)
@@ -311,7 +311,7 @@ namespace StorageNodeMoveDialog {
       const result: StorageTreeNodeData[] = []
 
       // 引数ディレクトリ直下の子ディレクトリのデータを取得
-      const nodes = pageService.getStorageChildren(dirPath)
+      const nodes = pageService.getStorageChildren({ path: dirPath })
 
       for (const node of nodes) {
         // ディレクトリノード以外はツリービューに追加しない

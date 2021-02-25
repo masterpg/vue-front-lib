@@ -77,12 +77,12 @@ namespace ArticleStorageService {
 
     base.fetchRoot.value = async () => {
       // 記事ルートがストアに存在しない場合
-      if (!base.existsHierarchicalOnStore()) {
+      if (!base.existsHierarchicalOnStore('')) {
         // 記事ルートをサーバーから読み込み
-        await base.fetchHierarchicalNodes()
+        await base.fetchHierarchicalNodes('')
       }
       // サーバーから記事ルートを読み込んだ後でも、記事ルートが存在しない場合
-      if (!base.existsHierarchicalOnStore()) {
+      if (!base.existsHierarchicalOnStore('')) {
         // 記事ルートを作成
         const apiNodes = await base.createHierarchicalDirsAPI([base.toFullPath('')])
         base.setAPINodesToStore(apiNodes)
@@ -154,7 +154,7 @@ namespace ArticleStorageService {
 
       // 記事作成時は記事ファイルも作成されるので読み込みを行う
       if (apiNode.article?.dir?.type === 'Article') {
-        await base.fetchChildren(base.toBasePath(apiNode.path))
+        await base.fetchChildren({ path: base.toBasePath(apiNode.path) })
       }
 
       return base.toBasePathNode(dirNode)!
@@ -209,7 +209,7 @@ namespace ArticleStorageService {
         pagination
       )
       // APIノードにないストアノードを削除
-      base.removeNotExistsStoreNodes(apiNodes, stores.storage.getChildren(dirPath))
+      base.removeNotExistsStoreNodes(apiNodes, stores.storage.getChildren({ path: dirPath }))
 
       const list = base.setAPINodesToStore(apiNodes)
       return { nextPageToken, list, isPaginationTimeout }

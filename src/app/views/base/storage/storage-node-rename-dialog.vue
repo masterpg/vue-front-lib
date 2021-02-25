@@ -200,7 +200,7 @@ namespace StorageNodeRenameDialog {
 
       // リネームしようとする名前のノードが存在しないことをチェック
       const parentNode = pageService.getStorageNode({ path: targetNode.value.dir })!
-      const siblingNodes = pageService.getStorageChildren(targetNode.value.dir)
+      const siblingNodes = pageService.getStorageChildren({ path: targetNode.value.dir })
       for (const siblingNode of siblingNodes) {
         if (siblingNode === targetNode.value) continue
 

@@ -8,6 +8,7 @@ import {
   StorageNode,
   StorageNodeGetKeyInput,
   StorageNodeGetKeysInput,
+  StorageNodeGetUnderInput,
   StorageNodeKeyInput,
   StorageNodeShareSettingsInput,
 } from '@/app/services'
@@ -37,10 +38,8 @@ interface AppStorageService extends StorageService {
 
   getNodeAPI(input: StorageNodeGetKeyInput): Promise<StorageNode | undefined>
   getNodesAPI(input: StorageNodeGetKeysInput): Promise<StorageNode[]>
-  getDirDescendantsAPI(dirPath?: string): Promise<StorageNode[]>
-  getDescendantsAPI(dirPath?: string): Promise<StorageNode[]>
-  getDirChildrenAPI(dirPath?: string): Promise<StorageNode[]>
-  getChildrenAPI(dirPath?: string): Promise<StorageNode[]>
+  getDescendantsAPI(input: StorageNodeGetUnderInput): Promise<StorageNode[]>
+  getChildrenAPI(input: StorageNodeGetUnderInput): Promise<StorageNode[]>
   getHierarchicalNodesAPI(nodePath: string): Promise<StorageNode[]>
   getAncestorDirsAPI(nodePath: string): Promise<StorageNode[]>
   createDirAPI(dirPath: string, options?: CreateStorageNodeOptions): Promise<StorageNode>
@@ -89,22 +88,22 @@ interface AppStorageService extends StorageService {
   /**
    * 指定ノードを含め階層を構成するディレクトリがストアに存在しているかを走査します。
    * @param targetPath 対象となるノードを指定します。
-   *   引数が未指定(または空文字)な場合、ベースパスルートとその階層を構成するディレクトリが対象となります。
+   *   空文字が指定された場合、ベースパスルートとその階層を構成するディレクトリが対象となります。
    */
-  existsHierarchicalOnStore(targetPath?: string): boolean
+  existsHierarchicalOnStore(targetPath: string): boolean
   /**
    * 指定ノードを構成する祖先ディレクトリでまだストアに格納されていないものがある場合、
    * サーバーから取得し、ストアに格納します。
    * @param targetPath 対象となるノードを指定します。
-   *   引数が未指定(または空文字)な場合、ベースパスルートを構成する祖先が対象となります。
+   *   空文字が指定された場合、ベースパスルートを構成する祖先が対象となります。
    */
-  fetchUnloadedAncestorDirs(targetPath?: string): Promise<void>
+  fetchUnloadedAncestorDirs(targetPath: string): Promise<void>
   /**
    * 指定ノードを構成する祖先ディレクトリがストアに存在するかを走査します。
    * @param targetPath 対象となるノードを指定します。
-   *   引数が未指定(または空文字)な場合、ベースパスルートを構成する祖先が対象となります。
+   *   空文字が指定された場合、ベースパスルートを構成する祖先が対象となります。
    */
-  existsAncestorDirsOnStore(targetPath?: string): boolean
+  existsAncestorDirsOnStore(targetPath: string): boolean
   /**
    * ノードパスをベースパスを基準に変換します。
    * @param nodePath
@@ -203,36 +202,30 @@ namespace AppStorageService {
       return toBasePathNodes(nodes)
     }
 
-    const sgetNode: AppStorageService['sgetNode'] = key => {
-      const id = key.id
-      let path = key.path
+    const sgetNode: AppStorageService['sgetNode'] = ({ id, path }) => {
       if (typeof path === 'string') {
         path = toFullPath(path)
       }
       const node = toBasePathNode(stores.storage.get({ id, path }))
       if (!node) {
-        throw new Error(`Storage store does not have specified node: ${JSON.stringify(key)}`)
+        throw new Error(`Storage store does not have specified node: ${JSON.stringify({ id, path })}`)
       }
       return node
     }
 
-    const getDirDescendants: AppStorageService['getDirDescendants'] = dirPath => {
-      const nodes = stores.storage.getDirDescendants(toFullPath(dirPath))
+    const getDescendants: AppStorageService['getDescendants'] = ({ id, path, includeBase }) => {
+      if (typeof path === 'string') {
+        path = toFullPath(path)
+      }
+      const nodes = stores.storage.getDescendants({ id, path, includeBase })
       return toBasePathNodes(nodes)
     }
 
-    const getDescendants: AppStorageService['getDescendants'] = dirPath => {
-      const nodes = stores.storage.getDescendants(toFullPath(dirPath))
-      return toBasePathNodes(nodes)
-    }
-
-    const getDirChildren: AppStorageService['getDirChildren'] = dirPath => {
-      const nodes = stores.storage.getDirChildren(toFullPath(dirPath))
-      return toBasePathNodes(nodes)
-    }
-
-    const getChildren: AppStorageService['getChildren'] = dirPath => {
-      const nodes = stores.storage.getChildren(toFullPath(dirPath))
+    const getChildren: AppStorageService['getChildren'] = ({ id, path, includeBase }) => {
+      if (typeof path === 'string') {
+        path = toFullPath(path)
+      }
+      const nodes = stores.storage.getChildren({ id, path, includeBase })
       return toBasePathNodes(nodes)
     }
 
@@ -364,42 +357,38 @@ namespace AppStorageService {
       return toBasePathNodes(result)
     }
 
-    const fetchDirDescendants: AppStorageService['fetchDirDescendants'] = async dirPath => {
+    const fetchDescendants: AppStorageService['fetchDescendants'] = async input => {
+      if (!input.id && typeof input.path !== 'string') {
+        throw new Error(`Either 'id' or 'path' must be specified.`)
+      }
+
       // APIノードをストアへ反映
-      const apiNodes = await getDirDescendantsAPI(toFullPath(dirPath))
+      const fullInput: StorageNodeGetUnderInput = {}
+      input.id && (fullInput.id = input.id)
+      typeof input.path === 'string' && (fullInput.path = toFullPath(input.path))
+      typeof input.includeBase === 'boolean' && (fullInput.includeBase = input.includeBase)
+      const apiNodes = await getDescendantsAPI(fullInput)
       const result = setAPINodesToStore(apiNodes)
       // APIノードにないストアノードを削除
-      removeNotExistsStoreNodes(apiNodes, stores.storage.getDirDescendants(toFullPath(dirPath)))
+      removeNotExistsStoreNodes(apiNodes, stores.storage.getDescendants(fullInput))
 
       return toBasePathNodes(result)
     }
 
-    const fetchDescendants: AppStorageService['fetchDescendants'] = async dirPath => {
+    const fetchChildren: AppStorageService['fetchChildren'] = async input => {
+      if (!input.id && typeof input.path !== 'string') {
+        throw new Error(`Either 'id' or 'path' must be specified.`)
+      }
+
       // APIノードをストアへ反映
-      const apiNodes = await getDescendantsAPI(toFullPath(dirPath))
+      const fullInput: StorageNodeGetUnderInput = {}
+      input.id && (fullInput.id = input.id)
+      typeof input.path === 'string' && (fullInput.path = toFullPath(input.path))
+      typeof input.includeBase === 'boolean' && (fullInput.includeBase = input.includeBase)
+      const apiNodes = await getChildrenAPI(fullInput)
       const result = setAPINodesToStore(apiNodes)
       // APIノードにないストアノードを削除
-      removeNotExistsStoreNodes(apiNodes, stores.storage.getDescendants(toFullPath(dirPath)))
-
-      return toBasePathNodes(result)
-    }
-
-    const fetchDirChildren: AppStorageService['fetchDirChildren'] = async dirPath => {
-      // APIノードをストアへ反映
-      const apiNodes = await getDirChildrenAPI(toFullPath(dirPath))
-      const result = setAPINodesToStore(apiNodes)
-      // APIノードにないストアノードを削除
-      removeNotExistsStoreNodes(apiNodes, stores.storage.getDirChildren(toFullPath(dirPath)))
-
-      return toBasePathNodes(result)
-    }
-
-    const fetchChildren: AppStorageService['fetchChildren'] = async dirPath => {
-      // APIノードをストアへ反映
-      const apiNodes = await getChildrenAPI(toFullPath(dirPath))
-      const result = setAPINodesToStore(apiNodes)
-      // APIノードにないストアノードを削除
-      removeNotExistsStoreNodes(apiNodes, stores.storage.getChildren(toFullPath(dirPath)))
+      removeNotExistsStoreNodes(apiNodes, stores.storage.getChildren(fullInput))
 
       return toBasePathNodes(result)
     }
@@ -407,14 +396,14 @@ namespace AppStorageService {
     const fetchHierarchicalDescendants: AppStorageService['fetchHierarchicalDescendants'] = async dirPath => {
       const result: StorageNode[] = []
 
-      // 引数ディレクトリが指定されなかった場合
-      if (!dirPath) {
-        result.push(...(await fetchDirDescendants(dirPath)))
+      // 引数ディレクトリに空文字が指定された場合
+      if (dirPath === '') {
+        result.push(...(await fetchDescendants({ path: dirPath })))
       }
-      // 引数ディレクトリが指定された場合
+      // 引数ディレクトリにパスが指定された場合
       else {
         result.push(...(await fetchHierarchicalNodes(dirPath)))
-        result.push(...(await fetchDescendants(dirPath)))
+        result.push(...(await fetchDescendants({ path: dirPath })))
       }
 
       return result
@@ -423,14 +412,14 @@ namespace AppStorageService {
     const fetchHierarchicalChildren: AppStorageService['fetchHierarchicalChildren'] = async dirPath => {
       const result: StorageNode[] = []
 
-      // 引数ディレクトリが指定されなかった場合
-      if (!dirPath) {
-        result.push(...(await fetchDirChildren(dirPath)))
+      // 引数ディレクトリに空文字が指定された場合
+      if (dirPath === '') {
+        result.push(...(await fetchChildren({ path: dirPath })))
       }
-      // 引数ディレクトリが指定された場合
+      // 引数ディレクトリにパスが指定された場合
       else {
         result.push(...(await fetchHierarchicalNodes(dirPath)))
-        result.push(...(await fetchChildren(dirPath)))
+        result.push(...(await fetchChildren({ path: dirPath })))
       }
 
       return result
@@ -481,7 +470,7 @@ namespace AppStorageService {
       const fullToDirPath = toFullPath(toDirPath)
 
       // 移動ノードをストアから取得しておく
-      const movingNodes = stores.storage.getDirDescendants(fullFromDirPath)
+      const movingNodes = stores.storage.getDescendants({ path: fullFromDirPath, includeBase: true })
 
       // ノード移動を実行
       await moveDirAPI(fullFromDirPath, fullToDirPath)
@@ -523,7 +512,7 @@ namespace AppStorageService {
       const fullDirPath = toFullPath(dirPath)
 
       // リネームノードをストアから取得しておく
-      const renamingNodes = stores.storage.getDirDescendants(fullDirPath)
+      const renamingNodes = stores.storage.getDescendants({ path: fullDirPath, includeBase: true })
 
       // リネームを実行
       await renameDirAPI(fullDirPath, newName)
@@ -643,23 +632,13 @@ namespace AppStorageService {
       return apiNodesToStorageNodes(apiNodes)
     })
 
-    const getDirDescendantsAPI = extendedMethod<AppStorageService['getDirDescendantsAPI']>(async dirPath => {
-      const apiNodes = await apis.callStoragePaginationAPI(apis.getStorageDirDescendants, dirPath)
+    const getDescendantsAPI = extendedMethod<AppStorageService['getDescendantsAPI']>(async input => {
+      const apiNodes = await apis.callStoragePaginationAPI(apis.getStorageDescendants, input)
       return apiNodesToStorageNodes(apiNodes)
     })
 
-    const getDescendantsAPI = extendedMethod<AppStorageService['getDescendantsAPI']>(async dirPath => {
-      const apiNodes = await apis.callStoragePaginationAPI(apis.getStorageDescendants, dirPath)
-      return apiNodesToStorageNodes(apiNodes)
-    })
-
-    const getDirChildrenAPI = extendedMethod<AppStorageService['getDirChildrenAPI']>(async dirPath => {
-      const apiNodes = await apis.callStoragePaginationAPI(apis.getStorageDirChildren, dirPath)
-      return apiNodesToStorageNodes(apiNodes)
-    })
-
-    const getChildrenAPI = extendedMethod<AppStorageService['getChildrenAPI']>(async dirPath => {
-      const apiNodes = await apis.callStoragePaginationAPI(apis.getStorageChildren, dirPath)
+    const getChildrenAPI = extendedMethod<AppStorageService['getChildrenAPI']>(async input => {
+      const apiNodes = await apis.callStoragePaginationAPI(apis.getStorageChildren, input)
       return apiNodesToStorageNodes(apiNodes)
     })
 
@@ -895,9 +874,7 @@ namespace AppStorageService {
       getNode,
       getNodes,
       sgetNode,
-      getDirDescendants,
       getDescendants,
-      getDirChildren,
       getChildren,
       getHierarchicalNodes,
       getInheritedShare,
@@ -906,9 +883,7 @@ namespace AppStorageService {
       fetchNodes,
       fetchHierarchicalNodes,
       fetchAncestorDirs,
-      fetchDirDescendants,
       fetchDescendants,
-      fetchDirChildren,
       fetchChildren,
       fetchHierarchicalDescendants,
       fetchHierarchicalChildren,
@@ -936,9 +911,7 @@ namespace AppStorageService {
       //--------------------------------------------------
       getNodeAPI,
       getNodesAPI,
-      getDirDescendantsAPI,
       getDescendantsAPI,
-      getDirChildrenAPI,
       getChildrenAPI,
       getHierarchicalNodesAPI,
       getAncestorDirsAPI,
