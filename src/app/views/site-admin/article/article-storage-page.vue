@@ -248,7 +248,7 @@ namespace ArticleStoragePage {
         // 選択ノードまでスクロールするフラグが立っている場合
         if (base.needScrollToSelectedNode.value) {
           // 選択されたノードの祖先を展開（アニメーションなし）
-          base.openParentNode(selectedNode.path, false)
+          base.openAncestorNodes(selectedNode.path, false)
           // 選択ノードの位置までスクロールする
           base.scrollToSelectedNode(selectedNode.path, true)
 

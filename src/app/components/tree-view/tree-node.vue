@@ -246,6 +246,25 @@ interface TreeNode<DATA extends TreeNodeData = TreeNodeData> extends Vue {
   /**
    * 子ノードを展開します。
    * @param animate
+   * @example
+   * // 下位のノードをアニメーションありで展開し、その後に上位ノードを展開すると、
+   * // 上位ノードの子ノードが表示されない状態になります。
+   *
+   * const node1: TreeNode = treeView.getNode(`node1`)
+   * const node1_1: TreeNode = treeView.getNode(`node1_1`)
+   *
+   * // 下位ノードをアニメーションありで展開
+   * node1_1.open(true)
+   * // 上位ノードを展開
+   * node1.open(true)
+   *
+   * // アニメーションありで下位ノード展開中に上位ノードが展開されると、
+   * // 下位ノードが展開されらきらず高さが「0」と算出されてしまい上記のような不具合が発生します。
+   * // アニメーション付きで展開する場合は「上位→下位」に展開する ようにして下さい。
+   *
+   * // 上位→下位の順に展開すること！
+   * node1.open(true)
+   * node1_1.open(true)
    */
   open(animate?: boolean): void
   /**

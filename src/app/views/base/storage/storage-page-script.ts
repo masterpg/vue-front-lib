@@ -232,12 +232,23 @@ namespace StoragePage {
      * @param nodePath
      * @param animate
      */
-    function openParentNode(nodePath: string, animate: boolean): void {
+    function openAncestorNodes(nodePath: string, animate: boolean): void {
       const treeNode = pageService.getTreeNode({ path: nodePath })
       if (!treeNode?.parent) return
 
       treeNode.parent.open(animate)
-      openParentNode(treeNode.parent.path, animate)
+      openAncestorNodes(treeNode.parent.path, animate)
+    }
+
+    /**
+     * 指定されたノードと祖先ノードを展開します。
+     * @param nodePath
+     * @param animate
+     */
+    function openAncestorNodesWith(nodePath: string, animate: boolean): void {
+      openAncestorNodes(nodePath, animate)
+      const node = pageService.sgetTreeNode({ path: nodePath })
+      node.open(animate)
     }
 
     /**
@@ -595,7 +606,7 @@ namespace StoragePage {
       }
 
       // 遅延ロードの対象ノードを展開
-      e.node.open()
+      openAncestorNodesWith(e.node.path, true)
 
       dirView.value!.loading = false
     }
@@ -610,7 +621,7 @@ namespace StoragePage {
       // 選択ノードまでスクロールするフラグが立っている場合
       if (needScrollToSelectedNode.value) {
         // 選択されたノードの祖先を展開（アニメーションなし）
-        openParentNode(selectedNode.path, false)
+        openAncestorNodes(selectedNode.path, false)
         // 選択ノードの位置までスクロールする
         scrollToSelectedNode(selectedNode.path, true)
 
@@ -680,7 +691,7 @@ namespace StoragePage {
       needScrollToSelectedNode,
       changeDir,
       changeDirOnPage,
-      openParentNode,
+      openAncestorNodes,
       scrollToSelectedNode,
       showNodeDetail,
       clear,
