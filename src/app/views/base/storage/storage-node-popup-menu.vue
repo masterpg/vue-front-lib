@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts">
-import { StorageArticleDirType, StorageNodeType, StorageType } from '@/app/services'
+import { StorageNodeType, StorageType } from '@/app/services'
 import { computed, defineComponent, ref } from '@vue/composition-api'
 import { QMenu } from 'quasar'
 import { StorageNodeActionEvent } from '@/app/views/base/storage/base'

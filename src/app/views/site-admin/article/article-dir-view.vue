@@ -63,7 +63,7 @@
         />
       </q-btn-group>
     </div>
-    <storage-dir-table
+    <StorageDirTable
       ref="table"
       :data="rowFilter(rows)"
       :columns="columns"
@@ -92,7 +92,7 @@
             <q-icon :name="slotProps.tr.row.share.icon" :size="slotProps.tr.row.share.iconSize" />
           </q-td>
           <q-td key="updatedAt" :props="slotProps.tr" class="th">{{ slotProps.tr.row.updatedAt }}</q-td>
-          <storage-node-popup-menu
+          <StorageNodePopupMenu
             :storage-type="storageType"
             :node="slotProps.tr.row"
             :selected-nodes="table.selected"
@@ -101,7 +101,7 @@
           />
         </q-tr>
       </template>
-    </storage-dir-table>
+    </StorageDirTable>
     <q-inner-loading :showing="spinning">
       <q-spinner size="50px" color="primary" />
     </q-inner-loading>

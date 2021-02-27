@@ -61,7 +61,7 @@
 </template>
 
 <script lang="ts">
-import { StorageArticleDirType, StorageNode, StorageNodeType, StorageType } from '@/app/services'
+import { StorageNode, StorageNodeType, StorageType } from '@/app/services'
 import { defineComponent, onMounted, ref } from '@vue/composition-api'
 import { StorageNodeActionEvent } from '@/app/views/base/storage/base'
 import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'

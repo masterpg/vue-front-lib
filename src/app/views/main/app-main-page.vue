@@ -26,7 +26,7 @@
 
         <div class="app-mr-16">Quasar v{{ $q.version }}</div>
 
-        <LoadingSpinner v-if="isSigningIn" color="indigo-3" />
+        <q-spinner v-if="isSigningIn" size="20px" color="indigo-3" />
         <div v-show="isSignedIn" class="app-mr-16">{{ user.fullName }}</div>
 
         <q-btn flat round dense color="white" icon="more_vert">
@@ -102,7 +102,6 @@
 import { computed, defineComponent, ref, watch } from '@vue/composition-api'
 import { useRouteParams, useRoutes } from '@/app/router'
 import { Dialogs } from '@/app/dialogs'
-import { LoadingSpinner } from '@/app/components/loading-spinner'
 import { Notify } from 'quasar'
 import { Screen } from 'quasar'
 import { useI18n } from '@/app/i18n'
@@ -112,7 +111,6 @@ import { useServiceWorker } from '@/app/service-worker'
 export default defineComponent({
   components: {
     Dialogs: Dialogs.clazz,
-    LoadingSpinner: LoadingSpinner.clazz,
   },
 
   setup() {

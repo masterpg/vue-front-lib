@@ -43,14 +43,14 @@
       <q-layout v-show="isSignedIn" class="page-layout" view="hHh lpr fff">
         <q-drawer v-model="visibleDetailDrawer" side="right" :width="320" overlay elevated>
           <div class="node-detail-container">
-            <storage-dir-detail-view
+            <StorageDirDetailView
               v-show="visibleDirDetailView"
               ref="dirDetailView"
               class="node-detail-view"
               :storage-type="storageType"
               @close="nodeDetailViewOnClose"
             />
-            <storage-file-detail-view
+            <StorageFileDetailView
               v-show="visibleFileDetailView"
               ref="fileDetailView"
               class="node-detail-view"
@@ -75,7 +75,7 @@
             </template>
             <template v-slot:after>
               <div class="content-container layout vertical">
-                <storage-dir-path-breadcrumb
+                <StorageDirPathBreadcrumb
                   ref="pathDirBreadcrumb"
                   :storage-type="storageType"
                   @select="pathDirBreadcrumbOnSelect($event)"
@@ -83,7 +83,7 @@
                   @toggle-drawer="pathDirBreadcrumbOnToggleDrawer"
                 />
                 <div class="view-container layout horizontal flex-1">
-                  <article-dir-view
+                  <ArticleDirView
                     ref="dirView"
                     class="dir-view flex-1"
                     v-show="visibleDirView"
@@ -92,20 +92,20 @@
                     @deep-select="dirViewOnDeepSelect($event)"
                     @node-action="popupMenuOnNodeAction($event)"
                   />
-                  <article-writing-view ref="writingView" v-show="visibleWritingView" class="flex-1" :storage-type="storageType" />
+                  <ArticleWritingView ref="writingView" v-show="visibleWritingView" class="flex-1" :storage-type="storageType" />
                 </div>
               </div>
             </template>
           </q-splitter>
         </q-page-container>
 
-        <storage-dir-create-dialog ref="dirCreateDialog" :storage-type="storageType" />
-        <storage-node-move-dialog ref="nodeMoveDialog" :storage-type="storageType" />
-        <storage-node-rename-dialog ref="nodeRenameDialog" :storage-type="storageType" />
-        <storage-node-remove-dialog ref="nodeRemoveDialog" :storage-type="storageType" />
-        <storage-node-share-dialog ref="nodeShareDialog" :storage-type="storageType" />
+        <StorageDirCreateDialog ref="dirCreateDialog" :storage-type="storageType" />
+        <StorageNodeMoveDialog ref="nodeMoveDialog" :storage-type="storageType" />
+        <StorageNodeRenameDialog ref="nodeRenameDialog" :storage-type="storageType" />
+        <StorageNodeRemoveDialog ref="nodeRemoveDialog" :storage-type="storageType" />
+        <StorageNodeShareDialog ref="nodeShareDialog" :storage-type="storageType" />
 
-        <storage-upload-progress-float
+        <StorageUploadProgressFloat
           ref="uploadProgressFloat"
           class="fixed-bottom-right"
           :storage-type="storageType"

@@ -123,7 +123,6 @@ import { RequiredStorageNodeShareSettings, StorageArticleSettings, StorageNodeSh
 import { StorageNodeActionEvent, StorageTreeNodeData, StorageTreeNodeEditData } from '@/app/views/base/storage/base'
 import { TreeNode, TreeNodeImpl } from '@/app/components/tree-view'
 import { Dayjs } from 'dayjs'
-import { LoadingSpinner } from '@/app/components/loading-spinner'
 import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'
 import _path from 'path'
 import { removeStartDirChars } from 'web-base-lib'
@@ -174,7 +173,6 @@ namespace StorageTreeNode {
     name: 'StorageTreeNode',
 
     components: {
-      LoadingSpinner: LoadingSpinner.clazz,
       StorageNodePopupMenu: StorageNodePopupMenu.clazz,
     },
 
