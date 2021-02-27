@@ -325,7 +325,7 @@ namespace StorageUploader {
       state.status = 'none'
 
       // ファイルアップローダーを作成(まだアップロードは実行しない)
-      fileUploaders.value.push(...createUploadingFiles.value(files))
+      fileUploaders.value.push(...createUploadingFiles(files))
 
       // ファイルアップローダー配列をソート
       fileUploaders.value.sort((a, b) => {

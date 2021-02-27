@@ -587,7 +587,7 @@ namespace TreeNode {
       }
 
       // サブクラスで必要な処理を実行
-      setNodeData_sub.value(editData)
+      setNodeData_sub(editData)
 
       // 親コンテナ内における自身の配置位置を再設定
       resetNodePositionInParent(self)
@@ -673,7 +673,7 @@ namespace TreeNode {
       nodeData.value = data as Required<TreeNodeData>
 
       // サブクラスで必要な処理を実行
-      init_sub.value(nodeData.value)
+      init_sub(nodeData.value)
 
       setSelectedImpl(nodeData.value.selected, { initializing: true })
     }
