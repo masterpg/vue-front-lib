@@ -81,15 +81,15 @@ interface StoragePageService {
   getAllTreeNodes(): StorageTreeNode[]
   /**
    * 指定されたパスと一致するツリーノードを取得します。
-   * @param input
+   * @param key
    */
-  getTreeNode(input: StorageNodeGetKeyInput): StorageTreeNode | undefined
+  getTreeNode(key: StorageNodeGetKeyInput): StorageTreeNode | undefined
   /**
    * 指定されたパスと一致するツリーノードを取得します。
    * ツリーノードが存在しない場合は例外がスローされます。
-   * @param input
+   * @param key
    */
-  sgetTreeNode(input: StorageNodeGetKeyInput): StorageTreeNode
+  sgetTreeNode(key: StorageNodeGetKeyInput): StorageTreeNode
   /**
    * ストレージノードを取得します。
    */
@@ -159,20 +159,20 @@ interface StoragePageService {
   /**
    * ストレージノードの初回読み込みを行います。
    * 指定されたディレクトリを基準にその祖先と直下の子ノードがサーバーから読み込まれます。
-   * @param input
+   * @param key
    */
-  fetchInitialStorage(input: StorageNodeGetKeyInput): Promise<void>
+  fetchInitialStorage(key: StorageNodeGetKeyInput): Promise<void>
   /**
    * 指定されたディレクトリ直下の子ノードをサーバーから読み込みます。
-   * @param input
+   * @param key
    */
-  fetchStorageChildren: (input: StorageNodeGetUnderInput) => Promise<void>
+  fetchStorageChildren: (key: StorageNodeGetUnderInput) => Promise<void>
   /**
    * 指定されたディレクトリの再読み込みを行います。
-   * @param input
+   * @param key
    * @param options
    */
-  reloadStorageDir(input: StorageNodeGetKeyInput, options?: { deep: boolean }): Promise<void>
+  reloadStorageDir(key: StorageNodeGetKeyInput, options?: { deep: boolean }): Promise<void>
   /**
    * ディレクトリの作成を行います。
    * @param dirPath 作成するディレクトリのパス
@@ -287,9 +287,9 @@ interface StoragePageService {
   getDisplayNodeName(node: Pick<StorageNode, 'path' | 'name' | 'article'>): string
   /**
    * ノードの表示用パスを取得します。
-   * @param input
+   * @param key
    */
-  getDisplayNodePath(input: StorageNodeGetKeyInput): string
+  getDisplayNodePath(key: StorageNodeGetKeyInput): string
   /**
    * ノードのアイコンを取得します。
    * @param node
@@ -307,49 +307,49 @@ interface StoragePageService {
   getNodeTypeLabel(node: { nodeType: StorageNodeType; article?: DeepPartial<StorageArticleSettings> }): string
   /**
    * 指定されたノードが記事ルートの配下ノードか否かを取得します。
-   * @param input
+   * @param key
    */
-  isArticleRootUnder(input: StorageNodeGetKeyInput): boolean
+  isArticleRootUnder(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢アセットディレクトリ｣か否かを取得します。
-   * @param input
+   * @param key
    */
-  isAssetsDir(input: StorageNodeGetKeyInput): boolean
+  isAssetsDir(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢リストバンドル｣か否かを取得します。
-   * @param input
+   * @param key
    */
-  isListBundle(input: StorageNodeGetKeyInput): boolean
+  isListBundle(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢ツリーバンドル｣か否かを取得します。
-   * @param input
+   * @param key
    */
-  isTreeBundle(input: StorageNodeGetKeyInput): boolean
+  isTreeBundle(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢カテゴリディレクトリ｣か否かを取得します。
-   * @param input
+   * @param key
    */
-  isCategoryDir(input: StorageNodeGetKeyInput): boolean
+  isCategoryDir(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢記事ディレクトリ｣か否かを取得します。
-   * @param input
+   * @param key
    */
-  isArticleDir(input: StorageNodeGetKeyInput): boolean
+  isArticleDir(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢記事ディレクトリ｣配下のノードか否かを取得します。
-   * @param input
+   * @param key
    */
-  isArticleDirUnder(input: StorageNodeGetKeyInput): boolean
+  isArticleDirUnder(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢記事マスターソース｣か否かを取得します。
-   * @param input
+   * @param key
    */
-  isArticleMasterSrc(input: StorageNodeGetKeyInput): boolean
+  isArticleMasterSrc(key: StorageNodeGetKeyInput): boolean
   /**
    * 指定されたノードが｢記事下書きソース｣か否かを取得します。
-   * @param input
+   * @param key
    */
-  isArticleDraftSrc(input: StorageNodeGetKeyInput): boolean
+  isArticleDraftSrc(key: StorageNodeGetKeyInput): boolean
   /**
    * 記事の下書きソースをローカルストレージから取得します。
    * @param draftNodeId 下書きファイルノードのID
@@ -512,47 +512,47 @@ namespace StoragePageService {
       return getTreeView().getAllNodes()
     }
 
-    const getTreeNode: StoragePageService['getTreeNode'] = input => {
-      if (typeof input.id === 'string') {
+    const getTreeNode: StoragePageService['getTreeNode'] = key => {
+      if (typeof key.id === 'string') {
         const allTreeNodes = getTreeView().getAllNodes()
         for (const treeNode of allTreeNodes) {
-          if (treeNode.id === input.id) return treeNode
+          if (treeNode.id === key.id) return treeNode
         }
       }
 
-      if (typeof input.path === 'string') {
-        const treeNode = getTreeView().getNode(input.path)
+      if (typeof key.path === 'string') {
+        const treeNode = getTreeView().getNode(key.path)
         if (treeNode) return treeNode
       }
 
       return undefined
     }
 
-    const sgetTreeNode: StoragePageService['sgetTreeNode'] = input => {
-      const treeNode = getTreeNode(input)
+    const sgetTreeNode: StoragePageService['sgetTreeNode'] = key => {
+      const treeNode = getTreeNode(key)
       if (!treeNode) {
-        throw new Error(`The specified tree node was not found: ${JSON.stringify(input)}`)
+        throw new Error(`The specified tree node was not found: ${JSON.stringify(key)}`)
       }
       return treeNode
     }
 
-    const getStorageNode: StoragePageService['getStorageNode'] = input => {
-      return storageService.getNode(input)
+    const getStorageNode: StoragePageService['getStorageNode'] = key => {
+      return storageService.getNode(key)
     }
 
-    const sgetStorageNode: StoragePageService['sgetStorageNode'] = input => {
-      return storageService.sgetNode(input)
+    const sgetStorageNode: StoragePageService['sgetStorageNode'] = key => {
+      return storageService.sgetNode(key)
     }
 
-    const getStorageDescendants: StoragePageService['getStorageDescendants'] = input => {
-      return storageService.getDescendants(input)
+    const getStorageDescendants: StoragePageService['getStorageDescendants'] = key => {
+      return storageService.getDescendants(key)
     }
 
-    const getStorageChildren: StoragePageService['getStorageChildren'] = input => {
-      return storageService.getChildren(input)
+    const getStorageChildren: StoragePageService['getStorageChildren'] = key => {
+      return storageService.getChildren(key)
     }
 
-    const fetchInitialStorage: StoragePageService['fetchInitialStorage'] = async input => {
+    const fetchInitialStorage: StoragePageService['fetchInitialStorage'] = async key => {
       if (!treeViewRef.value) return
       if (!isSignedIn.value) return
 
@@ -564,15 +564,15 @@ namespace StoragePageService {
       getRootTreeNode().lazyLoadStatus = 'loading'
 
       // 引数をノードパスへ変換
-      const targetNodePath = await (async (input: StorageNodeGetKeyInput) => {
-        let path = removeBothEndsSlash(input.path)
-        if (input.id) {
-          let node = storageService.getNode({ id: input.id })
-          !node && (node = await storageService.fetchNode({ id: input.id }))
+      const targetNodePath = await (async (key: StorageNodeGetKeyInput) => {
+        let path = removeBothEndsSlash(key.path)
+        if (key.id) {
+          let node = storageService.getNode({ id: key.id })
+          !node && (node = await storageService.fetchNode({ id: key.id }))
           node && (path = node.path)
         }
         return path
-      })(input)
+      })(key)
 
       // ノードパスを階層的に分割
       const hierarchicalPaths = splitHierarchicalPaths(targetNodePath)
@@ -624,15 +624,15 @@ namespace StoragePageService {
       store.isFetchedInitialStorage.value = true
     }
 
-    const fetchStorageChildren: StoragePageService['fetchStorageChildren'] = async input => {
-      const storeChildDirNodes = await storageService.fetchChildren(input)
+    const fetchStorageChildren: StoragePageService['fetchStorageChildren'] = async key => {
+      const storeChildDirNodes = await storageService.fetchChildren(key)
 
       // ストアのノードをツリービューに反映
       setTreeNodes(storeChildDirNodes)
 
-      const dirTreeNode = getTreeNode(input)
+      const dirTreeNode = getTreeNode(key)
       if (!dirTreeNode) {
-        throw new Error(`The specified node was not found: ${JSON.stringify(input)}`)
+        throw new Error(`The specified node was not found: ${JSON.stringify(key)}`)
       }
 
       // ストアにないがツリーには存在するノードをツリーから削除
@@ -643,8 +643,8 @@ namespace StoragePageService {
       dirTreeNode.lazyLoadStatus = 'loaded'
     }
 
-    const reloadStorageDir = extendedMethod<StoragePageService['reloadStorageDir']>(async (input, options) => {
-      const { path: dirPath } = sgetTreeNode(input)
+    const reloadStorageDir = extendedMethod<StoragePageService['reloadStorageDir']>(async (key, options) => {
+      const { path: dirPath } = sgetTreeNode(key)
       const deep = options?.deep ?? false
 
       // 引数ディレクトリを遅延ロード中に設定
@@ -1344,8 +1344,8 @@ namespace StoragePageService {
       return node.article?.dir?.name || node.name
     }
 
-    const getDisplayNodePath: StoragePageService['getDisplayNodePath'] = input => {
-      const node = storageService.getNode(input)
+    const getDisplayNodePath: StoragePageService['getDisplayNodePath'] = key => {
+      const node = storageService.getNode(key)
       if (!node) return ''
 
       const hierarchicalNodes = storageService.getHierarchicalNodes(node.path)
@@ -1392,45 +1392,45 @@ namespace StoragePageService {
       }
     }
 
-    const isArticleRootUnder: StoragePageService['isArticleRootUnder'] = input => {
-      const node = storageService.getNode(input)
+    const isArticleRootUnder: StoragePageService['isArticleRootUnder'] = key => {
+      const node = storageService.getNode(key)
       if (!node) return false
       return StorageUtil.isArticleRootUnder(storageService.toFullPath(node.path))
     }
 
-    const isAssetsDir: StoragePageService['isAssetsDir'] = input => {
+    const isAssetsDir: StoragePageService['isAssetsDir'] = key => {
       if (storageType !== 'article') return false
-      const node = storageService.getNode(input)
+      const node = storageService.getNode(key)
       if (!node) return false
 
       return node.path === config.storage.article.assetsName
     }
 
-    const isListBundle: StoragePageService['isListBundle'] = input => {
-      const node = storageService.getNode(input)
+    const isListBundle: StoragePageService['isListBundle'] = key => {
+      const node = storageService.getNode(key)
       if (!node) return false
       return node.article?.dir?.type === 'ListBundle'
     }
 
-    const isTreeBundle: StoragePageService['isTreeBundle'] = input => {
-      const node = storageService.getNode(input)
+    const isTreeBundle: StoragePageService['isTreeBundle'] = key => {
+      const node = storageService.getNode(key)
       if (!node) return false
       return node.article?.dir?.type === 'TreeBundle'
     }
 
-    const isCategoryDir: StoragePageService['isCategoryDir'] = input => {
-      const node = storageService.getNode(input)
+    const isCategoryDir: StoragePageService['isCategoryDir'] = key => {
+      const node = storageService.getNode(key)
       if (!node) return false
       return node.article?.dir?.type === 'Category'
     }
 
-    const isArticleDir: StoragePageService['isArticleDir'] = input => {
-      const node = storageService.getNode(input)
+    const isArticleDir: StoragePageService['isArticleDir'] = key => {
+      const node = storageService.getNode(key)
       if (!node) return false
       return node.article?.dir?.type === 'Article'
     }
 
-    const isArticleDirUnder: StoragePageService['isArticleDirUnder'] = input => {
+    const isArticleDirUnder: StoragePageService['isArticleDirUnder'] = key => {
       function existsArticle(nodePath: string): boolean {
         const parentPath = removeStartDirChars(_path.dirname(nodePath))
         if (!parentPath) return false
@@ -1444,7 +1444,7 @@ namespace StoragePageService {
         }
       }
 
-      const node = storageService.getNode(input)
+      const node = storageService.getNode(key)
       if (!node) return false
 
       const parentPath = removeStartDirChars(_path.dirname(node.path))
@@ -1453,14 +1453,14 @@ namespace StoragePageService {
       return existsArticle(node.path)
     }
 
-    const isArticleMasterSrc: StoragePageService['isArticleMasterSrc'] = input => {
-      const node = storageService.getNode(input)
+    const isArticleMasterSrc: StoragePageService['isArticleMasterSrc'] = key => {
+      const node = storageService.getNode(key)
       if (!node) return false
       return node.article?.file?.type === 'Master'
     }
 
-    const isArticleDraftSrc: StoragePageService['isArticleDraftSrc'] = input => {
-      const node = storageService.getNode(input)
+    const isArticleDraftSrc: StoragePageService['isArticleDraftSrc'] = key => {
+      const node = storageService.getNode(key)
       if (!node) return false
       return node.article?.file?.type === 'Draft'
     }

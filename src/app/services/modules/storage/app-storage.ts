@@ -197,8 +197,8 @@ namespace AppStorageService {
       return toBasePathNode(stores.storage.get({ id, path }))
     }
 
-    const getNodes: AppStorageService['getNodes'] = input => {
-      const nodes = stores.storage.getList(input)
+    const getNodes: AppStorageService['getNodes'] = key => {
+      const nodes = stores.storage.getList(key)
       return toBasePathNodes(nodes)
     }
 
@@ -275,15 +275,15 @@ namespace AppStorageService {
       // アプリケーションストレージの場合、特にすることはない
     })
 
-    const fetchNode: AppStorageService['fetchNode'] = async input => {
-      if (!input.id && !removeBothEndsSlash(input.path)) {
+    const fetchNode: AppStorageService['fetchNode'] = async key => {
+      if (!key.id && !removeBothEndsSlash(key.path)) {
         return undefined
       }
 
       // APIからノードを取得
       const fullInput: StorageNodeGetKeyInput = {}
-      input.id && (fullInput.id = input.id)
-      input.path && (fullInput.path = toFullPath(input.path))
+      key.id && (fullInput.id = key.id)
+      key.path && (fullInput.path = toFullPath(key.path))
       const apiNode = await getNodeAPI(fullInput)
 
       let result: StorageNode | undefined
@@ -302,12 +302,12 @@ namespace AppStorageService {
       return toBasePathNode(result)
     }
 
-    const fetchNodes: AppStorageService['fetchNodes'] = async input => {
+    const fetchNodes: AppStorageService['fetchNodes'] = async keys => {
       // APIノードをストアへ反映
       const fullInput: StorageNodeGetKeysInput = {}
-      input.ids && (fullInput.ids = input.ids)
-      if (input.paths) {
-        fullInput.paths = input.paths.filter(path => Boolean(removeBothEndsSlash(path))).map(path => toFullPath(path))
+      keys.ids && (fullInput.ids = keys.ids)
+      if (keys.paths) {
+        fullInput.paths = keys.paths.filter(path => Boolean(removeBothEndsSlash(path))).map(path => toFullPath(path))
       }
       const apiNodes = await getNodesAPI(fullInput)
       const result = setAPINodesToStore(apiNodes)
@@ -357,16 +357,16 @@ namespace AppStorageService {
       return toBasePathNodes(result)
     }
 
-    const fetchDescendants: AppStorageService['fetchDescendants'] = async input => {
-      if (!input.id && typeof input.path !== 'string') {
+    const fetchDescendants: AppStorageService['fetchDescendants'] = async key => {
+      if (!key.id && typeof key.path !== 'string') {
         throw new Error(`Either 'id' or 'path' must be specified.`)
       }
 
       // APIノードをストアへ反映
       const fullInput: StorageNodeGetUnderInput = {}
-      input.id && (fullInput.id = input.id)
-      typeof input.path === 'string' && (fullInput.path = toFullPath(input.path))
-      typeof input.includeBase === 'boolean' && (fullInput.includeBase = input.includeBase)
+      key.id && (fullInput.id = key.id)
+      typeof key.path === 'string' && (fullInput.path = toFullPath(key.path))
+      typeof key.includeBase === 'boolean' && (fullInput.includeBase = key.includeBase)
       const apiNodes = await getDescendantsAPI(fullInput)
       const result = setAPINodesToStore(apiNodes)
       // APIノードにないストアノードを削除
@@ -375,16 +375,16 @@ namespace AppStorageService {
       return toBasePathNodes(result)
     }
 
-    const fetchChildren: AppStorageService['fetchChildren'] = async input => {
-      if (!input.id && typeof input.path !== 'string') {
+    const fetchChildren: AppStorageService['fetchChildren'] = async key => {
+      if (!key.id && typeof key.path !== 'string') {
         throw new Error(`Either 'id' or 'path' must be specified.`)
       }
 
       // APIノードをストアへ反映
       const fullInput: StorageNodeGetUnderInput = {}
-      input.id && (fullInput.id = input.id)
-      typeof input.path === 'string' && (fullInput.path = toFullPath(input.path))
-      typeof input.includeBase === 'boolean' && (fullInput.includeBase = input.includeBase)
+      key.id && (fullInput.id = key.id)
+      typeof key.path === 'string' && (fullInput.path = toFullPath(key.path))
+      typeof key.includeBase === 'boolean' && (fullInput.includeBase = key.includeBase)
       const apiNodes = await getChildrenAPI(fullInput)
       const result = setAPINodesToStore(apiNodes)
       // APIノードにないストアノードを削除

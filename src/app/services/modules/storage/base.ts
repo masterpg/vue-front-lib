@@ -31,30 +31,30 @@ interface StorageService {
   getAllNodes(): StorageNode[]
   /**
    * 指定ノードをストアから取得します。
-   * @param input
+   * @param key
    */
-  getNode(input: StorageNodeGetKeyInput): StorageNode | undefined
+  getNode(key: StorageNodeGetKeyInput): StorageNode | undefined
   /**
    * 指定されたノードリストを取得します。
-   * @param input
+   * @param keys
    */
-  getNodes(input: StorageNodeGetKeysInput): StorageNode[]
+  getNodes(keys: StorageNodeGetKeysInput): StorageNode[]
   /**
    * 指定ノードをストアから取得します。
    * ノードが存在しない場合は例外がスローされます。
-   * @param input
+   * @param key
    */
-  sgetNode(input: StorageNodeGetKeyInput): StorageNode
+  sgetNode(key: StorageNodeGetKeyInput): StorageNode
   /**
    * 指定ディレクトリとその配下のノードをストアから取得します。
-   * @param input
+   * @param key
    */
-  getDescendants(input: StorageNodeGetUnderInput): StorageNode[]
+  getDescendants(key: StorageNodeGetUnderInput): StorageNode[]
   /**
    * 指定ディレクトリとその直下のノードをストアから取得します。
-   * @param input
+   * @param key
    */
-  getChildren(input: StorageNodeGetUnderInput): StorageNode[]
+  getChildren(key: StorageNodeGetUnderInput): StorageNode[]
   /**
    * 指定ノードとその階層を構成するディレクトリをストアから取得します。
    * 戻り値で取得される階層構造のトップは、ベースパスルート直下のディレクトリとなります。
@@ -77,14 +77,14 @@ interface StorageService {
   fetchRoot(): Promise<void>
   /**
    * 指定されたノードを取得します。
-   * @param input
+   * @param key
    */
-  fetchNode(input: StorageNodeGetKeyInput): Promise<StorageNode | undefined>
+  fetchNode(key: StorageNodeGetKeyInput): Promise<StorageNode | undefined>
   /**
    * 指定されたノードを取得します。
-   * @param input
+   * @param keys
    */
-  fetchNodes(input: StorageNodeGetKeysInput): Promise<StorageNode[]>
+  fetchNodes(keys: StorageNodeGetKeysInput): Promise<StorageNode[]>
   /**
    * 指定ノードとその階層を構成するディレクトリをサーバーから取得します。
    * 戻り値で返される最上位のノードは、ベースパスルート直下のディレクトリとなります。
@@ -107,16 +107,16 @@ interface StorageService {
   fetchAncestorDirs(nodePath: string): Promise<StorageNode[]>
   /**
    * 指定ディレクトリとその配下のノードをサーバーから取得し、ストアに格納します。
-   * @param input
+   * @param key
    * - path: 空文字が指定された場合、ベースパスルート配下のノードを取得します。
    */
-  fetchDescendants(input: StorageNodeGetUnderInput): Promise<StorageNode[]>
+  fetchDescendants(key: StorageNodeGetUnderInput): Promise<StorageNode[]>
   /**
    * 指定ディレクトリとその直下のノードをサーバーから取得し、ストアに格納します。
-   * @param input
+   * @param key
    * - path: 空文字が指定された場合、ベースパスルート直下のノードを取得します。
    */
-  fetchChildren(input: StorageNodeGetUnderInput): Promise<StorageNode[]>
+  fetchChildren(key: StorageNodeGetUnderInput): Promise<StorageNode[]>
   /**
    * 指定ディレクトリとその階層を構成するディレクトリ、さらに指定ディレクトリ配下のノードを取得し、
    * ストアに格納します。
@@ -220,15 +220,15 @@ interface StorageService {
   setFileShareSettings(filePath: string, input: StorageNodeShareSettingsInput): Promise<StorageNode>
   /**
    * ファイルアップロードの後に必要な処理を行います。
-   * @param input
+   * @param key
    */
-  handleUploadedFile(input: StorageNodeKeyInput): Promise<StorageNode>
+  handleUploadedFile(key: StorageNodeKeyInput): Promise<StorageNode>
   /**
    * Cloud Storageのセキュリティルールを通過させるため、
    * ユーザークレイムにファイルアクセス権限を設定します。
-   * @param input
+   * @param key
    */
-  setFileAccessAuthClaims(input: StorageNodeKeyInput): Promise<void>
+  setFileAccessAuthClaims(key: StorageNodeKeyInput): Promise<void>
   /**
    * Cloud Storageのセキュリティルールを通過させるために
    * ユーザークレイムに設定されていたファイルアクセス権限を削除します。

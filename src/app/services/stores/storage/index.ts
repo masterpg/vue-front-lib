@@ -12,13 +12,13 @@ import _path from 'path'
 interface StorageStore {
   readonly all: ComputedRef<DeepReadonly<StorageNode>[]>
 
-  get(input: StorageNodeGetKeyInput): StorageNode | undefined
+  get(key: StorageNodeGetKeyInput): StorageNode | undefined
 
-  getList(input: StorageNodeGetKeysInput): StorageNode[]
+  getList(keys: StorageNodeGetKeysInput): StorageNode[]
 
-  getDescendants(input: StorageNodeGetUnderInput): StorageNode[]
+  getDescendants(key: StorageNodeGetUnderInput): StorageNode[]
 
-  getChildren(input: StorageNodeGetUnderInput): StorageNode[]
+  getChildren(key: StorageNodeGetUnderInput): StorageNode[]
 
   getHierarchical(targetPath: string): StorageNode[]
 
@@ -34,9 +34,9 @@ interface StorageStore {
 
   setAll(nodes: StorageNode[]): void
 
-  remove(input: { id?: string; path?: string }): StorageNode[]
+  remove(key: StorageNodeGetKeyInput): StorageNode[]
 
-  removeList(input: { ids?: string[]; paths?: string[] }): StorageNode[]
+  removeList(keys: StorageNodeGetKeysInput): StorageNode[]
 
   removeAll(): StorageNode[]
 
@@ -96,12 +96,12 @@ namespace StorageStore {
     //
     //----------------------------------------------------------------------
 
-    const get: StorageStore['get'] = input => {
-      const stateNode = getStateNode(input)
+    const get: StorageStore['get'] = key => {
+      const stateNode = getStateNode(key)
       return StorageNode.clone(stateNode)
     }
 
-    const getList: StorageStore['getList'] = input => {
+    const getList: StorageStore['getList'] = keys => {
       const idDict: { [id: string]: StorageNode } = {}
       const pathDict: { [path: string]: StorageNode } = {}
       all.value.forEach(node => {
@@ -110,23 +110,23 @@ namespace StorageStore {
       })
 
       const stateNodes: StorageNode[] = []
-      ;(input.ids ?? []).forEach(id => {
+      ;(keys.ids ?? []).forEach(id => {
         idDict[id] && stateNodes.push(idDict[id])
       })
-      ;(input.paths ?? []).forEach(path => {
+      ;(keys.paths ?? []).forEach(path => {
         pathDict[path] && stateNodes.push(pathDict[path])
       })
 
       return StorageNode.clone(stateNodes)
     }
 
-    const getDescendants: StorageStore['getDescendants'] = input => {
-      const descendants = getStateDescendants(input)
+    const getDescendants: StorageStore['getDescendants'] = key => {
+      const descendants = getStateDescendants(key)
       return descendants.map(descendant => StorageNode.clone(descendant))
     }
 
-    const getChildren: StorageStore['getChildren'] = input => {
-      const children = getStateChildren(input)
+    const getChildren: StorageStore['getChildren'] = key => {
+      const children = getStateChildren(key)
       return children.map(child => StorageNode.clone(child))
     }
 
@@ -187,8 +187,8 @@ namespace StorageStore {
       return nodes.map(node => add(node))
     }
 
-    const remove: StorageStore['remove'] = input => {
-      const stateNode = getStateNode(input)
+    const remove: StorageStore['remove'] = key => {
+      const stateNode = getStateNode(key)
       if (!stateNode) return []
 
       const result: StorageNode[] = []
@@ -202,18 +202,18 @@ namespace StorageStore {
       return StorageNode.clone(result)
     }
 
-    const removeList: StorageStore['removeList'] = input => {
-      if (!input.ids && !input.paths) {
+    const removeList: StorageStore['removeList'] = keys => {
+      if (!keys.ids && !keys.paths) {
         throw new Error(`Either 'ids' or 'paths' must be specified.`)
       }
 
       const result: StorageNode[] = []
-      if (input.ids) {
-        for (const id of input.ids) {
+      if (keys.ids) {
+        for (const id of keys.ids) {
           result.push(...remove({ id }))
         }
-      } else if (input.paths) {
-        for (const path of input.paths) {
+      } else if (keys.paths) {
+        for (const path of keys.paths) {
           result.push(...remove({ path }))
         }
       }
@@ -306,21 +306,21 @@ namespace StorageStore {
       return undefined
     }
 
-    function getStateDescendants(input: StorageNodeGetUnderInput): StorageNode[] {
-      if (!input.id && typeof input.path !== 'string') {
+    function getStateDescendants(key: StorageNodeGetUnderInput): StorageNode[] {
+      if (!key.id && typeof key.path !== 'string') {
         throw new Error(`Either 'id' or 'path' must be specified.`)
       }
 
-      let path = removeBothEndsSlash(input.path)
-      if (input.id) {
-        const node = getStateNode({ id: input.id })
+      let path = removeBothEndsSlash(key.path)
+      if (key.id) {
+        const node = getStateNode({ id: key.id })
         node && (path = node.path)
       }
       if (path === '') return state.all
 
       const result: StorageNode[] = []
       for (const node of state.all) {
-        if (input.includeBase && node.path === path) {
+        if (key.includeBase && node.path === path) {
           result.push(node)
           continue
         }
@@ -331,20 +331,20 @@ namespace StorageStore {
       return result
     }
 
-    function getStateChildren(input: StorageNodeGetUnderInput): StorageNode[] {
-      if (!input.id && typeof input.path !== 'string') {
+    function getStateChildren(key: StorageNodeGetUnderInput): StorageNode[] {
+      if (!key.id && typeof key.path !== 'string') {
         throw new Error(`Either 'id' or 'path' must be specified.`)
       }
 
-      let path = removeBothEndsSlash(input.path)
-      if (input.id) {
-        const node = getStateNode({ id: input.id })
+      let path = removeBothEndsSlash(key.path)
+      if (key.id) {
+        const node = getStateNode({ id: key.id })
         node && (path = node.path)
       }
 
       const result: StorageNode[] = []
       for (const node of state.all) {
-        if (input.includeBase && node.path === path) {
+        if (key.includeBase && node.path === path) {
           result.push(node)
           continue
         }
@@ -355,20 +355,20 @@ namespace StorageStore {
       return result
     }
 
-    function removeSpecifiedNode(input: { id?: string; path?: string }): StorageNode | undefined {
-      if (!input.id && !input.path) {
+    function removeSpecifiedNode(key: StorageNodeGetKeyInput): StorageNode | undefined {
+      if (!key.id && !key.path) {
         throw new Error(`Either 'id' or 'path' must be specified.`)
       }
 
       for (let i = 0; i < state.all.length; i++) {
         const node = state.all[i]
-        if (typeof input.id === 'string') {
-          if (node.id === input.id) {
+        if (typeof key.id === 'string') {
+          if (node.id === key.id) {
             state.all.splice(i--, 1)
             return node
           }
-        } else if (typeof input.path === 'string') {
-          if (node.path === input.path) {
+        } else if (typeof key.path === 'string') {
+          if (node.path === key.path) {
             state.all.splice(i--, 1)
             return node
           }
