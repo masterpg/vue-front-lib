@@ -170,10 +170,10 @@ namespace ArticleStoragePage {
       //
       //----------------------------------------------------------------------
 
-      base.changeDir.value = nodePath => {
-        base.changeDir.super(nodePath)
+      base.changePageNode.value = key => {
+        base.changePageNode.super(key)
 
-        const node = pageService.getTreeNode({ path: nodePath }) ?? pageService.getRootTreeNode()
+        const node = pageService.getTreeNode(key) ?? pageService.getRootTreeNode()
         switch (node.nodeType) {
           case 'Dir': {
             // ディレクトリビューを表示
@@ -227,30 +227,30 @@ namespace ArticleStoragePage {
         if (selectedNode.nodeType === 'File') {
           // 選択ノードが｢記事ソースファイル｣の場合
           if (selectedNode.article?.file?.type === 'Master') {
-            // 選択ノードのパスをURLに付与
+            // 選択ノードのIDをURLに付与
             // ※記事編集ビューが表示されることになる
-            base.changeDirOnPage(selectedNode.path)
+            await base.changeRouteNode(selectedNode)
           } else {
             // ファイル詳細ビューの表示
             base.showNodeDetail(selectedNode.path)
             // ツリーのファイルノードは選択状態にはしない
             // ※この時点ではファイルノードが選択されてしまっているので、
             //   前に選択されていたノードに選択を戻している
-            oldSelectedNode && pageService.setSelectedTreeNode(oldSelectedNode.path, true, true)
+            oldSelectedNode && pageService.setSelectedTreeNode(oldSelectedNode, true, true)
           }
         }
         // 選択ノードが上記以外の場合
         else {
-          // 選択ノードのパスをURLに付与
-          base.changeDirOnPage(selectedNode.path)
+          // 選択ノードのIDをURLに付与
+          await base.changeRouteNode(selectedNode)
         }
 
         // 選択ノードまでスクロールするフラグが立っている場合
         if (base.needScrollToSelectedNode.value) {
           // 選択されたノードの祖先を展開（アニメーションなし）
-          base.openAncestorNodes(selectedNode.path, false)
+          base.openAncestorNodes(selectedNode, false)
           // 選択ノードの位置までスクロールする
-          base.scrollToSelectedNode(selectedNode.path, true)
+          base.scrollToSelectedNode(selectedNode, true)
 
           base.needScrollToSelectedNode.value = false
         }

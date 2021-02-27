@@ -47,8 +47,8 @@ interface UserRoute<T extends UserRouteParams = UserRouteParams> extends Route<T
 type UserRouteParams = { [UserNameProp]: string } & Dictionary<string>
 
 interface StorageRoute<T extends UserRouteParams = UserRouteParams> extends Route<T> {
-  move(nodePath: string): Promise<boolean>
-  getNodePath(): string
+  move(nodeId: string): Promise<boolean>
+  getNodeId(): string
 }
 
 interface Routes {
@@ -231,10 +231,10 @@ namespace StorageRoute {
   }): StorageRoute<T> & RawRoute {
     const base = Route.newRawInstance<T>(input)
 
-    const move: StorageRoute['move'] = async nodePath => {
+    const move: StorageRoute['move'] = async nodeId => {
       const router = RouterContainer.useRouter()
       const currentRoutePath = removeEndSlash(router.currentRoute.path)
-      const nextPath = removeEndSlash(_path.join(base.path.value, nodePath))
+      const nextPath = removeEndSlash(_path.join(base.path.value, nodeId))
       if (currentRoutePath === nextPath) {
         return false
       }
@@ -243,17 +243,17 @@ namespace StorageRoute {
       return true
     }
 
-    const getNodePath: StorageRoute['getNodePath'] = () => {
+    const getNodeId: StorageRoute['getNodeId'] = () => {
       const router = RouterContainer.useRouter()
       if (!base.isCurrent) return ''
 
-      return router.currentRoute.params.nodePath ?? ''
+      return router.currentRoute.params.nodeId ?? ''
     }
 
     base.toRouteConfig.value = () => {
       return {
         // https://github.com/pillarjs/path-to-regexp/tree/v1.7.0#zero-or-more
-        path: `${base.routePath.value}/:nodePath*`,
+        path: `${base.routePath.value}/:nodeId*`,
         component: base.component.value,
       }
     }
@@ -261,7 +261,7 @@ namespace StorageRoute {
     return {
       ...base,
       move,
-      getNodePath,
+      getNodeId,
     }
   }
 }

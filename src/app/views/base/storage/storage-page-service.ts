@@ -66,11 +66,11 @@ interface StoragePageService {
   selectedTreeNode: WritableComputedRef<StorageTreeNode>
   /**
    * 指定されたノードの選択状態を設定します。
-   * @param value ノードを特定するための値を指定
+   * @param key ノードを特定するためのキーを指定
    * @param selected 選択状態を指定
    * @param silent 選択イベントを発火したくない場合はtrueを指定
    */
-  setSelectedTreeNode(value: string, selected: boolean, silent: boolean): void
+  setSelectedTreeNode(key: StorageNodeGetKeyInput, selected: boolean, silent: boolean): void
   /**
    * ツリービューのルートノードです。
    */
@@ -372,7 +372,7 @@ interface StoragePageService {
 
 interface StoragePageStore {
   isFetchedInitialStorage: Ref<boolean>
-  selectedTreeNodePath: Ref<string>
+  selectedTreeNodeId: Ref<string>
 }
 
 //========================================================================
@@ -482,13 +482,16 @@ namespace StoragePageService {
         if (current.path !== node?.path) {
           getTreeView().selectedNode = node
         }
-        store.selectedTreeNodePath.value = node.path
+        store.selectedTreeNodeId.value = node.id
       },
     })
 
-    const setSelectedTreeNode: StoragePageService['setSelectedTreeNode'] = (value, selected, silent) => {
-      getTreeView().setSelectedNode(value, selected, silent)
-      store.selectedTreeNodePath.value = value
+    const setSelectedTreeNode: StoragePageService['setSelectedTreeNode'] = (key, selected, silent) => {
+      const targetNode = getTreeNode(key)
+      if (targetNode) {
+        targetNode.setSelected(selected, silent)
+        store.selectedTreeNodeId.value = targetNode.id
+      }
     }
 
     //----------------------------------------------------------------------
@@ -1270,7 +1273,7 @@ namespace StoragePageService {
     const clear: StoragePageService['clear'] = () => {
       // 表示中のルートノード配下全ノードを削除し、ルートノードを選択ノードにする
       getRootTreeNode().removeAllChildren()
-      setSelectedTreeNode(getRootTreeNode().path, true, true)
+      getRootTreeNode().setSelected(true, true)
       // ページストアをクリア
       store.clear()
     }
@@ -1666,11 +1669,11 @@ namespace StoragePageStore {
 
     const isFetchedInitialStorage = ref(false) as Ref<boolean>
 
-    const selectedTreeNodePath = ref('') as Ref<string>
+    const selectedTreeNodeId = ref('') as Ref<string>
 
     function clear(): void {
       isFetchedInitialStorage.value = false
-      selectedTreeNodePath.value = ''
+      selectedTreeNodeId.value = ''
     }
 
     services.auth.watchSignInStatus(newValue => {
@@ -1679,7 +1682,7 @@ namespace StoragePageStore {
 
     return {
       isFetchedInitialStorage,
-      selectedTreeNodePath,
+      selectedTreeNodeId,
       clear,
     }
   }

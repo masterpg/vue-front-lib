@@ -1,4 +1,4 @@
-import { CreateArticleTypeDirInput, StorageNode, StorageNodeShareSettings, StorageType } from '@/app/services'
+import { CreateArticleTypeDirInput, StorageNode, StorageNodeGetKeyInput, StorageNodeShareSettings, StorageType } from '@/app/services'
 import { Loading, QSplitter, Screen } from 'quasar'
 import { SetupContext, computed, onMounted, onUnmounted, reactive, ref, watch } from '@vue/composition-api'
 import { StorageNodeActionEvent, StorageTreeNodeData } from '@/app/views/base/storage/base'
@@ -152,40 +152,35 @@ namespace StoragePage {
      */
     async function fetchInitialNodes(): Promise<void> {
       dirView.value!.loading = true
-      const { selectedTreeNodePath, isFetchedInitialStorage } = pageService.store
+      const { selectedTreeNodeId } = pageService.store
 
       // 現在の選択ノードを取得
-      // ※URLから取得したディレクトリまたは現在の選択ノード
-      const dirPath = pageService.route.getNodePath() || selectedTreeNodePath.value
+      // ※URLから取得したノードまたは現在の選択ノード
+      const nodeId = pageService.route.getNodeId() || selectedTreeNodeId.value
 
       // 初期ストレージノードの読み込み
-      await pageService.fetchInitialStorage({ path: dirPath })
-      if (!isFetchedInitialStorage.value) {
-        dirView.value!.loading = false
-        return
-      }
+      await pageService.fetchInitialStorage({ id: nodeId })
 
       // ページの選択ノードを設定
-      await changeDirOnPage(dirPath)
+      await changeRouteNode({ id: nodeId })
       // 選択ノードの位置までスクロールする
-      scrollToSelectedNode(dirPath, false)
+      scrollToSelectedNode({ id: nodeId }, false)
 
       dirView.value!.loading = false
     }
 
     /**
-     * 指定されたノードがディレクトリの場合はそのディレクトリへ移動し、
-     * 指定されたノードがディレクトリ以外の場合は親であるディレクトリへ移動します。
-     * @param nodePath
+     * ページに表示するノードを変更します。
+     * @param key
      */
-    const changeDir = extendedMethod((nodePath: string) => {
-      const selectedNodePath = pageService.getTreeNode({ path: nodePath })?.path ?? pageService.getRootTreeNode().path
+    const changePageNode = extendedMethod((key: StorageNodeGetKeyInput) => {
+      const selectedNodePath = pageService.getTreeNode(key)?.path ?? pageService.getRootTreeNode().path
 
       // ノード詳細ビューを非表示にする
       visibleDirDetailView.value = false
       visibleFileDetailView.value = false
       // 選択ノードを設定
-      pageService.setSelectedTreeNode(selectedNodePath, true, true)
+      pageService.setSelectedTreeNode({ path: selectedNodePath }, true, true)
       // パンくずに選択ノードを設定
       pathDirBreadcrumb.value!.setSelectedNode(selectedNodePath)
       // ディレクトリビューに選択ノードを設定
@@ -193,24 +188,25 @@ namespace StoragePage {
     })
 
     /**
-     * 指定ディレクトリのパスをURLへ付与してディレクトリを移動します。
-     * @param dirPath ディレクトリパス
+     * 指定ノードのIDをURLへ付与し、ページに表示するノードを変更します。
+     * @param key 移動先ノードを指定します。
      */
-    async function changeDirOnPage(dirPath: string): Promise<void> {
-      dirPath = removeBothEndsSlash(dirPath)
+    async function changeRouteNode(key: StorageNodeGetKeyInput): Promise<void> {
+      const specifiedNode = pageService.getTreeNode(key)
+      if (!specifiedNode) return
 
-      const urlDirPath = removeBothEndsSlash(pageService.route.getNodePath())
-      // 移動先が変わらない場合
-      // ※URLから取得したディレクトリと移動先のディレクトリが同じ場合
-      if (urlDirPath === dirPath) {
-        // 指定されたディレクトリをページの選択ノードとして設定
-        changeDir(dirPath)
+      const urlNode = pageService.getTreeNode({ id: pageService.route.getNodeId() })
+      // ページの表示ノードが変わらない場合
+      // ※URLから取得したノードと指定ノードが同じ場合
+      if (urlNode?.path === specifiedNode.path) {
+        // 指定されたノードをページに表示するノードとして設定
+        changePageNode(specifiedNode)
       }
-      // 移動先が変わる場合
+      // ページの表示ノードが変わる場合
       else {
-        // 選択ディレクトリのパスをURLに付与
-        // ※ルーターによって本ページ内のbeforeRouteUpdate()が実行される
-        await pageService.route.move(dirPath)
+        // 指定ノードのIDをURLに付与
+        // ※URL経由でchangePageNode()が呼び出される
+        await pageService.route.move(specifiedNode.id)
       }
     }
 
@@ -224,40 +220,40 @@ namespace StoragePage {
       needScrollToSelectedNode.value = true
       // ツリービューの選択ノードに指定されたディレクトリを設定
       // ※ツリービューのselectイベントが発火され、ディレクトリが切り替わる
-      pageService.setSelectedTreeNode(dirPath, true, false)
+      pageService.setSelectedTreeNode({ path: dirPath }, true, false)
     }
 
     /**
      * 指定されたノードの祖先ノードを展開します。
-     * @param nodePath
+     * @param key
      * @param animate
      */
-    function openAncestorNodes(nodePath: string, animate: boolean): void {
-      const treeNode = pageService.getTreeNode({ path: nodePath })
+    function openAncestorNodes(key: StorageNodeGetKeyInput, animate: boolean): void {
+      const treeNode = pageService.getTreeNode(key)
       if (!treeNode?.parent) return
 
       treeNode.parent.open(animate)
-      openAncestorNodes(treeNode.parent.path, animate)
+      openAncestorNodes(treeNode.parent, animate)
     }
 
     /**
      * 指定されたノードと祖先ノードを展開します。
-     * @param nodePath
+     * @param key
      * @param animate
      */
-    function openAncestorNodesWith(nodePath: string, animate: boolean): void {
-      openAncestorNodes(nodePath, animate)
-      const node = pageService.sgetTreeNode({ path: nodePath })
+    function openAncestorNodesWith(key: StorageNodeGetKeyInput, animate: boolean): void {
+      openAncestorNodes(key, animate)
+      const node = pageService.sgetTreeNode(key)
       node.open(animate)
     }
 
     /**
      * 指定ノードをツリービューの上下中央に位置するようスクロールします。
-     * @param nodePath
+     * @param key
      * @param animate
      */
-    function scrollToSelectedNode(nodePath: string, animate: boolean): void {
-      const treeNode = pageService.getTreeNode({ path: nodePath })
+    function scrollToSelectedNode(key: StorageNodeGetKeyInput, animate: boolean): void {
+      const treeNode = pageService.getTreeNode(key)
       if (!treeNode) return
 
       // 本ページのグローバルな上位置を取得
@@ -326,8 +322,8 @@ namespace StoragePage {
       // ディレクトリの作成を実行
       await pageService.createStorageDir(dirPath)
 
-      // 現在選択されているノードへURL遷移 ※ページ更新
-      await changeDirOnPage(pageService.selectedTreeNode.value.path)
+      // 現在選択されているノードをページの表示ノードに変更 ※URL経由で
+      await changeRouteNode(pageService.selectedTreeNode.value)
 
       Loading.hide()
     }
@@ -343,8 +339,8 @@ namespace StoragePage {
       // ノードの移動を実行
       await pageService.moveStorageNodes(nodePaths, toParentPath)
 
-      // 現在選択されているノードへURL遷移 ※ページ更新
-      await changeDirOnPage(pageService.selectedTreeNode.value.path)
+      // 現在選択されているノードをページの表示ノードに変更 ※URL経由で
+      await changeRouteNode(pageService.selectedTreeNode.value)
 
       Loading.hide()
     }
@@ -360,8 +356,8 @@ namespace StoragePage {
       // ノードのリネームを実行
       await pageService.renameStorageNode(nodePath, newName)
 
-      // 現在選択されているノードへURL遷移
-      await changeDirOnPage(pageService.selectedTreeNode.value.path)
+      // 現在選択されているノードをページの表示ノードに変更 ※URL経由で
+      await changeRouteNode(pageService.selectedTreeNode.value)
 
       Loading.hide()
     }
@@ -377,8 +373,8 @@ namespace StoragePage {
       // ノードの共有設定を実行
       await pageService.setStorageNodeShareSettings(nodePaths, input)
 
-      // 現在選択されているノードへURL遷移 ※ページ更新
-      await changeDirOnPage(pageService.selectedTreeNode.value.path)
+      // 現在選択されているノードをページの表示ノードに変更 ※URL経由で
+      await changeRouteNode(pageService.selectedTreeNode.value)
 
       Loading.hide()
     }
@@ -407,8 +403,8 @@ namespace StoragePage {
       // ノードの移動を実行
       await pageService.removeStorageNodes(nodePaths)
 
-      // 上記で取得したノードへURL遷移
-      await changeDirOnPage(toNodePath)
+      // 上記で取得したノードをページの表示ノードに変更 ※URL経由で
+      await changeRouteNode({ path: toNodePath })
 
       Loading.hide()
     }
@@ -423,8 +419,8 @@ namespace StoragePage {
       // 記事系ディレクトリの作成
       await pageService.createArticleTypeDir(input)
 
-      // 現在選択されているノードへURL遷移 ※ページ更新
-      await changeDirOnPage(pageService.selectedTreeNode.value.path)
+      // 現在選択されているノードをページの表示ノードに変更 ※URL経由で
+      await changeRouteNode(pageService.selectedTreeNode.value)
 
       Loading.hide()
     }
@@ -459,10 +455,10 @@ namespace StoragePage {
       () => ctx.root.$route,
       (newValue, oldValue) => {
         if (!isSignedIn.value || !pageService.route.isCurrent.value) return
-        // URLから選択ノードパスを取得(取得できなかった場合はルートノード)
-        const dirPath = pageService.route.getNodePath()
-        // ページの選択ノードを設定
-        changeDir(dirPath)
+        // URLからノードIDを取得
+        const nodeId = pageService.route.getNodeId()
+        // ページの表示ノードを変更
+        changePageNode({ id: nodeId })
       }
     )
 
@@ -501,8 +497,8 @@ namespace StoragePage {
     async function uploadProgressFloatOnUploadEnds(e: UploadEndedEvent) {
       // アップロードが行われた後のツリーの更新処理
       await pageService.onUploaded(e)
-      // 現在選択されているノードへURL遷移 ※ページ更新
-      await changeDirOnPage(pageService.selectedTreeNode.value.path)
+      // 現在選択されているノードをページの表示ノードに変更 ※URL経由で
+      await changeRouteNode(pageService.selectedTreeNode.value)
     }
 
     /**
@@ -516,7 +512,7 @@ namespace StoragePage {
           await pageService.reloadStorageDir({ path: targetPath })
           // ページの選択ノードを設定
           // ※ディレクトリビューの更新
-          changeDir(pageService.selectedTreeNode.value.path)
+          changePageNode(pageService.selectedTreeNode.value)
           break
         }
         case 'createDir': {
@@ -606,7 +602,7 @@ namespace StoragePage {
       }
 
       // 遅延ロードの対象ノードを展開
-      openAncestorNodesWith(e.node.path, true)
+      openAncestorNodesWith(e.node, true)
 
       dirView.value!.loading = false
     }
@@ -621,15 +617,15 @@ namespace StoragePage {
       // 選択ノードまでスクロールするフラグが立っている場合
       if (needScrollToSelectedNode.value) {
         // 選択されたノードの祖先を展開（アニメーションなし）
-        openAncestorNodes(selectedNode.path, false)
+        openAncestorNodes(selectedNode, false)
         // 選択ノードの位置までスクロールする
-        scrollToSelectedNode(selectedNode.path, true)
+        scrollToSelectedNode(selectedNode, true)
 
         needScrollToSelectedNode.value = false
       }
 
-      // 選択ノードのパスをURLに付与
-      return changeDirOnPage(selectedNode.path)
+      // 選択ノードをページの表示ノードに変更 ※URL経由で
+      return changeRouteNode(selectedNode)
     })
 
     //--------------------------------------------------
@@ -689,8 +685,8 @@ namespace StoragePage {
       visibleFileDetailView,
       splitterModel,
       needScrollToSelectedNode,
-      changeDir,
-      changeDirOnPage,
+      changePageNode,
+      changeRouteNode,
       openAncestorNodes,
       scrollToSelectedNode,
       showNodeDetail,
