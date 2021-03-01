@@ -150,7 +150,7 @@ interface TreeNode<DATA extends TreeNodeData = TreeNodeData> extends Vue {
   /**
    * 親ノードです。
    */
-  readonly parent: this | null
+  readonly parent?: this
   /**
    * 子ノードです。
    */
@@ -189,15 +189,15 @@ interface TreeNode<DATA extends TreeNodeData = TreeNodeData> extends Vue {
   /**
    * 本ノードが所属するツリービューです。
    */
-  readonly treeView: TreeView | null
+  readonly treeView?: TreeView<this, DATA>
   /**
    * 子ノードの並びを決めるソート関数を取得します。
    */
-  getSortFunc<N extends TreeNode = this>(): ChildrenSortFunc<N> | null
+  getSortFunc<N extends TreeNode = this>(): ChildrenSortFunc<N> | undefined
   /**
    * 子ノードの並びを決めるソート関数を設定します。
    */
-  setSortFunc(value: ChildrenSortFunc<this> | null): void
+  setSortFunc(value: ChildrenSortFunc<this> | undefined): void
   /**
    * ルートノードを取得します。
    */
@@ -275,17 +275,17 @@ interface TreeNode<DATA extends TreeNodeData = TreeNodeData> extends Vue {
 }
 
 interface TreeNodeImpl<DATA extends TreeNodeData = TreeNodeData> extends TreeNode<DATA> {
-  parent: this | null
+  parent?: this
   isEldest: boolean
-  treeView: TreeViewImpl | null
+  treeView?: TreeViewImpl<this, DATA>
   readonly el: HTMLElement
   readonly childContainer: HTMLElement
-  readonly nodeData: Required<DATA>
+  readonly nodeData: DATA
   readonly extraEventNames: string[]
   init(nodeData: DATA): void
   sortChildren(): void
   removeChildImpl(childNode: this, isDispatchEvent: boolean): boolean
-  resetNodePositionInParent(node: TreeNodeImpl): void
+  resetNodePositionInParent(node: this): void
   refreshChildContainerHeight(): void
   refreshChildContainerHeightWithAnimation(): Promise<void>
   getChildrenContainerHeight(base: this): number
@@ -309,14 +309,16 @@ namespace TreeNode {
     setup: (props: Props, ctx) => setup(props, ctx),
   })
 
-  export function setup(props: Props, ctx: SetupContext) {
+  export function setup<NODE extends TreeNodeImpl = TreeNodeImpl>(props: Props, ctx: SetupContext) {
+    type DATA = NODE['nodeData']
+
     //----------------------------------------------------------------------
     //
     //  Variables
     //
     //----------------------------------------------------------------------
 
-    const self = getCurrentInstance()!.proxy as TreeNodeImpl
+    const self = getCurrentInstance()!.proxy as NODE
     const el = ref<HTMLElement>()
     const nodeContainer = ref<HTMLElement>()
     const childContainer = ref<HTMLElement>()
@@ -329,7 +331,7 @@ namespace TreeNode {
       extraEventNames: [] as string[],
     })
 
-    const _nodeData: Ref<Required<TreeNodeData>> = ref({} as any)
+    const _nodeData: Ref<DATA> = ref({} as any)
     const nodeData = computed({
       get: () => _nodeData.value,
       set: value => (_nodeData.value = value),
@@ -390,10 +392,10 @@ namespace TreeNode {
       },
     })
 
-    const opened = computed(() => nodeData.value.opened)
+    const opened = computed(() => nodeData.value.opened!)
 
     const selected = computed({
-      get: () => nodeData.value.selected,
+      get: () => nodeData.value.selected!,
       set: value => {
         setSelectedImpl(value, { silent: false })
         resetNodePositionInParentDebounce(self)
@@ -406,7 +408,7 @@ namespace TreeNode {
     }
 
     const unselectable = computed({
-      get: () => nodeData.value.unselectable,
+      get: () => nodeData.value.unselectable!,
       set: value => {
         nodeData.value.unselectable = value
         if (value) {
@@ -416,16 +418,16 @@ namespace TreeNode {
       },
     })
 
-    const _parent: Ref<TreeNodeImpl | null> = ref(null)
+    const _parent: Ref<NODE | undefined> = ref(undefined)
     const parent = computed({
       get: () => _parent.value,
       set: value => (_parent.value = value),
     })
 
-    const children: Ref<TreeNodeImpl[]> = ref([])
+    const children: Ref<NODE[]> = ref([])
 
     const icon = computed({
-      get: () => nodeData.value.icon,
+      get: () => nodeData.value.icon!,
       set: value => {
         nodeData.value.icon = value
         resetNodePositionInParentDebounce(self)
@@ -433,7 +435,7 @@ namespace TreeNode {
     })
 
     const iconColor = computed({
-      get: () => nodeData.value.iconColor,
+      get: () => nodeData.value.iconColor!,
       set: value => {
         nodeData.value.iconColor = value
         resetNodePositionInParentDebounce(self)
@@ -441,7 +443,7 @@ namespace TreeNode {
     })
 
     const iconSize = computed({
-      get: () => nodeData.value.iconSize,
+      get: () => nodeData.value.iconSize!,
       set: value => {
         nodeData.value.iconSize = value
         resetNodePositionInParentDebounce(self)
@@ -449,7 +451,7 @@ namespace TreeNode {
     })
 
     const lazy = computed({
-      get: () => nodeData.value.lazy,
+      get: () => nodeData.value.lazy!,
       set: value => {
         nodeData.value.lazy = value
         resetNodePositionInParentDebounce(self)
@@ -457,7 +459,7 @@ namespace TreeNode {
     })
 
     const lazyLoadStatus = computed({
-      get: () => nodeData.value.lazyLoadStatus,
+      get: () => nodeData.value.lazyLoadStatus!,
       set: value => {
         nodeData.value.lazyLoadStatus = value
         resetNodePositionInParentDebounce(self)
@@ -469,7 +471,7 @@ namespace TreeNode {
       set: value => (state.isEldest = value),
     })
 
-    const _treeView: Ref<TreeViewImpl | null> = ref(null)
+    const _treeView: Ref<TreeViewImpl<NODE, DATA> | undefined> = ref(undefined)
     const treeView = computed({
       get: () => _treeView.value,
       set: value => {
@@ -518,13 +520,11 @@ namespace TreeNode {
       if (nodeData.value.sortFunc) {
         return nodeData.value.sortFunc
       }
-
-      const sortFunc = treeView.value?.getSortFunc() ?? null
-      return sortFunc as ChildrenSortFunc<any> | null
+      return treeView.value?.getSortFunc()
     }
 
     const setSortFunc: TreeNodeImpl['setSortFunc'] = value => {
-      nodeData.value.sortFunc = value ?? null
+      nodeData.value.sortFunc = value
       if (children.value.length) {
         sortChildren()
       }
@@ -543,7 +543,7 @@ namespace TreeNode {
 
     const setNodeData: TreeNodeImpl['setNodeData'] = editData => {
       if (typeof editData.label === 'string') {
-        label.value = editData.label!
+        label.value = editData.label
       }
 
       if (typeof editData.value === 'string') {
@@ -583,11 +583,11 @@ namespace TreeNode {
       }
 
       if (typeof editData.lazyLoadStatus === 'string') {
-        lazyLoadStatus.value = editData.lazyLoadStatus!
+        lazyLoadStatus.value = editData.lazyLoadStatus
       }
 
       // サブクラスで必要な処理を実行
-      setNodeData_sub(editData)
+      setNodeData_sub(editData as TreeNodeEditData<DATA>)
 
       // 親コンテナ内における自身の配置位置を再設定
       resetNodePositionInParent(self)
@@ -597,21 +597,21 @@ namespace TreeNode {
      * このコンポーネントを拡張したサブコンポーネントで`setNodeData()`に追加で処理が必要な場合、
      * その追加処理を記述するためのプレースホルダー関数になります。
      */
-    const setNodeData_sub = extendedMethod<(nodeData: TreeNodeEditData<TreeNodeData>) => void>(() => {})
+    const setNodeData_sub = extendedMethod<(nodeData: TreeNodeEditData<DATA>) => void>(() => {})
 
     const addChild: TreeNodeImpl['addChild'] = (child: any, options?: { insertIndex?: number | null }) => {
-      let childNode: TreeNodeImpl
+      let childNode: NODE
       const childType = child instanceof Vue ? 'Node' : 'Data'
 
       switch (childType) {
         // 引数のノードがノードコンポーネントで指定された場合
         case 'Node': {
-          childNode = addChildByNode(child as TreeNodeImpl, options)
+          childNode = addChildByNode(child as NODE, options)
           break
         }
         // 引数のノードがノードデータで指定された場合
         case 'Data': {
-          childNode = addChildByData(child as TreeNodeData, options)
+          childNode = addChildByData(child as DATA, options)
         }
       }
 
@@ -669,20 +669,20 @@ namespace TreeNode {
       set(data, 'children', data.children || [])
       set(data, 'lazy', Boolean(data.lazy))
       set(data, 'lazyLoadStatus', data.lazyLoadStatus || 'none')
-      set(data, 'sortFunc', data.sortFunc || null)
-      nodeData.value = data as Required<TreeNodeData>
+      set(data, 'sortFunc', data.sortFunc)
+      nodeData.value = data as DATA
 
       // サブクラスで必要な処理を実行
       init_sub(nodeData.value)
 
-      setSelectedImpl(nodeData.value.selected, { initializing: true })
+      setSelectedImpl(nodeData.value.selected!, { initializing: true })
     }
 
     /**
      * このコンポーネントを拡張したサブコンポーネントで`init()`に追加で処理が必要な場合、
      * その追加処理を記述するためのプレースホルダー関数になります。
      */
-    const init_sub = extendedMethod<(nodeData: TreeNodeData) => void>(() => {})
+    const init_sub = extendedMethod<(nodeData: DATA) => void>(() => {})
 
     const sortChildren: TreeNodeImpl['sortChildren'] = () => {
       const sortFunc = getSortFunc()
@@ -700,14 +700,14 @@ namespace TreeNode {
      * @param isDispatchEvent 削除イベントを発火するか否かを指定
      * @return 削除された場合はtrue, 削除対象のノードがなく削除が行われなかった場合はfalse
      */
-    const removeChildImpl: TreeNodeImpl['removeChildImpl'] = (childNode, isDispatchEvent) => {
+    const removeChildImpl: TreeNodeImpl['removeChildImpl'] = (childNode: NODE, isDispatchEvent) => {
       const index = children.value.indexOf(childNode)
       if (index >= 0) {
         isDispatchEvent && util.dispatchBeforeNodeRemove(self, childNode)
-        childNode.parent = null
-        childNode.treeView = null
+        childNode.parent = undefined
+        childNode.treeView = undefined
         children.value.splice(index, 1)
-        nodeData.value.children.splice(index, 1)
+        nodeData.value.children!.splice(index, 1)
         removeChildFromContainer(childNode)
         refreshChildContainerHeight()
         isDispatchEvent && util.dispatchNodeRemove(self, childNode)
@@ -723,7 +723,7 @@ namespace TreeNode {
      * + 指定ノードのプロパティ変更がソート関数に影響を及ぼす場合
      * @param node
      */
-    const resetNodePositionInParent: TreeNodeImpl['resetNodePositionInParent'] = node => {
+    const resetNodePositionInParent: TreeNodeImpl['resetNodePositionInParent'] = (node: NODE) => {
       if (node.parent) {
         // 親ノードまたはツリービューにソート関数が指定されていない場合、何もしない
         const sortFunc = node.parent.getSortFunc()
@@ -812,7 +812,7 @@ namespace TreeNode {
      * 子ノードが配置されるコンテナの高さを算出します。
      * @param base 基準となるノードを指定します。このノードの子孫を走査して高さが算出されます。
      */
-    const getChildrenContainerHeight: TreeNodeImpl['getChildrenContainerHeight'] = base => {
+    const getChildrenContainerHeight: TreeNodeImpl['getChildrenContainerHeight'] = (base: NODE) => {
       let result = 0
 
       if (opened.value) {
@@ -830,7 +830,7 @@ namespace TreeNode {
       return result
     }
 
-    const getInsertIndex: TreeNodeImpl['getInsertIndex'] = (newNode, options) => {
+    const getInsertIndex: TreeNodeImpl['getInsertIndex'] = (newNode: NODE, options) => {
       const sortFunc = getSortFunc()
       // 親ノードまたはツリービューにソート関数が指定されている場合
       if (sortFunc) {
@@ -944,7 +944,7 @@ namespace TreeNode {
       }
     }
 
-    function addChildByData(childNodeData: TreeNodeData, options?: { insertIndex?: number | null }): TreeNodeImpl {
+    function addChildByData(childNodeData: DATA, options?: { insertIndex?: number | null }): NODE {
       if (!treeView.value) {
         throw new Error(`'treeView' not found.`)
       }
@@ -956,7 +956,7 @@ namespace TreeNode {
       ascendSetBlockForDisplay()
 
       // 子ノードの作成
-      const childNode = util.newTreeNode(childNodeData, treeView.value.getNodeClass())
+      const childNode = util.newTreeNode<NODE>(childNodeData, treeView.value.getNodeClass())
 
       // ノード挿入位置を決定
       const insertIndex = getInsertIndex(childNode, options)
@@ -974,8 +974,8 @@ namespace TreeNode {
       // ノードの親子関係を設定
       childNode.parent = self
       children.value.splice(insertIndex, 0, childNode)
-      if (!nodeData.value.children.find(data => data.value === childNode.value)) {
-        nodeData.value.children.splice(insertIndex, 0, childNode.nodeData)
+      if (!nodeData.value.children!.find(data => data.value === childNode.value)) {
+        nodeData.value.children!.splice(insertIndex, 0, childNode.nodeData as DATA)
       }
 
       // 親ノードのコンテナの高さを設定
@@ -997,7 +997,7 @@ namespace TreeNode {
       return childNode
     }
 
-    function addChildByNode(childNode: TreeNodeImpl, options?: { insertIndex?: number | null }): TreeNodeImpl {
+    function addChildByNode(childNode: NODE, options?: { insertIndex?: number | null }): NODE {
       // 追加ノードの子に自ノードが含まれないことを検証
       const descendantDict = util.getDescendantDict(childNode)
       if (descendantDict[value.value]) {
@@ -1047,9 +1047,9 @@ namespace TreeNode {
 
       // ノードの親子関係を設定
       childNode.parent = self
-      children.value!.splice(insertIndex, 0, childNode)
-      if (!nodeData.value.children.find(data => data.value === childNode.value)) {
-        nodeData.value.children.splice(insertIndex, 0, childNode.nodeData)
+      children.value.splice(insertIndex, 0, childNode)
+      if (!nodeData.value.children!.find(data => data.value === childNode.value)) {
+        nodeData.value.children!.splice(insertIndex, 0, childNode.nodeData)
       }
 
       // 親ノードのコンテナの高さを設定
@@ -1075,7 +1075,7 @@ namespace TreeNode {
      * 子コンテナからノードを削除します。
      * @param node
      */
-    function removeChildFromContainer(node: TreeNodeImpl): void {
+    function removeChildFromContainer(node: NODE): void {
       childContainer.value!.removeChild(node.el)
     }
 
@@ -1084,7 +1084,7 @@ namespace TreeNode {
      * @param node 追加するノード
      * @param insertIndex ノード挿入位置
      */
-    function insertChildIntoContainer(node: TreeNodeImpl, insertIndex: number): void {
+    function insertChildIntoContainer(node: NODE, insertIndex: number): void {
       const childrenLength = childContainer.value!.children.length
 
       // 挿入位置が大きすぎないかを検証

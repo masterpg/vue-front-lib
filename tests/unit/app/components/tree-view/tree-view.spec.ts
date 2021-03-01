@@ -13,6 +13,7 @@ import {
 } from '@/app/components/tree-view'
 import { Wrapper, mount } from '@vue/test-utils'
 import { cloneDeep, merge } from 'lodash'
+import { TreeCheckboxNodeImpl } from '@/app/components/tree-view/tree-checkbox-node.vue'
 import { sleep } from 'web-base-lib'
 
 //========================================================================
@@ -69,14 +70,14 @@ function verifyTreeView(treeView: TreeViewImpl) {
     // ノードからツリービューが取得できることを検証
     expect(node.treeView).toBe(treeView)
     // ノードの親が空であることを検証
-    expect(node.parent).toBeNull()
+    expect(node.parent).toBeUndefined()
     // ツリービューのコンテナにノードが存在することを検証
     const containerChildren = Array.from(treeView.childContainer.children)
     expect(containerChildren[i]).toBe(node.el)
     // ツリービューからノードを取得できることを検証
     expect(treeView.getNode(node.value)!.value).toBe(node.value)
     // ノードの親子(子孫)関係の検証
-    expect(node.children.length).toBe(node.nodeData.children.length)
+    expect(node.children.length).toBe(node.nodeData.children!.length)
     verifyParentChildRelation(treeView, node)
     // ノードが選択状態の場合
     if (node.selected) {
@@ -102,7 +103,7 @@ function verifyParentChildRelation(treeView: TreeViewImpl, node: TreeNodeImpl) {
     expect(node.treeView).toBe(treeView)
     // ノードの親子関係を検証
     expect(child.parent).toBe(node)
-    expect(child.parent!.nodeData.children.find((childData: TreeNodeData) => childData.value === child.value)).toEqual(child.nodeData)
+    expect(child.parent!.nodeData.children!.find((childData: TreeNodeData) => childData.value === child.value)).toEqual(child.nodeData)
     // ノードのコンテナに子ノードが存在することを検証
     const containerChildren = Array.from(node.childContainer.children)
     expect(containerChildren[i]).toBe(child.el)
@@ -589,7 +590,7 @@ describe('TreeView', () => {
 
       expect(treeView.children.length).toBe(treeViewNodesLength + 1)
       expect(treeView.children[2]).toBe(node1_1)
-      expect(node1_1.parent).toBeNull()
+      expect(node1_1.parent).toBeUndefined()
       expect(node1.children.includes(node1_1)).not.toBeTruthy()
       verifyTreeView(treeView)
     })
@@ -713,7 +714,7 @@ describe('TreeView', () => {
       // ・select
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
-      expect(treeView.selectedNode).toBeNull()
+      expect(treeView.selectedNode).toBeUndefined()
       expect(node1_1_1.selected).toBeFalsy()
 
       verifyTreeView(treeView)
@@ -741,7 +742,7 @@ describe('TreeView', () => {
       // ・select
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
-      expect(treeView.selectedNode).toBeNull()
+      expect(treeView.selectedNode).toBeUndefined()
       expect(node1_1_1.selected).toBeFalsy()
 
       verifyTreeView(treeView)
@@ -802,7 +803,7 @@ describe('TreeView', () => {
       }
 
       // 選択ノードがないことを検証
-      expect(treeView.selectedNode).toBeNull()
+      expect(treeView.selectedNode).toBeUndefined()
 
       verifyTreeView(treeView)
     })
@@ -829,7 +830,7 @@ describe('TreeView', () => {
 
       const actual = treeView.selectedNode
 
-      expect(actual).toBeNull()
+      expect(actual).toBeUndefined()
       verifyTreeView(treeView)
     })
 
@@ -906,7 +907,7 @@ describe('TreeView', () => {
       expect(node1_1_1.selected).toBeTruthy()
       await clearEmitted(wrapper)
 
-      treeView.selectedNode = null
+      treeView.selectedNode = undefined
 
       // イベント発火を検証
       // ・select
@@ -917,7 +918,7 @@ describe('TreeView', () => {
       expect(selectChangeEmitted.length).toBe(1)
       expect(selectChangeEvent.node).toBe(node1_1_1)
       // ノードの選択状態を検証
-      expect(treeView.selectedNode).toBeNull()
+      expect(treeView.selectedNode).toBeUndefined()
       expect(node1_1_1.selected).toBeFalsy()
 
       verifyTreeView(treeView)
@@ -1009,7 +1010,7 @@ describe('TreeView', () => {
       expect(selectChangeEmitted.length).toBe(1)
       expect(selectChangeEvent.node).toBe(node1_1_1)
       // ノードの選択状態を検証
-      expect(treeView.selectedNode).toBeNull()
+      expect(treeView.selectedNode).toBeUndefined()
       expect(node1_1_1.selected).toBeFalsy()
 
       verifyTreeView(treeView)
@@ -1512,7 +1513,7 @@ describe('TreeNode', () => {
       // ・select
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
-      expect(treeView.selectedNode).toBeNull()
+      expect(treeView.selectedNode).toBeUndefined()
       expect(node1_1_1.selected).toBeFalsy()
 
       verifyTreeView(treeView)
@@ -1540,7 +1541,7 @@ describe('TreeNode', () => {
       // ・select
       expect(wrapper.emitted('select')).toBeUndefined()
       // ノードの選択状態を検証
-      expect(treeView.selectedNode).toBeNull()
+      expect(treeView.selectedNode).toBeUndefined()
       expect(node1_1_1.selected).toBeFalsy()
 
       verifyTreeView(treeView)
@@ -1678,7 +1679,7 @@ describe('TreeNode', () => {
       // 閉じている中のノードは未選択である
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.selected).toBe(false)
-      expect(treeView.selectedNode).toBeNull()
+      expect(treeView.selectedNode).toBeUndefined()
       await clearEmitted(wrapper)
 
       // 閉じている中のノードは選択する
@@ -2459,7 +2460,7 @@ describe('TreeNode', () => {
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeFalsy()
-      expect(treeView.selectedNode).toBeNull()
+      expect(treeView.selectedNode).toBeUndefined()
       await clearEmitted(wrapper)
 
       node1_1_1.selected = true
@@ -2492,7 +2493,7 @@ describe('TreeNode', () => {
       const node1_1_1 = treeView.getNode('node1_1_1')!
       expect(node1_1_1.unselectable).toBeFalsy()
       expect(node1_1_1.selected).toBeFalsy()
-      expect(treeView.selectedNode).toBeNull()
+      expect(treeView.selectedNode).toBeUndefined()
       await clearEmitted(wrapper)
 
       node1_1_1.setNodeData({ selected: true })
@@ -2974,7 +2975,7 @@ describe('カスタムツリー', () => {
   ]
 
   it('独自イベントが発火されるかを検証', () => {
-    const wrapper = mount<TreeViewImpl<TreeCheckboxNode>>(TreeView.clazz)
+    const wrapper = mount<TreeViewImpl<TreeCheckboxNodeImpl>>(TreeView.clazz)
     const treeView = wrapper.vm
     treeView.buildTree(cloneDeep(baseNodeDataList), { nodeClass: TreeCheckboxNode.clazz })
 

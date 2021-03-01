@@ -118,8 +118,8 @@
 </template>
 
 <script lang="ts">
-import { ComputedRef, SetupContext, computed, defineComponent, reactive } from '@vue/composition-api'
 import { RequiredStorageNodeShareSettings, StorageArticleSettings, StorageNodeShareSettings, StorageNodeType } from '@/app/services'
+import { SetupContext, computed, defineComponent, reactive } from '@vue/composition-api'
 import { StorageNodeActionEvent, StorageTreeNodeData, StorageTreeNodeEditData } from '@/app/views/base/storage/base'
 import { TreeNode, TreeNodeImpl } from '@/app/components/tree-view'
 import { Dayjs } from 'dayjs'
@@ -186,8 +186,8 @@ namespace StorageTreeNode {
     //
     //----------------------------------------------------------------------
 
-    const base = TreeNode.setup(props, ctx)
-    const nodeData = base.nodeData as ComputedRef<StorageTreeNodeData>
+    const base = TreeNode.setup<StorageTreeNodeImpl>(props, ctx)
+    const { nodeData } = base
     const i18n = useI18n()
 
     base.extraEventNames.value.push('node-action')
@@ -288,7 +288,7 @@ namespace StorageTreeNode {
     //
     //----------------------------------------------------------------------
 
-    base.setNodeData_sub.value = (editData: StorageTreeNodeEditData) => {
+    base.setNodeData_sub.value = editData => {
       if (typeof editData.id === 'string') {
         nodeData.value.id = editData.id
       }
@@ -427,5 +427,5 @@ namespace StorageTreeNode {
 
 export default StorageTreeNode.clazz
 // eslint-disable-next-line no-undef
-export { StorageTreeNode }
+export { StorageTreeNode, StorageTreeNodeImpl }
 </script>

@@ -61,7 +61,7 @@ interface TreeNodeData {
   /**
    * 子ノードの並びを決めるソート関数を指定します。
    */
-  sortFunc?: ChildrenSortFunc<any> | null
+  sortFunc?: ChildrenSortFunc<any>
 }
 
 type TreeNodeEditData<T> = Partial<Omit<T, 'children'>>

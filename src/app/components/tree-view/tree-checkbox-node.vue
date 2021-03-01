@@ -105,8 +105,8 @@
 </template>
 
 <script lang="ts">
-import { ComputedRef, computed, defineComponent, set } from '@vue/composition-api'
-import { TreeNode } from '@/app/components/tree-view/tree-node.vue'
+import { TreeNode, TreeNodeImpl } from '@/app/components/tree-view/tree-node.vue'
+import { computed, defineComponent, set } from '@vue/composition-api'
 import { TreeNodeData } from '@/app/components/tree-view/base'
 
 //========================================================================
@@ -115,13 +115,15 @@ import { TreeNodeData } from '@/app/components/tree-view/base'
 //
 //========================================================================
 
-interface TreeCheckboxNode extends TreeNode<TreeCheckboxNodeData>, TreeCheckboxNode.Props {
-  checked: boolean | null
+interface TreeCheckboxNodeMembers {
+  checked?: boolean
 }
 
-interface TreeCheckboxNodeData extends TreeNodeData {
-  checked?: boolean | null
-}
+interface TreeCheckboxNodeData extends TreeNodeData, TreeCheckboxNodeMembers {}
+
+interface TreeCheckboxNode extends TreeNode<TreeCheckboxNodeData>, TreeCheckboxNode.Props, TreeCheckboxNodeMembers {}
+
+interface TreeCheckboxNodeImpl extends TreeNodeImpl<TreeCheckboxNodeData>, TreeCheckboxNode.Props, TreeCheckboxNodeMembers {}
 
 //========================================================================
 //
@@ -136,27 +138,26 @@ namespace TreeCheckboxNode {
     name: 'TreeCheckboxNode',
 
     setup(props: Props, context) {
-      const base = TreeNode.setup(props, context)
-      const nodeData = base.nodeData as ComputedRef<TreeCheckboxNodeData>
+      const base = TreeNode.setup<TreeCheckboxNodeImpl>(props, context)
 
       base.extraEventNames.value.push('checked-change')
 
-      base.init_sub.value = (nodeData: TreeCheckboxNodeData) => {
-        set(nodeData, 'checked', typeof nodeData.checked === 'boolean' ? nodeData.checked : null)
+      base.init_sub.value = nodeData => {
+        set(nodeData, 'checked', nodeData.checked)
       }
 
-      const checked = computed<boolean | null>({
-        get: () => (typeof nodeData.value.checked === 'boolean' ? nodeData.value.checked : null),
+      const checked = computed({
+        get: () => base.nodeData.value.checked,
         set: value => {
-          const changed = nodeData.value.checked !== value
-          nodeData.value.checked = value
+          const changed = base.nodeData.value.checked !== value
+          base.nodeData.value.checked = value
           if (useCheckbox.value && changed) {
             base.dispatchExtraEvent('checked-change')
           }
         },
       })
 
-      const useCheckbox = computed(() => typeof nodeData.value.checked === 'boolean')
+      const useCheckbox = computed(() => typeof base.nodeData.value.checked === 'boolean')
 
       return {
         ...base,
@@ -168,5 +169,5 @@ namespace TreeCheckboxNode {
 }
 
 export default TreeCheckboxNode.clazz
-export { TreeCheckboxNode, TreeCheckboxNodeData }
+export { TreeCheckboxNode, TreeCheckboxNodeImpl, TreeCheckboxNodeData }
 </script>

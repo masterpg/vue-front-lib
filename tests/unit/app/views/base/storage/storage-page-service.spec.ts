@@ -13,10 +13,10 @@ import {
 import { GeneralUser, NewTestStorageNodeData, TestServiceContainer, newStorageDirNode, newStorageFileNode } from '../../../../../helpers/app'
 import { Ref, computed, ref } from '@vue/composition-api'
 import { StoragePageService, StorageTreeNodeFilter } from '@/app/views/base/storage'
-import { StorageTreeNodeData, StorageTreeNodeInput } from '@/app/views/base/storage/base'
+import { StorageTreeNode, StorageTreeNodeImpl } from '@/app/views/base/storage/storage-tree-node.vue'
 import { TreeNode, TreeView, TreeViewImpl } from '@/app/components/tree-view'
 import { AuthService } from '@/app/services/modules/auth'
-import { StorageTreeNode } from '@/app/views/base/storage/storage-tree-node.vue'
+import { StorageTreeNodeInput } from '@/app/views/base/storage/base'
 import { UploadEndedEvent } from '@/app/components/storage'
 import { VueRouter } from 'vue-router/types/router'
 import dayjs from 'dayjs'
@@ -36,7 +36,7 @@ const { EmptyShareSettings } = StorageUtil
 
 type RawStoragePageService = ReturnType<typeof StoragePageService['newRawInstance']>
 
-type TestStorageTreeView = TreeViewImpl<StorageTreeNode, StorageTreeNodeData>
+type TestStorageTreeView = TreeViewImpl<StorageTreeNodeImpl>
 
 type NewTreeDirNodeInputData = NewTestStorageNodeData & Pick<StorageTreeNodeInput, 'opened' | 'lazyLoadStatus'>
 
@@ -146,7 +146,7 @@ function verifyParentChildRelationForTree(treeView: TreeView) {
   for (let i = 0; i < treeView.children.length; i++) {
     const node = treeView.children[i]
     // ノードの親が空であることを検証
-    expect(node.parent).toBeNull()
+    expect(node.parent).toBeUndefined()
     // ノードの親子(子孫)関係の検証
     verifyParentChildRelationForNode(node)
   }

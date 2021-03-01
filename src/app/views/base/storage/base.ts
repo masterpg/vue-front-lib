@@ -10,7 +10,7 @@ import { useI18n } from '@/app/i18n'
 //
 //========================================================================
 
-interface StorageTreeNodeData extends RequiredAre<TreeNodeData, 'icon' | 'opened' | 'lazy' | 'lazyLoadStatus' | 'sortFunc' | 'selected'> {
+interface StorageTreeNodeData extends TreeNodeData {
   storageType: StorageType
   id: string
   nodeType: StorageNodeType
@@ -23,6 +23,12 @@ interface StorageTreeNodeData extends RequiredAre<TreeNodeData, 'icon' | 'opened
   updatedAt: Dayjs
   version: number
   disableContextMenu: boolean
+
+  // --- Override ---
+  icon: string
+  opened: boolean
+  lazy: boolean
+  lazyLoadStatus: TreeViewLazyLoadStatus
 }
 
 interface StorageTreeNodeEditData extends Partial<Omit<StorageTreeNodeData, 'article'>> {

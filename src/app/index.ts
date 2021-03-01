@@ -1,7 +1,9 @@
 import 'animate.css/animate.css'
 import '@/app/styles/app.sass'
 
+import { AppMainArticleTreeNodeData } from '@/app/views/main/app-main-article-tree-node.vue'
 import AppMainPage from '@/app/views/main'
+import { TreeNodeData } from '@/app/components/tree-view'
 import Vue from 'vue'
 import VueCompositionApi from '@vue/composition-api'
 import firebase from 'firebase/app'
@@ -37,3 +39,23 @@ async function init() {
   }).$mount('#app')
 }
 init()
+
+// type Func<T extends TreeNodeData = TreeNodeData> = (data: T) => void
+//
+// const func: Func<AppMainArticleTreeNodeData> = data => {
+//   console.log(data.id)
+// }
+
+type Func<T extends TreeNodeData = TreeNodeData> = (data: T) => void
+
+const func: Func = ((data: AppMainArticleTreeNodeData) => {
+  console.log(data.id)
+}) as Func
+
+// const func: Func = (data => {
+//   console.log(data.id)
+// }) as Func<AppMainArticleTreeNodeData>
+
+// const func: Func<AppMainArticleTreeNodeData> = data => {
+//   console.log(data.id)
+// }

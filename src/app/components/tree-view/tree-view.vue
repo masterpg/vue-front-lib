@@ -56,7 +56,7 @@ interface TreeView<NODE extends TreeNode = TreeNode, DATA extends TreeNodeData =
   /**
    * 選択ノードです。
    */
-  selectedNode: NODE | null
+  selectedNode?: NODE
 
   /**
    * ツリービューを構成するノードのコンポーネントクラスを取得します。
@@ -86,11 +86,11 @@ interface TreeView<NODE extends TreeNode = TreeNode, DATA extends TreeNodeData =
   /**
    * 子ノードの並びを決めるソート関数を取得します。
    */
-  getSortFunc<N extends TreeNode = NODE>(): ChildrenSortFunc<N> | null
+  getSortFunc<N extends TreeNode = NODE>(): ChildrenSortFunc<N> | undefined
   /**
    * 子ノードの並びを決めるソート関数を設定します。
    */
-  setSortFunc(value: ChildrenSortFunc<NODE> | null): void
+  setSortFunc(value: ChildrenSortFunc<NODE> | undefined): void
   /**
    * 指定されたノードデータからノードツリーを構築します。
    * @param nodeDataList ノードツリーを構築するためのデータ
@@ -140,7 +140,7 @@ interface TreeView<NODE extends TreeNode = TreeNode, DATA extends TreeNodeData =
   removeAllNodes(): void
 }
 
-interface TreeViewImpl<NODE extends TreeNode = TreeNodeImpl, DATA extends TreeNodeData = TreeNodeData> extends TreeView<NODE, DATA> {
+interface TreeViewImpl<NODE extends TreeNodeImpl = TreeNodeImpl, DATA extends TreeNodeData = TreeNodeData> extends TreeView<NODE, DATA> {
   readonly el: HTMLElement
   readonly childContainer: HTMLElement
   sortChildren(): void
@@ -215,7 +215,7 @@ namespace TreeView {
       return result + util.getElementFrameWidth(childContainer.value!)
     })
 
-    let sortFunc: ChildrenSortFunc<any> | null = null
+    let sortFunc: ChildrenSortFunc<any> | undefined = undefined
 
     const currentSize = ref<{ width: string; height: string }>({ width: '0px', height: '0px' })
 
@@ -227,7 +227,7 @@ namespace TreeView {
 
     const children: Ref<TreeNodeImpl[]> = ref([])
 
-    const _selectedNode: Ref<TreeNodeImpl | null> = ref(null)
+    const _selectedNode: Ref<TreeNodeImpl | undefined> = ref(undefined)
 
     const selectedNode = computed({
       get: () => _selectedNode.value,
@@ -310,7 +310,7 @@ namespace TreeView {
     }
 
     const buildTree: TreeViewImpl['buildTree'] = (nodeDataList, options) => {
-      sortFunc = options?.sortFunc ?? null
+      sortFunc = options?.sortFunc
       let insertIndex = options?.insertIndex
       options?.nodeClass && setNodeClass(options.nodeClass)
 
@@ -563,7 +563,7 @@ namespace TreeView {
       }
 
       // ルートノードのツリービューをクリア
-      node.treeView = null
+      node.treeView = undefined
 
       // 最年長ノードフラグを再設定
       restIsEldest()
@@ -681,7 +681,7 @@ namespace TreeView {
       // ノードの選択が解除された場合
       else {
         // 選択ノードをクリア
-        _selectedNode.value = null
+        _selectedNode.value = undefined
       }
 
       !silent && ctx.emit('select-change', { node } as TreeViewSelectEvent)
