@@ -11,6 +11,7 @@ import { Unsubscribe, createNanoEvents } from 'nanoevents'
 interface InternalServiceContainer {
   helper: InternalHelperService
   auth: InternalAuthService
+  article: ArticleHelper
 }
 
 interface InternalHelperService {}
@@ -29,6 +30,11 @@ interface InternalAuthService {
    * @param cb
    */
   watchSignInStatus: (cb: (newValue: SignInStatus, oldValue?: SignInStatus) => any) => Unsubscribe
+}
+
+interface ArticleHelper {
+  emitTableOfContentsUpdate(): void
+  watchTableOfContentsUpdate: (cb: () => any) => Unsubscribe
 }
 
 //========================================================================
@@ -121,6 +127,29 @@ namespace InternalAuthService {
   }
 }
 
+//--------------------------------------------------
+//  ArticleHelper
+//--------------------------------------------------
+
+namespace ArticleHelper {
+  export function newInstance(): ArticleHelper {
+    const emitter = createNanoEvents()
+
+    const emitTableOfContentsUpdate: ArticleHelper['emitTableOfContentsUpdate'] = () => {
+      emitter.emit('tableOfContentsUpdate')
+    }
+
+    const watchTableOfContentsUpdate: ArticleHelper['watchTableOfContentsUpdate'] = cb => {
+      return emitter.on('tableOfContentsUpdate', cb)
+    }
+
+    return {
+      emitTableOfContentsUpdate,
+      watchTableOfContentsUpdate,
+    }
+  }
+}
+
 namespace InternalServiceContainer {
   let instance: InternalServiceContainer
 
@@ -129,13 +158,15 @@ namespace InternalServiceContainer {
     return instance
   }
 
-  export function newRawInstance(options?: { helper?: InternalHelperService; auth?: InternalAuthService }) {
+  export function newRawInstance(options?: Partial<InternalServiceContainer>) {
     const helper = options?.helper ?? InternalHelperService.newInstance()
     const auth = options?.auth ?? InternalAuthService.newInstance()
+    const article = options?.article ?? ArticleHelper.newInstance()
 
     return {
       helper,
       auth,
+      article,
     }
   }
 }
@@ -147,4 +178,4 @@ namespace InternalServiceContainer {
 //========================================================================
 
 const { useInternalService } = InternalServiceContainer
-export { InternalAuthService, InternalHelperService, InternalServiceContainer, useInternalService }
+export { InternalAuthService, InternalHelperService, InternalServiceContainer, ArticleHelper, useInternalService }

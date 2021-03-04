@@ -1,3 +1,4 @@
+import { ArticleHelper, useInternalService } from '@/app/services/modules/internal'
 import { ArticleTableOfContentsNode } from '@/app/services'
 import { extendedMethod } from '@/app/base'
 import { useAPI } from '@/app/services/apis'
@@ -8,7 +9,7 @@ import { useAPI } from '@/app/services/apis'
 //
 //========================================================================
 
-interface ArticleService {
+interface ArticleService extends Pick<ArticleHelper, 'emitTableOfContentsUpdate' | 'watchTableOfContentsUpdate'> {
   /**
    * 指定されたユーザーの記事の目次を取得します。
    * @param userName
@@ -35,6 +36,7 @@ namespace ArticleService {
     //----------------------------------------------------------------------
 
     const apis = useAPI()
+    const helpers = useInternalService()
 
     //----------------------------------------------------------------------
     //
@@ -68,6 +70,8 @@ namespace ArticleService {
 
     return {
       fetchTableOfContents,
+      emitTableOfContentsUpdate: helpers.article.emitTableOfContentsUpdate,
+      watchTableOfContentsUpdate: helpers.article.watchTableOfContentsUpdate,
     }
   }
 }

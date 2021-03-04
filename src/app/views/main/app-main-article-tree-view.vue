@@ -14,9 +14,10 @@
 <script lang="ts">
 import { AppMainArticleTreeNode, AppMainArticleTreeNodeData } from '@/app/views/main/app-main-article-tree-node.vue'
 import { ArticleTableOfContentsNode, useService } from '@/app/services'
-import { SetupContext, defineComponent, onMounted, ref } from '@vue/composition-api'
+import { SetupContext, defineComponent, onMounted, onUnmounted, ref } from '@vue/composition-api'
 import { TreeNodeData, TreeView, TreeViewSelectEvent } from '@/app/components/tree-view'
 import { useRouteParams, useRoutes } from '@/app/router'
+import { pickProps } from 'web-base-lib'
 
 interface AppMainArticleTreeView extends AppMainArticleTreeView.Props {
   load(userName: string): Promise<void>
@@ -48,6 +49,10 @@ namespace AppMainArticleTreeView {
       treeView.value!.setNodeClass(AppMainArticleTreeNode.clazz)
     })
 
+    onUnmounted(() => {
+      offTableOfContentsUpdate()
+    })
+
     //----------------------------------------------------------------------
     //
     //  Variables
@@ -56,8 +61,7 @@ namespace AppMainArticleTreeView {
 
     const services = useService()
     const routes = useRoutes()
-    const { userName } = useRouteParams()
-    routes.articles.move
+    const routeParams = useRouteParams()
 
     const treeView = ref<TreeView<AppMainArticleTreeNode, AppMainArticleTreeNodeData>>()
 
@@ -71,9 +75,21 @@ namespace AppMainArticleTreeView {
       const tocNodes = await services.article.fetchTableOfContents(userName)
       console.log(tocNodes)
 
-      for (const node of tocNodes) {
-        const nodeData = { ...node, value: node.path }
-        treeView.value!.addNode(nodeData, { parent: node.dir || undefined })
+      let existingNodeDataMap: { [path: string]: { opened?: boolean; selected?: boolean } } = {}
+      for (const tocNode of tocNodes) {
+        const treeNode = treeView.value!.getNode(tocNode.path)
+        if (treeNode) {
+          existingNodeDataMap[tocNode.path] = pickProps(treeNode, ['opened', 'selected'])
+        } else {
+          existingNodeDataMap[tocNode.path] = {}
+        }
+      }
+
+      treeView.value!.removeAllNodes()
+      for (const tocNode of tocNodes) {
+        const existingNodeData = existingNodeDataMap[tocNode.path]
+        const nodeData = { ...tocNode, ...existingNodeData, value: tocNode.path }
+        treeView.value!.addNode(nodeData, { parent: tocNode.dir || undefined })
       }
     }
 
@@ -82,6 +98,10 @@ namespace AppMainArticleTreeView {
     //  Event listeners
     //
     //----------------------------------------------------------------------
+
+    const offTableOfContentsUpdate = services.article.watchTableOfContentsUpdate(async () => {
+      await load(routeParams.userName)
+    })
 
     async function onSelect(e: TreeViewSelectEvent<AppMainArticleTreeNode>) {
       const { node: selectedNode, oldNode: oldSelectedNode } = e

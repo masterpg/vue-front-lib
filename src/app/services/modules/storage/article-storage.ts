@@ -3,7 +3,6 @@ import {
   CreateStorageNodeOptions,
   GetArticleChildrenInput,
   SaveArticleSrcMasterFileResult,
-  StorageArticleDirType,
   StorageNode,
   StoragePaginationInput,
   StoragePaginationResult,
@@ -52,6 +51,7 @@ namespace ArticleStorageService {
     //----------------------------------------------------------------------
 
     const base = AppStorageService.newRawInstance()
+    const helpers = useInternalService()
 
     const config = useConfig()
     const apis = useAPI()
@@ -105,15 +105,37 @@ namespace ArticleStorageService {
       }
     }
 
+    base.removeDir.value = async dirPath => {
+      const result = await base.removeDir.super(dirPath)
+
+      // 目次に影響がある更新が発生したことを通知
+      helpers.article.emitTableOfContentsUpdate()
+
+      return result
+    }
+
     base.renameDir.value = async (dirPath, newName) => {
       const dirNode = base.sgetNode({ path: dirPath })
       if (dirNode.article?.dir) {
         const apiNode = await renameArticleDirAPI(base.toFullPath(dirPath), newName)
         const dirNode = base.setAPINodeToStore(apiNode)
+
+        // 目次に影響がある更新が発生したことを通知
+        helpers.article.emitTableOfContentsUpdate()
+
         return base.toBasePathNodes([dirNode])
       } else {
         return await base.renameDir.super(dirPath, newName)
       }
+    }
+
+    base.setDirShareSettings.value = async (dirPath, input) => {
+      const result = await base.setDirShareSettings.super(dirPath, input)
+
+      // 目次に影響がある更新が発生したことを通知
+      helpers.article.emitTableOfContentsUpdate()
+
+      return result
     }
 
     base.createDir.value = async (dirPath, input) => {
@@ -157,6 +179,9 @@ namespace ArticleStorageService {
         await base.fetchChildren({ path: base.toBasePath(apiNode.path) })
       }
 
+      // 目次に影響がある更新が発生したことを通知
+      helpers.article.emitTableOfContentsUpdate()
+
       return base.toBasePathNode(dirNode)!
     }
 
@@ -171,6 +196,9 @@ namespace ArticleStorageService {
         const _nodes = await base.fetchNodes({ paths })
         nodes.push(..._nodes)
       }
+
+      // 目次に影響がある更新が発生したことを通知
+      helpers.article.emitTableOfContentsUpdate()
 
       return nodes
     }

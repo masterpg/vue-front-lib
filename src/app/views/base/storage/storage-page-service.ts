@@ -7,7 +7,7 @@ import {
   StorageService,
   UploadFileParam,
 } from '@/app/services/modules/storage'
-import { ComputedRef, Ref, WritableComputedRef, computed, ref, watch } from '@vue/composition-api'
+import { ComputedRef, Ref, WritableComputedRef, computed, ref } from '@vue/composition-api'
 import {
   CreateArticleTypeDirInput,
   RequiredStorageNodeShareSettings,

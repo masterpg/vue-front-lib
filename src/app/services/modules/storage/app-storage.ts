@@ -449,12 +449,12 @@ namespace AppStorageService {
       return toBasePathNodes(nodes)
     }
 
-    const removeDir: AppStorageService['removeDir'] = async dirPath => {
+    const removeDir = extendedMethod<AppStorageService['removeDir']>(async dirPath => {
       validateNotBasePathRoot('dirPath', dirPath)
 
       await removeDirAPI(toFullPath(dirPath))
       stores.storage.remove({ path: toFullPath(dirPath) })
-    }
+    })
 
     const removeFile: AppStorageService['removeFile'] = async filePath => {
       validateNotBasePathRoot('filePath', filePath)
@@ -539,14 +539,14 @@ namespace AppStorageService {
       return toBasePathNode(node)!
     })
 
-    const setDirShareSettings: AppStorageService['setDirShareSettings'] = async (dirPath, input) => {
+    const setDirShareSettings = extendedMethod<AppStorageService['setDirShareSettings']>(async (dirPath, input) => {
       validateNotBasePathRoot('dirPath', dirPath)
 
       const apiNode = await setDirShareSettingsAPI(toFullPath(dirPath), input)
       const node = setAPINodeToStore(apiNode)
 
       return toBasePathNode(node)!
-    }
+    })
 
     const setFileShareSettings: AppStorageService['setFileShareSettings'] = async (filePath, input) => {
       validateNotBasePathRoot('filePath', filePath)
