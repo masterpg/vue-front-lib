@@ -1,6 +1,6 @@
 import { DemoAPIContainer, useAPI } from '@/demo/services/apis'
 import { DemoStoreContainer, useStore } from '@/demo/services/stores'
-import { InternalServiceContainer, useInternalService } from '@/app/services/modules/internal'
+import { HelperContainer, useHelper } from '@/app/services/helpers'
 import { ServiceContainer } from '@/app/services'
 import { ShopService } from '@/demo/services/modules/shop'
 
@@ -28,11 +28,11 @@ namespace DemoServiceContainer {
     return instance
   }
 
-  export function newRawInstance(options?: { apis?: DemoAPIContainer; stores?: DemoStoreContainer; internal?: InternalServiceContainer }) {
+  export function newRawInstance(options?: { apis?: DemoAPIContainer; stores?: DemoStoreContainer; helpers?: HelperContainer }) {
     const apis = useAPI(options?.apis)
     const stores = useStore(options?.stores)
-    const internal = useInternalService(options?.internal)
-    const dependency = { apis, stores, internal }
+    const helpers = useHelper(options?.helpers)
+    const dependency = { apis, stores, helpers }
 
     const base = ServiceContainer.newRawInstance(dependency)
 

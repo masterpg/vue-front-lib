@@ -4,11 +4,11 @@ import { ArticleStorageService, StorageService } from '@/app/services/modules/st
 import {
   CreateArticleTypeDirInput,
   StorageArticleDirType,
+  StorageHelper,
   StorageNode,
   StorageNodeShareSettings,
   StorageNodeType,
   StorageType,
-  StorageUtil,
 } from '@/app/services'
 import { GeneralUser, NewTestStorageNodeData, TestServiceContainer, newStorageDirNode, newStorageFileNode } from '../../../../../helpers/app'
 import { Ref, computed, ref } from '@vue/composition-api'
@@ -26,7 +26,7 @@ import { shuffleArray } from 'web-base-lib'
 import { useConfig } from '@/app/config'
 import { useI18n } from '@/app/i18n'
 
-const { EmptyShareSettings } = StorageUtil
+const { EmptyShareSettings } = StorageHelper
 
 //========================================================================
 //
@@ -66,8 +66,8 @@ function newStoragePageService(
     switch (params.storageType) {
       case 'app': {
         const basePath = ''
-        services.appStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
-        services.appStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
+        services.appStorage.toFullPath = nodePath => StorageHelper.toFullPath(basePath, nodePath)
+        services.appStorage.toFullPaths = nodePaths => StorageHelper.toFullPaths(basePath, nodePaths)
         result = {
           storageType: 'app',
           storageService: services.appStorage,
@@ -76,9 +76,9 @@ function newStoragePageService(
         break
       }
       case 'user': {
-        const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
-        services.userStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
-        services.userStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
+        const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
+        services.userStorage.toFullPath = nodePath => StorageHelper.toFullPath(basePath, nodePath)
+        services.userStorage.toFullPaths = nodePaths => StorageHelper.toFullPaths(basePath, nodePaths)
         result = {
           storageType: 'user',
           storageService: services.userStorage,
@@ -87,9 +87,9 @@ function newStoragePageService(
         break
       }
       case 'article': {
-        const basePath = StorageUtil.toArticleRootPath(GeneralUser().uid)
-        services.articleStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
-        services.articleStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
+        const basePath = StorageHelper.toArticleRootPath(GeneralUser().uid)
+        services.articleStorage.toFullPath = nodePath => StorageHelper.toFullPath(basePath, nodePath)
+        services.articleStorage.toFullPaths = nodePaths => StorageHelper.toFullPaths(basePath, nodePaths)
         result = {
           storageType: 'article',
           storageService: services.articleStorage,
@@ -99,8 +99,8 @@ function newStoragePageService(
       }
       default: {
         const basePath = ''
-        services.appStorage.toFullPath = nodePath => StorageUtil.toFullPath(basePath, nodePath)
-        services.appStorage.toFullPaths = nodePaths => StorageUtil.toFullPaths(basePath, nodePaths)
+        services.appStorage.toFullPath = nodePath => StorageHelper.toFullPath(basePath, nodePath)
+        services.appStorage.toFullPaths = nodePaths => StorageHelper.toFullPaths(basePath, nodePaths)
         result = {
           storageType: 'app',
           storageService: services.appStorage,
@@ -251,10 +251,10 @@ function newListBundleFamilyNodes() {
       },
     },
   })
-  const art2_master = newStorageDirNode(StorageUtil.toArticleSrcMasterPath(art2.path), {
+  const art2_master = newStorageDirNode(StorageHelper.toArticleSrcMasterPath(art2.path), {
     article: { file: { type: 'Master' } },
   })
-  const art2_draft = newStorageDirNode(StorageUtil.toArticleSrcDraftPath(art2.path), {
+  const art2_draft = newStorageDirNode(StorageHelper.toArticleSrcDraftPath(art2.path), {
     article: { file: { type: 'Draft' } },
   })
   const art1 = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
@@ -266,10 +266,10 @@ function newListBundleFamilyNodes() {
       },
     },
   })
-  const art1_master = newStorageDirNode(StorageUtil.toArticleSrcMasterPath(art1.path), {
+  const art1_master = newStorageDirNode(StorageHelper.toArticleSrcMasterPath(art1.path), {
     article: { file: { type: 'Master' } },
   })
-  const art1_draft = newStorageDirNode(StorageUtil.toArticleSrcDraftPath(art1.path), {
+  const art1_draft = newStorageDirNode(StorageHelper.toArticleSrcDraftPath(art1.path), {
     article: { file: { type: 'Draft' } },
   })
 
@@ -317,10 +317,10 @@ function newTreeBundleFamilyNodes() {
       },
     },
   })
-  const variable_master = newStorageDirNode(StorageUtil.toArticleSrcMasterPath(variable.path), {
+  const variable_master = newStorageDirNode(StorageHelper.toArticleSrcMasterPath(variable.path), {
     article: { file: { type: 'Master' } },
   })
-  const variable_draft = newStorageDirNode(StorageUtil.toArticleSrcDraftPath(variable.path), {
+  const variable_draft = newStorageDirNode(StorageHelper.toArticleSrcDraftPath(variable.path), {
     article: { file: { type: 'Draft' } },
   })
   const clazz = newStorageDirNode(`${ts.path}/${StorageNode.generateId()}`, {
@@ -332,10 +332,10 @@ function newTreeBundleFamilyNodes() {
       },
     },
   })
-  const clazz_master = newStorageDirNode(StorageUtil.toArticleSrcMasterPath(clazz.path), {
+  const clazz_master = newStorageDirNode(StorageHelper.toArticleSrcMasterPath(clazz.path), {
     article: { file: { type: 'Master' } },
   })
-  const clazz_draft = newStorageDirNode(StorageUtil.toArticleSrcDraftPath(clazz.path), {
+  const clazz_draft = newStorageDirNode(StorageHelper.toArticleSrcDraftPath(clazz.path), {
     article: { file: { type: 'Draft' } },
   })
 
@@ -2248,10 +2248,10 @@ describe('StoragePageService', () => {
         },
         lazyLoadStatus: 'none',
       })
-      const art1_master = newTreeFileNodeInput(StorageUtil.toArticleSrcMasterPath(art1.path), {
+      const art1_master = newTreeFileNodeInput(StorageHelper.toArticleSrcMasterPath(art1.path), {
         article: { file: { type: 'Master' } },
       })
-      const art1_draft = newTreeFileNodeInput(StorageUtil.toArticleSrcDraftPath(art1.path), {
+      const art1_draft = newTreeFileNodeInput(StorageHelper.toArticleSrcDraftPath(art1.path), {
         article: { file: { type: 'Draft' } },
       })
       pageService.setAllTreeNodes([bundle])

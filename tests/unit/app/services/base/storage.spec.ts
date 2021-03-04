@@ -1,9 +1,9 @@
 import { Config, useConfig } from '@/app/config'
 import { GeneralUser, newStorageDirNode, newStorageFileNode } from '../../../../helpers/app'
-import { StorageArticleDirType, StorageArticleFileType, StorageNode, StorageUtil } from '@/app/services'
+import { StorageHelper, StorageNode } from '@/app/services'
 import { shuffleArray } from 'web-base-lib'
 
-describe('StorageUtil', () => {
+describe('StorageHelper', () => {
   let config: Config
 
   beforeEach(() => {
@@ -12,21 +12,21 @@ describe('StorageUtil', () => {
 
   describe('toFullPathNode', () => {
     it('ベーシックケース - 単一指定', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
       const d1 = newStorageDirNode(`d1`)
 
-      const actual = StorageUtil.toFullPathNode(`${basePath}`, d1)
+      const actual = StorageHelper.toFullPathNode(`${basePath}`, d1)
 
       expect(actual.dir).toBe(`${basePath}`)
       expect(actual.path).toBe(`${basePath}/d1`)
     })
 
     it('ベーシックケース - 複数指定', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
       const d1 = newStorageDirNode(`d1`)
       const d2 = newStorageDirNode(`d2`)
 
-      const actual = StorageUtil.toFullPathNode(`${basePath}`, [d1, d2])
+      const actual = StorageHelper.toFullPathNode(`${basePath}`, [d1, d2])
 
       const [_d1, _d2] = actual
       expect(_d1.dir).toBe(`${basePath}`)
@@ -38,29 +38,29 @@ describe('StorageUtil', () => {
 
   describe('toBasePathNode', () => {
     it('ベーシックケース', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
       const d1 = newStorageDirNode(`${basePath}/d1`)
 
-      const actual = StorageUtil.toBasePathNode(`${basePath}`, d1)!
+      const actual = StorageHelper.toBasePathNode(`${basePath}`, d1)!
 
       expect(actual.dir).toBe(``)
       expect(actual.path).toBe(`d1`)
     })
 
     it('指定ノードのパスがベースパスと同じ場合', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
       const baseNode = newStorageDirNode(`${basePath}`)
 
-      const actual = StorageUtil.toBasePathNode(`${basePath}`, baseNode)
+      const actual = StorageHelper.toBasePathNode(`${basePath}`, baseNode)
 
       expect(actual).toBeUndefined()
     })
 
     it('指定ノードのパスがベースパス配下のノードでない場合', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
       const d11 = newStorageDirNode(`d1/d11`)
 
-      const actual = StorageUtil.toBasePathNode(`${basePath}`, d11)
+      const actual = StorageHelper.toBasePathNode(`${basePath}`, d11)
 
       expect(actual).toBeUndefined()
     })
@@ -68,11 +68,11 @@ describe('StorageUtil', () => {
 
   describe('toBasePathNodes', () => {
     it('ベーシックケース', async () => {
-      const baseNode = newStorageDirNode(StorageUtil.toUserRootPath(GeneralUser().uid))
+      const baseNode = newStorageDirNode(StorageHelper.toUserRootPath(GeneralUser().uid))
       const d1 = newStorageDirNode(`${baseNode.path}/d1`)
       const d2 = newStorageDirNode(`${baseNode.path}/d2`)
 
-      const actual = StorageUtil.toBasePathNodes(`${baseNode.path}`, [d1, d2])
+      const actual = StorageHelper.toBasePathNodes(`${baseNode.path}`, [d1, d2])
 
       const [_d1, _d2] = actual
       expect(_d1.dir).toBe(``)
@@ -82,11 +82,11 @@ describe('StorageUtil', () => {
     })
 
     it('指定ノードのパスがベースパスと同じ場合', async () => {
-      const baseNode = newStorageDirNode(StorageUtil.toUserRootPath(GeneralUser().uid))
+      const baseNode = newStorageDirNode(StorageHelper.toUserRootPath(GeneralUser().uid))
       const d1 = newStorageDirNode(`${baseNode.path}/d1`)
       const d2 = newStorageDirNode(`${baseNode.path}/d2`)
 
-      const actual = StorageUtil.toBasePathNodes(`${baseNode.path}`, [baseNode, d1, d2])
+      const actual = StorageHelper.toBasePathNodes(`${baseNode.path}`, [baseNode, d1, d2])
 
       const [_d1, _d2] = actual
       expect(actual.length).toBe(2)
@@ -97,11 +97,11 @@ describe('StorageUtil', () => {
     })
 
     it('指定ノードのパスがベースパス配下のノードでない場合', async () => {
-      const baseNode = newStorageDirNode(StorageUtil.toUserRootPath(GeneralUser().uid))
+      const baseNode = newStorageDirNode(StorageHelper.toUserRootPath(GeneralUser().uid))
       const d1 = newStorageDirNode(`${baseNode.path}/d1`)
       const x1 = newStorageDirNode(`x1`)
 
-      const actual = StorageUtil.toBasePathNodes(`${baseNode.path}`, [d1, x1])
+      const actual = StorageHelper.toBasePathNodes(`${baseNode.path}`, [d1, x1])
 
       const [_d1] = actual
       expect(actual.length).toBe(1)
@@ -112,25 +112,25 @@ describe('StorageUtil', () => {
 
   describe('toFullPath', () => {
     it('ベーシックケース', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
 
-      const actual = StorageUtil.toFullPath(`${basePath}`, `d1`)
+      const actual = StorageHelper.toFullPath(`${basePath}`, `d1`)
 
       expect(actual).toBe(`${basePath}/d1`)
     })
 
     it('パス指定しなかった場合', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
 
-      const actual = StorageUtil.toFullPath(`${basePath}`, undefined)
+      const actual = StorageHelper.toFullPath(`${basePath}`, undefined)
 
       expect(actual).toBe(`${basePath}`)
     })
 
     it('スラッシュ付き', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
 
-      const actual = StorageUtil.toFullPath(`/${basePath}/`, `/`)
+      const actual = StorageHelper.toFullPath(`/${basePath}/`, `/`)
 
       expect(actual).toBe(`${basePath}`)
     })
@@ -138,9 +138,9 @@ describe('StorageUtil', () => {
 
   describe('toFullPaths', () => {
     it('ベーシックケース - 複数指定', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
 
-      const actual = StorageUtil.toFullPaths(`${basePath}`, [`d1`, `d2`])
+      const actual = StorageHelper.toFullPaths(`${basePath}`, [`d1`, `d2`])
 
       expect(actual[0]).toBe(`${basePath}/d1`)
       expect(actual[1]).toBe(`${basePath}/d2`)
@@ -149,41 +149,41 @@ describe('StorageUtil', () => {
 
   describe('toBasePath', () => {
     it('ベーシックケース', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
 
-      const actual = StorageUtil.toBasePath(`${basePath}`, `${basePath}/d1`)
+      const actual = StorageHelper.toBasePath(`${basePath}`, `${basePath}/d1`)
 
       expect(actual).toBe(`d1`)
     })
 
     it('指定パスがベースパスと同じ場合', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
 
-      const actual = StorageUtil.toBasePath(`${basePath}`, `${basePath}`)
+      const actual = StorageHelper.toBasePath(`${basePath}`, `${basePath}`)
 
       expect(actual).toBe(``)
     })
 
     it('指定パスがベースパスと同じ場合 - ベースパスにスラッシュ付き', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
 
-      const actual = StorageUtil.toBasePath(`/${basePath}/`, `${basePath}`)
+      const actual = StorageHelper.toBasePath(`/${basePath}/`, `${basePath}`)
 
       expect(actual).toBe(``)
     })
 
     it('指定パスがベースパスと同じ場合 - 指定パスにスラッシュ付き', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
 
-      const actual = StorageUtil.toBasePath(`${basePath}`, `/${basePath}/`)
+      const actual = StorageHelper.toBasePath(`${basePath}`, `/${basePath}/`)
 
       expect(actual).toBe(``)
     })
 
     it('指定パスがベースパス配下のパスでない場合', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
 
-      const actual = StorageUtil.toBasePath(`${basePath}`, `d1/d11`)
+      const actual = StorageHelper.toBasePath(`${basePath}`, `d1/d11`)
 
       expect(actual).toBe(`d1/d11`) // ベースパス変換されない
     })
@@ -191,9 +191,9 @@ describe('StorageUtil', () => {
 
   describe('toBasePaths', () => {
     it('ベーシックケース', async () => {
-      const basePath = StorageUtil.toUserRootPath(GeneralUser().uid)
+      const basePath = StorageHelper.toUserRootPath(GeneralUser().uid)
 
-      const actual = StorageUtil.toBasePaths(`${basePath}`, [`${basePath}/d1`, `${basePath}/d2`])
+      const actual = StorageHelper.toBasePaths(`${basePath}`, [`${basePath}/d1`, `${basePath}/d2`])
 
       expect(actual[0]).toBe(`d1`)
       expect(actual[1]).toBe(`d2`)
@@ -239,9 +239,9 @@ describe('StorageUtil', () => {
 
       const users = newStorageDirNode(config.storage.user.rootName)
 
-      const userRoot = newStorageDirNode(StorageUtil.toUserRootPath(GeneralUser().uid))
+      const userRoot = newStorageDirNode(StorageHelper.toUserRootPath(GeneralUser().uid))
 
-      const articleRoot = newStorageDirNode(StorageUtil.toArticleRootPath(GeneralUser().uid))
+      const articleRoot = newStorageDirNode(StorageHelper.toArticleRootPath(GeneralUser().uid))
 
       const blog = newStorageDirNode(`${articleRoot.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'blog', type: 'ListBundle', sortOrder: 2 } },
@@ -249,10 +249,10 @@ describe('StorageUtil', () => {
       const blog_artA = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art1', type: 'Article', sortOrder: 2 } },
       })
-      const blog_artA_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(blog_artA.path), {
+      const blog_artA_master = newStorageFileNode(StorageHelper.toArticleSrcMasterPath(blog_artA.path), {
         article: { file: { type: 'Master' } },
       })
-      const blog_artA_draft = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(blog_artA.path), {
+      const blog_artA_draft = newStorageFileNode(StorageHelper.toArticleSrcMasterPath(blog_artA.path), {
         article: { file: { type: 'Draft' } },
       })
       const blog_artA_images = newStorageDirNode(`${blog_artA.path}/images`)
@@ -262,10 +262,10 @@ describe('StorageUtil', () => {
       const blog_artB = newStorageDirNode(`${blog.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art2', type: 'Article', sortOrder: 1 } },
       })
-      const blog_artB_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(blog_artB.path), {
+      const blog_artB_master = newStorageFileNode(StorageHelper.toArticleSrcMasterPath(blog_artB.path), {
         article: { file: { type: 'Master' } },
       })
-      const blog_artB_draft = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(blog_artB.path), {
+      const blog_artB_draft = newStorageFileNode(StorageHelper.toArticleSrcMasterPath(blog_artB.path), {
         article: { file: { type: 'Draft' } },
       })
 
@@ -284,26 +284,26 @@ describe('StorageUtil', () => {
       const programming_ts_artE = newStorageDirNode(`${programming_ts.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art1', type: 'Article', sortOrder: 2 } },
       })
-      const programming_ts_artE_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(programming_ts_artE.path), {
+      const programming_ts_artE_master = newStorageFileNode(StorageHelper.toArticleSrcMasterPath(programming_ts_artE.path), {
         article: { file: { type: 'Master' } },
       })
-      const programming_ts_artE_draft = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(programming_ts_artE.path), {
+      const programming_ts_artE_draft = newStorageFileNode(StorageHelper.toArticleSrcMasterPath(programming_ts_artE.path), {
         article: { file: { type: 'Draft' } },
       })
       const programming_ts_artF = newStorageDirNode(`${programming_ts.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'art2', type: 'Article', sortOrder: 1 } },
       })
-      const programming_ts_artF_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(programming_ts_artF.path), {
+      const programming_ts_artF_master = newStorageFileNode(StorageHelper.toArticleSrcMasterPath(programming_ts_artF.path), {
         article: { file: { type: 'Master' } },
       })
-      const programming_ts_artF_draft = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(programming_ts_artF.path), {
+      const programming_ts_artF_draft = newStorageFileNode(StorageHelper.toArticleSrcMasterPath(programming_ts_artF.path), {
         article: { file: { type: 'Draft' } },
       })
       const programming_js = newStorageDirNode(`${programming.path}/${StorageNode.generateId()}`, {
         article: { dir: { name: 'JavaScript', type: 'Category', sortOrder: 1 } },
       })
 
-      const assets = newStorageDirNode(StorageUtil.toArticleAssetsPath(GeneralUser().uid))
+      const assets = newStorageDirNode(StorageHelper.toArticleAssetsPath(GeneralUser().uid))
       const assets_picC = newStorageFileNode(`${assets.path}/picC.png`)
       const assets_picD = newStorageFileNode(`${assets.path}/picD.png`)
 
@@ -352,7 +352,7 @@ describe('StorageUtil', () => {
       ])
 
       // テスト対象実行
-      StorageUtil.sortNodes(nodes)
+      StorageHelper.sortNodes(nodes)
 
       expect(nodes[0]).toBe(users)
       expect(nodes[1]).toBe(userRoot)
@@ -401,7 +401,7 @@ describe('StorageUtil', () => {
       //     ├art1
       //     └art2
 
-      const articleRootPath = StorageUtil.toArticleRootPath(GeneralUser().uid)
+      const articleRootPath = StorageHelper.toArticleRootPath(GeneralUser().uid)
       const programmingPath = `${articleRootPath}/programming`
 
       const programming_art1 = newStorageDirNode(`${programmingPath}/${StorageNode.generateId()}`, {
@@ -442,7 +442,7 @@ describe('StorageUtil', () => {
       ])
 
       // テスト対象実行
-      StorageUtil.sortNodes(nodes)
+      StorageHelper.sortNodes(nodes)
 
       expect(nodes[0]).toBe(programming_art1)
       expect(nodes[1]).toBe(programming_art2)
@@ -456,7 +456,7 @@ describe('StorageUtil', () => {
 
     it('パターン③', async () => {
       // エラーも何も発生しないことを検証
-      StorageUtil.sortNodes([])
+      StorageHelper.sortNodes([])
     })
   })
 
@@ -467,7 +467,7 @@ describe('StorageUtil', () => {
         const articleRootName = config.storage.article.rootName
 
         // '/'なしで終わる
-        const actual = StorageUtil.getStorageType(`${userRootName}/taro/${articleRootName}`)
+        const actual = StorageHelper.getStorageType(`${userRootName}/taro/${articleRootName}`)
 
         expect(actual).toBe('article')
       })
@@ -477,7 +477,7 @@ describe('StorageUtil', () => {
         const articleRootName = config.storage.article.rootName
 
         // '/'で終わる
-        const actual = StorageUtil.getStorageType(`${userRootName}/taro/${articleRootName}/`)
+        const actual = StorageHelper.getStorageType(`${userRootName}/taro/${articleRootName}/`)
 
         expect(actual).toBe('article')
       })
@@ -487,7 +487,7 @@ describe('StorageUtil', () => {
         const articleRootName = config.storage.article.rootName
 
         // '/'の続きがある
-        const actual = StorageUtil.getStorageType(`${userRootName}/taro/${articleRootName}/aaa`)
+        const actual = StorageHelper.getStorageType(`${userRootName}/taro/${articleRootName}/aaa`)
 
         expect(actual).toBe('article')
       })
@@ -498,7 +498,7 @@ describe('StorageUtil', () => {
         const userRootName = config.storage.user.rootName
 
         // '/'なしで終わる
-        const actual = StorageUtil.getStorageType(`${userRootName}/taro/aaa`)
+        const actual = StorageHelper.getStorageType(`${userRootName}/taro/aaa`)
 
         expect(actual).toBe('user')
       })
@@ -507,7 +507,7 @@ describe('StorageUtil', () => {
         const userRootName = config.storage.user.rootName
 
         // '/'で終わる
-        const actual = StorageUtil.getStorageType(`${userRootName}/taro/aaa/`)
+        const actual = StorageHelper.getStorageType(`${userRootName}/taro/aaa/`)
 
         expect(actual).toBe('user')
       })
@@ -516,14 +516,14 @@ describe('StorageUtil', () => {
     describe('タイプがappの場合', () => {
       it('パターン①', async () => {
         // '/'なしで終わる
-        const actual = StorageUtil.getStorageType(`aaa`)
+        const actual = StorageHelper.getStorageType(`aaa`)
 
         expect(actual).toBe('app')
       })
 
       it('パターン②', async () => {
         // '/'で終わる
-        const actual = StorageUtil.getStorageType(`aaa/`)
+        const actual = StorageHelper.getStorageType(`aaa/`)
 
         expect(actual).toBe('app')
       })
@@ -537,7 +537,7 @@ describe('StorageUtil', () => {
         const articleRootName = config.storage.article.rootName
 
         // '/'なしで終わる
-        const actual = StorageUtil.isRootNode(`${userRootName}/taro/${articleRootName}`)
+        const actual = StorageHelper.isRootNode(`${userRootName}/taro/${articleRootName}`)
 
         expect(actual).toBeTruthy()
       })
@@ -547,7 +547,7 @@ describe('StorageUtil', () => {
         const articleRootName = config.storage.article.rootName
 
         // '/'ありで終わる
-        const actual = StorageUtil.isRootNode(`${userRootName}/taro/${articleRootName}/`)
+        const actual = StorageHelper.isRootNode(`${userRootName}/taro/${articleRootName}/`)
 
         expect(actual).toBeTruthy()
       })
@@ -557,7 +557,7 @@ describe('StorageUtil', () => {
         const articleRootName = config.storage.article.rootName
 
         // '/'ありで終わる
-        const actual = StorageUtil.isRootNode(`${userRootName}/taro/${articleRootName}/aaa`)
+        const actual = StorageHelper.isRootNode(`${userRootName}/taro/${articleRootName}/aaa`)
 
         expect(actual).toBeFalsy()
       })
@@ -568,7 +568,7 @@ describe('StorageUtil', () => {
         const userRootName = config.storage.user.rootName
 
         // '/'なしで終わる
-        const actual = StorageUtil.isRootNode(`${userRootName}/taro`)
+        const actual = StorageHelper.isRootNode(`${userRootName}/taro`)
 
         expect(actual).toBeTruthy()
       })
@@ -577,7 +577,7 @@ describe('StorageUtil', () => {
         const userRootName = config.storage.user.rootName
 
         // '/'ありで終わる
-        const actual = StorageUtil.isRootNode(`${userRootName}/taro/`)
+        const actual = StorageHelper.isRootNode(`${userRootName}/taro/`)
 
         expect(actual).toBeTruthy()
       })
@@ -586,7 +586,7 @@ describe('StorageUtil', () => {
         const userRootName = config.storage.user.rootName
 
         // '/'ありで終わる
-        const actual = StorageUtil.isRootNode(`${userRootName}/taro/aaa`)
+        const actual = StorageHelper.isRootNode(`${userRootName}/taro/aaa`)
 
         expect(actual).toBeFalsy()
       })
@@ -594,22 +594,22 @@ describe('StorageUtil', () => {
 
     describe('アプリケーションルート', () => {
       it(`空文字の場合`, async () => {
-        const actual = StorageUtil.isRootNode(``)
+        const actual = StorageHelper.isRootNode(``)
         expect(actual).toBeTruthy()
       })
 
       it(`undefinedの場合`, async () => {
-        const actual = StorageUtil.isRootNode(undefined)
+        const actual = StorageHelper.isRootNode(undefined)
         expect(actual).toBeTruthy()
       })
 
       it(`'/'の場合`, async () => {
-        const actual = StorageUtil.isRootNode(`/`)
+        const actual = StorageHelper.isRootNode(`/`)
         expect(actual).toBeFalsy()
       })
 
       it(`何かしらアプリケーションノードが指定された場合`, async () => {
-        const actual = StorageUtil.isRootNode(`aaa`)
+        const actual = StorageHelper.isRootNode(`aaa`)
         expect(actual).toBeFalsy()
       })
     })

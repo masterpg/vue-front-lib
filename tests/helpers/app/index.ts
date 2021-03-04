@@ -1,6 +1,6 @@
 import { TestAPIContainer, TestServiceContainer, TestStoreContainer } from './services'
 import { Dialogs } from '@/app/dialogs'
-import { InternalServiceContainer } from '@/app/services/modules/internal'
+import { HelperContainer } from '@/app/services/helpers'
 import { shallowMount } from '@vue/test-utils'
 import { useService } from '@/app/services'
 
@@ -12,8 +12,8 @@ import { useService } from '@/app/services'
 
 interface ProvidedDependency {
   apis: TestAPIContainer
+  helpers: HelperContainer
   stores: TestStoreContainer
-  internal: InternalServiceContainer
   services: TestServiceContainer
 }
 
@@ -44,8 +44,8 @@ function provideDependency(setup?: SetupFunc): ProvidedDependency {
     },
   })
 
-  const { apis, stores, internal, services } = wrapper.vm
-  return { apis, stores, internal, services }
+  const { apis, helpers, stores, services } = wrapper.vm
+  return { apis, helpers, stores, services }
 }
 
 /**
@@ -60,17 +60,17 @@ function provideDependency(setup?: SetupFunc): ProvidedDependency {
 function provideDependencyToVue(setup?: SetupFunc): ProvidedDependency {
   if (!provided) {
     const {
-      dependency: { apis, stores, internal },
-      ...service
+      dependency: { apis, helpers, stores },
+      ...services
     } = TestServiceContainer.newInstance()
-    useService(service)
+    useService(services)
     Dialogs.provide(td.object())
 
     provided = {
       apis,
+      helpers,
       stores,
-      internal,
-      services: service,
+      services,
     }
   }
 

@@ -2,7 +2,7 @@ import { CartItem, Product } from '@/demo/services/base'
 import { ComputedRef, watch } from '@vue/composition-api'
 import { DeepReadonly } from 'web-base-lib'
 import { useAPI } from '@/demo/services/apis'
-import { useInternalService } from '@/app/services/modules/internal'
+import { useHelper } from '@/app/services/helpers'
 import { useStore } from '@/demo/services/stores'
 
 //========================================================================
@@ -48,8 +48,8 @@ namespace ShopService {
     //----------------------------------------------------------------------
 
     const apis = useAPI()
+    const helpers = useHelper()
     const stores = useStore()
-    const internal = useInternalService()
 
     //----------------------------------------------------------------------
     //
@@ -64,7 +64,7 @@ namespace ShopService {
     }
 
     const fetchCartItems: ShopService['fetchCartItems'] = async () => {
-      internal.auth.validateSignedIn()
+      helpers.auth.validateSignedIn()
 
       const cartItems = await apis.getCartItems()
       stores.cart.setAll(cartItems)
@@ -72,7 +72,7 @@ namespace ShopService {
     }
 
     const addItemToCart: ShopService['addItemToCart'] = async productId => {
-      internal.auth.validateSignedIn()
+      helpers.auth.validateSignedIn()
 
       const product = stores.product.sgetById(productId)
       if (product.stock <= 0) {
@@ -88,7 +88,7 @@ namespace ShopService {
     }
 
     const removeItemFromCart: ShopService['removeItemFromCart'] = async productId => {
-      internal.auth.validateSignedIn()
+      helpers.auth.validateSignedIn()
 
       const cartItem = stores.cart.sgetByProductId(productId)
       if (cartItem.quantity > 1) {
@@ -99,7 +99,7 @@ namespace ShopService {
     }
 
     const checkout: ShopService['checkout'] = async () => {
-      internal.auth.validateSignedIn()
+      helpers.auth.validateSignedIn()
 
       await apis.checkoutCart()
 
@@ -155,7 +155,7 @@ namespace ShopService {
     //----------------------------------------------------------------------
 
     watch(
-      () => internal.auth.isSignedIn.value,
+      () => helpers.auth.isSignedIn.value,
       async (newValue, oldValue) => {
         // サインインが完了している場合
         if (newValue) {

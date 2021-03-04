@@ -8,11 +8,11 @@ import {
   StorageNode,
   StorageNodeKeyInput,
   StorageNodeShareSettings,
-  StorageUtil,
   User,
   UserInput,
 } from '@/app/services'
 import { AppAdminToken, GeneralToken, GeneralUser, provideDependency } from '../../../../helpers/app'
+import { StorageHelper } from '@/app/services'
 import { sleep } from 'web-base-lib'
 
 jest.setTimeout(25000)
@@ -131,7 +131,7 @@ describe('Storage API', () => {
 
       const actual = await apis.getStorageDescendants({ path: `${TEST_DIR}/d1`, includeBase: true })
 
-      StorageUtil.sortNodes(actual.list)
+      StorageHelper.sortNodes(actual.list)
       expect(actual.nextPageToken).toBeUndefined()
       expect(actual.list.length).toBe(6)
       expect(actual.list[0].path).toBe(`${TEST_DIR}/d1`)
@@ -148,7 +148,7 @@ describe('Storage API', () => {
 
       const actual = await apis.callStoragePaginationAPI(apis.getStorageDescendants, { path: `${TEST_DIR}/d1`, includeBase: true }, { maxChunk: 2 })
 
-      StorageUtil.sortNodes(actual)
+      StorageHelper.sortNodes(actual)
       expect(actual.length).toBe(6)
       expect(actual[0].path).toBe(`${TEST_DIR}/d1`)
       expect(actual[1].path).toBe(`${TEST_DIR}/d1/d11`)
@@ -175,7 +175,7 @@ describe('Storage API', () => {
 
       const actual = await apis.getStorageChildren({ path: `${TEST_DIR}/d1`, includeBase: true })
 
-      StorageUtil.sortNodes(actual.list)
+      StorageHelper.sortNodes(actual.list)
       expect(actual.nextPageToken).toBeUndefined()
       expect(actual.list.length).toBe(4)
       expect(actual.list[0].path).toBe(`${TEST_DIR}/d1`)
@@ -190,7 +190,7 @@ describe('Storage API', () => {
 
       const actual = await apis.callStoragePaginationAPI(apis.getStorageChildren, { path: `${TEST_DIR}/d1`, includeBase: true }, { maxChunk: 2 })
 
-      StorageUtil.sortNodes(actual)
+      StorageHelper.sortNodes(actual)
       expect(actual.length).toBe(4)
       expect(actual[0].path).toBe(`${TEST_DIR}/d1`)
       expect(actual[1].path).toBe(`${TEST_DIR}/d1/d11`)
@@ -345,7 +345,7 @@ describe('Storage API', () => {
       await apis.moveStorageDir(`${TEST_DIR}/d1`, `${TEST_DIR}/d2/d1`)
 
       const d1_and_descendants = (await apis.getStorageDescendants({ path: `${TEST_DIR}/d2/d1`, includeBase: true })).list
-      StorageUtil.sortNodes(d1_and_descendants)
+      StorageHelper.sortNodes(d1_and_descendants)
       expect(d1_and_descendants.length).toBe(6)
       expect(d1_and_descendants[0].path).toBe(`${TEST_DIR}/d2/d1`)
       expect(d1_and_descendants[1].path).toBe(`${TEST_DIR}/d2/d1/d11`)
@@ -388,7 +388,7 @@ describe('Storage API', () => {
       await await apis.renameStorageDir(`${TEST_DIR}/d1`, `d2`)
 
       const d2_and_descendants = (await apis.getStorageDescendants({ path: `${TEST_DIR}/d2`, includeBase: true })).list
-      StorageUtil.sortNodes(d2_and_descendants)
+      StorageHelper.sortNodes(d2_and_descendants)
       expect(d2_and_descendants.length).toBe(6)
       expect(d2_and_descendants[0].path).toBe(`${TEST_DIR}/d2`)
       expect(d2_and_descendants[1].path).toBe(`${TEST_DIR}/d2/d11`)
@@ -503,7 +503,7 @@ describe('Storage API', () => {
       const { apis } = provideDependency()
       apis.setTestAuthToken(GeneralToken())
 
-      articleRootPath = StorageUtil.toArticleRootPath(GeneralToken().uid)
+      articleRootPath = StorageHelper.toArticleRootPath(GeneralToken().uid)
       await apis.createStorageHierarchicalDirs([articleRootPath])
 
       bundle = await apis.createArticleTypeDir({
@@ -573,7 +573,7 @@ describe('Storage API', () => {
       const { apis } = provideDependency()
       apis.setTestAuthToken(GeneralToken())
 
-      articleRootPath = StorageUtil.toArticleRootPath(GeneralToken().uid)
+      articleRootPath = StorageHelper.toArticleRootPath(GeneralToken().uid)
       await apis.createStorageHierarchicalDirs([articleRootPath])
 
       bundle = await apis.createArticleTypeDir({
@@ -612,7 +612,7 @@ describe('Storage API', () => {
       const { apis } = provideDependency()
       apis.setTestAuthToken(GeneralToken())
 
-      articleRootPath = StorageUtil.toArticleRootPath(GeneralToken().uid)
+      articleRootPath = StorageHelper.toArticleRootPath(GeneralToken().uid)
       await apis.createStorageHierarchicalDirs([articleRootPath])
 
       bundle = await apis.createArticleTypeDir({
@@ -646,7 +646,7 @@ describe('Storage API', () => {
       const { apis } = provideDependency()
       apis.setTestAuthToken(GeneralToken())
 
-      articleRootPath = StorageUtil.toArticleRootPath(GeneralToken().uid)
+      articleRootPath = StorageHelper.toArticleRootPath(GeneralToken().uid)
       await apis.createStorageHierarchicalDirs([articleRootPath])
 
       bundle = await apis.createArticleTypeDir({
@@ -678,7 +678,7 @@ describe('Storage API', () => {
       await apis.setArticleSortOrder([art1.path, art2.path])
 
       const bundle_children = (await apis.getStorageChildren({ path: bundle.path })).list
-      const [_art1, _art2] = StorageUtil.sortNodes(bundle_children)
+      const [_art1, _art2] = StorageHelper.sortNodes(bundle_children)
       expect(_art1.path).toBe(art1.path)
       expect(_art1.article?.dir?.sortOrder).toBe(2)
       expect(_art2.path).toBe(art2.path)
@@ -697,7 +697,7 @@ describe('Storage API', () => {
       const { apis } = provideDependency()
       apis.setTestAuthToken(GeneralToken())
 
-      articleRootPath = StorageUtil.toArticleRootPath(GeneralToken().uid)
+      articleRootPath = StorageHelper.toArticleRootPath(GeneralToken().uid)
       await apis.createStorageHierarchicalDirs([articleRootPath])
 
       bundle = await apis.createArticleTypeDir({
@@ -713,11 +713,11 @@ describe('Storage API', () => {
       })
 
       art1_master = (await apis.getStorageNode({
-        path: StorageUtil.toArticleSrcMasterPath(art1.path),
+        path: StorageHelper.toArticleSrcMasterPath(art1.path),
       }))!
 
       art1_draft = (await apis.getStorageNode({
-        path: StorageUtil.toArticleSrcDraftPath(art1.path),
+        path: StorageHelper.toArticleSrcDraftPath(art1.path),
       }))!
     }
 
@@ -755,7 +755,7 @@ describe('Storage API', () => {
       const { apis } = provideDependency()
       apis.setTestAuthToken(GeneralToken())
 
-      articleRootPath = StorageUtil.toArticleRootPath(GeneralToken().uid)
+      articleRootPath = StorageHelper.toArticleRootPath(GeneralToken().uid)
       await apis.createStorageHierarchicalDirs([articleRootPath])
 
       bundle = await apis.createArticleTypeDir({
@@ -771,7 +771,7 @@ describe('Storage API', () => {
       })
 
       art1_draft = (await apis.getStorageNode({
-        path: StorageUtil.toArticleSrcDraftPath(art1.path),
+        path: StorageHelper.toArticleSrcDraftPath(art1.path),
       }))!
     }
 
@@ -802,7 +802,7 @@ describe('Storage API', () => {
       const { apis } = provideDependency()
       apis.setTestAuthToken(GeneralToken())
 
-      articleRootPath = StorageUtil.toArticleRootPath(GeneralToken().uid)
+      articleRootPath = StorageHelper.toArticleRootPath(GeneralToken().uid)
       await apis.createStorageHierarchicalDirs([articleRootPath])
 
       bundle = await apis.createArticleTypeDir({
@@ -869,7 +869,7 @@ describe('Storage API', () => {
       const { apis } = provideDependency()
       apis.setTestAuthToken(GeneralToken())
 
-      articleRootPath = StorageUtil.toArticleRootPath(GeneralToken().uid)
+      articleRootPath = StorageHelper.toArticleRootPath(GeneralToken().uid)
       await apis.createStorageHierarchicalDirs([articleRootPath])
 
       bundle = await apis.createArticleTypeDir({

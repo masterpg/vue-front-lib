@@ -1,7 +1,7 @@
 import { CartItem, Product } from '@/demo/services'
 import { TestDemoAPIContainer, provideDependency, toBeCopyCartItem, toBeCopyProduct } from '../../../../../helpers/demo'
+import { AuthHelper } from '@/app/services/helpers'
 import { CartItemEditResponse } from '@/demo/services/apis/base'
-import { InternalAuthService } from '@/app/services/modules/internal'
 import dayjs from 'dayjs'
 
 //========================================================================
@@ -109,9 +109,9 @@ describe('ShopService', () => {
 
   describe('fetchCartItems', () => {
     it('ベーシックケース', async () => {
-      const { stores, internal, service } = provideDependency(({ apis, internal }) => {
+      const { stores, helpers, service } = provideDependency(({ apis, helpers }) => {
         // モック設定
-        td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
+        td.replace<AuthHelper, 'validateSignedIn'>(helpers.auth, 'validateSignedIn')
         const getCartItems = td.replace<TestDemoAPIContainer, 'getCartItems'>(apis, 'getCartItems')
         td.when(getCartItems()).thenResolve(CartItems())
       })
@@ -124,16 +124,16 @@ describe('ShopService', () => {
       toBeCopyCartItem(stores, actual)
 
       // validateSignedInの呼び出しを検証
-      const exp = td.explain(internal.auth.validateSignedIn)
+      const exp = td.explain(helpers.auth.validateSignedIn)
       expect(exp.calls.length).toBe(1) // 1回呼び出されるはず
       expect(exp.calls[0].args[0]).toBeUndefined() // 1回目の呼び出しが引数なしなはず
     })
 
     it('APIでエラーが発生した場合', async () => {
       const expected = new Error()
-      const { stores, service } = provideDependency(({ apis, internal }) => {
+      const { stores, service } = provideDependency(({ apis, helpers }) => {
         // モック設定
-        td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
+        td.replace<AuthHelper, 'validateSignedIn'>(helpers.auth, 'validateSignedIn')
         const getCartItems = td.replace<TestDemoAPIContainer, 'getCartItems'>(apis, 'getCartItems')
         td.when(getCartItems()).thenReject(expected)
       })
@@ -178,11 +178,11 @@ describe('ShopService', () => {
         },
       }
 
-      const { apis, stores, internal, service } = provideDependency(({ apis, stores, internal }) => {
+      const { apis, stores, helpers, service } = provideDependency(({ apis, stores, helpers }) => {
         // ストア設定
         stores.product.setAll(products)
         // モック設定
-        td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
+        td.replace<AuthHelper, 'validateSignedIn'>(helpers.auth, 'validateSignedIn')
         const addCartItems = td.replace<TestDemoAPIContainer, 'addCartItems'>(apis, 'addCartItems')
         td.when(addCartItems(td.matchers.anything())).thenResolve([response])
       })
@@ -209,7 +209,7 @@ describe('ShopService', () => {
       expect(product.stock).toBe(response.product.stock)
 
       // validateSignedInの呼び出しを検証
-      const exp = td.explain(internal.auth.validateSignedIn)
+      const exp = td.explain(helpers.auth.validateSignedIn)
       expect(exp.calls.length).toBe(1)
       expect(exp.calls[0].args[0]).toBeUndefined()
     })
@@ -235,12 +235,12 @@ describe('ShopService', () => {
         },
       }
 
-      const { apis, stores, internal, service } = provideDependency(({ apis, stores, internal }) => {
+      const { apis, stores, helpers, service } = provideDependency(({ apis, stores, helpers }) => {
         // ストア設定
         stores.product.setAll(products)
         stores.cart.setAll(CartItems())
         // モック設定
-        td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
+        td.replace<AuthHelper, 'validateSignedIn'>(helpers.auth, 'validateSignedIn')
         const updateCartItems = td.replace<TestDemoAPIContainer, 'updateCartItems'>(apis, 'updateCartItems')
         td.when(updateCartItems(td.matchers.anything())).thenResolve([response])
       })
@@ -265,7 +265,7 @@ describe('ShopService', () => {
       expect(product.stock).toBe(response.product.stock)
 
       // validateSignedInの呼び出しを検証
-      const exp = td.explain(internal.auth.validateSignedIn)
+      const exp = td.explain(helpers.auth.validateSignedIn)
       expect(exp.calls.length).toBe(1)
       expect(exp.calls[0].args[0]).toBeUndefined()
     })
@@ -276,11 +276,11 @@ describe('ShopService', () => {
       // 現在の商品の在庫数を設定
       product1.stock = 0
 
-      const { stores, service } = provideDependency(({ apis, stores, internal }) => {
+      const { stores, service } = provideDependency(({ apis, stores, helpers }) => {
         // ストア設定
         stores.product.setAll(products)
         // モック設定
-        td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
+        td.replace<AuthHelper, 'validateSignedIn'>(helpers.auth, 'validateSignedIn')
         const addCartItems = td.replace<TestDemoAPIContainer, 'addCartItems'>(apis, 'addCartItems')
         td.when(addCartItems(td.matchers.anything())).thenReject(new Error())
       })
@@ -303,11 +303,11 @@ describe('ShopService', () => {
       const product1 = Products()[0]
 
       const expected = new Error()
-      const { stores, service } = provideDependency(({ apis, stores, internal }) => {
+      const { stores, service } = provideDependency(({ apis, stores, helpers }) => {
         // ストア設定
         stores.product.setAll(Products())
         // モック設定
-        td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
+        td.replace<AuthHelper, 'validateSignedIn'>(helpers.auth, 'validateSignedIn')
         const addCartItems = td.replace<TestDemoAPIContainer, 'addCartItems'>(apis, 'addCartItems')
         td.when(addCartItems(td.matchers.anything())).thenReject(expected)
       })
@@ -351,12 +351,12 @@ describe('ShopService', () => {
         },
       }
 
-      const { apis, stores, internal, service } = provideDependency(({ apis, stores, internal }) => {
+      const { apis, stores, helpers, service } = provideDependency(({ apis, stores, helpers }) => {
         // ストア設定
         stores.product.setAll(products)
         stores.cart.setAll(cartItems)
         // モック設定
-        td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
+        td.replace<AuthHelper, 'validateSignedIn'>(helpers.auth, 'validateSignedIn')
         const updateCartItems = td.replace<TestDemoAPIContainer, 'updateCartItems'>(apis, 'updateCartItems')
         td.when(updateCartItems(td.matchers.anything())).thenResolve([response])
       })
@@ -381,7 +381,7 @@ describe('ShopService', () => {
       expect(product.stock).toBe(response.product.stock)
 
       // validateSignedInの呼び出しを検証
-      const exp = td.explain(internal.auth.validateSignedIn)
+      const exp = td.explain(helpers.auth.validateSignedIn)
       expect(exp.calls.length).toBe(1)
       expect(exp.calls[0].args[0]).toBeUndefined()
     })
@@ -409,12 +409,12 @@ describe('ShopService', () => {
         },
       }
 
-      const { apis, stores, internal, service } = provideDependency(({ apis, stores, internal }) => {
+      const { apis, stores, helpers, service } = provideDependency(({ apis, stores, helpers }) => {
         // ストア設定
         stores.product.setAll(products)
         stores.cart.setAll(cartItems)
         // モック設定
-        td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
+        td.replace<AuthHelper, 'validateSignedIn'>(helpers.auth, 'validateSignedIn')
         const removeCartItems = td.replace<TestDemoAPIContainer, 'removeCartItems'>(apis, 'removeCartItems')
         td.when(removeCartItems(td.matchers.anything())).thenResolve([response])
       })
@@ -432,7 +432,7 @@ describe('ShopService', () => {
       expect(product.stock).toBe(response.product.stock)
 
       // validateSignedInの呼び出しを検証
-      const exp = td.explain(internal.auth.validateSignedIn)
+      const exp = td.explain(helpers.auth.validateSignedIn)
       expect(exp.calls.length).toBe(1)
       expect(exp.calls[0].args[0]).toBeUndefined()
     })
@@ -445,12 +445,12 @@ describe('ShopService', () => {
       cartItem1.quantity = 1
 
       const expected = new Error()
-      const { stores, service } = provideDependency(({ apis, stores, internal }) => {
+      const { stores, service } = provideDependency(({ apis, stores, helpers }) => {
         // ストア設定
         stores.product.setAll(Products())
         stores.cart.setAll(cartItems)
         // モック設定
-        td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
+        td.replace<AuthHelper, 'validateSignedIn'>(helpers.auth, 'validateSignedIn')
         const removeCartItems = td.replace<TestDemoAPIContainer, 'removeCartItems'>(apis, 'removeCartItems')
         td.when(removeCartItems(td.matchers.anything())).thenReject(expected)
       })
@@ -472,12 +472,12 @@ describe('ShopService', () => {
 
   describe('checkout', () => {
     it('ベーシックケース', async () => {
-      const { apis, service } = provideDependency(({ apis, stores, internal }) => {
+      const { apis, service } = provideDependency(({ apis, stores, helpers }) => {
         // ストア設定
         stores.product.setAll(Products())
         stores.cart.setAll(CartItems())
         // モック設定
-        td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
+        td.replace<AuthHelper, 'validateSignedIn'>(helpers.auth, 'validateSignedIn')
         const checkoutCart = td.replace<TestDemoAPIContainer, 'checkoutCart'>(apis, 'checkoutCart')
         td.when(checkoutCart()).thenResolve(true)
       })
@@ -492,12 +492,12 @@ describe('ShopService', () => {
 
     it('APIでエラーが発生した場合', async () => {
       const expected = new Error()
-      const { stores, service } = provideDependency(({ apis, stores, internal }) => {
+      const { stores, service } = provideDependency(({ apis, stores, helpers }) => {
         // ストア設定
         stores.product.setAll(Products())
         stores.cart.setAll(CartItems())
         // モック設定
-        td.replace<InternalAuthService, 'validateSignedIn'>(internal.auth, 'validateSignedIn')
+        td.replace<AuthHelper, 'validateSignedIn'>(helpers.auth, 'validateSignedIn')
         const checkoutCart = td.replace<TestDemoAPIContainer, 'checkoutCart'>(apis, 'checkoutCart')
         td.when(checkoutCart()).thenReject(expected)
       })

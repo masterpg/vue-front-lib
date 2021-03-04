@@ -1,6 +1,6 @@
 import { DeepReadonly, removeStartDirChars } from 'web-base-lib'
 import { GeneralUser, cloneStorageNode, newStorageDirNode, newStorageFileNode, provideDependency } from '../../../../../helpers/app'
-import { StorageNode, StorageNodeShareSettings, StorageUtil } from '@/app/services'
+import { StorageHelper, StorageNode, StorageNodeShareSettings } from '@/app/services'
 import dayjs from 'dayjs'
 import path from 'path'
 import { useConfig } from '@/app/config'
@@ -511,7 +511,7 @@ describe('StorageStore', () => {
         cloneStorageNode(f111, { share: NEW_SHARE_SETTINGS, createdAt: UPDATED_AT, updatedAt: UPDATED_AT }),
       ])
 
-      StorageUtil.sortNodes(actual)
+      StorageHelper.sortNodes(actual)
       expect(actual.length).toBe(2)
       expect(actual[0].id).toBe(d11.id)
       expect(actual[0].share).toEqual(NEW_SHARE_SETTINGS)
@@ -690,7 +690,7 @@ describe('StorageStore', () => {
 
       const actual = stores.storage.addList([d12, f121])
 
-      StorageUtil.sortNodes(actual)
+      StorageHelper.sortNodes(actual)
       expect(actual[0]).toEqual(d12)
       expect(actual[1]).toEqual(f121)
 
@@ -755,7 +755,7 @@ describe('StorageStore', () => {
 
         const actual = stores.storage.removeList({ paths: [d11.path, d1.path] })
 
-        StorageUtil.sortNodes(actual)
+        StorageHelper.sortNodes(actual)
         expect(actual.length).toBe(4)
         expect(actual[0].path).toBe('d1')
         expect(actual[1].path).toBe('d1/d11')
@@ -818,7 +818,7 @@ describe('StorageStore', () => {
 
         const actual = stores.storage.removeList({ ids: [d11.id, d1.id] })
 
-        StorageUtil.sortNodes(actual)
+        StorageHelper.sortNodes(actual)
         expect(actual.length).toBe(4)
         expect(actual[0].path).toBe('d1')
         expect(actual[1].path).toBe('d1/d11')
@@ -974,7 +974,7 @@ describe('StorageStore', () => {
 
       const actual = stores.storage.move('d1', 'd2/d1')
 
-      StorageUtil.sortNodes(actual)
+      StorageHelper.sortNodes(actual)
       expect(actual.length).toBe(4)
       expect(actual[0].path).toBe('d2/d1')
       expect(actual[1].path).toBe('d2/d1/d11')
@@ -998,7 +998,7 @@ describe('StorageStore', () => {
 
       const actual = stores.storage.move('d1/d12', 'd12')
 
-      StorageUtil.sortNodes(actual)
+      StorageHelper.sortNodes(actual)
       expect(actual.length).toBe(1)
       expect(actual[0].path).toBe('d12')
 
@@ -1019,7 +1019,7 @@ describe('StorageStore', () => {
 
       const actual = stores.storage.move('d1/d11/f111.txt', 'd1/d12/f111.txt')
 
-      StorageUtil.sortNodes(actual)
+      StorageHelper.sortNodes(actual)
       expect(actual.length).toBe(1)
       expect(actual[0].path).toBe('d1/d12/f111.txt')
 
@@ -1040,7 +1040,7 @@ describe('StorageStore', () => {
 
       const actual = stores.storage.move('d1/d11/f111.txt', 'f111.txt')
 
-      StorageUtil.sortNodes(actual)
+      StorageHelper.sortNodes(actual)
       expect(actual.length).toBe(1)
       expect(actual[0].path).toBe('f111.txt')
 
@@ -1129,7 +1129,7 @@ describe('StorageStore', () => {
       //     └fileZ.txt
 
       // 戻り値の検証
-      StorageUtil.sortNodes(actual)
+      StorageHelper.sortNodes(actual)
       expect(actual.map(node => node.path)).toEqual([
         'dB/d1',
         'dB/d1/d11',

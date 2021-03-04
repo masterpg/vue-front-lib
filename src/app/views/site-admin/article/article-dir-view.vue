@@ -108,10 +108,10 @@
 </template>
 
 <script lang="ts">
-import { StorageArticleFileType, StorageUtil } from '@/app/services'
 import { StorageDirTableRow, StorageDirView } from '@/app/views/base/storage/storage-dir-view.vue'
 import { computed, defineComponent, ref } from '@vue/composition-api'
 import { StorageDirTable } from '@/app/views/base/storage/storage-dir-table.vue'
+import { StorageHelper } from '@/app/services'
 import { StorageNodePopupMenu } from '@/app/views/base/storage/storage-node-popup-menu.vue'
 import { StoragePageService } from '@/app/views/base/storage'
 import { useI18n } from '@/app/i18n'
@@ -284,7 +284,7 @@ namespace ArticleDirView {
       }
 
       base.sortMethod.value = rows => {
-        return StorageUtil.sortChildren([...rows]) as any
+        return StorageHelper.sortChildren([...rows]) as any
       }
 
       function rowFilter(rows: StorageDirTableRow[]): StorageDirTableRow[] {

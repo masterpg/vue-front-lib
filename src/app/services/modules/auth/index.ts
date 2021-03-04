@@ -1,6 +1,6 @@
 import 'firebase/auth'
+import { AuthHelper, useHelper } from '@/app/services/helpers'
 import { AuthStatus, SignInStatus, User, UserInput } from '@/app/services/base'
-import { InternalAuthService, useInternalService } from '@/app/services/modules/internal'
 import { ComputedRef } from '@vue/composition-api'
 import { DeepReadonly } from 'web-base-lib'
 import { Dialog } from 'quasar'
@@ -59,9 +59,9 @@ interface AuthService {
 
   setUserInfo(input: UserInput): Promise<{ result: boolean; code: string; errorMessage: string }>
 
-  validateSignedIn: InternalAuthService['validateSignedIn']
+  validateSignedIn: AuthHelper['validateSignedIn']
 
-  watchSignInStatus: InternalAuthService['watchSignInStatus']
+  watchSignInStatus: AuthHelper['watchSignInStatus']
 }
 
 enum AuthProviderType {
@@ -91,7 +91,7 @@ namespace AuthService {
 
     const apis = useAPI()
     const stores = useStore()
-    const internal = useInternalService()
+    const helpers = useHelper()
     const i18n = useI18n()
 
     const googleProvider = new firebase.auth.GoogleAuthProvider()
@@ -101,7 +101,7 @@ namespace AuthService {
     facebookProvider.addScope('user_birthday')
 
     // サインイン中に設定
-    internal.auth.changeStatus('SigningIn')
+    helpers.auth.changeStatus('SigningIn')
 
     //----------------------------------------------------------------------
     //
@@ -109,15 +109,15 @@ namespace AuthService {
     //
     //----------------------------------------------------------------------
 
-    const authStatus = internal.auth.authStatus
+    const authStatus = helpers.auth.authStatus
 
-    const signInStatus = internal.auth.signInStatus
+    const signInStatus = helpers.auth.signInStatus
 
-    const isSignedIn = internal.auth.isSignedIn
+    const isSignedIn = helpers.auth.isSignedIn
 
-    const isSigningIn = internal.auth.isSigningIn
+    const isSigningIn = helpers.auth.isSigningIn
 
-    const isNotSignedIn = internal.auth.isNotSignedIn
+    const isNotSignedIn = helpers.auth.isNotSignedIn
 
     //----------------------------------------------------------------------
     //
@@ -320,9 +320,9 @@ namespace AuthService {
       return { result: true, code: '', errorMessage: '' }
     }
 
-    const validateSignedIn = internal.auth.validateSignedIn
+    const validateSignedIn = helpers.auth.validateSignedIn
 
-    const watchSignInStatus = internal.auth.watchSignInStatus
+    const watchSignInStatus = helpers.auth.watchSignInStatus
 
     //----------------------------------------------------------------------
     //
@@ -353,14 +353,14 @@ namespace AuthService {
           await stores.user.reflectCustomToken()
         }
         // 認証ステータスを設定
-        internal.auth.changeStatus(authData.status)
+        helpers.auth.changeStatus(authData.status)
       }
       // ローカルに認証ユーザーがない場合
       else {
         // ストアをクリア
         stores.user.clear()
         // 認証ステータスをクリア
-        internal.auth.changeStatus('None')
+        helpers.auth.changeStatus('None')
       }
     }
 

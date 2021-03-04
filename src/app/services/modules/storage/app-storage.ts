@@ -15,14 +15,13 @@ import {
 import { DeepReadonly, arrayToDict, removeBothEndsSlash, splitArrayChunk, splitHierarchicalPaths } from 'web-base-lib'
 import { StorageDownloader, StorageFileDownloader } from '@/app/services/modules/storage/download'
 import { StorageFileUploader, StorageUploader } from '@/app/services/modules/storage/upload'
+import { StorageHelper, useHelper } from '@/app/services/helpers'
 import { computed, reactive, watch } from '@vue/composition-api'
 import { StorageService } from '@/app/services/modules/storage/base'
 import { StorageURLUploader } from '@/app/services/modules/storage/upload-url'
-import { StorageUtil } from '@/app/services/base'
 import { extendedMethod } from '@/app/base'
 import firebase from 'firebase/app'
 import { useAPI } from '@/app/services/apis'
-import { useInternalService } from '@/app/services/modules/internal'
 import { useStore } from '@/app/services/stores'
 
 //========================================================================
@@ -155,7 +154,7 @@ namespace AppStorageService {
 
     const apis = useAPI()
     const stores = useStore()
-    const internal = useInternalService()
+    const helpers = useHelper()
 
     const state = reactive({
       basePath: '',
@@ -727,7 +726,7 @@ namespace AppStorageService {
 
     const apiNodesToStorageNodes: AppStorageService['apiNodesToStorageNodes'] = apiNodes => {
       return apiNodes.map(apiNode => {
-        return { ...apiNode, url: StorageUtil.getNodeURL(apiNode.id) }
+        return { ...apiNode, url: StorageHelper.getNodeURL(apiNode.id) }
       })
     }
 
@@ -805,27 +804,27 @@ namespace AppStorageService {
     }
 
     const toFullPath: AppStorageService['toFullPath'] = nodePath => {
-      return StorageUtil.toFullPath(basePath.value, nodePath)
+      return StorageHelper.toFullPath(basePath.value, nodePath)
     }
 
     const toFullPaths: AppStorageService['toFullPaths'] = nodePaths => {
-      return StorageUtil.toFullPaths(basePath.value, nodePaths)
+      return StorageHelper.toFullPaths(basePath.value, nodePaths)
     }
 
     const toBasePath: AppStorageService['toBasePath'] = nodePath => {
-      return StorageUtil.toBasePath(basePath.value, nodePath)
+      return StorageHelper.toBasePath(basePath.value, nodePath)
     }
 
     const toBasePaths: AppStorageService['toBasePaths'] = nodePaths => {
-      return StorageUtil.toBasePaths(basePath.value, nodePaths)
+      return StorageHelper.toBasePaths(basePath.value, nodePaths)
     }
 
     const toBasePathNode: AppStorageService['toBasePathNode'] = node => {
-      return StorageUtil.toBasePathNode(basePath.value, node)
+      return StorageHelper.toBasePathNode(basePath.value, node)
     }
 
     const toBasePathNodes: AppStorageService['toBasePathNodes'] = nodes => {
-      return StorageUtil.toBasePathNodes(basePath.value, nodes)
+      return StorageHelper.toBasePathNodes(basePath.value, nodes)
     }
 
     const validateNotBasePathRoot: AppStorageService['validateNotBasePathRoot'] = (argName, nodePath) => {
@@ -853,7 +852,7 @@ namespace AppStorageService {
     //----------------------------------------------------------------------
 
     watch(
-      () => internal.auth.isSignedIn.value,
+      () => helpers.auth.isSignedIn.value,
       newValue => {
         !newValue && stores.storage.removeAll()
       }

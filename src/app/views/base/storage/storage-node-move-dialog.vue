@@ -66,7 +66,7 @@
 
 <script lang="ts">
 import { Ref, SetupContext, computed, defineComponent, ref } from '@vue/composition-api'
-import { StorageArticleDirType, StorageNode, StorageNodeType, StorageType, StorageUtil } from '@/app/services'
+import { StorageHelper, StorageNode, StorageType } from '@/app/services'
 import { TreeView, TreeViewEvent, TreeViewLazyLoadEvent } from '@/app/components/tree-view'
 import { removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
 import { Dialog } from '@/app/components/dialog'
@@ -182,7 +182,7 @@ namespace StorageNodeMoveDialog {
         }
       }
 
-      StorageUtil.sortNodes(movingNodes.value)
+      StorageHelper.sortNodes(movingNodes.value)
 
       return base.open({
         opened: async () => {

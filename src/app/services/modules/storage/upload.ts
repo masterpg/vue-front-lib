@@ -1,7 +1,8 @@
 import 'firebase/storage'
 import { ComputedRef, Ref, UnwrapRef, computed, reactive, ref, watch } from '@vue/composition-api'
-import { StorageNode, StorageNodeKeyInput, StorageUtil } from '@/app/services/base'
+import { StorageNode, StorageNodeKeyInput } from '@/app/services/base'
 import { removeBothEndsSlash, splitHierarchicalPaths } from 'web-base-lib'
+import { StorageHelper } from '@/app/services/helpers'
 import { StorageService } from '@/app/services/modules/storage/base'
 import _path from 'path'
 import { extendedMethod } from '@/app/base'
@@ -494,7 +495,7 @@ namespace StorageFileUploader {
       // ファイルノード情報を取得
       const node = storageService.getNode({ path: path.value })
       const nodeId = node?.id || StorageNode.generateId()
-      const uid = StorageUtil.extractUId(storageService.basePath.value) || undefined
+      const uid = StorageHelper.extractUId(storageService.basePath.value) || undefined
 
       // アップロード先の参照を取得
       await setFileAccessAuth({ id: nodeId, path: path.value })

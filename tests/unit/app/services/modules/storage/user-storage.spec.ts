@@ -32,7 +32,7 @@ describe('UserStorageService', () => {
   let toFullPaths: TestUserStorageService['toFullPaths']
 
   beforeEach(async () => {
-    provideDependency(({ services, internal }) => {
+    provideDependency(({ services, helpers }) => {
       // Firebaseの認証状態が変化した際の処理は実行されたくないので無効化
       services.auth.firebaseOnAuthStateChanged.value = async user => {}
       // ベースパスをモック化

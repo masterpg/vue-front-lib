@@ -1,4 +1,4 @@
-import { ArticleHelper, useInternalService } from '@/app/services/modules/internal'
+import { ArticleHelper, useHelper } from '@/app/services/helpers'
 import { ArticleTableOfContentsNode } from '@/app/services'
 import { extendedMethod } from '@/app/base'
 import { useAPI } from '@/app/services/apis'
@@ -36,7 +36,7 @@ namespace ArticleService {
     //----------------------------------------------------------------------
 
     const apis = useAPI()
-    const helpers = useInternalService()
+    const helpers = useHelper()
 
     //----------------------------------------------------------------------
     //

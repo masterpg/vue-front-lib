@@ -1,10 +1,10 @@
 import { DeepPartial, removeBothEndsSlash, removeStartDirChars } from 'web-base-lib'
-import { StorageArticleSettings, StorageNode, StorageUtil } from '@/app/services'
+import { StorageArticleSettings, StorageHelper, StorageNode } from '@/app/services'
 import { TestServiceContainer } from '../index'
 import _path from 'path'
 import dayjs from 'dayjs'
 import { merge } from 'lodash'
-const { EmptyShareSettings } = StorageUtil
+const { EmptyShareSettings } = StorageHelper
 
 //========================================================================
 //
@@ -39,7 +39,7 @@ function newStorageDirNode(dirPath: string, data?: NewTestStorageNodeData): Stor
     name,
     dir,
     path: dirPath,
-    url: StorageUtil.getNodeURL(nodeId),
+    url: StorageHelper.getNodeURL(nodeId),
     contentType: data.contentType || '',
     size: data.size || 0,
     share: merge(EmptyShareSettings(), data.share),
@@ -63,7 +63,7 @@ function newStorageFileNode(filePath: string, data?: NewTestStorageNodeData): St
     name,
     dir,
     path: filePath,
-    url: StorageUtil.getNodeURL(nodeId),
+    url: StorageHelper.getNodeURL(nodeId),
     contentType: data.contentType || 'text/plain; charset=utf-8',
     size: data.size || 5,
     share: merge(EmptyShareSettings(), data.share),

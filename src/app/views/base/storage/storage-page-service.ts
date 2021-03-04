@@ -14,13 +14,13 @@ import {
   SaveArticleSrcMasterFileResult,
   StorageArticleDirType,
   StorageArticleSettings,
+  StorageHelper,
   StorageNode,
   StorageNodeGetKeyInput,
   StorageNodeGetUnderInput,
   StorageNodeShareSettings,
   StorageNodeType,
   StorageType,
-  StorageUtil,
   useService,
 } from '@/app/services'
 import { DeepPartial, PartialAre, arrayToDict, pickProps, removeBothEndsSlash, removeStartDirChars, splitHierarchicalPaths } from 'web-base-lib'
@@ -756,7 +756,7 @@ namespace StoragePageService {
 
     const setTreeNodes: StoragePageService['setTreeNodes'] = nodes => {
       // 上位ノードから順に追加または更新する必要があるためソートする
-      nodes = StorageUtil.sortNodes([...nodes])
+      nodes = StorageHelper.sortNodes([...nodes])
 
       for (const node of nodes) {
         setTreeNode(node)
@@ -840,7 +840,7 @@ namespace StoragePageService {
     }
 
     const mergeAllTreeNodes: StoragePageService['mergeAllTreeNodes'] = nodes => {
-      nodes = StorageUtil.sortNodes([...nodes])
+      nodes = StorageHelper.sortNodes([...nodes])
 
       const nodeDict = arrayToDict(nodes, 'path')
 
@@ -1302,7 +1302,7 @@ namespace StoragePageService {
         label: getDisplayNodeName(source),
         icon: getNodeIcon(source),
         lazy: source.nodeType === 'Dir',
-        sortFunc: StorageUtil.childrenSortFunc,
+        sortFunc: StorageHelper.childrenSortFunc,
         id: source.id,
         nodeType: source.nodeType,
         contentType: source.contentType,
@@ -1395,7 +1395,7 @@ namespace StoragePageService {
     const isArticleRootUnder: StoragePageService['isArticleRootUnder'] = key => {
       const node = storageService.getNode(key)
       if (!node) return false
-      return StorageUtil.isArticleRootUnder(storageService.toFullPath(node.path))
+      return StorageHelper.isArticleRootUnder(storageService.toFullPath(node.path))
     }
 
     const isAssetsDir: StoragePageService['isAssetsDir'] = key => {
@@ -1629,7 +1629,7 @@ namespace StoragePageService {
       opened: false,
       lazy: false,
       lazyLoadStatus: 'none',
-      sortFunc: StorageUtil.childrenSortFunc,
+      sortFunc: StorageHelper.childrenSortFunc,
       selected: false,
       id: '',
       nodeType: 'Dir',

@@ -9,7 +9,7 @@ import {
   newStorageFileNode,
   provideDependency,
 } from '../../../../../helpers/app'
-import { StorageNode, StorageUtil } from '@/app/services'
+import { StorageHelper, StorageNode } from '@/app/services'
 import _path from 'path'
 import dayjs from 'dayjs'
 import { useConfig } from '@/app/config'
@@ -414,14 +414,14 @@ describe('AppStorageService', () => {
           },
         },
       })
-      const art1_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(art1.path), {
+      const art1_master = newStorageFileNode(StorageHelper.toArticleSrcMasterPath(art1.path), {
         article: {
           file: {
             type: 'Master',
           },
         },
       })
-      const art1_draft = newStorageFileNode(StorageUtil.toArticleSrcDraftPath(art1.path), {
+      const art1_draft = newStorageFileNode(StorageHelper.toArticleSrcDraftPath(art1.path), {
         article: {
           file: {
             type: 'Draft',
@@ -721,10 +721,10 @@ describe('AppStorageService', () => {
           },
         },
       })
-      const art1_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(art1.path), {
+      const art1_master = newStorageFileNode(StorageHelper.toArticleSrcMasterPath(art1.path), {
         article: { file: { type: 'Master' } },
       })
-      const art1_draft = newStorageFileNode(StorageUtil.toArticleSrcDraftPath(art1.path), {
+      const art1_draft = newStorageFileNode(StorageHelper.toArticleSrcDraftPath(art1.path), {
         article: { file: { type: 'Draft' } },
       })
       const {
@@ -806,10 +806,10 @@ describe('AppStorageService', () => {
           },
         },
       })
-      const art1_master = newStorageFileNode(StorageUtil.toArticleSrcMasterPath(art1.path), {
+      const art1_master = newStorageFileNode(StorageHelper.toArticleSrcMasterPath(art1.path), {
         article: { file: { type: 'Master' } },
       })
-      const art1_draft = newStorageFileNode(StorageUtil.toArticleSrcDraftPath(art1.path), {
+      const art1_draft = newStorageFileNode(StorageHelper.toArticleSrcDraftPath(art1.path), {
         article: { file: { type: 'Draft' } },
       })
       const {

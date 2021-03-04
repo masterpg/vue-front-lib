@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Img, ImgTemplate } from '@/app/components/img'
-import { StorageUtil, getIdToken } from '@/app/services'
+import { StorageHelper, getIdToken } from '@/app/services'
 import axios, { AxiosResponse, Canceler } from 'axios'
 import { defineComponent, onMounted, onUnmounted, ref, watch } from '@vue/composition-api'
 
@@ -81,7 +81,7 @@ namespace StorageImg {
         // 画像の入力ソースを取得
         let src: string
         if (props.nodeId) {
-          src = StorageUtil.getNodeURL(props.nodeId)
+          src = StorageHelper.getNodeURL(props.nodeId)
         } else {
           src = props.src
         }
