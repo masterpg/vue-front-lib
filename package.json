@@ -46,6 +46,7 @@
     "markdown-it-sup": "^1.0.0",
     "monaco-editor": "^0.21.3",
     "nanoevents": "^5.1.11",
+    "path-to-regexp": "^6.2.0",
     "quasar": "^1.15.1",
     "register-service-worker": "^1.7.2",
     "twemoji": "^13.0.1",

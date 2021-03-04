@@ -18,7 +18,6 @@
       > span
         pointer-events: unset
         @extend %app-link
-        font-weight: map-get($text-weights, "medium")
 </style>
 
 <template>

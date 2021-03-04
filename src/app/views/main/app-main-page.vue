@@ -14,6 +14,13 @@
 
 .drawer-scroll-area
   height: 100%
+
+  .expansion-item
+    color: $text-primary-bold-color
+    font-weight: $text-weight-bold
+
+    .selected-item
+      color: $pink-5
 </style>
 
 <template>
@@ -55,33 +62,47 @@
 
     <q-drawer v-model="leftDrawerOpen" :width="300" :breakpoint="1440" bordered content-class="bg-grey-2">
       <q-scroll-area class="drawer-scroll-area">
+        <!-- Article Browser -->
+        <q-expansion-item
+          v-model="isArticleBrowserExpanded"
+          class="expansion-item"
+          icon="fas fa-newspaper"
+          :label="t('index.mainMenu.articleBrowser')"
+          expand-separator
+        >
+          <AppMainArticleTreeView ref="articleTreeView" />
+        </q-expansion-item>
+
         <!-- Site Admin -->
         <q-expansion-item
           v-show="isSignedIn"
           v-model="isSiteAdminExpanded"
+          class="expansion-item"
           icon="fas fa-user-cog"
           :label="t('index.mainMenu.siteAdmin')"
           expand-separator
         >
           <q-list padding>
             <template v-for="(item, index) in siteAdminItems">
-              <q-item :key="index" v-ripple :to="item.path" class="app-ml-20" clickable>
+              <q-item :key="index" v-ripple :to="item.path" class="app-ml-20" active-class="selected-item" clickable>
                 <q-item-section>{{ item.title }}, {{ item.path }}</q-item-section>
               </q-item>
             </template>
           </q-list>
         </q-expansion-item>
+
         <!-- App Admin -->
         <q-expansion-item
           v-show="isSignedIn && user.isAppAdmin"
           v-model="isAppAdminExpanded"
+          class="expansion-item"
           icon="fas fa-cog"
           :label="t('index.mainMenu.appAdmin')"
           expand-separator
         >
           <q-list padding>
             <template v-for="(item, index) in appAdminItems">
-              <q-item :key="index" v-ripple :to="item.path" class="app-ml-20" clickable>
+              <q-item :key="index" v-ripple :to="item.path" class="app-ml-20" active-class="selected-item" clickable>
                 <q-item-section>{{ item.title }}, {{ item.path }}</q-item-section>
               </q-item>
             </template>
@@ -99,8 +120,9 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref, watch } from '@vue/composition-api'
-import { useRouteParams, useRoutes } from '@/app/router'
+import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api'
+import { useRoute, useRouteParams, useRoutes } from '@/app/router'
+import { AppMainArticleTreeView } from '@/app/views/main/app-main-article-tree-view.vue'
 import { Dialogs } from '@/app/dialogs'
 import { Notify } from 'quasar'
 import { Screen } from 'quasar'
@@ -111,9 +133,24 @@ import { useServiceWorker } from '@/app/service-worker'
 export default defineComponent({
   components: {
     Dialogs: Dialogs.clazz,
+    AppMainArticleTreeView: AppMainArticleTreeView.clazz,
   },
 
   setup() {
+    //----------------------------------------------------------------------
+    //
+    //  Lifecycle hooks
+    //
+    //----------------------------------------------------------------------
+
+    onMounted(async () => {
+      if (routeParams.userName) {
+        await articleTreeView.value!.load(routeParams.userName)
+      } else {
+        // TODO URLにユーザー名がない場合はNotFoundページへ遷移
+      }
+    })
+
     //----------------------------------------------------------------------
     //
     //  Variables
@@ -122,14 +159,17 @@ export default defineComponent({
 
     const services = useService()
     const serviceWorker = useServiceWorker()
-    const routes = useRoutes()
     const i18n = useI18n()
-    const { userName } = useRouteParams()
+    const routes = useRoutes()
+    const route = useRoute()
+    const routeParams = useRouteParams()
 
     const dialogsRef = ref<Dialogs>()
     Dialogs.provide(dialogsRef)
+    const articleTreeView = ref<AppMainArticleTreeView>()
 
     const leftDrawerOpen = ref(Screen.gt.md ? true : false)
+    const isArticleBrowserExpanded = ref(true)
     const isSiteAdminExpanded = ref(true)
     const isAppAdminExpanded = ref(true)
     const isSignedIn = services.auth.isSignedIn
@@ -141,11 +181,11 @@ export default defineComponent({
       return [
         {
           title: String(i18n.t('index.mainMenu.articleAdmin')),
-          path: routes.siteAdmin.article.path.value,
+          path: routes.siteAdmin.article.basePath,
         },
         {
           title: String(i18n.t('index.mainMenu.userStorageAdmin')),
-          path: routes.siteAdmin.storage.path.value,
+          path: routes.siteAdmin.storage.basePath,
         },
       ]
     })
@@ -154,7 +194,7 @@ export default defineComponent({
       return [
         {
           title: String(i18n.t('index.mainMenu.appStorageAdmin')),
-          path: routes.appAdmin.storage.path.value,
+          path: routes.appAdmin.storage.basePath,
         },
       ]
     })
@@ -166,10 +206,24 @@ export default defineComponent({
     //----------------------------------------------------------------------
 
     watch(
+      () => route.path,
+      (newValue, oldValue) => {
+        console.log(newValue)
+      }
+    )
+
+    watch(
+      () => routeParams.userName,
+      (newValue, oldValue) => {
+        newValue && articleTreeView.value!.load(newValue)
+      }
+    )
+
+    watch(
       () => services.auth.signInStatus.value,
       (newValue, oldValue) => {
         if (newValue === 'None') {
-          const needSignedIn = [routes.siteAdmin.article, routes.siteAdmin.storage, routes.appAdmin.storage].some(page => page.isCurrent.value)
+          const needSignedIn = [routes.siteAdmin.article, routes.siteAdmin.storage, routes.appAdmin.storage].some(route => route.isCurrent)
           if (needSignedIn) {
             routes.home.move()
           }
@@ -242,7 +296,9 @@ export default defineComponent({
     return {
       ...i18n,
       dialogsRef,
+      articleTreeView,
       leftDrawerOpen,
+      isArticleBrowserExpanded,
       isSiteAdminExpanded,
       isAppAdminExpanded,
       isSignedIn,

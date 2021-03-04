@@ -20,6 +20,7 @@ import { UploadEndedEvent } from '@/app/components/storage'
 import _path from 'path'
 import anime from 'animejs'
 import { removeBothEndsSlash } from 'web-base-lib'
+import { useRoute } from '@/app/router'
 
 //========================================================================
 //
@@ -56,6 +57,8 @@ namespace StoragePage {
     })
 
     onUnmounted(() => {
+      offBeforeRouteUpdate()
+      offBeforeRouteLeave()
       StoragePageService.destroyInstance(storageType)
     })
 
@@ -83,6 +86,7 @@ namespace StoragePage {
     const screenSize = useScreenSize()
     const isSignedIn = pageService.isSignedIn
     const isSigningIn = pageService.isSigningIn
+    const route = useRoute()
 
     const state = reactive({
       visibleDirDetailView: false,
@@ -440,6 +444,25 @@ namespace StoragePage {
     //
     //----------------------------------------------------------------------
 
+    const offBeforeRouteUpdate = pageService.route.onBeforeRouteUpdate(async (to, from) => {
+      console.log(`onBeforeRouteUpdate`)
+    })
+
+    const offBeforeRouteLeave = pageService.route.onBeforeRouteLeave(async (to, from) => {
+      console.log(`onBeforeRouteLeave`)
+    })
+
+    watch(
+      () => route.path,
+      (newValue, oldValue) => {
+        if (!isSignedIn.value || !pageService.route.isCurrent) return
+        // URLからノードIDを取得
+        const nodeId = pageService.route.getNodeId()
+        // ページの表示ノードを変更
+        changePageNode({ id: nodeId })
+      }
+    )
+
     watch(
       () => isSignedIn.value,
       async newValue => {
@@ -448,17 +471,6 @@ namespace StoragePage {
         } else {
           clear()
         }
-      }
-    )
-
-    watch(
-      () => ctx.root.$route,
-      (newValue, oldValue) => {
-        if (!isSignedIn.value || !pageService.route.isCurrent.value) return
-        // URLからノードIDを取得
-        const nodeId = pageService.route.getNodeId()
-        // ページの表示ノードを変更
-        changePageNode({ id: nodeId })
       }
     )
 

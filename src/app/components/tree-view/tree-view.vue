@@ -4,7 +4,7 @@
 .child-container
   color: var(--tree-view-color, $app-link-color)
   font-size: var(--tree-view-font-size, 14px)
-  font-weight: var(--tree-font-weight, $app-link-font-weight)
+  font-weight: var(--tree-font-weight, $text-weight-regular)
   padding: var(--tree-padding, 10px)
 </style>
 

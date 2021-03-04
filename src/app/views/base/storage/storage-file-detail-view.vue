@@ -15,7 +15,7 @@
 
 .node-label
   @extend %text-subtitle1
-  font-weight: map-get($text-weights, "bold")
+  font-weight: $text-weight-bold
   overflow-wrap: anywhere
   margin-top: 7px
 

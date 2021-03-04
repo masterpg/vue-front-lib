@@ -11,9 +11,6 @@
 .title
   @extend %text-h6
 
-.emphasis
-  font-weight: map-get($text-weights, "medium")
-
 .error-message
   @extend %text-caption
   color: $text-error-color

@@ -47,10 +47,10 @@ export default {
     mainMenu: {
       articleBrowser: 'Articles',
       siteAdmin: 'Site Admin',
-      articleAdmin: 'Articles',
-      userStorageAdmin: 'Storage',
+      articleAdmin: 'Article Admin',
+      userStorageAdmin: 'Storage Admin',
       appAdmin: 'Application Admin',
-      appStorageAdmin: 'Storage',
+      appStorageAdmin: 'Storage Admin',
     },
     updated: 'The site needs to be updated.',
   },
@@ -99,7 +99,7 @@ export default {
   },
   storage: {
     appRootName: 'Storage',
-    userRootName: 'Storage',
+    userRootName: 'My Storage',
     articleRootName: 'Article',
     uploading: 'Uploading',
     uploadTotalRatio: 'Upload {0} / {1}',

@@ -47,10 +47,10 @@ export default {
     mainMenu: {
       articleBrowser: '記事',
       siteAdmin: 'サイト管理',
-      articleAdmin: '記事',
-      userStorageAdmin: 'ストレージ',
+      articleAdmin: '記事管理',
+      userStorageAdmin: 'ストレージ管理',
       appAdmin: 'アプリケーション管理',
-      appStorageAdmin: 'ストレージ',
+      appStorageAdmin: 'ストレージ管理',
     },
     updated: 'サイトのアップデートが必要です。',
   },
@@ -98,7 +98,7 @@ export default {
   },
   storage: {
     appRootName: 'Storage',
-    userRootName: 'Storage',
+    userRootName: 'My Storage',
     articleRootName: '記事',
     uploading: 'アップロード中',
     uploadTotalRatio: 'アップロード {0} / {1}',

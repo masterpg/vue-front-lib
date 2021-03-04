@@ -17,7 +17,7 @@
   &.last
     color: $text-primary-color
     pointer-events: none
-    font-weight: map-get($text-weights, "bold")
+    font-weight: $text-weight-bold
   &.last.enabled
     color: $app-link-color
     pointer-events: auto

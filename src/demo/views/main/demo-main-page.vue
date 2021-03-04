@@ -111,31 +111,31 @@ export default defineComponent({
       return [
         {
           title: 'Home',
-          path: routes.home.path.value,
+          path: routes.home.path,
         },
         {
           title: 'ABC',
-          path: routes.abc.path.value,
+          path: routes.abc.path,
         },
         {
           title: 'Shop',
-          path: routes.shop.path.value,
+          path: routes.shop.path,
         },
         {
           title: 'TreeView',
-          path: routes.tree.path.value,
+          path: routes.tree.path,
         },
         {
           title: 'Img',
-          path: routes.img.path.value,
+          path: routes.img.path,
         },
         {
           title: 'Markdown',
-          path: routes.markdown.path.value,
+          path: routes.markdown.path,
         },
         {
           title: 'markdown-it',
-          path: routes.markdownIt.path.value,
+          path: routes.markdownIt.path,
         },
       ]
     })

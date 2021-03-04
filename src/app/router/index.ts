@@ -1,7 +1,8 @@
 import * as _path from 'path'
 import { Component, Dictionary, RedirectOption } from 'vue-router/types/router'
-import { ComputedRef, Ref, computed, ref } from '@vue/composition-api'
-import VueRouter, { RouteConfig } from 'vue-router'
+import { ComputedRef, Ref, UnwrapRef, reactive, ref } from '@vue/composition-api'
+import { Key, compile, pathToRegexp } from 'path-to-regexp'
+import VueRouter, { Route as VueRoute } from 'vue-router'
 import HomePage from '@/demo/views/home'
 import Vue from 'vue'
 import { extendedMethod } from '@/app/base'
@@ -17,17 +18,9 @@ Vue.use(VueRouter)
 
 const UserNameProp = 'userName'
 
-interface RouterContainer {
-  router: VueRouter
-  routes: Routes
-  params: RouteParams
-}
+type NavigationGuardChecker = (to: VueRoute, from: VueRoute) => Promise<void | boolean>
 
-interface Route<T extends Dictionary<string> = Dictionary<string>> {
-  readonly path: ComputedRef<string>
-  readonly params: ComputedRef<Partial<T>>
-  readonly isCurrent: ComputedRef<boolean>
-}
+type FlowStatus = 'None' | 'Enter' | 'Update' | 'Leave'
 
 interface RouteInput {
   routePath: string
@@ -35,25 +28,90 @@ interface RouteInput {
   redirect?: RedirectOption
 }
 
-interface RawRoute {
-  toRouteConfig(): { path: string; component: any }
-  update(): void
+interface RouterContainer {
+  router: VueRouter
+  routes: Routes
+  route: CurrentRoute
+  params: RouteParams
 }
 
-interface UserRoute<T extends UserRouteParams = UserRouteParams> extends Route<T> {
+interface Route {
+  /**
+   * ルートのベースパスです。
+   * 例: /app.admin/siteAdmin/storage
+   */
+  readonly basePath: string
+  /**
+   * ルートのパスです。
+   * 例: /app.admin/siteAdmin/storage/xkoqcFH4B3edNPPCC4zR
+   */
+  readonly path: string
+  /**
+   * ルートのステータスです。
+   */
+  readonly status: FlowStatus
+  /**
+   * 現在のルートが自身であるかを示すフラグです。
+   */
+  readonly isCurrent: boolean
+  /**
+   * ベースパスを基準としてルートが変更される際のナビゲーションガードです。
+   * 次のルートへ遷移させたくない場合は戻り値に`false`を返してください。
+   * @param guard
+   */
+  onBeforeRouteUpdate(guard: NavigationGuardChecker): () => void
+  /**
+   * ベースパスから他のルートへ変更される際のナビゲーションガードです。
+   * 次のルートへ遷移させたくない場合は戻り値に`false`を返してください。
+   * @param guard
+   */
+  onBeforeRouteLeave(guard: NavigationGuardChecker): () => void
+}
+
+interface CurrentRoute extends Pick<Route, 'basePath' | 'path' | 'status'> {}
+
+type RawCurrentRoute = { [K in keyof CurrentRoute]: CurrentRoute[K] }
+
+interface RawRoute extends Omit<Route, 'basePath' | 'path' | 'status' | 'isCurrent'> {
+  readonly basePath: ComputedRef<string>
+  readonly path: ComputedRef<string>
+  readonly status: ComputedRef<FlowStatus>
+  readonly isCurrent: ComputedRef<boolean>
+  /**
+   * 自身をVue Routerの設定形式に変換します。
+   */
+  toRouteConfig(): { path: string; component: any }
+  /**
+   * 次のルートへ進むかをチェックします。
+   * @param to
+   * @param from
+   */
+  proceed(to: VueRoute, from: VueRoute): Promise<boolean>
+  /**
+   * 次のルートをもとに状態を更新します。
+   * @param to
+   * @param from
+   */
+  update(to: VueRoute, from: VueRoute): void
+}
+
+interface UserRoute extends Route {
   move(): Promise<boolean>
 }
 
-type UserRouteParams = { [UserNameProp]: string } & Dictionary<string>
+interface ArticlesRoute extends Route {
+  move(articleId: string): Promise<boolean>
+  getArticleId(): string
+}
 
-interface StorageRoute<T extends UserRouteParams = UserRouteParams> extends Route<T> {
+interface StorageRoute extends Route {
   move(nodeId: string): Promise<boolean>
   getNodeId(): string
 }
 
 interface Routes {
   home: UserRoute
-  articles: UserRoute
+  articles: ArticlesRoute
   siteAdmin: {
     article: StorageRoute
     storage: StorageRoute
@@ -64,18 +122,14 @@ interface Routes {
 }
 
 interface RouteParams {
-  userName: ComputedRef<string>
+  userName: string
 }
 
 //========================================================================
 //
-//  Implementation
+//  Helpers
 //
 //========================================================================
-
-//------------------------------------------------------------------------
-//  Helpers
-//------------------------------------------------------------------------
 
 /**
  * `routePath`の中にある変数プレースホルダーを`routeParams`で指定された値に置き換えます。
@@ -113,84 +167,178 @@ function replaceRouteParams(routePath: string, routeParams: Partial<Dictionary<s
   return result
 }
 
-function replaceUserNameRouteParams(routePath: string, routeParams: Partial<Dictionary<string>>): string {
-  let result = routePath
-
-  // パラメータからユーザー名を取得
-  // ※取得できなかった場合、空文字を返す
-  const userName = routeParams[UserNameProp]
-  if (!userName) return ''
-
-  // 変数プレースホルダーの置き換え
-  const pattern = new RegExp(`^/(:${UserNameProp})$|^/(:${UserNameProp})/`)
-  result = result.replace(pattern, (str, p1, p2, offset, s) => {
-    return str.replace(p1 || p2, userName)
-  })
-
-  // 置き換えられない変数プレースホルダーがあった場合、空文字を返す
-  if (pattern.test(result)) return ''
-
-  return result
-}
-
-//------------------------------------------------------------------------
+//========================================================================
+//
 //  Routes
-//------------------------------------------------------------------------
+//
+//========================================================================
 
 //--------------------------------------------------
 //  Route
 //--------------------------------------------------
 
 namespace Route {
-  export function newInstance<T extends Dictionary<string>>(input: RouteInput): Route<T> & RawRoute {
-    return newRawInstance(input)
-  }
+  export function newRawInstance(input: RouteInput) {
+    //----------------------------------------------------------------------
+    //
+    //  Variables
+    //
+    //----------------------------------------------------------------------
 
-  export function newRawInstance<T extends Dictionary<string>>(input: RouteInput) {
+    const baseRoutePath = ref(input.routePath)
+
     const routePath = ref(input.routePath)
-
-    const path = computed(() => {
-      return path_get()
-    })
-
-    const path_get = extendedMethod(() => {
-      return replaceRouteParams(routePath.value, params.value)
-    })
-
-    const params = ref({}) as Ref<Partial<T>>
-
-    const isCurrent = ref(false)
 
     const component = ref(input.component)
 
     const redirect = ref(input.redirect)
 
-    const toRouteConfig = extendedMethod<RawRoute['toRouteConfig']>(() => {
-      return { path: routePath.value, component: component.value, redirect: redirect.value }
-    })
+    const currentRoute = ref<VueRoute>()
 
-    const update: RawRoute['update'] = () => {
-      const router = RouterContainer.useRouter()
-      isCurrent.value = isCurrentRoute()
-      params.value = router.currentRoute.params as T
+    const beforeUpdateListeners: NavigationGuardChecker[] = []
+
+    const beforeLeaveListeners: NavigationGuardChecker[] = []
+
+    //----------------------------------------------------------------------
+    //
+    //  Properties
+    //
+    //----------------------------------------------------------------------
+
+    const basePath = ref('')
+
+    const path = ref('')
+
+    const status = ref<FlowStatus>('None')
+
+    const isCurrent = ref(false)
+
+    //----------------------------------------------------------------------
+    //
+    //  Methods
+    //
+    //----------------------------------------------------------------------
+
+    const onBeforeRouteUpdate: Route['onBeforeRouteUpdate'] = guard => {
+      beforeUpdateListeners.push(guard)
+      return () => {
+        const index = beforeUpdateListeners.indexOf(guard)
+        index >= 0 && beforeUpdateListeners.splice(index, 1)
+      }
     }
 
-    function isCurrentRoute(): boolean {
-      const router = RouterContainer.useRouter()
-      const currentPath = replaceRouteParams(routePath.value, router.currentRoute.params)
-      if (!currentPath) return false
-      return router.currentRoute.path.startsWith(currentPath)
+    const onBeforeRouteLeave: Route['onBeforeRouteLeave'] = guard => {
+      beforeLeaveListeners.push(guard)
+      return () => {
+        const index = beforeLeaveListeners.indexOf(guard)
+        index >= 0 && beforeLeaveListeners.splice(index, 1)
+      }
+    }
+
+    //----------------------------------------------------------------------
+    //
+    //  Internal methods
+    //
+    //----------------------------------------------------------------------
+
+    const toRouteConfig = extendedMethod<RawRoute['toRouteConfig']>(() => {
+      return { path: baseRoutePath.value, component: component.value, redirect: redirect.value }
+    })
+
+    const proceed = extendedMethod<RawRoute['proceed']>(async (to, from) => {
+      const toIsCurrent = getIsCurrent(to)
+      const fromIsCurrent = getIsCurrent(from)
+
+      if (toIsCurrent) {
+        if (toIsCurrent === fromIsCurrent) {
+          status.value = 'Update'
+        } else {
+          status.value = 'Enter'
+        }
+      } else {
+        if (fromIsCurrent) {
+          status.value = 'Leave'
+        } else {
+          status.value = 'None'
+        }
+      }
+
+      if (status.value === 'Update') {
+        for (const listener of beforeUpdateListeners) {
+          const ret = await listener(to, from)
+          if (ret === false) return false
+        }
+      } else if (status.value === 'Leave') {
+        for (const listener of beforeLeaveListeners) {
+          const ret = await listener(to, from)
+          if (ret === false) return false
+        }
+      }
+
+      return true
+    })
+
+    const update = extendedMethod<RawRoute['update']>((to, from) => {
+      currentRoute.value = to
+      isCurrent.value = getIsCurrent(to)
+      basePath.value = getBasePath(to)
+      path.value = getPath(to)
+    })
+
+    const getBasePath = extendedMethod((route: VueRoute) => {
+      return toPath(baseRoutePath.value, route.params)
+    })
+
+    const getPath = extendedMethod((route: VueRoute) => {
+      return toPath(routePath.value, route.params)
+    })
+
+    const getIsCurrent = extendedMethod((route: VueRoute) => {
+      const regexp = pathToRegexp(baseRoutePath.value)
+      return regexp.test(route.path)
+    })
+
+    const toPath = (routePath: string, params: Dictionary<string>) => {
+      const keys: Key[] = []
+      const regexp = pathToRegexp(routePath, keys)
+
+      const params_ = keys.reduce<Dictionary<string>>((result, key) => {
+        result[key.name] = params[key.name] || 'none'
+        return result
+      }, {})
+
+      return compile(routePath)(params_)
+    }
+
+    //----------------------------------------------------------------------
+    //
+    //  Result
+    //
+    //----------------------------------------------------------------------
+
+    const rawRoute: RawRoute = {
+      basePath,
+      path,
+      status,
+      isCurrent,
+      onBeforeRouteLeave,
+      onBeforeRouteUpdate,
+      toRouteConfig,
+      proceed,
+      update,
     }
 
     return {
+      ...rawRoute,
+      baseRoutePath,
       routePath,
-      path,
-      path_get,
-      params,
-      isCurrent,
       component,
+      currentRoute,
       toRouteConfig,
-      update,
+      getBasePath,
+      getPath,
+      getIsCurrent,
+      toPath,
     }
   }
 }
@@ -200,15 +348,11 @@ namespace Route {
 //--------------------------------------------------
 
 namespace UserRoute {
-  export function newInstance<T extends UserRouteParams = UserRouteParams>(input: RouteInput): UserRoute<T> & RawRoute {
-    const base = Route.newRawInstance<T>(input)
-
-    base.path_get.value = () => {
-      return replaceUserNameRouteParams(base.routePath.value, base.params.value)
-    }
+  export function newRawInstance(input: RouteInput) {
+    const base = Route.newRawInstance(input)
 
     const move: UserRoute['move'] = async () => {
-      const router = RouterContainer.useRouter()
+      const router = useRouter()
       await router.push(base.path.value)
       return true
     }
@@ -221,21 +365,94 @@ namespace UserRoute {
 }
 
 //--------------------------------------------------
+//  ArticlesRoute
+//--------------------------------------------------
+
+namespace ArticlesRoute {
+  export function newRawInstance(input: RouteInput) {
+    const base = Route.newRawInstance(input)
+
+    base.routePath.value = _path.join(base.baseRoutePath.value, ':articleId')
+
+    base.getPath.value = route => {
+      return base.toPath(base.routePath.value, route.params)
+    }
+
+    base.toRouteConfig.value = () => {
+      return {
+        path: base.routePath.value,
+        component: base.component.value,
+      }
+    }
+
+    base.getIsCurrent.value = route => {
+      const regexp = pathToRegexp(base.routePath.value)
+      return regexp.test(route.path)
+    }
+
+    const move: ArticlesRoute['move'] = async articleId => {
+      const router = useRouter()
+      const currentPath = removeEndSlash(router.currentRoute.path)
+      const nextPath = base.toPath(base.routePath.value, { ...router.currentRoute.params, articleId })
+      if (currentPath === nextPath) {
+        return false
+      }
+
+      await router.push(nextPath)
+      return true
+    }
+
+    const getArticleId: ArticlesRoute['getArticleId'] = () => {
+      if (!base.isCurrent.value) return ''
+      return base.currentRoute.value?.params.articleId ?? ''
+    }
+
+    return {
+      ...base,
+      move,
+      getArticleId,
+    }
+  }
+}
+
+//--------------------------------------------------
 //  StorageRoute
 //--------------------------------------------------
 
 namespace StorageRoute {
-  export function newInstance<T extends UserRouteParams = UserRouteParams>(input: {
-    routePath: string
-    component: Component
-  }): StorageRoute<T> & RawRoute {
-    const base = Route.newRawInstance<T>(input)
+  export function newRawInstance(input: RouteInput) {
+    const base = Route.newRawInstance(input)
+
+    // https://github.com/pillarjs/path-to-regexp/tree/v1.7.0#zero-or-more
+    base.routePath.value = _path.join(base.baseRoutePath.value, ':nodeId*')
+
+    base.getPath.value = route => {
+      return base.toPath(base.routePath.value, route.params)
+    }
+
+    base.toRouteConfig.value = () => {
+      return {
+        path: base.routePath.value,
+        component: base.component.value,
+      }
+    }
+
+    base.getIsCurrent.value = route => {
+      const regexp = pathToRegexp(base.routePath.value)
+      return regexp.test(route.path)
+    }
 
     const move: StorageRoute['move'] = async nodeId => {
-      const router = RouterContainer.useRouter()
-      const currentRoutePath = removeEndSlash(router.currentRoute.path)
-      const nextPath = removeEndSlash(_path.join(base.path.value, nodeId))
-      if (currentRoutePath === nextPath) {
+      const router = useRouter()
+      const currentPath = removeEndSlash(router.currentRoute.path)
+      let nextPath: string
+      if (nodeId) {
+        nextPath = base.toPath(base.routePath.value, { ...router.currentRoute.params, nodeId })
+      } else {
+        nextPath = base.basePath.value
+      }
+
+      if (currentPath === nextPath) {
         return false
       }
 
@@ -244,18 +461,8 @@ namespace StorageRoute {
     }
 
     const getNodeId: StorageRoute['getNodeId'] = () => {
-      const router = RouterContainer.useRouter()
-      if (!base.isCurrent) return ''
-
-      return router.currentRoute.params.nodeId ?? ''
-    }
-
-    base.toRouteConfig.value = () => {
-      return {
-        // https://github.com/pillarjs/path-to-regexp/tree/v1.7.0#zero-or-more
-        path: `${base.routePath.value}/:nodeId*`,
-        component: base.component.value,
-      }
+      if (!base.isCurrent.value) return ''
+      return base.currentRoute.value?.params.nodeId ?? ''
     }
 
     return {
@@ -266,9 +473,11 @@ namespace StorageRoute {
   }
 }
 
-//------------------------------------------------------------------------
-//  Setup router
-//------------------------------------------------------------------------
+//========================================================================
+//
+//  Router
+//
+//========================================================================
 
 namespace RouterContainer {
   let instance: RouterContainer
@@ -283,51 +492,73 @@ namespace RouterContainer {
     return instance.routes
   }
 
+  export function useRoute(): CurrentRoute {
+    instance = instance ?? newInstance()
+    return instance.route
+  }
+
   export function useRouteParams(): RouteParams {
     instance = instance ?? newInstance()
     return instance.params
   }
 
   function newInstance(): RouterContainer {
-    const params = {
-      userName: ref(''),
-    }
+    //----------------------------------------------------------------------
+    //
+    //  Variables
+    //
+    //----------------------------------------------------------------------
 
-    const home = UserRoute.newInstance({
-      routePath: `/:${UserNameProp}`,
-      component: HomePage,
+    const params = reactive({
+      userName: '',
     })
 
-    const articles = UserRoute.newInstance({
-      routePath: `/:${UserNameProp}/articles/:articleId`,
-      component: HomePage,
-    })
+    const home = reactive(
+      UserRoute.newRawInstance({
+        routePath: `/:${UserNameProp}`,
+        component: HomePage,
+      })
+    )
 
-    const siteAdmin = {
-      article: StorageRoute.newInstance({
+    const articles = reactive(
+      ArticlesRoute.newRawInstance({
+        routePath: `/:${UserNameProp}/articles`,
+        component: () => import(/* webpackChunkName: "views/article-browser" */ '@/app/views/article-browser'),
+      })
+    )
+
+    const siteAdmin = reactive({
+      article: StorageRoute.newRawInstance({
         routePath: `/:${UserNameProp}/siteAdmin/article`,
         component: () => import(/* webpackChunkName: "views/site-admin/article" */ '@/app/views/site-admin/article'),
       }),
-
-      storage: StorageRoute.newInstance({
+      storage: StorageRoute.newRawInstance({
         routePath: `/:${UserNameProp}/siteAdmin/storage`,
         component: () => import(/* webpackChunkName: "views/site-admin/storage" */ '@/app/views/site-admin/storage'),
       }),
-    }
+    })
 
-    const appAdmin = {
-      storage: StorageRoute.newInstance({
+    const appAdmin = reactive({
+      storage: StorageRoute.newRawInstance({
         routePath: `/:${UserNameProp}/appAdmin/storage`,
         component: () => import(/* webpackChunkName: "views/app-admin/storage" */ '@/app/views/app-admin/storage'),
       }),
-    }
-
-    const fallback = Route.newInstance({
-      routePath: '*',
-      redirect: '/',
     })
 
-    const routeList = [home, articles, siteAdmin.article, siteAdmin.storage, appAdmin.storage, fallback]
+    const fallback = reactive(
+      Route.newRawInstance({
+        routePath: '/(.*)',
+        // redirect: '/',
+      })
+    )
+
+    const routeList: UnwrapRef<RawRoute>[] = [home, articles, siteAdmin.article, siteAdmin.storage, appAdmin.storage]
+
+    //----------------------------------------------------------------------
+    //
+    //  Properties
+    //
+    //----------------------------------------------------------------------
 
     const router = new (class extends VueRouter {
       constructor() {
@@ -339,20 +570,49 @@ namespace RouterContainer {
       }
     })()
 
-    router.beforeEach((to, from, next) => {
-      routeList.forEach(vieRoute => vieRoute.update())
-      params.userName.value = to.params[UserNameProp] || ''
+    const routes: Routes = { home, articles, siteAdmin, appAdmin }
+
+    const route: Ref<RawCurrentRoute> = ref({
+      basePath: '',
+      path: '',
+      status: 'None' as FlowStatus,
+    })
+
+    //----------------------------------------------------------------------
+    //
+    //  Event listeners
+    //
+    //----------------------------------------------------------------------
+
+    router.beforeEach(async (to, from, next) => {
+      // 次のルートに進むかチェック
+      for (const route of routeList) {
+        const ret = await route.proceed(to, from)
+        if (!ret) return false
+      }
+
+      // 各ルートオブジェクトを更新
+      for (const route of routeList) {
+        route.update(to, from)
+      }
+
       next()
     })
 
-    router.afterEach(() => {
-      routeList.forEach(vieRoute => vieRoute.update())
-      params.userName.value = router.currentRoute.params[UserNameProp] || ''
+    router.afterEach((to, from) => {
+      const { basePath, path, status } = routeList.find(route => route.isCurrent)!
+      Object.assign(route.value, { basePath, path, status })
+
+      params.userName = to.params[UserNameProp] ?? ''
     })
 
-    const routes = { home, articles, siteAdmin, appAdmin }
+    //----------------------------------------------------------------------
+    //
+    //  Result
+    //
+    //----------------------------------------------------------------------
 
-    return { router, routes, params }
+    return { router, routes, route: route.value, params }
   }
 }
 
@@ -362,5 +622,17 @@ namespace RouterContainer {
 //
 //========================================================================
 
-const { useRouter, useRoutes, useRouteParams } = RouterContainer
-export { Route, RawRoute, StorageRoute, replaceRouteParams, useRouter, useRoutes, useRouteParams }
+const { useRouter, useRoutes, useRoute, useRouteParams } = RouterContainer
+export {
+  CurrentRoute,
+  FlowStatus,
+  RawCurrentRoute,
+  RawRoute,
+  Route,
+  StorageRoute,
+  replaceRouteParams,
+  useRoute,
+  useRouteParams,
+  useRouter,
+  useRoutes,
+}

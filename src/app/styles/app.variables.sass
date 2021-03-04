@@ -23,6 +23,7 @@ $warning: #F2C037 !default
 //--------------------------------------------------
 
 $text-primary-color: $grey-9 !default
+$text-primary-bold-color: $grey-8 !default
 $text-secondary-color: $grey-6 !default
 $text-disabled-color: $grey-6 !default
 $text-accent-color: $pink-12 !default
@@ -36,9 +37,16 @@ $text-error-color: $red-14 !default
       line-height: map-get($value, "line-height")
       letter-spacing: map-get($value, "letter-spacing")
 
+$text-weight-thin: map-get($text-weights, "thin") !default
+$text-weight-light: map-get($text-weights, "light") !default
+$text-weight-regular: map-get($text-weights, "regular") !default
+$text-weight-medium: map-get($text-weights, "medium") !default
+$text-weight-bold: map-get($text-weights, "bold") !default
+$text-weight-bolder: map-get($text-weights, "bolder") !default
+
 $app-item-title-color: $grey-7 !default
 $app-item-title-font-size: 13px !default
-$app-item-title-font-weight: map-get($text-weights, "regular") !default
+$app-item-title-font-weight: $text-weight-regular !default
 
 %app-item-title
   color: $app-item-title-color
@@ -47,7 +55,7 @@ $app-item-title-font-weight: map-get($text-weights, "regular") !default
 
 $app-item-value-color: $text-primary-color !default
 $app-item-value-font-size: 13px !default
-$app-item-value-font-weight: map-get($text-weights, "regular") !default
+$app-item-value-font-weight: $text-weight-regular !default
 
 %app-item-value
   color: $app-item-value-color
@@ -55,7 +63,7 @@ $app-item-value-font-weight: map-get($text-weights, "regular") !default
   font-weight: $app-item-value-font-weight
 
 $app-link-color: $indigo-8 !default
-$app-link-font-weight: map-get($text-weights, "medium") !default
+$app-link-font-weight: $text-weight-regular !default
 
 %app-link
   color: $app-link-color

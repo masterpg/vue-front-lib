@@ -1,6 +1,7 @@
+import { CurrentRoute, FlowStatus, RawCurrentRoute, RawRoute, Route } from '@/app/router'
+import { Ref, UnwrapRef, reactive, ref } from '@vue/composition-api'
 import VueRouter, { RouteConfig } from 'vue-router'
 import HomePage from '@/demo/views/home'
-import { Route } from '@/app/router'
 import Vue from 'vue'
 
 Vue.use(VueRouter)
@@ -14,6 +15,7 @@ Vue.use(VueRouter)
 interface RouterContainer {
   router: VueRouter
   routes: Routes
+  route: CurrentRoute
 }
 
 interface Routes {
@@ -50,50 +52,78 @@ namespace RouterContainer {
   }
 
   function newInstance(): RouterContainer {
-    const home = Route.newInstance({
-      routePath: '/demo',
-      component: HomePage,
-    })
+    //----------------------------------------------------------------------
+    //
+    //  Variables
+    //
+    //----------------------------------------------------------------------
 
-    const abc = Route.newInstance({
-      routePath: '/demo/abc',
-      // route level code-splitting
-      // this generates a separate chunk (about.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "demo/views/abc" */ '@/demo/views/abc'),
-    })
+    const home = reactive(
+      Route.newRawInstance({
+        routePath: '/demo',
+        component: HomePage,
+      })
+    )
 
-    const shop = Route.newInstance({
-      routePath: '/demo/shop',
-      component: () => import(/* webpackChunkName: "demo/views/shop" */ '@/demo/views/shop'),
-    })
+    const abc = reactive(
+      Route.newRawInstance({
+        routePath: '/demo/abc',
+        // route level code-splitting
+        // this generates a separate chunk (about.[hash].js) for this route
+        // which is lazy-loaded when the route is visited.
+        component: () => import(/* webpackChunkName: "demo/views/abc" */ '@/demo/views/abc'),
+      })
+    )
 
-    const tree = Route.newInstance({
-      routePath: '/demo/tree',
-      component: () => import(/* webpackChunkName: "demo/views/tree-view" */ '@/demo/views/tree-view'),
-    })
+    const shop = reactive(
+      Route.newRawInstance({
+        routePath: '/demo/shop',
+        component: () => import(/* webpackChunkName: "demo/views/shop" */ '@/demo/views/shop'),
+      })
+    )
 
-    const img = Route.newInstance({
-      routePath: '/demo/img',
-      component: () => import(/* webpackChunkName: "demo/views/img" */ '@/demo/views/img'),
-    })
+    const tree = reactive(
+      Route.newRawInstance({
+        routePath: '/demo/tree',
+        component: () => import(/* webpackChunkName: "demo/views/tree-view" */ '@/demo/views/tree-view'),
+      })
+    )
 
-    const markdown = Route.newInstance({
-      routePath: '/demo/markdown',
-      component: () => import(/* webpackChunkName: "demo/views/markdown" */ '@/demo/views/markdown'),
-    })
+    const img = reactive(
+      Route.newRawInstance({
+        routePath: '/demo/img',
+        component: () => import(/* webpackChunkName: "demo/views/img" */ '@/demo/views/img'),
+      })
+    )
 
-    const markdownIt = Route.newInstance({
-      routePath: '/demo/markdownIt',
-      component: () => import(/* webpackChunkName: "demo/views/markdown-it" */ '@/demo/views/markdown-it'),
-    })
+    const markdown = reactive(
+      Route.newRawInstance({
+        routePath: '/demo/markdown',
+        component: () => import(/* webpackChunkName: "demo/views/markdown" */ '@/demo/views/markdown'),
+      })
+    )
 
-    const fallback = Route.newInstance({
-      routePath: '/demo/*',
-      redirect: '/demo',
-    })
+    const markdownIt = reactive(
+      Route.newRawInstance({
+        routePath: '/demo/markdownIt',
+        component: () => import(/* webpackChunkName: "demo/views/markdown-it" */ '@/demo/views/markdown-it'),
+      })
+    )
 
-    const routeList = [home, abc, shop, tree, img, markdown, markdownIt, fallback]
+    const fallback = reactive(
+      Route.newRawInstance({
+        routePath: '/demo/(.*)',
+        redirect: '/demo',
+      })
+    )
+
+    const routeList: UnwrapRef<RawRoute>[] = [home, abc, shop, tree, img, markdown, markdownIt, fallback]
+
+    //----------------------------------------------------------------------
+    //
+    //  Properties
+    //
+    //----------------------------------------------------------------------
 
     const router = new (class extends VueRouter {
       constructor() {
@@ -105,18 +135,47 @@ namespace RouterContainer {
       }
     })()
 
-    router.beforeEach((to, from, next) => {
-      routeList.forEach(vieRoute => vieRoute.update())
+    const routes: Routes = { home, abc, shop, tree, img, markdown, markdownIt }
+
+    const route: Ref<RawCurrentRoute> = ref({
+      basePath: '',
+      path: '',
+      status: 'None' as FlowStatus,
+    })
+
+    //----------------------------------------------------------------------
+    //
+    //  Event listeners
+    //
+    //----------------------------------------------------------------------
+
+    router.beforeEach(async (to, from, next) => {
+      // 次のルートに進むかチェック
+      for (const route of routeList) {
+        const ret = await route.proceed(to, from)
+        if (!ret) return false
+      }
+
+      // 各ルートオブジェクトを更新
+      for (const route of routeList) {
+        route.update(to, from)
+      }
+
       next()
     })
 
-    router.afterEach(() => {
-      routeList.forEach(vieRoute => vieRoute.update())
+    router.afterEach((to, from) => {
+      const { basePath, path, status } = routeList.find(route => route.isCurrent)!
+      Object.assign(route.value, { basePath, path, status })
     })
 
-    const routes = { home, abc, shop, tree, img, markdown, markdownIt }
+    //----------------------------------------------------------------------
+    //
+    //  Result
+    //
+    //----------------------------------------------------------------------
 
-    return { router, routes }
+    return { router, routes, route: route.value }
   }
 }
 
